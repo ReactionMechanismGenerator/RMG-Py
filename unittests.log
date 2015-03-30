@@ -6,7 +6,7 @@ Traceback (most recent call last):
 ImportError: No module named dassl
 mkdir -p testing/coverage
 rm -rf testing/coverage/*
-nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 test the checkConformerEnergy function with an list of energies. ... ok
 Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax. ... ok
 Test the generated temperature list. ... ok
@@ -890,7 +890,7 @@ rmgpy.data                            3      1      0      0    67%   34
 rmgpy.data.base                     684    457    309    236    30%   43-45, 211-213, 230-251, 257-274, 281-300, 306-332, 343-361, 374-430, 439, 451, 458, 468-469, 472, 492-502, 509-539, 548-603, 610-618, 626-719, 726-732, 739-751, 758-792, 802, 808-814, 820-825, 834-838, 847-860, 900, 902, 913-918, 952, 954, 965, 970, 985, 992-996, 1013, 1024-1030, 1037-1046, 1057-1064, 1082, 1092, 1114-1117, 1130, 1140-1144, 1156-1160, 1182-1201, 1207-1208, 1214, 1222-1235, 1249-1270
 rmgpy.data.kinetics                   7      0      0      0   100%   
 rmgpy.data.kinetics.common          128    115     70     70     7%   106-107, 116-224, 236-282
-rmgpy.data.kinetics.database        283    225    131    114    18%   82-87, 93-95, 102-104, 114-129, 143-153, 157-159, 161-163, 170-172, 178, 186-191, 201-227, 234-238, 245-259, 266-270, 277-284, 291-310, 317-352, 360-363, 371-376, 384-399, 412-421, 442-540
+rmgpy.data.kinetics.database        283    225    131    114    18%   82-87, 93-95, 102-104, 114-129, 143-153, 157-159, 161-163, 170-172, 178, 186-191, 201-227, 234-238, 245-259, 266-270, 277-284, 291-310, 317-352, 360-363, 371-376, 384-400, 413-422, 443-541
 rmgpy.data.kinetics.depository       56     42     16     16    19%   63-76, 82, 101, 114, 117, 123-158, 189-204, 210
 rmgpy.data.kinetics.family          905    838    502    502     5%   93-106, 112, 131, 159, 167, 175-191, 202-284, 291, 298, 344-355, 365-425, 432-467, 473-484, 490-513, 526-605, 613-614, 621-625, 631-633, 639, 645-648, 655-656, 662-709, 720-804, 811, 818-821, 828-930, 939-942, 949-952, 965-1076, 1091-1134, 1141-1146, 1156-1182, 1191-1200, 1212-1247, 1254-1261, 1275-1475, 1483-1562, 1570, 1579-1584, 1594-1602, 1612-1626, 1634-1637, 1650-1704, 1712-1720, 1727-1735, 1743-1748
 rmgpy.data.kinetics.groups          291    274    182    182     4%   68-69, 75-82, 101-167, 177-203, 212-264, 277-544
