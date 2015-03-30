@@ -76,7 +76,7 @@ decython:
 test:
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 eg1: noQM
 	mkdir -p testing/minimal
