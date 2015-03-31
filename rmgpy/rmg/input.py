@@ -119,7 +119,10 @@ def simpleReactor(temperature,
                   sensitivityThreshold=1e-3
                   ):
     logging.debug('Found SimpleReactor reaction system')
-
+    
+    for value in initialMoleFractions.values():
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
     if sum(initialMoleFractions.values()) != 1:
         logging.warning('Initial mole fractions do not sum to one; renormalizing.')
         for spec in initialMoleFractions:
