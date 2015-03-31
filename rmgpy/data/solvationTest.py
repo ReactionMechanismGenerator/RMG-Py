@@ -100,7 +100,21 @@ multiplicity 1
 3 H u0 p0 c0 {1,S}
 """)
         species = Species(molecule=[molecule])
-	soluteData = self.database.getSoluteDataFromGroups(species)
+        soluteData = self.database.getSoluteDataFromGroups(species)
+        self.assertTrue(soluteData is not None)
+        
+    @work_in_progress
+    def testSoluteDataGenerationAmmonia(self):
+        "Test we can obtain solute parameters via group additivity for ammonia"
+        molecule=Molecule().fromAdjacencyList(
+"""
+1 N u0 p1 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+""")
+        species = Species(molecule=[molecule])
+        soluteData = self.database.getSoluteDataFromGroups(species)
         self.assertTrue(soluteData is not None)
 
     def testRadicalandLonePairGeneration(self):
@@ -117,7 +131,7 @@ multiplicity 2
 3 H u0 p0 c0 {2,S}
 """)
         species = Species(molecule=[molecule])
-	soluteData = self.database.getSoluteDataFromGroups(species)
+        soluteData = self.database.getSoluteDataFromGroups(species)
         self.assertTrue(soluteData is not None)
 
     def testCorrectionGeneration(self):
