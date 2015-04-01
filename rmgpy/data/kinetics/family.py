@@ -1601,30 +1601,6 @@ class KineticsFamily(Database):
                 kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
-    def getKineticsFromRules(self, template, degeneracy):
-        """
-        Search the given `depository` in this kinetics family for kinetics
-        for the given `reaction`. Returns a list of all of the matching 
-        kinetics, the corresponding entries, and ``True`` if the kinetics
-        match the forward direction or ``False`` if they match the reverse
-        direction.
-        """
-        kineticsList = []
-        
-        entries = self.rules.getAllRules(template)
-        for entry in entries:
-            kineticsList.append([deepcopy(entry.data), entry, True])
-        
-        for kinetics, entry, isForward in kineticsList:
-            if kinetics is not None:
-                # The rules are defined on a per-site basis, so we need to include the degeneracy manually
-                assert isinstance(kinetics, ArrheniusEP)
-                kinetics.A.value_si *= degeneracy
-                kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, self.rules.label)
-                kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-        
-        return kineticsList
-    
     def __selectBestKinetics(self, kineticsList):
         """
         For a given set of kinetics `kineticsList`, return the kinetics deemed
@@ -1660,15 +1636,6 @@ class KineticsFamily(Database):
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])
-        
-        # Check the rate rules for kinetics
-        kineticsList0 = self.getKineticsFromRules(template, degeneracy)
-        if len(kineticsList0) > 0 and not returnAllKinetics:
-            kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
-            return kinetics, self.rules, entry, isForward
-        else:
-            for kinetics, entry, isForward in kineticsList0:
-                kineticsList.append([kinetics, self.rules, entry, isForward])
         
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
         if estimator:        
