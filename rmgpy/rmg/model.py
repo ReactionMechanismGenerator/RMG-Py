@@ -956,9 +956,9 @@ class CoreEdgeReactionModel:
         # uninformative strings, so here we replace them with much shorter ones
         if not self.verboseComments:
             # Only keep a short comment (to save memory)
-            if 'Exact' in kinetics.comment or 'Matched rule' in kinetics.comment:
+            if 'Exact' in kinetics.comment:
                 # Exact match of rate rule
-                kinetics.comment = 'Exact match found for rate rule ({0})'.format(','.join([g.label for g in reaction.template])) 
+                pass
             elif 'Matched reaction' in kinetics.comment:
                 # Stems from matching a reaction from a depository
                 pass
