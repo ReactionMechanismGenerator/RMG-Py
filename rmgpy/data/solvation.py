@@ -38,7 +38,7 @@ import logging
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
-from rmgpy.molecule import Molecule, Atom, Bond, Group
+from rmgpy.molecule import Molecule, Atom, Bond, Group, atomTypes
 
 ################################################################################
 
@@ -484,13 +484,14 @@ class SolvationDatabase(object):
         Load the solute database from the given `path` on disk, where `path`
         points to the top-level folder of the solute database.
         
-        Two sets of groups for additivity, atom-centered ('abraham') and non atom-centered 
-        ('nonacentered').
+        Three sets of groups for additivity, atom-centered ('abraham'), non atom-centered 
+        ('nonacentered'), and radical corrections ('radical')
         """
         logging.info('Loading Platts additivity group database from {0}...'.format(path))
         self.groups = {}
         self.groups['abraham']   =   SoluteGroups(label='abraham').load(os.path.join(path, 'abraham.py'  ), self.local_context, self.global_context)
         self.groups['nonacentered']  =  SoluteGroups(label='nonacentered').load(os.path.join(path, 'nonacentered.py' ), self.local_context, self.global_context)
+        self.groups['radical']  =  SoluteGroups(label='radical').load(os.path.join(path, 'radical.py' ), self.local_context, self.global_context)
    
     def save(self, path):
         """
@@ -519,6 +520,7 @@ class SolvationDatabase(object):
         if not os.path.exists(path): os.mkdir(path)
         self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
         self.groups['nonacentered'].save(os.path.join(path, 'nonacentered.py'))
+        self.groups['radical'].save(os.path.join(path, 'radical.py'))
 
     def loadOld(self, path):
         """
@@ -672,7 +674,117 @@ class SolvationDatabase(object):
         soluteData.comment = "Average of {0}".format(" and ".join(comments))
 
         return soluteData
+
+    def saturateRadicals(self, molecule):
+        saturatedStruct = molecule.copy(deep=True)
+
+        # Saturate structure by replacing all radicals with bonds to
+        # hydrogen atoms
+        added = {}
+        for atom in saturatedStruct.atoms:
+            for i in range(atom.radicalElectrons):
+                H = Atom('H')
+                bond = Bond(atom, H, 'S')
+                saturatedStruct.addAtom(H)
+                saturatedStruct.addBond(bond)
+                if atom not in added:
+                    added[atom] = []
+                added[atom].append([H, bond])
+                atom.decrementRadical()
+      
+        # Update the atom types of the saturated structure (not sure why
+        # this is necessary, because saturating with H shouldn't be
+        # changing atom types, but it doesn't hurt anything and is not
+        # very expensive, so will do it anyway)
+        saturatedStruct.updateConnectivityValues()
+        saturatedStruct.sortVertices()
+        saturatedStruct.updateAtomTypes()
+        saturatedStruct.updateLonePairs()
+        saturatedStruct.multiplicity = 1
+
+        return saturatedStruct, added
+   
+    def transformLonePairs(self, molecule):
+        """
+        Changes lone pairs in a molecule to two radicals for purposes of finding
+        solute data via group additivity. Transformed for each atom based on valency.
+        """
+        saturatedStruct = molecule.copy(deep=True)
+        addedToPairs = {}
+
+        for atom in saturatedStruct.atoms:
+            addedToPairs[atom] = 0
+            if atom.lonePairs > 0:
+                charge = atom.charge # Record this so we can conserve it when checking
+                bonds = saturatedStruct.getBonds(atom)
+                sumBondOrders = 0
+                for key, bond in bonds.iteritems():
+                    if bond.order == 'S': sumBondOrders += 1
+                    if bond.order == 'D': sumBondOrders += 2
+                    if bond.order == 'T': sumBondOrders += 3
+                    if bond.order == 'B': sumBondOrders += 1.5 # We should always have 2 'B' bonds (but what about Cbf?)
+                if atomTypes['Val4'] in atom.atomType.generic: # Carbon, Silicon
+                    while(atom.radicalElectrons + charge + sumBondOrders != 4):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+                if atomTypes['Val5'] in atom.atomType.generic: # Nitrogen
+                    while(atom.radicalElectrons + charge + sumBondOrders != 3):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+                if atomTypes['Val6'] in atom.atomType.generic: # Oxygen, sulfur
+                    while(atom.radicalElectrons + charge + sumBondOrders != 2):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+                if atomTypes['Val7'] in atom.atomType.generic: # Chlorine
+                    while(atom.radicalElectrons + charge + sumBondOrders != 1):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+
+        saturatedStruct.updateConnectivityValues()
+        saturatedStruct.sortVertices()
+        saturatedStruct.updateAtomTypes()
+        saturatedStruct.updateLonePairs()
+        saturatedStruct.updateMultiplicity()
         
+        return saturatedStruct, addedToPairs
+
+    def removeHBonding(self, saturatedStruct, addedToRadicals, addedToPairs, soluteData):  
+        
+        # Remove hydrogen bonds and restore the radical
+        for atom in addedToRadicals:
+            for H, bond in addedToRadicals[atom]:
+                saturatedStruct.removeBond(bond)
+                saturatedStruct.removeAtom(H)
+                atom.incrementRadical()
+
+        # Change transformed lone pairs back
+        for atom in addedToPairs:    
+            if addedToPairs[atom] > 0:
+                for pair in range(1, addedToPairs[atom]):
+                    saturatedStruct.decrementRadical()
+                    saturatedStruct.decrementRadical()
+                    saturatedStruct.incrementLonePairs()
+
+        # Update Abraham 'A' H-bonding parameter for unsaturated struct
+        for atom in saturatedStruct.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen() and atom.radicalElectrons > 0:
+                for electron in range(1, atom.radicalElectrons):
+                    # Get solute data for radical group    
+                    try:
+                        self.__addGroupSoluteData(soluteData, self.groups['radical'], saturatedStruct, {'*':atom})
+                    except KeyError: pass
+      
+        return soluteData
+
     def estimateSoluteViaGroupAdditivity(self, molecule):
         """
         Return the set of Abraham solute parameters corresponding to a given
@@ -693,73 +805,43 @@ class SolvationDatabase(object):
             L = 0.13,
             A = 0.003
         )
-
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
-
-            # Make a copy of the structure so we don't change the original
-            saturatedStruct = molecule.copy(deep=True)
-
-            # Saturate structure by replacing all radicals with bonds to
-            # hydrogen atoms
-            added = {}
-            for atom in saturatedStruct.atoms:
-                for i in range(atom.radicalElectrons):
-                    H = Atom('H')
-                    bond = Bond(atom, H, 'S')
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(bond)
-                    if atom not in added:
-                        added[atom] = []
-                    added[atom].append([H, bond])
-                    atom.decrementRadical()
-
-            # Update the atom types of the saturated structure (not sure why
-            # this is necessary, because saturating with H shouldn't be
-            # changing atom types, but it doesn't hurt anything and is not
-            # very expensive, so will do it anyway)
-            saturatedStruct.updateConnectivityValues()
-            saturatedStruct.sortVertices()
-            saturatedStruct.updateAtomTypes()
-            saturatedStruct.updateLonePairs()
-            saturatedStruct.multiplicity = 1
-
-            # Get solute descriptor estimates for saturated form of structure
-            soluteData = self.estimateSoluteViaGroupAdditivity(saturatedStruct)
-            assert soluteData is not None, "Solute data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
-
-            # For each radical site, get radical correction
-            # Only one radical site should be considered at a time; all others
-            # should be saturated with hydrogen atoms
-            for atom in added:
-
-                # Remove the added hydrogen atoms and bond and restore the radical
-                for H, bond in added[atom]:
-                    saturatedStruct.removeBond(bond)
-                    saturatedStruct.removeAtom(H)
-                    atom.incrementRadical()
-
-                saturatedStruct.updateConnectivityValues()
-
-        else: # non-radical species
-            # Generate estimate of solute data
-            for atom in molecule.atoms:
-                # Iterate over heavy (non-hydrogen) atoms
-                if atom.isNonHydrogen():
-                    # Get initial solute data from main group database. Every atom must
-                    # be found in the main abraham database
-                    try:
-                        self.__addGroupSoluteData(soluteData, self.groups['abraham'], molecule, {'*':atom})
-                    except KeyError:
-                        logging.error("Couldn't find in main abraham database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
-                    # Get solute data for non-atom centered groups (being found in this group
-                    # database is optional)    
-                    try:
-                        self.__addGroupSoluteData(soluteData, self.groups['nonacentered'], molecule, {'*':atom})
-                    except KeyError: pass
         
+        addedToRadicals = {} # Dictionary of key = atom, value = dictionary of {H atom: bond}
+        addedToPairs = {} # Dictionary of key = atom, value = # lone pairs changed
+        saturatedStruct = molecule.copy(deep=True)
+
+        # Convert lone pairs to radicals, then saturate with H.
+       
+        # Change lone pairs to radicals based on valency
+        if sum([atom.lonePairs for atom in saturatedStruct.atoms]) > 0: # molecule contains lone pairs
+            saturatedStruct, addedToPairs = self.transformLonePairs(saturatedStruct)
+
+        # Now saturate radicals with H
+        if sum([atom.radicalElectrons for atom in saturatedStruct.atoms]) > 0: # radical species
+            saturatedStruct, addedToRadicals = self.saturateRadicals(saturatedStruct)
+
+        # Saturated structure should now have no unpaired electrons, and only "expected" lone pairs
+        # based on the valency
+        for atom in saturatedStruct.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                # Get initial solute data from main group database. Every atom must
+                # be found in the main abraham database
+                try:
+                    self.__addGroupSoluteData(soluteData, self.groups['abraham'], saturatedStruct, {'*':atom})
+                except KeyError:
+                    logging.error("Couldn't find in main abraham database:")
+                    logging.error(saturatedStruct)
+                    logging.error(saturatedStruct.toAdjacencyList())
+                    raise
+                # Get solute data for non-atom centered groups (being found in this group
+                # database is optional)    
+                try:
+                    self.__addGroupSoluteData(soluteData, self.groups['nonacentered'], saturatedStruct, {'*':atom})
+                except KeyError: pass
+        
+        soluteData = self.removeHBonding(saturatedStruct, addedToRadicals, addedToPairs, soluteData)
+
         return soluteData
 
     def __addGroupSoluteData(self, soluteData, database, molecule, atom):

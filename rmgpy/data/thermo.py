@@ -688,7 +688,7 @@ class ThermoDatabase(object):
             if thermoData is not None:
                 assert len(thermoData) == 3, "thermoData should be a tuple at this point"
                 if rmgpy.rmg.main.solvent is not None and trainingSet is None:
-                    thermoData[0].comment += 'Thermo library "corrected": ' + label
+                    thermoData[0].comment += 'Thermo library corrected for liquid phase: ' + label
                 else:
                     thermoData[0].comment += 'Thermo library: ' + label
                 return thermoData

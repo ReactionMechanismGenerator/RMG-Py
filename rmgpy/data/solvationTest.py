@@ -77,12 +77,7 @@ class TestSoluteDatabase(TestCase):
         "Test we can estimate Abraham solute parameters correctly using group contributions"
         
         self.testCases = [
-        # from RMG-Java test runs by RWest (mostly in agreement with Jalan et. al. supplementary data)
         ['1,2-ethanediol', 'C(CO)O', 0.823, 0.685, 0.327, 2.572, 0.693, None],
-        # a nitrogen case
-        #['acetonitrile', 'CC#N', 0.9, 0.33, 0.237, 1.739, 0.04, None],
-        # a sulfur case
-        #['ethanethiol', 'CCS', 0.35, 0.24, 0.392, 2.173, 0, None]
         ]
         
         for name, smiles, S, B, E, L, A, V in self.testCases:
@@ -93,6 +88,68 @@ class TestSoluteDatabase(TestCase):
             self.assertAlmostEqual(soluteData.E, E, places=2)
             self.assertAlmostEqual(soluteData.L, L, places=2)
             self.assertAlmostEqual(soluteData.A, A, places=2)
+
+    def testLonePairSoluteGeneration(self):
+        "Test we can obtain solute parameters via group additivity for a molecule with lone pairs"
+        molecule=Molecule().fromAdjacencyList(
+"""
+CH2_singlet
+multiplicity 1
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+""")
+        species = Species(molecule=[molecule])
+        soluteData = self.database.getSoluteDataFromGroups(species)
+        self.assertTrue(soluteData is not None)
+        
+    def testSoluteDataGenerationAmmonia(self):
+        "Test we can obtain solute parameters via group additivity for ammonia"
+        molecule=Molecule().fromAdjacencyList(
+"""
+1 N u0 p1 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+""")
+        species = Species(molecule=[molecule])
+        soluteData = self.database.getSoluteDataFromGroups(species)
+        self.assertTrue(soluteData is not None)
+        
+    def testSoluteDataGenerationAmide(self):
+        "Test that we can obtain solute parameters via group additivity for an amide"        
+        molecule=Molecule().fromAdjacencyList(
+"""
+1  N u0 p1 {2,S} {3,S} {4,S}
+2   H   u0 {1,S}
+3   C u0 {1,S} {6,S} {7,S} {8,S}
+4   C  u0 {1,S} {5,D} {9,S}
+5   O  u0 p2 {4,D}
+6   H   u0 {3,S}
+7   H   u0 {3,S}
+8   H   u0 {3,S}
+9   H   u0 {4,S}
+""")
+        species = Species(molecule=[molecule])
+        soluteData = self.database.getSoluteDataFromGroups(species)
+        self.assertTrue(soluteData is not None)
+        
+    def testRadicalandLonePairGeneration(self):
+        """
+        Test we can obtain solute parameters via group additivity for a molecule with both lone 
+        pairs and a radical
+        """
+        molecule=Molecule().fromAdjacencyList(
+"""
+[C]OH
+multiplicity 2
+1 C u1 p1 c0 {2,S}
+2 O u0 p2 c0 {1,S} {3,S}
+3 H u0 p0 c0 {2,S}
+""")
+        species = Species(molecule=[molecule])
+        soluteData = self.database.getSoluteDataFromGroups(species)
+        self.assertTrue(soluteData is not None)
 
     def testCorrectionGeneration(self):
         "Test we can estimate solvation thermochemistry."
