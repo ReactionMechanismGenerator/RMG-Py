@@ -103,7 +103,6 @@ multiplicity 1
         soluteData = self.database.getSoluteDataFromGroups(species)
         self.assertTrue(soluteData is not None)
         
-    @work_in_progress
     def testSoluteDataGenerationAmmonia(self):
         "Test we can obtain solute parameters via group additivity for ammonia"
         molecule=Molecule().fromAdjacencyList(
