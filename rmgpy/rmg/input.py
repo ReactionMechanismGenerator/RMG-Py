@@ -58,7 +58,7 @@ def database(
              seedMechanisms = None,
              kineticsFamilies = 'default',
              kineticsDepositories = 'default',
-             kineticsEstimator = 'group additivity',
+             kineticsEstimator = 'rate rules',
              ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
