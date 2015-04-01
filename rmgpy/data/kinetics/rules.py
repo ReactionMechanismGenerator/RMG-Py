@@ -539,6 +539,8 @@ class KineticsRules(Database):
                 
                 kinetics.comment +=  ' for rate rule ' + originalLeaves
                 kinetics.A.value_si *= degeneracy
+                kinetics.comment += "\n"
+                kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
 
                 return kinetics
             
