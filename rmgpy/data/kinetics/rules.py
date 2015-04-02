@@ -498,7 +498,7 @@ class KineticsRules(Database):
         """
         def getTemplateLabel(template):
             # Get string format of the template in the form "(leaf1,leaf2)"
-            return '({0})'.format(','.join([g.label for g in template]))
+            return '({0})'.format(';'.join([g.label for g in template]))
     
         
         originalLeaves = getTemplateLabel(template)
