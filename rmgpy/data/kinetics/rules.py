@@ -437,9 +437,12 @@ class KineticsRules(Database):
             
             # We found one or more results! Let's average them together
             kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-            kinetics.comment += 'Average of ({0}). '.format(
-                ' + '.join([k.comment if k.comment != '' else ','.join([g.label for g in t]) for k, t in kineticsList]),
-            )
+            if len(kineticsList) > 1:
+                kinetics.comment += 'Average of ({0})'.format(
+                    ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+            else:
+                k,t = kineticsList[0]
+                kinetics.comment += k.comment if k.comment != '' else ';'.join(g.label for g in t)
             entry = Entry(
                 index = 0,
                 label = rootLabel,
@@ -523,7 +526,10 @@ class KineticsRules(Database):
                         kinetics.comment += 'Exact match found' 
                     else:
                     # Using a more general node to estimate original template
-                        kinetics.comment += 'Estimated using template ' + matchedLeaves
+                        if kinetics.comment:
+                            kinetics.comment += '\n'
+                        kinetics.comment +='Estimated using template ' + matchedLeaves
+                            
                 else:
                     # We found one or more results! Let's average them together
                     kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
