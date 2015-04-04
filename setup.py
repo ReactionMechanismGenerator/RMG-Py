@@ -179,6 +179,7 @@ elif 'solver' in sys.argv:
 elif 'cantherm' in sys.argv:
     # This is for `python setup.py build_ext cantherm`
     sys.argv.remove('cantherm')
+    ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getCanthermExtensionModules())
 elif 'minimal' in sys.argv:
     # This starts with the full install list, but removes anything that has a pure python mode
