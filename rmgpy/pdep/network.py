@@ -427,7 +427,7 @@ class Network:
         Nreac = self.Nreac
         Nprod = self.Nprod
         
-        logging.info('Calculating densities of states for {0}...'.format(self))
+        logging.info('Calculating densities of states for {0} network...'.format(self.label))
 
         # Choose the energies used to compute the densities of states
         # Use Tmin to select the minimum energy and grain size

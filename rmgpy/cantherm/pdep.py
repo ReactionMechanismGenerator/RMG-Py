@@ -387,8 +387,7 @@ class PressureDependenceJob(object):
     
     def save(self, outputFile):
         
-        logging.info('Saving pressure dependence results for {0}...'.format(self.network))
-        
+        logging.info('Saving pressure dependence results for {0} network...'.format(self.network.label))
         f = open(outputFile, 'a')
     
         Nreac = self.network.Nisom + self.network.Nreac
