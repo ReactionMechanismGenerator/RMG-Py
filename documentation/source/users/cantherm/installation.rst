@@ -20,19 +20,22 @@ standard library:
   
 * `Cython v0.19+ <http://www.cython.org>`_. C-extensions for Python
 
+* `RDKit <http://www.rdkit.org>`_. Cheminformatics libraries and functions
+
 * `Cairo <http://cairographics.org/>`_. Cairo graphics rendering for Python for drawing reaction networks
 
 * Quantities. For converting between different scientific units
 
 * Argparse. For parsing input arguments when running scripts
 
-You can install them on linux in the following fashion.  Numpy must be installed first. ::
+You can install these dependencies on Linux in the following fashion. ::
 
-	sudo apt-get install python-numpy
-	sudo pip install scipy cython>=0.19 quantities argparse
+	sudo apt-get install python-numpy python-scipy python-cairo
+	sudo pip install cython>=0.19 quantities argparse
 
-Cairo must be installed manually as it has problems with pip.
-	
+It is recommended that RDKit be installed manually with InChI capabilities on.
+
+
 Installing CanTherm
 ===================
 
