@@ -904,9 +904,9 @@ class CoreEdgeReactionModel:
             elif (entry is not None and rev_entry is not None 
                   and entry is rev_entry):
                 # Both forward and reverse have the same source and entry
-                # Use the one for which the kinetics is the forward kinetics
-                reason = "Both direction matched the same entry in {0}, which is defined in this direction.".format(reaction.family.label)
-                keepReverse = not isForward
+                # Use the one for which the kinetics is the forward kinetics          
+                keepReverse = G298 > 0 and isForward and rev_isForward
+                reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family.label)
             elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
                   and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
                     # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
