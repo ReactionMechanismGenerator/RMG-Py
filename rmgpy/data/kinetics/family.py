@@ -1577,9 +1577,9 @@ class KineticsFamily(Database):
         RMG-Java behavior).
         """
         if method.lower() == 'group additivity':
-            return self.estimateKineticsUsingGroupAdditivity(template, degeneracy)
+            return self.estimateKineticsUsingGroupAdditivity(template, degeneracy), None
         elif method.lower() == 'rate rules':
-            return self.estimateKineticsUsingRateRules(template, degeneracy)
+            return self.estimateKineticsUsingRateRules(template, degeneracy)  # This returns kinetics and entry data
         else:
             raise ValueError('Invalid value "{0}" for method parameter; should be "group additivity" or "rate rules".'.format(method))
         
@@ -1639,28 +1639,28 @@ class KineticsFamily(Database):
         
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
         if estimator:        
-            kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+            kinetics, entry = self.getKineticsForTemplate(template, degeneracy, method=estimator)
             if kinetics:
                 if not returnAllKinetics:
-                    return kinetics, None, None, True
-                kineticsList.append([kinetics, None, None, True])
+                    return kinetics, estimator, entry, True
+                kineticsList.append([kinetics, estimator, entry, True])
         # If no estimation method was given, prioritize rate rule estimation. 
         # If returning all kinetics, add estimations from both rate rules and group additivity.
         else:
             try:
-                kinetics = self.getKineticsForTemplate(template, degeneracy, method='rate rules')
+                kinetics, entry = self.getKineticsForTemplate(template, degeneracy, method='rate rules')
                 if not returnAllKinetics:
-                    return kinetics, None, None, True
-                kineticsList.append([kinetics, 'rate rules', None, True])
+                    return kinetics, 'rate rules', entry, True
+                kineticsList.append([kinetics, 'rate rules', entry, True])
             except KineticsError:
                 # If kinetics were undeterminable for rate rules estimation, do nothing.
                 pass
             
             try:
-                kinetics2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
+                kinetics2, entry2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
                 if not returnAllKinetics:
-                    return kinetics, None, None, True
-                kineticsList.append([kinetics2, 'group additivity', None, True])
+                    return kinetics, 'group additivity', entry2, True
+                kineticsList.append([kinetics2, 'group additivity', entry2, True])
             except KineticsError:                
                 # If kinetics were undeterminable for group additivity estimation, do nothing.
                 pass
@@ -1691,7 +1691,7 @@ class KineticsFamily(Database):
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        kinetics = self.rules.estimateKinetics(template, degeneracy)
+        kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
         if self.label.lower() == 'r_recombination':
             # The kinetics could be stored exactly with the template labels swapped
             # If this gives an exact match and the other gives an estimate, then keep the exact match
@@ -1699,7 +1699,7 @@ class KineticsFamily(Database):
             kinetics0 = self.rules.estimateKinetics(template[::-1], degeneracy)
             if 'exact' in kinetics0.comment.lower() and 'exact' not in kinetics.comment.lower():
                 kinetics = kinetics0
-        return kinetics
+        return kinetics, entry
 
     def getRateCoefficientUnits(self):
         """

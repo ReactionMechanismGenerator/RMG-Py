@@ -882,7 +882,6 @@ class CoreEdgeReactionModel:
         
         # Get the kinetics for the reaction
         kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
-        
         # Get the enthalpy of reaction at 298 K
         H298 = reaction.getEnthalpyOfReaction(298)
         G298 = reaction.getFreeEnergyOfReaction(298)
@@ -893,21 +892,20 @@ class CoreEdgeReactionModel:
             
             # First get the kinetics for the other direction
             rev_kinetics, rev_source, rev_entry, rev_isForward = reaction.family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
-
             # Now decide which direction's kinetics to keep
             keepReverse = False
-            if (source is not None and rev_source is None):
+            if (entry is not None and rev_entry is None):
                 # Only the forward has a source - use forward.
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(source.label)
-            elif (source is None and rev_source is not None):
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family.label)
+            elif (entry is None and rev_entry is not None):
                 # Only the reverse has a source - use reverse.
                 keepReverse = True
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(rev_source.label)
-            elif (source is not None and rev_source is not None 
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family.label)
+            elif (entry is not None and rev_entry is not None 
                   and entry is rev_entry):
                 # Both forward and reverse have the same source and entry
                 # Use the one for which the kinetics is the forward kinetics
-                reason = "Both direction matched the same entry in {0}, which is defined in this direction.".format(source.label)
+                reason = "Both direction matched the same entry in {0}, which is defined in this direction.".format(reaction.family.label)
                 keepReverse = not isForward
             elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
                   and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :

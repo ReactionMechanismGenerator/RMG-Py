@@ -546,7 +546,7 @@ class KineticsRules(Database):
                     kinetics.comment += "\n"
                     kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
 
-                return kinetics
+                return kinetics, entry if 'Exact' in kinetics.comment else None
             
             else:
                 # No results found
