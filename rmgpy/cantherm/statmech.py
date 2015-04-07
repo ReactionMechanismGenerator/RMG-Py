@@ -519,6 +519,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         #structure calculation utilized 75 radial points and 434 angular points 
         #(i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
         atomEnergies = {'H':-0.5017321350 + SOC['H'], 'N':-54.5574039365 + SOC['N'], 'O':-75.0382931348+ SOC['O'], 'C':-37.8245648740+ SOC['C'], 'P':-341.2444299005+ SOC['P'], 'S':-398.0940312227+ SOC['S'] }
+    elif modelChemistry == 'M062X/MG3S':
+        atomEnergies = {'H':-0.498134 + SOC['H'], 'N':-54.584679 + SOC['N'], 'O':-75.061892+ SOC['O'], 'C':-37.840761+ SOC['C'], 'P':-341.240846+ SOC['P'], 'S':-398.097071+ SOC['S'] }
     elif modelChemistry == 'Klip_1':
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'N':-54.53383153 + SOC['N'], 'O':-75.00935474+ SOC['O'], 'C':-37.79266591+ SOC['C']}
     elif modelChemistry == 'Klip_2':
