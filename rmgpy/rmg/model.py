@@ -779,14 +779,19 @@ class CoreEdgeReactionModel:
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
             
-        # Check new core reactions for Chemkin duplicates
+        # Check new core and edge reactions for Chemkin duplicates
+        # The same duplicate reaction gets brought into the core
+        # at the same time, so there is no danger in checking all of the edge.
         newCoreReactions = self.core.reactions[numOldCoreReactions:]
-        checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
+        newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+        checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
         from rmgpy.chemkin import markDuplicateReaction
         for rxn in newCoreReactions:
-            markDuplicateReaction(rxn,checkedCoreReactions)
-            checkedCoreReactions.append(rxn)
-        
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
+        for rxn in newEdgeReactions:
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
