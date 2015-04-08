@@ -415,16 +415,19 @@ class RMG:
                         pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
-            
-            # Add nonreactive species (e.g. bath gases) to core first
-            # This is necessary so that the PDep algorithm can identify the bath gas
-            self.reactionModel.enlarge([spec for spec in self.initialSpecies if not spec.reactive])
-            # Then add remaining reactive species
+
             for spec in self.initialSpecies:
                 spec.generateThermoData(self.database, quantumMechanics=self.quantumMechanics)
                 spec.generateTransportData(self.database)
-
-            self.reactionModel.enlarge([spec for spec in self.initialSpecies if spec.reactive])
+                
+            # Add nonreactive species (e.g. bath gases) to core first
+            # This is necessary so that the PDep algorithm can identify the bath gas            
+            for spec in self.initialSpecies:
+                if not spec.reactive:
+                    self.reactionModel.enlarge(spec)
+            for spec in self.initialSpecies:
+                if spec.reactive:
+                    self.reactionModel.enlarge(spec)
             
             # Save a restart file if desired
             if self.saveRestartPeriod:
@@ -504,7 +507,8 @@ class RMG:
                 # These should be Species or Network objects
                 logging.info('')
                 objectsToEnlarge = list(set(objectsToEnlarge))
-                self.reactionModel.enlarge(objectsToEnlarge)
+                for objectToEnlarge in objectsToEnlarge:
+                    self.reactionModel.enlarge(objectToEnlarge)
 
             self.saveEverything()
 

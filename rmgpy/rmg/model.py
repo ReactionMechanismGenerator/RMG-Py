@@ -779,14 +779,19 @@ class CoreEdgeReactionModel:
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
             
-        # Check new core reactions for Chemkin duplicates
+        # Check new core and edge reactions for Chemkin duplicates
+        # The same duplicate reaction gets brought into the core
+        # at the same time, so there is no danger in checking all of the edge.
         newCoreReactions = self.core.reactions[numOldCoreReactions:]
-        checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
+        newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+        checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
         from rmgpy.chemkin import markDuplicateReaction
         for rxn in newCoreReactions:
-            markDuplicateReaction(rxn,checkedCoreReactions)
-            checkedCoreReactions.append(rxn)
-        
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
+        for rxn in newEdgeReactions:
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
@@ -882,7 +887,6 @@ class CoreEdgeReactionModel:
         
         # Get the kinetics for the reaction
         kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
-        
         # Get the enthalpy of reaction at 298 K
         H298 = reaction.getEnthalpyOfReaction(298)
         G298 = reaction.getFreeEnergyOfReaction(298)
@@ -893,22 +897,21 @@ class CoreEdgeReactionModel:
             
             # First get the kinetics for the other direction
             rev_kinetics, rev_source, rev_entry, rev_isForward = reaction.family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
-
             # Now decide which direction's kinetics to keep
             keepReverse = False
-            if (source is not None and rev_source is None):
+            if (entry is not None and rev_entry is None):
                 # Only the forward has a source - use forward.
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(source.label)
-            elif (source is None and rev_source is not None):
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family.label)
+            elif (entry is None and rev_entry is not None):
                 # Only the reverse has a source - use reverse.
                 keepReverse = True
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(rev_source.label)
-            elif (source is not None and rev_source is not None 
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family.label)
+            elif (entry is not None and rev_entry is not None 
                   and entry is rev_entry):
                 # Both forward and reverse have the same source and entry
-                # Use the one for which the kinetics is the forward kinetics
-                reason = "Both direction matched the same entry in {0}, which is defined in this direction.".format(source.label)
-                keepReverse = not isForward
+                # Use the one for which the kinetics is the forward kinetics          
+                keepReverse = G298 > 0 and isForward and rev_isForward
+                reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family.label)
             elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
                   and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
                     # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
@@ -956,9 +959,9 @@ class CoreEdgeReactionModel:
         # uninformative strings, so here we replace them with much shorter ones
         if not self.verboseComments:
             # Only keep a short comment (to save memory)
-            if 'Exact' in kinetics.comment or 'Matched rule' in kinetics.comment:
+            if 'Exact' in kinetics.comment:
                 # Exact match of rate rule
-                kinetics.comment = 'Exact match found for rate rule ({0})'.format(','.join([g.label for g in reaction.template])) 
+                pass
             elif 'Matched reaction' in kinetics.comment:
                 # Stems from matching a reaction from a depository
                 pass
