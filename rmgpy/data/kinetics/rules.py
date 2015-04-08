@@ -378,7 +378,8 @@ class KineticsRules(Database):
         except KeyError:
             pass
         
-        if self.label.lower() == 'r_recombination' and template[0] != template[1]:
+        family = os.path.split(self.label)[0]   # i.e. self.label = 'R_Recombination/rules'
+        if family.lower() == 'r_recombination':
             template.reverse()
             templateLabels = ';'.join([group.label for group in template])
             try:
