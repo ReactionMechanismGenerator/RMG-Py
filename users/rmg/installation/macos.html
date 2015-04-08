@@ -65,12 +65,20 @@
   <div class="section" id="macos-x-installation">
 <span id="macos"></span><h1>3.3. MacOS X Installation<a class="headerlink" href="#macos-x-installation" title="Permalink to this headline">¶</a></h1>
 <p>There are a number of dependencies for RMG-Py. This page will guide you through installing them.
-You will need the Command Line Tools for XCode. We highly recommend the <a class="reference external" href="http://mxcl.github.com/homebrew/">Homebrew</a> package manager.
-The following instructions assume that you have <a class="reference external" href="https://github.com/mxcl/homebrew/wiki/installation">installed Homebrew and its requirements</a>.</p>
-<p>You will also need gfortran, Python, Numpy and Scipy. We typically install them following <a class="reference external" href="http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/">these instructions</a>
-but other methods like the <a class="reference external" href="http://fonnesbeck.github.com/ScipySuperpack/">Scipy Superpack</a> may work as well.</p>
+You will need the Command Line Tools for XCode. We highly recommend the <a class="reference external" href="http://brew.sh">Homebrew</a> package manager.
+The following instructions assume that you have <a class="reference external" href="http://brew.sh">installed Homebrew and its requirements</a>.
+We recommend using a <a class="reference external" href="http://docs.python-guide.org/en/latest/dev/virtualenvs/">Virtual Environment</a> for your Python packages,
+but this is optional (without it you may need to add <cite>sudo</cite> before some commands to solve permission errors).</p>
+<p>You will also need gfortran, Python, Numpy and Scipy. We typically install them using
+<a class="reference external" href="https://github.com/Homebrew/homebrew-python">homebrew-python</a>  but other methods may work as well. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>brew tap homebrew/python
+brew install numpy
+brew install scipy
+brew install matplotlib --with-cairo --with-ghostscript --with-ticl-tk --with-pyqt --with-pygtk --withgtk3
+</pre></div>
+</div>
 <ul>
-<li><p class="first">Install git (you may also like some graphical interfaces like <a class="reference external" href="https://github.com/mxcl/gitx/downloads">mxcl&#8217;s GitX</a> or <a class="reference external" href="http://mac.github.com/">GitHub for Mac</a>):</p>
+<li><p class="first">Install git if you don&#8217;t already have it (you may also like some graphical interfaces like <a class="reference external" href="https://github.com/mxcl/gitx/downloads">mxcl&#8217;s GitX</a> or <a class="reference external" href="http://mac.github.com/">GitHub for Mac</a>):</p>
 <div class="highlight-python"><div class="highlight"><pre>brew update
 brew install git
 </pre></div>
@@ -83,8 +91,8 @@ brew install git
 </li>
 <li><p class="first">Get the RMG-Py source code from GitHub:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone git@github.com:GreenGroup/RMG-database.git
-git clone git@github.com:GreenGroup/RMG-Py.git
+git clone https://github.com/GreenGroup/RMG-database.git
+git clone https://github.com/GreenGroup/RMG-Py.git
 </pre></div>
 </div>
 </li>
@@ -97,11 +105,9 @@ git clone git@github.com:GreenGroup/RMG-Py.git
 <div class="highlight-python"><div class="highlight"><pre>cd ~/Code
 git clone https://github.com/GreenGroup/PyDQED.git
 cd PyDQED
+export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
 make
-</pre></div>
-</div>
-<p>It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with:</p>
-<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a)) LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
+make install
 </pre></div>
 </div>
 </li>
@@ -109,11 +115,9 @@ make
 <div class="highlight-python"><div class="highlight"><pre>cd ~/Code
 git clone https://github.com/GreenGroup/PyDAS.git
 cd PyDAS
+export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
 make
-</pre></div>
-</div>
-<p>It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with:</p>
-<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a)) LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
+make install
 </pre></div>
 </div>
 </li>
@@ -126,17 +130,14 @@ make
 </pre></div>
 </div>
 </li>
-<li><p class="first">Install RDKit:</p>
-<div class="highlight-python"><div class="highlight"><pre>brew uninstall boost
-brew install boost --build-from-source
-brew tap edc/homebrew-rdkit
+<li><p class="first">Install <a class="reference external" href="http://www.rdkit.org">RDKit</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>brew tap rdkit/rdkit
 brew install rdkit --with-inchi
+brew link --overwrite rdkit
 </pre></div>
 </div>
-<p>You&#8217;ll need various environment variables set, eg.:</p>
-<div class="highlight-python"><div class="highlight"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
-export PYTHONPATH=$PYTHONPATH:$RDBASE
+<p>You&#8217;ll need various environment variables set, eg. put this in your <cite>~/.bash_profile</cite> file:</p>
+<div class="highlight-python"><div class="highlight"><pre>export RDBASE=/usr/local/share/RDKit
 </pre></div>
 </div>
 </li>
@@ -154,6 +155,8 @@ make eg2
 </div>
 </li>
 </ul>
+<p>To run with on-the-fly Quantum Mechanics calculations, you will also need
+<a class="reference external" href="http://openmopac.net/downloads.html">MOPAC</a> or Gaussian.</p>
 </div>
 
 
