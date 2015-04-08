@@ -1690,24 +1690,8 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
-        """
+        """    
         kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
-        if self.label.lower() == 'r_recombination':
-            # The kinetics could be stored exactly with the template labels swapped
-            # If this gives an exact match and the other gives an estimate, then keep the exact match
-            # Not sure how to decide which to keep if both are exact or both are estimates
-            kinetics0, entry0 = self.rules.estimateKinetics(template[::-1], degeneracy)
-            if entry0:
-                # Matched an exact entry in the other direction
-                if entry:
-                    if entry0.rank < entry.rank:
-                        # other direction has a higher (smaller valued) rank than original direction
-                        kinetics = kinetics0
-                        entry = entry0
-                else:
-                    # No exact match in original direction, so use the match from the other direction
-                    kinetics = kinetics0
-                    entry = entry0
                 
         return kinetics, entry
 
