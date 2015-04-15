@@ -37,6 +37,7 @@ class TestMopacMolPM3(unittest.TestCase):
 		qm = QMCalculator(software = 'mopac',
 						  method = 'pm3',
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
 		
 		if not os.path.exists(qm.settings.fileStore):
@@ -101,6 +102,7 @@ class TestMopacMolPM6(unittest.TestCase):
 		qm = QMCalculator(software = 'mopac',
 						  method = 'pm6',
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
 
 		if not os.path.exists(qm.settings.fileStore):
@@ -165,6 +167,7 @@ class TestMopacMolPM7(unittest.TestCase):
 		qm = QMCalculator(software = 'mopac',
 						  method = 'pm7',
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
 
 		if not os.path.exists(qm.settings.fileStore):

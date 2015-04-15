@@ -41,8 +41,10 @@ class TestGaussianMolPM3(unittest.TestCase):
 		qm = QMCalculator(software = 'gaussian',
 						  method = 'pm3',
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
 
+		
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
 
@@ -106,6 +108,7 @@ class TestGaussianMolPM6(unittest.TestCase):
 		qm = QMCalculator(software = 'gaussian',
 						  method = 'pm6',
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
 
 		if not os.path.exists(qm.settings.fileStore):

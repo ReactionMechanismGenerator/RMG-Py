@@ -248,16 +248,6 @@ class QMMolecule:
         "The total number of attempts to try"
         return 2 * len(self.keywords)
     
-    def setOutputDirectory(self, outputDirectory):
-        """
-        Set up the fileStore and scratchDirectory if not already done.
-        """
-        
-        subPath = os.path.join('Species', self.uniqueID, self.settings.method)
-        
-        self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', subPath)
-        self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', subPath)
-    
     def initialize(self):
         """
         Do any startup tasks.
@@ -279,8 +269,6 @@ class QMMolecule:
             raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
         if not os.path.isdir(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-            
-        self.setOutputDirectory(self.settings.fileStore.split('QMfiles')[0])
         
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
