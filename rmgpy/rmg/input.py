@@ -214,13 +214,13 @@ def quantumMechanics(
                     maxRadicalNumber = 0,
                     ):
     from rmgpy.qm.main import QMCalculator
-    rmg.quantumMechanics = QMCalculator()
-    rmg.quantumMechanics.settings.software = software
-    rmg.quantumMechanics.settings.method = method
-    rmg.quantumMechanics.settings.fileStore = fileStore
-    rmg.quantumMechanics.settings.scratchDirectory = scratchDirectory
-    rmg.quantumMechanics.settings.onlyCyclics = onlyCyclics
-    rmg.quantumMechanics.settings.maxRadicalNumber = maxRadicalNumber
+    rmg.quantumMechanics = QMCalculator(software = software,
+                                        method = method,
+                                        fileStore = fileStore,
+                                        scratchDirectory = scratchDirectory,
+                                        onlyCyclics = onlyCyclics,
+                                        maxRadicalNumber = maxRadicalNumber,
+                                        )
                     
 
 def pressureDependence(
