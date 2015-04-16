@@ -137,7 +137,7 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertIsNone(self.gauss2.settings.scratchDirectory)
 		
 		# Now set the default directories for those not set
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..','..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -170,7 +170,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		
 		# Now set the default directories for those not set
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -192,7 +192,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() fails when expected.
 		"""
-		outputDirectory = os.path.join(self.mop4.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop4.settings.fileStore, '..', '..')
 		self.mop4.setDefaultOutputDirectory(outputDirectory)
 		self.gauss3.setDefaultOutputDirectory(outputDirectory)
 		self.molpro1.setDefaultOutputDirectory(outputDirectory)
@@ -209,7 +209,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() works correctly.
 		"""
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -257,7 +257,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() works correctly.
 		"""
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.gauss1.setDefaultOutputDirectory(outputDirectory)
 		self.gauss2.setDefaultOutputDirectory(outputDirectory)
 		
