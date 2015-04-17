@@ -1342,19 +1342,27 @@ class Molecule(Graph):
         obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
         return obConversion.WriteString(obmol).strip()
 
+    def createMultiplicityLayer(self):
+        """
+        Creates the string with the multiplicity information
+        that is appended to the InChI to create an augmented InChI.
+        
+        Only return a non-empty string when the multiplicity is >= 2.
+        """
+        
+        mult = self.multiplicity
+        return '/mult'+str(mult) if mult >= 2 else ''
+            
+        
     def toAugmentedInChI(self):
         """
-        Adds an extra layer to the InChI denoting the number of unpaired electrons in case
-        more than 1 ( >= 2) unpaired electrons are present in the molecule.
+        Adds an extra layer to the InChI denoting the multiplicity
+        of the molecule.
         """
         inchi = self.toInChI()
         
-        radicalNumber = sum([i.radicalElectrons for i in self.atoms])
+        return inchi + self.createMultiplicityLayer()
         
-        if radicalNumber >= 2:
-            return inchi+'/mult'+str(radicalNumber+1)
-        else:
-            return inchi
     
     def toInChIKey(self):
         """
@@ -1390,17 +1398,14 @@ class Molecule(Graph):
     
     def toAugmentedInChIKey(self):
         """
-        Adds an extra layer to the InChIKey denoting the number of unpaired electrons in case
-        more than 1 ( >= 2) unpaired electrons are present in the molecule.
+        Adds an extra layer to the InChIKey denoting the multiplicity
+        of the molecule.
+
         """
         key = self.toInChIKey()
         
-        radicalNumber = sum([i.radicalElectrons for i in self.atoms])
-        
-        if radicalNumber >= 2:
-            return key+'mult'+str(radicalNumber+1)
-        else:
-            return key
+        return key + self.createMultiplicityLayer()
+    
 
     def toSMARTS(self):
         """
