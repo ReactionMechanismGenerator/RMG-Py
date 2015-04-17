@@ -17,6 +17,7 @@ import rmgpy.thermo
 import rmgpy.molecule
 import symmetry
 import qmdata
+from qmdata import CCLibData
 
 class Geometry:
     """
@@ -46,6 +47,21 @@ class Geometry:
         else:
             #: Long, truly unique, ID, such as the augmented InChI.
             self.uniqueIDlong = uniqueIDlong
+        
+        if self.settings:
+            self.fileStore = self.settings.fileStore
+            self.scratchDirectory = self.settings.scratchDirectory
+        else:
+            self.fileStore = None
+            self.scratchDirectory = None
+        
+        if self.fileStore and not os.path.exists(self.fileStore):
+            logging.info("Creating permanent directory %s for qm files."%os.path.abspath(self.fileStore))
+            os.makedirs(self.fileStore)
+            
+        if self.scratchDirectory and not os.path.exists(self.scratchDirectory):
+            logging.info("Creating scratch directory %s for qm files."%os.path.abspath(self.scratchDirectory))
+            os.makedirs(self.scratchDirectory)
 
     def getFilePath(self, extension):
         """
@@ -53,7 +69,7 @@ class Geometry:
         
         The provided extension should include the leading dot.
         """
-        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        return os.path.join(self.settings.scratchDirectory, self.uniqueID  + extension)
         
     def getCrudeMolFilePath(self):
         "Returns the path of the crude mol file."
@@ -63,7 +79,7 @@ class Geometry:
         "Returns the path the the refined mol file."
         return self.getFilePath('.refined.mol')
 
-    def generateRDKitGeometries(self, boundsMatrix=None):
+    def generateRDKitGeometries(self):
         """
         Use RDKit to guess geometry.
 
@@ -77,7 +93,7 @@ class Geometry:
         if atoms > 3:#this check prevents the number of attempts from being negative
             distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
-        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
+        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts)
         self.saveCoordinatesFromRDMol(rdmol, minEid, rdAtIdx)
         
     def rd_build(self):
@@ -87,7 +103,7 @@ class Geometry:
         return self.molecule.toRDKitMol(removeHs=False, returnMapping=True)
 
 
-    def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
+    def rd_embed(self, rdmol, numConfAttempts):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
@@ -200,14 +216,13 @@ class QMMolecule:
         self.uniqueID = self.molecule.toAugmentedInChIKey()
         self.uniqueIDlong = self.molecule.toAugmentedInChI()
         
-
     def getFilePath(self, extension):
         """
         Returns the path to the file with the given extension.
         
         The provided extension should include the leading dot.
         """
-        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        return os.path.join(self.settings.scratchDirectory, self.uniqueID  + extension)
         
     @property
     def outputFilePath(self):
@@ -219,6 +234,10 @@ class QMMolecule:
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
     
+    def getThermoFilePath(self):
+        "Returns the path the thermo data file."
+        return os.path.join(self.settings.fileStore, self.uniqueID  + '.thermo')
+    
     @property
     def scriptAttempts(self):
         "The number of attempts with different script keywords"
@@ -228,6 +247,35 @@ class QMMolecule:
     def maxAttempts(self):
         "The total number of attempts to try"
         return 2 * len(self.keywords)
+    
+    def initialize(self):
+        """
+        Do any startup tasks.
+        """
+        self.checkReady()
+    
+    def checkReady(self):
+        """
+        Check that it's ready to run calculations.
+        """
+        self.settings.checkAllSet()
+        self.checkPaths()
+    
+    def checkPaths(self):
+        """
+        Check the paths in the settings are OK. Make folders as necessary.
+        """
+        if not os.path.exists(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
+        if not os.path.isdir(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+        
+        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
+        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
+        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+            if not os.path.exists(path):
+                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
+                os.makedirs(path)
         
     def createGeometry(self):
         """
@@ -236,6 +284,17 @@ class QMMolecule:
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
         self.geometry.generateRDKitGeometries()
         return self.geometry
+        
+    def parse(self):
+        """
+        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        """
+        parser = self.getParser(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = self.molecule.getRadicalCount()
+        qmData = CCLibData(cclibData, radicalNumber+1) # Should `radicalNumber+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
+        return qmData
     
     def generateQMData(self):
         """
@@ -250,6 +309,8 @@ class QMMolecule:
         
         Returns None if it fails.
         """
+        self.initialize()
+        
         # First, see if we already have it.
         if self.loadThermoData():
             return self.thermo
@@ -282,7 +343,7 @@ class QMMolecule:
         self.thermo.H298.units = 'kcal/mol'
         self.thermo.S298.units = 'cal/mol/K'
         self.thermo.Cpdata.units = 'cal/mol/K'
-        with open(self.getFilePath('.thermo'), 'w') as resultFile:
+        with open(self.getThermoFilePath(), 'w') as resultFile:
             resultFile.write('InChI = "{0!s}"\n'.format(self.uniqueIDlong))
             resultFile.write("thermoData = {0!r}\n".format(self.thermo))
             resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
@@ -293,7 +354,7 @@ class QMMolecule:
         """
         Try loading a thermo data from a previous run.
         """
-        filePath = self.getFilePath('.thermo')
+        filePath = self.getThermoFilePath()
         local_context = loadThermoDataFile(filePath)
         if local_context is None:
             # file does not exist or is invalid

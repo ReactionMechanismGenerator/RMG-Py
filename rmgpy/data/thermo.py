@@ -44,6 +44,7 @@ import rmgpy.constants as constants
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 import rmgpy.molecule
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -704,10 +705,12 @@ class ThermoDatabase(object):
         if not isinstance(thermoData,ThermoData):
             return # Just skip it
             raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
-        Cp0 = species.calculateCp0()
-        CpInf = species.calculateCpInf()  
-        thermoData.Cp0 = (Cp0,"J/(mol*K)")
-        thermoData.CpInf = (CpInf,"J/(mol*K)")
+        if thermoData.Cp0 is None:
+            Cp0 = species.calculateCp0()
+            thermoData.Cp0 = (Cp0,"J/(mol*K)")
+        if thermoData.CpInf is None:
+            CpInf = species.calculateCpInf()  
+            thermoData.CpInf = (CpInf,"J/(mol*K)")
                 
                 
     def getAllThermoData(self, species):
@@ -849,9 +852,17 @@ class ThermoDatabase(object):
         saturatedStruct.multiplicity = 1
         
         # Get thermo estimate for saturated form of structure
-        thermoData = stableThermoEstimator(saturatedStruct)
+        try:
+            thermoData = stableThermoEstimator(saturatedStruct)
+        except AttributeError:
+            # Probably looking for thermo in a library 
+            saturatedSpec = Species(molecule=[saturatedStruct])
+            thermoData = stableThermoEstimator(saturatedSpec)
+            if thermoData:
+                assert len(thermoData) == 3, "thermoData should be a tuple at this point: (thermoData, library, entry)"
+                thermoData = thermoData[0]
         if thermoData is None:
-            logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
+            # logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None
         assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
