@@ -15,7 +15,7 @@ Thermochemistry of species is obtained via three possible ways:
 #. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)
 
 Species thermochemistry libraries
-====================================
+=================================
 These databases contain thermochemical parameters for species. 
 In these databases each entry contains an unambiguous definition of the species 
 (through the adjacency list representation), 
@@ -28,7 +28,7 @@ RMG is shipped with a number of species thermochemistry libraries, located in th
 
 
 Group contribution methods
-=============================
+==========================
 When the thermochemistry of a species is not present in one of the available
 species thermochemistry libraries, RMG needs to estimate thermochemistry. One way
 to do so, is by using group contribution methods that estimate the thermochemistry 
@@ -137,6 +137,13 @@ The HBI method is the default method use to estimate thermochemistry of radicals
 the effect of resonance stabilization on the enthalpy of the radical will be accounted for
 through the corresponding HBI. For example, the HBI labeled as "C=CC=CCJ" will account
 for the resonance present in 1,4-pentadien-3-yl radical.
+
+The HBI method can be applied to a variety of saturated compound thermochemistry values.  In
+RMG, library values for saturated compounds are prioritized over group additivity values for saturated compounds.  
+Note that if QMTP is on, the QM saturated value will get priority over group additivty but library value will
+have priority over QM value.  This ensures that there is a systematic HBI correction for values used
+in the final model: if the saturated molecule thermo uses a library as a source, the radical thermo
+applies the HBI correction to that same library value.
 
 RMG contains a database for with HBIs, named radical.py. More information on the nature on the available HBIs, and corresponding values 
 can be found here: :ref:`thermoDatabase`.
@@ -256,7 +263,7 @@ Chiral molecules belong to point groups that lack a superposable mirror image
 symmetry elements).
 	
 References
-============================================
+==========
 
 .. [Benson] Benson, Sidney William. "Thermochemical kinetics." (1976)
 
