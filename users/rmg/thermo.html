@@ -157,6 +157,12 @@ Similar expressions are valid for the entropy and heat capacity.</p>
 the effect of resonance stabilization on the enthalpy of the radical will be accounted for
 through the corresponding HBI. For example, the HBI labeled as &#8220;C=CC=CCJ&#8221; will account
 for the resonance present in 1,4-pentadien-3-yl radical.</p>
+<p>The HBI method can be applied to a variety of saturated compound thermochemistry values.  In
+RMG, library values for saturated compounds are prioritized over group additivity values for saturated compounds.
+Note that if QMTP is on, the QM saturated value will get priority over group additivty but library value will
+have priority over QM value.  This ensures that there is a systematic HBI correction for values used
+in the final model: if the saturated molecule thermo uses a library as a source, the radical thermo
+applies the HBI correction to that same library value.</p>
 <p>RMG contains a database for with HBIs, named radical.py. More information on the nature on the available HBIs, and corresponding values
 can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><em>Thermo Database</em></a>.</p>
 </div>

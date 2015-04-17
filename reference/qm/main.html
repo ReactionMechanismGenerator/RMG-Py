@@ -65,13 +65,13 @@
 <h1>rmgpy.qm.main<a class="headerlink" href="#rmgpy-qm-main" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.qm.main.QMSettings">
-<em class="property">class </em><tt class="descclassname">rmgpy.qm.main.</tt><tt class="descname">QMSettings</tt><a class="headerlink" href="#rmgpy.qm.main.QMSettings" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.main.</tt><tt class="descname">QMSettings</tt><big>(</big><em>software=None</em>, <em>method='pm3'</em>, <em>fileStore=None</em>, <em>scratchDirectory=None</em>, <em>onlyCyclics=True</em>, <em>maxRadicalNumber=0</em><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMSettings" title="Permalink to this definition">¶</a></dt>
 <dd><p>A minimal class to store settings related to quantum mechanics calculations.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="24%" />
-<col width="29%" />
-<col width="46%" />
+<col width="19%" />
+<col width="23%" />
+<col width="58%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -80,6 +80,14 @@
 </tr>
 </thead>
 <tbody valign="top">
+<tr class="row-even"><td><cite>software</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>Quantum chemical package name in common letters</td>
+</tr>
+<tr class="row-odd"><td><cite>method</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>Semi-empirical method</td>
+</tr>
 <tr class="row-even"><td><cite>fileStore</cite></td>
 <td><tt class="docutils literal"><span class="pre">str</span></tt></td>
 <td>The path to the QMfiles directory</td>
@@ -87,6 +95,14 @@
 <tr class="row-odd"><td><cite>scratchDirectory</cite></td>
 <td><tt class="docutils literal"><span class="pre">str</span></tt></td>
 <td>The path to the scratch directory</td>
+</tr>
+<tr class="row-even"><td><cite>onlyCyclics</cite></td>
+<td><tt class="docutils literal"><span class="pre">bool</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">True</span></tt> if to run QM only on ringed species</td>
+</tr>
+<tr class="row-odd"><td><cite>maxRadicalNumber</cite></td>
+<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td>Radicals larger than this are saturated before applying HBI</td>
 </tr>
 </tbody>
 </table>
@@ -100,7 +116,7 @@
 
 <dl class="class">
 <dt id="rmgpy.qm.main.QMCalculator">
-<em class="property">class </em><tt class="descclassname">rmgpy.qm.main.</tt><tt class="descname">QMCalculator</tt><big>(</big><em>fileStore=None</em>, <em>scratchDirectory=None</em><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.main.</tt><tt class="descname">QMCalculator</tt><big>(</big><em>software=None</em>, <em>method='pm3'</em>, <em>fileStore=None</em>, <em>scratchDirectory=None</em>, <em>onlyCyclics=True</em>, <em>maxRadicalNumber=0</em><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Quantum Mechanics calculator object, to store settings.</p>
 <p>The attributes are:</p>
 <table border="1" class="docutils">

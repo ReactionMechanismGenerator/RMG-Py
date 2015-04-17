@@ -102,7 +102,7 @@
 </table>
 <dl class="method">
 <dt id="rmgpy.qm.molecule.Geometry.generateRDKitGeometries">
-<tt class="descname">generateRDKitGeometries</tt><big>(</big><em>boundsMatrix=None</em><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.generateRDKitGeometries" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">generateRDKitGeometries</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.generateRDKitGeometries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use RDKit to guess geometry.</p>
 <p>Save mol files of both crude and refined.
 Saves coordinates on atoms.</p>
@@ -135,7 +135,7 @@ Saves coordinates on atoms.</p>
 
 <dl class="method">
 <dt id="rmgpy.qm.molecule.Geometry.rd_embed">
-<tt class="descname">rd_embed</tt><big>(</big><em>rdmol</em>, <em>numConfAttempts</em>, <em>boundsMatrix=None</em><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.rd_embed" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">rd_embed</tt><big>(</big><em>rdmol</em>, <em>numConfAttempts</em><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.Geometry.rd_embed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Embed the RDKit molecule and create the crude molecule file.</p>
 </dd></dl>
 
@@ -219,6 +219,18 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.checkPaths">
+<tt class="descname">checkPaths</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.checkPaths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.checkReady">
+<tt class="descname">checkReady</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.checkReady" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that it&#8217;s ready to run calculations.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.qm.molecule.QMMolecule.createGeometry">
 <tt class="descname">createGeometry</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.createGeometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates self.geometry with RDKit geometries</p>
@@ -265,6 +277,18 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 then we start to use the crude coordinates.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.getThermoFilePath">
+<tt class="descname">getThermoFilePath</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.getThermoFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path the thermo data file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do any startup tasks.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.qm.molecule.QMMolecule.inputFilePath">
 <tt class="descname">inputFilePath</tt><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.inputFilePath" title="Permalink to this definition">¶</a></dt>
@@ -287,6 +311,12 @@ then we start to use the crude coordinates.</p>
 <dt id="rmgpy.qm.molecule.QMMolecule.outputFilePath">
 <tt class="descname">outputFilePath</tt><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.outputFilePath" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.molecule.QMMolecule.parse">
+<tt class="descname">parse</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.molecule.QMMolecule.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the results of the Mopac calculation, and returns a CCLibData object.</p>
 </dd></dl>
 
 <dl class="method">
