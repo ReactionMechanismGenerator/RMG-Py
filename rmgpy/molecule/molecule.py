@@ -1347,21 +1347,22 @@ class Molecule(Graph):
         Creates the string with the multiplicity information
         that is appended to the InChI to create an augmented InChI.
         
-        Only return a non-empty string when the multiplicity is >= 2.
         """
         
         mult = self.multiplicity
-        return '/mult'+str(mult) if mult >= 2 else ''
+        return ''.join(['mult', str(mult)])
             
         
     def toAugmentedInChI(self):
         """
         Adds an extra layer to the InChI denoting the multiplicity
         of the molecule.
+        
+        Separate layer with a forward slash character.
         """
         inchi = self.toInChI()
         
-        return inchi + self.createMultiplicityLayer()
+        return '/'.join([inchi , self.createMultiplicityLayer()])
         
     
     def toInChIKey(self):
@@ -1401,10 +1402,12 @@ class Molecule(Graph):
         Adds an extra layer to the InChIKey denoting the multiplicity
         of the molecule.
 
+        Simply append the multiplicity string, do not separate by a
+        character like forward slash.
         """
         key = self.toInChIKey()
         
-        return key + self.createMultiplicityLayer()
+        return ''.join([key , self.createMultiplicityLayer()])
     
 
     def toSMARTS(self):
