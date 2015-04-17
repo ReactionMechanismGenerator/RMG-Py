@@ -47,6 +47,8 @@ bin/symmetry:
 QM: bin/symmetry
 	@ echo "Checking you have rdkit..."
 	@ python -c 'import rdkit; print rdkit.__file__'
+	@ echo "Checking rdkit version..."
+	@ python -c 'import rdkit.rdBase; print rdkit.rdBase.rdkitVersion; assert rdkit.rdBase.rdkitVersion > "2015.03"'
 	@ echo "Checking rdkit has InChI support..."
 	@ python -c 'from rdkit import Chem; assert Chem.inchi.INCHI_AVAILABLE, "RDKit installed without InChI Support"'
 
