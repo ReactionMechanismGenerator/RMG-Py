@@ -1502,6 +1502,7 @@ class Molecule(Graph):
         for index, atom in enumerate(self.vertices):
             rdAtom = Chem.rdchem.Atom(atom.element.symbol)
             rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
+            if atom.element.symbol == 'C' and atom.lonePairs == 1 and self.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
             rdkitmol.AddAtom(rdAtom)
             rdAtomIndices[atom] = index
         
