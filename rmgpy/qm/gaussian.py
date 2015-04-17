@@ -239,7 +239,7 @@ class GaussianMol(QMMolecule, Gaussian):
         assert atomCount == len(self.molecule.atoms)
     
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=20, memory='10GB')
+        self.writeInputFile(output, attempt, numProcShared=40, memory='10GB')
     
     def generateQMData(self):
         """
@@ -504,7 +504,7 @@ class GaussianTS(QMReaction, Gaussian):
         assert atomCount == len(self.reactantGeom.molecule.atoms)
         
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=20, memory='10GB', checkPoint=True)
+        self.writeInputFile(output, attempt, numProcShared=40, memory='10GB', checkPoint=True)
     
     def createIRCFile(self):
         """
@@ -512,11 +512,18 @@ class GaussianTS(QMReaction, Gaussian):
         IRC calculation on the transition state. The geometry is taken 
         from the checkpoint file created during the geometry search.
         """
+        output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity )]
+        if os.path.exists(self.getFilePath('.chk')):
+            top_keys = self.inputFileKeywords(0, irc=True)
+            output.append('')
+            output.append('')
+        else:
+            top_keys = "# m062x/6-311+g(2df,2p) irc=(calcall)"
+            atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
+            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+            assert atomCount == len(self.reactantGeom.molecule.atoms)
         
-        top_keys = self.inputFileKeywords(0, irc=True)
-        output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ), '', '']
-        
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='10GB', checkPoint=True, inputFilePath=self.ircInputFilePath)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', checkPoint=True, inputFilePath=self.ircInputFilePath)
     
     def createGeomInputFile(self, freezeAtoms, otherGeom=False):
         
@@ -553,7 +560,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         top_keys = self.inputFileKeywords(0, modRed=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='10GB', bottomKeys=bottom_keys)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottom_keys)
     
     def createQST2InputFile(self):
         # For now we don't do this, until seg faults are fixed on Discovery.
@@ -578,7 +585,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         top_keys = self.inputFileKeywords(0, qst2=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='10GB')
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB')
         
     def optEstimate(self, labels):
         """
@@ -618,7 +625,7 @@ class GaussianTS(QMReaction, Gaussian):
             for combo in dist_combo_l:
                 bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
             
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='10GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
             
             outputFilePath = self.runDouble(inputFilePath)
         

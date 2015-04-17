@@ -770,8 +770,11 @@ class QMReaction:
         # add the bonds
         output = output + ['', 'linear = False', '', 'externalSymmetry = {0}'.format(symmetry), '', 'spinMultiplicity = {0}'.format(multiplicity), '', 'opticalIsomers = 1', '']
         
-        # Energy - get it from the QM output file
-        output = output + ['energy = {', "    'DFT_G03_b3lyp': GaussianLog('{0}'),".format(path.split('/')[-1]), '}', '']
+        # Energy ~ get it from the QM output file
+        if self.method=='b3lyp':
+            output = output + ['energy = {', "    'DFT_G03_b3lyp': GaussianLog('{0}'),".format(path.split('/')[-1]), '}', '']
+        elif self.method=='m062x':
+            output = output + ['energy = {', "    'M062X/MG3S': GaussianLog('{0}'),".format(path.split('/')[-1]), '}', '']
         
         # Geometry - get it from the QM output file
         output = output + ["geometry = GaussianLog('{0}')".format(path.split('/')[-1]), '']
@@ -783,8 +786,7 @@ class QMReaction:
         output = output + ['rotors = []', '']
         
         input_string = '\n'.join(output)
-        
-        with open(path.split('.')[0]+'.py', 'w') as statMechFile:
+        with open(path.rsplit('.',1)[0]+'.py', 'w') as statMechFile:
             statMechFile.write(input_string)
     
     def writeCanThermInput(self, reactants, products, filePath, fileStore):
@@ -793,18 +795,26 @@ class QMReaction:
         """
         output = ['#!/usr/bin/env python', '# -*- coding: utf-8 -*-', '']
         
-        output.append('modelChemistry = "DFT_G03_b3lyp"')
-        output.append('frequencyScaleFactor = 0.964')
+        if self.method=='b3lyp':
+            output.append('modelChemistry = "DFT_G03_b3lyp"')
+            output.append('frequencyScaleFactor = 0.964')
+        elif self.method=='m062x':
+            output.append('modelChemistry = "M062X/MG3S"')
+            output.append('frequencyScaleFactor = 0.982') # source - http://comp.chem.umn.edu/freqscale/version3b1.htm
         output.append('useHinderedRotors = False')
         output.append('useBondCorrections = False\n')
         
+        if not fileStore.startswith('/'):
+            fileStore = os.path.abspath(fileStore)
+        
         for reactant in reactants:
             reactant.setOutputDirectory(fileStore)
-            output.append("species('{0}', '{1}{2}')".format(reactant.uniqueID, self.outputFilePath.count('/')*'../', reactant.outputFilePath.split('.')[0]+'.py', ))
+            output.append("species('{0}', '{1}')".format(reactant.uniqueID, reactant.getFilePath('.py')))
         for product in products:
             product.setOutputDirectory(fileStore)
-            output.append("species('{0}', '{1}{2}')".format(product.uniqueID, self.outputFilePath.count('/')*'../', product.outputFilePath.split('.')[0]+'.py', ))
-        output.append("transitionState('TS', '{0}')".format(self.outputFilePath.split('.')[0].split('/')[-1]+'.py'))
+            output.append("species('{0}', '{1}')".format(product.uniqueID, product.getFilePath('.py')))
+        
+        output.append("transitionState('TS', '{0}')".format(self.getFilePath('.py')))
         output.append('')
         output.append('reaction(')
         output.append("    label = '{0}',".format(self.uniqueID))
@@ -822,7 +832,6 @@ class QMReaction:
         output.append("statmech('TS')\nkinetics('{0}')\n".format(self.uniqueID))
         
         input_string = '\n'.join(output)
-        
         with open(filePath, 'w') as canThermInp:
             canThermInp.write(input_string)
     
@@ -868,7 +877,8 @@ class QMReaction:
             # Return the reaction without the kinetics included. Fall back on group additivity.
             return self.reaction
             
-        cantopt = ['CC(C)C([O])(OO)C(C)C', 'C[C](CC(=O)C(C)(C)OO)OO', 'C[C](OO)C(=O)C(C)(C)OO', 'CC(C)(C)[CH]OO', 'OO[C]1CCCCC1', '[CH2]OO', '[O]Cc1ccccc1'] # A local minimum for the following geometries has not been found at B3LYP/6-31+G(d,p)
+        # cantopt = ['CC(C)C([O])(OO)C(C)C', 'C[C](CC(=O)C(C)(C)OO)OO', 'C[C](OO)C(=O)C(C)(C)OO', 'CC(C)(C)[CH]OO', 'OO[C]1CCCCC1', '[CH2]OO', '[O]Cc1ccccc1'] # A local minimum for the following geometries has not been found at B3LYP/6-31+G(d,p)
+        cantopt = [] # They have been found at m062x
         for mol in self.reaction.reactants:
             if isinstance(mol, Species):
                 mol = mol.molecule[0]
