@@ -860,7 +860,7 @@ class ThermoDatabase(object):
                 assert len(thermoData) == 3, "thermoData should be a tuple at this point: (thermoData, library, entry)"
                 thermoData = thermoData[0]
         if thermoData is None:
-            logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
+            # logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None
         assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
