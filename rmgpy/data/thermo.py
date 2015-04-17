@@ -705,10 +705,12 @@ class ThermoDatabase(object):
         if not isinstance(thermoData,ThermoData):
             return # Just skip it
             raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
-        Cp0 = species.calculateCp0()
-        CpInf = species.calculateCpInf()  
-        thermoData.Cp0 = (Cp0,"J/(mol*K)")
-        thermoData.CpInf = (CpInf,"J/(mol*K)")
+        if thermoData.Cp0 is None:
+            Cp0 = species.calculateCp0()
+            thermoData.Cp0 = (Cp0,"J/(mol*K)")
+        if thermoData.CpInf is None:
+            CpInf = species.calculateCpInf()  
+            thermoData.CpInf = (CpInf,"J/(mol*K)")
                 
                 
     def getAllThermoData(self, species):
