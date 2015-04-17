@@ -379,6 +379,7 @@ Test the Molecule.isAromatic() method for Cyclohexane. ... ok
 Test the Molecule.isAromatic() method for Naphthalene. ... ok
 Test that Augmented InChI generation is printing the /mult layer ... ok
 Test that Augmented InChI Key generation is printing the mult layer ... ok
+Test that singlet carbene molecules, bearing an electron pair rather than unpaired electrons ... ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
@@ -942,7 +943,7 @@ rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
 TOTAL                             14435  11058   6312   5475    20%   
 ----------------------------------------------------------------------
-Ran 813 tests.
+Ran 814 tests.
 
 FAILED (SKIP=24, errors=3)
 make: *** [test] Error 1
