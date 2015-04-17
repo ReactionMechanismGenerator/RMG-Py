@@ -1039,6 +1039,41 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertEqual(Molecule().fromSMILES('C#C').countInternalRotors(), 0)
     
+    def testCarbeneIdentifiers(self):
+        """
+        Test that singlet carbene molecules, bearing an electron pair rather than unpaired electrons
+        are correctly converted into rdkit molecules and identifiers.
+        """
+        
+
+        ch2_t = '''
+        multiplicity 3
+        1 C u2 p0 c0 {2,S} {3,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        '''
+        
+        mol = Molecule().fromAdjacencyList(ch2_t)
+    
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3')
+        self.assertEqual( mol.toSMILES(), '[CH2]')
+        
+
+        ch2_s = '''
+        multiplicity 1
+        1 C u0 p1 c0 {2,S} {3,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        '''
+        
+        mol = Molecule().fromAdjacencyList(ch2_s)
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult1')
+        self.assertEqual( mol.toSMILES(), '[CH2]')
+        
+        
+        
+        
+        
     @work_in_progress
     def testCountInternalRotorsDimethylAcetylene(self):
         """
