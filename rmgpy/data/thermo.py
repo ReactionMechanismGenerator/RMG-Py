@@ -862,11 +862,7 @@ class ThermoDatabase(object):
         then applying hydrogen bond increment corrections for the radical
         site(s) and correcting for the symmetry.
         
-        The stableThermoEstimator should NOT have already corrected for the symmetry of the 
-        stable saturated molecule, because we do not "uncorrect" it. 
-        I.e. stableThermoEstimator should be a method that overestimates the entropy by R*ln(symmetry).
         """
-        #TODO: check the validity of the above statement for QMThermo and databases.
         
         assert molecule.isRadical(), "Method only valid for radicals."
         
@@ -874,18 +870,26 @@ class ThermoDatabase(object):
         
         # Get thermo estimate for saturated form of structure
         try:
-            thermoData = stableThermoEstimator(saturatedStruct)
+            thermoData_sat = stableThermoEstimator(saturatedStruct)
         except AttributeError:
             # Probably looking for thermo in a library 
             saturatedSpec = Species(molecule=[saturatedStruct])
-            thermoData = stableThermoEstimator(saturatedSpec)
-            if thermoData:
-                assert len(thermoData) == 3, "thermoData should be a tuple at this point: (thermoData, library, entry)"
-                thermoData = thermoData[0]
-        if thermoData is None:
+            thermoData_sat = stableThermoEstimator(saturatedSpec)
+            if thermoData_sat:
+                assert len(thermoData_sat) == 3, "thermoData should be a tuple at this point: (thermoData, library, entry)"
+                thermoData_sat = thermoData_sat[0]
+        if thermoData_sat is None:
             # logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None
-        assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+        assert thermoData_sat is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+        
+        #TODO we should have a better way to check the origin of the thermodata.
+        if not 'group additivity' in thermoData_sat.comment:
+            #remove the symmetry contribution to the entropy of the saturated molecule
+            ##assumes that the thermo data comes from QMTP or from a thermolibrary
+            thermoData_sat.S298.value_si += constants.R * math.log(saturatedStruct.getSymmetryNumber())
+        
+        thermoData = thermoData_sat
         
         # Correct entropy for symmetry number of radical structure
         thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
