@@ -867,8 +867,7 @@ class ThermoDatabase(object):
         assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
         # Correct entropy for symmetry number of radical structure
-        molecule.calculateSymmetryNumber()
-        thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
+        thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
         
         # For each radical site, get radical correction
         # Only one radical site should be considered at a time; all others
@@ -926,8 +925,7 @@ class ThermoDatabase(object):
             thermoData = self.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection(molecule)
 
         # Correct entropy for symmetry number
-        molecule.calculateSymmetryNumber()
-        thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
+        thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
 
         return thermoData
 
