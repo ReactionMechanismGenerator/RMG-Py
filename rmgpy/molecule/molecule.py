@@ -602,7 +602,7 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=1, multiplicity=-187, SMILES='', InChI='', SMARTS=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, SMILES='', InChI='', SMARTS=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
@@ -1648,6 +1648,17 @@ class Molecule(Graph):
             
             return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
+    def getSymmetryNumber(self):
+        """
+        Returns the symmetry number of Molecule.
+        First checks whether the value is stored as an attribute of Molecule.
+        If not, it calls the calculateSymmetryNumber method. 
+        """
+        if self.symmetryNumber == -1:
+            self.calculateSymmetryNumber()
+        return self.symmetryNumber
+        
+        
     def calculateSymmetryNumber(self):
         """
         Return the symmetry number for the structure. The symmetry number

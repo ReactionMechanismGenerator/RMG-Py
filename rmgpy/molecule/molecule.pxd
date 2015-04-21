@@ -214,3 +214,4 @@ cdef class Molecule(Graph):
     cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1
+    

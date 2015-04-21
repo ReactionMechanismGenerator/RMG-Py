@@ -1071,8 +1071,17 @@ class TestMolecule(unittest.TestCase):
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
         
+    def testGetSymmetryNumber(self):
+        """
+        Test that the symmetry number getter works properly
+        """
         
+        mol = Molecule().fromSMILES('C')
         
+        self.assertEquals(12, mol.getSymmetryNumber())
+        
+        empty = Molecule()
+        self.assertEquals(1, empty.getSymmetryNumber())
         
     @work_in_progress
     def testCountInternalRotorsDimethylAcetylene(self):
