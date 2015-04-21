@@ -695,25 +695,25 @@ class SolvationDatabase(object):
                     if bond.order == 'T': sumBondOrders += 3
                     if bond.order == 'B': sumBondOrders += 1.5 # We should always have 2 'B' bonds (but what about Cbf?)
                 if atomTypes['Val4'] in atom.atomType.generic: # Carbon, Silicon
-                    while(atom.radicalElectrons + charge + sumBondOrders != 4):
+                    while(atom.radicalElectrons + charge + sumBondOrders < 4):
                         atom.decrementLonePairs()
                         atom.incrementRadical()
                         atom.incrementRadical()
                         addedToPairs[atom] += 1
                 if atomTypes['Val5'] in atom.atomType.generic: # Nitrogen
-                    while(atom.radicalElectrons + charge + sumBondOrders != 3):
+                    while(atom.radicalElectrons + charge + sumBondOrders < 3):
                         atom.decrementLonePairs()
                         atom.incrementRadical()
                         atom.incrementRadical()
                         addedToPairs[atom] += 1
                 if atomTypes['Val6'] in atom.atomType.generic: # Oxygen, sulfur
-                    while(atom.radicalElectrons + charge + sumBondOrders != 2):
+                    while(atom.radicalElectrons + charge + sumBondOrders < 2):
                         atom.decrementLonePairs()
                         atom.incrementRadical()
                         atom.incrementRadical()
                         addedToPairs[atom] += 1
                 if atomTypes['Val7'] in atom.atomType.generic: # Chlorine
-                    while(atom.radicalElectrons + charge + sumBondOrders != 1):
+                    while(atom.radicalElectrons + charge + sumBondOrders < 1):
                         atom.decrementLonePairs()
                         atom.incrementRadical()
                         atom.incrementRadical()
