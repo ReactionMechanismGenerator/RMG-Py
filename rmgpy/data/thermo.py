@@ -808,24 +808,24 @@ class ThermoDatabase(object):
         thermoData = thermo[indices[0]]
         self.findCp0andCpInf(species, thermoData)
         return thermoData
-        
-    def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
+    
+    def saturate(self, radical):
         """
-        Estimate the thermodynamics of a radical by saturating it,
-        applying the provided stableThermoEstimator method on the saturated species,
-        then applying hydrogen bond increment corrections for the radical
-        site(s) and correcting for the symmetry.
+        Creates a Molecule object that is the saturated parent molecule of the 
+        parameter radical molecule.
         
-        The stableThermoEstimator should NOT have already corrected for the symmetry of the 
-        stable saturated molecule, because we do not "uncorrect" it. 
-        I.e. stableThermoEstimator should be a method that overestimates the entropy by R*ln(symmetry).
+        Sets the property 'saturate' to True in Props dictionary of the 
+        Molecule object.
+        
+        Returns the saturated Molecule, as well as a dictionary 'added'
+        that keeps track of the H-atoms and bonds that were added.
+        
+        parameter radical: Molecule
+        Returns: Molecule, dict 
         """
-        #TODO: check the validity of the above statement for QMThermo and databases.
-        
-        assert molecule.isRadical(), "Method only valid for radicals."
         
         # Make a copy of the structure so we don't change the original
-        saturatedStruct = molecule.copy(deep=True)
+        saturatedStruct = radical.copy(deep=True)
         
         # Saturate structure by replacing all radicals with bonds to
         # hydrogen atoms
@@ -850,6 +850,27 @@ class ThermoDatabase(object):
         saturatedStruct.updateAtomTypes()
         saturatedStruct.updateLonePairs()
         saturatedStruct.multiplicity = 1
+        
+        saturatedStruct.props['saturated'] = True
+        
+        return saturatedStruct, added
+        
+    def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
+        """
+        Estimate the thermodynamics of a radical by saturating it,
+        applying the provided stableThermoEstimator method on the saturated species,
+        then applying hydrogen bond increment corrections for the radical
+        site(s) and correcting for the symmetry.
+        
+        The stableThermoEstimator should NOT have already corrected for the symmetry of the 
+        stable saturated molecule, because we do not "uncorrect" it. 
+        I.e. stableThermoEstimator should be a method that overestimates the entropy by R*ln(symmetry).
+        """
+        #TODO: check the validity of the above statement for QMThermo and databases.
+        
+        assert molecule.isRadical(), "Method only valid for radicals."
+        
+        saturatedStruct, added = self.saturate(molecule)
         
         # Get thermo estimate for saturated form of structure
         try:
@@ -910,26 +931,19 @@ class ThermoDatabase(object):
         # will probably not visit the right atoms, and so will get the thermo wrong
         molecule.sortVertices()
 
-        # Create the ThermoData object
-        thermoData = ThermoData(
-            Tdata = ([300,400,500,600,800,1000,1500],"K"),
-            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
-            H298 = (0.0,"kJ/mol"),
-            S298 = (0.0,"J/(mol*K)"),
-        )
-
         if molecule.isRadical(): # radical species
-            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection)
+            thermoData = self.estimateRadicalThermoViaHBI(molecule, self.computeGroupAdditivityThermo)
+            return thermoData
 
         else: # non-radical species
-            thermoData = self.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection(molecule)
+            thermoData = self.computeGroupAdditivityThermo(molecule)
+            # Correct entropy for symmetry number
+            if not 'saturated' in molecule.props: 
+                thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
+            return thermoData
 
-        # Correct entropy for symmetry number
-        thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
 
-        return thermoData
-
-    def estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection(self, molecule):
+    def computeGroupAdditivityThermo(self, molecule):
         """
         Return the set of thermodynamic parameters corresponding to a given
         :class:`Molecule` object `molecule` by estimation using the group
