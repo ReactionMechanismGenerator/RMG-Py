@@ -84,6 +84,28 @@ class TestThermoDatabase(unittest.TestCase):
             for T, Cp in zip(self.Tlist, Cplist):
                 self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles,T))
 
+    def testSymmetryContributionRadicals(self):
+        """
+        Test that the symmetry contribution is correctly added for radicals
+        estimated via the HBI method. 
+        """
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.rmg.main import RMG
+        from rmgpy.rmg.model import Species
+        
+        rmg = RMG()
+        database = RMGDatabase()
+        database.load(os.path.join(settings['database.directory']), kineticsFamilies='none')
+        
+        spc = Species(molecule=[Molecule().fromSMILES('[CH3]')])
+        
+        thermoData_lib = database.thermo.getThermoDataFromLibraries(spc)[0]
+        
+        thermoData_ga = database.thermo.getThermoDataFromGroups(spc)
+        
+        self.assertAlmostEqual(thermoData_lib.getEntropy(298.), thermoData_ga.getEntropy(298.), 0)
+
+        
     @work_in_progress
     def testSymmetryNumberGeneration(self):
         """
