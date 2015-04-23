@@ -2079,3 +2079,30 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
+    def saturate(self):
+        """
+        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
+        """
+        added = {}
+        for atom in self.atoms:
+            for i in range(atom.radicalElectrons):
+                H = Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
+                bond = Bond(atom, H, 'S')
+                self.addAtom(H)
+                self.addBond(bond)
+                if atom not in added:
+                    added[atom] = []
+                added[atom].append([H, bond])
+                atom.decrementRadical()
+      
+        # Update the atom types of the saturated structure (not sure why
+        # this is necessary, because saturating with H shouldn't be
+        # changing atom types, but it doesn't hurt anything and is not
+        # very expensive, so will do it anyway)
+        self.updateConnectivityValues()
+        self.sortVertices()
+        self.updateAtomTypes()
+        self.updateLonePairs()
+        self.multiplicity = 1
+
+        return added

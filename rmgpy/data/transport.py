@@ -444,25 +444,7 @@ class TransportDatabase(object):
 
             # Saturate structure by replacing all radicals with bonds to
             # hydrogen atoms
-            added = {}
-            for atom in saturatedStruct.atoms:
-                for i in range(atom.radicalElectrons):
-                    H = Atom('H')
-                    bond = Bond(atom, H, 'S')
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(bond)
-                    if atom not in added:
-                        added[atom] = []
-                    added[atom].append([H, bond])
-                    atom.decrementRadical()
-
-            # Update the atom types of the saturated structure (not sure why
-            # this is necessary, because saturating with H shouldn't be
-            # changing atom types, but it doesn't hurt anything and is not
-            # very expensive, so will do it anyway)
-            saturatedStruct.updateConnectivityValues()
-            saturatedStruct.sortVertices()
-            saturatedStruct.updateAtomTypes()
+            added = saturatedStruct.saturate()
 
             # Get critical point contribution estimates for saturated form of structure
             criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(saturatedStruct)
