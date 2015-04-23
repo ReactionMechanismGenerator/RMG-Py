@@ -7,35 +7,8 @@ ImportError: No module named dassl
 mkdir -p testing/coverage
 rm -rf testing/coverage/*
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-test the checkConformerEnergy function with an list of energies. ... ok
-Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax. ... ok
-Test the generated temperature list. ... ok
-Test the master equation solution method chosen. ... ok
-Test the number of isomers identified. ... ok
-Test the whether or not RMG mode is turned on. ... ok
-Test the number of products identified. ... ok
-Test the number of reactants identified. ... ok
-Test a path reaction label ... ok
-Test the number pressures specified. ... ok
-Test the minimum pressure value. ... ok
-Test the pressure list. ... ok
-Test the whether or not RMG mode is turned on. ... ok
-Test the number temperatures specified. ... ok
-Test the temperature list. ... ok
-Test the Temperature Units. ... ok
-Test the temperature value. ... ok
-Test the whether or not tunneling has been included in a specific kinetics job. ... ok
-Test the max grain size value. ... ok
-Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... SKIP: WIP test failed: -78.46694399999998 != -78.467452 within 4 places
-Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... SKIP: WIP test failed: -78.55632 != -78.562189 within 4 places
-Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
-Uses an optimum geometry for s-butanol (CCC(O)C) to test that the ... ok
-Uses an optimum geometry for ethane (CC) to test that the ... ok
-Test that a Geometry object can be successfully reconstructed ... ok
-Test that a Geometry object can be successfully pickled and unpickled ... ok
-Uses a Molepro log file for ethylene_dz (C2H4) to test that F12a ... ok
-Uses a Molepro log file for ethylene_qz (C2H4) to test that F12b ... ok
-Uses a Molepro log file for OH (C2H4) to test that radical ... ok
+Failure: ValueError (rmgpy.molecule.molecule.Molecule has the wrong size, try recompiling) ... ERROR
+Failure: ImportError (cannot import name ReactionError) ... ERROR
 Test the value of the atomic mass unit. ... ok
 Test the value of the Avogadro constant. ... ok
 Test the value of the Bohr radius. ... ok
@@ -52,7 +25,8 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test that nodes can match other nodes. ... ok
 Test that the MatchNodeToStructure family works properly. ... ok
-Test that the loadFamilies function raises the correct exceptions ... ok
+Failure: ImportError (cannot import name ReactionError) ... ERROR
+Failure: ImportError (cannot import name ReactionError) ... ERROR
 Test we can estimate solvation thermochemistry. ... ok
 Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity ... ok
 Test we can obtain solute parameters via group additivity for a molecule with lone pairs ... ok
@@ -65,8 +39,10 @@ Test we can obtain solute parameters from a library ... ok
 Test we can obtain solvent parameters from a library ... ok
 Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters ... ok
 Test that the new ThermoDatabase generates appropriate thermo data. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
+Test that the symmetry contribution is correctly added for radicals ... ERROR
 Test we generate symmetry numbers correctly. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
 Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
+Test that the symmetry contribution is correctly added for radicals for Aromatics. ... ERROR
 Test we generate symmetry numbers correctly. for Aromatics. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
@@ -396,6 +372,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
+Test that the symmetry number getter works properly ... ERROR
 Test that InChI Key generation is working properly. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -409,6 +386,8 @@ Test the Molecule.isLinear() method. ... ok
 Test the Molecule.isLinear() method. ... ok
 Test the Molecule.isLinear() method. ... ok
 Test the Molecule.isLinear() method. ... ok
+Test a key-value pair is added to the props attribute of Molecule. ... ok
+Test that Molecule's props dictionaries are independent of each other. ... ok
 Test that a Molecule object can be successfully pickled and ... ok
 Test that the species [CH] has three radical electrons and a spin multiplicity of 4. ... ok
 Test that the species [CH2] has two radical electrons and a spin multiplicity of 3. ... ok
@@ -420,530 +399,57 @@ Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 Test the Molecule.toAdjacencyList() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() on CC ... ok
-Test the Molecule.calculateAtomSymmetryNumber() on CC(C)C ... ok
-Test the Molecule.calculateAtomSymmetryNumber() on CH4 ... ok
-Test the Molecule.calculateAtomSymmetryNumber() on [CH3] ... ok
-Test the Molecule.calculateAtomSymmetryNumber() on CCC ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on CC(C)=C=C(CC)CC ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on CC=C=[C] ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=CCCC ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C) ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=[C]C(C)(C)[C]=C=C ... SKIP: WIP test failed: 1 != 4
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=O ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on CC=C=C=O ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=N ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=[N] ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=C ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=[CH] ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=C ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on C=C=[C] ... ok
-Test the Molecule.calculateAxisSymmetryNumber() on O=O ... ok
-Test the Molecule.calculateBondSymmetryNumber() on C#C ... ok
-Test the Molecule.calculateBondSymmetryNumber() on CCCC ... ok
-Test the Molecule.calculateBondSymmetryNumber() on CC ... ok
-Test the Molecule.calculateBondSymmetryNumber() on C=C. ... ok
-Test the Molecule.calculateBondSymmetryNumber() on CCC ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() on C1CCCCC1 ... ok
-Test the Molecule.calculateSymmetryNumber() on C#C ... ok
-Test the Molecule.calculateSymmetryNumber() on C#CC#C ... ok
-Test the Molecule.calculateSymmetryNumber() on C1=C=C=1 ... ok
-Test the Molecule.calculateSymmetryNumber() on [C]#[C] ... ok
-Test the Molecule.calculateSymmetryNumber() on C=[CH]. ... ok
-Test the Molecule.calculateSymmetryNumber() on C=C ... ok
-Test the Molecule.calculateSymmetryNumber() on C=O ... ok
-Test the Molecule.calculateSymmetryNumber() on [H][H] ... ok
-Test the Molecule.calculateSymmetryNumber() on [OH] ... ok
-Test the Molecule.calculateSymmetryNumber() on CH4 ... ok
-Test the Molecule.calculateSymmetryNumber() on [CH3] ... ok
-Test the Molecule.calculateSymmetryNumber() on O=O ... ok
-Test the Molecule.calculateSymmetryNumber() on H2O ... ok
-Test the Molecule.calculateSymmetryNumber() on C=C=[C]C(C)(C)[C]=C=C ... ok
-Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccccc1C ... ok
-Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccc(C)cc1 ... SKIP: WIP test failed: 18 != 36
-Test the Molecule.calculateSymmetryNumber() on C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC ... SKIP: WIP test failed: 9 != '36?'
-Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1 ... ok
-Test the Molecule.calculateSymmetryNumber() on CC ... ok
-Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1C ... ok
+Failure: ValueError (rmgpy.molecule.molecule.Molecule has the wrong size, try recompiling) ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() on CC ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() on CC(C)C ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() on CH4 ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() on [CH3] ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() on CCC ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on CC(C)=C=C(CC)CC ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on CC=C=[C] ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=CCCC ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C) ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=[C]C(C)(C)[C]=C=C ... SKIP: WIP test failed: Missing type object
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=O ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on CC=C=C=O ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=N ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=[N] ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=C ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=[CH] ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=[C] ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() on O=O ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() on C#C ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() on CCCC ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() on CC ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() on C=C. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() on CCC ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() on C1CCCCC1 ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C#C ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C#CC#C ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C1=C=C=1 ... ERROR
+Test the Molecule.calculateSymmetryNumber() on [C]#[C] ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C=[CH]. ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C=C ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C=O ... ERROR
+Test the Molecule.calculateSymmetryNumber() on [H][H] ... ERROR
+Test the Molecule.calculateSymmetryNumber() on [OH] ... ERROR
+Test the Molecule.calculateSymmetryNumber() on CH4 ... ERROR
+Test the Molecule.calculateSymmetryNumber() on [CH3] ... ERROR
+Test the Molecule.calculateSymmetryNumber() on O=O ... ERROR
+Test the Molecule.calculateSymmetryNumber() on H2O ... ERROR
+Test the Molecule.calculateSymmetryNumber() on C=C=[C]C(C)(C)[C]=C=C ... ERROR
+Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccccc1C ... ERROR
+Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccc(C)cc1 ... SKIP: WIP test failed: Missing type object
+Test the Molecule.calculateSymmetryNumber() on C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC ... SKIP: WIP test failed: Missing type object
+Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1 ... ERROR
+Test the Molecule.calculateSymmetryNumber() on CC ... ERROR
+Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1C ... ERROR
 Test the SingleExponentialDown.T0 attribute. ... ok
 Test the SingleExponentialDown.sigma attribute. ... ok
 Test the SingleExponentialDown.getAlpha() method. ... ok
 Test the SingleExponentialDown.n attribute. ... ok
 Test that a SingleExponentialDown object can be successfully pickled ... ok
 Test that a SingleExponentialDown object can be successfully ... ok
-Test that the network `bathGas` property was properly set. ... ok
-Test that the Network.initialize() method. ... ok
-Test that the network `isomers` property was properly set. ... ok
-Test that the network `label` property was properly set. ... ok
-Test that the network `netReactions` property was properly set. ... ok
-Test that the network `pathReactions` property was properly set. ... ok
-Test that the network `products` property was properly set. ... ok
-Test that the network `reactants` property was properly set. ... ok
-Test that generateThermoData() works correctly. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() can load thermo from a previous run. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() works correctly. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() can load thermo from a previous run. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
-Test that checkPaths() works correctly. ... ok
-Test that getThermoData() fails when expected. ... ok
-Test that getThermoData() works correctly. ... SKIP: If GAUSSIAN installed, try checking your environment variables.
-Test that getThermoData() works correctly. ... SKIP: If MOPAC installed, try checking your environment variables.
-Test that initialize() works correctly. ... ok
-Test that setDefaultOutputDirectory() works correctly. ... ok
-Test that checkAllSet() works correctly. ... ok
-Test that generateThermoData() works correctly. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() can load thermo from a previous run. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() works correctly. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() can load thermo from a previous run. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() works correctly. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
-Test that generateThermoData() can load thermo from a previous run. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
-Test the creation of an acceleration quantity with units of cm/s^2. ... ok
-Test the creation of an acceleration quantity with units of m/s^2. ... ok
-Test the creation of an area quantity with units of m^2. ... ok
-Test the creation of an area quantity with units of m^2. ... ok
-Test the creation of an concentration quantity with units of molecules/m^3. ... ok
-Test the creation of an concentration quantity with units of mol/m^3. ... ok
-Test the creation of an concentration quantity with units of m^-3. ... ok
-Test the creation of a dipole moment quantity with units of C*m. ... ok
-Test the creation of a dipole moment quantity with units of J/mol. ... ok
-Test the creation of an energy quantity with units of J. ... ok
-Test the creation of an energy quantity with units of J/mol. ... ok
-Test the creation of an energy quantity with units of cal. ... ok
-Test the creation of an energy quantity with units of cal/mol. ... ok
-Test the creation of an energy quantity with units of kJ. ... ok
-Test the creation of an energy quantity with units of kJ/mol. ... ok
-Test the creation of an energy quantity with units of kcal. ... ok
-Test the creation of an energy quantity with units of kcal/mol. ... ok
-Test the creation of a flux quantity with units of molecules/(m^2*s). ... ok
-Test the creation of a flux quantity with units of mol/(m^2*s). ... ok
-Test the creation of a flux quantity with units of m^-2*s^-1. ... ok
-Test the creation of an force quantity with units of N. ... ok
-Test the creation of a frequency quantity with units of GHz. ... ok
-Test the creation of a frequency quantity with units of Hz. ... ok
-Test the creation of a frequency quantity with units of K. ... ok
-Test the creation of a frequency quantity with units of MHz. ... ok
-Test the creation of a frequency quantity with units of cm^-1. ... ok
-Test the creation of a frequency quantity with units of eV. ... ok
-Test the creation of a frequency quantity with units of kHz. ... ok
-Test the creation of a frequency quantity with units of s^-1. ... ok
-Test the creation of a heat capacity quantity with units of J/K. ... ok
-Test the creation of a heat capacity quantity with units of J/(mol*K). ... ok
-Test the creation of a heat capacity quantity with units of cal/K. ... ok
-Test the creation of a heat capacity quantity with units of cal/(mol*K). ... ok
-Test the creation of a heat capacity quantity with units of kJ/K. ... ok
-Test the creation of a heat capacity quantity with units of kJ/(mol*K). ... ok
-Test the creation of a heat capacity quantity with units of kcal/K. ... ok
-Test the creation of a heat capacity quantity with units of kcal/(mol*K). ... ok
-Test the creation of a moment of inertia quantity with units of amu*angstrom^2. ... ok
-Test the creation of a moment of inertia quantity with units of kg*m^2. ... ok
-Test the creation of a length quantity with units of cm. ... ok
-Test the creation of a length quantity with units of km. ... ok
-Test the creation of a length quantity with units of m. ... ok
-Test the creation of a length quantity with units of mm. ... ok
-Test the creation of a length quantity with units of nm. ... ok
-Test the creation of a length quantity with units of pm. ... ok
-Test the creation of a length quantity with units of um. ... ok
-Test the creation of a mass quantity with units of amu. ... ok
-Test the creation of a mass quantity with units of g/mol. Note that ... ok
-Test the creation of a mass quantity with units of kg. ... ok
-Test the creation of a mass quantity with units of kg/mol. Note that ... ok
-Test the creation of a momentum quantity with units of kg*m/s^2. ... ok
-Test the creation of a power quantity with units of W. ... ok
-Test the creation of a pressure quantity with units of Pa. ... ok
-Test the creation of a pressure quantity with units of atm. ... ok
-Test the creation of a pressure quantity with units of bar. ... ok
-Test the creation of a pressure quantity with units of psi. ... ok
-Test the creation of a pressure quantity with units of torr. ... ok
-Test the creation of a rate coefficient quantity with units of cm^3/(molecule*s). ... ok
-Test the creation of a rate coefficient quantity with units of cm^3/(mol*s). ... ok
-Test the creation of a rate coefficient quantity with units of cm^6/(mol^2*s). ... ok
-Test the creation of a rate coefficient quantity with units of cm^6/(molecule^2*s). ... ok
-Test the creation of a rate coefficient quantity with units of cm^9/(mol^3*s). ... ok
-Test the creation of a rate coefficient quantity with units of cm^9/(molecule^3*s). ... ok
-Test the creation of a rate coefficient quantity with units of m^3/(mol*s). ... ok
-Test the creation of a rate coefficient quantity with units of m^6/(mol^2*s). ... ok
-Test the creation of a rate coefficient quantity with units of m^9/(mol^3*s). ... ok
-Test the creation of a rate coefficient quantity with units of s^-1. ... ok
-Test the creation of a temperature quantity with units of K. ... ok
-Test the creation of a temperature quantity with units of degrees C. ... ok
-Test the creation of a temperature quantity with units of degrees F. ... ok
-Test the creation of a temperature quantity with units of degrees R. ... ok
-Test the creation of a time quantity with units of fs. ... ok
-Test the creation of a time quantity with units of hr. ... ok
-Test the creation of a time quantity with units of min. ... ok
-Test the creation of a time quantity with units of ms. ... ok
-Test the creation of a time quantity with units of ns. ... ok
-Test the creation of a time quantity with units of ps. ... ok
-Test the creation of a time quantity with units of s. ... ok
-Test the creation of a time quantity with units of us. ... ok
-Test the creation of an velocity quantity with units of m/s. ... ok
-Test the creation of an velocity quantity with units of m/s. ... ok
-Test the creation of an volume quantity with units of L. ... ok
-Test the creation of an volume quantity with units of m^3. ... ok
-Test the Reaction.getEnthalpyOfReaction() method. ... ok
-Test the Reaction.getEntropyOfReaction() method. ... ok
-Test the Reaction.getEquilibriumConstant() method. ... ok
-Test the Reaction.getEquilibriumConstant() method. ... ok
-Test the Reaction.getEquilibriumConstant() method. ... ok
-Test the Reaction.getFreeEnergyOfReaction() method. ... ok
-Test the Reaction.generateReverseRateCoefficient() method. ... ok
-Test the Reaction.hasTemplate() method. ... ok
-Test the Reaction.isAssociation() method. ... ok
-Test the Reaction.isDissociation() method. ... ok
-Test the Reaction.isIsomerization() method. ... ok
-Test that a Reaction object can be successfully reconstructed ... ok
-Test that a Reaction object can be successfully pickled and ... ok
-Test the Reaction.getRateCoefficient() method. ... ok
-Test the Reaction.getStoichiometricCoefficient() method. ... ok
-A test of the transition state theory k(T) calculation function, ... ok
-test1to1 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
-test1to2 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
-test2to2 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
-test2to3 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
-Failure: ValueError (rmgpy.solver.base.ReactionSystem has the wrong size, try recompiling) ... ERROR
-Failure: ImportError (cannot import name SimpleReactor) ... ERROR
-Failure: ImportError (cannot import name SimpleReactor) ... ERROR
-Test that a Species object can be reconstructed from its repr(). ... ok
-Test that a Species object can be pickled and unpickled. ... ok
-Test a key-value pair is added to the props attribute of Species. ... ok
-Test that Species's props dictionaries are independent of each other. ... ok
-Test that toAdjacencyList() works as expected. ... ok
-Test the Conformer.getCenterOfMass() method. ... ok
-Test the StatMech.getDensityOfStates() method for ethylene. ... ok
-Test the StatMech.getDensityOfStates() method for oxygen. ... ok
-Test the StatMech.getEnthalpy() method for ethylene. ... ok
-Test the StatMech.getEnthalpy() method for oxygen. ... ok
-Test the StatMech.getEntropy() method for ethylene. ... ok
-Test the StatMech.getEntropy() method for oxygen. ... ok
-Test the StatMech.getHeatCapacity() method for ethylene. ... ok
-Test the StatMech.getHeatCapacity() method for oxygen. ... ok
-Test the Conformer.getInternalReducedMomentOfInertia() method. ... ok
-Test the Conformer.getMomentOfInertiaTensor() method. ... ok
-Test the Conformer.getNumberDegreesOfFreedom() method. ... ok
-Test the StatMech.getPartitionFunction() method for ethylene. ... ok
-Test the StatMech.getPartitionFunction() method for oxygen. ... ok
-Test the Conformer.getPrincipalMomentsOfInertia() method. ... ok
-Test the StatMech.getSumOfStates() method for ethylene. ... ok
-Test the StatMech.getSumOfStates() method for oxygen. ... ok
-Test the Conformer.getTotalMass() method. ... ok
-Test the KRotor.getDensityOfStates() method using a classical ... ok
-Test the KRotor.getDensityOfStates() method using a quantum rotor. ... ok
-Test the KRotor.getEnthalpy() method using a classical rotor. ... ok
-Test the KRotor.getEnthalpy() method using a quantum rotor. ... ok
-Test the KRotor.getEntropy() method using a classical rotor. ... ok
-Test the KRotor.getEntropy() method using a quantum rotor. ... ok
-Test the KRotor.getHeatCapacity() method using a classical rotor. ... ok
-Test the KRotor.getHeatCapacity() method using a quantum rotor. ... ok
-Test the KRotor.getLevelDegeneracy() method. ... ok
-Test the KRotor.getLevelEnergy() method. ... ok
-Test the KRotor.getPartitionFunction() method for a classical ... ok
-Test the KRotor.getPartitionFunction() method for a quantum ... ok
-Test getting the KRotor.rotationalConstant property. ... ok
-Test the KRotor.getSumOfStates() method using a classical rotor. ... ok
-Test the KRotor.getSumOfStates() method using a quantum rotor. ... ok
-Test that a KRotor object can be pickled and unpickled with no loss ... ok
-Test that a KRotor object can be reconstructed from its repr() output ... ok
-Test setting the KRotor.rotationalConstant property. ... ok
-Test the LinearRotor.getDensityOfStates() method using a classical ... ok
-Test the LinearRotor.getDensityOfStates() method using a quantum rotor. ... ok
-Test the LinearRotor.getEnthalpy() method using a classical rotor. ... ok
-Test the LinearRotor.getEnthalpy() method using a quantum rotor. ... ok
-Test the LinearRotor.getEntropy() method using a classical rotor. ... ok
-Test the LinearRotor.getEntropy() method using a quantum rotor. ... ok
-Test the LinearRotor.getHeatCapacity() method using a classical rotor. ... ok
-Test the LinearRotor.getHeatCapacity() method using a quantum rotor. ... ok
-Test the LinearRotor.getLevelDegeneracy() method. ... ok
-Test the LinearRotor.getLevelEnergy() method. ... ok
-Test the LinearRotor.getPartitionFunction() method for a classical ... ok
-Test the LinearRotor.getPartitionFunction() method for a quantum ... ok
-Test getting the LinearRotor.rotationalConstant property. ... ok
-Test the LinearRotor.getSumOfStates() method using a classical rotor. ... ok
-Test the LinearRotor.getSumOfStates() method using a quantum rotor. ... ok
-Test that a LinearRotor object can be pickled and unpickled with no ... ok
-Test that a LinearRotor object can be reconstructed from its repr() ... ok
-Test setting the LinearRotor.rotationalConstant property. ... ok
-Test the NonlinearRotor.getDensityOfStates() method using a classical ... ok
-Test the NonlinearRotor.getEnthalpy() method using a classical rotor. ... ok
-Test the NonlinearRotor.getEntropy() method using a classical rotor. ... ok
-Test the NonlinearRotor.getHeatCapacity() method using a classical ... ok
-Test the NonlinearRotor.getPartitionFunction() method for a classical ... ok
-Test getting the NonlinearRotor.rotationalConstant property. ... ok
-Test the NonlinearRotor.getSumOfStates() method using a classical rotor. ... ok
-Test that a NonlinearRotor object can be pickled and unpickled with ... ok
-Test that a NonlinearRotor object can be reconstructed from its ... ok
-Test setting the NonlinearRotor.rotationalConstant property. ... ok
-Test the SphericalTopRotor.getDensityOfStates() method using a classical ... ok
-Test the SphericalTopRotor.getDensityOfStates() method using a quantum rotor. ... ok
-Test the SphericalTopRotor.getEnthalpy() method using a classical rotor. ... ok
-Test the SphericalTopRotor.getEnthalpy() method using a quantum rotor. ... ok
-Test the SphericalTopRotor.getEntropy() method using a classical rotor. ... ok
-Test the SphericalTopRotor.getEntropy() method using a quantum rotor. ... ok
-Test the SphericalTopRotor.getHeatCapacity() method using a classical rotor. ... ok
-Test the SphericalTopRotor.getHeatCapacity() method using a quantum rotor. ... ok
-Test the SphericalTopRotor.getLevelDegeneracy() method. ... ok
-Test the SphericalTopRotor.getLevelEnergy() method. ... ok
-Test the SphericalTopRotor.getPartitionFunction() method for a classical ... ok
-Test the SphericalTopRotor.getPartitionFunction() method for a quantum ... ok
-Test getting the SphericalTopRotor.rotationalConstant property. ... ok
-Test the SphericalTopRotor.getSumOfStates() method using a classical rotor. ... ok
-Test the SphericalTopRotor.getSumOfStates() method using a quantum rotor. ... ok
-Test that a SphericalTopRotor object can be pickled and unpickled ... ok
-Test that a SphericalTopRotor object can be reconstructed from its ... ok
-Test setting the SphericalTopRotor.rotationalConstant property. ... ok
-Test the getDensityOfStates() method. ... ok
-Test the getEnthalpy() method. ... ok
-Test the getEntropy() method. ... ok
-Test the getHeatCapacity() method. ... ok
-Test the getPartitionFunction() method. ... ok
-Test the HinderedRotor.getDensityOfStates() method using a classical ... ok
-Test the HinderedRotor.getDensityOfStates() method using a Fourier ... ok
-Test the HinderedRotor.getDensityOfStates() method using a classical ... ok
-Test the HinderedRotor.getDensityOfStates() method using a Fourier ... ok
-Test the HinderedRotor.getEnthalpy() method using a cosine potential ... ok
-Test the HinderedRotor.getEnthalpy() method using a Fourier series ... ok
-Test the HinderedRotor.getEnthalpy() method using a cosine potential ... ok
-Test the HinderedRotor.getEnthalpy() method using a Fourier series ... ok
-Test the HinderedRotor.getEntropy() method using a cosine potential ... ok
-Test the HinderedRotor.getEntropy() method using a Fourier series ... ok
-Test the HinderedRotor.getEntropy() method using a cosine potential ... ok
-Test the HinderedRotor.getEntropy() method using a Fourier series ... ok
-Test the HinderedRotor.getHeatCapacity() method using a cosine ... ok
-Test the HinderedRotor.getHeatCapacity() method using a Fourier series ... ok
-Test the HinderedRotor.getHeatCapacity() method using a cosine ... ok
-Test the HinderedRotor.getHeatCapacity() method using a Fourier series ... ok
-Test the HinderedRotor.getPartitionFunction() method for a cosine ... ok
-Test the HinderedRotor.getPartitionFunction() method for a Fourier ... ok
-Test the HinderedRotor.getPartitionFunction() method for a cosine ... ok
-Test the HinderedRotor.getPartitionFunction() method for a Fourier ... ok
-Test the HinderedRotor.getPotential() method for a cosine potential. ... ok
-Test the HinderedRotor.getPotential() method for a Fourier series ... ok
-Test getting the HinderedRotor.rotationalConstant property. ... ok
-Test the HinderedRotor.getSumOfStates() method using a cosine potential ... ok
-Test the HinderedRotor.getSumOfStates() method using a Fourier series ... ok
-Test the HinderedRotor.getSumOfStates() method using a cosine potential ... ok
-Test the HinderedRotor.getSumOfStates() method using a Fourier series ... ok
-Test that a HinderedRotor object can be pickled and unpickled with no ... ok
-Test that a HinderedRotor object can be reconstructed from its repr() ... ok
-Test setting the HinderedRotor.rotationalConstant property. ... ok
-Test the IdealGasTranslation.getDensityOfStates() method using a ... ok
-Test the IdealGasTranslation.getEnthalpy() method using a classical ... ok
-Test the IdealGasTranslation.getEntropy() method using a classical ... ok
-Test the IdealGasTranslation.getHeatCapacity() method using a classical ... ok
-Test the IdealGasTranslation.getPartitionFunction() method for a ... ok
-Test the IdealGasTranslation.getSumOfStates() method using a classical ... ok
-Test that a IdealGasTranslation object can be pickled and unpickled ... ok
-Test that an IdealGasTranslation object can be reconstructed from its ... ok
-Test the HarmonicOscillator.getDensityOfStates() method using a set of ... ok
-Test the HarmonicOscillator.getDensityOfStates() method using a set of ... ok
-Test the HarmonicOscillator.getEnthalpy() method using a set of ... ok
-Test the HarmonicOscillator.getEnthalpy() method using a set of quantum ... ok
-Test the HarmonicOscillator.getEntropy() method using a set of ... ok
-Test the HarmonicOscillator.getEntropy() method using a set of quantum ... ok
-Test the HarmonicOscillator.getHeatCapacity() method using a set of ... ok
-Test the HarmonicOscillator.getHeatCapacity() method using a set of ... ok
-Test the HarmonicOscillator.getPartitionFunction() method for a set of ... ok
-Test the HarmonicOscillator.getPartitionFunction() method for a set of ... ok
-Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
-Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
-Test that a HarmonicOscillator object can be pickled and unpickled ... ok
-Test that a HarmonicOscillator object can be reconstructed from its ... ok
-Test round-trip conversion from Wilhoit to NASA and back ... ok
-Test round-trip conversion from Wilhoit to ThermoData and back ... ok
-Test the conversion of a NASA model to a ThermoData model. ... ok
-Test the conversion of a NASA model to a Wilhoit model. ... ok
-Test the conversion of a ThermoData model to a NASA model. ... ok
-Test the conversion of a ThermoData model to a Wilhoit model. ... ok
-Test the conversion of a Wilhoit model to a NASA model. ... ok
-Test the conversion of a Wilhoit model to a ThermoData model. ... ok
-Test that the NASA comment property was properly set. ... ok
-Test that the NASA E0 property was properly set. ... ok
-Test that the NASA Tmax property was properly set. ... ok
-Test that the NASA Tmin property was properly set. ... ok
-Test the NASA.getEnthalpy() method. ... ok
-Test the NASA.getEntropy() method. ... ok
-Test the NASA.getFreeEnergy() method. ... ok
-Test the NASA.getHeatCapacity() method. ... ok
-Test the NASA.isTemperatureValid() method. ... ok
-Test that a NASA object can be pickled and unpickled with no loss of ... ok
-Test that the NASA high-temperature polynomial was properly set. ... ok
-Test that the NASA low-temperature polynomial was properly set. ... ok
-Test that a NASA object can be reconstructed from its repr() output ... ok
-Test that the ThermoData comment property was properly set. ... ok
-Test that the ThermoData Cp0 property was properly set. ... ok
-Test that the ThermoData CpInf property was properly set. ... ok
-Test that the ThermoData Cpdata property was properly set. ... ok
-Test that the ThermoData E0 property was properly set. ... ok
-Test that the ThermoData H298 property was properly set. ... ok
-Test that the ThermoData S298 property was properly set. ... ok
-Test that the ThermoData Tdata property was properly set. ... ok
-Test that the ThermoData Tmax property was properly set. ... ok
-Test that the ThermoData Tmin property was properly set. ... ok
-Test the ThermoData.getEnthalpy() method. ... ok
-Test the ThermoData.getEntropy() method. ... ok
-Test the ThermoData.getFreeEnergy() method. ... ok
-Test the ThermoData.getHeatCapacity() method. ... ok
-Test the ThermoData.isTemperatureValid() method. ... ok
-Test that a ThermoData object can be successfully pickled and ... ok
-Test that a ThermoData object can be successfully reconstructed from its ... ok
-Test that the Wilhoit B property was properly set. ... ok
-Test that the Wilhoit Cp0 property was properly set. ... ok
-Test that the Wilhoit CpInf property was properly set. ... ok
-Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K ... ok
-Test that the Wilhoit H0 property was properly set. ... ok
-Test that the Wilhoit S0 property was properly set. ... ok
-Test that the Wilhoit Tmax property was properly set. ... ok
-Test that the Wilhoit Tmin property was properly set. ... ok
-Test that the Wilhoit a0 property was properly set. ... ok
-Test that the Wilhoit a1 property was properly set. ... ok
-Test that the Wilhoit a2 property was properly set. ... ok
-Test that the Wilhoit a3 property was properly set. ... ok
-Test that the Wilhoit comment property was properly set. ... ok
-Test the Wilhoit.fitToData() method. ... ok
-Test the Wilhoit.getEnthalpy() method. ... ok
-Test the Wilhoit.getEntropy() method. ... ok
-Test the Wilhoit.getFreeEnergy() method. ... ok
-Test the Wilhoit.getHeatCapacity() method. ... ok
-Test the Wilhoit.isTemperatureValid() method. ... ok
-Test that a Wilhoit object can be pickled and unpickled with no loss ... ok
-Test that a Wilhoit object can be reconstructed from its repr() output ... ok
-Test that the CriticalPointGroupContribution Pc property was properly set. ... ok
-Test that the CriticalPointGroupContribution Tb property was properly set. ... ok
-Test that the CriticalPointGroupContribution Tc property was properly set. ... ok
-Test that the CriticalPointGroupContribution Vc property was properly set. ... ok
-Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information. ... ok
-Test that a CriticalPointGroupContribution object can be reconstructed from its repr() output with no loss of information ... ok
-Test that the CriticalPointGroupContribution structureIndex property was properly set. ... ok
-Test that the TransportData comment property was properly set. ... ok
-Test that the TransportData dipoleMoment property was properly set. ... ok
-Test that the TransportData epsilon property was properly set. ... ok
-Test the LennardJones.getCollisionFrequency() method. ... ok
-Test that a TransportData object can be pickled and unpickled with no loss of information. ... ok
-Test that the TransportData polarizability property was properly set. ... ok
-Test that a TransportData object can be reconstructed from its repr() output with no loss of information ... ok
-Test that the TransportData rotrelaxcollnum property was properly set. ... ok
-Test that the TransportData shapeIndex property was properly set. ... ok
-Test that the TransportData sigma property was properly set. ... ok
-testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
-Test Joback doesn't crash on Cb desription of beneze ... ok
-
-======================================================================
-ERROR: Failure: ValueError (rmgpy.solver.base.ReactionSystem has the wrong size, try recompiling)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/rmg/input.py", line 39, in <module>
-    from rmgpy.solver.base import TerminationTime, TerminationConversion
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/solver/__init__.py", line 32, in <module>
-    from .simple import SimpleReactor
-  File "rmgpy/solver/simple.pyx", line 1, in init rmgpy.solver.simple (build/pyrex/rmgpy/solver/simple.c:20050)
-    ################################################################################
-ValueError: rmgpy.solver.base.ReactionSystem has the wrong size, try recompiling
-
-======================================================================
-ERROR: Failure: ImportError (cannot import name SimpleReactor)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/rmg/main.py", line 49, in <module>
-    from rmgpy.solver.base import TerminationTime, TerminationConversion
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/solver/__init__.py", line 32, in <module>
-    from .simple import SimpleReactor
-ImportError: cannot import name SimpleReactor
-
-======================================================================
-ERROR: Failure: ImportError (cannot import name SimpleReactor)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/solver/__init__.py", line 32, in <module>
-    from .simple import SimpleReactor
-ImportError: cannot import name SimpleReactor
-
-Name                              Stmts   Miss Branch BrMiss  Cover   Missing
------------------------------------------------------------------------------
-rmgpy                                55     16     18     10    64%   71, 79-82, 104-107, 113, 115, 119, 131-135
-rmgpy.cantherm                        5      0      0      0   100%   
-rmgpy.cantherm.common                 9      4      2      2    45%   43-46
-rmgpy.cantherm.gaussian             219    124    112     68    42%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-399, 407-423
-rmgpy.cantherm.geometry              74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
-rmgpy.cantherm.input                232     56    100     40    71%   82, 90-92, 122-125, 139, 146-148, 169, 180-182, 188, 190, 193-194, 206, 212, 219-221, 235, 237, 241, 245-249, 273-274, 280-287, 291-296, 321, 381-383, 387, 396-400
-rmgpy.cantherm.kinetics             126     93     32     28    23%   61, 66, 73-76, 80-85, 95, 98, 103, 106, 111, 114, 122-129, 136-160, 167-217, 227-248
-rmgpy.cantherm.main                  94     67     10     10    26%   45-46, 89-130, 139-168, 174-187, 193-194, 214-238
-rmgpy.cantherm.molepro               33      2     18      4    88%   64, 87
-rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-158, 168-173
-rmgpy.cantherm.pdep                 405    320    158    155    16%   117, 128, 179, 204, 224-238, 255-266, 270-301, 313-330, 334-366, 370-386, 390-486, 491-555, 565-574, 581-694
-rmgpy.cantherm.qchem                221    205    102    102     5%   47, 56-71, 81-106, 115-180, 191-279, 287-314, 321-346, 353-387, 395-409
-rmgpy.cantherm.statmech             532    498    238    238     4%   90, 97-128, 136-153, 158, 168-173, 180-182, 191-411, 415-421, 430-461, 469-499, 516-686, 697-897
-rmgpy.cantherm.thermo               161    140     32     32    11%   63-64, 71-75, 83-130, 137-213, 225-277
-rmgpy.chemkin                      1023    975    522    521     3%   72, 82-159, 170-281, 288-389, 396-521, 533-679, 690-710, 716-729, 736-751, 760-920, 932-974, 988-1046, 1056-1204, 1212-1222, 1234-1284, 1295-1364, 1372-1418, 1435-1605, 1615-1635, 1645-1648, 1656-1662, 1684-1707, 1726-1772, 1780-1811
-rmgpy.data                            3      1      0      0    67%   34
-rmgpy.data.base                     684    456    309    234    31%   43-45, 211-213, 230-251, 257-274, 281-300, 306-332, 343-361, 374-430, 439, 451, 458, 468-469, 472, 492-502, 509-539, 548-603, 610-618, 626-719, 726-732, 739-751, 758-792, 802, 808-814, 820-825, 834-838, 847-860, 900, 902, 913-918, 954, 965, 970, 985, 992-996, 1013, 1024-1030, 1037-1046, 1057-1064, 1082, 1092, 1114-1117, 1130, 1140-1144, 1156-1160, 1182-1201, 1207-1208, 1214, 1222-1235, 1249-1270
-rmgpy.data.kinetics                   7      0      0      0   100%   
-rmgpy.data.kinetics.common          128    115     70     70     7%   106-107, 116-224, 236-282
-rmgpy.data.kinetics.database        283    225    131    114    18%   82-87, 93-95, 102-104, 114-129, 143-153, 157-159, 161-163, 170-172, 178, 186-191, 201-227, 234-238, 245-259, 266-270, 277-284, 291-310, 317-352, 360-363, 371-376, 384-400, 413-422, 443-541
-rmgpy.data.kinetics.depository       56     42     16     16    19%   63-76, 82, 101, 114, 117, 123-158, 189-204, 210
-rmgpy.data.kinetics.family          883    817    488    488     5%   93-106, 112, 131, 159, 167, 175-191, 202-284, 291, 298, 344-355, 365-425, 432-467, 473-484, 490-513, 526-605, 613-614, 621-625, 631-633, 639, 645-648, 655-656, 662-709, 720-804, 811, 818-821, 828-930, 939-942, 949-952, 965-1076, 1091-1134, 1141-1146, 1156-1182, 1191-1200, 1212-1247, 1254-1261, 1275-1475, 1483-1562, 1570, 1579-1584, 1594-1602, 1610-1613, 1626-1671, 1679-1687, 1694-1696, 1704-1709
-rmgpy.data.kinetics.groups          291    274    182    182     4%   68-69, 75-82, 101-167, 177-203, 212-264, 277-544
-rmgpy.data.kinetics.library         265    240    148    148     6%   70-83, 89, 107, 117, 120, 130-137, 145-154, 161-216, 220-254, 278-300, 306, 312-346, 356-360, 370-531
-rmgpy.data.kinetics.rules           304    277    133    133     6%   59, 78-93, 99, 107-155, 162-188, 196-244, 252-319, 326-333, 340, 347, 354-367, 374-391, 397-459, 470-496, 503-567
-rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
-rmgpy.data.rmg                       86     65     14     14    21%   56-71, 92-104, 111-112, 119-120, 127-128, 141-156, 167-168, 175-176, 183-192, 198-205, 211-216
-rmgpy.data.solvation                446    149    112     34    67%   50-122, 175, 246, 296, 324-329, 352, 359, 366, 407, 415, 422, 446-451, 457-459, 501-504, 511-513, 520-523, 531-546, 562-575, 613-625, 734-737, 740-743, 745-749, 772-774, 832-836, 871-875
-rmgpy.data.statmech                 298    247    107    107    13%   48-86, 93-96, 103-111, 122, 135-137, 152, 162, 174, 189, 196, 203, 214, 226-234, 249, 256, 263, 270-277, 286-301, 311-347, 356-437, 447-459, 465-471, 477-480, 487-492, 499-500, 507-519, 526-528, 535-539, 546-548, 555-557, 564-566, 574-591, 608-621, 634-642, 650-655, 663-666, 675, 688-689, 697-704
-rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   469    365    158    145    19%   57-125, 132-150, 170, 189-200, 206, 233, 237-238, 255, 262, 269, 310, 318, 325, 351-357, 363-366, 376, 406, 428-432, 439-441, 448-450, 457-464, 472-539, 554-565, 575-618, 635-644, 658-697, 705-713, 726-742, 752-763, 776-782, 796-810, 825-899, 912-932, 945-1014, 1021-1034, 1042-1074
-rmgpy.data.transport                280    146     76     57    43%   51-107, 159, 166, 173, 194, 212, 219, 226, 247-252, 258-260, 304-307, 314-316, 323-325, 335-349, 357-369, 380-384, 411, 443-482, 504-505, 532, 540, 542, 546-550, 567-600
-rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
-rmgpy.kinetics                        6      0      0      0   100%   
-rmgpy.kinetics.diffusionLimited      56     43     12     12    19%   16-19, 22, 34-61, 70-86
-rmgpy.measure                         0      0      0      0   100%   
-rmgpy.measure.input                 266    234    150    150     8%   77-88, 91-115, 119, 123, 127-138, 142-152, 156-169, 173-186, 190-199, 203-205, 209-210, 223-244, 256-266, 278-288, 329-562
-rmgpy.measure.main                  408    384    140    140     4%   81-85, 91-108, 114-140, 147-165, 172-182, 189-195, 202-208, 215-216, 225-274, 288-534, 543-636, 649-679, 688-694, 705-747
-rmgpy.measure.network               779    732    332    332     4%   109-122, 125-128, 134-161, 168, 174-177, 184-189, 196-207, 215-248, 255, 269-286, 297-318, 336-370, 379-454, 461-472, 478-486, 495-506, 518-624, 634-649, 660-672, 680-700, 711-723, 734-773, 780-787, 794-801, 808-815, 827-921, 932-991, 994-1007, 1022-1228, 1236-1254, 1265-1313
-rmgpy.measure.output                164    146     82     82     7%   53-60, 71-110, 120-124, 135-136, 142-157, 168-169, 175-186, 197-198, 206-231, 241-303
-rmgpy.measure.settings                2      0      0      0   100%   
-rmgpy.measure.simulate               58     50     30     30     9%   46, 49, 66-128, 144-169
-rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              593    100    385     95    80%   74-75, 84, 131, 175, 179-181, 191, 233, 240-244, 250-254, 260-265, 272-275, 295, 303, 341, 354, 356, 358, 376, 390-391, 416-418, 451, 456-457, 471, 479-480, 494, 503, 543, 561, 564, 572, 590, 597, 616, 618, 624, 626, 631, 661, 674, 676, 678, 696, 737-738, 746, 776-779, 787, 791, 872-896, 909, 914, 919-920, 937, 978-981
-rmgpy.molecule.atomtypedatabase      82      6     12      0    94%   17-18, 22-23, 27-28
-rmgpy.molecule.draw                 930    575    448    303    36%   76, 79-82, 141-143, 170-172, 181-186, 194-196, 199-202, 205-207, 210-212, 215-218, 267-275, 288-289, 297-349, 374-376, 385-390, 399-430, 438-448, 455-580, 587-641, 648-720, 733-827, 851-852, 860-861, 884, 906-927, 940-942, 993-996, 1002-1003, 1005-1007, 1046-1047, 1094-1102, 1124-1125, 1138-1141, 1160-1165, 1171-1172, 1201-1202, 1210-1212, 1215-1216, 1224-1226, 1232-1239, 1244-1247, 1256-1259, 1264-1281, 1291-1294, 1298-1301, 1305-1322, 1350-1354, 1368-1488
-rmgpy.pdep                            5      0      0      0   100%   
-rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
-rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
-rmgpy.qm                              0      0      0      0   100%   
-rmgpy.qm.gaussian                   141    109     54     50    18%   27-28, 30-31, 51-52, 56-61, 80-139, 145-150, 166-169, 176-201, 209-232, 238
-rmgpy.qm.main                        75     16     30     14    71%   69, 162, 164, 177, 179, 181, 184-195
-rmgpy.qm.molecule                   226    167     52     48    23%   10-11, 49, 52-53, 59-60, 63-64, 72, 76, 80, 89-97, 110-131, 135-137, 153-186, 213-217, 225, 230, 235, 239, 244, 249, 255, 261-262, 268-278, 284-286, 292-297, 304, 312-337, 343-351, 357-375, 382, 391-394, 402-404, 410-413, 422-467
-rmgpy.qm.mopac                      142    105     50     48    20%   23, 25, 59-60, 63-68, 87-146, 152, 176-202, 214-237, 255-278
-rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
-rmgpy.qm.qmverifier                  26     20      6      6    19%   18-24, 40-61, 71
-rmgpy.qm.symmetry                    82     53     22     18    32%   128-130, 133, 163-176, 182, 188-197, 203-208, 214-226, 235-259
-rmgpy.rmg                             2      0      0      0   100%   
-rmgpy.rmg.model                     952    888    540    540     4%   76-77, 83, 101-209, 219-281, 289-297, 304-308, 334, 349-350, 375-402, 412-432, 440-487, 497-567, 584-638, 656-667, 673-684, 696-852, 861-928, 935-1021, 1030-1066, 1076-1102, 1108, 1116-1201, 1209-1263, 1272-1275, 1285-1286, 1294-1298, 1305-1311, 1319-1329, 1336-1341, 1353-1401, 1416-1456, 1470-1495, 1508-1561, 1576-1654, 1665-1668, 1678-1700, 1707-1742
-rmgpy.rmg.output                    160    152     68     68     4%   62-363, 371-956
-rmgpy.rmg.pdep                      312    285    182    182     5%   71-83, 89, 106, 128-131, 134, 140, 143, 150, 156-176, 185-206, 215-237, 244-263, 271-295, 303-313, 320-375, 385-446, 453-631
-rmgpy.statmech                        5      0      0      0   100%   
-rmgpy.thermo                          3      0      0      0   100%   
-rmgpy.transport                      28      1      0      0    96%   71
------------------------------------------------------------------------------
-TOTAL                             14513  11119   6358   5514    20%   
-----------------------------------------------------------------------
-Ran 814 tests.
-
-FAILED (SKIP=24, errors=3)
-make: *** [test] Error 1
+Test that the network `bathGas` property was properly set. ... make: *** [test] Segmentation fault (core dumped)

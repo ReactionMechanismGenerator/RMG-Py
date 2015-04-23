@@ -68,15 +68,23 @@
 <em class="property">class </em><tt class="descclassname">rmgpy.data.thermo.</tt><tt class="descname">ThermoDatabase</tt><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with the RMG thermodynamics database.</p>
 <dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.computeGroupAdditivityThermo">
+<tt class="descname">computeGroupAdditivityThermo</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.computeGroupAdditivityThermo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set of thermodynamic parameters corresponding to a given
+<tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite> by estimation using the group
+additivity values. If no group additivity values are loaded, a
+<tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
+<p>The entropy is not corrected for the symmetry of the molecule.
+This should be done later by the calling function.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.estimateRadicalThermoViaHBI">
 <tt class="descname">estimateRadicalThermoViaHBI</tt><big>(</big><em>molecule</em>, <em>stableThermoEstimator</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateRadicalThermoViaHBI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the thermodynamics of a radical by saturating it,
 applying the provided stableThermoEstimator method on the saturated species,
 then applying hydrogen bond increment corrections for the radical
 site(s) and correcting for the symmetry.</p>
-<p>The stableThermoEstimator should NOT have already corrected for the symmetry of the 
-stable saturated molecule, because we do not &#8220;uncorrect&#8221; it. 
-I.e. stableThermoEstimator should be a method that overestimates the entropy by R*ln(symmetry).</p>
 </dd></dl>
 
 <dl class="method">
@@ -86,17 +94,6 @@ I.e. stableThermoEstimator should be a method that overestimates the entropy by 
 <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
 <tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection">
-<tt class="descname">estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the set of thermodynamic parameters corresponding to a given
-<tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite> by estimation using the group
-additivity values. If no group additivity values are loaded, a
-<tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
-<p>The entropy is not corrected for the symmetry of the molecule.
-This should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">
@@ -212,6 +209,19 @@ points to the top-level folder of the thermo database.</p>
 <tt class="descname">pruneHeteroatoms</tt><big>(</big><em>allowed=['C', 'H', 'O', 'S']</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.pruneHeteroatoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all species from thermo libraries that contain atoms other than those allowed.</p>
 <p>This is useful before saving the database for use in RMG-Java</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.saturate">
+<tt class="descname">saturate</tt><big>(</big><em>radical</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.saturate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Molecule object that is the saturated parent molecule of the 
+parameter radical molecule.</p>
+<p>Sets the property &#8216;saturate&#8217; to True in Props dictionary of the 
+Molecule object.</p>
+<p>Returns the saturated Molecule, as well as a dictionary &#8216;added&#8217;
+that keeps track of the H-atoms and bonds that were added.</p>
+<p>parameter radical: Molecule
+Returns: Molecule, dict</p>
 </dd></dl>
 
 <dl class="method">
