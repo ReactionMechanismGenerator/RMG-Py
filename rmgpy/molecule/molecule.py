@@ -602,7 +602,7 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=1, multiplicity=-187, SMILES='', InChI='', SMARTS=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None ,SMILES='', InChI='', SMARTS=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
@@ -610,6 +610,7 @@ class Molecule(Graph):
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
         elif SMARTS != '': self.fromSMARTS(SMARTS)
+        self.props = props or {}
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
     
@@ -633,7 +634,7 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.symmetryNumber, self.multiplicity))
+        return (Molecule, (self.vertices, self.symmetryNumber, self.multiplicity, self.props))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -1648,6 +1649,17 @@ class Molecule(Graph):
             
             return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
+    def getSymmetryNumber(self):
+        """
+        Returns the symmetry number of Molecule.
+        First checks whether the value is stored as an attribute of Molecule.
+        If not, it calls the calculateSymmetryNumber method. 
+        """
+        if self.symmetryNumber == -1:
+            self.calculateSymmetryNumber()
+        return self.symmetryNumber
+        
+        
     def calculateSymmetryNumber(self):
         """
         Return the symmetry number for the structure. The symmetry number

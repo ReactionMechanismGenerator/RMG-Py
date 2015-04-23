@@ -1071,8 +1071,40 @@ class TestMolecule(unittest.TestCase):
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
         
+    def testGetSymmetryNumber(self):
+        """
+        Test that the symmetry number getter works properly
+        """
         
+        mol = Molecule().fromSMILES('C')
         
+        self.assertEquals(12, mol.getSymmetryNumber())
+        
+        empty = Molecule()
+        self.assertEquals(1, empty.getSymmetryNumber())
+    
+    def testMoleculeProps(self):
+        """
+        Test a key-value pair is added to the props attribute of Molecule.
+        """
+        self.molecule[0].props['foo'] = 'bar'
+        self.assertIsInstance(self.molecule[0].props, dict)
+        self.assertEquals(self.molecule[0].props['foo'], 'bar')
+        
+    def testMoleculeProps_object_attribute(self):
+        """
+        Test that Molecule's props dictionaries are independent of each other.
+        
+        Create a test in which is checked whether props is an object attribute rather
+        than a class attribute
+        """
+        spc2 = Molecule()
+        self.molecule[0].props['foo'] = 'bar'
+        spc3 = Molecule()
+        spc3.props['foo'] = 'bla'
+        self.assertEquals(self.molecule[0].props['foo'], 'bar')
+        self.assertDictEqual(spc2.props, {})
+        self.assertDictEqual(spc3.props, {'foo': 'bla'})
         
     @work_in_progress
     def testCountInternalRotorsDimethylAcetylene(self):

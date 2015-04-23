@@ -361,7 +361,7 @@ class Species(object):
         requires additional calculateSymmetryNumber calls.
         """
         cython.declare(symmetryNumber=cython.int)
-        symmetryNumber = numpy.max([mol.calculateSymmetryNumber() for mol in self.molecule])
+        symmetryNumber = numpy.max([mol.getSymmetryNumber() for mol in self.molecule])
         return symmetryNumber
         
     def calculateCp0(self):

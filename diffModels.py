@@ -237,7 +237,7 @@ if __name__ == '__main__':
     for spec1, spec2 in commonSpecies:
         print '    {0!s}'.format(spec1)
         if spec1.thermo and spec2.thermo:
-            spec1.molecule[0].calculateSymmetryNumber()
+            spec1.molecule[0].getSymmetryNumber()
             print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
                 spec1.thermo.getEnthalpy(300) / 4184.,
                 spec1.thermo.getEntropy(300) / 4.184,

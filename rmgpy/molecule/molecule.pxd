@@ -43,6 +43,7 @@ cdef class Atom(Vertex):
     cdef public AtomType atomType
     cdef public numpy.ndarray coords
     cdef public short lonePairs
+
     
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -106,7 +107,8 @@ cdef class Molecule(Graph):
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
-        
+    cdef public dict props
+    
     cpdef str getFingerprint(self)
     
     cpdef addAtom(self, Atom atom)
@@ -214,3 +216,4 @@ cdef class Molecule(Graph):
     cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1
+    
