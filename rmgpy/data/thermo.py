@@ -808,32 +808,6 @@ class ThermoDatabase(object):
         thermoData = thermo[indices[0]]
         self.findCp0andCpInf(species, thermoData)
         return thermoData
-    
-    def saturate(self, radical):
-        """
-        Creates a Molecule object that is the saturated parent molecule of the 
-        parameter radical molecule.
-        
-        Sets the property 'saturate' to True in Props dictionary of the 
-        Molecule object.
-        
-        Returns the saturated Molecule, as well as a dictionary 'added'
-        that keeps track of the H-atoms and bonds that were added.
-        
-        parameter radical: Molecule
-        Returns: Molecule, dict 
-        """
-        
-        # Make a copy of the structure so we don't change the original
-        saturatedStruct = radical.copy(deep=True)
-        
-        # Saturate structure by replacing all radicals with bonds to
-        # hydrogen atoms
-        added = saturatedStruct.saturate()
-        
-        saturatedStruct.props['saturated'] = True
-        
-        return saturatedStruct, added
         
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
@@ -845,8 +819,9 @@ class ThermoDatabase(object):
         """
         
         assert molecule.isRadical(), "Method only valid for radicals."
-        
-        saturatedStruct, added = self.saturate(molecule)
+        saturatedStruct = molecule.copy(deep=True)
+        added = saturatedStruct.saturate()
+        saturatedStruct.props['saturated'] = True
         
         # Get thermo estimate for saturated form of structure
         try:
