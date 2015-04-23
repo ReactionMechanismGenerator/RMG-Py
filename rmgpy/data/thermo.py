@@ -943,6 +943,11 @@ class ThermoDatabase(object):
             return None
         assert thermoData_sat is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
+        # Convert to ThermoData object if necessary in order to add and subtract from enthalpy and entropy values
+        if not isinstance(thermoData_sat, ThermoData):
+            thermoData_sat = thermoData_sat.toThermoData()
+        
+        
         if not stableThermoEstimator == self.computeGroupAdditivityThermo:
             #remove the symmetry contribution to the entropy of the saturated molecule
             ##assumes that the thermo data comes from QMTP or from a thermolibrary
