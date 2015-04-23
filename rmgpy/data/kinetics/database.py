@@ -439,11 +439,6 @@ class KineticsDatabase(object):
         of the reactants and products. For this reason you must also pass
         the `thermoDatabase` to use to generate the thermo data.
         """
-
-        def generateThermoData(species, thermoDatabase):
-            thermoData = [thermoDatabase.getThermoData(species)]
-            thermoData.sort(key=lambda x: x.getEnthalpy(298))
-            return thermoData[0]
         
         def matchSpeciesToMolecules(species, molecules):
             if len(species) == len(molecules) == 1:
@@ -485,12 +480,12 @@ class KineticsDatabase(object):
             for molecule in entry.item.reactants:
                 reactant = Species(molecule=[molecule])
                 reactant.generateResonanceIsomers()
-                reactant.thermo = generateThermoData(reactant, thermoDatabase)
+                reactant.thermo = thermoDatabase.getThermoData(reactant)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
-                product.thermo = generateThermoData(product, thermoDatabase)
+                product.thermo = thermoDatabase.getThermoData(product)
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
