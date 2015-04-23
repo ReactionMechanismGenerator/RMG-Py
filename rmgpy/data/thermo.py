@@ -929,22 +929,21 @@ class ThermoDatabase(object):
         saturatedStruct.props['saturated'] = True
         
         # Get thermo estimate for saturated form of structure
-        try:
-            thermoData_sat = stableThermoEstimator(saturatedStruct)
-        except AttributeError:
-            # Probably looking for thermo in a library 
+        if stableThermoEstimator == self.getThermoDataFromLibraries:
+            # Get data from libraries
             saturatedSpec = Species(molecule=[saturatedStruct])
             thermoData_sat = stableThermoEstimator(saturatedSpec)
             if thermoData_sat:
                 assert len(thermoData_sat) == 3, "thermoData should be a tuple at this point: (thermoData, library, entry)"
                 thermoData_sat = thermoData_sat[0]
+        else:
+            thermoData_sat = stableThermoEstimator(saturatedStruct)
         if thermoData_sat is None:
             # logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None
         assert thermoData_sat is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
-        #TODO we should have a better way to check the origin of the thermodata.
-        if not 'group additivity' in thermoData_sat.comment:
+        if not stableThermoEstimator == self.computeGroupAdditivityThermo:
             #remove the symmetry contribution to the entropy of the saturated molecule
             ##assumes that the thermo data comes from QMTP or from a thermolibrary
             thermoData_sat.S298.value_si += constants.R * math.log(saturatedStruct.getSymmetryNumber())
