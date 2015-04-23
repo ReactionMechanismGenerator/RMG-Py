@@ -46,6 +46,10 @@ from rmgpy.molecule import Molecule, Atom, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
 
+
+#: This dictionary is used to add multiplicity to species label
+_multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
+
 ################################################################################
 
 def saveEntry(f, entry):
@@ -622,7 +626,7 @@ class ThermoDatabase(object):
         )
 
 
-    def getThermoData(self, species, trainingSet=None):
+    def getThermoData(self, species, trainingSet=None, quantumMechanics=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -631,17 +635,118 @@ class ThermoDatabase(object):
         
         Returns: ThermoData
         """
-        # Check the libraries in order first; return the first successful match
-        thermoData = self.getThermoDataFromLibraries(species, trainingSet)
-        if thermoData is not None:
-            assert len(thermoData)==3, "thermoData should be a tuple at this point, eg. (thermoData, library, entry)"
-            thermoData = thermoData[0]
-        else:
-            # Thermo not found in any loaded libraries, so estimate
-            thermoData = self.getThermoDataFromGroups(species)
+        
+        thermo0 = None
+        
+        thermo0 = self.getThermoDataFromLibraries(species)
+        
+        if thermo0 is not None:
+            logging.info("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
+            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
+            thermo0 = thermo0[0]
+            
+        elif quantumMechanics:
+            original_molecule = species.molecule[0]
+            if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
+                pass
+            else: # try a QM calculation
+                if original_molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                    # Too many radicals for direct calculation: use HBI.
+                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                        original_molecule.getRadicalCount(),
+                        species.label,
+                        quantumMechanics.settings.maxRadicalNumber,
+                        ))
+                    
+                    # Need to estimate thermo via each resonance isomer
+                    thermo = []
+                    for molecule in species.molecule:
+                        molecule.clearLabeledAtoms()
+                        # Try to see if the saturated molecule can be found in the libraries
+                        tdata = self.estimateRadicalThermoViaHBI(molecule, self.getThermoDataFromLibraries)
+                        priority = 1
+                        if tdata is None:
+                            # Then attempt quantum mechanics job on the saturated molecule
+                            tdata = self.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                            priority = 2
+                        if tdata is None:
+                            # Fall back to group additivity
+                            tdata = self.estimateThermoViaGroupAdditivity(molecule)
+                            priority = 3
+                        
+                        thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
+                    
+                    if len(thermo) > 1:
+                        # Sort thermo first by the priority, then by the most stable H298 value
+                        thermo = sorted(thermo, key=lambda x: (x[0], x[1])) 
+                        for i in range(len(thermo)): 
+                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
+                        # Save resonance isomers reordered by their thermo
+                        species.molecule = [item[2] for item in thermo]
+                        original_molecule = species.molecule[0]
+                    thermo0 = thermo[0][3] 
+                    
+                    # If priority == 2
+                    if thermo[0][0] == 2:
+                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.  (Do this only if it came from a QM calculation)
+                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
+                                                        molecule = original_molecule.toAdjacencyList(),
+                                                        thermo = thermo0,
+                                                        shortDesc = thermo0.comment
+                                                        
+                                                        )                    
+#                    # For writing thermodata HBI check for QM molecules
+#                    with open('thermoHBIcheck.txt','a') as f:
+#                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
+#                        f.write('{0}\n'.format(original_molecule.toSMILES()))
+#                        f.write('{0}\n\n'.format(original_molecule.toAdjacencyList(removeH=False)))
+
+                else: # Not too many radicals: do a direct calculation.
+                    thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
+                
+                    if thermo0 is not None:
+                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
+                                                        molecule = original_molecule.toAdjacencyList(),
+                                                        thermo = thermo0,
+                                                        shortDesc = thermo0.comment
+                                                        )                    
+        if thermo0 is None:
+            # Use group additivity methods to determine thermo for molecule (or if QM fails completely)
+            original_molecule = species.molecule[0]
+            if original_molecule.getRadicalCount() > 0:
+                # Molecule is a radical, use the HBI method
+                thermo = []
+                for molecule in species.molecule:
+                    molecule.clearLabeledAtoms()
+                    # First see if the saturated molecule is in the libaries
+                    tdata = self.estimateRadicalThermoViaHBI(molecule, self.getThermoDataFromLibraries)
+                    priority = 1
+                    if tdata is None:
+                        # Otherwise use normal group additivity to obtain the thermo for the molecule
+                        tdata = self.estimateThermoViaGroupAdditivity(molecule)
+                        priority = 2
+                    thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
+                
+                if len(thermo) > 1:
+                    # Sort thermo first by the priority, then by the most stable H298 value
+                    thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                    for i in range(len(thermo)): 
+                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
+                    # Save resonance isomers reordered by their thermo
+                    species.molecule = [item[2] for item in thermo]
+                thermo0 = thermo[0][3] 
+            else:
+                # Saturated molecule, does not need HBI method
+                thermo0 = self.getThermoDataFromGroups(species)
+                
+            # Make sure to calculate Cp0 and CpInf if it wasn't done already
+            self.findCp0andCpInf(species, thermo0)
 
         # Return the resulting thermo parameters
-        return thermoData
+        return thermo0
     
         
     def getThermoDataFromLibraries(self, species, trainingSet=None):

@@ -57,8 +57,6 @@ import rmgpy.data.rmg
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
 
-#: This dictionary is used to add multiplicity to species label
-_multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
 
 
 ################################################################################
@@ -98,114 +96,8 @@ class Species(rmgpy.species.Species):
         Result stored in `self.thermo` and returned.
         """
 
-        thermo0 = None
+        thermo0 = database.thermo.getThermoData(self, trainingSet=None, quantumMechanics=quantumMechanics) 
         
-        thermo0 = database.thermo.getThermoDataFromLibraries(self)
-        
-        if thermo0 is not None:
-            logging.info("Found thermo for {0} in {1}".format(self.label,thermo0[0].comment.lower()))
-            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
-            thermo0 = thermo0[0]
-            
-        elif quantumMechanics:
-            original_molecule = self.molecule[0]
-            if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
-                pass
-            else: # try a QM calculation
-                if original_molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
-                    # Too many radicals for direct calculation: use HBI.
-                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
-                        original_molecule.getRadicalCount(),
-                        self.label,
-                        quantumMechanics.settings.maxRadicalNumber,
-                        ))
-                    
-                    # Need to estimate thermo via each resonance isomer
-                    thermo = []
-                    for molecule in self.molecule:
-                        molecule.clearLabeledAtoms()
-                        # Try to see if the saturated molecule can be found in the libraries
-                        tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, database.thermo.getThermoDataFromLibraries)
-                        priority = 1
-                        if tdata is None:
-                            # Then attempt quantum mechanics job on the saturated molecule
-                            tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
-                            priority = 2
-                        if tdata is None:
-                            # Fall back to group additivity
-                            tdata = database.thermo.estimateThermoViaGroupAdditivity(molecule)
-                            priority = 3
-                        
-                        thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
-                    
-                    if len(thermo) > 1:
-                        # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1])) 
-                        for i in range(len(thermo)): 
-                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
-                        # Save resonance isomers reordered by their thermo
-                        self.molecule = [item[2] for item in thermo]
-                        original_molecule = self.molecule[0]
-                    thermo0 = thermo[0][3] 
-                    
-                    # If priority == 2
-                    if thermo[0][0] == 2:
-                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.  (Do this only if it came from a QM calculation)
-                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
-                                                        molecule = original_molecule.toAdjacencyList(),
-                                                        thermo = thermo0,
-                                                        shortDesc = thermo0.comment
-                                                        
-                                                        )                    
-#                    # For writing thermodata HBI check for QM molecules
-#                    with open('thermoHBIcheck.txt','a') as f:
-#                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
-#                        f.write('{0}\n'.format(original_molecule.toSMILES()))
-#                        f.write('{0}\n\n'.format(original_molecule.toAdjacencyList(removeH=False)))
-
-                else: # Not too many radicals: do a direct calculation.
-                    thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
-                
-                    if thermo0 is not None:
-                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
-                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
-                                                        molecule = original_molecule.toAdjacencyList(),
-                                                        thermo = thermo0,
-                                                        shortDesc = thermo0.comment
-                                                        )                    
-        if thermo0 is None:
-            # Use group additivity methods to determine thermo for molecule (or if QM fails completely)
-            original_molecule = self.molecule[0]
-            if original_molecule.getRadicalCount() > 0:
-                # Molecule is a radical, use the HBI method
-                thermo = []
-                for molecule in self.molecule:
-                    molecule.clearLabeledAtoms()
-                    # First see if the saturated molecule is in the libaries
-                    tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, database.thermo.getThermoDataFromLibraries)
-                    priority = 1
-                    if tdata is None:
-                        # Otherwise use normal group additivity to obtain the thermo for the molecule
-                        tdata = database.thermo.estimateThermoViaGroupAdditivity(molecule)
-                        priority = 2
-                    thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
-                
-                if len(thermo) > 1:
-                    # Sort thermo first by the priority, then by the most stable H298 value
-                    thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
-                    for i in range(len(thermo)): 
-                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
-                    # Save resonance isomers reordered by their thermo
-                    self.molecule = [item[2] for item in thermo]
-                thermo0 = thermo[0][3] 
-            else:
-                # Saturated molecule, does not need HBI method
-                thermo0 = database.thermo.getThermoDataFromGroups(self)
-                
-            # Make sure to calculate Cp0 and CpInf if it wasn't done already
-            database.thermo.findCp0andCpInf(self, thermo0)
         return self.processThermoData(database, thermo0, thermoClass)
 
     def processThermoData(self, database, thermo0, thermoClass=NASA):
