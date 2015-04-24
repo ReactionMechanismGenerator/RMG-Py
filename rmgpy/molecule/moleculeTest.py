@@ -1067,7 +1067,7 @@ class TestMolecule(unittest.TestCase):
         '''
         
         mol = Molecule().fromAdjacencyList(ch2_s)
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
         

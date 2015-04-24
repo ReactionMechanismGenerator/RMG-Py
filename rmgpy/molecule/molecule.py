@@ -1365,6 +1365,8 @@ class Molecule(Graph):
         # Only write multiplicity if it is not 1
         if self.multiplicity !=1:
             return '/'.join([inchi , self.createMultiplicityLayer()])
+        else:
+            return inchi
         
     
     def toInChIKey(self):
@@ -1412,6 +1414,8 @@ class Molecule(Graph):
         # Only write multiplicity if it is not 1
         if self.multiplicity !=1:
             return ''.join([key , self.createMultiplicityLayer()])
+        else: 
+            return key
     
 
     def toSMARTS(self):
