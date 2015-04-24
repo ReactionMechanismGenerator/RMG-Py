@@ -355,7 +355,7 @@ Test the Molecule.isAromatic() method for Cyclohexane. ... ok
 Test the Molecule.isAromatic() method for Naphthalene. ... ok
 Test that Augmented InChI generation is printing the /mult layer ... ok
 Test that Augmented InChI Key generation is printing the mult layer ... ok
-Test that singlet carbene molecules, bearing an electron pair rather than unpaired electrons ... ok
+Test that singlet carbene molecules, bearing an electron pair rather than unpaired electrons ... FAIL
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
@@ -395,6 +395,7 @@ Test radical count on [CH2]C[CH2] ... ok
 Test the Molecule.getRadicalCount() method. ... ok
 Test that we can generate a few SMILES strings as expected ... ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
+Test that the Molecule.saturate() method works properly for an indenyl radical ... ok
 Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
