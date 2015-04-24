@@ -2050,9 +2050,10 @@ class Molecule(Graph):
     
     def updateLonePairs(self):
         """
-        Iterate through the atoms in the structure and calcualte the
-        number of lone electron pairs, assumin a neutral molecule.
+        Iterate through the atoms in the structure and calculate the
+        number of lone electron pairs, assuming a neutral molecule.
         """
+        cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
             order = 0
             if not atom1.isHydrogen():
@@ -2063,8 +2064,10 @@ class Molecule(Graph):
                         order = order + 2
                     if bond12.isTriple():
                         order = order + 3
+                    if bond12.isBenzene():
+                        order = order + 1.5
                         
-                atom1.lonePairs = 4 - atom1.radicalElectrons - order
+                atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
         
             else:
                 atom1.lonePairs = 0
