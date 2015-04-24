@@ -742,8 +742,8 @@ class ThermoDatabase(object):
                 # Saturated molecule, does not need HBI method
                 thermo0 = self.getThermoDataFromGroups(species)
                 
-            # Make sure to calculate Cp0 and CpInf if it wasn't done already
-            self.findCp0andCpInf(species, thermo0)
+        # Make sure to calculate Cp0 and CpInf if it wasn't done already
+        self.findCp0andCpInf(species, thermo0)
 
         # Return the resulting thermo parameters
         return thermo0
