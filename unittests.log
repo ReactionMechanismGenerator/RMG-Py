@@ -34,6 +34,7 @@ Test we can calculate and set the McGowan volume for species containing H,C,O,N 
 Test we can obtain solute parameters via group additivity for a molecule with both lone ... ok
 Test that we can obtain solute parameters via group additivity for an amide ... ok
 Test we can obtain solute parameters via group additivity for ammonia ... ok
+Test that we can obtain solute parameters via group additivity for CO. ... ok
 Test we can estimate Abraham solute parameters correctly using group contributions ... ok
 Test we can obtain solute parameters from a library ... ok
 Test we can obtain solvent parameters from a library ... ok
@@ -355,7 +356,7 @@ Test the Molecule.isAromatic() method for Cyclohexane. ... ok
 Test the Molecule.isAromatic() method for Naphthalene. ... ok
 Test that Augmented InChI generation is printing the /mult layer ... ok
 Test that Augmented InChI Key generation is printing the mult layer ... ok
-Test that singlet carbene molecules, bearing an electron pair rather than unpaired electrons ... FAIL
+Test that singlet carbene molecules, bearing an electron pair rather than unpaired electrons ... ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
