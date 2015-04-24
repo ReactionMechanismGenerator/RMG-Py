@@ -89,19 +89,11 @@ class TestThermoDatabase(unittest.TestCase):
         Test that the symmetry contribution is correctly added for radicals
         estimated via the HBI method. 
         """
-        from rmgpy.data.rmg import RMGDatabase
-        from rmgpy.rmg.main import RMG
-        from rmgpy.rmg.model import Species
-        
-        rmg = RMG()
-        database = RMGDatabase()
-        database.load(os.path.join(settings['database.directory']), kineticsFamilies='none')
-        
         spc = Species(molecule=[Molecule().fromSMILES('[CH3]')])
         
-        thermoData_lib = database.thermo.getThermoDataFromLibraries(spc)[0]
+        thermoData_lib = self.database.getThermoDataFromLibraries(spc)[0]
         
-        thermoData_ga = database.thermo.getThermoDataFromGroups(spc)
+        thermoData_ga = self.database.getThermoDataFromGroups(spc)
         
         self.assertAlmostEqual(thermoData_lib.getEntropy(298.), thermoData_ga.getEntropy(298.), 0)
 
