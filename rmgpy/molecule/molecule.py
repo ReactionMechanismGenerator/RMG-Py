@@ -1362,11 +1362,7 @@ class Molecule(Graph):
         Separate layer with a forward slash character.
         """
         inchi = self.toInChI()
-        # Only write multiplicity if it is not 1
-        if self.multiplicity !=1:
-            return '/'.join([inchi , self.createMultiplicityLayer()])
-        else:
-            return inchi
+        return '/'.join([inchi , self.createMultiplicityLayer()])
         
     
     def toInChIKey(self):
@@ -1411,11 +1407,7 @@ class Molecule(Graph):
         """
         key = self.toInChIKey()
         
-        # Only write multiplicity if it is not 1
-        if self.multiplicity !=1:
-            return ''.join([key , self.createMultiplicityLayer()])
-        else: 
-            return key
+        return '-'.join([key , self.createMultiplicityLayer()])
     
 
     def toSMARTS(self):
