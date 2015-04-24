@@ -1113,6 +1113,54 @@ class TestMolecule(unittest.TestCase):
         This is a "hard" test that currently fails.
         """
         self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
+        
+    def testSaturateAromaticRadical(self):
+        """
+        Test that the Molecule.saturate() method works properly for an indenyl radical
+        containing Benzene bonds
+        """
+        indenyl = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  C u0 p0 c0 {2,B} {3,S} {4,B}
+2  C u0 p0 c0 {1,B} {5,B} {6,S}
+3  C u0 p0 c0 {1,S} {7,D} {11,S}
+4  C u0 p0 c0 {1,B} {8,B} {12,S}
+5  C u0 p0 c0 {2,B} {9,B} {15,S}
+6  C u1 p0 c0 {2,S} {7,S} {16,S}
+7  C u0 p0 c0 {3,D} {6,S} {10,S}
+8  C u0 p0 c0 {4,B} {9,B} {13,S}
+9  C u0 p0 c0 {5,B} {8,B} {14,S}
+10 H u0 p0 c0 {7,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {8,S}
+14 H u0 p0 c0 {9,S}
+15 H u0 p0 c0 {5,S}
+16 H u0 p0 c0 {6,S}
+""")
+        indene = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {3,S} {4,B}
+2  C u0 p0 c0 {1,B} {5,B} {6,S}
+3  C u0 p0 c0 {1,S} {7,D} {11,S}
+4  C u0 p0 c0 {1,B} {8,B} {12,S}
+5  C u0 p0 c0 {2,B} {9,B} {15,S}
+6  C u0 p0 c0 {2,S} {7,S} {16,S} {17,S}
+7  C u0 p0 c0 {3,D} {6,S} {10,S}
+8  C u0 p0 c0 {4,B} {9,B} {13,S}
+9  C u0 p0 c0 {5,B} {8,B} {14,S}
+10 H u0 p0 c0 {7,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {8,S}
+14 H u0 p0 c0 {9,S}
+15 H u0 p0 c0 {5,S}
+16 H u0 p0 c0 {6,S}
+17 H u0 p0 c0 {6,S}
+""")
+        saturated_molecule = indenyl.copy(deep=True)
+        saturated_molecule.saturate()
+        self.assertTrue(saturated_molecule.isIsomorphic(indene))
+        
 
 ################################################################################
 

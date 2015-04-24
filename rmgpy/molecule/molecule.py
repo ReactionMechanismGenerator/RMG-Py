@@ -2086,6 +2086,7 @@ class Molecule(Graph):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """
+        cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
         for atom in self.atoms:
             for i in range(atom.radicalElectrons):
