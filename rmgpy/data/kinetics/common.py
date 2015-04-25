@@ -134,28 +134,28 @@ def saveEntry(f, entry):
         f.write('    label = "{0}",\n'.format(entry.label))
 
     if isinstance(entry.item, Reaction):
-        for i, reactant in enumerate(entry.item.reactants):
-            if isinstance(reactant, Molecule):
-                f.write('    reactant{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(reactant.toAdjacencyList(removeH=False))
-                f.write('""",\n')
-            elif isinstance(reactant, Species):
-                f.write('    reactant{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
-                f.write('""",\n')
-        for i, product in enumerate(entry.item.products):
-            if isinstance(product, Molecule):
-                f.write('    product{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(product.toAdjacencyList(removeH=False))
-                f.write('""",\n')
-            elif isinstance(reactant, Species):
-                f.write('    product{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
-                f.write('""",\n')
+#        for i, reactant in enumerate(entry.item.reactants):
+#            if isinstance(reactant, Molecule):
+#                f.write('    reactant{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(reactant.toAdjacencyList(removeH=False))
+#                f.write('""",\n')
+#            elif isinstance(reactant, Species):
+#                f.write('    reactant{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
+#                f.write('""",\n')
+#        for i, product in enumerate(entry.item.products):
+#            if isinstance(product, Molecule):
+#                f.write('    product{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(product.toAdjacencyList(removeH=False))
+#                f.write('""",\n')
+#            elif isinstance(reactant, Species):
+#                f.write('    product{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
+#                f.write('""",\n')
         if isinstance(entry.item.reactants[0], Species): 
             # Add degeneracy if the reaction is coming from a depository or kinetics library
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
