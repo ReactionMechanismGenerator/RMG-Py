@@ -23,6 +23,7 @@ from .gamessukparser import GAMESSUK
 from .gaussianparser import Gaussian
 from .jaguarparser import Jaguar
 from .molproparser import Molpro
+from .mopacparser import Mopac
 from .nwchemparser import NWChem
 from .orcaparser import ORCA
 from .psiparser import Psi
