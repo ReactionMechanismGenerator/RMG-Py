@@ -43,9 +43,11 @@ class TestGaussianMolPM3(unittest.TestCase):
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
 						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
+
 		
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
+
 		self.qmmol1 = GaussianMolPM3(mol1, qm.settings)
 
 	def testGenerateThermoData(self):
@@ -108,8 +110,10 @@ class TestGaussianMolPM6(unittest.TestCase):
 						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
 						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
 						  )
+
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
+
 		self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
 	def testGenerateThermoData(self):

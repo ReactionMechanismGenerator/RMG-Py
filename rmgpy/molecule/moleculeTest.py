@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import numpy
 from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Atom, Bond, Molecule, ActionError
 from rmgpy.molecule.group import Group
