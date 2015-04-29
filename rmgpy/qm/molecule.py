@@ -421,68 +421,6 @@ class QMMolecule:
         if not os.path.isdir(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
         
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
-        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
-            if not os.path.exists(path):
-                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
-                os.makedirs(path)
-        
-        setFileStore = True
-        setScratch = True
-        if self.settings.fileStore:
-            if not self.settings.fileStore.endswith(subPath):
-                currDir = self.settings.fileStore
-                if not all(x in currDir for x in subStrings):
-                    self.settings.fileStore = os.path.join(self.settings.fileStore, subPath)
-                else:
-                    self.settings.fileStore = os.path.join(self.settings.fileStore.split('/Species')[0], subPath)
-                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
-            setFileStore = False 
-        
-        if self.settings.scratchDirectory:
-            if not self.settings.scratchDirectory.endswith(subPath):
-                currDir = self.settings.scratchDirectory
-                if not all(x in currDir for x in subStrings):
-                    self.settings.scratchDirectory = os.path.join(self.settings.scratchDirectory, subPath)
-                else:
-                    self.settings.scratchDirectory = os.path.join(self.settings.scratchDirectory.split('/Species')[0], subPath)
-                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory)) 
-            setScratch = False
-                    
-        if setFileStore:
-            self.settings.fileStore = os.path.join(outputDirectory, subPath)
-            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
-        if setScratch:
-            self.settings.scratchDirectory = os.path.join(outputDirectory, subPath)
-            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory))            
-    
-    def initialize(self):
-        """
-        Do any startup tasks.
-        """
-        self.checkReady()
-    
-    def checkReady(self):
-        """
-        Check that it's ready to run calculations.
-        """
-        self.settings.checkAllSet()
-        self.checkPaths()
-    
-    def checkPaths(self):
-        """
-        Check the paths in the settings are OK. Make folders as necessary.
-        """
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-            
-        self.setOutputDirectory(self.settings.fileStore)
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
-        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)

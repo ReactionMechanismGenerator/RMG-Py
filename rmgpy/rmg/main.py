@@ -192,7 +192,7 @@ class RMG:
         self.reactionModel.verboseComments = self.verboseComments
         
         if self.quantumMechanics:
-            self.quantumMechanics.setOutputDirectory(self.outputDirectory)
+            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
             self.reactionModel.quantumMechanics = self.quantumMechanics
             
     def loadThermoInput(self, path=None):

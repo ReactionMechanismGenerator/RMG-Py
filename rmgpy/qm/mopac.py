@@ -2,14 +2,10 @@ import os
 import re
 import external.cclib as cclib
 import logging
-<<<<<<< HEAD
 from subprocess import Popen
-=======
 import time
 import math
 import numpy
-from subprocess import Popen, PIPE
->>>>>>> nwchem
 
 from rmgpy.molecule import Molecule, Atom, getElement
 from rmgpy.reaction import Reaction
@@ -165,24 +161,9 @@ class Mopac:
                 logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
                 # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
                 return False
-        
-<<<<<<< HEAD
+            
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
-    
-    def getParser(self, outputFile):
-=======
-        # Compare the optimized geometry to the original molecule
-        qmData = self.parse()
-        cclibMol = Molecule()
-        cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
-        testMol = self.molecule.toSingleBonds()
-        if not cclibMol.isIsomorphic(testMol):
-            logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
-            return False
-
-        logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
-        return True
     
     def getParser(self, outputFile):
              """
@@ -191,19 +172,10 @@ class Mopac:
              return cclib.parser.Mopac(outputFile)
     
     def parse(self):
->>>>>>> nwchem
         """
         Returns the appropriate cclib parser.
         """
-<<<<<<< HEAD
         return cclib.parser.Mopac(outputFile)
-=======
-        parser = cclib.parser.Mopac(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        cclibData = parser.parse()
-        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
-        return qmData
     
     def writeInputFile(self, output, attempt=None, top_keys=None, bottom_keys=None, inputFilePath=None, refFile=False):
         """
@@ -232,7 +204,6 @@ class Mopac:
         
         with open(inputFilePath, 'w') as mopacFile:
             mopacFile.write(input_string)
->>>>>>> nwchem
 
 class MopacMol(QMMolecule, Mopac):
     """
@@ -375,8 +346,7 @@ class MopacMolPM7(MopacMolPMn):
     but for now it's the same as all the MOPAC PMn calculations, only pm7
     """
     pm_method = 'pm7'
-<<<<<<< HEAD
-=======
+
     
 class MopacTS(QMReaction, Mopac):
 
@@ -937,4 +907,3 @@ class MopacTSPM7(MopacTS):
             image.set_calculator(ase.calculators.mopac.Mopac(command=self.executablePath, label=label, functional='PM7'))
             image.get_calculator().set(spin=self.geometry.molecule.getRadicalCount())
 
->>>>>>> nwchem
