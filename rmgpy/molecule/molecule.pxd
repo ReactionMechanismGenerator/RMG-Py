@@ -43,7 +43,6 @@ cdef class Atom(Vertex):
     cdef public AtomType atomType
     cdef public numpy.ndarray coords
     cdef public short lonePairs
-
     
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -172,6 +171,8 @@ cdef class Molecule(Graph):
     cpdef fromRDKitMol(self, rdkitmol)
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
+    
+    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
 
     cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
     
@@ -184,8 +185,6 @@ cdef class Molecule(Graph):
     cpdef str toAugmentedInChIKey(self)
 
     cpdef str toSMILES(self)
-
-#    cpdef tRDKitMol(self)
 
     cpdef toAdjacencyList(self, str label=?, bint removeH=?, bint removeLonePairs=?, bint oldStyle=?)
 
@@ -216,4 +215,3 @@ cdef class Molecule(Graph):
     cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1
-    

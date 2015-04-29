@@ -1,15 +1,22 @@
-"""
-cclib (http://cclib.sf.net) is (c) 2006, the cclib development team
-and licensed under the LGPL (http://www.gnu.org/copyleft/lgpl.html).
-"""
+# This file is part of cclib (http://cclib.github.io), a library for parsing
+# and interpreting the results of computational chemistry packages.
+#
+# Copyright (C) 2007-2014, the cclib development team
+#
+# The library is free software, distributed under the terms of
+# the GNU Lesser General Public version 2.1 or later. You should have
+# received a copy of the license along with cclib. You can also access
+# the full license online at http://www.gnu.org/copyleft/lgpl.html.
 
-__revision__ = "$Revision: 453 $"
+"""Charge Decomposition Analysis (CDA)"""
 
-import random # For sometimes running the progress updater
+from __future__ import print_function
+
+import random
 
 import numpy
 
-from fragments import FragmentAnalysis
+from .fragments import FragmentAnalysis
 
 
 class CDA(FragmentAnalysis):
@@ -77,6 +84,12 @@ class CDA(FragmentAnalysis):
             else:
                 homob = fragments[1].homos[0]
 
+            print("handling spin unrestricted")
+            if spin == 0:
+                fooverlaps = self.fooverlaps
+            elif spin == 1 and hasattr(self, "fooverlaps2"):
+                fooverlaps = self.fooverlaps2
+
             offset = fragments[0].nbasis
 
             self.logger.info("Creating donations, bdonations, and repulsions: array[]")
@@ -91,22 +104,22 @@ class CDA(FragmentAnalysis):
                 for k in range(0, homoa + 1):
                     for n in range(offset + homob + 1, self.data.nbasis):
                         donations[spin][i] += 2 * occs * self.mocoeffs[spin][i,k] \
-                                                * self.mocoeffs[spin][i,n] * self.fooverlaps[k][n]
+                                                * self.mocoeffs[spin][i,n] * fooverlaps[k][n]
 
                 for l in range(offset, offset + homob + 1):
                     for m in range(homoa + 1, offset):
                         bdonations[spin][i] += 2 * occs * self.mocoeffs[spin][i,l] \
-                                                * self.mocoeffs[spin][i,m] * self.fooverlaps[l][m]
+                                                * self.mocoeffs[spin][i,m] * fooverlaps[l][m]
 
                 for k in range(0, homoa + 1):
                     for m in range(offset, offset+homob + 1):
                         repulsions[spin][i] += 2 * occs * self.mocoeffs[spin][i,k] \
-                                                * self.mocoeffs[spin][i, m] * self.fooverlaps[k][m]
+                                                * self.mocoeffs[spin][i, m] * fooverlaps[k][m]
 
                 for m in range(homoa + 1, offset):
                     for n in range(offset + homob + 1, self.data.nbasis):
                         residuals[spin][i] += 2 * occs * self.mocoeffs[spin][i,m] \
-                                                * self.mocoeffs[spin][i, n] * self.fooverlaps[m][n]
+                                                * self.mocoeffs[spin][i, n] * fooverlaps[m][n]
 
                 step += 1
                 if self.progress and random.random() < cupdate:

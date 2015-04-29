@@ -49,6 +49,7 @@ from .common import KineticsError, UndeterminableKineticsError, saveEntry, \
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
+from .transitionstates import TSGroups, TransitionStates, TransitionStateDepository
 
 ################################################################################
 
@@ -353,6 +354,8 @@ class KineticsFamily(Database):
         self.groups = None
         self.rules = None
         self.depositories = []
+        #: Transition state estimator database
+        self.transitionStates = None
 
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
@@ -523,6 +526,7 @@ class KineticsFamily(Database):
         If depositoryLabels is None then load 'training' first then everything else.
         If depositoryLabels is not None then load in the order specified in depositoryLabels.
         """
+        
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
         local_context['forbidden'] = self.loadForbidden
@@ -604,8 +608,42 @@ class KineticsFamily(Database):
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
         
-
+        if depositoryLabels is None:
+            # load all the remaining depositories, in order returned by os.walk
+            for root, dirs, files in os.walk(path):
+                if 'training' in root: continue
+                for f in files:
+                    if not f.endswith('.py'): continue
+                    if f.startswith('TS_'): continue # skip transition state files
+                    name = f.split('.py')[0]
+                    if name not in ['groups', 'rules'] and name not in (depositoryLabels or ['training']):
+                        fpath = os.path.join(root, f)
+                        label = '{0}/{1}'.format(self.label, name)
+                        depository = KineticsDepository(label=label)
+                        logging.debug("Loading kinetics family depository from {0}".format(fpath))
+                        depository.load(fpath, local_context, global_context)
+                        self.depositories.append(depository)
             
+        # Create and load a transition states database if possible
+        if os.path.exists(os.path.join(path, 'TS_groups.py')):
+            logging.debug("Loading transition state groups for {0}".format(path))
+            self.transitionStates = TransitionStates()
+            self.transitionStates.family = KineticsFamily(  entries=None,
+                                                            top=None,
+                                                            label=self.label,
+                                                            name=self.name,
+                                                            reverse='',
+                                                            shortDesc='',
+                                                            longDesc='',
+                                                            forwardTemplate=self.forwardTemplate.copy(),
+                                                            forwardRecipe=self.forwardRecipe,
+                                                            reverseTemplate=None,
+                                                            reverseRecipe=None,
+                                                            forbidden=None
+                                                            )
+                                                            
+            self.transitionStates.load(path, local_context, global_context)
+
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
@@ -666,7 +704,7 @@ class KineticsFamily(Database):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}/groups"\n'.format(self.name))
-        f.write('shortDesc = u"{0}"\n'.format(self.groups.shortDesc))
+        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
         f.write('longDesc = u"""\n')
         f.write(self.groups.longDesc)
         f.write('\n"""\n\n')
@@ -707,6 +745,14 @@ class KineticsFamily(Database):
                 self.forbidden.saveEntry(f, entry, name='forbidden')
     
         f.close()
+
+    def saveTransitionStateGroups(self, path, entryName='entry'):
+        """
+        Save the current TS groups to the file at location `path` on disk. The
+        optional `entryName` parameter specifies the identifier used for each
+        data entry.
+        """
+        self.transitionstates.saveTransitionStateGroups(path, entryName=entryName)
 
     def generateProductTemplate(self, reactants0):
         """
@@ -951,7 +997,7 @@ class KineticsFamily(Database):
             alreadyDone = {}
         self.rules.fillRulesByAveragingUp(rootTemplate, alreadyDone)
 
-    def applyRecipe(self, reactantStructures, forward=True, unique=True):
+    def applyRecipe(self, reactantStructures, forward=True, unique=True, getTS=False):
         """
         Apply the recipe for this reaction family to the list of
         :class:`Molecule` objects `reactantStructures`. The atoms
@@ -988,13 +1034,22 @@ class KineticsFamily(Database):
             if identicalCenterCounter != 2:
                 raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
 
+        if getTS:
+            transitionStateStructure = list()
+            transitionStateStructure.append(reactantStructure.copy(deep=True)) # before resorting, merged reactants
+
+
         # Generate the product structure by applying the recipe
         if forward:
             self.forwardRecipe.applyForward(reactantStructure, unique)
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
         productStructure = reactantStructure
-
+        
+        if getTS:
+            transitionStateStructure.append(productStructure.copy(deep=True)) # before resorting, merged products
+            return productStructure.split(), transitionStateStructure
+            
         # Hardcoding of reaction family for reverse of radical recombination
         # (Unimolecular homolysis)
         # Because the two products are identical, they should the same tags
@@ -1073,9 +1128,12 @@ class KineticsFamily(Database):
                 struct.updateMultiplicity()
 
         # Return the product structures
-        return productStructures
+        if getTS:
+            return productStructures, transitionStateStructure
+        else:
+            return productStructures
 
-    def __generateProductStructures(self, reactantStructures, maps, forward, failsSpeciesConstraints=None):
+    def __generateProductStructures(self, reactantStructures, maps, forward, failsSpeciesConstraints=None, getTS=False):
         """
         For a given set of `reactantStructures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1106,7 +1164,10 @@ class KineticsFamily(Database):
 
         # Generate the product structures by applying the forward reaction recipe
         try:
-            productStructures = self.applyRecipe(reactantStructures, forward=forward)
+            if getTS:
+                productStructures, transitionStateStructure = self.applyRecipe(reactantStructures, forward=forward, getTS=True)
+            else:
+                productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
         except InvalidActionError:
 #            logging.error('Unable to apply reaction recipe!')
@@ -1177,6 +1238,9 @@ class KineticsFamily(Database):
         for reactant in reaction.reactants:
             for label, atom in reactant.getLabeledAtoms().items():
                 labeledAtoms.append((label, atom))
+        for product in reaction.products:
+            for label, atom in product.getLabeledAtoms().items():
+                labeledAtoms.append((label, atom))
         reaction.labeledAtoms = labeledAtoms
         
         return reaction
@@ -1226,8 +1290,9 @@ class KineticsFamily(Database):
                     for product in rxn.products:
                         logging.info("Product")
                         logging.info(product.toAdjacencyList())
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                rxn.reverse = reactions[0]
+                    #raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
+                else:
+                    rxn.reverse = reactions[0]
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
@@ -1271,6 +1336,11 @@ class KineticsFamily(Database):
         `failsSpeciesConstraints` is an optional function that accepts a :class:`Molecule`
         structure and returns `True` if it is forbidden.
         """
+        
+        ## This would make all calls to __generateProductStructures() also return
+        ## the "transition state structure", a list containing [merged_reactants, merged_products]
+        ## with the atom ordering consistent (needed for double-ended searches):
+        # options['getTS']=True
 
         rxnList = []; speciesList = []
 
@@ -1468,7 +1538,7 @@ class KineticsFamily(Database):
                 atom.label = ''
             
             # We're done with the labeled atoms, so delete the attribute
-            del reaction.labeledAtoms
+            #del reaction.labeledAtoms
             
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions

@@ -31,8 +31,11 @@ import os
 
 import logging
 
+from rmgpy.qm.molecule import QMMolecule
+from rmgpy.qm.reaction import QMReaction
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
+import rmgpy.qm.nwchem
 from rmgpy.data.thermo import ThermoLibrary
 
 class QMSettings():
@@ -120,6 +123,7 @@ class QMCalculator():
                                    onlyCyclics = onlyCyclics,
                                    maxRadicalNumber = maxRadicalNumber,
                                    )
+            
         self.database = ThermoLibrary(name='QM Thermo Library')
         
     def setDefaultOutputDirectory(self, outputDirectory):
@@ -147,23 +151,6 @@ class QMCalculator():
         self.settings.checkAllSet()
         self.checkPaths()
 
-    def checkPaths(self):
-        """
-        Check the paths in the settings are OK. Make folders as necessary.
-        """
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
-        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
-            if not os.path.exists(path):
-                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
-                os.makedirs(path)
-
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-            
-        
     def getThermoData(self, molecule):
         """
         Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
@@ -181,17 +168,59 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for mopac".format(self.settings.method))
-            thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'gaussian':
             if self.settings.method == 'pm3':
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
             elif self.settings.method == 'pm6':
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM6(molecule, self.settings)
+            elif self.settings.method == 'b3lyp':
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolB3LYP(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
-            thermo0 = qm_molecule_calculator.generateThermoData()
+        elif self.settings.software == 'nwchem':
+            if self.settings.method =='hf':
+                qm_molecule_calculator = rmgpy.qm.nwchem.NWChemMolHF(molecule, self.settings)
+            else:
+                raise Exception("Unknown QM method '{0}' for nwchem".format(self.settings.method))
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
+        thermo0 = qm_molecule_calculator.generateThermoData()
         return thermo0
+    
+    def getKineticData(self, reaction, tsDatabase):
+        """
+        Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
+        
+        Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
+        (I.e. the code that chooses whether to call this method should consider those settings).
+        """
+        if self.settings.software == 'mopac':
+            if self.settings.method == 'pm3':
+                qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM3(reaction, self.settings, tsDatabase)
+            elif self.settings.method == 'pm6':
+                qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM6(reaction, self.settings, tsDatabase)
+            elif self.settings.method == 'pm7':
+                qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM7(reaction, self.settings, tsDatabase)
+            else:
+                raise Exception("Unknown QM method '{0}' for mopac".format(self.settings.method))
+        if self.settings.software == 'gaussian':
+            if self.settings.method == 'pm6':
+                qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSPM6(reaction, self.settings, tsDatabase)
+            elif self.settings.method == 'b3lyp':
+                qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSB3LYP(reaction, self.settings, tsDatabase)
+            elif self.settings.method == 'm062x':
+                qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSM062X(reaction, self.settings, tsDatabase)
+            else:
+                raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method, tsDatabase))
+        elif self.settings.software == 'nwchem':
+            if self.settings.method =='hf':
+                qm_reaction_calculator = rmgpy.qm.nwchem.NWChemTSHF(reaction, self.settings, tsDatabase)
+            else:
+                raise Exception("Unknown QM method '{0}' for nwchem".format(self.settings.method))
+        else:
+            raise Exception("Unknown QM software '{0}'".format(self.settings.software))
+        
+        kinetics0 = qm_reaction_calculator.generateKineticData()
+        return kinetics0
     
         

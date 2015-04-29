@@ -7,7 +7,12 @@ import os
 
 from rmgpy import getPath
 from rmgpy.qm.main import QMSettings, QMCalculator
+# from rmgpy.qm.gaussian import QMSettings, QMCalculator
+# from rmgpy.qm.mopac import QMSettings, QMCalculator
 from rmgpy.molecule import Molecule
+
+
+mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
 class TestQMSettings(unittest.TestCase):
 	"""
@@ -82,6 +87,7 @@ class TestQMCalculator(unittest.TestCase):
 				
 		self.mop2 = QMCalculator(software = 'mopac',
 								method = 'pm6',
+								molecule = mol,
 								)
 		
 		self.mop3 = QMCalculator(software = 'mopac',
@@ -96,6 +102,7 @@ class TestQMCalculator(unittest.TestCase):
 		
 		self.gauss1 = QMCalculator(software = 'gaussian',
 								  method = 'pm3',
+								  molecule = mol,
 								  )	
 		
 		self.gauss2 = QMCalculator(software = 'gaussian',
@@ -119,9 +126,9 @@ class TestQMCalculator(unittest.TestCase):
 		self.qmmol2 = QMCalculator(fileStore=fileStore)
 		self.qmmol2.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'hexadiene', 'input.py')
 
-	def testSetDefaultOutputDirectory(self):
+	def testSetOutputDirectory(self):
 		"""
-		Test that setDefaultOutputDirectory() works correctly.
+		Test that setOutputDirectory() works correctly.
 		"""
 		self.assertIsNotNone(self.mop1.settings.fileStore)
 		self.assertIsNotNone(self.mop3.settings.fileStore)
@@ -154,7 +161,7 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertIsNotNone(self.mop3.settings.scratchDirectory)
 		self.assertIsNotNone(self.gauss1.settings.scratchDirectory)
 		self.assertIsNotNone(self.gauss2.settings.scratchDirectory)
-
+	
 	def testCheckPaths(self):
 		"""
 		Test that checkPaths() works correctly.
@@ -168,7 +175,6 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that initialize() works correctly.
 		"""
-		
 		# Now set the default directories for those not set
 		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
@@ -190,7 +196,7 @@ class TestQMCalculator(unittest.TestCase):
 	
 	def testGetThermoData(self):
 		"""
-		Test that getThermoData() fails when expected.
+		Test that getThermoData(mol) fails when expected.
 		"""
 		outputDirectory = os.path.join(self.mop4.settings.fileStore, '..', '..')
 		self.mop4.setDefaultOutputDirectory(outputDirectory)
@@ -207,12 +213,9 @@ class TestQMCalculator(unittest.TestCase):
 	@unittest.skipIf(os.path.exists(mopExecutablePath)==False, "If MOPAC installed, try checking your environment variables.")
 	def testGetThermoDataMopac(self):
 		"""
-		Test that getThermoData() works correctly.
+		Test that getThermoData(mol) works correctly.
 		"""
 		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
-		self.mop1.setDefaultOutputDirectory(outputDirectory)
-		self.mop2.setDefaultOutputDirectory(outputDirectory)
-		self.mop3.setDefaultOutputDirectory(outputDirectory)
 		
 		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
@@ -255,13 +258,12 @@ class TestQMCalculator(unittest.TestCase):
 	@unittest.skipIf(os.path.exists(gaussExecutablePath)==False, "If GAUSSIAN installed, try checking your environment variables.")
 	def testGetThermoDataGaussian(self):
 		"""
-		Test that getThermoData() works correctly.
+		Test that getThermoData(mol) works correctly.
 		"""
 		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.gauss1.setDefaultOutputDirectory(outputDirectory)
 		self.gauss2.setDefaultOutputDirectory(outputDirectory)
 		
-		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
 		try:
 			fileList = os.listdir(self.gauss1.settings.fileStore)

@@ -115,6 +115,16 @@ class Entry:
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
+    
+    def copy(self, deep=False):
+        from copy import copy, deepcopy
+        if deep:
+            other = deepcopy(self)
+        else:
+            other = copy(self)
+        return other
+        
+        
 
 ################################################################################
 
@@ -1179,6 +1189,7 @@ class ForbiddenStructures(Database):
         contains forbidden functionality, or ``False`` if not. Labeled atoms
         on the forbidden structures and the molecule are honored.
         """
+        
         for entry in self.entries.values():
             entryLabeledAtoms = entry.item.getLabeledAtoms()
             moleculeLabeledAtoms = molecule.getLabeledAtoms()

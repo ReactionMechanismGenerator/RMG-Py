@@ -1,11 +1,17 @@
-"""
-cclib (http://cclib.sf.net) is (c) 2006, the cclib development team
-and licensed under the LGPL (http://www.gnu.org/copyleft/lgpl.html).
-"""
+# This file is part of cclib (http://cclib.github.io), a library for parsing
+# and interpreting the results of computational chemistry packages.
+#
+# Copyright (C) 2006, the cclib development team
+#
+# The library is free software, distributed under the terms of
+# the GNU Lesser General Public version 2.1 or later. You should have
+# received a copy of the license along with cclib. You can also access
+# the full license online at http://www.gnu.org/copyleft/lgpl.html.
 
-__revision__ = "$Revision: 867 $"
+"""Bridge for using cclib data in openbabel (http://openbabel.org)."""
 
 import openbabel as ob
+
 
 def makeopenbabel(atomcoords, atomnos, charge=0, mult=1):
     """Create an Open Babel molecule.
@@ -33,6 +39,7 @@ def makeopenbabel(atomcoords, atomnos, charge=0, mult=1):
     obmol.SetTotalSpinMultiplicity(mult)
     obmol.SetTotalCharge(charge)
     return obmol
+
 
 if __name__ == "__main__":
     import doctest
