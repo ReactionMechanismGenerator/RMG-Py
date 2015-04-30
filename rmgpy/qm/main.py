@@ -65,11 +65,11 @@ class QMSettings():
         self.software = software
         self.method = method
         if fileStore:
-            self.fileStore = os.path.join(fileStore, method)
+            self.fileStore = fileStore
         else:
             self.fileStore = None
         if scratchDirectory:
-            self.scratchDirectory = os.path.join(scratchDirectory, method)
+            self.scratchDirectory = scratchDirectory
         else:
             self.scratchDirectory = None
         self.onlyCyclics = onlyCyclics
@@ -132,10 +132,10 @@ class QMCalculator():
         """
         
         if not self.settings.fileStore:
-            self.settings.fileStore = os.path.abspath(os.path.join(outputDirectory, 'QMfiles', self.settings.method))
+            self.settings.fileStore = os.path.abspath(os.path.join(outputDirectory, 'QMfiles'))
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
         if not self.settings.scratchDirectory:
-            self.settings.scratchDirectory = os.path.abspath(os.path.join(outputDirectory, 'QMscratch', self.settings.method))
+            self.settings.scratchDirectory = os.path.abspath(os.path.join(outputDirectory, 'QMscratch'))
             logging.info("Setting the quantum mechanics scratchDirectory to {0}".format(self.settings.scratchDirectory))
     
     def initialize(self):

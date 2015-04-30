@@ -421,9 +421,19 @@ class QMMolecule:
         if not os.path.isdir(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
         
+        rPath = os.path.join('Species', self.uniqueID, self.settings.method)
+        
+        pathList = [self.settings.fileStore, self.settings.scratchDirectory]
+        for i, path in enumerate(pathList):
+            if 'Species' not in path:
+                path = os.path.join(path, rPath)
+            path = os.path.expandvars(path)
+            pathList[i] = path
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
+                
+        self.settings.fileStore, self.settings.scratchDirectory = pathList
         
     def createGeometry(self, boundsMatrix=None, atomMatch=None):
         """
