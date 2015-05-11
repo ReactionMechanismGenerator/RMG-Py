@@ -509,8 +509,8 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.libraries['solvent'].save(os.path.join(path,'solvent.py'))
-        self.libraries['solute'].save(os.path.join(path,'solute.py'))
+        for library in self.libraries.keys():
+            self.libraries[library].save(os.path.join(path, library+'.py'))
         
     def saveGroups(self, path):
         """
@@ -518,9 +518,8 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
-        self.groups['nonacentered'].save(os.path.join(path, 'nonacentered.py'))
-        self.groups['radical'].save(os.path.join(path, 'radical.py'))
+        for group in self.groups.keys():
+            self.groups[group].save(os.path.join(path, group+'.py'))
 
     def loadOld(self, path):
         """

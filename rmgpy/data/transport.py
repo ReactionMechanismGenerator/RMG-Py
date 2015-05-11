@@ -321,8 +321,8 @@ class TransportDatabase(object):
         points to the top-level folder of the transport groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.groups['nonring'].save(os.path.join(path, 'nonring.py'))
-        self.groups['ring'].save(os.path.join(path, 'ring.py'))
+        for group in self.groups.keys():
+            self.groups[group].save(os.path.join(path, group+'.py'))
 
 
     def getTransportProperties(self, species):

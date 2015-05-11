@@ -588,7 +588,7 @@ class StatmechDatabase(object):
                 library.label = os.path.basename(root)
                 self.libraries[library.label] = library
 
-        self.groups = StatmechGroups(label='group', name='Functional Group Values').loadOld(
+        self.groups['groups'] = StatmechGroups(label='group', name='Functional Group Values').loadOld(
             dictstr = os.path.join(path, 'frequencies_groups', 'Dictionary.txt'),
             treestr = os.path.join(path, 'frequencies_groups', 'Tree.txt'),
             libstr = os.path.join(path, 'frequencies_groups', 'Library.txt'),

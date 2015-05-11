@@ -189,7 +189,10 @@ class RMGDatabase:
         self.kinetics = KineticsDatabase()
         self.kinetics.loadOld(path)
         self.statmech = StatmechDatabase()
-        self.statmech.loadOld(path)
+        self.statmech.loadOld(path)        
+        self.solvation = SolvationDatabase()
+        # Not completely implemented
+        # self.solvation.loadOld(path)    
 
     def save(self, path):
         """

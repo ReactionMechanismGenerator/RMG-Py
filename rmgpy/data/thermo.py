@@ -441,8 +441,8 @@ class ThermoDatabase(object):
         points to the top-level folder of the thermo depository.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.depository['stable'].save(os.path.join(path, 'stable.py'))
-        self.depository['radical'].save(os.path.join(path, 'radical.py'))
+        for depo in self.depository.keys():
+            self.depository[depo].save(os.path.join(path, depo+'.py'))
 
     def saveLibraries(self, path):
         """
@@ -459,14 +459,9 @@ class ThermoDatabase(object):
         points to the top-level folder of the thermo groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.groups['group'].save(os.path.join(path, 'group.py'))
-        self.groups['gauche'].save(os.path.join(path, 'gauche.py'))
-        self.groups['int15'].save(os.path.join(path, 'int15.py'))
-        self.groups['ring'].save(os.path.join(path, 'ring.py'))
-        self.groups['radical'].save(os.path.join(path, 'radical.py'))
-        self.groups['polycyclic'].save(os.path.join(path, 'polycyclic.py'))        
-        self.groups['other'].save(os.path.join(path, 'other.py'))
-
+        for group in self.groups.keys():
+            self.groups[group].save(os.path.join(path, group+'.py'))
+            
     def loadOld(self, path):
         """
         Load the old RMG thermo database from the given `path` on disk, where
