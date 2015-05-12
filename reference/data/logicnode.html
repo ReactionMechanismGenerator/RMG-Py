@@ -75,8 +75,10 @@
 <dd><p>A logical AND node. Structure must match all components.</p>
 <dl class="method">
 <dt id="rmgpy.data.base.LogicAnd.matchToStructure">
-<tt class="descname">matchToStructure</tt><big>(</big><em>database</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicAnd.matchToStructure" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">matchToStructure</tt><big>(</big><em>database</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicAnd.matchToStructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
+<p>Setting <cite>strict</cite> to True makes enforces matching of atomLabels in the structure to every
+atomLabel in the node.</p>
 </dd></dl>
 
 </dd></dl>
@@ -100,8 +102,10 @@
 
 <dl class="method">
 <dt id="rmgpy.data.base.LogicOr.matchToStructure">
-<tt class="descname">matchToStructure</tt><big>(</big><em>database</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicOr.matchToStructure" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">matchToStructure</tt><big>(</big><em>database</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicOr.matchToStructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
+<p>Setting <cite>strict</cite> to True makes enforces matching of atomLabels in the structure to every
+atomLabel in the node.</p>
 </dd></dl>
 
 </dd></dl>

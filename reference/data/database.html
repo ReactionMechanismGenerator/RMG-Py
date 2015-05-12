@@ -92,11 +92,14 @@ new and old database formats.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.base.Database.descendTree">
-<tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.descendTree" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em>, <em>strict=False</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
 matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
 <p>If root=None then uses the first matching top node.</p>
 <p>Returns None if there is no matching root.</p>
+<p>Set strict to <tt class="docutils literal"><span class="pre">True</span></tt> if all labels in final matched node must match that of the
+structure.  This is used in kinetics groups to find the correct reaction template, but
+not generally used in other GAVs due to species generally not being prelabeled.</p>
 </dd></dl>
 
 <dl class="method">
@@ -187,7 +190,7 @@ Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items
 
 <dl class="method">
 <dt id="rmgpy.data.base.Database.matchNodeToStructure">
-<tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
 structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
 have atoms with the appropriate labels because they are set on loading
@@ -197,15 +200,19 @@ include extra labels, and so we only require that every labeled atom in
 the functional group represented by <cite>node</cite> has an equivalent labeled
 atom in <cite>structure</cite>.</p>
 <p>Matching to structure is more strict than to node.  All labels in structure must 
-be found in node.  However the reverse is not true.</p>
+be found in node.  However the reverse is not true, unless <cite>strict</cite> is set to True.</p>
 <dl class="docutils">
 <dt>Usage: node = either an Entry or a key in the self.entries dictionary which has</dt>
 <dd><blockquote class="first">
 <div>a Group or LogicNode as its Entry.item</div></blockquote>
 <p>structure = a Group or a Molecule
 atoms = dictionary of {label: atom} in the structure.  A possible dictionary</p>
-<blockquote class="last">
+<blockquote>
 <div>is the one produced by structure.getLabeledAtoms()</div></blockquote>
+<dl class="last docutils">
+<dt>strict = if set to True, ensures that all the node&#8217;s atomLabels are matched by</dt>
+<dd>in the structure.</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
