@@ -871,13 +871,15 @@ class Database:
         atom in `structure`.
         
         Matching to structure is more strict than to node.  All labels in structure must 
-        be found in node.  However the reverse is not true.
+        be found in node.  However the reverse is not true, unless `strict` is set to True.
         
         Usage: node = either an Entry or a key in the self.entries dictionary which has
                       a Group or LogicNode as its Entry.item
                structure = a Group or a Molecule
                atoms = dictionary of {label: atom} in the structure.  A possible dictionary
                        is the one produced by structure.getLabeledAtoms()
+               strict = if set to True, ensures that all the node's atomLabels are matched by
+                        in the structure.
         """
         if isinstance(node, str): node = self.entries[node]
         group = node.item
@@ -946,7 +948,8 @@ class Database:
         Returns None if there is no matching root.
         
         Set strict to ``True`` if all labels in final matched node must match that of the
-        structure.
+        structure.  This is used in kinetics groups to find the correct reaction template, but
+        not generally used in other GAVs due to species generally not being prelabeled.
         """
 
         if root is None:
@@ -1012,6 +1015,9 @@ class LogicOr(LogicNode):
     def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
+        
+        Setting `strict` to True makes enforces matching of atomLabels in the structure to every
+        atomLabel in the node.
         """
         for node in self.components:
             if isinstance(node,LogicNode):
@@ -1058,6 +1064,9 @@ class LogicAnd(LogicNode):
     def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
+        
+        Setting `strict` to True makes enforces matching of atomLabels in the structure to every
+        atomLabel in the node.
         """
         for node in self.components:
             if isinstance(node,LogicNode):
