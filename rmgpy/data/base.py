@@ -859,7 +859,7 @@ class Database:
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
 
-    def matchNodeToStructure(self, node, structure, atoms):
+    def matchNodeToStructure(self, node, structure, atoms, strict=False):
         """
         Return :data:`True` if the `structure` centered at `atom` matches the
         structure at `node` in the dictionary. The structure at `node` should
@@ -871,18 +871,20 @@ class Database:
         atom in `structure`.
         
         Matching to structure is more strict than to node.  All labels in structure must 
-        be found in node.  However the reverse is not true.
+        be found in node.  However the reverse is not true, unless `strict` is set to True.
         
         Usage: node = either an Entry or a key in the self.entries dictionary which has
                       a Group or LogicNode as its Entry.item
                structure = a Group or a Molecule
                atoms = dictionary of {label: atom} in the structure.  A possible dictionary
                        is the one produced by structure.getLabeledAtoms()
+               strict = if set to True, ensures that all the node's atomLabels are matched by
+                        in the structure.
         """
         if isinstance(node, str): node = self.entries[node]
         group = node.item
         if isinstance(group, LogicNode):
-            return group.matchToStructure(self, structure, atoms)
+            return group.matchToStructure(self, structure, atoms, strict)
         else:
             # try to pair up labeled atoms
             centers = group.getLabeledAtoms()
@@ -891,8 +893,10 @@ class Database:
                 # Make sure the labels are in both group and structure.
                 if label not in atoms:
                     logging.log(0, "Label {0} is in group {1} but not in structure".format(label, node))
+                    if strict:
+                        # structure must match all labeled atoms in node if strict is set to True
+                        return False 
                     continue # with the next label - ring structures might not have all labeled atoms
-                    # return False # force it to have all the labeled atoms
                 center = centers[label]
                 atom = atoms[label]
                 # Make sure labels actually point to atoms.
@@ -934,7 +938,7 @@ class Database:
                 structure.atoms.append(atom)
             return result
 
-    def descendTree(self, structure, atoms, root=None):
+    def descendTree(self, structure, atoms, root=None, strict=False):
         """
         Descend the tree in search of the functional group node that best
         matches the local structure around `atoms` in `structure`.
@@ -942,24 +946,28 @@ class Database:
         If root=None then uses the first matching top node.
 
         Returns None if there is no matching root.
+        
+        Set strict to ``True`` if all labels in final matched node must match that of the
+        structure.  This is used in kinetics groups to find the correct reaction template, but
+        not generally used in other GAVs due to species generally not being prelabeled.
         """
 
         if root is None:
             for root in self.top:
-                if self.matchNodeToStructure(root, structure, atoms):
+                if self.matchNodeToStructure(root, structure, atoms, strict):
                     break # We've found a matching root
             else: # didn't break - matched no top nodes
                 return None
-        elif not self.matchNodeToStructure(root, structure, atoms):
+        elif not self.matchNodeToStructure(root, structure, atoms, strict):
             return None
         
         next = []
         for child in root.children:
-            if self.matchNodeToStructure(child, structure, atoms):
+            if self.matchNodeToStructure(child, structure, atoms, strict):
                 next.append(child)
 
         if len(next) == 1:
-            return self.descendTree(structure, atoms, next[0])
+            return self.descendTree(structure, atoms, next[0], strict)
         elif len(next) == 0:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
                 return root.children[-1]
@@ -967,7 +975,7 @@ class Database:
                 return root
         else:
             #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
-            return self.descendTree(structure, atoms, next[0])
+            return self.descendTree(structure, atoms, next[0], strict)
 
 ################################################################################
 
@@ -1004,15 +1012,18 @@ class LogicOr(LogicNode):
 
     symbol = "OR"
 
-    def matchToStructure(self,database,structure,atoms):
+    def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
+        
+        Setting `strict` to True makes enforces matching of atomLabels in the structure to every
+        atomLabel in the node.
         """
         for node in self.components:
             if isinstance(node,LogicNode):
-                match = node.matchToStructure(database,structure,atoms)
+                match = node.matchToStructure(database, structure, atoms, strict)
             else:
-                match = database.matchNodeToStructure(node, structure, atoms)
+                match = database.matchNodeToStructure(node, structure, atoms, strict)
             if match:
                 return True != self.invert
         return False != self.invert
@@ -1050,15 +1061,18 @@ class LogicAnd(LogicNode):
 
     symbol = "AND"
 
-    def matchToStructure(self,database,structure,atoms):
+    def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
+        
+        Setting `strict` to True makes enforces matching of atomLabels in the structure to every
+        atomLabel in the node.
         """
         for node in self.components:
             if isinstance(node,LogicNode):
-                match = node.matchToStructure(database,structure,atoms)
+                match = node.matchToStructure(database, structure, atoms, strict)
             else:
-                match = database.matchNodeToStructure(node, structure, atoms)
+                match = database.matchNodeToStructure(node, structure, atoms, strict)
             if not match:
                 return False != self.invert
         return True != self.invert
