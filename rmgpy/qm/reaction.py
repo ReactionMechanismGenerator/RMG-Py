@@ -789,7 +789,7 @@ class QMReaction:
         with open(path.rsplit('.',1)[0]+'.py', 'w') as statMechFile:
             statMechFile.write(input_string)
     
-    def writeCanThermInput(self, reactants, products, filePath, fileStore):
+    def writeCanThermInput(self, reactants, products, filePath, fileStore, scratchDirectory):
         """
         Write the CanTherm input file
         """
@@ -808,10 +808,14 @@ class QMReaction:
             fileStore = os.path.abspath(fileStore)
         
         for reactant in reactants:
-            reactant.setOutputDirectory(fileStore)
+            reactant.settings.fileStore = fileStore
+            reactant.settings.scratchDirectory = scratchDirectory
+            reactant.checkPaths()
             output.append("species('{0}', '{1}')".format(reactant.uniqueID, reactant.getFilePath('.py')))
         for product in products:
-            product.setOutputDirectory(fileStore)
+            product.settings.fileStore = fileStore
+            product.settings.scratchDirectory = scratchDirectory
+            product.checkPaths()
             output.append("species('{0}', '{1}')".format(product.uniqueID, product.getFilePath('.py')))
         
         output.append("transitionState('TS', '{0}')".format(self.getFilePath('.py')))
@@ -835,7 +839,7 @@ class QMReaction:
         with open(filePath, 'w') as canThermInp:
             canThermInp.write(input_string)
     
-    def calculateQMData(self, moleculeList, fileStore):
+    def calculateQMData(self, moleculeList, fileStore, scratchDirectory):
         """
         If the transition state is found, optimize reactant and product geometries for use in
         TST calculations.
@@ -846,6 +850,7 @@ class QMReaction:
                 molecule = molecule.molecule[0]
             qmMolecule = self.getQMMolecule(molecule)
             qmMolecule.settings.fileStore = fileStore
+            qmMolecule.settings.scratchDirectory = scratchDirectory
             qmMolecule.checkPaths()
             qmMolecule.qmData = qmMolecule.generateQMData()
             if qmMolecule.qmData:
@@ -867,12 +872,13 @@ class QMReaction:
         self.initialize()
         # provides transitionstate geometry
         fileStore = self.settings.fileStore #  To ensure all files are found in the same base directory
+        scratchDirectory = self.settings.scratchDirectory #  To ensure all files are found in the same base directory
         tsFound, notes = self.generateTSGeometryDirectGuess()
         
         self.settings.fileStore = fileStore
         with open(os.path.join(self.fileStore, 'error.txt'), 'w') as errorFile:
             errorFile.write(notes)
-            
+        
         if not tsFound:
             # Return the reaction without the kinetics included. Fall back on group additivity.
             return self.reaction
@@ -892,8 +898,8 @@ class QMReaction:
                 print 'Cannot optimize geometry for {0}'.format(mol.toSMILES())
                 return self.reaction
         
-        reactants = self.calculateQMData(self.reaction.reactants, fileStore)
-        products = self.calculateQMData(self.reaction.products, fileStore)
+        reactants = self.calculateQMData(self.reaction.reactants, fileStore, scratchDirectory)
+        products = self.calculateQMData(self.reaction.products, fileStore, scratchDirectory)
         
         allAtoms = []
         multiplicity=1
@@ -906,7 +912,7 @@ class QMReaction:
                 
         self.writeCanThermStatMech(allAtoms, {}, multiplicity, self.outputFilePath)
         canThermFilePath = os.path.join(self.fileStore, 'input.py')
-        self.writeCanThermInput(reactants, products, canThermFilePath, fileStore)
+        self.writeCanThermInput(reactants, products, canThermFilePath, fileStore, scratchDirectory)
         canThermJob = CanTherm()
         canThermJob.outputDirectory = self.fileStore
         canThermJob.inputFile = canThermFilePath
