@@ -61,6 +61,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, family_name
             
+            test = lambda x: self.kinetics_checkReactantAndProductTemplate(family_name)
+            test_name = "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, family_name
+            
             for depository in family.depositories:
                 
                 test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
@@ -276,6 +282,22 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     
                     nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
 
+    def kinetics_checkReactantAndProductTemplate(self, family_name):        
+        """
+        This test checks whether the reactant and product templates within a family are correctly defined.
+        For a reversible family, the reactant and product templates must have matching labels.
+        For a non-reversible family, the reactant and product templates must have non-matching labels, otherwise overwriting may occur.
+        """
+        family = self.database.kinetics.families[family_name]
+        if family.ownReverse:
+            nose.tools.assert_equal(family.forwardTemplate.reactants, family.forwardTemplate.products)
+        else:
+            reactant_labels = [reactant.label for reactant in family.forwardTemplate.reactants]
+            product_labels = [product.label for product in family.forwardTemplate.products]
+            for reactant_label in reactant_labels:
+                for product_label in product_labels:
+                    nose.tools.assert_false(reactant_label==product_label, "Reactant label {0} matches that of product label {1} in a non-reversible family template.  Please rename product label.".format(reactant_label,product_label))
+        
     def general_checkNodesFoundInTree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
