@@ -171,14 +171,25 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
     def kinetics_checkNodesInRulesFoundInGroups(self, family_name):
         """
-        This test ensures that each rate rule contains nodes that exist in the groups
+        This test ensures that each rate rule contains nodes that exist in the groups and that they match the order of the forwardTemplate.
         """
         family = self.database.kinetics.families[family_name]
+        
+        # List of the each top node's descendants (including the top node)
+        topDescendants = []
+        for topNode in family.getRootTemplate():
+            nodes = [topNode]
+            nodes.extend(family.groups.descendants(topNode))
+            topDescendants.append(nodes)
+            
+        topGroupOrder = ';'.join(topNode.label for topNode in family.getRootTemplate())
+        
         for label, entries in family.rules.entries.iteritems():
             for entry in entries:
                 nodes = label.split(';')
-                for node in nodes:
+                for i, node in enumerate(nodes):
                     nose.tools.assert_true(node in family.groups.entries, "In {family} family, no group definition found for label {label} in rule {entry}".format(family=family_name, label=node, entry=entry))
+                    nose.tools.assert_true(family.groups.entries[node] in topDescendants[i], "In {family} family, rule {entry} was found with groups out of order.  The correct order for a rule should be subgroups of {top}.".format(family=family_name, entry=entry, top=topGroupOrder))
                                         
     def kinetics_checkGroupsFoundInTree(self, family_name):
         """
