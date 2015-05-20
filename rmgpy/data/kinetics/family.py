@@ -884,15 +884,13 @@ class KineticsFamily(Database):
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
             data.changeT0(1)
-            
             # Estimate the thermo for the reactants and products
             # trainingSet=True used later to does not allow species to match a liquid phase library and get corrected thermo which will affect reverse rate calculation
-            item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.reactants], products=[m.molecule[0].copy(deep=True) for m in entry.item.products])
-            item.reactants = [Species(molecule=[m]) for m in item.reactants]
+            item = Reaction(reactants=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.reactants],
+                             products=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.products])
             for reactant in item.reactants:
                 reactant.generateResonanceIsomers()
                 reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True) 
-            item.products = [Species(molecule=[m]) for m in item.products]
             for product in item.products:
                 product.generateResonanceIsomers()
                 product.thermo = thermoDatabase.getThermoData(product,trainingSet=True)
