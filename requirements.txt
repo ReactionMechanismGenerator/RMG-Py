@@ -18,7 +18,7 @@ Jinja2 # this is for rendering the HTML output files
 # For postprocessing the profiling data
 argparse
 #gprof2dot
-git+https://code.google.com/p/jrfonseca.gprof2dot@bf25a2abb09b
+git+https://github.com/jrfonseca/gprof2dot.git@bf25a2abb09b # (or newer)
 pyparsing==1.5.7 # default pyparsing only works with Python3, 1.5.7 works on Python2.7. Pydot needs it.
 pydot
 
