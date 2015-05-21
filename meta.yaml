@@ -24,6 +24,12 @@ requirements:
     - libgcc # [unix]
     - python
     - numpy
+    - matplotlib
+    - rdkit
+    - pydas
+    - pydqed
+    - quantities
+    - scipy
 
 test:
   requires:
