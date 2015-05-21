@@ -473,7 +473,7 @@ class ModelMatcher():
                     assert len(tokens) == 2, "Not two tokens on line (was expecting NAME    SMILES)"
                     name, smiles = tokens
                     if name in known_smiles:
-                        assert smiles == known_smiles[name], "{0} defined twice".format(name)
+                        assert smiles == known_smiles[name], "{0} defined twice, as {1} and {2}".format(name, known_smiles[name], smiles)
                     known_smiles[name] = smiles
                     if user:
                         self.identified_by[name] = user
