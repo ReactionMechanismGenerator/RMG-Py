@@ -1,0 +1,39 @@
+# For conda build
+package:
+  name: rmg
+  version: "0.1.0"
+
+source:
+  path: .
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - gcc # [unix]
+    - python
+    - setuptools
+    - cython ==0.21
+    - numpy
+    - pydas
+    - pydqed
+    - boost
+    - rdkit
+  run:
+    - libgcc # [unix]
+    - python
+    - numpy
+
+test:
+  requires:
+    - nose
+  imports:
+    - rmgpy
+  commands:
+    - nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+
+about:
+  home: http://github.com/GreenGroup/RMG-Py
+  license: MIT
+  summary: "A program for automatically generating kinetic models of chemical reaction mechanisms."
