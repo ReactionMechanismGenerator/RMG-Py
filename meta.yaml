@@ -30,6 +30,10 @@ requirements:
     - pydqed
     - quantities
     - scipy
+    - xlwt
+    - MarkupSafe
+    - Jinja2
+    - argparse # [py26]
 
 test:
   requires:
