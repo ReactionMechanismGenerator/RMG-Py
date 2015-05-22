@@ -21,7 +21,6 @@ requirements:
     - boost ==1.56.0
     - rdkit
     - libgcc # [unix]
-    - python
     - numpy
     - matplotlib
     - rdkit
@@ -43,6 +42,7 @@ requirements:
     - libgcc # [unix]
     - python
     - numpy
+    - cython ==0.21
     - matplotlib
     - rdkit
     - pydas
@@ -64,8 +64,6 @@ test:
     - nose
   imports:
     - rmgpy
-  commands:
-    - nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 about:
   home: http://github.com/GreenGroup/RMG-Py
