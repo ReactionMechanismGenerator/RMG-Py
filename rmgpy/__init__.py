@@ -116,6 +116,7 @@ class Settings(dict):
             elif os.path.exists(os.path.join(working_dir, 'rmgrc')):
                 self.filename = os.path.join(working_dir, 'rmgrc')
             else:
+                return # fail silently, instead of raising the following error:
                 raise SettingsError('Could not find an RMG settings file to load!')
         
         # From here on we assume that we have identified the appropriate
