@@ -38,6 +38,8 @@ requirements:
     - coverage
     - guppy
     - gprof2dot
+    - cairo
+    - py2cairo
   run:
     - libgcc # [unix]
     - python
