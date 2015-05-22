@@ -30,6 +30,7 @@
 import os
 
 import logging
+import copy
 
 from rmgpy.qm.molecule import QMMolecule
 from rmgpy.qm.reaction import QMReaction
@@ -175,31 +176,32 @@ class QMCalculator():
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
         self.initialize()
+        settings = copy.deepcopy(self.settings)
         if self.settings.software == 'mopac':
             if self.settings.method == 'pm3':
-                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, settings)
             elif self.settings.method == 'pm6':
-                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM6(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM6(molecule, settings)
             elif self.settings.method == 'pm7':
-                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, settings)
             else:
-                raise Exception("Unknown QM method '{0}' for mopac".format(self.settings.method))
+                raise Exception("Unknown QM method '{0}' for mopac".format(settings.method))
         elif self.settings.software == 'gaussian':
             if self.settings.method == 'pm3':
-                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, settings)
             elif self.settings.method == 'pm6':
-                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM6(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM6(molecule, settings)
             elif self.settings.method == 'b3lyp':
-                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolB3LYP(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolB3LYP(molecule, settings)
             else:
-                raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
+                raise Exception("Unknown QM method '{0}' for gaussian".format(settings.method))
         elif self.settings.software == 'nwchem':
             if self.settings.method =='hf':
-                qm_molecule_calculator = rmgpy.qm.nwchem.NWChemMolHF(molecule, self.settings)
+                qm_molecule_calculator = rmgpy.qm.nwchem.NWChemMolHF(molecule, settings)
             else:
-                raise Exception("Unknown QM method '{0}' for nwchem".format(self.settings.method))
+                raise Exception("Unknown QM method '{0}' for nwchem".format(settings.method))
         else:
-            raise Exception("Unknown QM software '{0}'".format(self.settings.software))
+            raise Exception("Unknown QM software '{0}'".format(settings.software))
         thermo0 = qm_molecule_calculator.generateThermoData()
         return thermo0
     
