@@ -32,15 +32,15 @@ requirements:
     - markupsafe
     - jinja2
     - argparse # [py26]
-    - pyparsing # [win]
-    - pydot # [win]
+    - pyparsing # [not osx]
+    - pydot # [not osx]
     - nose
     - coverage
     - guppy
     - gprof2dot
     - cairo
     - py2cairo
-    - openbabel
+    - openbabel # [not osx]
   run:
     - libgcc # [unix]
     - python
@@ -56,15 +56,15 @@ requirements:
     - markupsafe
     - jinja2
     - argparse # [py26]
-    - pyparsing # [win]
-    - pydot # [win]
+    - pyparsing # [not osx]
+    - pydot # [not osx]
     - nose
     - coverage
     - guppy
     - gprof2dot
     - py2cairo
     - cairo
-    - openbabel
+    - openbabel # [not osx]
 test:
   requires:
     - nose
