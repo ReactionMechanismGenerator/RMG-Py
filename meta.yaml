@@ -33,7 +33,7 @@ requirements:
     - jinja2
     - argparse # [py26]
     - pyparsing # [not osx]
-    - pydot # [not osx]
+    - pydot # [win]
     - nose
     - coverage
     - guppy
@@ -57,7 +57,7 @@ requirements:
     - jinja2
     - argparse # [py26]
     - pyparsing # [not osx]
-    - pydot # [not osx]
+    - pydot # [win]
     - nose
     - coverage
     - guppy
