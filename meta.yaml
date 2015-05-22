@@ -20,6 +20,25 @@ requirements:
     - pydqed
     - boost ==1.56.0
     - rdkit
+    - libgcc # [unix]
+    - python
+    - numpy
+    - matplotlib
+    - rdkit
+    - pydas
+    - pydqed
+    - quantities
+    - scipy
+    - xlwt
+    - markupsafe
+    - jinja2
+    - argparse # [py26]
+    - pyparsing
+    - pydot
+    - nose
+    - coverage
+    - guppy
+    - gprof2dot
   run:
     - libgcc # [unix]
     - python
