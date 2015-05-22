@@ -31,10 +31,15 @@ requirements:
     - quantities
     - scipy
     - xlwt
-    - MarkupSafe
-    - Jinja2
+    - markupsafe
+    - jinja2
     - argparse # [py26]
-
+    - pyparsing
+    - pydot
+    - nose
+    - coverage
+    - guppy
+    - gprof2dot
 test:
   requires:
     - nose
