@@ -40,6 +40,7 @@ requirements:
     - gprof2dot
     - cairo
     - py2cairo
+    - openbabel
   run:
     - libgcc # [unix]
     - python
@@ -61,6 +62,9 @@ requirements:
     - coverage
     - guppy
     - gprof2dot
+    - py2cairo
+    - cairo
+    - openbabel
 test:
   requires:
     - nose
