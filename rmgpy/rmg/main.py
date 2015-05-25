@@ -683,11 +683,14 @@ class RMG:
     def getGitCommit(self):
         import subprocess
         from rmgpy import getPath
-        try:
-            return subprocess.check_output(['git', 'log',
-                                            '--format=%H%n%cd', '-1'],
-                                            cwd=getPath()).splitlines()
-        except:
+        if os.path.exists(os.path.join(getPath(),'..','.git')):
+            try:
+                return subprocess.check_output(['git', 'log',
+                                                '--format=%H%n%cd', '-1'],
+                                                cwd=getPath()).splitlines()
+            except:
+                return '', ''
+        else:
             return '', ''
     
     def logHeader(self, level=logging.INFO):
