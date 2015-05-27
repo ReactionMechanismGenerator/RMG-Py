@@ -43,8 +43,8 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 	git clone https://github.com/rdkit/rdkit.git
 	cd rdkit
 	export RDBASE=`pwd`
-  	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
-  	export PYTHONPATH=$PYTHONPATH:$RDBASE
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
+	export PYTHONPATH=$PYTHONPATH:$RDBASE
 	cd External/INCHI-API
 	./download-inchi.sh
 	cd ../../
@@ -67,7 +67,7 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 	git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
 	sudo pip install -r RMG-Py/requirements.txt
 	cd RMG-Py
-    make
+	make
 
 * Run an example: ::
 
