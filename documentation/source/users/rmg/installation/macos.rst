@@ -30,26 +30,26 @@ You will also need gfortran, Python, Numpy and Scipy. We typically install them 
 * Get the RMG-Py source code from GitHub::
 
 	cd ~/Code
-	git clone https://github.com/GreenGroup/RMG-database.git
-	git clone https://github.com/GreenGroup/RMG-Py.git
+	git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+	git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
 
 * Install the Python dependencies listed in the :file:`RMG-Py/requirements.txt` file using `pip` (do ``easy_install pip`` if you don't already have it)::
 
 	pip install -r RMG-Py/requirements.txt
 
-* Get and build `PyDQED <https://github.com/GreenGroup/PyDQED>`_::
+* Get and build `PyDQED <https://github.com/ReactionMechanismGenerator/PyDQED>`_::
 
 	cd ~/Code
-	git clone https://github.com/GreenGroup/PyDQED.git
+	git clone https://github.com/ReactionMechanismGenerator/PyDQED.git
 	cd PyDQED
 	export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
 	make
 	make install
 
-* Get and build `PyDAS <https://github.com/GreenGroup/PyDAS>`_::
+* Get and build `PyDAS <https://github.com/ReactionMechanismGenerator/PyDAS>`_::
 
 	cd ~/Code
-	git clone https://github.com/GreenGroup/PyDAS.git
+	git clone https://github.com/ReactionMechanismGenerator/PyDAS.git
 	cd PyDAS
 	export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
 	make
@@ -58,8 +58,8 @@ You will also need gfortran, Python, Numpy and Scipy. We typically install them 
 * Get the RMG-Database and get and build RMG-Py::
 
 	cd ~/Code
-	git clone git@github.com:GreenGroup/RMG-database.git
-	git clone git@github.com:GreenGroup/RMG-Py.git
+	git clone git@github.com:ReactionMechanismGenerator/RMG-database.git
+	git clone git@github.com:ReactionMechanismGenerator/RMG-Py.git
 	cd RMG-Py
 	make
 
