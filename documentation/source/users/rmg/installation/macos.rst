@@ -11,7 +11,9 @@ We recommend using a `Virtual Environment <http://docs.python-guide.org/en/lates
 but this is optional (without it you may need to add `sudo` before some commands to solve permission errors).
 
 You will also need gfortran, Python, Numpy and Scipy. We typically install them using 
-`homebrew-python <https://github.com/Homebrew/homebrew-python>`_  but other methods may work as well. For example::
+`homebrew-python <https://github.com/Homebrew/homebrew-python>`_  but other methods may work as well.
+
+* For example::
 
 	brew tap homebrew/python
 	brew install numpy
@@ -23,11 +25,26 @@ You will also need gfortran, Python, Numpy and Scipy. We typically install them 
 	brew update
 	brew install git
 
+* Optional (but recommended for Nitrogen-chemistry nomenclature): install `OpenBabel <http://www.openbabel.org>`_::
+
+	brew install open-babel --with-python --HEAD
+
+* Install `RDKit <http://www.rdkit.org>`_::
+
+	brew tap rdkit/rdkit
+	brew install rdkit --with-inchi
+	brew link --overwrite rdkit
+
+  You'll need to set an environment variable to use it, eg. put this in your `~/.bash_profile` file::
+	
+	export RDBASE=/usr/local/share/RDKit
+
+
 * Make a directory to put everything in::
 
 	mkdir ~/Code
 
-* Get the RMG-Py source code from GitHub::
+* Get the RMG-Py source code and the RMG-database from GitHub::
 
 	cd ~/Code
 	git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
@@ -55,23 +72,10 @@ You will also need gfortran, Python, Numpy and Scipy. We typically install them 
 	make
 	make install
 
-* Get the RMG-Database and get and build RMG-Py::
+* Build RMG-Py::
 
-	cd ~/Code
-	git clone git@github.com:ReactionMechanismGenerator/RMG-database.git
-	git clone git@github.com:ReactionMechanismGenerator/RMG-Py.git
-	cd RMG-Py
-	make
-
-* Install `RDKit <http://www.rdkit.org>`_::
-
-	brew tap rdkit/rdkit
-	brew install rdkit --with-inchi
-	brew link --overwrite rdkit
-
-  You'll need various environment variables set, eg. put this in your `~/.bash_profile` file::
-	
-	export RDBASE=/usr/local/share/RDKit
+	cd ~/Code/RMG-Py
+	make -j4
 
 * Run an example: ::
 
@@ -82,9 +86,10 @@ You will also need gfortran, Python, Numpy and Scipy. We typically install them 
   
   You can also use the Makefile targets to test and run examples: ::
 
+	cd ~/Code/RMG-Py/
 	make test
 	make eg1
 	make eg2
 
-To run with on-the-fly Quantum Mechanics calculations, you will also need 
-`MOPAC <http://openmopac.net/downloads.html>`_ or Gaussian.
+To run with on-the-fly Quantum Mechanics calculations, you will also need to install
+`MOPAC <http://openmopac.net/downloads.html>`_ or `Gaussian <http://www.gaussian.com>`_, then run `make QM`.
