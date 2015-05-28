@@ -38,7 +38,7 @@ Installing MEASURE
 
 MEASURE is installed automatically as part of the installation process for 
 RMG-Py. You can obtain a copy of RMG-Py from 
-http://github.com/GreenGroup/RMG-Py, either by downloading the current snapshot
+http://github.com/ReactionMechanismGenerator/RMG-Py, either by downloading the current snapshot
 or by cloning the repository using `git <http://git-scm.com/>`_. The latter is
 recommended so that you can easily keep up to date with new features and 
 bugfixes.

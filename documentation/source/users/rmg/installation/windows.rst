@@ -157,10 +157,10 @@ RMG
 * Download all RMG source packages: ::
 
 	cd /c
-	git clone git@github.com:GreenGroup/PyDAS.git
-	git clone git@github.com:GreenGroup/PyDQED.git
-	git clone git@github.com:GreenGroup/RMG-database.git
-	git clone git@github.com:GreenGroup/RMG-Py.git
+	git clone git@github.com:ReactionMechanismGenerator/PyDAS.git
+	git clone git@github.com:ReactionMechanismGenerator/PyDQED.git
+	git clone git@github.com:ReactionMechanismGenerator/RMG-database.git
+	git clone git@github.com:ReactionMechanismGenerator/RMG-Py.git
 
 * Build PyDAS by running the provided "make.bat" file, then install it: ::
 
