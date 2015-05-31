@@ -39,8 +39,8 @@ requirements:
     - guppy
     - gprof2dot
     - cairo
-    - openbabel # [not osx]
     - cairocffi
+    - openbabel
     - psutil
   run:
     - libgcc # [unix]
@@ -64,8 +64,8 @@ requirements:
     - guppy
     - gprof2dot
     - cairo
-    - openbabel # [not osx]
     - cairocffi
+    - openbabel
     - psutil
 test:
   requires:
