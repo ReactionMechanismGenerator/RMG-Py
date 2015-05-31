@@ -72,6 +72,8 @@ test:
     - nose
   imports:
     - rmgpy
+  commands:
+    - make -C $SRC_DIR test
 
 about:
   home: http://github.com/GreenGroup/RMG-Py
