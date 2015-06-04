@@ -212,7 +212,12 @@ class QchemLog:
                         frequencies = []
                         while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
                             if ' Frequency:' in line:
-                                frequencies.extend([float(d) for d in line.split()[-3:]])
+                                if len(line.split()) == 4:
+                                    frequencies.extend([float(d) for d in line.split()[-3:]])
+                                elif len(line.split()) == 3:
+                                    frequencies.extend([float(d) for d in line.split()[-2:]])
+                                elif len(line.split()) == 2:
+                                    frequencies.extend([float(d) for d in line.split()[-1:]])    
                             line = f.readline()
                         line = f.readline()
                         # If there is an imaginary frequency, remove it
