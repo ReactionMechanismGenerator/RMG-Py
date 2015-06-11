@@ -771,7 +771,22 @@ class GaussianTS(QMReaction, Gaussian):
             if not qst2:
                 notes = notes + 'QST3 needed, see {0}\n'.format(self.settings.fileStore)
                 return False, notes
-
+            
+    def checkComplete(self, filePath):
+        """
+        Check that an IRC output file is complete.
+        
+        Incomplete IRC files may exist from previous runs, due to the job being prematurely terminated.
+        This checks to ensure the job has been completed.
+        """
+        f = open(filePath, 'r')
+        allLines = f.readlines()
+        for line in allLines[-10]:
+            if line.startswith(' Normal termination') or line.startswith(' Error termination'):
+                return True
+        
+        return False
+    
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.

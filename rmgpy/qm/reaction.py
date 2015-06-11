@@ -496,13 +496,23 @@ class QMReaction:
         """
         Conduct the optimization step of the transition state search.
         """
+        if os.path.exists(self.outputFilePath):
+            complete = self.checkComplete(self.outputFilePath)
+            
+            if complete:
+                converged, internalCoord = self.verifyOutputFile()
+            else:
+                # Delete the output and checkpoint files so we redo the calc
+                os.remove(self.outputFilePath)
+                checkpointFile = os.path.join(self.settings.fileStore, self.uniqueID + ".chk")
+                assert os.path.exists(checkpointFile)
+                os.remove(checkpointFile) # Checkpoint file path
+        
         if not os.path.exists(self.outputFilePath):
             print "Optimizing TS once"
             self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optEst)
             converged, internalCoord = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-        else:
-            converged, internalCoord = self.verifyOutputFile()
 
         if internalCoord and not converged:
             notes = 'Internal coordinate error, trying cartesian\n'
@@ -517,11 +527,22 @@ class QMReaction:
         """
         Conduct the path analysis calculations and validate the transition state.
         """
+        if os.path.exists(self.ircOutputFilePath):
+            # Check if IRC is complete
+            complete = self.checkComplete(self.ircOutputFilePath)
+            
+            if complete:
+                rightTS = self.verifyIRCOutputFile()
+            else:
+                # Delete the IRC and checkpoint files so we redo the calc
+                os.remove(self.ircOutputFilePath)
+                checkpointFile = os.path.join(self.settings.fileStore, self.uniqueID + ".chk")
+                assert os.path.exists(checkpointFile)
+                os.remove(checkpointFile) # Checkpoint file path
+            
         if not os.path.exists(self.ircOutputFilePath):
             self.createIRCFile()
             rightTS = self.runIRC()
-        else:
-            rightTS = self.verifyIRCOutputFile()
 
         if rightTS:
             return True
