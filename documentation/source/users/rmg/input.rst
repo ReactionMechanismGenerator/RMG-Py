@@ -265,20 +265,41 @@ When using automated time stepping, it is also possible to perform mechanism gen
 The example below shows how to set up pruning parameters::
 	
 	model(
-	    toleranceKeepInEdge=0.0,
-	    toleranceMoveToCore=0.5,
-	    toleranceInterruptSimulation=0.5,
-	    maximumEdgeSpecies=100000
+	    toleranceKeepInEdge=,
+	    toleranceMoveToCore=,
+	    toleranceInterruptSimulation=,
+	    maximumEdgeSpecies=
 	)
 
-:ref:`toleranceKeepInEdge` indicates how low the edge flux ratio for a species must get before the species is pruned (removed) from the edge.
-:ref:`toleranceMoveToCore` indicates how high the edge flux ratio for a species must get to enter the core model.
-:ref:`toleranceInterruptSimulation` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the :ref:`terminationConversion` or 
-:ref:`terminationTime`). Pruning won’t occur if the simulation is interrupted before reaching the goal criteria, so set this high to increase pruning opportunities. 
-:ref:`maximumEdgeSpecies` indicates the upper limit for the size of the edge.
+``toleranceKeepInEdge`` indicates how low the edge flux ratio for a species must get before the species is pruned (removed) from the edge.
+``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. (This tolerance is not designed for pruning but for controlling the accuracy of final meodels. The lower tolMoveToCore the higher accuracy final models have.)
+``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or
+``terminationTime``). Pruning won’t occur if the simulation is interrupted before reaching the goal criteria, so set this high to increase pruning opportunities.
+``maximumEdgeSpecies`` indicates the upper limit for the size of the edge.
 
-When using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without first exceeding the termination tolerance. Therefore, you may find that RMG is not pruning even though the model edge size exceeds :ref:`maximumEdgeSpecies`. In order to increase the likelihood of pruning in such cases, you can try increasing :ref:`toleranceInterruptSimulation` to an arbitrarily high value. Alternatively, if you are using a conversion goal, because reaction systems may reach equilibrium below the goal conversion, it may be helpful to reduce the goal conversion or switch to a goal reaction time.
+When using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without first exceeding the termination tolerance. Therefore, you may find that RMG is not pruning even though the model edge size exceeds ``maximumEdgeSpecies``. In order to increase the likelihood of pruning in such cases, you can try increasing ``toleranceInterruptSimulation`` to an arbitrarily high value. Alternatively, if you are using a conversion goal, because reaction systems may reach equilibrium below the goal conversion, it may be helpful to reduce the goal conversion or switch to a goal reaction time.
 
+A typical set of parameters for pruning is::
+
+	model(
+	    toleranceKeepInEdge=0.05,
+	    toleranceMoveToCore=0.5,
+	    toleranceInterruptSimulation=1e8,
+	    maximumEdgeSpecies=200000
+	)
+
+Based on pruning case study, ``toleranceKeepInEdge`` should not be larger than 10% of ``toleranceMoveToCore``. In order to always enable pruning, ``toleranceInterruptSimulation`` should be set as a high value, e.g. 1e8. ``maximumEdgeSpecies`` can be adjusted based on user's RAM size. Usually 200000 edge species would cause memory shortage of 8GB computer, setting ``maximumEdgeSpecies = 200000 (or lower values)`` could effectively prevent memory crash.
+
+As a contrast, a typical set of parameters for non-pruning is::
+
+	model(
+	    toleranceKeepInEdge=0,
+	    toleranceMoveToCore=0.5,
+	    toleranceInterruptSimulation=0.5,
+	    maximumEdgeSpecies=200000
+	)
+
+where ``toleranceKeepInEdge`` is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. ``toleranceInterruptSimulation`` equals to ``toleranceMoveToCore`` so that ODE simulation get interrupted once discovering a new core species. Because of always interrupted ODE simulation, no pruning is performed, ``maximumEdgeSpecies`` is ignored and can be set to any value.
 
 Please find more details about pruning at :ref:`Pruning Theory <prune>`.
 
