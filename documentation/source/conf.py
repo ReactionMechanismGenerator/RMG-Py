@@ -186,7 +186,7 @@ html_copy_source = True
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'RMGPy.tex', u'RMG Py Documentation',
+  ('contents', 'RMGPy.tex', u'RMG Py Documentation',
    u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
 ]
 
