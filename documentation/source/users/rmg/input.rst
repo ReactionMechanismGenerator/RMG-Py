@@ -103,7 +103,7 @@ Seed Mechanisms
 The next section of the :file:`input.py` file specifies which, if any, 
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
-addition to the species that are listed in the :ref:`List of species` section.
+addition to the species that are listed in the :ref:`species` section.
 
 For details of the kinetics libraries included with RMG that can be used as a seed mechanism,
 see :ref:`reactionlibraries`.
@@ -351,7 +351,7 @@ and works reasonably well while running more rapidly. The latter
 utilizes the steady-state/reservoir-state approach of Green and Bhatti [Green2007]_, 
 and is more theoretically sound but more expensive.
 
-The pressure dependence block should specify the following ::
+The pressure dependence block should specify the following:
 
 
 Method used for estimating pressure dependent kinetics
@@ -454,7 +454,10 @@ The following is an example of pressure dependence options ::
 		maximumAtoms=16,
 	)
 
-Regarding the number of polynomial coeffients for Chebyshev interpolated rates, plese refer to the :ref:`documentation <rmgpy.kinetics.Chebyshev>`. The number of pressures and temperature coefficents should always be smaller than the respective number of user-specified temperatures and pressures. 
+Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
+plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
+The number of pressures and temperature coefficents should always be smaller 
+than the respective number of user-specified temperatures and pressures. 
 
 Miscellaneous Options
 ===================== 
