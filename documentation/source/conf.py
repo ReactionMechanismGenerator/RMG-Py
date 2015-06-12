@@ -200,8 +200,8 @@ latex_documents = [
 
 # Additional stuff for the LaTeX preamble.
 latex_preamble = """
-\usepackage[version=3]{mhchem}
-
+\\usepackage[version=3]{mhchem}
+\\DeclareUnicodeCharacter{0394}{\\ensuremath{\\Delta}}
 \\renewcommand{\\vector}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
 \\renewcommand{\\matrix}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
 """
