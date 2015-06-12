@@ -5,3 +5,4 @@ channels:
   - rdkit
 dependencies:
   - rmg
+  - sphinx
