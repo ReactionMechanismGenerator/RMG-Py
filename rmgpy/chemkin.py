@@ -1700,24 +1700,26 @@ def saveSpeciesDictionary(path, species):
                 raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
 
 def saveTransportFile(path, species):
-    """
+    r"""
     Save a Chemkin transport properties file to `path` on disk containing the
     transport properties of the given list of `species`.
     
+    The syntax is from the Chemkin TRANSPORT manual.
     The first 16 columns in each line of the database are reserved for the species name
-     (Presently CHEMKIN is programmed to allow no more than 16-character names.) 
-     Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:
+    (Presently CHEMKIN is programmed to allow no more than 16-character names.) 
+    Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:
+    
     1. An index indicating whether the molecule has a monatomic, linear or nonlinear geometrical configuration.
        If the index is 0, the molecule is a single atom. 
        If the index is 1 the molecule is linear, and 
        if it is 2, the molecule is nonlinear.
-    2. The Lennard-Jones potential well depth  $\epsilon / k_B$ in Kelvins.
-    3. The Lennard-Jones collision diameter $\sigma$in Angstroms.
-    4. The dipole moment $\mu$ in Debye. Note: a Debye is $10^{-18} cm^{3/2}erg^{1/2}$.
-    5. The polarizability $\alpha$ in cubic Angstroms.
-    6. The rotational relaxation collision number $Z_rot$ at 298K.
+    2. The Lennard-Jones potential well depth  :math:`\epsilon / k_B` in Kelvins.
+    3. The Lennard-Jones collision diameter :math:`\sigma` in Angstroms.
+    4. The dipole moment :math:`\mu` in Debye. Note: a Debye is :math:`10^{-18} cm^{3/2}erg^{1/2}`.
+    5. The polarizability :math:`\alpha` in cubic Angstroms.
+    6. The rotational relaxation collision number :math:`Z_rot` at 298K.
     7. After the last number, a comment field can be enclosed in parenthesis.
-    (from the chemkin TRANSPORT manual)
+
     """
     with open(path, 'w') as f:
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
