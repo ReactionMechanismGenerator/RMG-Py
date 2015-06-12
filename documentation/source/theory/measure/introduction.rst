@@ -81,7 +81,7 @@ pyrolysis and combustion [Wong2003]_.
     represents a count of the internal degrees of freedom. Over a wide
     variety of conditions of practical interest, even very large
     molecules exhibit significant pressure dependence. Figure adapted from
-    [Wong2003]_.
+    Wong, Matheu and Green (2003).
 
 .. [Wong2003] B. M. Wong, D. M. Matheu, and W. H. Green. *J. Phys. Chem. A* 
    **107**, p. 6206-6211 (2003).
