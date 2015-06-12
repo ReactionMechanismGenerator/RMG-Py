@@ -8,7 +8,7 @@
     
     <title>3.3. MacOS X Installation &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
     <link rel="up" title="3. Installation" href="index.html" />
     <link rel="next" title="3.4. Quantum Mechanical Calculations" href="QMthermo.html" />
     <link rel="prev" title="3.2. Linux Installation" href="linux.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,9 +56,9 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">3. Installation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">3. Installation</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -70,63 +70,24 @@ The following instructions assume that you have <a class="reference external" hr
 We recommend using a <a class="reference external" href="http://docs.python-guide.org/en/latest/dev/virtualenvs/">Virtual Environment</a> for your Python packages,
 but this is optional (without it you may need to add <cite>sudo</cite> before some commands to solve permission errors).</p>
 <p>You will also need gfortran, Python, Numpy and Scipy. We typically install them using
-<a class="reference external" href="https://github.com/Homebrew/homebrew-python">homebrew-python</a>  but other methods may work as well. For example:</p>
+<a class="reference external" href="https://github.com/Homebrew/homebrew-python">homebrew-python</a>  but other methods may work as well.</p>
+<ul>
+<li><p class="first">For example:</p>
 <div class="highlight-python"><div class="highlight"><pre>brew tap homebrew/python
 brew install numpy
 brew install scipy
 brew install matplotlib --with-cairo --with-ghostscript --with-ticl-tk --with-pyqt --with-pygtk --withgtk3
 </pre></div>
 </div>
-<ul>
+</li>
 <li><p class="first">Install git if you don&#8217;t already have it (you may also like some graphical interfaces like <a class="reference external" href="https://github.com/mxcl/gitx/downloads">mxcl&#8217;s GitX</a> or <a class="reference external" href="http://mac.github.com/">GitHub for Mac</a>):</p>
 <div class="highlight-python"><div class="highlight"><pre>brew update
 brew install git
 </pre></div>
 </div>
 </li>
-<li><p class="first">Make a directory to put everything in:</p>
-<div class="highlight-python"><div class="highlight"><pre>mkdir ~/Code
-</pre></div>
-</div>
-</li>
-<li><p class="first">Get the RMG-Py source code from GitHub:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone https://github.com/GreenGroup/RMG-database.git
-git clone https://github.com/GreenGroup/RMG-Py.git
-</pre></div>
-</div>
-</li>
-<li><p class="first">Install the Python dependencies listed in the <tt class="file docutils literal"><span class="pre">RMG-Py/requirements.txt</span></tt> file using <cite>pip</cite> (do <tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">pip</span></tt> if you don&#8217;t already have it):</p>
-<div class="highlight-python"><div class="highlight"><pre>pip install -r RMG-Py/requirements.txt
-</pre></div>
-</div>
-</li>
-<li><p class="first">Get and build <a class="reference external" href="https://github.com/GreenGroup/PyDQED">PyDQED</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone https://github.com/GreenGroup/PyDQED.git
-cd PyDQED
-export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
-make
-make install
-</pre></div>
-</div>
-</li>
-<li><p class="first">Get and build <a class="reference external" href="https://github.com/GreenGroup/PyDAS">PyDAS</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone https://github.com/GreenGroup/PyDAS.git
-cd PyDAS
-export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
-make
-make install
-</pre></div>
-</div>
-</li>
-<li><p class="first">Get the RMG-Database and get and build RMG-Py:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone git@github.com:GreenGroup/RMG-database.git
-git clone git@github.com:GreenGroup/RMG-Py.git
-cd RMG-Py
-make
+<li><p class="first">Optional (but recommended for Nitrogen-chemistry nomenclature): install <a class="reference external" href="http://www.openbabel.org">OpenBabel</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>brew install open-babel --with-python --HEAD
 </pre></div>
 </div>
 </li>
@@ -136,8 +97,51 @@ brew install rdkit --with-inchi
 brew link --overwrite rdkit
 </pre></div>
 </div>
-<p>You&#8217;ll need various environment variables set, eg. put this in your <cite>~/.bash_profile</cite> file:</p>
+<p>You&#8217;ll need to set an environment variable to use it, eg. put this in your <cite>~/.bash_profile</cite> file:</p>
 <div class="highlight-python"><div class="highlight"><pre>export RDBASE=/usr/local/share/RDKit
+</pre></div>
+</div>
+</li>
+<li><p class="first">Make a directory to put everything in:</p>
+<div class="highlight-python"><div class="highlight"><pre>mkdir ~/Code
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get the RMG-Py source code and the RMG-database from GitHub:</p>
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
+git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
+</pre></div>
+</div>
+</li>
+<li><p class="first">Install the Python dependencies listed in the <code class="file docutils literal"><span class="pre">RMG-Py/requirements.txt</span></code> file using <cite>pip</cite> (do <code class="docutils literal"><span class="pre">easy_install</span> <span class="pre">pip</span></code> if you don&#8217;t already have it):</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install -r RMG-Py/requirements.txt
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get and build <a class="reference external" href="https://github.com/ReactionMechanismGenerator/PyDQED">PyDQED</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
+git clone https://github.com/ReactionMechanismGenerator/PyDQED.git
+cd PyDQED
+export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
+make
+make install
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get and build <a class="reference external" href="https://github.com/ReactionMechanismGenerator/PyDAS">PyDAS</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
+git clone https://github.com/ReactionMechanismGenerator/PyDAS.git
+cd PyDAS
+export LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a))
+make
+make install
+</pre></div>
+</div>
+</li>
+<li><p class="first">Build RMG-Py:</p>
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code/RMG-Py
+make -j4
 </pre></div>
 </div>
 </li>
@@ -148,22 +152,23 @@ python rmg.py examples/rmg/minimal/input.py
 </div>
 <p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
 <p>You can also use the Makefile targets to test and run examples:</p>
-<div class="highlight-python"><div class="highlight"><pre>make test
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code/RMG-Py/
+make test
 make eg1
 make eg2
 </pre></div>
 </div>
 </li>
 </ul>
-<p>To run with on-the-fly Quantum Mechanics calculations, you will also need
-<a class="reference external" href="http://openmopac.net/downloads.html">MOPAC</a> or Gaussian.</p>
+<p>To run with on-the-fly Quantum Mechanics calculations, you will also need to install
+<a class="reference external" href="http://openmopac.net/downloads.html">MOPAC</a> or <a class="reference external" href="http://www.gaussian.com">Gaussian</a>, then run <cite>make QM</cite>.</p>
 </div>
 
 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -176,10 +181,10 @@ make eg2
                         title="next chapter">3.4. Quantum Mechanical Calculations</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/installation/macos.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/macos.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -196,9 +201,9 @@ make eg2
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

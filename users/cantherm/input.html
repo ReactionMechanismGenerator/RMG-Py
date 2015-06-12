@@ -8,7 +8,7 @@
     
     <title>3. Creating Input Files &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="CanTherm User’s Guide" href="index.html" />
     <link rel="next" title="4. Running CanTherm" href="running.html" />
     <link rel="prev" title="2. Installation" href="installation.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -74,20 +74,20 @@ either single or double quotes.</p>
 </div>
 <div class="section" id="model-chemistry">
 <h2>3.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
-<p>The first item in the input file should be a <tt class="docutils literal"><span class="pre">modelChemistry()</span></tt> function,
+<p>The first item in the input file should be a <code class="docutils literal"><span class="pre">modelChemistry()</span></code> function,
 which accepts a string describing the model chemistry. Currently the
 allowed model chemistries are:
-<tt class="docutils literal"><span class="pre">'CBS-QB3'</span></tt>
-<tt class="docutils literal"><span class="pre">'G3'</span></tt>
-<tt class="docutils literal"><span class="pre">'M08SO/MG3S*'</span></tt> * indicates that the grid size used in the [QChem] electronic structure calculation utilized 75 radial points and 434 angular points
-<tt class="docutils literal"><span class="pre">'CCSD(T)-F12/cc-pVnZ-F12'</span></tt>  n = D, T, Q
-<tt class="docutils literal"><span class="pre">'CCSD(T)-F12/aug-cc-pVnZ-F12'</span></tt>  n = D, T, Q
-<tt class="docutils literal"><span class="pre">'MP2_rmp2_pVnZ'</span></tt>  n = D, T, Q
-<tt class="docutils literal"><span class="pre">'FCI/cc-pVnZ'</span></tt>  n = D, T, Q
-<tt class="docutils literal"><span class="pre">'DFT_G03_b3lyp'</span></tt>  a B3LYP calculation with a moderately large basis set
-<tt class="docutils literal"><span class="pre">'BMK/cbsb7'</span></tt> or  <tt class="docutils literal"><span class="pre">'BMK/6-311G(2d,d,p)'</span></tt></p>
+<code class="docutils literal"><span class="pre">'CBS-QB3'</span></code>
+<code class="docutils literal"><span class="pre">'G3'</span></code>
+<code class="docutils literal"><span class="pre">'M08SO/MG3S*'</span></code> * indicates that the grid size used in the [QChem] electronic structure calculation utilized 75 radial points and 434 angular points
+<code class="docutils literal"><span class="pre">'CCSD(T)-F12/cc-pVnZ-F12'</span></code>  n = D, T, Q
+<code class="docutils literal"><span class="pre">'CCSD(T)-F12/aug-cc-pVnZ-F12'</span></code>  n = D, T, Q
+<code class="docutils literal"><span class="pre">'MP2_rmp2_pVnZ'</span></code>  n = D, T, Q
+<code class="docutils literal"><span class="pre">'FCI/cc-pVnZ'</span></code>  n = D, T, Q
+<code class="docutils literal"><span class="pre">'DFT_G03_b3lyp'</span></code>  a B3LYP calculation with a moderately large basis set
+<code class="docutils literal"><span class="pre">'BMK/cbsb7'</span></code> or  <code class="docutils literal"><span class="pre">'BMK/6-311G(2d,d,p)'</span></code></p>
 <p>CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
-states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for <tt class="docutils literal"><span class="pre">thermo()</span></tt> calculations (see below). The example below
+states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for <code class="docutils literal"><span class="pre">thermo()</span></code> calculations (see below). The example below
 demonstrates how to specify CBS-QB3 as a model chemistry:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">modelChemistry</span><span class="p">(</span><span class="s">&quot;CBS-QB3&quot;</span><span class="p">)</span>
 </pre></div>
@@ -95,7 +95,7 @@ demonstrates how to specify CBS-QB3 as a model chemistry:</p>
 </div>
 <div class="section" id="species">
 <h2>3.3. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
-<p>Each species of interest must be specified using a <tt class="docutils literal"><span class="pre">species()</span></tt> function,
+<p>Each species of interest must be specified using a <code class="docutils literal"><span class="pre">species()</span></code> function,
 which accepts the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -108,43 +108,43 @@ which accepts the following parameters:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">label</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">label</span></code></td>
 <td>A unique string label used as an identifier</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">geomLog</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">geomLog</span></code></td>
 <td>The path to the Gaussian log file containing the optimized geometry</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">statesLog</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">statesLog</span></code></td>
 <td>The path to the Gaussian log file containing the computed frequencies</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">extSymmetry</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">extSymmetry</span></code></td>
 <td>The external symmetry number for rotation</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">freqScaleFactor</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">freqScaleFactor</span></code></td>
 <td>A factor by which to scale all frequencies</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">linear</span></tt></td>
-<td><tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is linear, <tt class="docutils literal"><span class="pre">False</span></tt> if not</td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">linear</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code> if the molecule is linear, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">rotors</span></tt></td>
-<td>A list of <tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></tt> objects describing the hindered rotors</td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">rotors</span></code></td>
+<td>A list of <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></code> objects describing the hindered rotors</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">atoms</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">atoms</span></code></td>
 <td>A dict associating atom symbols with the number of each atom in the molecule</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">bonds</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">bonds</span></code></td>
 <td>A dict associating bond types with the number of each bond in the molecule</td>
 </tr>
 </tbody>
 </table>
 <p>The geometry and states log files can be identical if you computed them in the
-same Gaussian output. Allowed atom symbols for the <tt class="docutils literal"><span class="pre">atoms</span></tt> parameter are
-<tt class="docutils literal"><span class="pre">'C'</span></tt>, <tt class="docutils literal"><span class="pre">'H'</span></tt>, <tt class="docutils literal"><span class="pre">'N'</span></tt>, <tt class="docutils literal"><span class="pre">'O'</span></tt>, and <tt class="docutils literal"><span class="pre">'P'</span></tt>. Allowed bond types for the
-<tt class="docutils literal"><span class="pre">bonds</span></tt> parameter are <tt class="docutils literal"><span class="pre">'C-H'</span></tt>, <tt class="docutils literal"><span class="pre">'C-C'</span></tt>, <tt class="docutils literal"><span class="pre">'C=C'</span></tt>, <tt class="docutils literal"><span class="pre">'C#C'</span></tt>, <tt class="docutils literal"><span class="pre">'O-H'</span></tt>,
-<tt class="docutils literal"><span class="pre">'C-O'</span></tt>, <tt class="docutils literal"><span class="pre">'C-O'</span></tt>, <tt class="docutils literal"><span class="pre">'C=O'</span></tt>, <tt class="docutils literal"><span class="pre">'N#N'</span></tt>, <tt class="docutils literal"><span class="pre">'O=O'</span></tt>, <tt class="docutils literal"><span class="pre">'H-H'</span></tt>, and
-<tt class="docutils literal"><span class="pre">'C#N'</span></tt>. In both cases you can omit atoms and bonds not present in your
+same Gaussian output. Allowed atom symbols for the <code class="docutils literal"><span class="pre">atoms</span></code> parameter are
+<code class="docutils literal"><span class="pre">'C'</span></code>, <code class="docutils literal"><span class="pre">'H'</span></code>, <code class="docutils literal"><span class="pre">'N'</span></code>, <code class="docutils literal"><span class="pre">'O'</span></code>, and <code class="docutils literal"><span class="pre">'P'</span></code>. Allowed bond types for the
+<code class="docutils literal"><span class="pre">bonds</span></code> parameter are <code class="docutils literal"><span class="pre">'C-H'</span></code>, <code class="docutils literal"><span class="pre">'C-C'</span></code>, <code class="docutils literal"><span class="pre">'C=C'</span></code>, <code class="docutils literal"><span class="pre">'C#C'</span></code>, <code class="docutils literal"><span class="pre">'O-H'</span></code>,
+<code class="docutils literal"><span class="pre">'C-O'</span></code>, <code class="docutils literal"><span class="pre">'C-O'</span></code>, <code class="docutils literal"><span class="pre">'C=O'</span></code>, <code class="docutils literal"><span class="pre">'N#N'</span></code>, <code class="docutils literal"><span class="pre">'O=O'</span></code>, <code class="docutils literal"><span class="pre">'H-H'</span></code>, and
+<code class="docutils literal"><span class="pre">'C#N'</span></code>. In both cases you can omit atoms and bonds not present in your
 species, and their counts will be automatically set to zero.</p>
-<p>Each <tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></tt> object requires the following parameters:</p>
+<p>Each <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></code> object requires the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
@@ -156,16 +156,16 @@ species, and their counts will be automatically set to zero.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">scanLog</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">scanLog</span></code></td>
 <td>The path to the Gaussian/Qchem log file containing the scan</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">pivots</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">pivots</span></code></td>
 <td>The indices of the atoms in the hindered rotor torsional bond</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">top</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">top</span></code></td>
 <td>The indices of all atoms on one side of the torsional bond (including the pivot atom)</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">symmetry</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">symmetry</span></code></td>
 <td>The symmetry number for the torsional rotation</td>
 </tr>
 </tbody>
@@ -187,13 +187,13 @@ species, and their counts will be automatically set to zero.</p>
 </pre></div>
 </div>
 <p>Note that the atoms identified within the rotor section should correspond to the geometry indicated by
-<tt class="docutils literal"><span class="pre">geomLog</span></tt>.</p>
+<code class="docutils literal"><span class="pre">geomLog</span></code>.</p>
 </div>
 <div class="section" id="transition-state">
 <h2>3.4. Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
 <p>Each transition state of interest must be specified using a
-<tt class="docutils literal"><span class="pre">transitionState()</span></tt> function, which accepts exactly the same parameters as
-the <tt class="docutils literal"><span class="pre">species()</span></tt> function described above. This is only required if you wish
+<code class="docutils literal"><span class="pre">transitionState()</span></code> function, which accepts exactly the same parameters as
+the <code class="docutils literal"><span class="pre">species()</span></code> function described above. This is only required if you wish
 to perform a kinetics computation.</p>
 <p>The following is an example of a typical transition state item:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">transitionState</span><span class="p">(</span>
@@ -212,7 +212,7 @@ to perform a kinetics computation.</p>
 </div>
 <div class="section" id="reaction">
 <h2>3.5. Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h2>
-<p>Each reaction of interest must be specified using a <tt class="docutils literal"><span class="pre">reaction()</span></tt> function,
+<p>Each reaction of interest must be specified using a <code class="docutils literal"><span class="pre">reaction()</span></code> function,
 which accepts the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -225,16 +225,16 @@ which accepts the following parameters:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">label</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">label</span></code></td>
 <td>A unique string label used as an identifier</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">reactants</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">reactants</span></code></td>
 <td>A list of strings indicating the labels of the reactant species</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">products</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">products</span></code></td>
 <td>A list of strings indicating the labels of the product species</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">transitionState</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">transitionState</span></code></td>
 <td>The string label of the transition state</td>
 </tr>
 </tbody>
@@ -255,25 +255,25 @@ quantum tunneling factor.</p>
 </div>
 <div class="section" id="thermodynamics-computations">
 <h2>3.6. Thermodynamics Computations<a class="headerlink" href="#thermodynamics-computations" title="Permalink to this headline">¶</a></h2>
-<p>Use a <tt class="docutils literal"><span class="pre">thermo()</span></tt> function to compute the thermodynamic parameters for a
+<p>Use a <code class="docutils literal"><span class="pre">thermo()</span></code> function to compute the thermodynamic parameters for a
 species. Pass the string label of the species you wish to compute the
 thermodynamic parameters for and the type of thermodynamics model to
-generate (either <tt class="docutils literal"><span class="pre">'Wilhoit'</span></tt> or &#8216;&#8217;<cite>NASA</cite>&#8216;&#8217; for a Wilhoit polynomial
+generate (either <code class="docutils literal"><span class="pre">'Wilhoit'</span></code> or &#8216;&#8217;<cite>NASA</cite>&#8216;&#8217; for a Wilhoit polynomial
 model or NASA polynomial model). A table of thermodynamic parameters will
 also be displayed in the output file.</p>
-<p>Below is a typical <tt class="docutils literal"><span class="pre">thermo()</span></tt> function:</p>
+<p>Below is a typical <code class="docutils literal"><span class="pre">thermo()</span></code> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s">&#39;Wilhoit&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="kinetics-computations">
 <h2>3.7. Kinetics Computations<a class="headerlink" href="#kinetics-computations" title="Permalink to this headline">¶</a></h2>
-<p>Use a <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function to compute the high-pressure limit kinetic parameters for a
+<p>Use a <code class="docutils literal"><span class="pre">kinetics()</span></code> function to compute the high-pressure limit kinetic parameters for a
 reaction.  If desired, define a desired temperature range and number of temperatures
 at which the high-pressure rate coefficient will be tabulated and saved to
 the outupt file. 3-parameter modified Arrhenius coefficients will automatically be fit
 to the computed rate coefficients. The quantum tunneling factor will also be displayed</p>
-<p>Below is a typical <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function:</p>
+<p>Below is a typical <code class="docutils literal"><span class="pre">kinetics()</span></code> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
 <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
@@ -290,12 +290,15 @@ to the computed rate coefficients. The quantum tunneling factor will also be dis
 <h2>3.8. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
-in the <tt class="docutils literal"><span class="pre">examples</span></tt> directory.</p>
+in the <code class="docutils literal"><span class="pre">examples</span></code> directory.</p>
 </div>
 <div class="section" id="troubleshooting-and-faqs">
 <h2>3.9. Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
 <p>1) The network that CanTherm generated and the resulting pdf file show abnormally large
 absolute values. What&#8217;s going on?</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/cantherm/input.rst</tt>, line 194)</p>
+Unexpected indentation.</div>
 <blockquote>
 <div>This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).</div></blockquote>
 </div>
@@ -305,7 +308,7 @@ absolute values. What&#8217;s going on?</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -334,10 +337,10 @@ absolute values. What&#8217;s going on?</p>
                         title="next chapter">4. Running CanTherm</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/cantherm/input.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/cantherm/input.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -354,9 +357,9 @@ absolute values. What&#8217;s going on?</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

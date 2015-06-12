@@ -8,7 +8,7 @@
     
     <title>8. Species Representation &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="9. Group Representation" href="group.html" />
     <link rel="prev" title="7. Analyzing the Output Files" href="output.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,22 +56,22 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="species-representation">
 <span id="species"></span><h1>8. Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this headline">¶</a></h1>
 <p>Species objects in RMG contain a variety of attributes, including user given names,
-thermochemistry, as well as structural isomers.  See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><em>rmgpy.species.Species</em></a> class
+thermochemistry, as well as structural isomers.  See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><span>rmgpy.species.Species</span></a> class
 documentation for more information.</p>
 <p>RMG considers each species to be unique, and comprised of a set of molecular structural
 isomers, including resonance isomers.  RMG uses the list of resonance isomers to
 compare whether two species are the same. Each molecular structure is stored in RMG using
 graph representations, using vertices and edges, where the vertices are the atoms and the
 edges are the bonds.  This form of representation is known as an adjacency list.  For
-more information on adjacency lists, see the <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><em>Adjacency Lists</em></a> page.</p>
+more information on adjacency lists, see the <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span>Adjacency Lists</span></a> page.</p>
 <p>Species objects in the input file can also be constructed using other common representations
 such as SMILES, SMARTS, and InChIs.  The following can all be used to represent the methane
 species:</p>
@@ -127,7 +127,7 @@ for singlet oxygen it represents the reverse of a disproportionation reaction.</
 oxygen-related chemistry that was present in RMG databases consistent with the
 single-bonded biradical representation.</p>
 <p>Conversion between triplet and singlet forms is possible through the primary
-reaction library <tt class="docutils literal"><span class="pre">OxygenSingTrip</span></tt>; the reactions involved are very slow, however,
+reaction library <code class="docutils literal"><span class="pre">OxygenSingTrip</span></code>; the reactions involved are very slow, however,
 and are likely to be absent from any mechanisms generated. At this point, no other
 reactions of singlet oxygen have been included in RMG.</p>
 </div>
@@ -137,7 +137,7 @@ reactions of singlet oxygen have been included in RMG.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -158,10 +158,10 @@ reactions of singlet oxygen have been included in RMG.</p>
                         title="next chapter">9. Group Representation</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/species.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/species.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -178,9 +178,9 @@ reactions of singlet oxygen have been included in RMG.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

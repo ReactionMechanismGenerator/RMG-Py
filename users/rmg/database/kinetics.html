@@ -8,7 +8,7 @@
     
     <title>10.3. Kinetics Database &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
     <link rel="up" title="10. Databases" href="index.html" />
     <link rel="next" title="10.4. Database Modification" href="modification.html" />
     <link rel="prev" title="10.2. Thermo Database" href="thermo.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,15 +56,15 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="kinetics-database">
 <span id="kineticsdatabase"></span><h1>10.3. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
-<p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><em>Modifying the Kinetics Database</em></a> for
+<p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span>Modifying the Kinetics Database</span></a> for
 instructions on modifying the database.</p>
 <p>Pressure independent reaction rates in RMG are calculated using a modified
 Arrhenius equation, designating the reaction coefficient as <span class="math">\(k(T)\)</span> at
@@ -190,9 +190,9 @@ reaction. A template exact match is usually accurate within about one order
 of magnitude. When there is no kinetics available for for the template in
 either the training set or rules, the kinetics are averaged from the children
 nodes as an estimate. In these cases, the kinetic parameters are much less reliable.
-For more information on the estimation algorithm see <a class="reference internal" href="../kinetics.html#kinetics"><em>Kinetics Estimation</em></a>.</p>
+For more information on the estimation algorithm see <a class="reference internal" href="../kinetics.html#kinetics"><span>Kinetics Estimation</span></a>.</p>
 <p>The training set can be modified in training.py and the rules can be modified in
-rules.py. For more information on modification see <a class="reference internal" href="modification.html#kinetic-training-set"><em>Adding Training Reactions</em></a> and <a class="reference internal" href="modification.html#kinetic-rules"><em>Adding Kinetic Rules</em></a>.</p>
+rules.py. For more information on modification see <a class="reference internal" href="modification.html#kinetic-training-set"><span>Adding Training Reactions</span></a> and <a class="reference internal" href="modification.html#kinetic-rules"><span>Adding Kinetic Rules</span></a>.</p>
 </div>
 </div>
 </div>
@@ -201,7 +201,7 @@ rules.py. For more information on modification see <a class="reference internal"
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -227,10 +227,10 @@ rules.py. For more information on modification see <a class="reference internal"
                         title="next chapter">10.4. Database Modification</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/database/kinetics.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/kinetics.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -247,9 +247,9 @@ rules.py. For more information on modification see <a class="reference internal"
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

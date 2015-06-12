@@ -8,7 +8,7 @@
     
     <title>rmgpy.qm.qmdata &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="QMTP (rmgpy.qm)" href="index.html" />
     <link rel="next" title="rmgpy.qm.qmverifier" href="qmverifier.html" />
     <link rel="prev" title="rmgpy.qm.molecule" href="molecule.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">QMTP (<tt class="docutils literal"><span class="pre">rmgpy.qm</span></tt>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="docutils literal"><span class="pre">rmgpy.qm</span></code>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -65,29 +65,29 @@
 <h1>rmgpy.qm.qmdata<a class="headerlink" href="#rmgpy-qm-qmdata" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.qm.qmdata.QMData">
-<em class="property">class </em><tt class="descclassname">rmgpy.qm.qmdata.</tt><tt class="descname">QMData</tt><big>(</big><em>groundStateDegeneracy=None</em>, <em>numberOfAtoms=None</em>, <em>stericEnergy=None</em>, <em>molecularMass=None</em>, <em>energy=0</em>, <em>atomicNumbers=</em>, <span class="optional">[</span><span class="optional">]</span><em>rotationalConstants=</em>, <span class="optional">[</span><span class="optional">]</span><em>atomCoords=</em>, <span class="optional">[</span><span class="optional">]</span><em>frequencies=</em>, <span class="optional">[</span><span class="optional">]</span><em>source=None</em><big>)</big><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">QMData</code><span class="sig-paren">(</span><em>groundStateDegeneracy=None</em>, <em>numberOfAtoms=None</em>, <em>stericEnergy=None</em>, <em>molecularMass=None</em>, <em>energy=0</em>, <em>atomicNumbers=[]</em>, <em>rotationalConstants=[]</em>, <em>atomCoords=[]</em>, <em>frequencies=[]</em>, <em>source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
 <dd><p>General class for data extracted from a QM calculation</p>
 <dl class="attribute">
 <dt id="rmgpy.qm.qmdata.QMData.groundStateDegeneracy">
-<tt class="descname">groundStateDegeneracy</tt><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.groundStateDegeneracy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">groundStateDegeneracy</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.groundStateDegeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Electronic ground state degeneracy in RMG taken as number of radicals +1</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.qm.qmdata.QMData.numberOfAtoms">
-<tt class="descname">numberOfAtoms</tt><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.numberOfAtoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">numberOfAtoms</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.numberOfAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of atoms.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.qm.qmdata.QMData.rotationalConstants">
-<tt class="descname">rotationalConstants</tt><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.rotationalConstants" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotationalConstants</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.rotationalConstants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotational constants, in Hz.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.qm.qmdata.QMData.stericEnergy">
-<tt class="descname">stericEnergy</tt><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.stericEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">stericEnergy</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.stericEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Steric energy.</p>
 </dd></dl>
 
@@ -95,13 +95,13 @@
 
 <dl class="class">
 <dt id="rmgpy.qm.qmdata.CCLibData">
-<em class="property">class </em><tt class="descclassname">rmgpy.qm.qmdata.</tt><tt class="descname">CCLibData</tt><big>(</big><em>cclib_data</em>, <em>groundStateDegeneracy</em><big>)</big><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">CCLibData</code><span class="sig-paren">(</span><em>cclib_data</em>, <em>groundStateDegeneracy</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData" title="Permalink to this definition">¶</a></dt>
 <dd><p>QM Data extracted from a cclib data object</p>
 <p>This data objects collects information that CCLib was able to
 retrieve from a quantum chemistry output file.</p>
 <dl class="attribute">
 <dt id="rmgpy.qm.qmdata.CCLibData.cclib_data">
-<tt class="descname">cclib_data</tt><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData.cclib_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cclib_data</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData.cclib_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>data object returned by a parsing tool like CCLib.parse()</p>
 </dd></dl>
 
@@ -113,7 +113,7 @@ retrieve from a quantum chemistry output file.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -126,10 +126,10 @@ retrieve from a quantum chemistry output file.</p>
                         title="next chapter">rmgpy.qm.qmverifier</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/qm/qmdata.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/qm/qmdata.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -146,9 +146,9 @@ retrieve from a quantum chemistry output file.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

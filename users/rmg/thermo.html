@@ -8,7 +8,7 @@
     
     <title>11. Thermochemistry Estimation &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="12. Kinetics Estimation" href="kinetics.html" />
     <link rel="prev" title="10.4. Database Modification" href="database/modification.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -80,7 +80,7 @@ along with a values for the thermochemistry in a format that allows
 the evaluation of each thermodynamic variable as a function of temperature.</p>
 <p>RMG is shipped with a number of species thermochemistry libraries, located in the
 &#8216;libraries&#8217; folder of RMG-database. More information on these species thermochemistry libraries can be found in
-<a class="reference internal" href="database/thermo.html#thermodatabase"><em>Thermo Database</em></a>.</p>
+<a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="group-contribution-methods">
 <h2>11.2. Group contribution methods<a class="headerlink" href="#group-contribution-methods" title="Permalink to this headline">¶</a></h2>
@@ -107,7 +107,7 @@ of the contributions <span class="math">\(C_{i}\)</span>. E.g.:</p>
 <p>The term &#8216;group additive value&#8217; (GAV) denotes a polyvalent (ligancy &gt; 1) monoatomic central atom
 <span class="math">\(C_{i}\)</span> surrounded by its nearest-neighbor ligands.</p>
 <p>Values for each central atomtype (e.g. &#8220;tertiary carbon atom&#8221;) and its surrounding ligands can be found in the thermo
-group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><em>Thermo Database</em></a>.</p>
+group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
 <div class="section" id="nnis">
 <h3>11.2.1. NNIs<a class="headerlink" href="#nnis" title="Permalink to this headline">¶</a></h3>
 <p>Besides the main group-centered (GAV) contributions, non-next-nearest
@@ -119,7 +119,7 @@ alkene single and double cis, ene-yne cis and ortho interactions.</p>
 <div class="math">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + \sum_{j}NNI_{j}\]</div>
 <p>RMG contains a database with NNIs, named gauche.py and int15.py. More information on the nature on the available NNIs, and corresponding values
-can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><em>Thermo Database</em></a>.</p>
+can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="ring-strain">
 <h3>11.2.2. Ring Strain<a class="headerlink" href="#ring-strain" title="Permalink to this headline">¶</a></h3>
@@ -134,7 +134,7 @@ ring correction (RSC) needs to be added to the sum of the GAVs of the individual
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + RSC\]</div>
 <p>RMG contains a database with single-ring corrections, &#8216;ring.py&#8217; and polycyclic ring corrections,
 &#8216;polycyclic.py&#8217;. More information on the nature on the available NNIs, and corresponding values
-can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><em>Thermo Database</em></a>.</p>
+can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="hydrogen-bond-increment-hbi-method">
 <h3>11.2.3. Hydrogen Bond Increment (HBI) method<a class="headerlink" href="#hydrogen-bond-increment-hbi-method" title="Permalink to this headline">¶</a></h3>
@@ -164,7 +164,7 @@ have priority over QM value.  This ensures that there is a systematic HBI correc
 in the final model: if the saturated molecule thermo uses a library as a source, the radical thermo
 applies the HBI correction to that same library value.</p>
 <p>RMG contains a database for with HBIs, named radical.py. More information on the nature on the available HBIs, and corresponding values
-can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><em>Thermo Database</em></a>.</p>
+can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp">
@@ -339,7 +339,7 @@ symmetry elements).</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -376,10 +376,10 @@ symmetry elements).</p>
                         title="next chapter">12. Kinetics Estimation</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/thermo.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/thermo.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -396,9 +396,9 @@ symmetry elements).</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

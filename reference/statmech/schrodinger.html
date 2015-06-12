@@ -8,7 +8,7 @@
     
     <title>rmgpy.statmech.schrodinger &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Statistical mechanics (rmgpy.statmech)" href="index.html" />
     <link rel="next" title="rmgpy.statmech.Conformer" href="conformer.html" />
     <link rel="prev" title="Torsional degrees of freedom" href="hinderedrotor.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,14 +56,14 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Statistical mechanics (<tt class="docutils literal"><span class="pre">rmgpy.statmech</span></tt>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.statmech.schrodinger">
 <span id="rmgpy-statmech-schrodinger"></span><h1>rmgpy.statmech.schrodinger<a class="headerlink" href="#module-rmgpy.statmech.schrodinger" title="Permalink to this headline">¶</a></h1>
-<p>The <a class="reference internal" href="#module-rmgpy.statmech.schrodinger" title="rmgpy.statmech.schrodinger"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech.schrodinger</span></tt></a> module contains functionality for
+<p>The <a class="reference internal" href="#module-rmgpy.statmech.schrodinger" title="rmgpy.statmech.schrodinger"><code class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech.schrodinger</span></code></a> module contains functionality for
 working with the Schrodinger equation and its solution. In particular, it
 contains functions for using the energy levels and corresponding degeneracies
 obtained from solving the Schrodinger equation to compute various thermodynamic
@@ -71,13 +71,13 @@ and statistical mechanical properties, such as heat capacity, enthalpy,
 entropy, partition function, and the sum and density of states.</p>
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.convolve">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">convolve</tt><big>(</big><em>ndarray rho1</em>, <em>ndarray rho2</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.schrodinger.convolve" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">convolve</code><span class="sig-paren">(</span><em>ndarray rho1</em>, <em>ndarray rho2</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.schrodinger.convolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the convolution of two arrays <cite>rho1</cite> and <cite>rho2</cite>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.convolveBS">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">convolveBS</tt><big>(</big><em>ndarray Elist</em>, <em>ndarray rho0</em>, <em>double energy</em>, <em>int degeneracy=1</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.schrodinger.convolveBS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">convolveBS</code><span class="sig-paren">(</span><em>ndarray Elist</em>, <em>ndarray rho0</em>, <em>double energy</em>, <em>int degeneracy=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.schrodinger.convolveBS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convolve a molecular degree of freedom into a density or sum of states
 using the Beyer-Swinehart (BS) direct count algorithm. This algorithm is
 suitable for unevenly-spaced energy levels in the array of energy grains
@@ -88,7 +88,7 @@ degeneracy <cite>degeneracy</cite>.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.convolveBSSR">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">convolveBSSR</tt><big>(</big><em>ndarray Elist</em>, <em>ndarray rho0</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.schrodinger.convolveBSSR" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">convolveBSSR</code><span class="sig-paren">(</span><em>ndarray Elist</em>, <em>ndarray rho0</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.schrodinger.convolveBSSR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convolve a molecular degree of freedom into a density or sum of states
 using the Beyer-Swinehart-Stein-Rabinovitch (BSSR) direct count algorithm.
 This algorithm is suitable for unevenly-spaced energy levels in both the
@@ -98,7 +98,7 @@ corresponding to the solution of the Schrodinger equation.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.getDensityOfStates">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getDensityOfStates</tt><big>(</big><em>ndarray Elist</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>ndarray densStates0=None</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.schrodinger.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>ndarray Elist</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>ndarray densStates0=None</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.schrodinger.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the values of the dimensionless density of states
 <span class="math">\(\rho(E) \ dE\)</span> for a given set of energies <cite>Elist</cite> in J/mol above
 the ground state using an initial density of states <cite>densStates0</cite>. The
@@ -110,7 +110,7 @@ number always begins at <cite>n0</cite> and increases by ones.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.getEnthalpy">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getEnthalpy</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the dimensionless enthalpy <span class="math">\(H(T)/RT\)</span> at a given
 temperature <cite>T</cite> in K. The solution to the Schrodinger equation is given
 using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
@@ -122,7 +122,7 @@ of the quantum number <cite>nmax</cite>.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.getEntropy">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getEntropy</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">getEntropy</code><span class="sig-paren">(</span><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the dimensionless entropy <span class="math">\(S(T)/R\)</span> at a given
 temperature <cite>T</cite> in K. The solution to the Schrodinger equation is given
 using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
@@ -134,7 +134,7 @@ of the quantum number <cite>nmax</cite>.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.getHeatCapacity">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getHeatCapacity</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the dimensionless heat capacity <span class="math">\(C_\mathrm{v}(T)/R\)</span>
 at a given temperature <cite>T</cite> in K. The solution to the Schrodinger equation
 is given using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument
@@ -146,7 +146,7 @@ maximum allowed value of the quantum number <cite>nmax</cite>.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.getPartitionFunction">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getPartitionFunction</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function <span class="math">\(Q(T)\)</span> at a given
 temperature <cite>T</cite> in K. The solution to the Schrodinger equation is given
 using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
@@ -158,7 +158,7 @@ of the quantum number <cite>nmax</cite>.</p>
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.getSumOfStates">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getSumOfStates</tt><big>(</big><em>ndarray Elist</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>ndarray sumStates0=None</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.schrodinger.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>ndarray Elist</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>ndarray sumStates0=None</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.schrodinger.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the values of the sum of states <span class="math">\(N(E)\)</span> for a given set of
 energies <cite>Elist</cite> in J/mol above the ground state using an initial sum of
 states <cite>sumStates0</cite>. The solution to the Schrodinger equation is given
@@ -169,7 +169,7 @@ level. The quantum number always begins at <cite>n0</cite> and increases by ones
 
 <dl class="function">
 <dt id="rmgpy.statmech.schrodinger.unitDegeneracy">
-<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">unitDegeneracy</tt><big>(</big><em>n</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.schrodinger.unitDegeneracy" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.statmech.schrodinger.</code><code class="descname">unitDegeneracy</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.schrodinger.unitDegeneracy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -178,7 +178,7 @@ level. The quantum number always begins at <cite>n0</cite> and increases by ones
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -191,10 +191,10 @@ level. The quantum number always begins at <cite>n0</cite> and increases by ones
                         title="next chapter">rmgpy.statmech.Conformer</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/statmech/schrodinger.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/statmech/schrodinger.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -211,9 +211,9 @@ level. The quantum number always begins at <cite>n0</cite> and increases by ones
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

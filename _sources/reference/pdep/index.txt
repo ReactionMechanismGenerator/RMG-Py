@@ -41,7 +41,6 @@ Collision events
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`LennardJones`           A collision model based on the Lennard-Jones (12-6) model
 :class:`SingleExponentialDown`  A collisional energy transfer model based on the single exponential down model
 =============================== ================================================
 
@@ -118,7 +117,6 @@ Exception                               Description
 .. toctree::
     :hidden:
     
-    lennardjones
     singleexponentialdown
     reaction
     configuration

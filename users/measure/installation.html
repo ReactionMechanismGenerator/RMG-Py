@@ -8,7 +8,7 @@
     
     <title>2. Installation &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="MEASURE User’s Guide" href="index.html" />
     <link rel="next" title="3. Creating Input Files" href="input.html" />
     <link rel="prev" title="1. Introduction" href="introduction.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">MEASURE User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -95,7 +95,7 @@ automatic drawing of potential energy surfaces.</li>
 </div>
 <p>MEASURE is installed automatically as part of the installation process for
 RMG-Py. You can obtain a copy of RMG-Py from
-<a class="reference external" href="http://github.com/GreenGroup/RMG-Py">http://github.com/GreenGroup/RMG-Py</a>, either by downloading the current snapshot
+<a class="reference external" href="http://github.com/ReactionMechanismGenerator/RMG-Py">http://github.com/ReactionMechanismGenerator/RMG-Py</a>, either by downloading the current snapshot
 or by cloning the repository using <a class="reference external" href="http://git-scm.com/">git</a>. The latter is
 recommended so that you can easily keep up to date with new features and
 bugfixes.</p>
@@ -110,7 +110,7 @@ location on disk. If Cython is installed, this will also compile the appropriate
 modules prior to installation.</p>
 <p>You can also use RMG-Py and MEASURE without installing if you prefer. This is
 done by appending the full path to the package&#8217;s root directory to your
-<tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> environment variable. To compile the Cython modules in this
+<code class="docutils literal"><span class="pre">PYTHONPATH</span></code> environment variable. To compile the Cython modules in this
 case, use the command</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python setup.py build_ext --inplace
 </pre></div>
@@ -120,8 +120,8 @@ via the command</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python setup.py clean
 </pre></div>
 </div>
-<p>If you have the <tt class="docutils literal"><span class="pre">make</span></tt> build automation tool installed, you can also use the
-provided <tt class="docutils literal"><span class="pre">Makefile</span></tt>, via</p>
+<p>If you have the <code class="docutils literal"><span class="pre">make</span></code> build automation tool installed, you can also use the
+provided <code class="docutils literal"><span class="pre">Makefile</span></code>, via</p>
 <div class="highlight-python"><div class="highlight"><pre>$ make install
 </pre></div>
 </div>
@@ -141,7 +141,7 @@ provided <tt class="docutils literal"><span class="pre">Makefile</span></tt>, vi
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -163,10 +163,10 @@ provided <tt class="docutils literal"><span class="pre">Makefile</span></tt>, vi
                         title="next chapter">3. Creating Input Files</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/measure/installation.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/measure/installation.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -183,9 +183,9 @@ provided <tt class="docutils literal"><span class="pre">Makefile</span></tt>, vi
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

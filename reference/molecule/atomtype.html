@@ -8,7 +8,7 @@
     
     <title>rmgpy.molecule.AtomType &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="Reaction recipes" href="recipe.html" />
     <link rel="prev" title="rmgpy.molecule.Element" href="element.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -65,7 +65,7 @@
 <h1>rmgpy.molecule.AtomType<a class="headerlink" href="#rmgpy-molecule-atomtype" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="atom-types"></span><dl class="class">
 <dt id="rmgpy.molecule.AtomType">
-<em class="property">class </em><tt class="descclassname">rmgpy.molecule.</tt><tt class="descname">AtomType</tt><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for internal representation of atom types. Using unique objects
 rather than strings allows us to use fast pointer comparisons instead of
 slow string comparisons, as well as store extra metadata. In particular,
@@ -86,73 +86,77 @@ involving this atom type are taken. The attributes are:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>label</cite></td>
-<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
 <td>A unique label for the atom type</td>
 </tr>
 <tr class="row-odd"><td><cite>generic</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom types that are more generic than this one</td>
 </tr>
 <tr class="row-even"><td><cite>specific</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom types that are more specific than this one</td>
 </tr>
 <tr class="row-odd"><td><cite>incrementBond</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when an adjacent bond&#8217;s order is incremented</td>
 </tr>
 <tr class="row-even"><td><cite>decrementBond</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when an adjacent bond&#8217;s order is decremented</td>
 </tr>
 <tr class="row-odd"><td><cite>formBond</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when a new single bond is formed to this atom type</td>
 </tr>
 <tr class="row-even"><td><cite>breakBond</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when an existing single bond to this atom type is broken</td>
 </tr>
 <tr class="row-odd"><td><cite>incrementRadical</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of radical electrons is incremented</td>
 </tr>
 <tr class="row-even"><td><cite>decrementRadical</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of radical electrons is decremented</td>
 </tr>
-<tr class="row-odd"><td><a href="#id1"><span class="problematic" id="id2">`</span></a>incrementLonePair</td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<tr class="row-odd"><td><p class="first"><a href="#id1"><span class="problematic" id="id2">`</span></a>incrementLonePair</p>
+<div class="last system-message" id="id1">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">docstring of rmgpy.molecule.AtomType</tt>, line 21); <em><a href="#id2">backlink</a></em></p>
+Inline interpreted text or phrase reference start-string without end-string.</div>
+</td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of lone electron pairs is incremented</td>
 </tr>
 <tr class="row-even"><td><cite>decrementLonePair</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of lone electron pairs is decremented</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.equivalent">
-<tt class="descname">equivalent</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if two atom types <cite>atomType1</cite> and <cite>atomType2</cite> are
-equivalent or <tt class="docutils literal"><span class="pre">False</span></tt>  otherwise. This function respects wildcards,
-e.g. <tt class="docutils literal"><span class="pre">R!H</span></tt> is equivalent to <tt class="docutils literal"><span class="pre">C</span></tt>.</p>
+<code class="descname">equivalent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if two atom types <cite>atomType1</cite> and <cite>atomType2</cite> are
+equivalent or <code class="docutils literal"><span class="pre">False</span></code>  otherwise. This function respects wildcards,
+e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equivalent to <code class="docutils literal"><span class="pre">C</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.isSpecificCaseOf">
-<tt class="descname">isSpecificCaseOf</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.AtomType.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if atom type <cite>atomType1</cite> is a specific case of
-atom type <cite>atomType2</cite> or <tt class="docutils literal"><span class="pre">False</span></tt>  otherwise.</p>
+<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if atom type <cite>atomType1</cite> is a specific case of
+atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="pre">False</span></code>  otherwise.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.molecule.getAtomType">
-<tt class="descclassname">rmgpy.molecule.</tt><tt class="descname">getAtomType</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate atom type for an <tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt> object <cite>atom</cite>
-with local bond structure <cite>bonds</cite>, a <tt class="docutils literal"><span class="pre">dict</span></tt> containing atom-bond pairs.</p>
+<code class="descclassname">rmgpy.molecule.</code><code class="descname">getAtomType</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the appropriate atom type for an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object <cite>atom</cite>
+with local bond structure <cite>bonds</cite>, a <code class="docutils literal"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
 
 <p>The atom type of an atom describes the atom itself and (often) something about
@@ -173,95 +177,95 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <tbody valign="top">
 <tr class="row-even"><td colspan="2"><em>General atom types</em></td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">R</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">R</span></code></td>
 <td>any atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">R!H</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">R!H</span></code></td>
 <td>any non-hydrogen atom with any local bond structure</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Carbon atom types</em></td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">C</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">C</span></code></td>
 <td>carbon atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Cs</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cs</span></code></td>
 <td>carbon atom with four single bonds</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Cd</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cd</span></code></td>
 <td>carbon atom with one double bond (to carbon) and two single bonds</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Cdd</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cdd</span></code></td>
 <td>carbon atom with two double bonds</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Ct</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Ct</span></code></td>
 <td>carbon atom with one triple bond and one single bond</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">CO</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">CO</span></code></td>
 <td>carbon atom with one double bond (to oxygen) and two single bonds</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Cb</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cb</span></code></td>
 <td>carbon atom with two benzene bonds and one single bond</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Cbf</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cbf</span></code></td>
 <td>carbon atom with three benzene bonds</td>
 </tr>
 <tr class="row-even"><td colspan="2"><em>Hydrogen atom types</em></td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">H</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">H</span></code></td>
 <td>hydrogen atom with one single bond</td>
 </tr>
 <tr class="row-even"><td colspan="2"><em>Oxygen atom types</em></td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">O</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O</span></code></td>
 <td>oxygen atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Os</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Os</span></code></td>
 <td>oxygen atom with two single bonds</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Od</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Od</span></code></td>
 <td>oxygen atom with one double bond</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Oa</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Oa</span></code></td>
 <td>oxygen atom with no bonds</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Silicon atom types</em></td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Si</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Si</span></code></td>
 <td>silicon atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Sis</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sis</span></code></td>
 <td>silicon atom with four single bonds</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Sid</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sid</span></code></td>
 <td>silicon atom with one double bond (to carbon) and two single bonds</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Sidd</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sidd</span></code></td>
 <td>silicon atom with two double bonds</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Sit</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sit</span></code></td>
 <td>silicon atom with one triple bond and one single bond</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">SiO</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">SiO</span></code></td>
 <td>silicon atom with one double bond (to oxygen) and two single bonds</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Sib</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sib</span></code></td>
 <td>silicon atom with two benzene bonds and one single bond</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Sibf</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sibf</span></code></td>
 <td>silicon atom with three benzene bonds</td>
 </tr>
 <tr class="row-even"><td colspan="2"><em>Sulfur atom types</em></td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">S</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S</span></code></td>
 <td>sulfur atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Ss</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Ss</span></code></td>
 <td>sulfur atom with two single bonds</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Sd</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sd</span></code></td>
 <td>sulfur atom with one double bond</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Sa</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sa</span></code></td>
 <td>sulfur atom with no bonds</td>
 </tr>
 </tbody>
@@ -272,7 +276,7 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -285,10 +289,10 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
                         title="next chapter">Reaction recipes</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/atomtype.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/atomtype.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -305,9 +309,9 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

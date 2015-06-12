@@ -8,7 +8,7 @@
     
     <title>Reaction mechanism generation (rmgpy.rmg) &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG API Reference" href="../index.html" />
     <link rel="next" title="rmgpy.rmg.model.CoreEdgeReactionModel" href="coreedgereactionmodel.html" />
     <link rel="prev" title="rmgpy.reaction.ReactionModel" href="../reaction/reactionmodel.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,13 +56,13 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.rmg">
-<span id="reaction-mechanism-generation-rmgpy-rmg"></span><h1>Reaction mechanism generation (<a class="reference internal" href="#module-rmgpy.rmg" title="rmgpy.rmg"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.rmg</span></tt></a>)<a class="headerlink" href="#module-rmgpy.rmg" title="Permalink to this headline">¶</a></h1>
-<p>The <a class="reference internal" href="#module-rmgpy.rmg" title="rmgpy.rmg"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.rmg</span></tt></a> subpackage contains the main functionality for using
+<span id="reaction-mechanism-generation-rmgpy-rmg"></span><h1>Reaction mechanism generation (<a class="reference internal" href="#module-rmgpy.rmg" title="rmgpy.rmg"><code class="xref py py-mod docutils literal"><span class="pre">rmgpy.rmg</span></code></a>)<a class="headerlink" href="#module-rmgpy.rmg" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.rmg" title="rmgpy.rmg"><code class="xref py py-mod docutils literal"><span class="pre">rmgpy.rmg</span></code></a> subpackage contains the main functionality for using
 RMG-Py to automatically generate detailed reaction mechanisms.</p>
 <div class="section" id="reaction-models">
 <h2>Reaction models<a class="headerlink" href="#reaction-models" title="Permalink to this headline">¶</a></h2>
@@ -77,10 +77,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt></td>
+<tr class="row-even"><td><a class="reference internal" href="species.html#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal"><span class="pre">Species</span></code></a></td>
 <td>A chemical species, with RMG-specific functionality</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-class docutils literal"><span class="pre">CoreEdgeReactionModel</span></tt></td>
+<tr class="row-odd"><td><a class="reference internal" href="coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel" title="rmgpy.rmg.model.CoreEdgeReactionModel"><code class="xref py py-class docutils literal"><span class="pre">CoreEdgeReactionModel</span></code></a></td>
 <td>A reaction model comprised of core and edge species and reactions</td>
 </tr>
 </tbody>
@@ -99,10 +99,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-func docutils literal"><span class="pre">readInputFile()</span></tt></td>
+<tr class="row-even"><td><a class="reference internal" href="input.html#rmgpy.rmg.input.readInputFile" title="rmgpy.rmg.input.readInputFile"><code class="xref py py-func docutils literal"><span class="pre">readInputFile()</span></code></a></td>
 <td>Load an RMG job input file</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-func docutils literal"><span class="pre">saveInputFile()</span></tt></td>
+<tr class="row-odd"><td><a class="reference internal" href="input.html#rmgpy.rmg.input.saveInputFile" title="rmgpy.rmg.input.saveInputFile"><code class="xref py py-func docutils literal"><span class="pre">saveInputFile()</span></code></a></td>
 <td>Save an RMG job input file</td>
 </tr>
 </tbody>
@@ -121,10 +121,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><a class="reference internal" href="output.html#rmgpy.rmg.output.saveOutputHTML" title="rmgpy.rmg.output.saveOutputHTML"><tt class="xref py py-func docutils literal"><span class="pre">saveOutputHTML()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="output.html#rmgpy.rmg.output.saveOutputHTML" title="rmgpy.rmg.output.saveOutputHTML"><code class="xref py py-func docutils literal"><span class="pre">saveOutputHTML()</span></code></a></td>
 <td>Save the results of an RMG job to an HTML file</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="output.html#rmgpy.rmg.output.saveDiffHTML" title="rmgpy.rmg.output.saveDiffHTML"><tt class="xref py py-func docutils literal"><span class="pre">saveDiffHTML()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="output.html#rmgpy.rmg.output.saveDiffHTML" title="rmgpy.rmg.output.saveDiffHTML"><code class="xref py py-func docutils literal"><span class="pre">saveDiffHTML()</span></code></a></td>
 <td>Save a comparison of two reaction mechanisms to an HTML file</td>
 </tr>
 </tbody>
@@ -143,7 +143,7 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-class docutils literal"><span class="pre">RMG</span></tt></td>
+<tr class="row-even"><td><a class="reference internal" href="main.html#rmgpy.rmg.main.RMG" title="rmgpy.rmg.main.RMG"><code class="xref py py-class docutils literal"><span class="pre">RMG</span></code></a></td>
 <td>Main class for RMG jobs</td>
 </tr>
 </tbody>
@@ -162,10 +162,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><a class="reference internal" href="pdepreaction.html#rmgpy.rmg.pdep.PDepReaction" title="rmgpy.rmg.pdep.PDepReaction"><tt class="xref py py-class docutils literal"><span class="pre">PDepReaction</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="pdepreaction.html#rmgpy.rmg.pdep.PDepReaction" title="rmgpy.rmg.pdep.PDepReaction"><code class="xref py py-class docutils literal"><span class="pre">PDepReaction</span></code></a></td>
 <td>A pressure-dependent &#8220;net&#8221; reaction</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork" title="rmgpy.rmg.pdep.PDepNetwork"><tt class="xref py py-class docutils literal"><span class="pre">PDepNetwork</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork" title="rmgpy.rmg.pdep.PDepNetwork"><code class="xref py py-class docutils literal"><span class="pre">PDepNetwork</span></code></a></td>
 <td>A pressure-dependent unimolecular reaction network, with RMG-specific functionality</td>
 </tr>
 </tbody>
@@ -184,13 +184,13 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">InputError</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-exc docutils literal"><span class="pre">InputError</span></code></td>
 <td>Raised when an error occurs while working with an RMG input file</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">OutputError</span></tt></td>
+<tr class="row-odd"><td><code class="xref py py-exc docutils literal"><span class="pre">OutputError</span></code></td>
 <td>Raised when an error occurs while saving an RMG output file</td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">PressureDependenceError</span></tt></td>
+<tr class="row-even"><td><code class="xref py py-exc docutils literal"><span class="pre">PressureDependenceError</span></code></td>
 <td>Raised when an error occurs while computing pressure-dependent rate coefficients</td>
 </tr>
 </tbody>
@@ -204,14 +204,14 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Reaction mechanism generation (<tt class="docutils literal"><span class="pre">rmgpy.rmg</span></tt>)</a><ul>
+<li><a class="reference internal" href="#">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a><ul>
 <li><a class="reference internal" href="#reaction-models">Reaction models</a></li>
 <li><a class="reference internal" href="#input">Input</a></li>
 <li><a class="reference internal" href="#output">Output</a></li>
@@ -230,10 +230,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
                         title="next chapter">rmgpy.rmg.model.CoreEdgeReactionModel</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/rmg/index.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/index.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -250,9 +250,9 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

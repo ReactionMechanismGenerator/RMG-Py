@@ -8,7 +8,7 @@
     
     <title>2. The Master Equation &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="MEASURE Theory Guide" href="index.html" />
     <link rel="next" title="3. Methods for Determining Phenomenological Rate Coefficients" href="methods.html" />
     <link rel="prev" title="1. Introduction" href="introduction.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG Theory Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE Theory Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG Theory Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">MEASURE Theory Guide</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -117,13 +117,13 @@ Lennard-Jones collision theory:</p>
 \[k_{\mathrm{coll},i}(T) = \sqrt{\frac{8 k_\mathrm{B} T}{\pi \mu_i}} \pi d_i^2 \Omega_i^{(2,2)\ast}\]</div>
 <p>Above, <span class="math">\(\mu_i\)</span> is the reduced mass, <span class="math">\(d_i\)</span> is the collision diameter,
 and <span class="math">\(k_\mathrm{B}\)</span> is the Boltzmann constant. The collision diameter is
-generally taken as <span class="math">\(d \approx \frac{1}{2} (\sigma_i + \sigma_\ce{M})\)</span>,
+generally taken as <span class="math">\(d \approx \frac{1}{2} (\sigma_i + \sigma_{\ce{M}})\)</span>,
 the arithmetic average of the Lennard-Jones <span class="math">\(\sigma\)</span> parameter for the
 isomer and the bath gas. The parameter <span class="math">\(\Omega_i^{(2,2)\ast}\)</span> represents
 a configurational integral, which is well-approximated by the expression</p>
 <div class="math">
 \[\Omega_i^{(2,2)\ast} = 1.16145 \tilde{T}^{-0.14874} + 0.52487 e^{-0.7732 \tilde{T}}  + 2.16178 e^{-2.437887 \tilde{T}}\]</div>
-<p>where <span class="math">\(\tilde{T} \equiv k_\mathrm{B} T / \sqrt{\epsilon_i \epsilon_\ce{M}}\)</span>
+<p>where <span class="math">\(\tilde{T} \equiv k_\mathrm{B} T / \sqrt{\epsilon_i \epsilon_{\ce{M}}}\)</span>
 is a reduced temperature and <span class="math">\(\epsilon_i\)</span> is the Lennard-Jones
 <span class="math">\(\epsilon\)</span> parameter. Note that we have used a geometric average for the
 <span class="math">\(\epsilon\)</span> parameters of the isomer and the bath gas in this expression.
@@ -475,7 +475,7 @@ Cambridge University Press (2003).</td></tr>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -505,10 +505,10 @@ Cambridge University Press (2003).</td></tr>
                         title="next chapter">3. Methods for Determining Phenomenological Rate Coefficients</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/theory/measure/master_equation.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/theory/measure/master_equation.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -525,9 +525,9 @@ Cambridge University Press (2003).</td></tr>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

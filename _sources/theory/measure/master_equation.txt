@@ -66,14 +66,14 @@ Lennard-Jones collision theory:
 
 Above, :math:`\mu_i` is the reduced mass, :math:`d_i` is the collision diameter, 
 and :math:`k_\mathrm{B}` is the Boltzmann constant. The collision diameter is
-generally taken as :math:`d \approx \frac{1}{2} (\sigma_i + \sigma_\ce{M})`,
+generally taken as :math:`d \approx \frac{1}{2} (\sigma_i + \sigma_{\ce{M}})`,
 the arithmetic average of the Lennard-Jones :math:`\sigma` parameter for the
 isomer and the bath gas. The parameter :math:`\Omega_i^{(2,2)\ast}` represents 
 a configurational integral, which is well-approximated by the expression
 
 .. math:: \Omega_i^{(2,2)\ast} = 1.16145 \tilde{T}^{-0.14874} + 0.52487 e^{-0.7732 \tilde{T}}  + 2.16178 e^{-2.437887 \tilde{T}}
 
-where :math:`\tilde{T} \equiv k_\mathrm{B} T / \sqrt{\epsilon_i \epsilon_\ce{M}}`
+where :math:`\tilde{T} \equiv k_\mathrm{B} T / \sqrt{\epsilon_i \epsilon_{\ce{M}}}`
 is a reduced temperature and :math:`\epsilon_i` is the Lennard-Jones 
 :math:`\epsilon` parameter. Note that we have used a geometric average for the
 :math:`\epsilon` parameters of the isomer and the bath gas in this expression.

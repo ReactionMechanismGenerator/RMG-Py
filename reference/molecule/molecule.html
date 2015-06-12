@@ -8,7 +8,7 @@
     
     <title>rmgpy.molecule.Molecule &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.GroupAtom" href="groupatom.html" />
     <link rel="prev" title="rmgpy.molecule.Bond" href="bond.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -65,9 +65,9 @@
 <h1>rmgpy.molecule.Molecule<a class="headerlink" href="#rmgpy-molecule-molecule" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Molecule">
-<em class="property">class </em><tt class="descclassname">rmgpy.molecule.</tt><tt class="descname">Molecule</tt><a class="headerlink" href="#rmgpy.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Molecule</code><a class="headerlink" href="#rmgpy.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular structure using a graph data type, extending
-the <tt class="xref py py-class docutils literal"><span class="pre">Graph</span></tt> class. The <cite>atoms</cite> and <cite>bonds</cite> attributes are aliases
+the <code class="xref py py-class docutils literal"><span class="pre">Graph</span></code> class. The <cite>atoms</cite> and <cite>bonds</cite> attributes are aliases
 for the <cite>vertices</cite> and <cite>edges</cite> attributes. Other attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -83,11 +83,11 @@ for the <cite>vertices</cite> and <cite>edges</cite> attributes. Other attribute
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>symmetryNumber</cite></td>
-<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td><code class="docutils literal"><span class="pre">int</span></code></td>
 <td>The (estimated) external + internal symmetry number of the molecule</td>
 </tr>
 <tr class="row-odd"><td><cite>multiplicity</cite></td>
-<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td><code class="docutils literal"><span class="pre">int</span></code></td>
 <td>The multiplicity of this species, multiplicity = 2*total_spin+1</td>
 </tr>
 </tbody>
@@ -96,96 +96,96 @@ for the <cite>vertices</cite> and <cite>edges</cite> attributes. Other attribute
 <cite>InChI</cite> string representing the molecular structure.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.addAtom">
-<tt class="descname">addAtom</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.addAtom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">addAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.addAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>atom</cite> to the graph. The atom is initialized with no bonds.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.addBond">
-<tt class="descname">addBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.addBond" title="Permalink to this definition">¶</a></dt>
+<code class="descname">addBond</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.addBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a <cite>bond</cite> to the graph as an edge connecting the two atoms <cite>atom1</cite>
 and <cite>atom2</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.addEdge">
-<tt class="descname">addEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.addEdge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">addEdge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.addEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>edge</cite> to the graph. The two vertices in the edge must already
-exist in the graph, or a <tt class="xref py py-class docutils literal"><span class="pre">ValueError</span></tt> is raised.</p>
+exist in the graph, or a <code class="xref py py-class docutils literal"><span class="pre">ValueError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.addVertex">
-<tt class="descname">addVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.addVertex" title="Permalink to this definition">¶</a></dt>
+<code class="descname">addVertex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.addVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a <cite>vertex</cite> to the graph. The vertex is initialized with no edges.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.calculateCp0">
-<tt class="descname">calculateCp0</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateCp0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateCp0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateCp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.calculateCpInf">
-<tt class="descname">calculateCpInf</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateCpInf" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateCpInf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateCpInf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at infinite temperature in J/mol*K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.calculateSymmetryNumber">
-<tt class="descname">calculateSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateSymmetryNumber</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateSymmetryNumber" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the symmetry number for the structure. The symmetry number
 includes both external and internal modes.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.changeTripletSinglet">
-<tt class="descname">changeTripletSinglet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.changeTripletSinglet" title="Permalink to this definition">¶</a></dt>
-<dd><p>If the molecule is a 1-centered biradical, and the molecule is in a triplet state,
-change it to singlet state.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.molecule.Molecule.clearLabeledAtoms">
-<tt class="descname">clearLabeledAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.clearLabeledAtoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">clearLabeledAtoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.clearLabeledAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the labels from all atoms in the molecule.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.connectTheDots">
-<tt class="descname">connectTheDots</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.connectTheDots" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connectTheDots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.connectTheDots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete all bonds, and set them again based on the Atoms&#8217; coords.
 Does not detect bond type.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.containsLabeledAtom">
-<tt class="descname">containsLabeledAtom</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.containsLabeledAtom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the molecule contains an atom with the label
-<cite>label</cite> and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+<code class="descname">containsLabeledAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.containsLabeledAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if the molecule contains an atom with the label
+<cite>label</cite> and <code class="xref py py-data docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.copy">
-<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a copy of the current graph. If <cite>deep</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, a deep copy
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a copy of the current graph. If <cite>deep</cite> is <code class="docutils literal"><span class="pre">True</span></code>, a deep copy
 is made: copies of the vertices and edges are used in the new graph.
-If <cite>deep</cite> is <tt class="docutils literal"><span class="pre">False</span></tt> or not specified, a shallow copy is made: the
+If <cite>deep</cite> is <code class="docutils literal"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
 original vertices and edges are used in the new graph.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.countInternalRotors">
-<tt class="descname">countInternalRotors</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.countInternalRotors" title="Permalink to this definition">¶</a></dt>
+<code class="descname">countInternalRotors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.countInternalRotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the number of internal rotors in the structure. Any single
 bond not in a cycle and between two atoms that also have other bonds
 are considered to be internal rotors.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.createMultiplicityLayer">
+<code class="descname">createMultiplicityLayer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.createMultiplicityLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the string with the multiplicity information
+that is appended to the InChI to create an augmented InChI.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.deleteHydrogens">
-<tt class="descname">deleteHydrogens</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.deleteHydrogens" title="Permalink to this definition">¶</a></dt>
+<code class="descname">deleteHydrogens</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.deleteHydrogens" title="Permalink to this definition">¶</a></dt>
 <dd><p>Irreversibly delete all non-labeled hydrogens without updating
 connectivity values. If there&#8217;s nothing but hydrogens, it does nothing.
 It destroys information; be careful with it.</p>
@@ -193,72 +193,72 @@ It destroys information; be careful with it.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.draw">
-<tt class="descname">draw</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.draw" title="Permalink to this definition">¶</a></dt>
+<code class="descname">draw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a pictorial representation of the chemical graph using the
-<tt class="xref py py-mod docutils literal"><span class="pre">draw</span></tt> module. Use <cite>path</cite> to specify the file to save
+<code class="xref py py-mod docutils literal"><span class="pre">draw</span></code> module. Use <cite>path</cite> to specify the file to save
 the generated image to; the image type is automatically determined by
-extension. Valid extensions are <tt class="docutils literal"><span class="pre">.png</span></tt>, <tt class="docutils literal"><span class="pre">.svg</span></tt>, <tt class="docutils literal"><span class="pre">.pdf</span></tt>, and
-<tt class="docutils literal"><span class="pre">.ps</span></tt>; of these, the first is a raster format and the remainder are
+extension. Valid extensions are <code class="docutils literal"><span class="pre">.png</span></code>, <code class="docutils literal"><span class="pre">.svg</span></code>, <code class="docutils literal"><span class="pre">.pdf</span></code>, and
+<code class="docutils literal"><span class="pre">.ps</span></code>; of these, the first is a raster format and the remainder are
 vector formats.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.findAllDelocalizationPaths">
-<tt class="descname">findAllDelocalizationPaths</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPaths" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findAllDelocalizationPaths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPaths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths allyl to the radical center indicated
 by <cite>atom1</cite>. Used to generate resonance isomers.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.findAllDelocalizationPathsLonePairRadical">
-<tt class="descname">findAllDelocalizationPathsLonePairRadical</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPathsLonePairRadical" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findAllDelocalizationPathsLonePairRadical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPathsLonePairRadical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths of lone electron pairs next to the radical center indicated
 by <cite>atom1</cite>. Used to generate resonance isomers.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.findAllDelocalizationPathsN5dd_N5ts">
-<tt class="descname">findAllDelocalizationPathsN5dd_N5ts</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPathsN5dd_N5ts" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findAllDelocalizationPathsN5dd_N5ts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPathsN5dd_N5ts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
 and nitrogen atoms with one triple and one single bond (N5ts)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.findIsomorphism">
-<tt class="descname">findIsomorphism</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findIsomorphism" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+<code class="descname">findIsomorphism</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.findIsomorphism" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is isomorphic and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
 otherwise, and the matching mapping. The <cite>initialMap</cite> attribute can be
 used to specify a required mapping from <cite>self</cite> to <cite>other</cite> (i.e. the
 atoms of <cite>self</cite> are the keys, while the atoms of <cite>other</cite> are the
 values). The returned mapping also uses the atoms of <cite>self</cite> for the keys
 and the atoms of <cite>other</cite> for the values. The <cite>other</cite> parameter must
-be a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object, or a <tt class="xref py py-class docutils literal"><span class="pre">TypeError</span></tt> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.findSubgraphIsomorphisms">
-<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+<code class="descname">findSubgraphIsomorphisms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
 otherwise. Also returns the lists all of valid mappings. The
 <cite>initialMap</cite> attribute can be used to specify a required mapping from
 <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys, while the
 atoms of <cite>other</cite> are the values). The returned mappings also use the
 atoms of <cite>self</cite> for the keys and the atoms of <cite>other</cite> for the values.
-The <cite>other</cite> parameter must be a <tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt> object, or a
-<tt class="xref py py-class docutils literal"><span class="pre">TypeError</span></tt> is raised.</p>
+The <cite>other</cite> parameter must be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a
+<code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromAdjacencyList">
-<tt class="descname">fromAdjacencyList</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromAdjacencyList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a string adjacency list <cite>adjlist</cite> to a molecular structure.
 Skips the first line (assuming it&#8217;s a label) unless <cite>withLabel</cite> is
-<tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+<code class="docutils literal"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromInChI">
-<tt class="descname">fromInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromInChI" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromInChI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -266,7 +266,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromRDKitMol">
-<tt class="descname">fromRDKitMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromRDKitMol" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromRDKitMol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromRDKitMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -274,7 +274,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromSMARTS">
-<tt class="descname">fromSMARTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMARTS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromSMARTS</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMARTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -282,7 +282,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromSMILES">
-<tt class="descname">fromSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMILES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromSMILES</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMILES" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -290,7 +290,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromXYZ">
-<tt class="descname">fromXYZ</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromXYZ" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromXYZ</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromXYZ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an RMG molecule from a list of coordinates and a corresponding
 list of atomic numbers. These are typically received from CCLib and the
 molecule is sent to <cite>ConnectTheDots</cite> so will only contain single bonds.</p>
@@ -298,62 +298,68 @@ molecule is sent to <cite>ConnectTheDots</cite> so will only contain single bond
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.generateResonanceIsomers">
-<tt class="descname">generateResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.generateResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.generateResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return all of the resonance isomers of this molecule.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getAdjacentResonanceIsomers">
-<tt class="descname">getAdjacentResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getAdjacentResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getAdjacentResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAdjacentResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance isomers formed by one allyl radical shift.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getAllCycles">
-<tt class="descname">getAllCycles</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllCycles" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getAllCycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllCycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a starting vertex, returns a list of all the cycles containing
 that vertex.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getAllCyclicVertices">
-<tt class="descname">getAllCyclicVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllCyclicVertices" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getAllCyclicVertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllCyclicVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all vertices belonging to one or more cycles.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getAllPolycyclicVertices">
-<tt class="descname">getAllPolycyclicVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllPolycyclicVertices" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getAllPolycyclicVertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllPolycyclicVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all vertices belonging to two or more cycles, fused or spirocyclic.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getAromaticResonanceIsomers">
+<code class="descname">getAromaticResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAromaticResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the aromatic form of the molecule.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getBond">
-<tt class="descname">getBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getBond" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getBond</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the bond connecting atoms <cite>atom1</cite> and <cite>atom2</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getBonds">
-<tt class="descname">getBonds</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getBonds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getBonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getBonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the bonds involving the specified <cite>atom</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getEdge">
-<tt class="descname">getEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getEdge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEdge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the edge connecting vertices <cite>vertex1</cite> and <cite>vertex2</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getEdges">
-<tt class="descname">getEdges</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getEdges" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEdges</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getEdges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the edges involving the specified <cite>vertex</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getFingerprint">
-<tt class="descname">getFingerprint</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getFingerprint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFingerprint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getFingerprint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing the &#8220;fingerprint&#8221; used to accelerate graph
 isomorphism comparisons with other molecules. The fingerprint is a
 short string containing a summary of selected information about the 
@@ -363,52 +369,59 @@ sufficient) condition for the associated molecules to be isomorphic.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getFormula">
-<tt class="descname">getFormula</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getFormula" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFormula</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getFormula" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the molecular formula for the molecule.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getLabeledAtom">
-<tt class="descname">getLabeledAtom</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getLabeledAtom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getLabeledAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getLabeledAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the atoms in the molecule that are labeled.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getLabeledAtoms">
-<tt class="descname">getLabeledAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getLabeledAtoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the labeled atoms as a <tt class="docutils literal"><span class="pre">dict</span></tt> with the keys being the labels
+<code class="descname">getLabeledAtoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getLabeledAtoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the labeled atoms as a <code class="docutils literal"><span class="pre">dict</span></code> with the keys being the labels
 and the values the atoms themselves. If two or more atoms have the
 same label, the value is converted to a list of these atoms.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getLonePairRadicalResonanceIsomers">
-<tt class="descname">getLonePairRadicalResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getLonePairRadicalResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getLonePairRadicalResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getLonePairRadicalResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance isomers formed by lone electron pair - radical shifts.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getMolecularWeight">
-<tt class="descname">getMolecularWeight</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getMolecularWeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the molecular weight of the molecule in kg/mol.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getN5dd_N5tsResonanceIsomers">
-<tt class="descname">getN5dd_N5tsResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getN5dd_N5tsResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getN5dd_N5tsResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getN5dd_N5tsResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance isomers formed by shifts between N5dd and N5ts.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getNetCharge">
+<code class="descname">getNetCharge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getNetCharge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the atoms in the structure and calculate the net charge
+on the overall molecule.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getNumAtoms">
-<tt class="descname">getNumAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getNumAtoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getNumAtoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getNumAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of atoms in molecule.  If element is given, ie. &#8220;H&#8221; or &#8220;C&#8221;,
 the number of atoms of that element is returned.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getNumberOfRadicalElectrons">
-<tt class="descname">getNumberOfRadicalElectrons</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getNumberOfRadicalElectrons" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getNumberOfRadicalElectrons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getNumberOfRadicalElectrons" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the total number of radical electrons on all atoms in the
 molecule. In this function, monoradical atoms count as one, biradicals
 count as two, etc.</p>
@@ -416,19 +429,19 @@ count as two, etc.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getRadicalAtoms">
-<tt class="descname">getRadicalAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalAtoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getRadicalAtoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the atoms in the molecule that have unpaired electrons.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getRadicalCount">
-<tt class="descname">getRadicalCount</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalCount" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getRadicalCount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of unpaired electrons.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getSmallestSetOfSmallestRings">
-<tt class="descname">getSmallestSetOfSmallestRings</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getSmallestSetOfSmallestRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the smallest set of smallest rings in the graph. The
 algorithm implements was adapted from a description by Fan, Panaye,
 Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
@@ -439,43 +452,51 @@ p. 657-662 (1993).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getSymmetryNumber">
+<code class="descname">getSymmetryNumber</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the symmetry number of Molecule.
+First checks whether the value is stored as an attribute of Molecule.
+If not, it calls the calculateSymmetryNumber method.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getURL">
-<tt class="descname">getURL</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getURL" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getURL</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getURL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a URL to the molecule&#8217;s info page on the RMG website.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.hasAtom">
-<tt class="descname">hasAtom</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.hasAtom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>atom</cite> is an atom in the graph, or <tt class="docutils literal"><span class="pre">False</span></tt> if
+<code class="descname">hasAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.hasAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>atom</cite> is an atom in the graph, or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.hasBond">
-<tt class="descname">hasBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.hasBond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if atoms <cite>atom1</cite> and <cite>atom2</cite> are connected
-by an bond, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+<code class="descname">hasBond</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.hasBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if atoms <cite>atom1</cite> and <cite>atom2</cite> are connected
+by an bond, or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.hasEdge">
-<tt class="descname">hasEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.hasEdge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
-by an edge, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+<code class="descname">hasEdge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.hasEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
+by an edge, or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.hasVertex">
-<tt class="descname">hasVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.hasVertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>vertex</cite> is a vertex in the graph, or <tt class="docutils literal"><span class="pre">False</span></tt> if
+<code class="descname">hasVertex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.hasVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>vertex</cite> is a vertex in the graph, or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isAromatic">
-<tt class="descname">isAromatic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isAromatic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is aromatic, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.  
+<code class="descname">isAromatic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isAromatic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if the molecule is aromatic, or <code class="docutils literal"><span class="pre">False</span></code> if not.  
 Iterates over the SSSR&#8217;s and searches for rings that consist solely of Cb 
 atoms.  Assumes that aromatic rings always consist of 6 atoms. 
 In cases of naphthalene, where a 6 + 4 aromatic system exists,
@@ -485,67 +506,53 @@ will not fail for fused aromatic rings.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isAtomInCycle">
-<tt class="descname">isAtomInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isAtomInCycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>atom</cite> is in one or more cycles in the structure,
-and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.molecule.Molecule.isBiradicalSinglet">
-<tt class="descname">isBiradicalSinglet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isBiradicalSinglet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is a 1-centered biradical, and the molecule is in singlet state,
-or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.molecule.Molecule.isBiradicalTriplet">
-<tt class="descname">isBiradicalTriplet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isBiradicalTriplet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is a 1-centered biradical, and the molecule is in triplet state,
-or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+<code class="descname">isAtomInCycle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isAtomInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if <cite>atom</cite> is in one or more cycles in the structure,
+and <code class="xref py py-data docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isBondInCycle">
-<tt class="descname">isBondInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isBondInCycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the bond between atoms <cite>atom1</cite> and <cite>atom2</cite>
-is in one or more cycles in the graph, or <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not.</p>
+<code class="descname">isBondInCycle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isBondInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if the bond between atoms <cite>atom1</cite> and <cite>atom2</cite>
+is in one or more cycles in the graph, or <code class="xref py py-data docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isCyclic">
-<tt class="descname">isCyclic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isCyclic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if one or more cycles are present in the graph or
-<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+<code class="descname">isCyclic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isCyclic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if one or more cycles are present in the graph or
+<code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isEdgeInCycle">
-<tt class="descname">isEdgeInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isEdgeInCycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the edge between vertices <cite>vertex1</cite> and <cite>vertex2</cite>
-is in one or more cycles in the graph, or <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not.</p>
+<code class="descname">isEdgeInCycle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isEdgeInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if the edge between vertices <cite>vertex1</cite> and <cite>vertex2</cite>
+is in one or more cycles in the graph, or <code class="xref py py-data docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isIsomorphic">
-<tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isIsomorphic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if two graphs are isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object, or a <tt class="xref py py-class docutils literal"><span class="pre">TypeError</span></tt> is raised.
+be a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.
 Also ensures multiplicities are also equal.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isLinear">
-<tt class="descname">isLinear</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isLinear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the structure is linear and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+<code class="descname">isLinear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isLinear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if the structure is linear and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
 otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isMappingValid">
-<tt class="descname">isMappingValid</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isMappingValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isMappingValid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isMappingValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
 is valid by checking that the vertices and edges involved in the
 mapping are mutually equivalent.</p>
@@ -553,38 +560,38 @@ mapping are mutually equivalent.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isRadical">
-<tt class="descname">isRadical</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isRadical" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule contains at least one radical electron,
-or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+<code class="descname">isRadical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the molecule contains at least one radical electron,
+or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isSubgraphIsomorphic">
-<tt class="descname">isSubgraphIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+<code class="descname">isSubgraphIsomorphic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt> object, or a <tt class="xref py py-class docutils literal"><span class="pre">TypeError</span></tt> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.isVertexInCycle">
-<tt class="descname">isVertexInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isVertexInCycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the given <cite>vertex</cite> is contained in one or more
-cycles in the graph, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+<code class="descname">isVertexInCycle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isVertexInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the given <cite>vertex</cite> is contained in one or more
+cycles in the graph, or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.merge">
-<tt class="descname">merge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge two molecules so as to store them in a single <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt>
-object. The merged <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object is returned.</p>
+<code class="descname">merge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge two molecules so as to store them in a single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code>
+object. The merged <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object is returned.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.removeAtom">
-<tt class="descname">removeAtom</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.removeAtom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">removeAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.removeAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove <cite>atom</cite> and all bonds associated with it from the graph. Does
 not remove atoms that no longer have any bonds as a result of this
 removal.</p>
@@ -592,7 +599,7 @@ removal.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.removeBond">
-<tt class="descname">removeBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.removeBond" title="Permalink to this definition">¶</a></dt>
+<code class="descname">removeBond</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.removeBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the bond between atoms <cite>atom1</cite> and <cite>atom2</cite> from the graph.
 Does not remove atoms that no longer have any bonds as a result of
 this removal.</p>
@@ -600,7 +607,7 @@ this removal.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.removeEdge">
-<tt class="descname">removeEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.removeEdge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">removeEdge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.removeEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the specified <cite>edge</cite> from the graph.
 Does not remove vertices that no longer have any edges as a result of
 this removal.</p>
@@ -608,7 +615,7 @@ this removal.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.removeVertex">
-<tt class="descname">removeVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.removeVertex" title="Permalink to this definition">¶</a></dt>
+<code class="descname">removeVertex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.removeVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove <cite>vertex</cite> and all edges associated with it from the graph. Does
 not remove vertices that no longer have any edges as a result of this
 removal.</p>
@@ -616,55 +623,64 @@ removal.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.resetConnectivityValues">
-<tt class="descname">resetConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resetConnectivityValues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset any cached connectivity information. Call this method when you
 have modified the graph.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.saturate">
+<code class="descname">saturate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.sortAtoms">
-<tt class="descname">sortAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.sortAtoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sortAtoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.sortAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the atoms in the graph. This can make certain operations, e.g.
 the isomorphism functions, much more efficient.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.sortVertices">
-<tt class="descname">sortVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.sortVertices" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sortVertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.sortVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
 the isomorphism functions, much more efficient.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.split">
-<tt class="descname">split</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.split" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a single <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object containing two or more
+<code class="descname">split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object containing two or more
 unconnected molecules into separate class:<cite>Molecule</cite> objects.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toAdjacencyList">
-<tt class="descname">toAdjacencyList</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toAdjacencyList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the molecular structure to a string adjacency list.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toAugmentedInChI">
-<tt class="descname">toAugmentedInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toAugmentedInChI" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds an extra layer to the InChI denoting the number of unpaired electrons in case
-more than 1 ( &gt;= 2) unpaired electrons are present in the molecule.</p>
+<code class="descname">toAugmentedInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toAugmentedInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an extra layer to the InChI denoting the multiplicity
+of the molecule.</p>
+<p>Separate layer with a forward slash character.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toAugmentedInChIKey">
-<tt class="descname">toAugmentedInChIKey</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toAugmentedInChIKey" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds an extra layer to the InChIKey denoting the number of unpaired electrons in case
-more than 1 ( &gt;= 2) unpaired electrons are present in the molecule.</p>
+<code class="descname">toAugmentedInChIKey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toAugmentedInChIKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an extra layer to the InChIKey denoting the multiplicity
+of the molecule.</p>
+<p>Simply append the multiplicity string, do not separate by a
+character like forward slash.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toInChI">
-<tt class="descname">toInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChI" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity.</p>
@@ -675,7 +691,7 @@ Perceives aromaticity.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toInChIKey">
-<tt class="descname">toInChIKey</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChIKey" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toInChIKey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChIKey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI Key string. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 <p>or</p>
@@ -687,14 +703,14 @@ the 14 + 9 characters remain.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toOBMol">
-<tt class="descname">toOBMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toOBMol" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toOBMol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toOBMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an OpenBabel OBMol object. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toRDKitMol">
-<tt class="descname">toRDKitMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toRDKitMol" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toRDKitMol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toRDKitMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to a RDKit rdmol object. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.</p>
@@ -704,7 +720,7 @@ atoms to RDKit&#8217;s atom indices.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toSMARTS">
-<tt class="descname">toSMARTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toSMARTS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toSMARTS</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toSMARTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMARTS string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity and removes Hydrogen atoms.</p>
@@ -712,7 +728,7 @@ Perceives aromaticity and removes Hydrogen atoms.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toSMILES">
-<tt class="descname">toSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toSMILES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toSMILES</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toSMILES" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMILES string.</p>
 <p>If there is a Nitrogen atom present it uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
@@ -725,7 +741,7 @@ and removes Hydrogen atoms.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.toSingleBonds">
-<tt class="descname">toSingleBonds</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toSingleBonds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toSingleBonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toSingleBonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a copy of the current molecule, consisting of only single bonds.</p>
 <p>This is useful for isomorphism comparison against something that was made
 via fromXYZ, which does not attempt to perceive bond orders</p>
@@ -733,7 +749,7 @@ via fromXYZ, which does not attempt to perceive bond orders</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.updateAtomTypes">
-<tt class="descname">updateAtomTypes</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.updateAtomTypes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">updateAtomTypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.updateAtomTypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate through the atoms in the structure, checking their atom types
 to ensure they are correct (i.e. accurately describe their local bond
 environment) and complete (i.e. are as detailed as possible).</p>
@@ -741,16 +757,22 @@ environment) and complete (i.e. are as detailed as possible).</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.updateConnectivityValues">
-<tt class="descname">updateConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.updateConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<code class="descname">updateConnectivityValues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.updateConnectivityValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the connectivity values for each vertex in the graph. These are
 used to accelerate the isomorphism checking.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.updateLonePairs">
-<tt class="descname">updateLonePairs</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.updateLonePairs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterate through the atoms in the structure and calcualte the
-number of lone electron pairs, assumin a neutral molecule.</p>
+<code class="descname">updateLonePairs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.updateLonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the atoms in the structure and calculate the
+number of lone electron pairs, assuming a neutral molecule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.updateMultiplicity">
+<code class="descname">updateMultiplicity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.updateMultiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the multiplicity of a newly formed molecule.</p>
 </dd></dl>
 
 </dd></dl>
@@ -761,7 +783,7 @@ number of lone electron pairs, assumin a neutral molecule.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -774,10 +796,10 @@ number of lone electron pairs, assumin a neutral molecule.</p>
                         title="next chapter">rmgpy.molecule.GroupAtom</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/molecule.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/molecule.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -794,9 +816,9 @@ number of lone electron pairs, assumin a neutral molecule.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

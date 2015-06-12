@@ -8,7 +8,7 @@
     
     <title>rmgpy.data.statmechfit &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="rmgpy.data.statmech.StatmechGroups" href="statmechgroups.html" />
     <link rel="prev" title="rmgpy.data.statmech.StatmechDepository" href="statmechdepository.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -67,20 +67,20 @@
 <h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.fitStatmechToHeatCapacity">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechToHeatCapacity</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechToHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechToHeatCapacity</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechToHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given set of dimensionless heat capacity data <cite>Cvlist</cite> corresponding
 to temperature list <cite>Tlist</cite> in K, fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite>
 hindered internal rotor modes. External and other previously-known modes
 should have already been removed from <cite>Cvlist</cite> prior to calling this
 function. You must provide at least 7 values for <cite>Cvlist</cite>.</p>
 <p>This function returns a list containing the fitted vibrational frequencies
-in a <tt class="xref py py-class docutils literal"><span class="pre">HarmonicOscillator</span></tt> object and the fitted 1D hindered rotors
-in <tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor</span></tt> objects.</p>
+in a <code class="xref py py-class docutils literal"><span class="pre">HarmonicOscillator</span></code> object and the fitted 1D hindered rotors
+in <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor</span></code> objects.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.fitStatmechDirect">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechDirect</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechDirect" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechDirect</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechDirect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
 the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
 in K. This method assumes that there are enough heat capacity points
@@ -90,7 +90,7 @@ barrier pairs can be fit directly.</p>
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.fitStatmechPseudoRotors">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechPseudoRotors</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudoRotors" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechPseudoRotors</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudoRotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
 the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
 in K. This method assumes that there are enough heat capacity points
@@ -100,7 +100,7 @@ hindered rotors must be combined into a single &#8220;pseudo-rotor&#8221;.</p>
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.fitStatmechPseudo">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechPseudo</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudo" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechPseudo</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
 the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
 in K. This method assumes that there are relatively few heat capacity points
@@ -114,14 +114,14 @@ single &#8220;pseudo-rotor&#8221;.</p>
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.harmonicOscillator_heatCapacity">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">harmonicOscillator_heatCapacity</tt><big>(</big><em>T</em>, <em>freq</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_heatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">harmonicOscillator_heatCapacity</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_heatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
 in K for the harmonic oscillator with a frequency <cite>freq</cite> in cm^-1.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">harmonicOscillator_d_heatCapacity_d_freq</tt><big>(</big><em>T</em>, <em>freq</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">harmonicOscillator_d_heatCapacity_d_freq</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the first derivative of the heat capacity with respect to the
 harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
 temperatures <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1.</p>
@@ -129,7 +129,7 @@ temperatures <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cit
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.hinderedRotor_heatCapacity">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">hinderedRotor_heatCapacity</tt><big>(</big><em>T</em>, <em>freq</em>, <em>barr</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_heatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">hinderedRotor_heatCapacity</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em>, <em>barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_heatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
 in K for the 1D hindered rotor with a frequency <cite>freq</cite> in cm^-1 and a
 barrier height <cite>barr</cite> in cm^-1.</p>
@@ -137,7 +137,7 @@ barrier height <cite>barr</cite> in cm^-1.</p>
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">hinderedRotor_d_heatCapacity_d_freq</tt><big>(</big><em>T</em>, <em>freq</em>, <em>barr</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">hinderedRotor_d_heatCapacity_d_freq</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em>, <em>barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the first derivative of the heat capacity with respect to the
 hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
 <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
@@ -146,7 +146,7 @@ height <cite>barr</cite> in cm^-1.</p>
 
 <dl class="function">
 <dt id="rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr">
-<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">hinderedRotor_d_heatCapacity_d_barr</tt><big>(</big><em>T</em>, <em>freq</em>, <em>barr</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">hinderedRotor_d_heatCapacity_d_barr</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em>, <em>barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the first derivative of the heat capacity with respect to the
 hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
 <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
@@ -158,13 +158,13 @@ height <cite>barr</cite> in cm^-1.</p>
 <h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.data.statmechfit.DirectFit">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">DirectFit</tt><big>(</big><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">DirectFit</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for fitting vibrational frequencies and hindered rotor
 frequency-barrier pairs for the case when there are few enough oscillators
 and rotors that their values can be fit directly.</p>
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.DirectFit.initialize">
-<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
@@ -173,39 +173,64 @@ and rotors that their values can be fit directly.</p>
 <li><cite>Ncons</cite> - The number of constraint equations.</li>
 </ul>
 <p>The optional parameters are:</p>
-<ul class="simple">
-<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
-each unknown variable. Use <tt class="docutils literal"><span class="pre">None</span></tt> if there is no bound in one or
+<ul>
+<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
 either direction. If provided, you must give bounds for every unknown
-variable.</li>
-<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+variable.</p>
+</li>
+<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
 residual has absolute length less than <cite>tolf</cite>, i.e.
-:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>|</li>
+:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>|</p>
+<div class="system-message" id="id1">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 16); <em><a href="#id2">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{f} | le epsilon_f.</p>
 <blockquote>
-<div><ul class="simple">
-<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+<div><ul>
+<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
 variables has absolute length less than <cite>told</cite>, i.e.
-:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>| Delta</li>
+:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>| Delta</p>
+<div class="system-message" id="id3">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 21); <em><a href="#id4">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{x} | le epsilon_d.</p>
 <blockquote>
-<div><ul class="simple">
-<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+<div><ul>
+<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
 variables has relative length less than <cite>tolx</cite>, i.e.
-:math:<a href="#id5"><span class="problematic" id="id6">`</span></a>| Delta</li>
+:math:<a href="#id5"><span class="problematic" id="id6">`</span></a>| Delta</p>
+<div class="system-message" id="id5">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 26); <em><a href="#id6">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 29)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{x} | le epsilon_x cdot | 
 ector{x} |`.</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>maxIter</cite> - The maximum number of iterations to use</li>
-<li><cite>verbose</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to have DQED print extra information about the
-solve, <tt class="docutils literal"><span class="pre">False</span></tt> to only see printed output when the solver has an
+<li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
+solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
 error.</li>
 </ul>
 </div></blockquote>
@@ -213,9 +238,9 @@ error.</li>
 
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.DirectFit.solve">
-<tt class="descname">solve</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
-set of nonlinear algebraic equations defined by the <tt class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></tt> 
+set of nonlinear algebraic equations defined by the <code class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></code> 
 method of the derived class. This is the method that actually conducts
 the call to DQED. Returns the solution vector and a flag indicating
 the status of the solve. The possible output values of the flag are:</p>
@@ -262,7 +287,7 @@ the status of the solve. The possible output values of the flag are:</p>
 
 <dl class="class">
 <dt id="rmgpy.data.statmechfit.PseudoRotorFit">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">PseudoRotorFit</tt><big>(</big><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">PseudoRotorFit</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for fitting vibrational frequencies and hindered rotor
 frequency-barrier pairs for the case when there are too many oscillators
 and rotors for their values can be fit directly, and where collapsing the
@@ -270,7 +295,7 @@ rotors into a single pseudo-rotor allows for fitting the vibrational
 frequencies directly.</p>
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
-<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
@@ -279,39 +304,64 @@ frequencies directly.</p>
 <li><cite>Ncons</cite> - The number of constraint equations.</li>
 </ul>
 <p>The optional parameters are:</p>
-<ul class="simple">
-<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
-each unknown variable. Use <tt class="docutils literal"><span class="pre">None</span></tt> if there is no bound in one or
+<ul>
+<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
 either direction. If provided, you must give bounds for every unknown
-variable.</li>
-<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+variable.</p>
+</li>
+<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
 residual has absolute length less than <cite>tolf</cite>, i.e.
-:math:<a href="#id7"><span class="problematic" id="id8">`</span></a>|</li>
+:math:<a href="#id7"><span class="problematic" id="id8">`</span></a>|</p>
+<div class="system-message" id="id7">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 16); <em><a href="#id8">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{f} | le epsilon_f.</p>
 <blockquote>
-<div><ul class="simple">
-<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+<div><ul>
+<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
 variables has absolute length less than <cite>told</cite>, i.e.
-:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>| Delta</li>
+:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>| Delta</p>
+<div class="system-message" id="id9">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 21); <em><a href="#id10">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{x} | le epsilon_d.</p>
 <blockquote>
-<div><ul class="simple">
-<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+<div><ul>
+<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
 variables has relative length less than <cite>tolx</cite>, i.e.
-:math:<a href="#id11"><span class="problematic" id="id12">`</span></a>| Delta</li>
+:math:<a href="#id11"><span class="problematic" id="id12">`</span></a>| Delta</p>
+<div class="system-message" id="id11">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 26); <em><a href="#id12">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 29)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{x} | le epsilon_x cdot | 
 ector{x} |`.</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>maxIter</cite> - The maximum number of iterations to use</li>
-<li><cite>verbose</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to have DQED print extra information about the
-solve, <tt class="docutils literal"><span class="pre">False</span></tt> to only see printed output when the solver has an
+<li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
+solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
 error.</li>
 </ul>
 </div></blockquote>
@@ -319,9 +369,9 @@ error.</li>
 
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.PseudoRotorFit.solve">
-<tt class="descname">solve</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
-set of nonlinear algebraic equations defined by the <tt class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></tt> 
+set of nonlinear algebraic equations defined by the <code class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></code> 
 method of the derived class. This is the method that actually conducts
 the call to DQED. Returns the solution vector and a flag indicating
 the status of the solve. The possible output values of the flag are:</p>
@@ -368,7 +418,7 @@ the status of the solve. The possible output values of the flag are:</p>
 
 <dl class="class">
 <dt id="rmgpy.data.statmechfit.PseudoFit">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">PseudoFit</tt><big>(</big><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">PseudoFit</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for fitting vibrational frequencies and hindered rotor
 frequency-barrier pairs for the case when there are too many oscillators
 and rotors for their values can be fit directly, and where we must collapse
@@ -376,7 +426,7 @@ both the vibrations and hindered rotations into &#8220;pseudo-oscillators&#8221;
 &#8220;pseudo-rotors&#8221;.</p>
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.PseudoFit.initialize">
-<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
@@ -385,39 +435,64 @@ both the vibrations and hindered rotations into &#8220;pseudo-oscillators&#8221;
 <li><cite>Ncons</cite> - The number of constraint equations.</li>
 </ul>
 <p>The optional parameters are:</p>
-<ul class="simple">
-<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
-each unknown variable. Use <tt class="docutils literal"><span class="pre">None</span></tt> if there is no bound in one or
+<ul>
+<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
 either direction. If provided, you must give bounds for every unknown
-variable.</li>
-<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+variable.</p>
+</li>
+<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
 residual has absolute length less than <cite>tolf</cite>, i.e.
-:math:<a href="#id13"><span class="problematic" id="id14">`</span></a>|</li>
+:math:<a href="#id13"><span class="problematic" id="id14">`</span></a>|</p>
+<div class="system-message" id="id13">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 16); <em><a href="#id14">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{f} | le epsilon_f.</p>
 <blockquote>
-<div><ul class="simple">
-<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+<div><ul>
+<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
 variables has absolute length less than <cite>told</cite>, i.e.
-:math:<a href="#id15"><span class="problematic" id="id16">`</span></a>| Delta</li>
+:math:<a href="#id15"><span class="problematic" id="id16">`</span></a>| Delta</p>
+<div class="system-message" id="id15">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 21); <em><a href="#id16">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{x} | le epsilon_d.</p>
 <blockquote>
-<div><ul class="simple">
-<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+<div><ul>
+<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
 variables has relative length less than <cite>tolx</cite>, i.e.
-:math:<a href="#id17"><span class="problematic" id="id18">`</span></a>| Delta</li>
+:math:<a href="#id17"><span class="problematic" id="id18">`</span></a>| Delta</p>
+<div class="system-message" id="id17">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 26); <em><a href="#id18">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
 </ul>
 </div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 29)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
 <p>ector{x} | le epsilon_x cdot | 
 ector{x} |`.</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>maxIter</cite> - The maximum number of iterations to use</li>
-<li><cite>verbose</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to have DQED print extra information about the
-solve, <tt class="docutils literal"><span class="pre">False</span></tt> to only see printed output when the solver has an
+<li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
+solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
 error.</li>
 </ul>
 </div></blockquote>
@@ -425,9 +500,9 @@ error.</li>
 
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.PseudoFit.solve">
-<tt class="descname">solve</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
-set of nonlinear algebraic equations defined by the <tt class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></tt> 
+set of nonlinear algebraic equations defined by the <code class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></code> 
 method of the derived class. This is the method that actually conducts
 the call to DQED. Returns the solution vector and a flag indicating
 the status of the solve. The possible output values of the flag are:</p>
@@ -479,7 +554,7 @@ the status of the solve. The possible output values of the flag are:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -502,10 +577,10 @@ the status of the solve. The possible output values of the flag are:</p>
                         title="next chapter">rmgpy.data.statmech.StatmechGroups</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/statmechfit.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/statmechfit.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -522,9 +597,9 @@ the status of the solve. The possible output values of the flag are:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

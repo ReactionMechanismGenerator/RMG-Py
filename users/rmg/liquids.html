@@ -8,7 +8,7 @@
     
     <title>13. Liquid Phase Systems &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="14. Guidelines for Building a Model" href="guidelines.html" />
     <link rel="prev" title="12. Kinetics Estimation" href="kinetics.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -84,13 +84,13 @@
 </pre></div>
 </div>
 <p>For sensitivity analysis, RMG-Py must be compiled with the DASPK solver.
-(See <a class="reference internal" href="installation/linux.html#compile-sensitivity"><em>Compiling RMG-Py with Sensitivity Analysis</em></a> for more details.)
+(See <a class="reference internal" href="installation/linux.html#compile-sensitivity"><span>Compiling RMG-Py with Sensitivity Analysis</span></a> for more details.)
 Like for the simpleReactor, the sensitivity and sensitivityThrehold are optional arguments for when the
 user would like to conduct sensitivity analysis with respect to the reaction rate
-coefficients for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt>.</p>
-<p>Sensitivity analysis is conducted for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt> argument in the input file.
+coefficients for the list of species given for <code class="docutils literal"><span class="pre">sensitivity</span></code>.</p>
+<p>Sensitivity analysis is conducted for the list of species given for <code class="docutils literal"><span class="pre">sensitivity</span></code> argument in the input file.
 The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file
-with the file name <tt class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></tt> with the first index value indicating the reactor system and the second naming the index of the species
+with the file name <code class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></code> with the first index value indicating the reactor system and the second naming the index of the species
 the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
 dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
 sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) &gt; sensitivityThreshold are saved to this file.</p>
@@ -120,10 +120,10 @@ LSER approach described below.</p>
 <div class="section" id="use-of-thermo-libraries-in-liquid-phase-system">
 <span id="useofthermolibrariesliquid"></span><h3>13.2.1. Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
 <p>As it is for gas phase simulation, thermo libraries listed in the input files are checked first to find thermo for a given species and return the first match.
-As it exists two types of thermo libraries, (more details on <a class="reference internal" href="database/thermo.html#thermodatabase"><em>thermo libraries</em></a>),
+As it exists two types of thermo libraries, (more details on <a class="reference internal" href="database/thermo.html#thermodatabase"><span>thermo libraries</span></a>),
 thermo of species matching a library in a liquid phase simulation is obtained following those two cases:</p>
 <p>If library is a &#8220;liquid thermo library&#8221;, thermo data are directly used without applying solvation on it.</p>
-<p>If library is a &#8220;gas thermo library&#8221;, thermo data are extracted and then corrections are applied on it using the <a class="reference internal" href="#lsertoestimatethermo"><em>LSER method</em></a>
+<p>If library is a &#8220;gas thermo library&#8221;, thermo data are extracted and then corrections are applied on it using the <a class="reference internal" href="#lsertoestimatethermo"><span>LSER method</span></a>
 for this specific species-solvent system.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -368,7 +368,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -398,10 +398,10 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
                         title="next chapter">14. Guidelines for Building a Model</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/liquids.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/liquids.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -418,9 +418,9 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

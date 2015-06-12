@@ -8,7 +8,7 @@
     
     <title>10.2. Thermo Database &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
     <link rel="up" title="10. Databases" href="index.html" />
     <link rel="next" title="10.3. Kinetics Database" href="kinetics.html" />
     <link rel="prev" title="10.1. Introduction" href="introduction.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,9 +56,9 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -97,7 +97,7 @@ RMG will also raise an error if user try to use liquid phase thermo library in g
 </div>
 <div class="section" id="species-thermochemistry-libraries">
 <h3>10.2.1.2. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
-<p>The folder <tt class="docutils literal"><span class="pre">RMG-database/input/thermo/libraries/</span></tt> in RMG-database is the location to store
+<p>The folder <code class="docutils literal"><span class="pre">RMG-database/input/thermo/libraries/</span></code> in RMG-database is the location to store
 species thermochemistry libraries. Each particularly library is stored in a file
 with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 <p>An example of a species thermochemistry entry is shown here below:</p>
@@ -127,13 +127,13 @@ with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 labeled &#8216;H2&#8217;, through the adjacency list representation. Heat capacity data (&#8216;Cpdata&#8217;) is described
 at 7 different temperatures, along with the standard enthalpy of formation at 298K (&#8216;H298&#8217;), and
 the standard entropy at 298K (&#8216;S298&#8217;).</p>
-<p>According to the <cite>thermo classes</cite> availble in RMG, you can provide different thermo data: <a class="reference internal" href="../../../reference/thermo/nasa.html#thermonasa"><em>NASA</em></a>, <a class="reference internal" href="../../../reference/thermo/thermodata.html#thermothermodata"><em>thermodata</em></a> (as shown above),
-<a class="reference internal" href="../../../reference/thermo/wilhoit.html#thermowilhoit"><em>wilhoit</em></a> or <a class="reference internal" href="../../../reference/thermo/nasapolynomial.html#thermonasapolynomial"><em>NASAPolynomial</em></a>.</p>
+<p>According to the <cite>thermo classes</cite> availble in RMG, you can provide different thermo data: <a class="reference internal" href="../../../reference/thermo/nasa.html#thermonasa"><span>NASA</span></a>, <a class="reference internal" href="../../../reference/thermo/thermodata.html#thermothermodata"><span>thermodata</span></a> (as shown above),
+<a class="reference internal" href="../../../reference/thermo/wilhoit.html#thermowilhoit"><span>wilhoit</span></a> or <a class="reference internal" href="../../../reference/thermo/nasapolynomial.html#thermonasapolynomial"><span>NASAPolynomial</span></a>.</p>
 </div>
 </div>
 <div class="section" id="groups">
 <h2>10.2.2. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
-<p>The folder <tt class="docutils literal"><span class="pre">RMG-database/input/thermo/groups/</span></tt> in RMG-database is the location to store
+<p>The folder <code class="docutils literal"><span class="pre">RMG-database/input/thermo/groups/</span></code> in RMG-database is the location to store
 group contribution databases. Each particularly type of group contribution is stored in a file
 with the extension .py, e.g. &#8216;groups.py&#8217;:</p>
 <table border="1" class="docutils">
@@ -192,7 +192,7 @@ L1: R
 </pre></div>
 </div>
 <p>More information on hierarchical tree structures in RMG can be found here:
-<a class="reference internal" href="introduction.html#introdatabase"><em>Introduction</em></a>.</p>
+<a class="reference internal" href="introduction.html#introdatabase"><span>Introduction</span></a>.</p>
 <div class="section" id="group-additive-values-gav">
 <h3>10.2.2.1. Group additive values (GAV)<a class="headerlink" href="#group-additive-values-gav" title="Permalink to this headline">¶</a></h3>
 <p>An example of a GAV entry in group.py is shown here below:</p>
@@ -357,7 +357,7 @@ cis-, ortho- and ketene-corrections.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -389,10 +389,10 @@ cis-, ortho- and ketene-corrections.</p>
                         title="next chapter">10.3. Kinetics Database</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/database/thermo.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/thermo.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -409,9 +409,9 @@ cis-, ortho- and ketene-corrections.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

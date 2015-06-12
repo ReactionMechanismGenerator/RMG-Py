@@ -8,7 +8,7 @@
     
     <title>4. Running CanTherm &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="CanTherm User’s Guide" href="index.html" />
     <link rel="next" title="5. Parsing Output Files" href="output.html" />
     <link rel="prev" title="3. Creating Input Files" href="input.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -67,17 +67,17 @@
 <div class="highlight-python"><div class="highlight"><pre>$ python cantherm.py FILE
 </pre></div>
 </div>
-<p>The job will run and the results will be saved to <tt class="docutils literal"><span class="pre">output.py</span></tt> in the same
+<p>The job will run and the results will be saved to <code class="docutils literal"><span class="pre">output.py</span></code> in the same
 directory as the input file. If you wish to save the output elsewhere, use
-the <tt class="docutils literal"><span class="pre">-o</span></tt>/<tt class="docutils literal"><span class="pre">--output</span></tt> option, e.g.</p>
+the <code class="docutils literal"><span class="pre">-o</span></code>/<code class="docutils literal"><span class="pre">--output</span></code> option, e.g.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python cantherm.py INPUTFILE -o OUTPUTFILE
 </pre></div>
 </div>
 <p>You can manipulate the amount of information logged to the console window using
-the <tt class="docutils literal"><span class="pre">-q</span></tt>/<tt class="docutils literal"><span class="pre">--quiet</span></tt> flag (for quiet mode) or the <tt class="docutils literal"><span class="pre">-v</span></tt>/<tt class="docutils literal"><span class="pre">--verbose</span></tt> flag
+the <code class="docutils literal"><span class="pre">-q</span></code>/<code class="docutils literal"><span class="pre">--quiet</span></code> flag (for quiet mode) or the <code class="docutils literal"><span class="pre">-v</span></code>/<code class="docutils literal"><span class="pre">--verbose</span></code> flag
 (for verbose mode). The former causes the amount of logging information shown
 to decrease; the latter causes it to increase.</p>
-<p>To view help information and all available options, use the <tt class="docutils literal"><span class="pre">-h</span></tt>/<tt class="docutils literal"><span class="pre">--help</span></tt>
+<p>To view help information and all available options, use the <code class="docutils literal"><span class="pre">-h</span></code>/<code class="docutils literal"><span class="pre">--help</span></code>
 flag, e.g.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python cantherm.py -h
 </pre></div>
@@ -88,7 +88,7 @@ flag, e.g.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -101,10 +101,10 @@ flag, e.g.</p>
                         title="next chapter">5. Parsing Output Files</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/cantherm/running.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/cantherm/running.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -121,9 +121,9 @@ flag, e.g.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

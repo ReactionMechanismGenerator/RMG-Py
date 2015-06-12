@@ -8,7 +8,7 @@
     
     <title>rmgpy.molecule.Element &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.AtomType" href="atomtype.html" />
     <link rel="prev" title="rmgpy.molecule.vf2.VF2" href="vf2.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,8 +56,8 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -65,7 +65,7 @@
 <h1>rmgpy.molecule.Element<a class="headerlink" href="#rmgpy-molecule-element" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Element">
-<em class="property">class </em><tt class="descclassname">rmgpy.molecule.</tt><tt class="descname">Element</tt><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Element</code><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical element. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -81,23 +81,23 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>number</cite></td>
-<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td><code class="docutils literal"><span class="pre">int</span></code></td>
 <td>The atomic number of the element</td>
 </tr>
 <tr class="row-odd"><td><cite>symbol</cite></td>
-<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
 <td>The symbol used for the element</td>
 </tr>
 <tr class="row-even"><td><cite>name</cite></td>
-<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
 <td>The IUPAC name of the element</td>
 </tr>
 <tr class="row-odd"><td><cite>mass</cite></td>
-<td><tt class="docutils literal"><span class="pre">float</span></tt></td>
+<td><code class="docutils literal"><span class="pre">float</span></code></td>
 <td>The mass of the element in kg/mol</td>
 </tr>
 <tr class="row-even"><td><cite>covRadius</cite></td>
-<td><tt class="docutils literal"><span class="pre">float</span></tt></td>
+<td><code class="docutils literal"><span class="pre">float</span></code></td>
 <td>Covalent bond radius in Angstrom</td>
 </tr>
 </tbody>
@@ -108,11 +108,11 @@ share. Ideally there is only one instance of this class for each element.</p>
 
 <dl class="function">
 <dt id="rmgpy.molecule.getElement">
-<tt class="descclassname">rmgpy.molecule.</tt><tt class="descname">getElement</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.getElement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <tt class="xref py py-class docutils literal"><span class="pre">Element</span></tt> object corresponding to the given parameter
+<code class="descclassname">rmgpy.molecule.</code><code class="descname">getElement</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.getElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <code class="xref py py-class docutils literal"><span class="pre">Element</span></code> object corresponding to the given parameter
 <cite>value</cite>. If an integer is provided, the value is treated as the atomic
 number. If a string is provided, the value is treated as the symbol. An
-<tt class="xref py py-class docutils literal"><span class="pre">ElementError</span></tt> is raised if no matching element is found.</p>
+<code class="xref py py-class docutils literal"><span class="pre">ElementError</span></code> is raised if no matching element is found.</p>
 </dd></dl>
 
 </div>
@@ -121,7 +121,7 @@ number. If a string is provided, the value is treated as the symbol. An
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -134,10 +134,10 @@ number. If a string is provided, the value is treated as the symbol. An
                         title="next chapter">rmgpy.molecule.AtomType</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/element.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/element.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
@@ -154,9 +154,9 @@ number. If a string is provided, the value is treated as the symbol. An
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

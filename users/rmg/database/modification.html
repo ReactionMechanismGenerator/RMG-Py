@@ -8,7 +8,7 @@
     
     <title>10.4. Database Modification &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
     <link rel="up" title="10. Databases" href="index.html" />
     <link rel="next" title="11. Thermochemistry Estimation" href="../thermo.html" />
     <link rel="prev" title="10.3. Kinetics Database" href="kinetics.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,9 +56,9 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -141,7 +141,7 @@ group =
 </pre></div>
 </div>
 <p>If you have determined the suggested groups is appropriate, skip to
-<a class="reference internal" href="#kinetic-training-set"><em>Adding Training Reactions</em></a> or <a class="reference internal" href="#kinetic-rules"><em>Adding Kinetic Rules</em></a>. Otherwise proceed to the
+<a class="reference internal" href="#kinetic-training-set"><span>Adding Training Reactions</span></a> or <a class="reference internal" href="#kinetic-rules"><span>Adding Kinetic Rules</span></a>. Otherwise proceed to the
 next section for instructions on creating the new group.</p>
 </div>
 <div class="section" id="creating-a-new-group">
@@ -240,9 +240,15 @@ will want to add your reaction to the training set.</p>
 </li>
 <li><dl class="first docutils">
 <dt>The value and units of kinetic parameters must be given.</dt>
-<dd><ul class="first last simple">
-<li>Multiplicative uncertainty is given as &#8220;&#8217;<a href="#id1"><span class="problematic" id="id2">*</span></a>|/,&#8217; 5&#8221; meaning within a factor of 5</li>
-<li>Additive uncertainty is given as &#8220;&#8217;+|/-&#8216;, 2&#8221; meaning plus or minus 2.</li>
+<dd><ul class="first last">
+<li><p class="first">Multiplicative uncertainty is given as &#8220;&#8217;<a href="#id1"><span class="problematic" id="id2">*</span></a>|/,&#8217; 5&#8221; meaning within a factor of 5</p>
+<div class="system-message" id="id1">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/database/modification.rst</tt>, line 192); <em><a href="#id2">backlink</a></em></p>
+<p>Inline emphasis start-string without end-string.</p>
+</div>
+</li>
+<li><p class="first">Additive uncertainty is given as &#8220;&#8217;+|/-&#8216;, 2&#8221; meaning plus or minus 2.</p>
+</li>
 </ul>
 </dd>
 </dl>
@@ -263,7 +269,7 @@ training set, which in turn benefits the kinetics of similar reactions.  The new
 are formed by matching the reaction to the most most specific template nodes within
 the reaction&#8217;s respective family. If you do not want the
 training depository reactions to create new rate rules in the database, set the option for
-<tt class="docutils literal"><span class="pre">kineticsDepositories</span></tt> within the <tt class="docutils literal"><span class="pre">database</span></tt> field in your input file to</p>
+<code class="docutils literal"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal"><span class="pre">database</span></code> field in your input file to</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!training&#39;</span><span class="p">],</span>
 </pre></div>
 </div>
@@ -291,8 +297,8 @@ thermo database to estimate the kinetics in the forward direction.  Therefore th
 depending on the order of thermo libraries used when running a job.</p>
 </div>
 <p>If adding the training reaction manually, first identify the reaction family of the reaction, then
-go to the family&#8217;s folder in <tt class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/</span></tt>.  Create a new kinetics entry
-in the <tt class="docutils literal"><span class="pre">training.py</span></tt> file.  Make sure to apply the reaction recipe labels properly for the
+go to the family&#8217;s folder in <code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/</span></code>.  Create a new kinetics entry
+in the <code class="docutils literal"><span class="pre">training.py</span></code> file.  Make sure to apply the reaction recipe labels properly for the
 reactants and products.</p>
 </div>
 <div class="section" id="pitfalls">
@@ -323,7 +329,7 @@ activation energy truly does reflect the reaction barrier height.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -359,10 +365,10 @@ activation energy truly does reflect the reaction barrier height.</p>
                         title="next chapter">11. Thermochemistry Estimation</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/database/modification.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/modification.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -379,9 +385,9 @@ activation energy truly does reflect the reaction barrier height.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

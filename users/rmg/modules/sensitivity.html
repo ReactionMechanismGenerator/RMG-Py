@@ -8,7 +8,7 @@
     
     <title>15.4. Sensitivity Analysis &mdash; RMG Py 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,13 +23,13 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
     <link rel="up" title="15. Standalone Modules" href="index.html" />
     <link rel="next" title="15.5. Generating Flux Diagrams" href="generateFluxDiagram.html" />
     <link rel="prev" title="15.3. Generate Reactions" href="generateReactions.html" /> 
   </head>
-  <body>
+  <body role="document">
 <div class="header">
 &nbsp;
 </div>  
@@ -39,7 +39,7 @@
         <div class="bodywrapper">
           <div class="body">
             
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,29 +56,32 @@
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
-          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">15. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">15. Standalone Modules</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="sensitivity-analysis">
 <span id="sensitivity"></span><h1>15.4. Sensitivity Analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h1>
 <p>For sensitivity analysis, RMG-Py must be compiled with the DASPK solver.
-(See <a class="reference internal" href="../installation/linux.html#compile-sensitivity"><em>Compiling RMG-Py with Sensitivity Analysis</em></a> for more details.)
+(See <a class="reference internal" href="../installation/linux.html#compile-sensitivity"><span>Compiling RMG-Py with Sensitivity Analysis</span></a> for more details.)
 Sensitivity analysis can be conducted in a standalone system for an existing kinetics model in Chemkin format.</p>
 <p>To use the sensitivity analysis standalone module:</p>
 <div class="highlight-python"><div class="highlight"><pre>python $RMGPy/sensitivity.py input.py chem.inp species_dictionary.txt
 </pre></div>
 </div>
-<p>where <tt class="docutils literal"><span class="pre">chem.inp</span></tt> is the CHEMKIN file and the <tt class="docutils literal"><span class="pre">species_dictionary.txt</span></tt> contains the dictionary of
-species associated with the CHEMKIN file.  <tt class="docutils literal"><span class="pre">input.py</span></tt> is an input file similar to one used for an RMG job but
-does not generate a RMG job.  See the following <tt class="docutils literal"><span class="pre">input.py</span></tt> example file found under the
-<tt class="docutils literal"><span class="pre">$RMGPy/examples/rmg/sensitivity/input.py</span></tt> folder</p>
+<p>where <code class="docutils literal"><span class="pre">chem.inp</span></code> is the CHEMKIN file and the <code class="docutils literal"><span class="pre">species_dictionary.txt</span></code> contains the dictionary of
+species associated with the CHEMKIN file.  <code class="docutils literal"><span class="pre">input.py</span></code> is an input file similar to one used for an RMG job but
+does not generate a RMG job.  See the following <code class="docutils literal"><span class="pre">input.py</span></code> example file found under the
+<code class="docutils literal"><span class="pre">$RMGPy/examples/rmg/sensitivity/input.py</span></code> folder</p>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/modules/sensitivity.rst</tt>, line 22)</p>
+Include file u&#8217;/Users/rwest/Code/RMG-Py/documentation/examples/rmg/minimal/input.py&#8217; not found or reading it failed</div>
 <p>The names of species named in the input file must coincide with the name specified in the CHEMKIN file.</p>
-<p>Sensitivity analysis is conducted for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt> argument in the input file.
+<p>Sensitivity analysis is conducted for the list of species given for <code class="docutils literal"><span class="pre">sensitivity</span></code> argument in the input file.
 The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file
-with the file name <tt class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></tt> with the first index value indicating the reactor system and the second naming the index of the species
+with the file name <code class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></code> with the first index value indicating the reactor system and the second naming the index of the species
 the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
 dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
 sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) &gt; sensitivityThreshold are saved to this file.</p>
@@ -88,7 +91,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
@@ -101,10 +104,10 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
                         title="next chapter">15.5. Generating Flux Diagrams</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
-    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/modules/sensitivity.rst"
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/sensitivity.rst"
            rel="nofollow">Edit this page</a></li>
   </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" />
@@ -121,9 +124,9 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
