@@ -93,7 +93,7 @@ given in each mechanism, the different mechanisms can have different units.
 	RMG would only use the rate coefficient supplied by you in generating the mechanism.
 
 	RMG will not handle irreversible reactions correctly, if supplied in a Reaction
-	Library, see :ref:`irreversiblekinetics`.
+	Library.
 	
 
 .. _seedmechanism:
