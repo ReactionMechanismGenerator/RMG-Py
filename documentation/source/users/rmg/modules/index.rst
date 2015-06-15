@@ -15,3 +15,4 @@ There are several standalone modules that can be run separately from RMG.
     sensitivity
     generateFluxDiagram
     thermoEstimation
+    chemkin
