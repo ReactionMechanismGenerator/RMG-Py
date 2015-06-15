@@ -304,4 +304,7 @@ class TestConformer(unittest.TestCase):
         self.assertTrue(numberDegreesOfFreedom, 24) 
         #this is for ethylene:
         numberDegreesOfFreedom = self.ethylene.getNumberDegreesOfFreedom 
-        self.assertTrue(numberDegreesOfFreedom, 18)        
+        self.assertTrue(numberDegreesOfFreedom, 18)   
+        #this is for CO
+        numberDegreesOfFreedom = self.oxygen.getNumberDegreesOfFreedom 
+        self.assertTrue(numberDegreesOfFreedom, 6)        
