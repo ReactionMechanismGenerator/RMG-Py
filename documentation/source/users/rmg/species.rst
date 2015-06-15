@@ -28,7 +28,13 @@ species: ::
 Replacing the structure with any of the following representations will also produce
 the same species: ::
 
-    structure=adjacencyList("1 C 0"),
+    structure=adjacencyList("
+    1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+    2 H u0 p0 c0 {1,S}
+    3 H u0 p0 c0 {1,S}
+    4 H u0 p0 c0 {1,S}
+    5 H u0 p0 c0 {1,S}
+    "),
    
     structure=SMARTS("[CH4]"),
    
