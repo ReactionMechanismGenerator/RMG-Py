@@ -303,9 +303,13 @@ class TestConformer(unittest.TestCase):
         #this is for ethane:
         numberDegreesOfFreedom = self.conformer.getNumberDegreesOfFreedom()
         self.assertEqual(numberDegreesOfFreedom, 24)
+
         #this is for ethylene:
+        # It doesn't check aganist 3*Natoms, because Natoms is not declared.
         numberDegreesOfFreedom = self.ethylene.getNumberDegreesOfFreedom()
         self.assertEqual(numberDegreesOfFreedom, 18)
+
         #this is for CO
+        # It doesn't check aganist 3*Natoms, because Natoms is not declared.
         numberDegreesOfFreedom = self.oxygen.getNumberDegreesOfFreedom()
         self.assertEqual(numberDegreesOfFreedom, 6)
