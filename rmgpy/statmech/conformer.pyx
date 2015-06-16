@@ -245,19 +245,18 @@ cdef class Conformer:
         cdef int N, Natoms, degreesOfFreedom, numberDegreesOfFreedom
         cdef Mode mode
         N = 0 
-        Natoms =  len(self.conformer.mass.value)
+        Natoms =  len(self.mass.value)
         # what the total number of degrees of freedom for the species should be
-        degreesOfFreedom = Natoms*3 
-        for i in range(len(self.conformer.modes)):
-            mode = self.conformer.modes[i]
+        degreesOfFreedom = Natoms * 3 
+        for mode in self.modes:
             if isinstance(mode, HinderedRotor):
                 N += 1
-            if hasattr(mode,'frequencies'):
+            elif hasattr(mode,'frequencies'):
                 N += len(mode.frequencies.value) # found the harmonic frequencies
-            if hasattr(mode, 'mass'):
+            elif isinstance(mode, IdealGasTranslation):
                 # found the translational degrees of freedom
                 N += 3
-            if type(mode) == NonlinearRotor: 
+            elif type(mode) == NonlinearRotor: 
                 N += 3  
             elif type(mode) == LinearRotor:
                 N += 2
@@ -266,10 +265,10 @@ cdef class Conformer:
             elif type(mode) == SphericalTopRotor:
                 N += 3
             else:
-                raise TypeError("Mode type not supported")
-            numberDegreesOfFreedom = N      
-            if N != degreesOfFreedom:
-                raise ValueError('The total degrees of molecular freedom for this species should be ' + str(degreesOfFreedom))          
+                raise TypeError("Mode type {0!r} not supported".format(mode))
+        numberDegreesOfFreedom = N      
+        if N != degreesOfFreedom:
+            raise ValueError('The total degrees of molecular freedom for this species should be ' + str(degreesOfFreedom))          
     
         return numberDegreesOfFreedom
     
