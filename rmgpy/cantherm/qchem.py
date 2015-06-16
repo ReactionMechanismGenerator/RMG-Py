@@ -32,6 +32,7 @@ import math
 import numpy
 import os.path
 import rmgpy.constants as constants
+import logging
 from rmgpy.cantherm.common import checkConformerEnergy
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 ################################################################################
@@ -181,7 +182,7 @@ class QchemLog:
     
     def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):
         """
-        Load the molecular degree of freedom data from a log file created as
+        Load the molecular degree of freedom data from a output file created as
         the result of a Qchem "Freq"  calculation. As
         Qchem's guess of the external symmetry number is not always correct,
         you can use the `symmetry` parameter to substitute your own value; if
@@ -190,13 +191,17 @@ class QchemLog:
 
         modes = []; freq = []; mmass = []; rot = []
         E0 = 0.0
-
+#        symmetry = 1
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
-
-            # The data we want is in the Thermochemistry section of the output
-            if 'VIBRATIONAL ANALYSIS' in line:
+            # Read spin multiplicity if not explicitly given
+            if '$molecule' in line and spinMultiplicity is None:
+                line = f.readline()
+                if len(line.split()) == 2:
+                    spinMultiplicity = int(float(line.split()[1])) 
+            # The rest of the data we want is in the Thermochemistry section of the output
+            elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
                 
                 inPartitionFunctions = False
@@ -212,7 +217,12 @@ class QchemLog:
                         frequencies = []
                         while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
                             if ' Frequency:' in line:
-                                frequencies.extend([float(d) for d in line.split()[-3:]])
+                                if len(line.split()) == 4:
+                                    frequencies.extend([float(d) for d in line.split()[-3:]])
+                                elif len(line.split()) == 3:
+                                    frequencies.extend([float(d) for d in line.split()[-2:]])
+                                elif len(line.split()) == 2:
+                                    frequencies.extend([float(d) for d in line.split()[-1:]])    
                             line = f.readline()
                         line = f.readline()
                         # If there is an imaginary frequency, remove it
@@ -233,38 +243,27 @@ class QchemLog:
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
                         # If the first eigenvalue is 0, the rotor is linear
+                        symmetry = 1
                         if inertia[0] == 0.0:
                             inertia.remove(0.0)
+                            logging.debug('inertia is {}'.format(str(inertia)))
                             for i in range(2):
                                 inertia[i] *= (constants.a0/1e-10)**2
-                                rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                                #modes.append(rotation)
+                            inertia = numpy.sqrt(inertia[0]*inertia[1])
+                            rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)    
                             rot.append(rotation)                             
                         else:
                             for i in range(3):
                                 inertia[i] *= (constants.a0/1e-10)**2
+                                pass
                                 rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                                 #modes.append(rotation)
                             rot.append(rotation) 
 
                     # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
-                    elif 'Rotational Symmetry Number is' in line and symmetry is None:
+                    elif 'Rotational Symmetry Number is' in line: # and symmetry is None:
                         symmetry = int(float(line.split()[4]))
-                        
-                    elif 'Final energy is' in line:
-                        E0 = float(line.split()[3]) * constants.E_h * constants.Na
-                        print 'energy is' + str(E0)
-                    # Read ZPE and add to ground-state energy 
-                    # NEED TO MULTIPLY ZPE BY scaling factor!
-                    elif 'Zero point vibrational energy:' in line:
-                        ZPE = float(line.split()[4]) * 4184  
-                        E0=E0+ZPE
-                    # Read spin multiplicity if not explicitly given
-#                    elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity is None:
-#                        spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
-
-#                    elif 'Log10(Q)' in line:
-#                        inPartitionFunctions = True
+                        logging.debug('rot sym is {}'.format(str(symmetry)))
 
                     # Read the next line in the file
                     line = f.readline()
@@ -275,7 +274,6 @@ class QchemLog:
         # Close file when finished
         f.close()
         modes = mmass + rot + freq
-        #modes.append(mmass), modes.append(rot), modes.append(freq)
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
               
     def loadEnergy(self,frequencyScaleFactor=1.):
@@ -294,8 +292,7 @@ class QchemLog:
     
             if 'Final energy is' in line:
                 E0 = float(line.split()[3]) * constants.E_h * constants.Na
-                print 'energy is' + str(E0)
-            
+                logging.debug('energy is {}'.format(str(E0)))
             
 #            elif 'Zero point vibrational energy' in line:
                 #Qchem's ZPE is in kcal/mol
@@ -333,7 +330,7 @@ class QchemLog:
                 #Qchem's ZPE is in kcal/mol
                 ZPE = float(line.split()[4]) * 4184
                 #scaledZPE = ZPE * frequencyScaleFactor
-                print 'ZPE is' + str(ZPE)
+                logging.debug('ZPE is {}'.format(str(ZPE)))
             # Read the next line in the file
             line = f.readline()
     
