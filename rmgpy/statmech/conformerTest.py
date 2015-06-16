@@ -295,16 +295,17 @@ class TestConformer(unittest.TestCase):
         """
         I = self.conformer.getInternalReducedMomentOfInertia(pivots=[1,5], top1=[1,2,3,4])
         self.assertAlmostEqual(I*constants.Na*1e23, 1.56768, 4)
+
     def test_getNumberDegreesOfFreedom(self):
         """
         Test the Conformer.getNumberDegreesOfFreedom() method.
         """
         #this is for ethane:
-        numberDegreesOfFreedom = self.conformer.getNumberDegreesOfFreedom  
-        self.assertTrue(numberDegreesOfFreedom, 24) 
+        numberDegreesOfFreedom = self.conformer.getNumberDegreesOfFreedom()
+        self.assertEqual(numberDegreesOfFreedom, 24)
         #this is for ethylene:
-        numberDegreesOfFreedom = self.ethylene.getNumberDegreesOfFreedom 
-        self.assertTrue(numberDegreesOfFreedom, 18)   
+        numberDegreesOfFreedom = self.ethylene.getNumberDegreesOfFreedom()
+        self.assertEqual(numberDegreesOfFreedom, 18)
         #this is for CO
-        numberDegreesOfFreedom = self.oxygen.getNumberDegreesOfFreedom 
-        self.assertTrue(numberDegreesOfFreedom, 6)        
+        numberDegreesOfFreedom = self.oxygen.getNumberDegreesOfFreedom()
+        self.assertEqual(numberDegreesOfFreedom, 6)
