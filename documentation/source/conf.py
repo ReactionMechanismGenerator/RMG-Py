@@ -210,6 +210,8 @@ latex_preamble = """
 \\renewcommand{\\vector}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
 \\renewcommand{\\matrix}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
 """
+# See also the extrahead block in the layout.html template for mathjax extenions!
+
 pngmath_latex_preamble = latex_preamble
 
 # If true, show page references after internal links.
