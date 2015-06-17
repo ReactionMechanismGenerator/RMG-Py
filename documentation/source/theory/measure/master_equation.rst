@@ -347,6 +347,8 @@ differential equations:
 
 .. math::
 
+    \renewcommand{\vector}[1]{\boldsymbol{\mathbf{#1}}}
+    \renewcommand{\matrix}[1]{\boldsymbol{\mathbf{#1}}}
     \frac{d}{dt} \begin{bmatrix}
     \vector{p}_1 \\
     \vector{p}_2 \\
