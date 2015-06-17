@@ -191,6 +191,7 @@ Troubleshooting and FAQs
 
 1) The network that CanTherm generated and the resulting pdf file show abnormally large
 absolute values. What's going on?
+
     This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).
 
 Cantherm User Checklist
