@@ -1,8 +1,8 @@
 .. _measuretheoryguide:
 
-********************
-MEASURE Theory Guide
-********************
+********************************
+Pressure-Dependence Theory Guide
+********************************
 
 .. toctree::
     :maxdepth: 2
