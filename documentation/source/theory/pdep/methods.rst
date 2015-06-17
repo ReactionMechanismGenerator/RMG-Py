@@ -45,7 +45,11 @@ of energy only, and not of time.
 
 After discretizing the energy domain, the above becomes
 
-.. math:: \vector{p}_i(t) = \sum_{j=1}^{N_\mathrm{isom}} x_j(t) \vector{u}_{ij} + \sum_{m=1}^{N_\mathrm{reac}} y_{m\mathrm{A}}(t) y_{m\mathrm{B}} \vector{v}_{im}
+.. math:: 
+
+    \renewcommand{\vector}[1]{\boldsymbol{\mathbf{#1}}}
+    \renewcommand{\matrix}[1]{\boldsymbol{\mathbf{#1}}}
+    \vector{p}_i(t) = \sum_{j=1}^{N_\mathrm{isom}} x_j(t) \vector{u}_{ij} + \sum_{m=1}^{N_\mathrm{reac}} y_{m\mathrm{A}}(t) y_{m\mathrm{B}} \vector{v}_{im}
 
 The phenomenological rate coefficients can be constructed from the 
 energy-grained master equation matrix and the vectors :math:`\vector{u}_{ij}` 
