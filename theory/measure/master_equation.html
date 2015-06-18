@@ -27,7 +27,15 @@
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="MEASURE Theory Guide" href="index.html" />
     <link rel="next" title="3. Methods for Determining Phenomenological Rate Coefficients" href="methods.html" />
-    <link rel="prev" title="1. Introduction" href="introduction.html" /> 
+    <link rel="prev" title="1. Introduction" href="introduction.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -379,7 +387,9 @@ number of discrete bins called <em>grains</em>. This converts the linear
 integro-differential equation into a system of first-order ordinary
 differential equations:</p>
 <div class="math">
-\[\begin{split}\frac{d}{dt} \begin{bmatrix}
+\[\begin{split}\renewcommand{\vector}[1]{\boldsymbol{\mathbf{#1}}}
+\renewcommand{\matrix}[1]{\boldsymbol{\mathbf{#1}}}
+\frac{d}{dt} \begin{bmatrix}
 \vector{p}_1 \\
 \vector{p}_2 \\
 \vdots \\

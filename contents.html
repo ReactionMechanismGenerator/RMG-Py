@@ -25,7 +25,15 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="#" />
-    <link rel="next" title="User’s Guide" href="users/index.html" /> 
+    <link rel="next" title="User’s Guide" href="users/index.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -56,12 +64,6 @@
             
   <div class="section" id="rmg-py-vrelease-documentation">
 <h1>RMG Py v0.1.0 documentation<a class="headerlink" href="#rmg-py-vrelease-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="figure align-center" id="id1">
-<img alt="_images/dependency.png" src="_images/dependency.png" />
-<p class="caption"><span class="caption-text">The subprojects that make up the RMG Py codebase, shown in a dependency
-tree. A solid arrow indicates a required dependency, while a dashed arrow
-indicates an optional dependency.</span></p>
-</div>
 <div class="section" id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -78,7 +80,7 @@ indicates an optional dependency.</span></p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="theory/index.html">RMG Theory Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="theory/rmg/index.html">RMG Theory Guide</a></li>
-<li class="toctree-l2"><a class="reference internal" href="theory/measure/index.html">MEASURE Theory Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theory/pdep/index.html">Pressure-Dependence Theory Guide</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">RMG API Reference</a></li>

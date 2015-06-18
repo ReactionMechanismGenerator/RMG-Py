@@ -27,7 +27,15 @@
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="9. Group Representation" href="group.html" />
-    <link rel="prev" title="7. Analyzing the Output Files" href="output.html" /> 
+    <link rel="prev" title="7. Analyzing the Output Files" href="output.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -84,13 +92,19 @@ species:</p>
 </div>
 <p>Replacing the structure with any of the following representations will also produce
 the same species:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s">&quot;1 C 0&quot;</span><span class="p">),</span>
+<div class="highlight-python"><div class="highlight"><pre>structure=adjacencyList(&quot;
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+&quot;),
 
-<span class="n">structure</span><span class="o">=</span><span class="n">SMARTS</span><span class="p">(</span><span class="s">&quot;[CH4]&quot;</span><span class="p">),</span>
+structure=SMARTS(&quot;[CH4]&quot;),
 
-<span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">),</span>
+structure=SMILES(&quot;C&quot;),
 
-<span class="n">structure</span><span class="o">=</span><span class="n">InChI</span><span class="p">(</span><span class="s">&quot;InChI=1S/CH4/h1H4&quot;</span><span class="p">),</span>
+structure=InChI(&quot;InChI=1S/CH4/h1H4&quot;),
 </pre></div>
 </div>
 <p>To quickly generate any adjacency list, or to generate an adjacency list from

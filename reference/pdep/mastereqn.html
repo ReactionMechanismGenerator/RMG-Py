@@ -27,7 +27,15 @@
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="Pressure dependence (rmgpy.pdep)" href="index.html" />
     <link rel="next" title="Methods for estimating k(T,P) values" href="methods.html" />
-    <link rel="prev" title="rmgpy.pdep.Network" href="network.html" /> 
+    <link rel="prev" title="rmgpy.pdep.Network" href="network.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -235,7 +243,7 @@ reactant channel <span class="math">\(n\)</span> due to chemical reactions:</p>
 \[h_n = - \sum_{i=1}^{N_\mathrm{isom}} \sum_{r=1}^{N_\mathrm{grains}} y_{n\mathrm{B}} f_{in}(E_r) b_n(E_r)\]</div>
 <p>The interested reader is referred to any of a variety of other sources for
 alternative presentations, of which an illustrative sampling is given here
-<a class="reference internal" href="../../theory/measure/master_equation.html#gilbert1990" id="id1">[Gilbert1990]</a> <a class="reference internal" href="../../theory/measure/master_equation.html#baer1996" id="id2">[Baer1996]</a> <a class="reference internal" href="../../theory/measure/master_equation.html#holbrook1996" id="id3">[Holbrook1996]</a> <a class="reference internal" href="../../theory/measure/master_equation.html#forst2003" id="id4">[Forst2003]</a> <a class="reference internal" href="../../theory/measure/master_equation.html#pilling2003" id="id5">[Pilling2003]</a>.</p>
+<a class="reference internal" href="../../theory/pdep/master_equation.html#gilbert1990" id="id1">[Gilbert1990]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#baer1996" id="id2">[Baer1996]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#holbrook1996" id="id3">[Holbrook1996]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#forst2003" id="id4">[Forst2003]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#pilling2003" id="id5">[Pilling2003]</a>.</p>
 <table class="docutils citation" frame="void" id="gilbert1990" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">

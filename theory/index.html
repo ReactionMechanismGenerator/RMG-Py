@@ -26,7 +26,15 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../contents.html" />
     <link rel="next" title="RMG Theory Guide" href="rmg/index.html" />
-    <link rel="prev" title="1. Introduction" href="../developers/introduction.html" /> 
+    <link rel="prev" title="1. Introduction" href="../developers/introduction.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -60,17 +68,41 @@
             
   <div class="section" id="rmg-theory-guide">
 <h1>RMG Theory Guide<a class="headerlink" href="#rmg-theory-guide" title="Permalink to this headline">¶</a></h1>
+<p>The theoretical foundations to some of the parts of RMG and Cantherm
+are described in greater detail in these sections.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="rmg/index.html">RMG Theory Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="rmg/enlarger.html">1. Rate-Based Model Enlarger</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rmg/prune.html">2. Prune Edge Species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rmg/prune.html">2. Prune Edge Species</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rmg/prune.html#key-parameters-in-pruning">2.1. Key Parameters in Pruning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rmg/prune.html#how-pruning-works">2.2. How Pruning Works</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="measure/index.html">MEASURE Theory Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="measure/introduction.html">1. Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/master_equation.html">2. The Master Equation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/methods.html">3. Methods for Determining Phenomenological Rate Coefficients</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pdep/index.html">Pressure-Dependence Theory Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pdep/introduction.html">1. Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pdep/introduction.html#unimolecular-reactions">1.1. Unimolecular Reactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/introduction.html#historical-context">1.2. Historical Context</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/master_equation.html">2. The Master Equation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pdep/master_equation.html#isomers-reactants-and-products">2.1. Isomers, Reactants, and Products</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/master_equation.html#collision-models">2.2. Collision Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/master_equation.html#reaction-models">2.3. Reaction Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/master_equation.html#the-full-master-equation">2.4. The Full Master Equation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/master_equation.html#the-energy-grained-master-equation">2.5. The Energy-Grained Master Equation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/master_equation.html#further-reading">2.6. Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/methods.html">3. Methods for Determining Phenomenological Rate Coefficients</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pdep/methods.html#a-common-formalism">3.1. A Common Formalism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/methods.html#the-modified-strong-collision-method">3.2. The Modified Strong Collision Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/methods.html#the-reservoir-state-method">3.3. The Reservoir State Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdep/methods.html#the-chemically-signficant-eigenvalues-method">3.4. The Chemically-Signficant Eigenvalues Method</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

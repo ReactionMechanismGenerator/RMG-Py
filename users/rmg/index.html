@@ -27,7 +27,15 @@
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="User’s Guide" href="../index.html" />
     <link rel="next" title="1. Introduction" href="introduction.html" />
-    <link rel="prev" title="User’s Guide" href="../index.html" /> 
+    <link rel="prev" title="User’s Guide" href="../index.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -150,6 +158,7 @@
 <li class="toctree-l2"><a class="reference internal" href="modules/sensitivity.html">15.4. Sensitivity Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/generateFluxDiagram.html">15.5. Generating Flux Diagrams</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/thermoEstimation.html">15.6. Thermo Estimation Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/chemkin.html">15.7. Working With Chemkin Files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">16. Frequently Asked Questions</a><ul>

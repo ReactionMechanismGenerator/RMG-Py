@@ -26,8 +26,16 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG Theory Guide" href="index.html" />
-    <link rel="next" title="MEASURE Theory Guide" href="../measure/index.html" />
-    <link rel="prev" title="1. Rate-Based Model Enlarger" href="enlarger.html" /> 
+    <link rel="next" title="Pressure-Dependence Theory Guide" href="../pdep/index.html" />
+    <link rel="prev" title="1. Rate-Based Model Enlarger" href="enlarger.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -49,7 +57,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../measure/index.html" title="MEASURE Theory Guide"
+          <a href="../pdep/index.html" title="Pressure-Dependence Theory Guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="enlarger.html" title="1. Rate-Based Model Enlarger"
@@ -133,8 +141,8 @@ in the edge, which is followed by pruning of excessive amount of edge species to
   <p class="topless"><a href="enlarger.html"
                         title="previous chapter">1. Rate-Based Model Enlarger</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../measure/index.html"
-                        title="next chapter">MEASURE Theory Guide</a></p>
+  <p class="topless"><a href="../pdep/index.html"
+                        title="next chapter">Pressure-Dependence Theory Guide</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/theory/rmg/prune.rst"

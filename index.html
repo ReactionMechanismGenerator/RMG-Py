@@ -24,7 +24,15 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="contents.html" /> 
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="contents.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
   </head>
   <body role="document">
 <div class="header">
@@ -70,27 +78,35 @@
     It is developed on github as <a href="https://github.com/ReactionMechanismGenerator/RMG-Py/" title="RMG-Java github project">RMG-Py</a>.
   </p>
   
+  <p>
+    CanTherm is developend and distributed as part of RMG-Py, but can be used as a stand-alone
+    application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics
+    calculations.
+  </p>
+  
 RMG is free, open-source software, and is under active and ongoing development. 
-If you are interested in assisting with its development, please let us know. 
+If you are interested in assisting with or guiding its development, please let us know. 
 While you are free to use/modify RMG components as you wish, we would like to 
-co-ordinate with you. Please contact <a href="mailto:whgreen@mit.edu">Professor William H. Green</a>
+co-ordinate with you. Please contact <a href="mailto:whgreen@mit.edu">Professor William H. Green</a>,
+<a href="mailto:r.west@neu.edu">Professor Richard H. West</a>,
 or the <a href="mailto:rmg_dev@mit.edu">The RMG Development Team</a> for further information.
 
 
-
   <h2>Parts of the documentation:</h2>
-  
-  <table class="contentstable" align="center" style="margin-left: 30px"><tr>
-    <td width="50%">
-      <p class="biglink"><a class="biglink" href="users/index.html">User's Guide</a><br/>
-         <span class="linkdescr">how to get, install, and use RMG and CanTherm</span></p>
+
+    <div style="width: 300px; float: left; margin-left: 30px;">
+      <p class="biglink"><a class="biglink" href="users/rmg/index.html">RMG User's Guide</a><br/>
+         <span class="linkdescr">how to get, install, and use RMG-Py</span></p>
+      <p class="biglink"><a class="biglink" href="users/cantherm/index.html">CanTherm User's Guide</a><br/>
+         <span class="linkdescr">how to get, install, and use CanTherm</span></p>
       <p class="biglink"><a class="biglink" href="developers/index.html">Developer's Guide</a><br/>
          <span class="linkdescr">how to develop in RMG</span></p>
-      <p class="biglink"><a class="biglink" href="theory/index.html">Theory Guide</a><br/>
-         <span class="linkdescr">the theory behind RMG</span></p>
       <p class="biglink"><a class="biglink" href="reference/index.html">API Reference</a><br/>
          <span class="linkdescr">the RMG source code</span></p>
-   </td><td width="50%">
+      <p class="biglink"><a class="biglink" href="theory/index.html">Theory Guide</a><br/>
+         <span class="linkdescr">some of the theory behind RMG</span></p>
+   </div>
+   <div style="width: 300px; float: left; margin-left: 30px;">
       <p class="biglink"><a class="biglink" href="contents.html">Contents</a><br/>
          <span class="linkdescr">for a complete overview</span></p>
       <p class="biglink"><a class="biglink" href="search.html">Search page</a><br/>
@@ -99,8 +115,8 @@ or the <a href="mailto:rmg_dev@mit.edu">The RMG Development Team</a> for further
          <span class="linkdescr">all functions, classes, terms</span></p>
       <p class="biglink"><a class="biglink" href="py-modindex.html">Module Index</a><br/>
          <span class="linkdescr">all documented modules</span></p>
-    </td></tr>
-  </table>
+    </div>
+    <div style="clear:both; width:100%">&nbsp;</div>
   
 
           </div>

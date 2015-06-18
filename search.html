@@ -31,7 +31,15 @@
   </script>
   
   <script type="text/javascript" id="searchindexloader"></script>
-   
+  
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
 
   </head>
   <body role="document">

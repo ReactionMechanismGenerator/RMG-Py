@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>15.7. Working With Chemkin Files &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
+    <link rel="up" title="15. Standalone Modules" href="index.html" />
+    <link rel="next" title="16. Frequently Asked Questions" href="../faq.html" />
+    <link rel="prev" title="15.6. Thermo Estimation Module" href="thermoEstimation.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body role="document">
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../faq.html" title="16. Frequently Asked Questions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="thermoEstimation.html" title="15.6. Thermo Estimation Module"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">15. Standalone Modules</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="working-with-chemkin-files">
+<span id="chemkin"></span><h1>15.7. Working With Chemkin Files<a class="headerlink" href="#working-with-chemkin-files" title="Permalink to this headline">¶</a></h1>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/modules/chemkin.rst</tt>, line 3)</p>
+<p>Title overline too short.</p>
+<div class="highlight-python"><div class="highlight"><pre>********************
+Working With Chemkin Files
+********************
+</pre></div>
+</div>
+</div>
+<p>This section provides information on how to import your own chemkin II-formatted mechanism files
+into RMG so that they can be used as reaction libraries or seed mechanisms for further mechanism generation.</p>
+<div class="section" id="converting-a-chemkin-ii-file-for-use-in-rmg-py">
+<h2>15.7.1. Converting a Chemkin II file for use in RMG-Py<a class="headerlink" href="#converting-a-chemkin-ii-file-for-use-in-rmg-py" title="Permalink to this headline">¶</a></h2>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/modules/chemkin.rst</tt>, line 10)</p>
+<p>Title underline too short.</p>
+<div class="highlight-python"><div class="highlight"><pre>Converting a Chemkin II file for use in RMG-Py
+-----------------------------
+</pre></div>
+</div>
+</div>
+<p>This is useful when you have a mechanism (e.g., a &#8216;seed&#8217; or &#8216;foundation&#8217; mechanism) that you want RMG to build from.</p>
+<p>In this case, <span class="xref std std-ref">importChemkinLibrary.py</span> should be used to load a mechanism and its attending thermo and possibly transport data
+to a user specified path (this script is located in <cite>RMG-database</cite>. Once loaded, it is convered into a python format compatible with RMG. The user must also provide a species dictionary in the correct and current adjacency list format. To run the script, type:</p>
+<div class="highlight-python"><div class="highlight"><pre>python importChemkinLibrary.py chemkin.txt rmg_dictionary.txt library_name
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>chemkin.txt:</dt>
+<dd>the chemkin formated mechanism file containting ELEMENTS, SPECIES, REACTIONS, AND THERMO information</dd>
+<dt>rmg_dictionary.txt:</dt>
+<dd>the RMG formatted dictionary of all species and their corresponding adjacency lists</dd>
+<dt>library_name:</dt>
+<dd>the name you want to give your newly created RMG library (e.g., &#8216;new_fuel&#8217;)</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">15.7. Working With Chemkin Files</a><ul>
+<li><a class="reference internal" href="#converting-a-chemkin-ii-file-for-use-in-rmg-py">15.7.1. Converting a Chemkin II file for use in RMG-Py</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="thermoEstimation.html"
+                        title="previous chapter">15.6. Thermo Estimation Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../faq.html"
+                        title="next chapter">16. Frequently Asked Questions</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/chemkin.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
