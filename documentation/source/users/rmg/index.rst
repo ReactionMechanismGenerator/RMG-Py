@@ -7,9 +7,9 @@ RMG User's Guide
 .. toctree::
     :maxdepth: 2
     :numbered:
+    :includehidden:
 
     introduction
-    features
     installation/index
     input
     examples

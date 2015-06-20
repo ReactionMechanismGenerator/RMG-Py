@@ -1,8 +1,8 @@
 .. _features:
 
-********
+
 Features
-********
+========
 
 Thermodynamics estimation using group additivity.
 	Group additivity based on Benson's groups provide fast and reliable thermochemistry estimates. A standalone utility for estimating heat of formation, entropy, and heat capacity is also included.
