@@ -209,6 +209,7 @@ latex_logo = '_static/RMG-logo.pdf'
 
 # Additional stuff for the LaTeX preamble.
 latex_preamble = """
+\\usepackage[scaled]{beramono}
 \\usepackage[version=3]{mhchem}
 \\DeclareUnicodeCharacter{0394}{\\ensuremath{\\Delta}}
 \\renewcommand{\\vector}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
