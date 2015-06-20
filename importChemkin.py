@@ -563,6 +563,7 @@ class ModelMatcher():
         if not args.noqm:
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
+                method='pm3',
                 fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),
                 scratchDirectory=None,  # not currently used
                 onlyCyclics=True,
