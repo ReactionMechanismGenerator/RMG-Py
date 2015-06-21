@@ -653,6 +653,8 @@ class ThermoLibrary(Database):
         for entry in self.entries.values():
             if molecule.is_isomorphic(entry.item):
                 if molecule.multiplicity == entry.item.multiplicity:
+                    if getattr(self, 'SKIP_DUPLICATES', False):
+                        return True
                     raise DatabaseError('Adjacency list and multiplicity of {0} matches that of '
                                         'existing molecule {1} in thermo library {2}. Please '
                                         'correct your library.'.format(label, entry.label, self.name))
