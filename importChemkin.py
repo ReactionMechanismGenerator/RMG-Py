@@ -610,6 +610,7 @@ class ModelMatcher():
                     logging.info("But it's the model currently being imported, so not loading.")
                     break
                 library = rmgpy.data.thermo.ThermoLibrary()
+                library.SKIP_DUPLICATES = True
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
                 library.label = root.split('/')[-1]
                 rmg.database.thermo.libraries[library.label] = library
