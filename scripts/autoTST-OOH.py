@@ -39,6 +39,13 @@ print databasePath
 rmgDatabase.load(databasePath, kineticsFamilies=rxnFamilies)  # unsure if this is the right environment
 print 'RMG Database Loaded'
 
+qmCalc = QMCalculator(
+                        software='gaussian',
+                        method='m062x',
+                        fileStore=os.path.expandvars('/gss_gpfs_scratch/$USER/QMfiles'),
+                        scratchDirectory=os.path.expandvars('/gss_gpfs_scratch/$USER/QMscratch'),
+                        )
+
 def calculate(reaction):
     rxnFamily = reaction.family
     tsDatabase = rmgDatabase.kinetics.families[rxnFamily].transitionStates
@@ -101,12 +108,7 @@ def makeComparison(chemkinRxn):
         gotOne = True
     rxnFamily = reaction.family
     assert gotOne
-    qmCalc = QMCalculator(
-                            software='gaussian',
-                            method='m062x',
-                            fileStore=os.path.expandvars('/gss_gpfs_scratch/$USER/QMfiles'),
-                            scratchDirectory=os.path.expandvars('/gss_gpfs_scratch/$USER/QMscratch'),
-                            )
+
     reaction = calculate(reaction)
 
     print "For reaction {0!r}".format(reaction)
@@ -208,8 +210,6 @@ def makeComparison(chemkinRxn):
         input_string = ','.join(row)
         with open(os.path.join(folderPath, smiles_dict[entry] + '_kinetics.txt'), 'w') as kinTxt:
                 kinTxt.write(input_string)
-
-
 
 
 with open('kineticsDict.pkl', 'rb') as f:
