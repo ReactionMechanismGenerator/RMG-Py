@@ -1636,8 +1636,13 @@ class KineticsFamily(Database):
                     kineticsList.append([kinetics, depository, entry, isForward])
         
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
-        if estimator:        
-            kinetics, entry = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+        if estimator:
+            try:
+                kinetics, entry = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+            except Exception:
+                logging.error("Error getting kinetics for reaction {0!s}.\n{0!r}".format(reaction))
+                raise
+
             if kinetics:
                 if not returnAllKinetics:
                     return kinetics, estimator, entry, True
