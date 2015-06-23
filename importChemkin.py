@@ -635,6 +635,15 @@ class ModelMatcher():
             rmg.reactionModel.quantumMechanics = rmg.quantumMechanics
             rmg.quantumMechanics.initialize()
 
+        # We need to properly initialize the database so that we can
+        # find kinetics without crashing.
+        logging.info('Adding rate rules from training set in kinetics families...')
+        for family in rmg.database.kinetics.families.values():
+            family.addKineticsRulesFromTrainingSet(thermoDatabase=rmg.database.thermo)
+        logging.info('Filling in rate rules in kinetics families by averaging...')
+        for family in rmg.database.kinetics.families.values():
+            family.fillKineticsRulesByAveragingUp()
+
         self.rmg_object = rmg
         return rmg
 
