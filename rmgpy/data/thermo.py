@@ -685,13 +685,15 @@ class ThermoDatabase(object):
                     
                     # If priority == 2
                     if thermo[0][0] == 2:
-                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.  (Do this only if it came from a QM calculation)
-                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
+                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs. 
+                        # (Do this only if it came from a QM calculation)
+                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity])
+                        if label not in quantumMechanics.database.entries:
+                            quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = label,
                                                         molecule = original_molecule.toAdjacencyList(),
                                                         thermo = thermo0,
                                                         shortDesc = thermo0.comment
-                                                        
                                                         )                    
 #                    # For writing thermodata HBI check for QM molecules
 #                    with open('thermoHBIcheck.txt','a') as f:
@@ -704,8 +706,10 @@ class ThermoDatabase(object):
                 
                     if thermo0 is not None:
                         # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
-                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
+                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity])
+                        if label not in quantumMechanics.database.entries:
+                            quantumMechanics.database.loadEntry(index=len(quantumMechanics.database.entries) + 1,
+                                                        label=label,
                                                         molecule = original_molecule.toAdjacencyList(),
                                                         thermo = thermo0,
                                                         shortDesc = thermo0.comment
