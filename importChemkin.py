@@ -1113,7 +1113,8 @@ class ModelMatcher():
                         try:
                             match = entry.data.isIdenticalTo(ck_thermo)  #isIdenticalTo requires improvement before this should be fully implemented
                         except ValueError:
-                            logging.info("Could not compare two thermo entries, skipping entry for chemkin species {0} in the thermo library {1}".format(ck_label, library_name))
+                            logging.info("Error comparing two thermo entries, skipping entry for chemkin species {0} in the thermo library {1}".format(ck_label, library_name))
+                            match = False
                         if match:
                             # Successfully found a tentative match, set the match and report.
                             rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(entry.item, label=entry.label)
