@@ -1510,6 +1510,44 @@ multiplicity 2
         saturated_molecule.saturate()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
+    def testFusedAromatic(self):
+        """Test we can make aromatic perylene from both adjlist and SMILES"""
+        perylene = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {3,B} {6,B} {7,B}
+2  C u0 p0 c0 {4,B} {5,B} {8,B}
+3  C u0 p0 c0 {1,B} {4,B} {11,B}
+4  C u0 p0 c0 {2,B} {3,B} {12,B}
+5  C u0 p0 c0 {2,B} {6,B} {15,B}
+6  C u0 p0 c0 {1,B} {5,B} {16,B}
+7  C u0 p0 c0 {1,B} {9,B} {10,B}
+8  C u0 p0 c0 {2,B} {13,B} {14,B}
+9  C u0 p0 c0 {7,B} {17,B} {22,S}
+10 C u0 p0 c0 {7,B} {18,B} {23,S}
+11 C u0 p0 c0 {3,B} {18,B} {25,S}
+12 C u0 p0 c0 {4,B} {19,B} {26,S}
+13 C u0 p0 c0 {8,B} {19,B} {28,S}
+14 C u0 p0 c0 {8,B} {20,B} {29,S}
+15 C u0 p0 c0 {5,B} {20,B} {31,S}
+16 C u0 p0 c0 {6,B} {17,B} {32,S}
+17 C u0 p0 c0 {9,B} {16,B} {21,S}
+18 C u0 p0 c0 {10,B} {11,B} {24,S}
+19 C u0 p0 c0 {12,B} {13,B} {27,S}
+20 C u0 p0 c0 {14,B} {15,B} {30,S}
+21 H u0 p0 c0 {17,S}
+22 H u0 p0 c0 {9,S}
+23 H u0 p0 c0 {10,S}
+24 H u0 p0 c0 {18,S}
+25 H u0 p0 c0 {11,S}
+26 H u0 p0 c0 {12,S}
+27 H u0 p0 c0 {19,S}
+28 H u0 p0 c0 {13,S}
+29 H u0 p0 c0 {14,S}
+30 H u0 p0 c0 {20,S}
+31 H u0 p0 c0 {15,S}
+32 H u0 p0 c0 {16,S}
+""")
+        perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
+        self.assertTrue(perylene.isIsomorphic(perylene2))
 
 ################################################################################
 
