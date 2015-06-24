@@ -217,9 +217,7 @@ cdef class VF2:
         
         if not self.subgraph:
             # To be feasible the connectivity values must be an exact match
-            if vertex1.connectivity1 != vertex2.connectivity1: return False
-            if vertex1.connectivity2 != vertex2.connectivity2: return False
-            if vertex1.connectivity3 != vertex2.connectivity3: return False
+            if vertex1.connectivity != vertex2.connectivity: return False
         
         # Semantic check #1: vertex1 and vertex2 must be equivalent
         if self.subgraph:
