@@ -1289,6 +1289,7 @@ class ModelMatcher():
         entry.data = thermo
         comment = getattr(thermo, 'comment', '')
         if comment:
+            comment = unicode(comment, 'utf-8', 'replace')
             entry.longDesc = comment + '.\n'
         else:
             entry.longDesc = ''
