@@ -143,9 +143,7 @@ class Atom(Vertex):
         """
         d = {
             'edges': self.edges,
-            'connectivity1': self.connectivity1,
-            'connectivity2': self.connectivity2,
-            'connectivity3': self.connectivity3,
+            'connectivity': self.connectivity,
             'sortingLabel': self.sortingLabel,
             'atomType': self.atomType.label if self.atomType else None,
             'lonePairs': self.lonePairs,
@@ -157,9 +155,7 @@ class Atom(Vertex):
         A helper function used when unpickling an object.
         """
         self.edges = d['edges']
-        self.connectivity1 = d['connectivity1']
-        self.connectivity2 = d['connectivity2']
-        self.connectivity3 = d['connectivity3']
+        self.connectivity = d['connectivity']
         self.sortingLabel = d['sortingLabel']
         self.atomType = atomTypes[d['atomType']] if d['atomType'] else None
         self.lonePairs = d['lonePairs']
@@ -1769,9 +1765,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     atom1.incrementRadical()
@@ -1813,9 +1807,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     atom1.incrementRadical()
@@ -1861,9 +1853,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     bond12.incrementOrder()
@@ -1893,9 +1883,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     bond12.incrementOrder()

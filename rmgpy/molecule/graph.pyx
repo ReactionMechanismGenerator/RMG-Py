@@ -32,6 +32,8 @@ the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
 """
 
+from collections import Counter
+
 import logging
 from .vf2 cimport VF2
 
@@ -46,9 +48,7 @@ cdef class Vertex(object):
     =================== =============== ========================================
     Attribute           Type            Description
     =================== =============== ========================================
-    `connectivity1`     ``int``         The number of nearest neighbors
-    `connectivity2`     ``int``         The sum of the neighbors' `connectivity1` values
-    `connectivity3`     ``int``         The sum of the neighbors' `connectivity2` values
+    `connectivity`     ``int``         The number of nearest neighbors
     `sortingLabel`      ``int``         An integer label used to sort the vertices
     =================== =============== ========================================
     
@@ -64,9 +64,7 @@ cdef class Vertex(object):
         """
         d = {
             'edges': self.edges,
-            'connectivity1': self.connectivity1,
-            'connectivity2': self.connectivity2,
-            'connectivity3': self.connectivity3,
+            'connectivity': self.connectivity,
             'sortingLabel': self.sortingLabel,
             'terminal': self.terminal,
             'mapping': self.mapping,
@@ -75,9 +73,7 @@ cdef class Vertex(object):
 
     def __setstate__(self, d):
         self.edges = d['edges']
-        self.connectivity1 = d['connectivity1']
-        self.connectivity2 = d['connectivity2']
-        self.connectivity3 = d['connectivity3']
+        self.connectivity = d['connectivity']
         self.sortingLabel = d['sortingLabel']
         self.terminal = d['terminal']
         self.mapping = d['mapping']
@@ -111,9 +107,7 @@ cdef class Vertex(object):
         """
         Reset the cached structure information for this vertex.
         """
-        self.connectivity1 = -1
-        self.connectivity2 = -1
-        self.connectivity3 = -1
+        self.connectivity = -1
         self.sortingLabel = -1
         self.terminal = False
         self.mapping = None
@@ -124,7 +118,7 @@ cpdef short getVertexConnectivityValue(Vertex vertex) except 1:
     :meth:`__VF2_pairs`. The value returned is based on the vertex's
     connectivity values (and assumes that they are set properly).
     """
-    return ( -256*vertex.connectivity1 - 16*vertex.connectivity2 - vertex.connectivity3 )
+    return (-1*vertex.connectivity)
 
 cpdef short getVertexSortingLabel(Vertex vertex) except -1:
     """
@@ -285,6 +279,20 @@ cdef class Graph:
         del edge.vertex1.edges[edge.vertex2]
         del edge.vertex2.edges[edge.vertex1]
 
+    cpdef updateConnectivityValues(self):
+        """
+        Update the connectivity values for each vertex in the graph. These are
+        used to accelerate the isomorphism checking.
+        """
+        cdef Vertex vertex
+        cdef int value
+        cdef list connectivityValues
+
+        connectivityValues = self.update([len(vertex.edges) for vertex in self.vertices])
+        for vertex, value in zip(self.vertices, connectivityValues):
+            vertex.connectivity = value
+
+
     cpdef Graph copy(self, bint deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy
@@ -391,33 +399,36 @@ cdef class Graph:
         cdef Vertex vertex
         for vertex in self.vertices: vertex.resetConnectivityValues()
         
-    cpdef updateConnectivityValues(self):
+    cpdef list update(self, old_values):
         """
-        Update the connectivity values for each vertex in the graph. These are
-        used to accelerate the isomorphism checking.
+        Recursively generates updated connectivity values, until the number 
+        of different connectivity values does not increase anymore. 
         """
         cdef Vertex vertex1, vertex2
         cdef short count
+        cdef list new_values
         
-        for vertex1 in self.vertices:
-            count = len(vertex1.edges)
-            vertex1.connectivity1 = count
-        for vertex1 in self.vertices:
-            count = 0
-            for vertex2 in vertex1.edges: count += vertex2.connectivity1
-            vertex1.connectivity2 = count
-        for vertex1 in self.vertices:
-            count = 0
-            for vertex2 in vertex1.edges: count += vertex2.connectivity2
-            vertex1.connectivity3 = count
+        new_values = []
         
+        for vertex1, old_value in zip(self.vertices, old_values):
+            count = 0
+            for vertex2 in vertex1.edges: count += old_values[self.vertices.index(vertex2)]
+            new_values.append(count)
+
+        if len(Counter(new_values).keys()) > len(Counter(old_values).keys()):
+            return self.update(new_values)
+        else:
+            return old_values
+
     cpdef sortVertices(self):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
         cdef Vertex vertex
-        cdef int index
+        cdef int index, value
+        cdef list connectivityValues
+
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
@@ -427,7 +438,8 @@ cdef class Graph:
         # If we need to sort then let's also update the connecitivities so
         # we're sure they are right, since the sorting labels depend on them
         self.updateConnectivityValues()
-        self.vertices.sort(key=getVertexConnectivityValue)
+
+        self.vertices = sorted(self.vertices, key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 
