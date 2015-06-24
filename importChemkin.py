@@ -1874,7 +1874,7 @@ recommended = False
                     if self.args.quit_when_exhausted:
                         logging.warning("--quit_when_exhausted option detected. Now exiting without waiting for input.")
                         break
-                    logging.info("Waiting for input from the web front end..")
+                    logging.info("Waiting for input from the web front end... (port {0})".format(self.args.port))
                 while not self.manualMatchesToProcess:
                     time.sleep(1)
 
