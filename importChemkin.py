@@ -1274,9 +1274,16 @@ class ModelMatcher():
         entry.index = len(self.identified_labels)
         entry.label = chemkinLabel
         source = self.args.thermo
-        # molecule = Molecule(SMILES=self.smilesDict.get(species.label, 'C'))
-        # molecule = self.speciesDict_rmg.get(rmgSpecies.label, Species().fromSMILES('C')).molecule[0]
-        molecule = rmgSpecies.molecule[0]
+
+        # Look for the lowest energy resonance isomer that isn't aromatic,
+        # because saving aromatic adjacency lists can cause problems downstream.
+        for molecule in rmgSpecies.molecule:
+            if not molecule.isAromatic():
+                break
+        else:
+            logging.warning(("All resonance isomers of {0} are aromatic?! "
+                            "Unsafe saving to thermo.py file.").format(chemkinLabel))
+            return
         entry.item = molecule
         entry.data = thermo
         comment = getattr(thermo, 'comment', '')
