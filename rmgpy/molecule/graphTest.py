@@ -240,17 +240,17 @@ class TestGraph(unittest.TestCase):
         Test the Graph.updateConnectivityValues() method.
         """
         self.graph.updateConnectivityValues()
-        self.assertEqual(self.graph.vertices[0].connectivity, 2)
+        self.assertEqual(self.graph.vertices[0].connectivity, 10)
         self.assertEqual(self.graph.vertices[0].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[1].connectivity, 3)
+        self.assertEqual(self.graph.vertices[1].connectivity, 19)
         self.assertEqual(self.graph.vertices[1].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[2].connectivity, 4)
+        self.assertEqual(self.graph.vertices[2].connectivity, 23)
         self.assertEqual(self.graph.vertices[2].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[3].connectivity, 4)
+        self.assertEqual(self.graph.vertices[3].connectivity, 23)
         self.assertEqual(self.graph.vertices[3].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[4].connectivity, 3)
+        self.assertEqual(self.graph.vertices[4].connectivity, 19)
         self.assertEqual(self.graph.vertices[4].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[5].connectivity, 2)
+        self.assertEqual(self.graph.vertices[5].connectivity, 10)
         self.assertEqual(self.graph.vertices[5].sortingLabel, -1)
     
     def test_sortVertices(self):
@@ -291,7 +291,7 @@ class TestGraph(unittest.TestCase):
     
         graph.updateConnectivityValues()
 
-        for i,cv_ in enumerate([3,4,5,3,2,3]):
+        for i,cv_ in enumerate([11, 15, 18, 10, 7, 11]):
             cv = vertices[i].connectivity
             self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i,cv,cv_))
 
