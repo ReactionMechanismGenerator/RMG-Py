@@ -533,8 +533,7 @@ class Group(Graph):
     def __init__(self, atoms=None):
         Graph.__init__(self, atoms)
         self.multiplicity = []
-        self.updateConnectivityValues()
-        self.updateFingerprint()
+        self.update()
 
     def __reduce__(self):
         """
@@ -620,6 +619,12 @@ class Group(Graph):
         other = Group(g.vertices)
         return other
 
+    def update(self):
+
+        self.updateConnectivityValues()
+        self.updateFingerprint()
+
+
     def merge(self, other):
         """
         Merge two groups so as to store them in a single
@@ -693,8 +698,7 @@ class Group(Graph):
         self.vertices, multiplicity = fromAdjacencyList(adjlist, group=True)
         if multiplicity is not None:
             self.multiplicity = multiplicity
-        self.updateConnectivityValues()
-        self.updateFingerprint()
+        self.update()
         return self
 
     def toAdjacencyList(self, label=''):

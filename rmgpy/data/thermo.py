@@ -963,7 +963,7 @@ class ThermoDatabase(object):
                 saturatedStruct.removeBond(bond)
                 saturatedStruct.removeAtom(H)
                 atom.incrementRadical()
-            saturatedStruct.updateConnectivityValues()
+            saturatedStruct.update()
             try:
                 self.__addGroupThermoData(thermoData, self.groups['radical'], saturatedStruct, {'*':atom})
             except KeyError:

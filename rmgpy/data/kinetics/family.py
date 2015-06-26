@@ -281,7 +281,7 @@ class ReactionRecipe:
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
 
-        struct.updateConnectivityValues()
+        struct.update()
 
     def applyForward(self, struct, unique=True):
         """
@@ -1042,8 +1042,6 @@ class KineticsFamily(Database):
 
         # Split product structure into multiple species if necessary
         productStructures = productStructure.split()
-        for product in productStructures:
-            product.updateConnectivityValues()
 
         # Make sure we've made the expected number of products
         if len(template.products) != len(productStructures):
@@ -1067,8 +1065,7 @@ class KineticsFamily(Database):
         # If product structures are Molecule objects, update their atom types
         for struct in productStructures:
             if isinstance(struct, Molecule):
-                struct.updateAtomTypes()
-                struct.updateMultiplicity()
+                struct.update()
 
         # Return the product structures
         return productStructures
