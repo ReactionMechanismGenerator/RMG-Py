@@ -305,7 +305,11 @@ class ModelMatcher():
                     foundThermoBlock = True
                     # Unread the line (we'll re-read it in readThermoBlock())
                     f.seek(-len(line0), 1)
-                    formulaDict = readThermoBlock(f, speciesDict)
+                    try:
+                        formulaDict = readThermoBlock(f, speciesDict)
+                    except:
+                        logging.error("Error reading thermo block around line:\n" + f.readline())
+                        raise
                     assert formulaDict, "Didn't read any thermo data"
                 line0 = f.readline()
         assert foundThermoBlock, "Couldn't find a line beginning with THERMO or THERM or THER in {0}".format(thermo_file)
