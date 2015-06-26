@@ -1045,7 +1045,11 @@ def readThermoBlock(f, speciesDict):
 
         thermoBlock += line
         if line[79] == '4':
-            label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
+            try:
+                label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
+            except:
+                logging.error("Error reading thermo block:\n" + thermoBlock)
+                raise
             if label not in speciesDict:
                 logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
                 thermoBlock = ''
