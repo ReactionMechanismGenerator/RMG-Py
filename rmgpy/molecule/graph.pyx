@@ -32,8 +32,6 @@ the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
 """
 
-from collections import Counter
-
 import logging
 from .vf2 cimport VF2
 
@@ -290,7 +288,7 @@ cdef class Graph:
         cdef int value
         cdef list connectivityValues
 
-        connectivityValues = self.update([len(vertex.edges) for vertex in self.vertices], 0)
+        connectivityValues = self.__update([len(vertex.edges) for vertex in self.vertices], 0)
         for vertex, value in zip(self.vertices, connectivityValues):
             vertex.connectivity = value
 
@@ -401,7 +399,7 @@ cdef class Graph:
         cdef Vertex vertex
         for vertex in self.vertices: vertex.resetConnectivityValues()
         
-    cpdef list update(self, old_values, trial_number):
+    cpdef list __update(self, old_values, trial_number):
         """
         Recursively generates updated connectivity values, until the number 
         of different connectivity values does not increase anymore. 
@@ -417,14 +415,14 @@ cdef class Graph:
             for vertex2 in vertex1.edges: count += old_values[self.vertices.index(vertex2)]
             new_values.append(count)
 
-        element_count_old = len(Counter(old_values).keys())
-        element_count_new = len(Counter(new_values).keys())
+        element_count_old = len(set(old_values))
+        element_count_new = len(set(new_values))
 
         if element_count_new > element_count_old:
-            return self.update(new_values, 0)
+            return self.__update(new_values, 0)
         elif element_count_new == element_count_old and trial_number <= MAX_NUMBER_OF_TRIALS:
             trial_number += 1
-            return self.update(new_values, trial_number)
+            return self.__update(new_values, trial_number)
         else:
             return old_values
 

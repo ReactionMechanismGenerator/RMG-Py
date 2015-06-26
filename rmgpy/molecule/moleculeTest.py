@@ -850,8 +850,7 @@ class TestMolecule(unittest.TestCase):
         unpickled with no loss of information.
         """
         molecule0 = Molecule().fromSMILES('C=CC=C[CH2]C')
-        molecule0.updateAtomTypes()
-        molecule0.updateConnectivityValues()
+        molecule0.update()
         import cPickle
         molecule = cPickle.loads(cPickle.dumps(molecule0))
         

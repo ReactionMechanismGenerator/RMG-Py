@@ -718,11 +718,8 @@ class SolvationDatabase(object):
                         atom.incrementRadical()
                         addedToPairs[atom] += 1
 
-        saturatedStruct.updateConnectivityValues()
-        saturatedStruct.sortAtoms()
-        saturatedStruct.updateAtomTypes()
+        saturatedStruct.update()
         saturatedStruct.updateLonePairs()
-        saturatedStruct.updateMultiplicity()
         
         return saturatedStruct, addedToPairs
 

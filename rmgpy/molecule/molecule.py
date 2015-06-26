@@ -701,6 +701,18 @@ class Molecule(Graph):
         self._fingerprint = None
         return self.removeEdge(bond)
 
+    def update(self):
+        """
+        Update connectivity values, atom types of atoms.
+        Update multiplicity, and sort atoms using the new
+        connectivity values.
+        """
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
+        self.updateMultiplicity()
+        self.sortAtoms()
+
+
     def sortAtoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
@@ -1261,10 +1273,9 @@ class Molecule(Graph):
                     bond = Bond(self.vertices[i], self.vertices[j], order)
                     self.addBond(bond)
         
-        # Set atom types and connectivity values
-        self.updateConnectivityValues()
+        # Set atom types, connectivity values, and sort
+        self.update()
         self.updateLonePairs()
-        self.updateAtomTypes()
         
         # Assume this is always true
         # There are cases where 2 radicalElectrons is a singlet, but
