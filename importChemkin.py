@@ -2811,5 +2811,7 @@ if __name__ == '__main__':
     #import webbrowser
     print 'http://127.0.0.1:{0:d}'.format(args.port)
     #webbrowser.open('http://127.0.0.1:{0:d}'.format(args.port))
-
-    mm.main()
+    try:
+        mm.main()
+    finally:
+        cherrypy.engine.exit()
