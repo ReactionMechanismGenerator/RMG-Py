@@ -423,7 +423,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
     
     cpdef double getRateCoefficient(self, double T, double P=0) except -1:
         """
-        Return the rate coefficient in the appropriate combination of cm^3, 
+        Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa.
         """
         cdef double Plow, Phigh, klow, khigh, k

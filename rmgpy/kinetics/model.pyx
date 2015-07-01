@@ -174,7 +174,7 @@ cdef class KineticsModel:
 
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
         """
-        Return the value of the rate coefficient :math:`k(T)` in units of cm^3,
+        Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K. This method must be
         overloaded in the derived class.
         """
@@ -317,7 +317,7 @@ cdef class PDepKineticsModel(KineticsModel):
     cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1:
         """
         Return the effective pressure in Pa for a system at a given pressure
-        `P` in bar composed of the given list of `species` with the given
+        `P` in Pa composed of the given list of `species` with the given
         `fractions`.
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=1] _fractions
@@ -357,7 +357,7 @@ cdef class PDepKineticsModel(KineticsModel):
         
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
         """
-        Return the value of the rate coefficient :math:`k(T)` in units of cm^3,
+        Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
         Pa. If you wish to consider collision efficiencies, then you should
         first use :meth:`getEffectivePressure()` to compute the effective
