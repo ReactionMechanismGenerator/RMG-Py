@@ -1113,6 +1113,49 @@ class TestMolecule(unittest.TestCase):
         This is a "hard" test that currently fails.
         """
         self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
+    
+    def testKekulizeAromaticAdjlist(self):
+        """
+        Tests that a molecule formed using an aromatic adjacency list returns both
+        the aromatic and kekulized form as resonance isomers.
+        """
+        toluene = Molecule().fromAdjacencyList("""1  H 0 {2,S}
+2  C 0 {3,S} {9,S} {10,S} {1,S}
+3  C 0 {4,B} {8,B} {2,S}
+4  C 0 {3,B} {5,B} {11,S}
+5  C 0 {4,B} {6,B} {12,S}
+6  C 0 {5,B} {7,B} {13,S}
+7  C 0 {6,B} {8,B} {14,S}
+8  C 0 {3,B} {7,B} {15,S}
+9  H 0 {2,S}
+10  H 0 {2,S}
+11  H 0 {4,S}
+12  H 0 {5,S}
+13  H 0 {6,S}
+14  H 0 {7,S}
+15  H 0 {8,S}""")
+        
+        toluene_kekulized = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,D} {6,S} {7,S}
+2  C u0 p0 c0 {1,D} {3,S} {8,S}
+3  C u0 p0 c0 {2,S} {4,D} {9,S}
+4  C u0 p0 c0 {3,D} {5,S} {10,S}
+5  C u0 p0 c0 {4,S} {6,D} {11,S}
+6  C u0 p0 c0 {1,S} {5,D} {12,S}
+7  C u0 p0 c0 {1,S} {13,S} {14,S} {15,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {6,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {7,S}
+""")
+        
+        isomer = toluene.getKekulizedResonanceIsomers()[0]
+        self.assertTrue(isomer.isIsomorphic(toluene_kekulized))
+        
         
     def testSaturateAromaticRadical(self):
         """
