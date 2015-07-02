@@ -19,6 +19,7 @@ generatedSpeciesConstraints(
     #maximumSulfurAtoms = 0,
     #maximumHeavyAtoms = 3,
     maximumRadicalElectrons = 2,
+    allowSingletO2 = False,
 )
 
 # List of species
