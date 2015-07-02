@@ -1041,7 +1041,7 @@ def readThermoBlock(f, speciesDict):
             else:
                 logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
         else:
-            logging.info("Ignoring short line: {0!r}".format(line))
+            logging.debug("Ignoring short line: {0!r}".format(line))
         line = f.readline()
     return formulaDict
 
