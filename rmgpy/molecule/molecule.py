@@ -1696,6 +1696,7 @@ class Molecule(Graph):
             newIsomers = isomer.getAdjacentResonanceIsomers()
             newIsomers += isomer.getLonePairRadicalResonanceIsomers()
             newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
+            newIsomers += isomer.getKekulizedResonanceIsomers()
             
             for newIsomer in newIsomers:
                 newIsomer.updateAtomTypes()
@@ -1939,6 +1940,22 @@ class Molecule(Graph):
 
         return isomers
 
+    def getKekulizedResonanceIsomers(self):
+        """
+        Generate the kekulized (single-double bond) form of the molecule.
+        """
+        cython.declare(isomers=list, atom=Atom)
+        isomers = []
+        for atom in self.vertices:
+            if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
+                break
+        else:
+            return isomers
+        
+        rdkitmol = self.toRDKitMol() # This step kekulizes the molecule
+        isomers.append(Molecule().fromRDKitMol(rdkitmol))
+        return isomers
+    
     def findAllDelocalizationPaths(self, atom1):
         """
         Find all the delocalization paths allyl to the radical center indicated
