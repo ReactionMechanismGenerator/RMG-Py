@@ -1017,11 +1017,15 @@ def readThermoBlock(f, speciesDict):
         Tmin = float(meaningfulline[0:9].strip())
         Tint = float(meaningfulline[10:19].strip())
         Tmax = float(meaningfulline[20:29].strip())
+        if [Tmin, Tint, Tmax] != [float(i) for i in meaningfulline.split()[0:3]]:
+            logging.warning("Default temperature range line {0!r} may be badly formatted.".format(line))
+            logging.warning("It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30")
         logging.info("Thermo file has default temperature range {0} to {1} and {1} to {2}".format(Tmin, Tint, Tmax))
         line = f.readline()
     except:
         logging.info("Thermo file has no default temperature ranges")
-    
+        logging.info("(The line it would be on is {0!r} but that is not formatted as such)".format(line))
+        logging.info("(It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30)")
     thermoBlock = ''
     comments = ''
     while line != '' and not line.upper().strip().startswith('END'):
@@ -1029,7 +1033,8 @@ def readThermoBlock(f, speciesDict):
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
 
         if len(line) < 80:
-            logging.info("Ignoring short line: {0!r}".format(line))
+            if line.strip():
+                logging.info("Ignoring short but non-empty line: {0!r}".format(line))
             line = f.readline()
             continue
 
