@@ -67,9 +67,9 @@ class ChemkinError(Exception):
 
 def Ffloat(string):
     """
-    Parse a Fortran-ish string into a float, like "1.00D 03"
+    Parse a Fortran-ish string into a float, like "1.00D 03" or "1.00d+03"
     """
-    return float(string.replace("D", "E").replace("E ", "E+"))
+    return float(string.replace("e", "E").replace("d", "D").replace("D", "E").replace("E ", "E+"))
     
 def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
@@ -306,9 +306,9 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         dEa = float(tokens[-1])
         reaction = ''.join(tokens[:-6])
     else:
-        A = float(tokens[-3])
-        n = float(tokens[-2])
-        Ea = float(tokens[-1])
+        A = Ffloat(tokens[-3])
+        n = Ffloat(tokens[-2])
+        Ea = Ffloat(tokens[-1])
         dA = 0.0
         dn = 0.0
         dEa = 0.0
@@ -712,6 +712,9 @@ def loadSpeciesDictionary(path):
 def removeCommentFromLine(line):
     """
     Remove a comment from a line of a Chemkin file or species dictionary file.
+    
+    Returns the line and the comment.
+    If the comment is encoded with latin-1, it is converted to utf-8.
     """
     try:
         index1 = line.index('!')
@@ -726,6 +729,18 @@ def removeCommentFromLine(line):
     comment = line[index+1:-1]
     if index < len(line):
         line = line[0:index] + '\n'
+
+    try:
+        ucomment = comment.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            ucomment = comment.decode('latin-1')
+        except UnicodeDecodeError:
+            ucomment = comment.decode('windows-1252', errors='replace')
+    # Convert back to utf-8.
+    # Other parts of RMG-Py expect a string object not a unicode object,
+    # but at least this way we know what the encoding is.
+    comment = ucomment.encode('utf-8', 'replace')
     return line, comment
 
 def loadTransportFile(path, speciesDict):
@@ -983,6 +998,8 @@ def readThermoBlock(f, speciesDict):
     
     Returns a dictionary of molecular formulae for each species, in the form
     `{'methane': {'C':1, 'H':4}}
+    
+    If duplicate entries are found, the FIRST is used, and a warning is printed.
     """
     # List of thermodynamics (hopefully one per species!)
     formulaDict = {}
@@ -1010,38 +1027,48 @@ def readThermoBlock(f, speciesDict):
     while line != '' and not line.upper().strip().startswith('END'):
         line, comment = removeCommentFromLine(line)
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
-        if len(line) >= 80:
-            if line[79] in ['1', '2', '3', '4']:
-                thermoBlock += line
-                if line[79] == '4':
-                    label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
-                    if label not in speciesDict:
-                        logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
-                        thermoBlock = ''
-                        line = f.readline()
-                        continue
-                    else:
-                        if thermo is None:
-                            logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
-                            raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
-                    try:
-                        formulaDict[label] = formula
-                        speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
-                        if comments:
-                            speciesDict[label].thermo.comment += '\n{0}'.format(comments)
-                        comments = ''
-                    except KeyError:
-                        if label.upper() in ['AR', 'N2', 'HE', 'NE']:
-                            logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
-                        else:
-                            logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
-                    thermoBlock = ''
-                assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
-            else:
-                logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
-        else:
+
+        if len(line) < 80:
             logging.info("Ignoring short line: {0!r}".format(line))
+            line = f.readline()
+            continue
+
+        if line[79] not in ['1', '2', '3', '4']:
+            logging.warning("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+            line = f.readline()
+            continue
+
+        thermoBlock += line
+        if line[79] == '4':
+            label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
+            if label not in speciesDict:
+                logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
+                thermoBlock = ''
+                line = f.readline()
+                continue
+            elif speciesDict[label].thermo:
+                logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
+                thermoBlock = ''
+                line = f.readline()
+                continue
+            else:
+                if thermo is None:
+                    logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
+                    raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
+            try:
+                formulaDict[label] = formula
+                speciesDict[label].thermo = thermo
+                speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
+                if comments:
+                    speciesDict[label].thermo.comment += '\n{0}'.format(comments)
+                comments = ''
+            except KeyError:
+                if label.upper() in ['AR', 'N2', 'HE', 'NE']:
+                    logging.warning('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
+                else:
+                    logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+            thermoBlock = ''
+        assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
         line = f.readline()
     return formulaDict
 
@@ -1069,11 +1096,14 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if len(tokens) > 0 and tokens[0].upper() == 'REACTIONS':
             # Regular Chemkin file
             found = True
-            try:
-                energyUnits = tokens[1].lower()
-                moleculeUnits = tokens[2].lower()
-            except IndexError:
-                pass
+            for token in tokens[1:]:
+                unit = token.lower()
+                if unit in ['molecules', 'moles', 'mole', 'mol', 'molecule']:
+                    moleculeUnits = unit
+                elif unit in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol', 'kelvins']:
+                    energyUnits = unit
+                else:
+                    raise ChemkinError('Unknown unit type "{0}"'.format(unit))
 
         elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
             # RMG-Java kinetics library file
@@ -1099,7 +1129,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
     assert moleculeUnits in ['molecules', 'moles', 'mole', 'mol', 'molecule']
     assert volumeUnits in ['cm3', 'm3']
     assert timeUnits in ['s']
-    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol']
+    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol', 'kelvins']
     
     # Homogenize units
     if moleculeUnits == 'molecules':
@@ -1115,6 +1145,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         energyUnits = 'kj/mol'
     elif energyUnits == 'j/mole':
         energyUnits = 'j/mol'
+    elif energyUnits == 'kelvins':
+        energyUnits = 'K'
     energyUnits = energyUnits.replace('j/mol', 'J/mol')
     
     # Set up kinetics units
@@ -1186,6 +1218,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if kineticsList[0] == '':
             kineticsList.pop(0)
         if len(kineticsList) != len(commentsList):
+            logging.warning("Discarding comments from Chemkin file because not sure which reaction they apply to")
             commentsList = ['' for kinetics in kineticsList]
         
     reactionList = []
