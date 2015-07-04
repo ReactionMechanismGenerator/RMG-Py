@@ -890,10 +890,28 @@ class TestMolecule(unittest.TestCase):
         Test that we can generate a few SMILES strings as expected
         """
         import rmgpy.molecule
-        test_strings =['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','[C]#N']
+        test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
+                       '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
+                       'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
+                       'O=C=O', '[C]#N',
+                       ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
-            self.assertEqual(s,molecule.toSMILES())
+            self.assertEqual(s, molecule.toSMILES())
+
+    def testKekuleSMILES(self):
+        """
+        Test that we can round-trip SMILES strings of Kekulized aromatics
+        """
+        import rmgpy.molecule
+        test_strings = [
+                       'CC1=CC=CC=C1O', 'CC1C=CC=CC=1O',
+                       # 'Cc1ccccc1O', # this will fail because it is Kekulized during fromSMILES()
+                       ]
+        for s in test_strings:
+            molecule = Molecule(SMILES=s)
+            molecule.toRDKitMol(sanitize=False).Debug()
+            self.assertEqual(s, molecule.toSMILES(), "Started with {0} but ended with {1}".format(s, molecule.toSMILES()))
 
     def testInChIKey(self):
         """

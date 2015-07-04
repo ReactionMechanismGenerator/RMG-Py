@@ -1452,7 +1452,9 @@ class Molecule(Graph):
                 mol = self.toOBMol()
                 return SMILEwriter.WriteString(mol).strip()
 
-        rdkitmol = self.toRDKitMol()
+        rdkitmol = self.toRDKitMol(sanitize=False)
+        if not self.isAromatic():
+            return Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
         return Chem.MolToSmiles(rdkitmol)
 
     def toOBMol(self):
@@ -1487,7 +1489,7 @@ class Molecule(Graph):
 
         return obmol
     
-    def toRDKitMol(self, removeHs=True, returnMapping=False):
+    def toRDKitMol(self, removeHs=True, returnMapping=False, sanitize=True):
         """
         Convert a molecular structure to a RDKit rdmol object. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -1522,9 +1524,10 @@ class Molecule(Graph):
         
         # Make editable mol into a mol and rectify the molecule
         rdkitmol = rdkitmol.GetMol()
-        Chem.SanitizeMol(rdkitmol)
+        if sanitize:
+            Chem.SanitizeMol(rdkitmol)
         if removeHs:
-            rdkitmol = Chem.RemoveHs(rdkitmol)
+            rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
         
         if returnMapping:
             return rdkitmol, rdAtomIndices
