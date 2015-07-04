@@ -129,7 +129,7 @@ class Species(object):
         if self.label != -1: string += 'label="{0}", '.format(self.label)
         if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
         if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
-        if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
+        if len(self.molecule) > 0: string += 'molecule={0!r}, '.format(self.molecule)
         if self.transportData is not None: string += 'transportData={0!r}, '.format(self.transportData)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
