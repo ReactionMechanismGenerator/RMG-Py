@@ -910,7 +910,7 @@ class TestMolecule(unittest.TestCase):
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
-            molecule.toRDKitMol(sanitize=False).Debug()
+            #molecule.toRDKitMol(sanitize=False).Debug()
             self.assertEqual(s, molecule.toSMILES(), "Started with {0} but ended with {1}".format(s, molecule.toSMILES()))
 
     def testInChIKey(self):
@@ -1128,14 +1128,17 @@ class TestMolecule(unittest.TestCase):
     def testCountInternalRotorsDimethylAcetylene(self):
         """
         Test the Molecule.countInternalRotors() method for dimethylacetylene.
+        
         This is a "hard" test that currently fails.
         """
         self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
     
-    def testKekulizeAromaticAdjlist(self):
+    def testKekulizeResonanceIsomer(self):
         """
-        Tests that a molecule formed using an aromatic adjacency list returns both
-        the aromatic and kekulized form as resonance isomers.
+        Tests that an aromatic molecule returns at least one Kekulized resonance isomer.
+        
+        A molecule formed using an aromatic adjacency list returns both
+        the aromatic and a kekulized form as resonance isomers.
         """
         toluene = Molecule().fromAdjacencyList("""1  H 0 {2,S}
 2  C 0 {3,S} {9,S} {10,S} {1,S}
@@ -1170,9 +1173,15 @@ class TestMolecule(unittest.TestCase):
 14 H u0 p0 c0 {7,S}
 15 H u0 p0 c0 {7,S}
 """)
+        kekulized_isomer = toluene.getKekulizedResonanceIsomers()[0]
+        self.assertTrue(kekulized_isomer.isIsomorphic(toluene_kekulized))
+
+        for isomer in toluene.generateResonanceIsomers():
+            if isomer.isIsomorphic(toluene_kekulized):
+                break
+        else:  # didn't brake
+            self.assertTrue(False, "Didn't find the Kekulized toulene in the result of getResonanceIsomers()")
         
-        isomer = toluene.getKekulizedResonanceIsomers()[0]
-        self.assertTrue(isomer.isIsomorphic(toluene_kekulized))
         
         
     def testSaturateAromaticRadical(self):
