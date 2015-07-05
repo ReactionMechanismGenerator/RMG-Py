@@ -1955,8 +1955,8 @@ class Molecule(Graph):
         else:
             return isomers
         
-        rdkitmol = self.toRDKitMol() # This step kekulizes the molecule
-        isomers.append(Molecule().fromRDKitMol(rdkitmol))
+        rdkitmol = self.toRDKitMol()  # This perceives aromaticity
+        isomers.append(Molecule().fromRDKitMol(rdkitmol))  # This step Kekulizes the molecule
         return isomers
     
     def findAllDelocalizationPaths(self, atom1):
