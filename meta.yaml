@@ -67,6 +67,7 @@ requirements:
     - cairocffi
     - openbabel
     - psutil
+    - symmetry
 test:
   requires:
     - nose
