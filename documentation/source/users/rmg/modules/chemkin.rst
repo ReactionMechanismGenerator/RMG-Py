@@ -1,13 +1,13 @@
 .. _chemkin:
 
-********************
+**************************
 Working With Chemkin Files
-********************
+**************************
 This section provides information on how to import your own chemkin II-formatted mechanism files
 into RMG so that they can be used as reaction libraries or seed mechanisms for further mechanism generation. 
 
 Converting a Chemkin II file for use in RMG-Py
------------------------------
+----------------------------------------------
 This is useful when you have a mechanism (e.g., a 'seed' or 'foundation' mechanism) that you want RMG to build from.
 
 In this case, :ref:`importChemkinLibrary.py` should be used to load a mechanism and its attending thermo and possibly transport data
