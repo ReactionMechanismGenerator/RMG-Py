@@ -1606,23 +1606,12 @@ class CoreEdgeReactionModel:
         maxSulfurAtoms = self.speciesConstraints.get('maximumSulfurAtoms', 1000000)
         maxHeavyAtoms = self.speciesConstraints.get('maximumHeavyAtoms', 1000000)
         maxRadicals = self.speciesConstraints.get('maximumRadicalElectrons', 1000000)
-        allowSingletO2= self.speciesConstraints.get('allowSingletO2', False)
              
         if isinstance(species, rmgpy.species.Species):
             struct = species.molecule[0]
         else:
             # expects a molecule here
             struct = species
-        #This is checked first by design, it actually ignores the allowed list because most often a user will accidently include O2 without knowing it
-        #We want the user to very explicitly allowSingletO2 (not implicitly by having it as part of the allowed list)
-        if not allowSingletO2:
-            O2Singlet=Molecule().fromSMILES('O=O')
-            if struct.isIsomorphic(O2Singlet):
-                logging.error("""
-                RMG expects the triplet form of oxygen for correct usage in reaction families. Please change your input to SMILES='[O][O]'
-                If you actually want to use the singlet state, set the allowSingletO2=True inside of the Species Constraints block in your input file.
-                """)
-                return True
             
         for molecule in explicitlyAllowedMolecules:
             if struct.isIsomorphic(molecule):

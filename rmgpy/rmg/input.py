@@ -289,7 +289,7 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumSulfurAtoms',
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
-        'allowSingletO2',
+        'allowsSingletO2',
     ]
     for key, value in kwargs.items():
         if key not in validConstraints:

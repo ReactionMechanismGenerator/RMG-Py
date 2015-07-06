@@ -415,13 +415,33 @@ class RMG:
                         pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
-
+            
+            #Check to see if user has input Singlet O2 into their input file or libraries
+            #This constraint is special in that we only want to check it once in the input instead of every time a species ia made
+            if 'allowsSingletO2' in self.speciesConstraints and self.speciesConstraints['allowsSingletO2']:
+                pass
+            else:
+                #Here we get a list of all species that from the user input
+                allInputtedSpecies=[spec for spec in self.initialSpecies]
+                #Because no iterations have taken place, the only things in the core are from seed mechanisms
+                allInputtedSpecies.extend(self.reactionModel.core.species)
+                #Because no iterations have taken place, the only things in the core are from 
+                allInputtedSpecies.extend(self.reactionModel.edge.species)
+                
+                O2Singlet=Molecule().fromSMILES('O=O')
+                for spec in allInputtedSpecies:
+                    if spec.isIsomorphic(O2Singlet):
+                        raise ForbiddenStructureException("""Species constraints forbids input species {0}
+                        RMG expects the triplet form of oxygen for correct usage in reaction families. Please change your input to SMILES='[O][O]'
+                        If you actually want to use the singlet state, set the allowSingletO2=True inside of the Species Constraints block in your input file.
+                        """.format(spec.label))
+                        
             for spec in self.initialSpecies:
                 spec.generateThermoData(self.database, quantumMechanics=self.quantumMechanics)
                 spec.generateTransportData(self.database)
-                
+                    
             # Add nonreactive species (e.g. bath gases) to core first
-            # This is necessary so that the PDep algorithm can identify the bath gas            
+            # This is necessary so that the PDep algorithm can identify the bath gas   
             for spec in self.initialSpecies:
                 if not spec.reactive:
                     self.reactionModel.enlarge(spec)
