@@ -860,7 +860,7 @@ class Molecule(Graph):
         
         # Ensure there are coordinates to work with
         for atom in atoms:
-            assert atom.coords != None
+            assert len(atom.coords) != 0
         
         # If there are any bonds, remove them
         for atom1 in atoms:
