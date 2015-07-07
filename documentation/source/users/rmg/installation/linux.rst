@@ -9,7 +9,8 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 * Install compilers and libraries: ::
 
-	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip 
+	sudo apt-get install git g++ gfortran python-dev liblapack-dev
+	sudo apt-get install python-openbabel python-setuptools python-pip
 
 * After creating a `Github account <https://github.com/signup/free>`_, generate your public key: ::
 
@@ -39,7 +40,8 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
   Be sure to **build it with InChI support.** Here's a synopsis: ::
   
 	cd ~
-	sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
+	sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3
+	sudo apt-get install libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
 	git clone https://github.com/rdkit/rdkit.git
 	cd rdkit
 	export RDBASE=`pwd`
