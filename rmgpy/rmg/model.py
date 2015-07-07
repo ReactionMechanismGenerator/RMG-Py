@@ -43,6 +43,7 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.molecule import Molecule
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
@@ -1605,15 +1606,16 @@ class CoreEdgeReactionModel:
         maxSulfurAtoms = self.speciesConstraints.get('maximumSulfurAtoms', 1000000)
         maxHeavyAtoms = self.speciesConstraints.get('maximumHeavyAtoms', 1000000)
         maxRadicals = self.speciesConstraints.get('maximumRadicalElectrons', 1000000)
-        
+             
         if isinstance(species, rmgpy.species.Species):
             struct = species.molecule[0]
         else:
             # expects a molecule here
             struct = species
+            
         for molecule in explicitlyAllowedMolecules:
             if struct.isIsomorphic(molecule):
-                return False        
+                return False
         H = struct.getNumAtoms('H')
         if struct.getNumAtoms('C') > maxCarbonAtoms:
             return True
