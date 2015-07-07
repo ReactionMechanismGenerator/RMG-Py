@@ -899,8 +899,95 @@ class TestMolecule(unittest.TestCase):
             molecule = Molecule(SMILES=s)
             self.assertEqual(s, molecule.toSMILES())
 
+    def testKekuleToSMILES(self):
+        """
+        Test that we can print SMILES strings of Kekulized structures
+        
+        The first two are different Kekule forms of the same thing.
+        """
+        test_cases = {
+                    "CC1C=CC=CC=1O":"""
+                        1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+                        2 C u0 p0 c0 {1,S} {3,D} {4,S}
+                        3 C u0 p0 c0 {2,D} {5,S} {8,S}
+                        4 C u0 p0 c0 {2,S} {7,D} {12,S}
+                        5 C u0 p0 c0 {3,S} {6,D} {13,S}
+                        6 C u0 p0 c0 {5,D} {7,S} {14,S}
+                        7 C u0 p0 c0 {4,D} {6,S} {15,S}
+                        8 O u0 p2 c0 {3,S} {16,S}
+                        9 H u0 p0 c0 {1,S}
+                        10 H u0 p0 c0 {1,S}
+                        11 H u0 p0 c0 {1,S}
+                        12 H u0 p0 c0 {4,S}
+                        13 H u0 p0 c0 {5,S}
+                        14 H u0 p0 c0 {6,S}
+                        15 H u0 p0 c0 {7,S}
+                        16 H u0 p0 c0 {8,S}""",
+                    "CC1=CC=CC=C1O":"""
+                        1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+                        2 C u0 p0 c0 {1,S} {3,S} {4,D}
+                        3 C u0 p0 c0 {2,S} {5,D} {8,S}
+                        4 C u0 p0 c0 {2,D} {7,S} {15,S}
+                        5 C u0 p0 c0 {3,D} {6,S} {12,S}
+                        6 C u0 p0 c0 {5,S} {7,D} {13,S}
+                        7 C u0 p0 c0 {4,S} {6,D} {14,S}
+                        8 O u0 p2 c0 {3,S} {16,S}
+                        9 H u0 p0 c0 {1,S}
+                        10 H u0 p0 c0 {1,S}
+                        11 H u0 p0 c0 {1,S}
+                        12 H u0 p0 c0 {5,S}
+                        13 H u0 p0 c0 {6,S}
+                        14 H u0 p0 c0 {7,S}
+                        15 H u0 p0 c0 {4,S}
+                        16 H u0 p0 c0 {8,S}""",
+                    "CC1C=CC=CC=1":"""
+                        1  C u0 p0 c0 {2,D} {6,S} {7,S}
+                        2  C u0 p0 c0 {1,D} {3,S} {8,S}
+                        3  C u0 p0 c0 {2,S} {4,D} {9,S}
+                        4  C u0 p0 c0 {3,D} {5,S} {10,S}
+                        5  C u0 p0 c0 {4,S} {6,D} {11,S}
+                        6  C u0 p0 c0 {1,S} {5,D} {12,S}
+                        7  C u0 p0 c0 {1,S} {13,S} {14,S} {15,S}
+                        8  H u0 p0 c0 {2,S}
+                        9  H u0 p0 c0 {3,S}
+                        10 H u0 p0 c0 {4,S}
+                        11 H u0 p0 c0 {5,S}
+                        12 H u0 p0 c0 {6,S}
+                        13 H u0 p0 c0 {7,S}
+                        14 H u0 p0 c0 {7,S}
+                        15 H u0 p0 c0 {7,S}"""
+                    }
+        for smiles, adjlist in test_cases.iteritems():
+            m = Molecule().fromAdjacencyList(adjlist)
+            s = m.toSMILES()
+            self.assertEqual(s, smiles, "Generated SMILES string {0} instead of {1}".format(s, smiles))
+        
+        
     @work_in_progress
-    def testKekuleSMILES(self):
+    def testMultipleKekulizedResonanceIsomers(self):
+        "Test we can make both Kekulized resonance isomers of 2-Hydroxy-1-methylbenzene"
+
+        adjlist_aromatic = """multiplicity 1
+1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+2 C u0 p0 c0 {1,S} {3,B} {4,B}
+3 C u0 p0 c0 {2,B} {5,B} {8,S}
+4 C u0 p0 c0 {2,B} {7,B} {15,S}
+5 C u0 p0 c0 {3,B} {6,B} {12,S}
+6 C u0 p0 c0 {5,B} {7,B} {13,S}
+7 C u0 p0 c0 {4,B} {6,B} {14,S}
+8 O u0 p2 c0 {3,S} {16,S}
+9 H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {1,S}
+12 H u0 p0 c0 {5,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {4,S}
+16 H u0 p0 c0 {8,S}
+"""
+
+    @work_in_progress
+    def testKekuleRoundTripSMILES(self):
         """
         Test that we can round-trip SMILES strings of Kekulized aromatics
         """
@@ -1141,7 +1228,8 @@ class TestMolecule(unittest.TestCase):
         A molecule formed using an aromatic adjacency list returns both
         the aromatic and a kekulized form as resonance isomers.
         """
-        toluene = Molecule().fromAdjacencyList("""1  H 0 {2,S}
+        toluene = Molecule().fromAdjacencyList("""
+1  H 0 {2,S}
 2  C 0 {3,S} {9,S} {10,S} {1,S}
 3  C 0 {4,B} {8,B} {2,S}
 4  C 0 {3,B} {5,B} {11,S}
@@ -1363,8 +1451,8 @@ class TestMolecule(unittest.TestCase):
                         break
                 else:  # didn't break
                     if generated.isAromatic():
-                        continue  # because that isomer isn't in our resonance_forms list
-                    self.fail("Generated a resonance form {0!r} that was not expected!\n{1}".format(generated, generated.toAdjacencyList()))
+                        continue  # because the aromatic isomer isn't in our resonance_forms list
+                    self.fail("Generated a resonance form {0!r} that was not expected!\n{1}\nAlthough that may be a bug in the unit test (not sure I got them all)".format(generated, generated.toAdjacencyList()))
 
             for expected in resonance_forms:
                 for generated in isomers:
