@@ -1527,7 +1527,7 @@ class Molecule(Graph):
         if sanitize:
             Chem.SanitizeMol(rdkitmol)
         if removeHs:
-            rdkitmol = Chem.RemoveHs(rdkitmol)
+            rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
         
         if returnMapping:
             return rdkitmol, rdAtomIndices
