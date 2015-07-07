@@ -68,6 +68,7 @@ requirements:
     - openbabel
     - psutil
     - symmetry
+    - mopac
 test:
   requires:
     - nose
