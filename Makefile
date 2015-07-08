@@ -7,11 +7,11 @@
 DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
 DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
 
-.PHONY : all minimal main measure solver cantherm clean decython documentation QM
+.PHONY : all minimal main solver cantherm clean decython documentation QM
 
-all: main measure solver QM
+all: main solver QM
 
-noQM: main measure solver
+noQM: main solver
 
 minimal:
 	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
@@ -20,9 +20,6 @@ main:
 	@ echo "Checking you have PyDQED..."
 	@ python -c 'import pydqed; print pydqed.__file__'
 	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
-
-measure:
-	python setup.py build_ext measure --build-lib . --build-temp build --pyrex-c-in-temp
 
 solver:
 
@@ -70,7 +67,7 @@ clean-solver:
 
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
-	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/measure/.*' -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
+	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test:
