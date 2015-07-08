@@ -41,6 +41,7 @@ install:
   - make install
   - cd ..
   - cd $TRAVIS_BUILD_DIR
+  - echo 'database.directory : ../../RMG-database/input' > rmgpy/rmgrc
   - make
 script: 
   - make test
