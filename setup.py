@@ -100,19 +100,6 @@ def getMainExtensionModules():
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
     ]
-
-def getMeasureExtensionModules():
-    return [
-        Extension('rmgpy.measure._network', ['rmgpy/measure/_network.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.collision', ['rmgpy/measure/collision.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.reaction', ['rmgpy/measure/reaction.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.msc', ['rmgpy/measure/msc.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.rs', ['rmgpy/measure/rs.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.cse', ['rmgpy/measure/cse.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.me', ['rmgpy/measure/me.pyx'], include_dirs=['.']),
-        Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
-        Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
-    ]
     
 def getSolverExtensionModules():
     return [
@@ -162,16 +149,11 @@ ext_modules = []
 if 'install' in sys.argv:
     # This is so users can still do simply `python setup.py install`
     ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getMeasureExtensionModules())
     ext_modules.extend(getSolverExtensionModules())
 elif 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
     sys.argv.remove('main')
     ext_modules.extend(getMainExtensionModules())
-elif 'measure' in sys.argv:
-    # This is for `python setup.py build_ext measure`
-    sys.argv.remove('measure')
-    ext_modules.extend(getMeasureExtensionModules())
 elif 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
@@ -187,14 +169,13 @@ elif 'minimal' in sys.argv:
     sys.argv.remove('minimal')
     temporary_list = []
     temporary_list.extend(getMainExtensionModules())
-    temporary_list.extend(getMeasureExtensionModules())
     temporary_list.extend(getSolverExtensionModules())
     for module in temporary_list:
         for source in module.sources:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
     
-scripts=['cantherm.py', 'measure.py', 'rmg.py']
+scripts=['cantherm.py', 'rmg.py']
 
 # Initiate the build and/or installation
 setup(name='RMG Py',
