@@ -175,7 +175,19 @@ elif 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
     
-scripts=['cantherm.py', 'rmg.py']
+scripts=['cantherm.py', 'rmg.py', 'diffModels.py', 'generateFluxDiagram.py',
+         'generateReactions.py', 'mergeModels.py','sensitivity.py', 'thermoEstimator.py']
+
+modules = []
+for root, dirs, files in os.walk('rmgpy'):
+    for dir in dirs:
+        print dir
+    for file in files:
+        if file.endswith('.py') or file.endswith('.pyx'):
+            if 'Test' not in file and '__init__' not in file:
+                if not root.endswith('rmgpy/cantherm/files'):
+                    module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                    modules.append(module)       
 
 # Initiate the build and/or installation
 setup(name='RMG Py',
@@ -185,6 +197,7 @@ setup(name='RMG Py',
     author_email='rmg_dev@mit.edu',
     url='http://rmg.mit.edu/',
     packages=['rmgpy'],
+    py_modules = modules,
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
