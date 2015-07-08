@@ -451,8 +451,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         network is marked as invalid.
         """
         from rmgpy.kinetics import Arrhenius, KineticsData, MultiArrhenius
-        from rmgpy.measure.collision import SingleExponentialDown
-        from rmgpy.measure.reaction import fitInterpolationModel
+        from rmgpy.pdep.collision import SingleExponentialDown
+        from rmgpy.pdep.reaction import fitInterpolationModel
         
         # Get the parameters for the pressure dependence calculation
         job = pdepSettings
@@ -542,7 +542,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for spec in bathGas:
             # is this really the only/best way to weight them? And what is alpha0?
             self.bathGas[spec] = 1.0 / len(bathGas)
-            spec.collisionModel = SingleExponentialDown(alpha0=4.86 * 4184)
+            spec.collisionModel = SingleExponentialDown(alpha0=(4.86,'kcal/mol'))
 
         # Save input file
         if not self.label: self.label = str(self.index)
