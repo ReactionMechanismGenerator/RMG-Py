@@ -149,7 +149,6 @@ ext_modules = []
 if 'install' in sys.argv:
     # This is so users can still do simply `python setup.py install`
     ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getMeasureExtensionModules())
     ext_modules.extend(getSolverExtensionModules())
 elif 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
@@ -170,7 +169,6 @@ elif 'minimal' in sys.argv:
     sys.argv.remove('minimal')
     temporary_list = []
     temporary_list.extend(getMainExtensionModules())
-    temporary_list.extend(getMeasureExtensionModules())
     temporary_list.extend(getSolverExtensionModules())
     for module in temporary_list:
         for source in module.sources:
