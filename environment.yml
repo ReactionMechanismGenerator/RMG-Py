@@ -4,6 +4,29 @@ channels:
   - rmg
   - rdkit
 dependencies:
-  - rmg
-  - rmgdatabase
-  - sphinx
+  - libgcc # [unix]
+  - python
+  - numpy
+  - cython ==0.21
+  - matplotlib
+  - rdkit
+  - pydas
+  - pydqed
+  - quantities
+  - scipy
+  - xlwt
+  - markupsafe
+  - jinja2
+  #- argparse # [py26]
+  - pyparsing # [not osx]
+  #- pydot # [not osx]
+  - nose
+  - coverage
+  - guppy
+  - gprof2dot
+  - cairo
+  - cairocffi
+  - openbabel
+  - psutil
+  - symmetry
+  - mopac
