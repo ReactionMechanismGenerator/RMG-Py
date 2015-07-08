@@ -14,6 +14,7 @@ psutil
 xlwt
 MarkupSafe # this makes Jinja2 faster
 Jinja2 # this is for rendering the HTML output files
+cairocffi
 
 # For postprocessing the profiling data
 argparse

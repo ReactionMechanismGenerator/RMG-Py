@@ -68,7 +68,10 @@ def createNewSurface(format, path=None, width=1024, height=768):
     surface if you know what it is; otherwise a default size of 1024 by 768 is
     used.
     """
-    import cairo
+    try:
+        import cairocffi as cairo
+    except ImportError:
+        import cairo
     format = format.lower()
     if format == 'png':
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
@@ -137,10 +140,13 @@ class MoleculeDrawer:
         # The Cairo 2D graphics library (and its Python wrapper) is required for
         # the molecule drawing algorithm
         try:
-            import cairo
+            import cairocffi as cairo
         except ImportError:
-            print 'Cairo not found; molecule will not be drawn.'
-            return
+            try:
+                import cairo
+            except ImportError:
+                print 'Cairo not found; molecule will not be drawn.'
+                return
         
         # Make a copy of the molecule so we don't modify the original
         self.molecule = molecule.copy(deep=True)
@@ -871,7 +877,10 @@ class MoleculeDrawer:
         You must specify the Cairo context `cr` to render to.
         """
     
-        import cairo
+        try:
+            import cairocffi as cairo
+        except ImportError:
+            import cairo
         
         coordinates = self.coordinates
         atoms = self.molecule.atoms
@@ -951,7 +960,11 @@ class MoleculeDrawer:
         Draw a line on the given Cairo context `cr` from (`x1`, `y1`) to
         (`x2`,`y2`), and update the bounding rectangle if necessary.
         """
-        import cairo
+        try:
+            import cairocffi as cairo
+        except ImportError:
+            import cairo
+        cairo
         cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         cr.set_line_width(1.0)
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
@@ -972,7 +985,10 @@ class MoleculeDrawer:
         on the Cairo context `cr`.
         """
     
-        import cairo
+        try:
+            import cairocffi as cairo
+        except ImportError:
+            import cairo
     
         bondLength = self.options['bondLength']
     
@@ -1014,7 +1030,10 @@ class MoleculeDrawer:
         radical electrons and charges to be drawn adjacent to the rendered symbol.
         """
     
-        import cairo
+        try:
+            import cairocffi as cairo
+        except ImportError:
+            import cairo
     
         atoms = self.molecule.atoms
     
@@ -1366,10 +1385,13 @@ class ReactionDrawer:
         # The Cairo 2D graphics library (and its Python wrapper) is required for
         # the reaction drawing algorithm
         try:
-            import cairo
+            import cairocffi as cairo
         except ImportError:
-            print 'Cairo not found; molecule will not be drawn.'
-            return
+            try:
+                import cairo
+            except ImportError:
+                print 'Cairo not found; molecule will not be drawn.'
+                return
 
         from .molecule import Molecule
         from rmgpy.species import Species
