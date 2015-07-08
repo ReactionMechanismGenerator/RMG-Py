@@ -7,20 +7,17 @@ digraph graphname {
     size="5,3";
     
     CanTherm    [color="#993333",fontcolor="#993333",fontname="sans-serif"];
-    Chem        [color="#993333",fontcolor="#993333",fontname="sans-serif"];
+    Molecule        [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     Data        [color="#993333",fontcolor="#993333",fontname="sans-serif"];
-    MEASURE     [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     RMG         [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     Solver      [color="#993333",fontcolor="#993333",fontname="sans-serif"];
     
-    Chem -> CanTherm [color="#993333"];
-    Chem -> Data [color="#993333"];
-    Chem -> MEASURE [color="#993333"];
-    Chem -> RMG [color="#993333"];
-    Chem -> Solver [color="#993333"];
+    Molecule -> CanTherm [color="#993333"];
+    Molecule -> Data [color="#993333"];
+    Molecule -> RMG [color="#993333"];
+    Molecule -> Solver [color="#993333"];
      
     Data -> RMG [color="#993333"];
-    MEASURE -> RMG [color="#993333",style=dashed];
     Solver -> RMG [color="#993333"];
     
 }
