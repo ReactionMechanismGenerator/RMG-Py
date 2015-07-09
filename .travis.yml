@@ -15,34 +15,16 @@ before_install:
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
 
-  # Clone relevant repositories
-  - sudo apt-get update -qq
-  - sudo apt-get install git 
+  - sudo apt-get install git
   - cd ..
-  - git clone https://github.com/GreenGroup/RMG-database.git
-  - git clone https://github.com/GreenGroup/PyDAS.git
-  - git clone https://github.com/GreenGroup/PyDQED.git
+  - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+  - cd RMG-Py
 
 install:
-  # Install non-RMG dependencies via conda
-  - conda install --yes -c rmg gcc libgcc python numpy cython==0.21 matplotlib rdkit quantities scipy xlwt markupsafe jinja2 pyparsing pydot nose coverage guppy gprof2dot cairo cairocffi openbabel psutil symmetry mopac setuptools boost==1.56.0  
-
-  - cd $TRAVIS_BUILD_DIR
-  - cd ..
-  - cd PyDAS
-  - cd daspk31
-  - wget http://www.engineering.ucsb.edu/~cse/Software/daspk31.tgz
-  - cd ..
-  - make F77=gfortran
-  - make install
-  - cd ..
-  - cd PyDQED
-  - make F77=gfortran
-  - make install
-  - cd ..
-  - cd $TRAVIS_BUILD_DIR
-  - echo 'database.directory : ../../RMG-database/input' > rmgpy/rmgrc
+  - conda env create 
+  - source activate rmg
   - make
+
 script: 
   - make test
   - make eg1
