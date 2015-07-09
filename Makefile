@@ -102,3 +102,9 @@ eg3: all
 	coverage run rmg.py -p testing/liquid_phase/input.py
 	coverage report
 	coverage html
+eg4: all
+	mkdir -p testing/thermoEstimator
+	rm -rf testing/thermoEstimator/*
+	cp examples/thermoEstimator/input.py testing/thermoEstimator/input.py
+	@ echo "Running thermo data estimator example. This tests QM."
+	python thermoEstimator.py testing/thermoEstimator/input.py
