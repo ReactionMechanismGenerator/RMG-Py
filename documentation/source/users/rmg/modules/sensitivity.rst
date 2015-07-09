@@ -19,7 +19,7 @@ does not generate a RMG job.  See the following ``input.py`` example file found 
 ``$RMGPy/examples/rmg/sensitivity/input.py`` folder
 
 
-.. literalinclude:: ../../../../examples/rmg/minimal/input.py
+.. literalinclude:: ../../../../../examples/rmg/minimal_sensitivity/input.py
 
 
 The names of species named in the input file must coincide with the name specified in the CHEMKIN file.  
