@@ -4,6 +4,11 @@
 Example Input Files
 *******************
 
+Perhaps the best way to learn the input file syntax is by example. To that end,
+a number of example input files and their corresponding output have been given
+in the ``examples`` directory. Two of the RMG jobs are shown below.
+
+
 Ethane pyrolysis (Minimal)
 ==========================
 

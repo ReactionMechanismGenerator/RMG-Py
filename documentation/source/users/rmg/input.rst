@@ -521,9 +521,3 @@ forbidden groups.
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.  
 
 
-Examples
-========
-
-Perhaps the best way to learn the input file syntax is by example. To that end,
-a number of example input files and their corresponding output have been given
-in the ``examples`` directory.
