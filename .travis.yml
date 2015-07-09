@@ -28,3 +28,4 @@ install:
 script: 
   - make test
   - make eg1
+  - make eg4
