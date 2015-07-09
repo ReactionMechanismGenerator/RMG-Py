@@ -78,6 +78,6 @@ test:
     - make -C $SRC_DIR test
 
 about:
-  home: http://github.com/GreenGroup/RMG-Py
+  home: http://github.com/ReactionMechanismGenerator/RMG-Py
   license: MIT
   summary: "A program for automatically generating kinetic models of chemical reaction mechanisms."
