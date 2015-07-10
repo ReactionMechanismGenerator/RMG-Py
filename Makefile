@@ -7,7 +7,7 @@
 DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
 DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
 
-.PHONY : all minimal main solver cantherm clean decython documentation QM
+.PHONY : all minimal main solver cantherm clean decython documentation QM mopac_travis
 
 all: main solver QM
 
@@ -93,6 +93,7 @@ eg2: all
 	coverage run rmg.py -p testing/hexadiene/input.py
 	coverage report
 	coverage html
+
 eg3: all
 	mkdir -p testing/liquid_phase
 	rm -rf testing/liquid_phase/*
@@ -102,9 +103,36 @@ eg3: all
 	coverage run rmg.py -p testing/liquid_phase/input.py
 	coverage report
 	coverage html
-eg4: all
+
+
+######### 
+# Section for setting up MOPAC calculations on the Travis-CI.org server
+ifeq ($(TRAVIS),true)
+ifneq ($(TRAVIS_SECURE_ENV_VARS),true)
+SKIP_MOPAC=true
+endif
+endif
+mopac_travis:
+ifeq ($(TRAVIS),true)
+ifneq ($(TRAVIS_SECURE_ENV_VARS),true)
+	@echo "Don't have MOPAC licence key on this Travis build so can't test QM"
+else
+	@echo "Installing MOPAC key"
+	@yes Yes | mopac $(MOPACKEY)
+endif
+else
+	@#echo "Not in Travis build, no need to run this target"
+endif
+# End of MOPAC / TRAVIS stuff
+#######
+
+eg4: all mopac_travis
+ifeq ($(SKIP_MOPAC),true)
+	@echo "Skipping eg4 (without failing) because can't run MOPAC"
+else
 	mkdir -p testing/thermoEstimator
 	rm -rf testing/thermoEstimator/*
 	cp examples/thermoEstimator/input.py testing/thermoEstimator/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python thermoEstimator.py testing/thermoEstimator/input.py
+endif
