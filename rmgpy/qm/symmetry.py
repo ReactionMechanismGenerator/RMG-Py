@@ -166,15 +166,7 @@ class SymmetryJob:
         "The object that holds information from a previous QM Job on 3D coords, molecule etc..."
         self.qmData = qmData
         self.attemptNumber = 1
-        self.pointGroupFound = False
-
-        if os.sys.platform == 'win32':
-            self.executable_path = os.path.join(settings.RMG_bin_path, 'symmetry.exe')
-        else:
-            self.executable_path = os.path.join(settings.RMG_bin_path, 'symmetry')
-        if not os.path.exists(self.executable_path):
-            raise Exception("Symmetry program not found at {0}.".format(self.executable_path))
-        
+        self.pointGroupFound = False       
 
     @property
     def inputFilePath(self):
@@ -200,7 +192,11 @@ class SymmetryJob:
         """
         Run the command, wait for it to finish, and return the stdout.
         """
-        pp = Popen(command, stdout=PIPE, stderr=PIPE)
+        try:
+            pp = Popen(command, stdout=PIPE, stderr=PIPE)
+        except OSError, e:
+            logging.error(e)
+            raise Exception('Running symmetry on the point group calculation has failed.  Please check if symmetry program is installed on your system in RMG-Py/bin/symmetry or on your path.')
         stdout, stderr = pp.communicate()
         if stderr:
             logging.error("Error message from SYMMETRY calculation:")
@@ -239,7 +235,7 @@ class SymmetryJob:
             """
             TODO only *nix case works!
             """
-            command = [self.executable_path]
+            command = [self.settings.symmetryPath]
             command.extend(arguments)
             command.append(self.inputFilePath)
 
