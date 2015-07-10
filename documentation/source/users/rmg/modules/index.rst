@@ -17,3 +17,4 @@ There are several standalone modules that can be run separately from RMG.
     thermoEstimation
     chemkin
     convertFAME
+    databaseScripts
