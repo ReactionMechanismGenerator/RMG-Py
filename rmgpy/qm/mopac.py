@@ -175,7 +175,7 @@ class MopacMol(QMMolecule, Mopac):
     def writeInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
-        for the `attmept`th attempt.
+        for the `attmept`.
         """
         
         molfile = self.getMolFilePathForCalculation(attempt) 
