@@ -265,6 +265,10 @@ class QMMolecule:
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
+        if not os.path.exists(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
+        if not os.path.isdir(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
         
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
