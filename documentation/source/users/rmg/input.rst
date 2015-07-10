@@ -506,6 +506,7 @@ all of RMG's reaction families. ::
         maximumSulfurAtoms=10,
         maximumHeavyAtoms=10,
         maximumRadicalElectrons=10,
+        allowsSingletO2=False,
     )
 
 An additional flag ``allowed`` can be set to allow species 
