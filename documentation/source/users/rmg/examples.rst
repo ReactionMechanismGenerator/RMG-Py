@@ -26,3 +26,10 @@ This example models the pyrolysis of 1,3-hexadiene and demonstrates the effect o
 .. literalinclude:: ../../../../examples/rmg/1,3-hexadiene/input.py
 
 
+Commented input file
+=======================
+
+This is a fully commented input file with all optional blocks
+for new users to better understand the options of rmg input files
+
+.. literalinclude:: ../../../../examples/rmg/commented/input.py
