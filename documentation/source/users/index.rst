@@ -9,4 +9,3 @@ User's Guide
 
     rmg/index
     cantherm/index
-    measure/index
