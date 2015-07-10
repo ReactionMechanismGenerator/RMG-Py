@@ -7,7 +7,7 @@ source:
   path: .
 
 build:
-  number: 2
+  number: 3
 
 requirements:
   build:
@@ -32,8 +32,8 @@ requirements:
     - markupsafe
     - jinja2
     - argparse # [py26]
-    - pyparsing # [not osx]
-    - pydot # [not osx]
+    - pyparsing
+    - pydot
     - nose
     - coverage
     - guppy
@@ -57,8 +57,8 @@ requirements:
     - markupsafe
     - jinja2
     - argparse # [py26]
-    - pyparsing # [not osx]
-    - pydot # [not osx]
+    - pyparsing
+    - pydot
     - nose
     - coverage
     - guppy
