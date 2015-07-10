@@ -16,7 +16,7 @@ To use the sensitivity analysis standalone module::
 where ``chem.inp`` is the CHEMKIN file and the ``species_dictionary.txt`` contains the dictionary of
 species associated with the CHEMKIN file.  ``input.py`` is an input file similar to one used for an RMG job but
 does not generate a RMG job.  See the following ``input.py`` example file found under the
-``$RMGPy/examples/rmg/sensitivity/input.py`` folder
+``$RMGPy/examples/sensitivity/input.py`` folder
 
 
 .. literalinclude:: ../../../../../examples/rmg/minimal_sensitivity/input.py
