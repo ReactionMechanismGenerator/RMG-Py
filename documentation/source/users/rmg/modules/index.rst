@@ -16,3 +16,4 @@ There are several standalone modules that can be run separately from RMG.
     generateFluxDiagram
     thermoEstimation
     chemkin
+    convertFAME
