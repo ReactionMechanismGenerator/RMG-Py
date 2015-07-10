@@ -1,14 +1,15 @@
-# Data sources
+# Data sources for kinetics
 database(
-    thermoLibraries = ['primaryThermoLibrary'],
-    reactionLibraries = [],
+    thermoLibraries = ['KlippensteinH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
+    reactionLibraries = [],  
     seedMechanisms = [],
-    kineticsDepositories = ['training'],
+    kineticsDepositories = 'default', 
+    #this section lists possible reaction families to find reactioons with
     kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
     kineticsEstimator = 'rate rules',
 )
 
-# List of species
+# List all species you want reactions between
 species(
     label='ethane',
     reactive=True,
@@ -22,41 +23,47 @@ species(
 )
 
 species(
-	label='butane',
-	reactive=True,
-	structure=SMILES("CCCC"),
+    label='butane',
+    reactive=True,
+    structure=SMILES("CCCC"),
 )
 
-# Reaction systems
+
+# you must list reactor conditions (though this may not effect the output)
 simpleReactor(
-    temperature=(1350,'K'),
-    pressure=(1.0,'bar'),
+    temperature=(650,'K'),
+    pressure=(10.0,'bar'),
     initialMoleFractions={
-        "ethane": 1.0,
+        "ethane": 1,
     },
     terminationConversion={
-        'ethane': 0.9,
+        'butane': .99,
     },
-    terminationTime=(1e6,'s'),
+    terminationTime=(40,'s'),
 )
 
-simulator(
-    atol=1e-16,
-    rtol=1e-8,
-)
+#optional module if you want to get pressure dependent kinetics. 
 
-model(
-    toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=0.1,
-    maximumEdgeSpecies=100000
-)
+#pressureDependence(
+#     method='modified strong collision',
+#     maximumGrainSize=(0.5,'kcal/mol'),
+#     minimumNumberOfGrains=250,
+#     temperatures=(300,2200,'K',2),
+#     pressures=(0.01,100,'bar',3),
+#     interpolation=('Chebyshev', 6, 4),
+#     maximumAtoms=15,
+#)
 
-options(
-    units='si',
-    saveRestartPeriod=None,
-    drawMolecules=False,
-    generatePlots=False,
-    saveEdgeSpecies=False,
-    saveSimulationProfiles=True,
-)
+#optional module if you want to limit species produced in reactions. 
+
+#generatedSpeciesConstraints(
+#    allowed=['input species','seed mechanisms','reaction libraries'],
+#    maximumCarbonAtoms=4,
+#    maximumHydrogenAtoms=10,
+#    maximumOxygenAtoms=7,
+#    maximumNitrogenAtoms=0,
+#    maximumSiliconAtoms=0,
+#    maximumSulfurAtoms=0,
+#    maximumHeavyAtoms=20,
+#    maximumRadicalElectrons=1,
+#)
