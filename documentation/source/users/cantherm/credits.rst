@@ -2,7 +2,7 @@
 Credits
 *******
 
-**Author:** Joshua W. Allen (jwallen@mit.edu)
+**Author:** Joshua W. Allen (joshua.w.allen@gmail.com)
 
 **P.I.:** Prof. William H. Green (whgreen@mit.edu)
 

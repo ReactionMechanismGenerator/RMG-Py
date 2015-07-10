@@ -22,7 +22,7 @@ CanTherm is provided as free, open source code under the terms of the
 `MIT/X11 License <http://www.opensource.org/licenses/mit-license.php>`_. The 
 full, official license is reproduced below::
 
-    Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu).
+    Copyright (c) 2010 by Joshua W. Allen (joshua.w.allen@gmail.com).
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the 'Software'),
