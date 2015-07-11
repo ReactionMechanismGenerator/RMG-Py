@@ -1,4 +1,4 @@
-.. _measuretheoryguide:
+.. _pdeptheoryguide:
 
 ********************************
 Pressure-Dependence Theory Guide

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>15.5. Generating Flux Diagrams &mdash; RMG Py 0.1.0 documentation</title>
+    <title>14.5. Generating Flux Diagrams &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="15. Standalone Modules" href="index.html" />
-    <link rel="next" title="15.6. Thermo Estimation Module" href="thermoEstimation.html" />
-    <link rel="prev" title="15.4. Sensitivity Analysis" href="sensitivity.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="up" title="14. Standalone Modules" href="index.html" />
+    <link rel="next" title="14.6. Thermo Estimation Module" href="thermoEstimation.html" />
+    <link rel="prev" title="14.4. Sensitivity Analysis" href="sensitivity.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,21 +57,29 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="thermoEstimation.html" title="15.6. Thermo Estimation Module"
+          <a href="thermoEstimation.html" title="14.6. Thermo Estimation Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sensitivity.html" title="15.4. Sensitivity Analysis"
+          <a href="sensitivity.html" title="14.4. Sensitivity Analysis"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">15. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">14. Standalone Modules</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="generating-flux-diagrams">
-<span id="generatefluxdiagram"></span><h1>15.5. Generating Flux Diagrams<a class="headerlink" href="#generating-flux-diagrams" title="Permalink to this headline">¶</a></h1>
+<span id="generatefluxdiagram"></span><h1>14.5. Generating Flux Diagrams<a class="headerlink" href="#generating-flux-diagrams" title="Permalink to this headline">¶</a></h1>
+<p>The script, <code class="docutils literal"><span class="pre">generateFluxDiagrams.py</span></code>, will create a movie out of a completed RMG model
+that shows interconnected arrows between species that represent fluxes.</p>
+<p>To use this method, you just need a completed RMG run.  THe syntax is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>python $RMGPy/generateFluxDiagram.py input.py
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">input.py</span></code> is the input file for the completed RMG run.  The program will use the automatically
+generated file structure to find the other necessary files to create the movie.</p>
 </div>
 
 
@@ -85,10 +93,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="sensitivity.html"
-                        title="previous chapter">15.4. Sensitivity Analysis</a></p>
+                        title="previous chapter">14.4. Sensitivity Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="thermoEstimation.html"
-                        title="next chapter">15.6. Thermo Estimation Module</a></p>
+                        title="next chapter">14.6. Thermo Estimation Module</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/generateFluxDiagram.rst"
@@ -112,7 +120,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

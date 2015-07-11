@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>RMG User’s Guide &mdash; RMG Py 0.1.0 documentation</title>
+    <title>RMG User’s Guide &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
     <link rel="up" title="User’s Guide" href="../index.html" />
     <link rel="next" title="1. Introduction" href="introduction.html" />
     <link rel="prev" title="User’s Guide" href="../index.html" />
@@ -74,99 +74,101 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#license">1.1. License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#features">1.2. Features</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">2. Features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/index.html">3. Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation/windows.html">3.1. Windows Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/linux.html">3.2. Linux Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/macos.html">3.3. MacOS X Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation/QMthermo.html">3.4. Quantum Mechanical Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/index.html">2. Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation/windows.html">2.1. Windows Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/linux.html">2.2. Linux Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/macos.html">2.3. MacOS X Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation/QMthermo.html">2.4. Quantum Mechanical Calculations</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="input.html">4. Creating Input Files</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="input.html#syntax">4.1. Syntax</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#datasources">4.2. Datasources</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#list-of-species">4.3. List of species</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#reaction-system">4.4. Reaction System</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#simulator-tolerances">4.5. Simulator Tolerances</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#pruning">4.6. Pruning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#on-the-fly-quantum-calculations">4.7. On the fly Quantum Calculations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#pressure-dependence">4.8. Pressure Dependence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#miscellaneous-options">4.9. Miscellaneous Options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#species-constraints">4.10. Species Constraints</a></li>
-<li class="toctree-l2"><a class="reference internal" href="input.html#examples">4.11. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input.html">3. Creating Input Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="input.html#syntax">3.1. Syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#datasources">3.2. Datasources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#list-of-species">3.3. List of species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#reaction-system">3.4. Reaction System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#simulator-tolerances">3.5. Simulator Tolerances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#pruning">3.6. Pruning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#on-the-fly-quantum-calculations">3.7. On the fly Quantum Calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#pressure-dependence">3.8. Pressure Dependence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#miscellaneous-options">3.9. Miscellaneous Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input.html#species-constraints">3.10. Species Constraints</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">5. Example Input Files</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#ethane-pyrolysis-minimal">5.1. Ethane pyrolysis (Minimal)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#hexadiene-pyrolysis">5.2. 1,3-hexadiene pyrolysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">4. Example Input Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#ethane-pyrolysis-minimal">4.1. Ethane pyrolysis (Minimal)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#hexadiene-pyrolysis">4.2. 1,3-hexadiene pyrolysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#commented-input-file">4.3. Commented input file</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="running.html">6. Running a Job</a></li>
-<li class="toctree-l1"><a class="reference internal" href="output.html">7. Analyzing the Output Files</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="output.html#the-chemkin-folder">7.1. The Chemkin Folder</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#the-species-folder">7.2. The Species Folder</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#the-pdep-folder">7.3. The Pdep Folder</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#the-solver-folder">7.4. The Solver Folder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">5. Running a Job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">6. Analyzing the Output Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="output.html#the-chemkin-folder">6.1. The Chemkin Folder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#the-species-folder">6.2. The Species Folder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#the-pdep-folder">6.3. The Pdep Folder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#the-solver-folder">6.4. The Solver Folder</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="species.html">8. Species Representation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="species.html#representing-oxygen">8.1. Representing Oxygen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="species.html">7. Species Representation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="species.html#representing-oxygen">7.1. Representing Oxygen</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="group.html">9. Group Representation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="database/index.html">10. Databases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="database/introduction.html">10.1. Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/thermo.html">10.2. Thermo Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/kinetics.html">10.3. Kinetics Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="database/modification.html">10.4. Database Modification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="group.html">8. Group Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database/index.html">9. Databases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="database/introduction.html">9.1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database/thermo.html">9.2. Thermo Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database/kinetics.html">9.3. Kinetics Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database/modification.html">9.4. Database Modification</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="thermo.html">11. Thermochemistry Estimation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#species-thermochemistry-libraries">11.1. Species thermochemistry libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#group-contribution-methods">11.2. Group contribution methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp">11.3. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#symmetry-and-chirality">11.4. Symmetry and Chirality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#references">11.5. References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="thermo.html">10. Thermochemistry Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#species-thermochemistry-libraries">10.1. Species thermochemistry libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#group-contribution-methods">10.2. Group contribution methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp">10.3. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#symmetry-and-chirality">10.4. Symmetry and Chirality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#references">10.5. References</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="kinetics.html">12. Kinetics Estimation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="kinetics.html#priority-of-kinetic-databases">12.1. Priority of Kinetic Databases</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kinetics.html#kinetic-families">12.2. Kinetic Families</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kinetics.html">11. Kinetics Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kinetics.html#priority-of-kinetic-databases">11.1. Priority of Kinetic Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics.html#kinetic-families">11.2. Kinetic Families</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="liquids.html">13. Liquid Phase Systems</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="liquids.html#equation-of-state">13.1. Equation of state</a></li>
-<li class="toctree-l2"><a class="reference internal" href="liquids.html#solvation-thermochemistry">13.2. Solvation thermochemistry</a></li>
-<li class="toctree-l2"><a class="reference internal" href="liquids.html#diffusion-limited-kinetics">13.3. Diffusion-limited kinetics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="liquids.html#example-liquid-phase-input-file">13.4. Example liquid-phase input file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="liquids.html">12. Liquid Phase Systems</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="liquids.html#equation-of-state">12.1. Equation of state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="liquids.html#solvation-thermochemistry">12.2. Solvation thermochemistry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="liquids.html#diffusion-limited-kinetics">12.3. Diffusion-limited kinetics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="liquids.html#example-liquid-phase-input-file">12.4. Example liquid-phase input file</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="guidelines.html">14. Guidelines for Building a Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="guidelines.html#start-with-a-good-seed-mechanism">14.1. Start with a good seed mechanism</a></li>
-<li class="toctree-l2"><a class="reference internal" href="guidelines.html#setting-up-the-right-termination-criterion">14.2. Setting up the right termination criterion</a></li>
-<li class="toctree-l2"><a class="reference internal" href="guidelines.html#restricting-the-number-of-carbon-atoms-oxygen-atoms-and-radical-sites-per-species">14.3. Restricting the number of carbon atoms, oxygen atoms, and radical sites per species</a></li>
-<li class="toctree-l2"><a class="reference internal" href="guidelines.html#adding-key-species-into-the-initial-condition-file">14.4. Adding key species into the initial condition file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="guidelines.html#starting-with-a-single-molecule-when-generating-a-model-for-a-mixture">14.5. Starting with a single molecule when generating a model for a mixture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guidelines.html">13. Guidelines for Building a Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#start-with-a-good-seed-mechanism">13.1. Start with a good seed mechanism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#setting-up-the-right-termination-criterion">13.2. Setting up the right termination criterion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#restricting-the-number-of-carbon-atoms-oxygen-atoms-and-radical-sites-per-species">13.3. Restricting the number of carbon atoms, oxygen atoms, and radical sites per species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#adding-key-species-into-the-initial-condition-file">13.4. Adding key species into the initial condition file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines.html#starting-with-a-single-molecule-when-generating-a-model-for-a-mixture">13.5. Starting with a single molecule when generating a model for a mixture</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules/index.html">15. Standalone Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules/diffModels.html">15.1. Model Comparison</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/mergeModels.html">15.2. Merging Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/generateReactions.html">15.3. Generate Reactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/sensitivity.html">15.4. Sensitivity Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/generateFluxDiagram.html">15.5. Generating Flux Diagrams</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/thermoEstimation.html">15.6. Thermo Estimation Module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/chemkin.html">15.7. Working With Chemkin Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">14. Standalone Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules/diffModels.html">14.1. Model Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/mergeModels.html">14.2. Merging Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/generateReactions.html">14.3. Generate Reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/sensitivity.html">14.4. Sensitivity Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/generateFluxDiagram.html">14.5. Generating Flux Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/thermoEstimation.html">14.6. Thermo Estimation Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/chemkin.html">14.7. Working With Chemkin Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/convertFAME.html">14.8. convert FAME to CanTherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/databaseScripts.html">14.9. Database Scripts</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">16. Frequently Asked Questions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#why-can-t-my-adjacency-lists-be-read-any-more">16.1. Why can&#8217;t my adjacency lists be read any more?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">15. Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#why-can-t-my-adjacency-lists-be-read-any-more">15.1. Why can&#8217;t my adjacency lists be read any more?</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="credits.html">17. Credits</a></li>
-<li class="toctree-l1"><a class="reference internal" href="credits.html#how-to-cite">18. How to Cite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">16. Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html#how-to-cite">17. How to Cite</a></li>
 </ul>
 </div>
 <ul class="simple">
@@ -214,7 +216,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

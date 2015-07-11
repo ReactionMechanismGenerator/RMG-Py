@@ -140,14 +140,15 @@ An example of a GAV entry in group.py is shown here below::
 	""",
 	    thermo = ThermoData(
 	        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-	        Cpdata = ([3.01,3.68,4.2,4.61,5.2,5.7,6.2],'cal/(mol*K)','+|-',[0.1,0.1,0.1,0.1,0.1,0.1,0.1]),
+	        Cpdata = ([3.01,3.68,4.2,4.61,5.2,5.7,6.2],'cal/(mol*K)',
+		          '+|-', [0.1,0.1,0.1,0.1,0.1,0.1,0.1]),
 	        H298 = (4.8,'kcal/mol','+|-',0.17),
 	        S298 = (-5,'cal/(mol*K)','+|-',0.1),
 	    ),
 	    shortDesc = u"""Cbf-CbfCbCb STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714""",
 	    longDesc = 
 	u"""
-	
+	Taken from STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714
 	""",
 	)
 

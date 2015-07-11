@@ -9,6 +9,17 @@ computed using the rigid rotor-harmonic oscillator approximation with optional
 corrections for hindered internal rotors. Kinetic parameters are computed using
 canonical transition state theory with optional tunneling correction.
 
+CanTherm can also estimate 
+pressure-dependent phenomenological rate coefficients :math:`k(T,P)` for  
+unimolecular reaction networks of arbitrary complexity. The approach is to
+first generate a detailed model of the reaction network using the 
+one-dimensional master equation, then apply one of several available model 
+reduction methods of varying accuracy, speed, and robustness to simplify the 
+detailed model into a set of phenomenological rate coefficients. The result 
+is a set of :math:`k(T,P)` functions suitable for use in chemical reaction
+mechanisms.
+
+
 About CanTherm
 ==============
 
@@ -22,7 +33,7 @@ CanTherm is provided as free, open source code under the terms of the
 `MIT/X11 License <http://www.opensource.org/licenses/mit-license.php>`_. The 
 full, official license is reproduced below::
 
-    Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu).
+    Copyright (c) 2010 by Joshua W. Allen (joshua.w.allen@gmail.com).
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the 'Software'),

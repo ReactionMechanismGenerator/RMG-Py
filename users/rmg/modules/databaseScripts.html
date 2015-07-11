@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>14.9. Database Scripts &mdash; RMG Py 1.0.alpha documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="up" title="14. Standalone Modules" href="index.html" />
+    <link rel="next" title="15. Frequently Asked Questions" href="../faq.html" />
+    <link rel="prev" title="14.8. convert FAME to CanTherm" href="convertFAME.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body role="document">
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../faq.html" title="15. Frequently Asked Questions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="convertFAME.html" title="14.8. convert FAME to CanTherm"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">14. Standalone Modules</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="database-scripts">
+<span id="databasescripts"></span><h1>14.9. Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this headline">¶</a></h1>
+<p>This section details usage for scripts available in RMG-database.</p>
+<div class="section" id="evanspolanyi-py">
+<h2>14.9.1. evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this headline">¶</a></h2>
+<p>This script will generate an Evans-Polanyi plot for a single kinetics
+depository.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python evansPolanyi.py [-h] DEPOSITORY
+</pre></div>
+</div>
+<p>Positional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>DEPOSITORY    the depository to use
+</pre></div>
+</div>
+<p>Optional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>-h, --help    show help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="exportkineticslibrarytochemkin-py">
+<h2>14.9.2. exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this headline">¶</a></h2>
+<p>This script exports an individual RMG-Py kinetics library to a chemkin
+and dictionary file.  Thermo is taken from RMG&#8217;s estimates and libraries.
+In order to use more specific thermo, you must tweak the thermoLibraries and
+estimators in use when loading the database. The script will save the
+chem.inp and species_dictionary.txt files in the local directory.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python exportKineticsLibrarytoChemkin.py [-h] LIBRARYNAME
+</pre></div>
+</div>
+<p>Positional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>LIBRARYNAME    the libraryname of the RMG-Py format kinetics library
+</pre></div>
+</div>
+<p>Optional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>-h, --help     show help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="exportolddatabase-py">
+<h2>14.9.3. exportOldDatabase.py<a class="headerlink" href="#exportolddatabase-py" title="Permalink to this headline">¶</a></h2>
+<p>This script exports the database to the old RMG-Java format. The script
+requires two command-line arguments: the path to the database to import, and
+the path to save the old RMG-Java database to.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python exportOldDatabase.py INPUT OUTPUT
+</pre></div>
+</div>
+<p>Positional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>INPUT    path to the directory containing the database to import
+OUTPUT   path to the directory where the RMG-Java database should be saved
+</pre></div>
+</div>
+</div>
+<div class="section" id="importchemkinlibrary-py">
+<h2>14.9.4. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
+<p>This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
+RMG-Py kinetics library and thermo library files.  These py files are automatically added to the
+input/kinetics/libraries and input/thermo/libraries folder under the user-specified <cite>name</cite> for the chemkin library.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python importChemkinLibrary.py [-h] CHEMKIN DICTIONARY NAME
+</pre></div>
+</div>
+<p>Positional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>CHEMKIN     The path of the chemkin file
+DICTIONARY  The path of the RMG dictionary file
+NAME        Name of the chemkin library to be saved
+</pre></div>
+</div>
+<p>Optional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>-h, --help  show help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="importjavakineticslibrary-py">
+<h2>14.9.5. importJavaKineticsLibrary.py<a class="headerlink" href="#importjavakineticslibrary-py" title="Permalink to this headline">¶</a></h2>
+<p>This script imports an individual RMG-Java kinetics library from a local directory and saves the output
+kinetics library py file into a path of the user&#8217;s choosing.  This library will be automatically
+added to the &#8216;libraryname&#8217; folder in the input/kinetics/libraries directory and can
+be used directly as an RMG-Py kinetics library.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python importJavaKineticsLibrary.py [-h] INPUT LIBRARYNAME
+</pre></div>
+</div>
+<p>Positional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>INPUT          the input path of the RMG-Java kinetics library directory
+LIBRARYNAME    the libraryname for the RMG-Py format kinetics library
+</pre></div>
+</div>
+<p>Optional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>-h, --help     show help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="importjavathermolibrary-py">
+<h2>14.9.6. importJavaThermoLibrary.py<a class="headerlink" href="#importjavathermolibrary-py" title="Permalink to this headline">¶</a></h2>
+<p>This script imports an individual RMG-Java themo library from a local directory and saves the output
+thermo library py file into a path of the user&#8217;s choosing.  This library will be automatically
+saved to libraryname.py in the input/thermo/libraries directory and can
+be used directly as an RMG-Py thermo library.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python importJavaThermoLibrary.py [-h] INPUT LIBRARYNAME
+</pre></div>
+</div>
+<p>Positional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>INPUT          the input path of the RMG-Java thermo library directory
+LIBRARYNAME    the libraryname for the RMG-Py format thermo library
+</pre></div>
+</div>
+<p>Optional arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre>-h, --help     show help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="importolddatabase-py">
+<h2>14.9.7. importOldDatabase.py<a class="headerlink" href="#importolddatabase-py" title="Permalink to this headline">¶</a></h2>
+<p>This script imports an RMG-Java database from the output directory and saves
+it in the input directory. Only recommended for use in extreme circumstances.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python importOldDatabase.py
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">14.9. Database Scripts</a><ul>
+<li><a class="reference internal" href="#evanspolanyi-py">14.9.1. evansPolanyi.py</a></li>
+<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">14.9.2. exportKineticsLibraryToChemkin.py</a></li>
+<li><a class="reference internal" href="#exportolddatabase-py">14.9.3. exportOldDatabase.py</a></li>
+<li><a class="reference internal" href="#importchemkinlibrary-py">14.9.4. importChemkinLibrary.py</a></li>
+<li><a class="reference internal" href="#importjavakineticslibrary-py">14.9.5. importJavaKineticsLibrary.py</a></li>
+<li><a class="reference internal" href="#importjavathermolibrary-py">14.9.6. importJavaThermoLibrary.py</a></li>
+<li><a class="reference internal" href="#importolddatabase-py">14.9.7. importOldDatabase.py</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="convertFAME.html"
+                        title="previous chapter">14.8. convert FAME to CanTherm</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../faq.html"
+                        title="next chapter">15. Frequently Asked Questions</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/databaseScripts.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

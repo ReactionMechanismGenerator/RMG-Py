@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>15.1. Model Comparison &mdash; RMG Py 0.1.0 documentation</title>
+    <title>14.1. Model Comparison &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="15. Standalone Modules" href="index.html" />
-    <link rel="next" title="15.2. Merging Models" href="mergeModels.html" />
-    <link rel="prev" title="15. Standalone Modules" href="index.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="up" title="14. Standalone Modules" href="index.html" />
+    <link rel="next" title="14.2. Merging Models" href="mergeModels.html" />
+    <link rel="prev" title="14. Standalone Modules" href="index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,21 +57,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="mergeModels.html" title="15.2. Merging Models"
+          <a href="mergeModels.html" title="14.2. Merging Models"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="15. Standalone Modules"
+          <a href="index.html" title="14. Standalone Modules"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">15. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">14. Standalone Modules</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="model-comparison">
-<span id="diffmodels"></span><h1>15.1. Model Comparison<a class="headerlink" href="#model-comparison" title="Permalink to this headline">¶</a></h1>
+<span id="diffmodels"></span><h1>14.1. Model Comparison<a class="headerlink" href="#model-comparison" title="Permalink to this headline">¶</a></h1>
+<p>The script <code class="docutils literal"><span class="pre">diffModels</span></code> compares two RMG generated models to determine their differences.
+To use this method you will need the chemkin and species dictionary outputs from RMG. These can be found in the
+<code class="docutils literal"><span class="pre">chemkin</span></code> folder from the directory of the <code class="docutils literal"><span class="pre">input.py</span></code> file used for the RMG run.  The syntax is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>python $RMGPy/diffModels.py CHEMKIN1 SPECIESDICT1 THERMO1 CHEMKIN2 SPECIESDICT2 THERMO2
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">CHEMKIN</span></code> represents the chemkin input file (<code class="docutils literal"><span class="pre">chem00XX.inp</span></code>), <code class="docutils literal"><span class="pre">SPECIESDICT</span></code>
+is the species diectionary from RMG (<code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>) and <code class="docutils literal"><span class="pre">THERMO</span></code>
+is input as the chemkin file again (<code class="docutils literal"><span class="pre">chem00XX.inp</span></code>).  The numbers (<code class="docutils literal"><span class="pre">1</span></code> and <code class="docutils literal"><span class="pre">2</span></code>) represent
+which model to each file is from.</p>
+<p>Output of each comparison is printed, and the method then produces a html file (<code class="docutils literal"><span class="pre">diff.html</span></code>)
+for easy viewing of the comparison.</p>
+<p>This method is also available to use with a web browser from the RMG website at rmg.mit.edu</p>
 </div>
 
 
@@ -85,10 +98,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">15. Standalone Modules</a></p>
+                        title="previous chapter">14. Standalone Modules</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="mergeModels.html"
-                        title="next chapter">15.2. Merging Models</a></p>
+                        title="next chapter">14.2. Merging Models</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/diffModels.rst"
@@ -112,7 +125,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

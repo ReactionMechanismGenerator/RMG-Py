@@ -189,8 +189,8 @@ The rule must be added into rules.py in the form::
 * The label is the name of the rule.
 * The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.
 * The value and units of kinetic parameters must be given. 
-	* Multiplicative uncertainty is given as "'*\|/,' 5" meaning within a factor of 5 
-	* Additive uncertainty is given as "'+\|/-', 2" meaning plus or minus 2.
+	* Multiplicative uncertainty is given as ``'*\|/,' 5`` meaning within a factor of 5 
+	* Additive uncertainty is given as ``'+\|/-', 2`` meaning plus or minus 2.
 * Rank determines the priority of the rule when compared with other rules.
 * The short description will appear in the annotated chemkin file.
 * The long description only appears in the database.

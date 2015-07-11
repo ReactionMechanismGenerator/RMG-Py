@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3.2. Linux Installation &mdash; RMG Py 0.1.0 documentation</title>
+    <title>2.2. Linux Installation &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="3. Installation" href="index.html" />
-    <link rel="next" title="3.3. MacOS X Installation" href="macos.html" />
-    <link rel="prev" title="3.1. Windows Installation" href="windows.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="up" title="2. Installation" href="index.html" />
+    <link rel="next" title="2.3. MacOS X Installation" href="macos.html" />
+    <link rel="prev" title="2.1. Windows Installation" href="windows.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,26 +57,27 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="macos.html" title="3.3. MacOS X Installation"
+          <a href="macos.html" title="2.3. MacOS X Installation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="windows.html" title="3.1. Windows Installation"
+          <a href="windows.html" title="2.1. Windows Installation"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">3. Installation</a> &raquo;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">2. Installation</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="linux-installation">
-<span id="linux"></span><h1>3.2. Linux Installation<a class="headerlink" href="#linux-installation" title="Permalink to this headline">¶</a></h1>
+<span id="linux"></span><h1>2.2. Linux Installation<a class="headerlink" href="#linux-installation" title="Permalink to this headline">¶</a></h1>
 <p>RMG-Py and all of its dependencies may be easily installed through a short series of Terminal commands.
 The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.</p>
 <ul>
 <li><p class="first">Install compilers and libraries:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev
+sudo apt-get install python-openbabel python-setuptools python-pip
 </pre></div>
 </div>
 </li>
@@ -107,7 +108,8 @@ cd PyDQED; make F77=gfortran; sudo make install; cd ..
 <p>Full installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
 Be sure to <strong>build it with InChI support.</strong> Here&#8217;s a synopsis:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd ~
-sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
+sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3
+sudo apt-get install libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
 git clone https://github.com/rdkit/rdkit.git
 cd rdkit
 export RDBASE=`pwd`
@@ -155,10 +157,6 @@ make eg2
 </ul>
 <ul id="compile-sensitivity">
 <li><p class="first">Compiling RMG-Py with Sensitivity Analysis:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/installation/linux.rst</tt>, line 88)</p>
-<p>Literal block expected; none found.</p>
-</div>
 <p>Running sensitivity analysis in RMG-Py requires the prerequisite DASPK solver and DASPK compiled wrapper in PyDAS.
 To do so first compile daspk in PyDAS and agree to download the daspk31.tgz file when prompted.</p>
 <div class="highlight-python"><div class="highlight"><pre>cd PyDAS/
@@ -188,10 +186,10 @@ make
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="windows.html"
-                        title="previous chapter">3.1. Windows Installation</a></p>
+                        title="previous chapter">2.1. Windows Installation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="macos.html"
-                        title="next chapter">3.3. MacOS X Installation</a></p>
+                        title="next chapter">2.3. MacOS X Installation</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/linux.rst"
@@ -215,7 +213,7 @@ make
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

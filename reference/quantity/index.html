@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Physical quantities (rmgpy.quantity) &mdash; RMG Py 0.1.0 documentation</title>
+    <title>Physical quantities (rmgpy.quantity) &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
     <link rel="up" title="RMG API Reference" href="../index.html" />
     <link rel="next" title="rmgpy.quantity.ScalarQuantity" href="scalarquantity.html" />
     <link rel="prev" title="rmgpy.qm.mopac" href="../qm/mopac.html" />
@@ -76,7 +76,7 @@ physical quantities. Physical quantities are represented by either the
 <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></code></a> or
 <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a> class depending on
 whether a scalar or vector (or tensor) value is used. The
-<a class="reference internal" href="quantity.html#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><code class="xref py py-func docutils literal"><span class="pre">Quantity</span></code></a> function automatically chooses the
+<code class="xref py py-func docutils literal"><span class="pre">Quantity</span></code> function automatically chooses the
 appropriate class based on the input value. In both cases, the value of a
 physical quantity is available from the <code class="docutils literal"><span class="pre">value</span></code> attribute, and the units from
 the <code class="docutils literal"><span class="pre">units</span></code> attribute.</p>
@@ -112,7 +112,7 @@ dimensionless.</p>
 <tr class="row-odd"><td><a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a></td>
 <td>An array physical quantity, with units and uncertainty</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="quantity.html#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><code class="xref py py-func docutils literal"><span class="pre">Quantity()</span></code></a></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Quantity()</span></code></td>
 <td>Return a scalar or array physical quantity</td>
 </tr>
 </tbody>
@@ -294,7 +294,7 @@ the output; for example, use <span class="math">\(\mathrm{kJ/mol}\)</span> inste
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

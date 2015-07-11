@@ -11,6 +11,7 @@ CanTherm User's Guide
     introduction
     installation
     input
+    input_pdep
     running
     output
     faq

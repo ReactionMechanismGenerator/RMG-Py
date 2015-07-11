@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Termination criteria &mdash; RMG Py 0.1.0 documentation</title>
+    <title>Termination criteria &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
     <link rel="up" title="Reaction system simulation (rmgpy.solver)" href="index.html" />
     <link rel="next" title="Species (rmgpy.species)" href="../species/index.html" />
     <link rel="prev" title="rmgpy.solver.SimpleReactor" href="simplereactor.html" />
@@ -71,21 +71,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="termination-criteria">
 <h1>Termination criteria<a class="headerlink" href="#termination-criteria" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.solver.TerminationTime">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">TerminationTime</code><a class="headerlink" href="#rmgpy.solver.TerminationTime" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a time at which the simulation should be terminated. This class
-has one attribute: the termination <cite>time</cite> in seconds.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="rmgpy.solver.TerminationConversion">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">TerminationConversion</code><a class="headerlink" href="#rmgpy.solver.TerminationConversion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a conversion at which the simulation should be terminated. This
-class has two attributes: the <cite>species</cite> to monitor and the fractional
-<cite>conversion</cite> at which to terminate.</p>
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/solver/termination.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;TerminationTime&#8217; from module u&#8217;rmgpy.solver&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/solver/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .base import ReactionSystem, TerminationTime, TerminationConversion
+ImportError: cannot import name TerminationTime
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/solver/termination.rst</tt>, line 7)</p>
+autodoc: failed to import class u&#8217;TerminationConversion&#8217; from module u&#8217;rmgpy.solver&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/solver/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .base import ReactionSystem, TerminationTime, TerminationConversion
+ImportError: cannot import name TerminationTime
+</div>
 </div>
 
 
@@ -126,7 +131,7 @@ class has two attributes: the <cite>species</cite> to monitor and the fractional
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.quantity.Quantity &mdash; RMG Py 0.1.0 documentation</title>
+    <title>rmgpy.quantity.Quantity &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
     <link rel="up" title="Physical quantities (rmgpy.quantity)" href="index.html" />
     <link rel="next" title="Reactions (rmgpy.reaction)" href="../reaction/index.html" />
     <link rel="prev" title="rmgpy.quantity.ArrayQuantity" href="arrayquantity.html" />
@@ -71,24 +71,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-quantity-quantity">
 <h1>rmgpy.quantity.Quantity<a class="headerlink" href="#rmgpy-quantity-quantity" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="rmgpy.quantity.Quantity">
-<code class="descclassname">rmgpy.quantity.</code><code class="descname">Quantity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.Quantity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></code></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a> object for a
-given physical quantity. The physical quantity can be specified in several
-ways:</p>
-<ul class="simple">
-<li>A scalar-like or array-like value (for a dimensionless quantity)</li>
-<li>An array of arguments (including keyword arguments) giving some or all of
-the <cite>value</cite>, <cite>units</cite>, <cite>uncertainty</cite>, and/or <cite>uncertaintyType</cite>.</li>
-<li>A tuple of the form <code class="docutils literal"><span class="pre">(value,)</span></code>, <code class="docutils literal"><span class="pre">(value,units)</span></code>, 
-<code class="docutils literal"><span class="pre">(value,units,uncertainty)</span></code>, or 
-<code class="docutils literal"><span class="pre">(value,units,uncertaintyType,uncertainty)</span></code></li>
-<li>An existing <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></code></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a> object, for
-which a copy is made</li>
-</ul>
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/quantity/quantity.rst</tt>, line 7)</p>
+autodoc: failed to import function u&#8217;Quantity&#8217; from module u&#8217;rmgpy.quantity&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 392, in import_object
+    obj = self.get_attr(obj, part)
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 288, in get_attr
+    return safe_getattr(obj, name, *defargs)
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/util/inspect.py&#8221;, line 115, in safe_getattr
+    raise AttributeError(name)
+AttributeError: Quantity
+</div>
 </div>
 
 
@@ -129,7 +123,7 @@ which a copy is made</li>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

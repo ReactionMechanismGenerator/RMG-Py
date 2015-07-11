@@ -506,6 +506,7 @@ all of RMG's reaction families. ::
         maximumSulfurAtoms=10,
         maximumHeavyAtoms=10,
         maximumRadicalElectrons=10,
+        allowSingletO2 = False,
     )
 
 An additional flag ``allowed`` can be set to allow species 
@@ -517,11 +518,6 @@ Note that under all circumstances all forbidden species will still be banned unl
 manually removed from the database.  See :ref:`kineticsDatabase` for more information on 
 forbidden groups.  
 
+By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.  
 
 
-Examples
-========
-
-Perhaps the best way to learn the input file syntax is by example. To that end,
-a number of example input files and their corresponding output have been given
-in the ``examples`` directory.

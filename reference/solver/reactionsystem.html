@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.solver.ReactionSystem &mdash; RMG Py 0.1.0 documentation</title>
+    <title>rmgpy.solver.ReactionSystem &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
     <link rel="up" title="Reaction system simulation (rmgpy.solver)" href="index.html" />
     <link rel="next" title="rmgpy.solver.SimpleReactor" href="simplereactor.html" />
     <link rel="prev" title="Reaction system simulation (rmgpy.solver)" href="index.html" />
@@ -71,89 +71,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-solver-reactionsystem">
 <h1>rmgpy.solver.ReactionSystem<a class="headerlink" href="#rmgpy-solver-reactionsystem" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.solver.ReactionSystem">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">ReactionSystem</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>A base class for all RMG reaction systems.</p>
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.advance">
-<code class="descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.advance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Simulate from the current value of the independent variable to a 
-specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and 
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
-and <cite>dydt</cite> attributes.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.initialize">
-<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize the DASPK solver by setting the initial values of the
-independent variable <cite>t0</cite>, dependent variables <cite>y0</cite>, and first
-derivatives <cite>dydt0</cite>. If provided, the derivatives must be consistent
-with the other initial conditions; if not provided, DASPK will attempt
-to estimate a consistent set of initial values for the derivatives.
-You can also set the absolute and relative tolerances <cite>atol</cite> and <cite>rtol</cite>,
-respectively, either as single values for all dependent variables or 
-individual values for each dependent variable.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.initializeModel">
-<code class="descname">initializeModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initializeModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize a simulation of the reaction system using the provided
-kinetic model. You will probably want to create your own version of this
-method in the derived class; don&#8217;t forget to also call the base class
-version, too.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.logConversions">
-<code class="descname">logConversions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.logConversions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Log information about the current conversion values.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.logRates">
-<code class="descname">logRates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.logRates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Log information about the current maximum species and network rates.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.residual">
-<code class="descname">residual</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.residual" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate the residual function for this model, given the current value
-of the independent variable <cite>t</cite>, dependent variables <cite>y</cite>, and first
-derivatives <cite>dydt</cite>. Return a numpy array with the values of the residual
-function and an integer with status information (0 if okay, -2 to
-terminate).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.simulate">
-<code class="descname">simulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.simulate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Simulate the reaction system with the provided reaction model,
-consisting of lists of core species, core reactions, edge species, and
-edge reactions. As the simulation proceeds the system is monitored for
-validity. If the model becomes invalid (e.g. due to an excessively
-large edge flux), the simulation is interrupted and the object causing
-the model to be invalid is returned. If the simulation completes to
-the desired termination criteria and the model remains valid throughout,
-<code class="docutils literal"><span class="pre">None</span></code> is returned.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.solver.ReactionSystem.step">
-<code class="descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform one simulation step from the current value of the independent 
-variable toward (but not past) a specified value <cite>tout</cite>. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and 
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
-and <cite>dydt</cite> attributes.</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/solver/reactionsystem.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;ReactionSystem&#8217; from module u&#8217;rmgpy.solver&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/solver/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .base import ReactionSystem, TerminationTime, TerminationConversion
+ImportError: cannot import name TerminationTime
+</div>
 </div>
 
 
@@ -194,7 +121,7 @@ and <cite>dydt</cite> attributes.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

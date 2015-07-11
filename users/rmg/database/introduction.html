@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10.1. Introduction &mdash; RMG Py 0.1.0 documentation</title>
+    <title>9.1. Introduction &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="10. Databases" href="index.html" />
-    <link rel="next" title="10.2. Thermo Database" href="thermo.html" />
-    <link rel="prev" title="10. Databases" href="index.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="up" title="9. Databases" href="index.html" />
+    <link rel="next" title="9.2. Thermo Database" href="thermo.html" />
+    <link rel="prev" title="9. Databases" href="index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,24 +57,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="thermo.html" title="10.2. Thermo Database"
+          <a href="thermo.html" title="9.2. Thermo Database"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="10. Databases"
+          <a href="index.html" title="9. Databases"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Databases</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="introduction">
-<span id="introdatabase"></span><h1>10.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<span id="introdatabase"></span><h1>9.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p>This section describes some of the general characteristics of RMG&#8217;s databases.</p>
 <div class="section" id="group-definitions">
-<h2>10.1.1. Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h2>
+<h2>9.1.1. Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h2>
 <p>The main section in many of RMG&#8217;s databases are the &#8216;group&#8217; definitions. Groups are
 <a class="reference internal" href="../../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span>adjacency lists</span></a>
 that describe structures around the reacting atoms. Between the adjacency
@@ -85,7 +85,7 @@ be lacking full valency. When this occurs, the omitted bonds are allowed to be
 anything. An example of a primary carbon group from H-Abstraction is shown below.
 The adjacency list defined on the left matches any of the three drawn structures
 on the right (the numbers correspond to the index from the adjacency list).</p>
-<a class="reference internal image-reference" href="../../../_images/Group.png"><img alt="../../../_images/Group.png" class="align-center" src="../../../_images/Group.png" /></a>
+<a class="reference internal image-reference" href="../../../_images/Group.png"><img alt="../../../_images/Group.png" class="align-center" src="../../../_images/Group.png" style="width: 613.2px; height: 301.0px;" /></a>
 <p>New <strong>atom types</strong> are also introduced to describe atoms in group definitions. The
 table below shows all atoms types in RMG.</p>
 <table border="1" class="docutils">
@@ -186,7 +186,7 @@ group=OR{X_H, Xrad_H},
 </div>
 </div>
 <div class="section" id="forbidden-groups">
-<h2>10.1.2. Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this headline">¶</a></h2>
+<h2>9.1.2. Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this headline">¶</a></h2>
 <p>Forbidden groups can be defined to ban structures globally in RMG or to
 ban pathways in a specific kinetic family.</p>
 <p>Globally forbidden structures will ban all reactions containing either reactants
@@ -222,7 +222,7 @@ alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.</p>
 </div>
 <div class="section" id="hierarchical-trees">
-<h2>10.1.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h2>
+<h2>9.1.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h2>
 <p>Groups are ordered into the nodes of a hierarchical trees which is written
 at the end of groups.py. The root node of each tree is the most general group with
 the reacting atoms required for the family. Descending from the root node are
@@ -248,20 +248,20 @@ Templates can be filled in with kinetic parameters from the training set or rule
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">10.1. Introduction</a><ul>
-<li><a class="reference internal" href="#group-definitions">10.1.1. Group Definitions</a></li>
-<li><a class="reference internal" href="#forbidden-groups">10.1.2. Forbidden Groups</a></li>
-<li><a class="reference internal" href="#hierarchical-trees">10.1.3. Hierarchical Trees</a></li>
+<li><a class="reference internal" href="#">9.1. Introduction</a><ul>
+<li><a class="reference internal" href="#group-definitions">9.1.1. Group Definitions</a></li>
+<li><a class="reference internal" href="#forbidden-groups">9.1.2. Forbidden Groups</a></li>
+<li><a class="reference internal" href="#hierarchical-trees">9.1.3. Hierarchical Trees</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">10. Databases</a></p>
+                        title="previous chapter">9. Databases</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="thermo.html"
-                        title="next chapter">10.2. Thermo Database</a></p>
+                        title="next chapter">9.2. Thermo Database</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/introduction.rst"
@@ -285,7 +285,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

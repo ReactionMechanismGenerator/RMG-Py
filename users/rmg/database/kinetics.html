@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10.3. Kinetics Database &mdash; RMG Py 0.1.0 documentation</title>
+    <title>9.3. Kinetics Database &mdash; RMG Py 1.0.alpha documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.1.0',
+        VERSION:     '1.0.alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="10. Databases" href="index.html" />
-    <link rel="next" title="10.4. Database Modification" href="modification.html" />
-    <link rel="prev" title="10.2. Thermo Database" href="thermo.html" />
+    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="up" title="9. Databases" href="index.html" />
+    <link rel="next" title="9.4. Database Modification" href="modification.html" />
+    <link rel="prev" title="9.2. Thermo Database" href="thermo.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,21 +57,21 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="modification.html" title="10.4. Database Modification"
+          <a href="modification.html" title="9.4. Database Modification"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="thermo.html" title="10.2. Thermo Database"
+          <a href="thermo.html" title="9.2. Thermo Database"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Databases</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="kinetics-database">
-<span id="kineticsdatabase"></span><h1>10.3. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
+<span id="kineticsdatabase"></span><h1>9.3. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
 <p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span>Modifying the Kinetics Database</span></a> for
 instructions on modifying the database.</p>
 <p>Pressure independent reaction rates in RMG are calculated using a modified
@@ -92,7 +92,7 @@ the rate coefficient are:</p>
 <p>When Evans-Polanyi corrections are used, <span class="math">\(\Delta H_{rxn}\)</span> is calculated
 using RMG&#8217;s thermo database, instead of being specified in the kinetic database.</p>
 <div class="section" id="libraries">
-<h2>10.3.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<h2>9.3.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
 <p>Kinetic libraries delineate kinetic parameters for specific reactions.
 RMG always chooses to use kinetics from libraries over families. If multiple libraries
 contain the same reaction, then precedence is given to whichever library is
@@ -110,7 +110,7 @@ families and are universally important to combustion systems.</p>
 </ul>
 </div>
 <div class="section" id="families">
-<h2>10.3.2. Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
+<h2>9.3.2. Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
 <p>Allowable reactions in RMG are divided up into classes called <strong>reaction families</strong>.
 All reactions not listed in a kinetic library have their kinetic parameters
 estimated from the reaction families.</p>
@@ -121,12 +121,12 @@ estimated from the reaction families.</p>
 <li>rules.py containing kinetic parameters for rules</li>
 </ul>
 <div class="section" id="recipe">
-<h3>10.3.2.1. Recipe<a class="headerlink" href="#recipe" title="Permalink to this headline">¶</a></h3>
+<h3>9.3.2.1. Recipe<a class="headerlink" href="#recipe" title="Permalink to this headline">¶</a></h3>
 <p>The recipe can be found near the top of groups.py and describes the changes in
 bond order and radicals that occur during the reaction. Reacting atoms are
 labelled with a starred number. Shown below is the recipe for the H-abstraction
 family.</p>
-<a class="reference internal image-reference" href="../../../_images/Recipe.png"><img alt="../../../_images/Recipe.png" class="align-center" src="../../../_images/Recipe.png" /></a>
+<a class="reference internal image-reference" href="../../../_images/Recipe.png"><img alt="../../../_images/Recipe.png" class="align-center" src="../../../_images/Recipe.png" style="width: 472.55px; height: 220.35px;" /></a>
 <p>The table below shows the possible actions for recipes. The arguments are given
 in the curly braces as shown above. For the order of bond change in the
 Change_Bond action, a -1 could represent a triple bond changing to a double
@@ -179,7 +179,7 @@ reaction families can be applied. However, RMG cannot properly handle benzene bo
 written in the kinetic group definitions.</p>
 </div>
 <div class="section" id="training-set-vs-rules">
-<h3>10.3.2.2. Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this headline">¶</a></h3>
+<h3>9.3.2.2. Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this headline">¶</a></h3>
 <p>The training set and rules both contain trusted kinetics that are used to fill in
 templates in a family. The <strong>training set</strong> contains kinetics for specific reactions,
 which are then matched to a template. The kinetic <strong>rules</strong> contain kinetic
@@ -216,11 +216,11 @@ rules.py. For more information on modification see <a class="reference internal"
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">10.3. Kinetics Database</a><ul>
-<li><a class="reference internal" href="#libraries">10.3.1. Libraries</a></li>
-<li><a class="reference internal" href="#families">10.3.2. Families</a><ul>
-<li><a class="reference internal" href="#recipe">10.3.2.1. Recipe</a></li>
-<li><a class="reference internal" href="#training-set-vs-rules">10.3.2.2. Training Set vs Rules</a></li>
+<li><a class="reference internal" href="#">9.3. Kinetics Database</a><ul>
+<li><a class="reference internal" href="#libraries">9.3.1. Libraries</a></li>
+<li><a class="reference internal" href="#families">9.3.2. Families</a><ul>
+<li><a class="reference internal" href="#recipe">9.3.2.1. Recipe</a></li>
+<li><a class="reference internal" href="#training-set-vs-rules">9.3.2.2. Training Set vs Rules</a></li>
 </ul>
 </li>
 </ul>
@@ -229,10 +229,10 @@ rules.py. For more information on modification see <a class="reference internal"
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="thermo.html"
-                        title="previous chapter">10.2. Thermo Database</a></p>
+                        title="previous chapter">9.2. Thermo Database</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="modification.html"
-                        title="next chapter">10.4. Database Modification</a></p>
+                        title="next chapter">9.4. Database Modification</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/kinetics.rst"
@@ -256,7 +256,7 @@ rules.py. For more information on modification see <a class="reference internal"
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
