@@ -175,9 +175,9 @@ elif 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
-scripts=['cantherm.py', 'rmg.py', 'diffModels.py', 'generateFluxDiagram.py',
-         'generateReactions.py', 'mergeModels.py','sensitivity.py', 'thermoEstimator.py',
-         'databaseTest.py']
+scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
+         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
+         'testing/databaseTest.py']
 
 modules = []
 for root, dirs, files in os.walk('rmgpy'):
