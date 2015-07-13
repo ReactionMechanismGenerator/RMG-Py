@@ -18,8 +18,8 @@ dependencies:
   - markupsafe
   - jinja2
   #- argparse # [py26]
-  - pyparsing # [not osx]
-  #- pydot # [not osx]
+  - pyparsing
+  - pydot
   - nose
   - coverage
   - guppy
