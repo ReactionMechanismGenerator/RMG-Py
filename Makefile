@@ -75,6 +75,9 @@ test:
 	rm -rf testing/coverage/*
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
+test-database:
+	nosetests -v -d testing/databaseTest.py	
+
 eg1: noQM
 	mkdir -p testing/minimal
 	rm -rf testing/minimal/*
