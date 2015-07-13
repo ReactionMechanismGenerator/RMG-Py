@@ -69,6 +69,7 @@ requirements:
     - psutil
     - symmetry
     - mopac
+    - graphviz
 test:
   requires:
     - nose
