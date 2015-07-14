@@ -1232,7 +1232,10 @@ def makeProfileGraph(stats_file):
     
     This requires the gprof2dot package available via `pip install gprof2dot`.
     Render the result using the program 'dot' via a command like
-    `dot -Tpdf input.dot -o output.pdf`.
+    `dot -Tps2 input.dot -o output.ps2`.
+    
+    Rendering the ps2 file to pdf requires an external pdf converter
+    `ps2pdf output.ps2` which produces a `output.ps2.pdf` file.
     """
     try:
         from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes
@@ -1290,13 +1293,19 @@ def makeProfileGraph(stats_file):
     output.close()
     
     try:
-        subprocess.check_call(['dot', '-Tpdf', dot_file, '-o', '{0}.pdf'.format(dot_file)])
+        subprocess.check_call(['dot', '-Tps2', dot_file, '-o', '{0}.ps2'.format(dot_file)])
     except subprocess.CalledProcessError:
         logging.error("Error returned by 'dot' when generating graph of the profile statistics.")
-        logging.info("To try it yourself:\n     dot -Tpdf {0} -o {0}.pdf".format(dot_file))
+        logging.info("To try it yourself:\n     dot -Tps2 {0} -o {0}.ps2".format(dot_file))
     except OSError:
         logging.error("Couldn't run 'dot' to create graph of profile statistics. Check graphviz is installed properly and on your path.")
-        logging.info("Once you've got it, try:\n     dot -Tpdf {0} -o {0}.pdf".format(dot_file))
+        logging.info("Once you've got it, try:\n     dot -Tps2 {0} -o {0}.ps2".format(dot_file))
+    
+    try:
+        subprocess.check_call(['ps2pdf', '{0}.ps2'.format(dot_file), '{0}.pdf'.format(dot_file)])
+    except OSError:
+        logging.error("Couldn't run 'ps2pdf' to create pdf graph of profile statistics. Check that ps2pdf converter is installed.")
+        logging.info("Once you've got it, try:\n     pd2pdf {0}.ps2 {0}.pdf".format(dot_file))    
     else:
         logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
 
