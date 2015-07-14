@@ -44,3 +44,6 @@ QMfiles/*
 
 # Solver settings file
 rmgpy/solver/settings.pxi
+
+# bin/symmetry
+bin/symmetry

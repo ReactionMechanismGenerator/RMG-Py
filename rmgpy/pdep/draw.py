@@ -128,7 +128,10 @@ class NetworkDrawer:
         """
         
         """
-        import cairo
+        try:
+            import cairocffi as cairo
+        except ImportError:
+            import cairo
         
         # Use dummy surface to determine text extents
         surface = createNewSurface(format)
@@ -218,12 +221,14 @@ class NetworkDrawer:
         surface of the given `format`. If `path` is given, the surface is
         saved to that location on disk.
         """
-        
         try:
-            import cairo
+            import cairocffi as cairo
         except ImportError:
-            logging.warning('Cairo not found; potential energy surface will not be drawn.')
-            return
+            try:
+                import cairo
+            except ImportError:
+                logging.warning('Cairo not found; potential energy surface will not be drawn.')
+                return
 
         self.network = network
 

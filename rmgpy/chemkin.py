@@ -37,15 +37,15 @@ import logging
 import textwrap
 import os.path
 import numpy
-import kinetics as _kinetics
-from reaction import Reaction
+import rmgpy.kinetics as _kinetics
+from rmgpy.reaction import Reaction
 #from species import Species
-from rmg.model import Species
-from rmg.pdep import PDepReaction
-from thermo import NASAPolynomial, NASA
+from rmgpy.rmg.model import Species
+from rmgpy.rmg.pdep import PDepReaction
+from rmgpy.thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants
-from quantity import Quantity
-from data.base import Entry 
+from rmgpy.quantity import Quantity
+from rmgpy.data.base import Entry 
 from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
 from rmgpy.data.kinetics.family import TemplateReaction, KineticsFamily
 from rmgpy.rmg.pdep import PDepNetwork

@@ -1,58 +1,36 @@
 language: python
+sudo: false
 python:
   - "2.7"
 virtualenv:
     system_site_packages: true
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install git build-essential gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
-#  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
-  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
-  - cd ..
+env:
+  global:
+    - secure: "L2ja+ZnV83w4qG3E8FwTjm0D6IWNOnj5wuFOjYTwbzQP4OAgLAWBzCMtxzWy5sMxFLtRgkswBH1d5f5kg8Ab7GIyAMFgQwe8UFqMJ+N05QNszE1mJkAvJtv2XN7669XXQhTt5EXfHrCcGZaODVnI2CEA8GB5DxiHO2Lcqf/xvgE="
+addons:
+  apt:
+    packages:
+    - git
 
-  - git clone https://github.com/GreenGroup/RMG-database.git
-  - git clone https://github.com/GreenGroup/PyDAS.git
-  - git clone https://github.com/GreenGroup/PyDQED.git
-  # RDKit, based on https://github.com/rdkit/rdkit/blob/master/.travis.yml
-  - sudo apt-get install -qq flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev python-imaging openjdk-7-jdk swig junit
-  - export CXX=g++
-  - export CC=gcc
-  - git clone https://github.com/rdkit/rdkit.git
-  - cd rdkit
-  - export RDBASE=`pwd`
-  - export PYTHONPATH=${PYTHONPATH}:${RDBASE}
-  - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${RDBASE}/lib
-  - cd External/INCHI-API
-  - ./download-inchi.sh
-  - cd ../../
-  - mkdir build
-  - cd build
-  - mkdir $RDBASE/External/java_lib
-  - cp /usr/share/java/junit.jar $RDBASE/External/java_lib
-  - ls -l $RDBASE/External/java_lib
-  - cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON
-  - make -j2
-  - make install
+before_install:
+  # Set up anaconda
+  - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/anaconda/bin:$PATH
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/RMG-Py:$PYTHONPATH
+  # Update conda itself
+  - conda update --yes conda
   - cd ..
-  - cd ..
+  - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+  - cd RMG-Py
+
 install:
-  - cd $TRAVIS_BUILD_DIR
-  - pip install numpy
-  - pip install -r requirements.txt
-  - cd ..
-  - cd PyDAS
-  - cd daspk31
-  - wget http://www.engineering.ucsb.edu/~cse/Software/daspk31.tgz
-  - cd ..
-  - make F77=gfortran
-  - make install
-  - cd ..
-  - cd PyDQED
-  - make F77=gfortran
-  - make install
-  - cd ..
-  - cd $TRAVIS_BUILD_DIR
-  - make noQM
+  - conda env create 
+  - source activate rmg
+  - make
+
 script: 
   - make test
   - make eg1
+  - make eg4

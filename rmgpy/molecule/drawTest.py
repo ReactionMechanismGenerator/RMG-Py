@@ -30,7 +30,10 @@ class TestMoleculeDrawer(unittest.TestCase):
         """
         Test we can create PNG files from molecules.
         """
-        from cairo import ImageSurface
+        try:
+            from cairocffi import ImageSurface
+        except ImportError:
+            from cairo import ImageSurface
         path = 'test_molecule.png'
         if os.path.exists(path):
             os.unlink(path)
@@ -43,7 +46,10 @@ class TestMoleculeDrawer(unittest.TestCase):
         """
         Test we can create PDF files from molecules.
         """
-        from cairo import PDFSurface
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
         path = 'test_molecule.pdf'
         if os.path.exists(path):
             os.unlink(path)
@@ -56,7 +62,10 @@ class TestMoleculeDrawer(unittest.TestCase):
         """
         Test we can draw a polycyclic molecule
         """
-        from cairo import PDFSurface
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
         path = 'test_molecule.pdf'
         if os.path.exists(path):
             os.unlink(path)
@@ -70,7 +79,10 @@ class TestMoleculeDrawer(unittest.TestCase):
         """
         Test we can create PDF surface without a temporary file (newer versions of PyCairo?)
         """
-        from cairo import PDFSurface
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
         surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf')
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)

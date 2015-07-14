@@ -72,9 +72,17 @@ class QMSettings():
         self.onlyCyclics = onlyCyclics
         self.maxRadicalNumber = maxRadicalNumber
         
-        RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
-        self.RMG_bin_path = os.path.join(RMGpy_path, 'bin')
-    
+        if os.sys.platform == 'win32':
+            symmetryPath = os.path.join(rmgpy.getPath(),'..', 'bin', 'symmetry.exe')
+            # If symmetry is not installed in the bin folder, assume it is available on the path somewhere
+            if not os.path.exists(symmetryPath):
+                symmetryPath = 'symmetry.exe' 
+        else:
+            symmetryPath = os.path.join(rmgpy.getPath(),'..', 'bin', 'symmetry')
+            if not os.path.exists(symmetryPath):
+                symmetryPath = 'symmetry'
+        self.symmetryPath = symmetryPath
+
     def checkAllSet(self):
         """
         Check that all the required settings are set.
@@ -156,13 +164,7 @@ class QMCalculator():
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
-                os.makedirs(path)
-
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-            
+                os.makedirs(path)            
         
     def getThermoData(self, molecule):
         """

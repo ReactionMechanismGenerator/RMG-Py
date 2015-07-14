@@ -563,9 +563,12 @@ class PressureDependenceJob(object):
         
         # Skip this step if cairo is not installed
         try:
-            import cairo
+            import cairocffi as cairo
         except ImportError:
-            return
+            try:
+                import cairo
+            except ImportError:
+                return
         
         from rmgpy.pdep.draw import NetworkDrawer
         

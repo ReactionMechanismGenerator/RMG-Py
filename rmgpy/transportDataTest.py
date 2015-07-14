@@ -37,7 +37,7 @@ import os
 import rmgpy.constants as constants
 from rmgpy import settings
 from rmgpy.species import Species
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule import Molecule
 from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.transport import TransportData
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase

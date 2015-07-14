@@ -3,10 +3,12 @@ import re
 import external.cclib as cclib
 import logging
 from subprocess import Popen
+import distutils.spawn
 
 from rmgpy.molecule import Molecule
 from qmdata import CCLibData
 from molecule import QMMolecule
+
 
 class Mopac:
     """
@@ -24,8 +26,11 @@ class Mopac:
     elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
         executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
     else:
-        executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
-    
+        executablePath = distutils.spawn.find_executable('mopac') or \
+                         distutils.spawn.find_executable('MOPAC2009.exe') or \
+                         distutils.spawn.find_executable('MOPAC2012.exe') or \
+                         os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+
     usePolar = False #use polar keyword in MOPAC
     
     "Keywords for the multiplicity"

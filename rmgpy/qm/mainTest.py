@@ -114,10 +114,8 @@ class TestQMCalculator(unittest.TestCase):
 								   )
 		
 		self.qmmol1 = QMCalculator(fileStore=fileStore)
-		self.qmmol1.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'qm', 'bin')
 		
 		self.qmmol2 = QMCalculator(fileStore=fileStore)
-		self.qmmol2.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'hexadiene', 'input.py')
 
 	def testSetDefaultOutputDirectory(self):
 		"""
@@ -154,15 +152,6 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertIsNotNone(self.mop3.settings.scratchDirectory)
 		self.assertIsNotNone(self.gauss1.settings.scratchDirectory)
 		self.assertIsNotNone(self.gauss2.settings.scratchDirectory)
-
-	def testCheckPaths(self):
-		"""
-		Test that checkPaths() works correctly.
-		"""
-		
-		with self.assertRaises(Exception):
-			self.qmmol1.checkPaths()
-			self.qmmol2.checkPaths()
 	
 	def testInitialize(self):
 		"""
