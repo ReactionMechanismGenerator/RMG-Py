@@ -18,6 +18,7 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/anaconda/bin:$PATH
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/RMG-Py:$PYTHONPATH
   # Update conda itself
   - conda update --yes conda
   - cd ..
