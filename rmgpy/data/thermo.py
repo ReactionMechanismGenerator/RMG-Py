@@ -755,6 +755,7 @@ class ThermoDatabase(object):
         
         Returns: ThermoData or None
         """
+        import rmgpy.rmg.main
         thermoData = None
         
         #chatelak 11/15/14: modification to introduce liquid phase thermo libraries
