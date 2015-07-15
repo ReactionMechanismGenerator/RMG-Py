@@ -873,13 +873,14 @@ class Database:
         Matching to structure is more strict than to node.  All labels in structure must 
         be found in node.  However the reverse is not true, unless `strict` is set to True.
         
-        Usage: node = either an Entry or a key in the self.entries dictionary which has
-                      a Group or LogicNode as its Entry.item
-               structure = a Group or a Molecule
-               atoms = dictionary of {label: atom} in the structure.  A possible dictionary
-                       is the one produced by structure.getLabeledAtoms()
-               strict = if set to True, ensures that all the node's atomLabels are matched by
-                        in the structure.
+        =================== ========================================================
+        Attribute           Description
+        =================== ========================================================
+        `node`              Either an Entry or a key in the self.entries dictionary which has a Group or LogicNode as its Entry.item
+        `structure`         A Group or a Molecule
+        `atoms`             Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()
+        `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
+        =================== ========================================================
         """
         if isinstance(node, str): node = self.entries[node]
         group = node.item
