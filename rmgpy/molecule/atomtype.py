@@ -73,7 +73,7 @@ class AtomType:
     `breakBond`         ``list``            The atom type(s) that result when an existing single bond to this atom type is broken
     `incrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is incremented
     `decrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is decremented
-    `incrementLonePair  ``list``            The atom type(s) that result when the number of lone electron pairs is incremented
+    `incrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is incremented
     `decrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is decremented
     =================== =================== ====================================
 
