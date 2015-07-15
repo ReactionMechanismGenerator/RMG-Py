@@ -8,7 +8,7 @@ This script combines up to 5 RMG models together.  The thermo and kinetics from 
 from the first model with the commonality.  To better understand the difference in two models, use diffModels.py.  
 To use this method type::
 
-	python $RMGPy/mergeModels.py --model1 chemkin1 speciesdict1 --model2 chemkin2 speciesdict2
+	python mergeModels.py --model1 chemkin1 speciesdict1 --model2 chemkin2 speciesdict2
 
 where ``chemkin`` specifies the chemkin input file from the RMG run and ``speciesdict`` represents the 
 species dictionary from the RMG run.  These can be found in the 
@@ -18,3 +18,7 @@ you can add ``--model3 chemkin3 speciesdict3``. Up to 5 models can be merged tog
 
 Running this method will create a new species dictionary (species_dictionary.txt) 
 and chemkin input file (chem.inp) in the parent directory of the terminal.
+
+
+This method is also available to use with a web browser from the RMG website: `Model Merge Tool <http://rmg.mit.edu/simulate/merge_models>`_.
+
