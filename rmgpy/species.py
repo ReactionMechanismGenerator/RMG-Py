@@ -86,9 +86,7 @@ class Species(object):
     'props'                 A generic 'properties' dictionary to store user-defined flags
     ======================= ====================================================
 
-    note::
-    
-        :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
+    note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
