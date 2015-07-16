@@ -1,13 +1,13 @@
 # For conda build
 package:
   name: rmg
-  version: "0.1.0"
+  version: "1.0.0"
 
 source:
   path: .
 
 build:
-  number: 3
+  number: 1
 
 requirements:
   build:
