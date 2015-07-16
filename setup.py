@@ -189,7 +189,7 @@ for root, dirs, files in os.walk('rmgpy'):
                     modules.append(module)       
 
 # Initiate the build and/or installation
-setup(name='RMG Py',
+setup(name='RMG-Py',
     version='1.0.0',
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',

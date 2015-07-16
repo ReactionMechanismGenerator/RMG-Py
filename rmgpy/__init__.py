@@ -36,6 +36,8 @@ import os
 import os.path
 import logging
 
+__version__ = '1.0.0'
+
 ################################################################################
 
 class SettingsError(Exception):
