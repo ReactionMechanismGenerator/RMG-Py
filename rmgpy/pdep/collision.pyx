@@ -65,7 +65,7 @@ cdef class SingleExponentialDown:
     where the parameter :math:`\\alpha = \\left< \\Delta E_\\mathrm{d} \\right>`
     represents the average energy transferred in a deactivating collision. This
     is the most commonly-used collision model, simply because it only has one
-    parameter to determine. The parameter :math:`\alpha` is specified using the
+    parameter to determine. The parameter :math:`\\alpha` is specified using the
     equation
     
     .. math:: \\alpha = \\alpha_0 \\left( \\frac{T}{T_0} \\right)^n
