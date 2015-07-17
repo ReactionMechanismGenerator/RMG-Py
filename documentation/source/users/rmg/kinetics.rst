@@ -85,3 +85,5 @@ average for :math:`A` is a geometric mean, while the average for :math:`n`,
 If there are still no "sibling" kinetics, then the groups will continue to fall
 up to more and more general nodes. In the worst case, the root nodes may be used.
 
+A :ref:`Full List of the Kinetics Families <kineticsFamilies>` in RMG is available.
+
