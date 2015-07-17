@@ -175,7 +175,7 @@ class MopacMol(QMMolecule, Mopac):
     def writeInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
-        for the `attmept`th attempt.
+        for the `attempt`.
         """
         
         molfile = self.getMolFilePathForCalculation(attempt) 
@@ -255,7 +255,7 @@ class MopacMolPMn(MopacMol):
         """
         Return the top, bottom, and polar keywords for attempt number `attempt`.
         
-        NB. `attempt`s begin at 1, not 0.
+        NB. `attempt` begins at 1, not 0.
         """
         assert attempt <= self.maxAttempts
         

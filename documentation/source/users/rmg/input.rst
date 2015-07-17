@@ -93,7 +93,7 @@ given in each mechanism, the different mechanisms can have different units.
 	RMG would only use the rate coefficient supplied by you in generating the mechanism.
 
 	RMG will not handle irreversible reactions correctly, if supplied in a Reaction
-	Library, see :ref:`irreversiblekinetics`.
+	Library.
 	
 
 .. _seedmechanism:
@@ -103,7 +103,7 @@ Seed Mechanisms
 The next section of the :file:`input.py` file specifies which, if any, 
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
-addition to the species that are listed in the :ref:`List of species` section.
+addition to the species that are listed in the :ref:`species` section.
 
 For details of the kinetics libraries included with RMG that can be used as a seed mechanism,
 see :ref:`reactionlibraries`.
@@ -351,7 +351,7 @@ and works reasonably well while running more rapidly. The latter
 utilizes the steady-state/reservoir-state approach of Green and Bhatti [Green2007]_, 
 and is more theoretically sound but more expensive.
 
-The pressure dependence block should specify the following ::
+The pressure dependence block should specify the following:
 
 
 Method used for estimating pressure dependent kinetics
@@ -454,7 +454,10 @@ The following is an example of pressure dependence options ::
 		maximumAtoms=16,
 	)
 
-Regarding the number of polynomial coeffients for Chebyshev interpolated rates, plese refer to the :ref:`documentation <rmgpy.kinetics.Chebyshev>`. The number of pressures and temperature coefficents should always be smaller than the respective number of user-specified temperatures and pressures. 
+Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
+plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
+The number of pressures and temperature coefficents should always be smaller 
+than the respective number of user-specified temperatures and pressures. 
 
 Miscellaneous Options
 ===================== 
@@ -503,6 +506,7 @@ all of RMG's reaction families. ::
         maximumSulfurAtoms=10,
         maximumHeavyAtoms=10,
         maximumRadicalElectrons=10,
+        allowSingletO2 = False,
     )
 
 An additional flag ``allowed`` can be set to allow species 
@@ -514,11 +518,6 @@ Note that under all circumstances all forbidden species will still be banned unl
 manually removed from the database.  See :ref:`kineticsDatabase` for more information on 
 forbidden groups.  
 
+By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.  
 
 
-Examples
-========
-
-Perhaps the best way to learn the input file syntax is by example. To that end,
-a number of example input files and their corresponding output have been given
-in the ``examples`` directory.

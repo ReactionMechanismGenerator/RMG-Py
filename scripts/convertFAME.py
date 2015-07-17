@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Convert a FAME input file to a MEASURE input file.
+Convert a FAME input file to a MEASURE input file.  MEASURE is the previous version of CanTherm.
 """
 
 import argparse

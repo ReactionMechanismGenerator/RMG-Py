@@ -10,8 +10,9 @@ and [Prof. Richard West's research group](http://www.northeastern.edu/comocheng/
 
 The most official repository can be found on github and is located at https://github.com/ReactionMechanismGenerator/RMG-Py.
 Instructions on how to use RMG can be found in the [Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/) including
-details on [how to install RMG-Py](http://ReactionMechanismGenerator.github.com/RMG-Py/users/rmg/installation/index.html)
-and its numerous dependencies.
+details on [how to install RMG-Py](http://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/installation/index.html)
+and its numerous dependencies.  PDF versions of the Documentation can also be found in the documentation folder
+of the source code.
 
 We have a continuous integration build test suite 
 which you can access at https://travis-ci.org/ReactionMechanismGenerator/RMG-Py

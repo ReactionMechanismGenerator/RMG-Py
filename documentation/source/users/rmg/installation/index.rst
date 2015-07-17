@@ -4,36 +4,35 @@
 Installation
 ************
 
+
+
 .. NOTE::
     RMG has been tested on the Python 2.5, 2.6, and 2.7 releases; dependency issues render it incompatible with Python 3.x releases
 
 
-Briefly, RMG depends on the following packages:
+Recommended: Installation Using Anaconda
+========================================
 
-* **NumPy:** fast matrix operations
-* **SciPy:** fast mathematical toolkit
-* **matplotlib:** generating plots
-* **rdkit:** open-source cheminformatics toolkit
-* **guppy:** memory profiling tools
-* **Cython:** compiling Python modules to C
-* **quantities:** unit conversion
-* **nose:** advanced unit test controls
-* **Sphinx:** documentation generation
-* **pydot:** interface to Dot graph language
-* **cairo:** molecular diagram generation
-* **psutil:** system utilization diagnostic tool
-* **xlwt:** generating Excel output files
-* **Graphviz:** generating flux diagrams
-* **MEncoder:** encode video flux diagrams
-* **PyDAS:** differential algebraic system solver
-* **PyDQED:** constrained nonlinear optimization
-* **RMG-database:** thermodynamic and kinetic libraries
+It is highly recommended to use the Python platform Anaconda to perform the installation of RMG-Py.
+Currently, this installation method is available only for unix-based systems: Linux and MacOSX.
+    
+.. toctree::
+    :maxdepth: 1
+    
+    anacondaUser
+    anacondaDeveloper
 
-Refer to these platform-specific instructions for details on the best ways to install these packages before attempting to build RMG-Py:
+
+Installation Using Dependencies Built By Source
+===============================================
+
+RMG-Py can also be installed using dependencies built by source, but requires several more steps.
+It is recommended to use Anaconda to install RMG if you use either Linux or MacOSX.
 
 .. toctree::
     :maxdepth: 1
-
+    
+    dependencies
     windows
     linux
     macos

@@ -1,5 +1,15 @@
 {% extends "!layout.html" %}
 
+{% block extrahead %}
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+{% endblock %}
+
 {% block rootrellink %}
 <li><a href="{{ pathto('index') }}">Documentation</a> &raquo;</li>
 {% endblock %}

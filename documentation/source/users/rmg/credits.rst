@@ -13,49 +13,32 @@ Project Supervisors:
  
 Current Developers: (rmg_dev@mit.edu)
 
-- Pierre Bhoorasingh
-- Dr. Beat A. Buesser
-- Caleb A. Class
+- Pierre L. Bhoorasingh
 - Connie Gao
-- Amrit Jalan
+- Kehang Han
 - Fariba Seyedzadeh Khanshan
-- Shamel S. Merchant
 - Belinda Slakman
+- Dr. Nick M. Vandewiele
 - Nathan Yee
-
-Original Developer:
-
-- Dr. Jing Song
 
 Previous Developers: 
 
 - Dr. Joshua W. Allen
-- Dr. Gregory R. Magoon
-- Jeffrey D. Mo
-- Dr. Michael R. Harper
-- Dr. C. Franklin Goldsmith
-- Dr. Sandeep Sharma
-- Dr. Robert W. Ashcraft
-- Dr. Gregory J. Beran
-- Dr. David M. Matheu
-- Dr. Sumathy Raman
-- Dr. Joanna Yu
-- Sarah Petway
-- Dr. Paul E. Yelvington
-- Dr. John Wen
-- Andrew Wong
-- Dr. Hsi-Wu Wong
-- Prof. Kevin M. Van Geem
+- Jacob Barlow
+- Dr. Beat A. Buesser
+- Dr. Caleb A. Class
+- Victor Lambert
+- Dr. Shamel S. Merchant
+- Sean Troiano
+- Dr. Aaron Vandeputte
 
 
 ***********
 How to Cite
 ***********
 
-William H. Green, Joshua W. Allen, Pierre Bhoorasingh, Beat A. Buesser, Robert W. Ashcraft, 
-Gregory J. Beran, Caleb A. Class, Connie Gao, C. Franklin Goldsmith, Michael R. Harper, 
-Amrit Jalan, Fariba Seyedzadeh Khanshan, Gregory R. Magoon, David M. Matheu, Shamel S. Merchant, 
-Jeffrey D. Mo, Sarah Petway, Sumathy Raman, Sandeep Sharma, Belinda Slakman, Jing Song,
-Kevin M. Van Geem, John Wen, Richard H. West, Andrew Wong, Hsi-Wu Wong, 
-Paul E. Yelvington, Nathan Yee, Joanna Yu; "Reaction Mechanism Generator", 
-2013, http://rmg.mit.edu/
+William H. Green, Joshua W. Allen, Jacob Barlow, Pierre L. Bhoorasingh, Beat A. Buesser, Caleb A. Class,
+Connie W. Gao, Kehang Han, Fariba Seyedzadeh Khanshan, Victor Lambert, Shamel S. Merchant, 
+Belinda L. Slakman, Sean Troiano, Aaron Vandeputte, Nick M. Vandewiele, 
+Richard H. West, and Nathan Yee. *Reaction Mechanism Generator v1.0.0*, 
+2015, MIT and Northeastern University, http://reactionmechanismgenerator.github.io/

@@ -30,11 +30,8 @@ Helper classes
 ==============
 
 .. autoclass:: rmgpy.data.statmechfit.DirectFit
-    :members:
 
 .. autoclass:: rmgpy.data.statmechfit.PseudoRotorFit
-    :members:
 
 .. autoclass:: rmgpy.data.statmechfit.PseudoFit
-    :members:
 
