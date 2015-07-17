@@ -11,7 +11,7 @@ source code updates and patches through Github.
 
 * Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_. When prompted to append Anaconda to your PATH, select or type Yes.
 
-* Install `Git <https://git-scm.com/>`_, the open source version control package through the Terminal ::
+* Install `Git <https://git-scm.com/>`_, the open source version control package through the Terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
 
     sudo apt-get install git
     
