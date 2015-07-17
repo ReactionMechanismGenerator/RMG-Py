@@ -4,12 +4,12 @@
 Quantum Mechanical Calculations
 *******************************
 
-To run quantum mechanical calculations for improved thermochemistry estimates of cyclic species,
+To run the :ref:`QMTP interface <qm>`, or quantum mechanical calculations for improved thermochemistry estimates of cyclic species,
 you will need some additional software.
 
 
 RDKit
-================
+=====
 
 Project home on GitHub: https://github.com/rdkit/rdkit
 
@@ -29,7 +29,7 @@ You'll need various environment variables set, eg.::
 
 
 SYMMETRY
-================
+========
 
 See http://www.cobalt.chem.ucalgary.ca/ps/symmetry.
 The source code for this is included in the `external` folder, but it needs compiling.::
@@ -42,7 +42,7 @@ This is now included in the master Makefile, so you can simply type::
 
 
 MOPAC
-================
+=====
 
 This is a semi-empirical software package you can use for QM calculations.
 See http://openmopac.net/
@@ -53,7 +53,7 @@ Ensure your environment contains the variables `MOPAC_LICENSE` and `MOPAC_DIR`. 
 	export MOPAC_DIR=$HOME/mopac
 
 Gaussian
-================
+========
 
 This can be used instead of MOPAC for QM calculations.
 
