@@ -20,6 +20,5 @@ please visit http://reactionmechanismgenerator.github.io/RMG-Py/
 
     users/rmg/index
     users/cantherm/index
-    developers/index
     theory/index
 
