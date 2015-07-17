@@ -191,11 +191,9 @@ html_copy_source = True
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('latex-rmg', 'RMGPy-UserGuide.tex', u'RMG-Py Documentation',
+  ('latex-rmg', 'RMG-Py_and_CanTherm_Documentation.tex', u'RMG-Py and CanTherm Documentation',
    u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
-  ('latex-cantherm', 'CanTherm-UserGuide.tex', u'CanTherm Documentation',
-    u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
-  ('latex-api', 'RMGPy-API-Reference.tex', u'RMG-Py API Reference',
+  ('latex-api', 'RMG-Py_API_Reference.tex', u'RMG-Py API Reference',
    u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
 ]
 
