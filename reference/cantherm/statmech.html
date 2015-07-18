@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.cantherm.StatMechJob &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>rmgpy.cantherm.StatMechJob &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="CanTherm (rmgpy.cantherm)" href="index.html" />
     <link rel="next" title="rmgpy.cantherm.ThermoJob" href="thermo.html" />
     <link rel="prev" title="rmgpy.cantherm.PressureDependenceJob" href="pdep.html" />
@@ -71,45 +71,30 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-cantherm-statmechjob">
 <h1>rmgpy.cantherm.StatMechJob<a class="headerlink" href="#rmgpy-cantherm-statmechjob" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.cantherm.StatMechJob">
-<em class="property">class </em><code class="descclassname">rmgpy.cantherm.</code><code class="descname">StatMechJob</code><span class="sig-paren">(</span><em>species</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.StatMechJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of a CanTherm statistical mechanics job. This job is used
-to compute and save the statistical mechanics information for a single
-species or transition state.</p>
-<dl class="method">
-<dt id="rmgpy.cantherm.StatMechJob.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the statistical mechanics job, saving the results to the
-given <cite>outputFile</cite> on disk.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.StatMechJob.load">
-<code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the statistical mechanics parameters for each conformer from
-the associated files on disk. Creates <code class="xref py py-class docutils literal"><span class="pre">Conformer</span></code> objects for
-each conformer and appends them to the list of confomers on the
-species object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.StatMechJob.plotHinderedRotor">
-<code class="descname">plotHinderedRotor</code><span class="sig-paren">(</span><em>angle</em>, <em>Vlist</em>, <em>cosineRotor</em>, <em>fourierRotor</em>, <em>rotor</em>, <em>rotorIndex</em>, <em>directory</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.plotHinderedRotor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
-series potential fits. The plot is saved to a set of files of the form
-<code class="docutils literal"><span class="pre">hindered_rotor_1.pdf</span></code>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.StatMechJob.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the statistical mechanics job to the file located
-at <cite>path</cite> on disk.</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/cantherm/statmech.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;StatMechJob&#8217; from module u&#8217;rmgpy.cantherm&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/__init__.py&#8221;, line 30, in &lt;module&gt;
+    from .main import CanTherm
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/main.py&#8221;, line 48, in &lt;module&gt;
+    from rmgpy.cantherm.input import loadInputFile
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/input.py&#8221;, line 56, in &lt;module&gt;
+    from rmgpy.pdep.configuration import Configuration
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/__init__.py&#8221;, line 35, in &lt;module&gt;
+    from .draw import *
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/draw.py&#8221;, line 39, in &lt;module&gt;
+    from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/draw.py&#8221;, line 54, in &lt;module&gt;
+    from rmgpy.qm.molecule import Geometry
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/molecule.py&#8221;, line 19, in &lt;module&gt;
+    import qmdata
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/qmdata.py&#8221;, line 4, in &lt;module&gt;
+    from rmgpy.quantity import Energy, Mass, Length, Frequency
+ImportError: cannot import name Energy
+</div>
 </div>
 
 
@@ -150,7 +135,7 @@ at <cite>path</cite> on disk.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

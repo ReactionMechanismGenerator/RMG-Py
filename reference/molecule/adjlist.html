@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Adjacency Lists &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>Adjacency Lists &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.symmetry" href="symmetry.html" />
     <link rel="prev" title="rmgpy.molecule.Group" href="group.html" />
@@ -118,9 +118,6 @@ multiplicity x
 1    R!H u0
 </pre></div>
 </div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/molecule/adjlist.rst</tt>, line 61)</p>
-Literal block ends without a blank line; unexpected unindent.</div>
 <div class="highlight-python"><div class="highlight"><pre>group2
 1    R!H u0
 </pre></div>
@@ -152,17 +149,10 @@ The value must be a single integer (and for charge must have a + or - sign if no
 The number of unpaired electrons (i.e. radical electrons) is required, even if zero.
 The number of lone pairs and the formal charge are assumed to be zero if omitted.</p>
 <p>For <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> definitions:
-The value can be an integer or a list of integers (with signs, for charges),</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/molecule/adjlist.rst</tt>, line 96)</p>
-Unexpected indentation.</div>
-<blockquote>
-<div>eg. <code class="docutils literal"><span class="pre">u[0,1,2]</span></code> or <code class="docutils literal"><span class="pre">c[0,+1,+2,+3,+4]</span></code>, or may be a wildcard <code class="docutils literal"><span class="pre">x</span></code>
-which matches any valid value,</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/molecule/adjlist.rst</tt>, line 98)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>eg. <code class="docutils literal"><span class="pre">px</span></code> is the same as <code class="docutils literal"><span class="pre">p[0,1,2,3,4,</span> <span class="pre">...]</span></code> and <code class="docutils literal"><span class="pre">cx</span></code> is the same as
+The value can be an integer or a list of integers (with signs, for charges),
+eg. <code class="docutils literal"><span class="pre">u[0,1,2]</span></code> or <code class="docutils literal"><span class="pre">c[0,+1,+2,+3,+4]</span></code>, or may be a wildcard <code class="docutils literal"><span class="pre">x</span></code>
+which matches any valid value,
+eg. <code class="docutils literal"><span class="pre">px</span></code> is the same as <code class="docutils literal"><span class="pre">p[0,1,2,3,4,</span> <span class="pre">...]</span></code> and <code class="docutils literal"><span class="pre">cx</span></code> is the same as
 <code class="docutils literal"><span class="pre">c[...,-4,-3,-2,-1,0,+1,+2,+3,+4,...]</span></code>. Lists must be enclosed is square brackets,
 and separated by commas, without spaces.
 If lone pairs or formal charges are omitted from a group definition,
@@ -316,7 +306,7 @@ adjacency list.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

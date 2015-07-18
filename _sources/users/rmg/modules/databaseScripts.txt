@@ -4,7 +4,7 @@
 Database Scripts
 ****************
 
-This section details usage for scripts available in RMG-database.
+This section details usage for scripts available in ``RMG-database/scripts`` folder.
 
 
 evansPolanyi.py
@@ -54,11 +54,10 @@ the path to save the old RMG-Java database to.
 
 Usage::
 
-    python exportOldDatabase.py INPUT OUTPUT
+    python exportOldDatabase.py OUTPUT
 
 Positional arguments::
 
-    INPUT    path to the directory containing the database to import
     OUTPUT   path to the directory where the RMG-Java database should be saved
 
 
@@ -132,7 +131,15 @@ it in the input directory. Only recommended for use in extreme circumstances.
 
 Usage::
 
-    python importOldDatabase.py
+    python importOldDatabase.py [-h]  INPUT OUTPUT
 
+Positional arguments::
+
+    INPUT          the input path of the RMG-Java database directory
+    LIBRARYNAME    output path for the desired RMG-Py database directory
+
+Optional arguments::
+
+    -h, --help     show help message and exit
 
 

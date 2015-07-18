@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>14.6. Thermo Estimation Module &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>14.6. Thermo Estimation Module &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="14. Standalone Modules" href="index.html" />
-    <link rel="next" title="14.7. Working With Chemkin Files" href="chemkin.html" />
+    <link rel="next" title="14.7. Convert FAME to CanTherm Input File" href="convertFAME.html" />
     <link rel="prev" title="14.5. Generating Flux Diagrams" href="generateFluxDiagram.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -57,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="chemkin.html" title="14.7. Working With Chemkin Files"
+          <a href="convertFAME.html" title="14.7. Convert FAME to CanTherm Input File"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="generateFluxDiagram.html" title="14.5. Generating Flux Diagrams"
@@ -107,8 +107,8 @@ by Benson&#8217;s method.</p>
 </pre></div>
 </div>
 <p>This library is located in the
-<code class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></code> directory.  All &#8220;Locations&#8221; for the
-ThermoLibrary field must be with respect to the <code class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></code>
+<code class="file docutils literal"><span class="pre">RMG-database/input/thermo/libraries</span></code> directory.  All &#8220;Locations&#8221; for the
+ThermoLibrary field must be with respect to the <code class="file docutils literal"><span class="pre">RMG-database/input/thermo/libraries</span></code>
 directory.</p>
 <p>The optional <code class="docutils literal"><span class="pre">quantumMechanics</span></code> block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
 These calculations are only run if the molecule is not included in a specified thermo library.
@@ -127,6 +127,7 @@ thermodynamic parameters.</p>
 </pre></div>
 </div>
 <p>We recommend you make a job-specific directory for each thermoEstimator simulation.</p>
+<p>Note that the RMG website also provides thermo estimation through the <a class="reference external" href="http://rmg.mit.edu/molecule_search">Molecule Search</a>.</p>
 </div>
 
 
@@ -142,8 +143,8 @@ thermodynamic parameters.</p>
   <p class="topless"><a href="generateFluxDiagram.html"
                         title="previous chapter">14.5. Generating Flux Diagrams</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="chemkin.html"
-                        title="next chapter">14.7. Working With Chemkin Files</a></p>
+  <p class="topless"><a href="convertFAME.html"
+                        title="next chapter">14.7. Convert FAME to CanTherm Input File</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/thermoEstimation.rst"
@@ -167,7 +168,7 @@ thermodynamic parameters.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

@@ -10,7 +10,6 @@ Contents
     :maxdepth: 2
 
     users/index
-    developers/index
     theory/index
     reference/index
     

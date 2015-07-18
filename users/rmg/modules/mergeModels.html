@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>14.2. Merging Models &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>14.2. Merging Models &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="14. Standalone Modules" href="index.html" />
     <link rel="next" title="14.3. Generate Reactions" href="generateReactions.html" />
     <link rel="prev" title="14.1. Model Comparison" href="diffModels.html" />
@@ -75,7 +75,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>This script combines up to 5 RMG models together.  The thermo and kinetics from common species and reactions is taken
 from the first model with the commonality.  To better understand the difference in two models, use diffModels.py.
 To use this method type:</p>
-<div class="highlight-python"><div class="highlight"><pre>python $RMGPy/mergeModels.py --model1 chemkin1 speciesdict1 --model2 chemkin2 speciesdict2
+<div class="highlight-python"><div class="highlight"><pre>python mergeModels.py --model1 chemkin1 speciesdict1 --model2 chemkin2 speciesdict2
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">chemkin</span></code> specifies the chemkin input file from the RMG run and <code class="docutils literal"><span class="pre">speciesdict</span></code> represents the
@@ -85,6 +85,7 @@ The numbers are for different models that you want to merge.  To merge more than
 you can add <code class="docutils literal"><span class="pre">--model3</span> <span class="pre">chemkin3</span> <span class="pre">speciesdict3</span></code>. Up to 5 models can be merged together this way</p>
 <p>Running this method will create a new species dictionary (species_dictionary.txt)
 and chemkin input file (chem.inp) in the parent directory of the terminal.</p>
+<p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/simulate/merge_models">Model Merge Tool</a>.</p>
 </div>
 
 
@@ -125,7 +126,7 @@ and chemkin input file (chem.inp) in the parent directory of the terminal.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

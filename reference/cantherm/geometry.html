@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.cantherm.geometry.Geometry &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>rmgpy.cantherm.geometry.Geometry &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="CanTherm (rmgpy.cantherm)" href="index.html" />
     <link rel="next" title="CanTherm input files" href="input.html" />
     <link rel="prev" title="rmgpy.cantherm.gaussian.GaussianLog" href="gaussianlog.html" />
@@ -71,105 +71,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-cantherm-geometry-geometry">
 <h1>rmgpy.cantherm.geometry.Geometry<a class="headerlink" href="#rmgpy-cantherm-geometry-geometry" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.cantherm.geometry.Geometry">
-<em class="property">class </em><code class="descclassname">rmgpy.cantherm.geometry.</code><code class="descname">Geometry</code><span class="sig-paren">(</span><em>coordinates</em>, <em>number</em>, <em>mass</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.geometry.Geometry" title="Permalink to this definition">¶</a></dt>
-<dd><p>The three-dimensional geometry of a molecular configuration. The attributes
-are:</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="16%" />
-<col width="24%" />
-<col width="60%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>coordinates</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code></td>
-<td>An N x 3 array containing the 3D coordinates of each atom</td>
-</tr>
-<tr class="row-odd"><td><cite>number</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code></td>
-<td>An array containing the integer atomic number of each atom</td>
-</tr>
-<tr class="row-even"><td><cite>mass</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">numpy.ndarray</span></code></td>
-<td>An array containing the atomic mass in kg/mol of each atom</td>
-</tr>
-</tbody>
-</table>
-<p>The integer index of each atom is consistent across all three attributes.</p>
-<dl class="method">
-<dt id="rmgpy.cantherm.geometry.Geometry.getCenterOfMass">
-<code class="descname">getCenterOfMass</code><span class="sig-paren">(</span><em>atoms=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.geometry.Geometry.getCenterOfMass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the [three-dimensional] position of the center of
-mass of the current geometry. If a list <cite>atoms</cite> of atoms is specified,
-only those atoms will be used to calculate the center of mass. 
-Otherwise, all atoms will be used.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.geometry.Geometry.getInternalReducedMomentOfInertia">
-<code class="descname">getInternalReducedMomentOfInertia</code><span class="sig-paren">(</span><em>pivots</em>, <em>top1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.geometry.Geometry.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the reduced moment of inertia for an internal
-torsional rotation around the axis defined by the two atoms in 
-<cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
-as part of the rotating top; this list should contain the pivot atom
-connecting the top to the rest of the molecule. The procedure used is
-that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math">\(I^{(2,3)}\)</span> by East
-and Radom <a class="footnote-reference" href="#id4" id="id2">[2]</a>. In this procedure, the molecule is divided into two
-tops: those at either end of the hindered rotor bond. The moment of
-inertia of each top is evaluated using an axis passing through the
-center of mass of both tops. Finally, the reduced moment of inertia is
-evaluated from the moment of inertia of each top via the formula</p>
-<div class="math">
-\[\frac{1}{I^{(2,3)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
-<table class="docutils footnote" frame="void" id="id3" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Pitzer, K. S. <em>J. Chem. Phys.</em> <strong>14</strong>, p. 239-243 (1946).</td></tr>
-</tbody>
-</table>
-<table class="docutils footnote" frame="void" id="id4" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>East, A. L. L. and Radom, L. <em>J. Chem. Phys.</em> <strong>106</strong>, p. 6655-6674 (1997).</td></tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.geometry.Geometry.getMomentOfInertiaTensor">
-<code class="descname">getMomentOfInertiaTensor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.geometry.Geometry.getMomentOfInertiaTensor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the moment of inertia tensor for the current 
-geometry in kg*m^2. If the coordinates are not at the center of mass,
-they are temporarily shifted there for the purposes of this calculation.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.geometry.Geometry.getPrincipalMomentsOfInertia">
-<code class="descname">getPrincipalMomentsOfInertia</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.geometry.Geometry.getPrincipalMomentsOfInertia" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the principal moments of inertia and corresponding 
-principal axes for the current geometry. The moments of inertia are in
-kg*m^2, while the principal axes have unit length.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.cantherm.geometry.Geometry.getTotalMass">
-<code class="descname">getTotalMass</code><span class="sig-paren">(</span><em>atoms=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.geometry.Geometry.getTotalMass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the total mass of the atoms in the geometry in 
-kg/mol. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
-be used to calculate the center of mass. Otherwise, all atoms will be
-used.</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/cantherm/geometry.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;Geometry&#8217; from module u&#8217;rmgpy.cantherm.geometry&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/__init__.py&#8221;, line 30, in &lt;module&gt;
+    from .main import CanTherm
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/main.py&#8221;, line 48, in &lt;module&gt;
+    from rmgpy.cantherm.input import loadInputFile
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/input.py&#8221;, line 50, in &lt;module&gt;
+    from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+  File &#8220;rmgpy/kinetics/model.pyx&#8221;, line 36, in init rmgpy.kinetics.model (build/pyrex/rmgpy/kinetics/model.c:12977)
+    import quantities as pq
+ImportError: No module named quantities
+</div>
 </div>
 
 
@@ -210,7 +129,7 @@ used.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

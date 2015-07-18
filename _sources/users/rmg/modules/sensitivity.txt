@@ -11,7 +11,7 @@ Sensitivity analysis can be conducted in a standalone system for an existing kin
 
 To use the sensitivity analysis standalone module::
 
-    python $RMGPy/sensitivity.py input.py chem.inp species_dictionary.txt
+    python sensitivity.py input.py chem.inp species_dictionary.txt
     
 where ``chem.inp`` is the CHEMKIN file and the ``species_dictionary.txt`` contains the dictionary of
 species associated with the CHEMKIN file.  ``input.py`` is an input file similar to one used for an RMG job but

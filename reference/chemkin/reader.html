@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Reading Chemkin files &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>Reading Chemkin files &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="Chemkin files (rmgpy.chemkin)" href="index.html" />
     <link rel="next" title="Writing Chemkin files" href="writer.html" />
     <link rel="prev" title="Chemkin files (rmgpy.chemkin)" href="index.html" />
@@ -79,13 +79,11 @@ autodoc: failed to import function u&#8217;loadChemkinFile&#8217; from module u&
 Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-  File &#8220;rmgpy/kinetics/model.pyx&#8221;, line 36, in init rmgpy.kinetics.model (build/pyrex/rmgpy/kinetics/model.c:12977)
-    import quantities as pq
-ImportError: No module named quantities
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
+    from rmgpy.rmg.model import Species
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
+    from rmgpy.quantity import Quantity
+ImportError: cannot import name Quantity
 </div>
 <div class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 12)</p>
@@ -93,19 +91,11 @@ autodoc: failed to import function u&#8217;loadSpeciesDictionary&#8217; from mod
 Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 41, in &lt;module&gt;
-    from reaction import Reaction
-  File &#8220;rmgpy/molecule/graph.pxd&#8221;, line 27, in init rmgpy.reaction (build/pyrex/rmgpy/reaction.c:33080)
-    cdef class Vertex(object):
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;rmgpy/molecule/element.pxd&#8221;, line 27, in init rmgpy.molecule.molecule (build/pyrex/rmgpy/molecule/molecule.c:41175)
-    cdef class Element:
-  File &#8220;rmgpy/molecule/element.py&#8221;, line 44, in init rmgpy.molecule.element (build/pyrex/rmgpy/molecule/element.c:5181)
-    from rdkit.Chem import GetPeriodicTable
-ImportError: No module named rdkit.Chem
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
+    from rmgpy.rmg.model import Species
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
+    from rmgpy.quantity import Quantity
+ImportError: cannot import name Quantity
 </div>
 <div class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 14)</p>
@@ -114,7 +104,7 @@ Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
-    from rmg.model import Species
+    from rmgpy.rmg.model import Species
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
     from rmgpy.quantity import Quantity
 ImportError: cannot import name Quantity
@@ -129,7 +119,7 @@ Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
-    from rmg.model import Species
+    from rmgpy.rmg.model import Species
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
     from rmgpy.quantity import Quantity
 ImportError: cannot import name Quantity
@@ -141,7 +131,7 @@ Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
-    from rmg.model import Species
+    from rmgpy.rmg.model import Species
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
     from rmgpy.quantity import Quantity
 ImportError: cannot import name Quantity
@@ -153,7 +143,7 @@ Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
-    from rmg.model import Species
+    from rmgpy.rmg.model import Species
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
     from rmgpy.quantity import Quantity
 ImportError: cannot import name Quantity
@@ -165,7 +155,7 @@ Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
-    from rmg.model import Species
+    from rmgpy.rmg.model import Species
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
     from rmgpy.quantity import Quantity
 ImportError: cannot import name Quantity
@@ -177,7 +167,7 @@ Traceback (most recent call last):
   File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 43, in &lt;module&gt;
-    from rmg.model import Species
+    from rmgpy.rmg.model import Species
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
     from rmgpy.quantity import Quantity
 ImportError: cannot import name Quantity
@@ -232,7 +222,7 @@ ImportError: cannot import name Quantity
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

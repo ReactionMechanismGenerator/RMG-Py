@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10. Thermochemistry Estimation &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>10. Thermochemistry Estimation &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="11. Kinetics Estimation" href="kinetics.html" />
     <link rel="prev" title="9.4. Database Modification" href="database/modification.html" />
@@ -176,7 +176,7 @@ can be found here: <a class="reference internal" href="database/thermo.html#ther
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp">
-<h2>10.3. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)<a class="headerlink" href="#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp" title="Permalink to this headline">¶</a></h2>
+<span id="qm"></span><h2>10.3. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)<a class="headerlink" href="#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp" title="Permalink to this headline">¶</a></h2>
 <p>An interface for performing on-the-fly quantum and force field calculations
 has been developed and integrated into RMG to complement the species thermochemistry databases and
 group contribution methods [Magoon and Green]_. This interface is particularly interesting for the estimation of
@@ -189,7 +189,7 @@ the available ring corrections in RMG&#8217;s ring strain correction databases.<
 <p>In a first step the connectivity representation is converted into a three-dimensional structure of the molecule
 through the generation of 3D coordinates for the atoms in the molecule. This is accomplished using
 a combination of a distance geometry method, followed by a optimization using the UFF force field available in
-RDKit <a class="reference internal" href="input.html#rdkit" id="id3">[RDKit]</a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
+RDKit <a class="reference internal" href="#rdkit" id="id3">[RDKit]</a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
 that calculates the thermochemistry of the given molecule &#8220;on-the-fly&#8221;. The keywords specify the type of calculation, and the level-of-theory.
 Finally, the calculated thermochemistry data is sent back to RMG.</p>
 <p>The QMTP calculation creates a folder &#8216;QMfiles&#8217; that contains a number of files that are created during the process.
@@ -405,7 +405,7 @@ symmetry elements).</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

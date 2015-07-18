@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.qm.qmdata &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>rmgpy.qm.qmdata &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="QMTP (rmgpy.qm)" href="index.html" />
     <link rel="next" title="rmgpy.qm.qmverifier" href="qmverifier.html" />
     <link rel="prev" title="rmgpy.qm.molecule" href="molecule.html" />
@@ -71,50 +71,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-qm-qmdata">
 <h1>rmgpy.qm.qmdata<a class="headerlink" href="#rmgpy-qm-qmdata" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.qm.qmdata.QMData">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">QMData</code><span class="sig-paren">(</span><em>groundStateDegeneracy=None</em>, <em>numberOfAtoms=None</em>, <em>stericEnergy=None</em>, <em>molecularMass=None</em>, <em>energy=0</em>, <em>atomicNumbers=[]</em>, <em>rotationalConstants=[]</em>, <em>atomCoords=[]</em>, <em>frequencies=[]</em>, <em>source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
-<dd><p>General class for data extracted from a QM calculation</p>
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.QMData.groundStateDegeneracy">
-<code class="descname">groundStateDegeneracy</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.groundStateDegeneracy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Electronic ground state degeneracy in RMG taken as number of radicals +1</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.QMData.numberOfAtoms">
-<code class="descname">numberOfAtoms</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.numberOfAtoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of atoms.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.QMData.rotationalConstants">
-<code class="descname">rotationalConstants</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.rotationalConstants" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rotational constants, in Hz.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.QMData.stericEnergy">
-<code class="descname">stericEnergy</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.stericEnergy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Steric energy.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="rmgpy.qm.qmdata.CCLibData">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">CCLibData</code><span class="sig-paren">(</span><em>cclib_data</em>, <em>groundStateDegeneracy</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData" title="Permalink to this definition">¶</a></dt>
-<dd><p>QM Data extracted from a cclib data object</p>
-<p>This data objects collects information that CCLib was able to
-retrieve from a quantum chemistry output file.</p>
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.CCLibData.cclib_data">
-<code class="descname">cclib_data</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData.cclib_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>data object returned by a parsing tool like CCLib.parse()</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/qm/qmdata.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;QMData&#8217; from module u&#8217;rmgpy.qm.qmdata&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/qmdata.py&#8221;, line 4, in &lt;module&gt;
+    from rmgpy.quantity import Energy, Mass, Length, Frequency
+ImportError: cannot import name Energy
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/qm/qmdata.rst</tt>, line 6)</p>
+autodoc: failed to import class u&#8217;CCLibData&#8217; from module u&#8217;rmgpy.qm.qmdata&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/qmdata.py&#8221;, line 4, in &lt;module&gt;
+    from rmgpy.quantity import Energy, Mass, Length, Frequency
+ImportError: cannot import name Energy
+</div>
 </div>
 
 
@@ -155,7 +131,7 @@ retrieve from a quantum chemistry output file.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

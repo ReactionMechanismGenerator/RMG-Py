@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>2. Installation &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>2. Installation &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="../index.html" />
-    <link rel="next" title="2.1. Windows Installation" href="windows.html" />
+    <link rel="next" title="2.1.1. Binary Installation Using Anaconda: For Basic Users" href="anacondaUser.html" />
     <link rel="prev" title="1. Introduction" href="../introduction.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -57,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="windows.html" title="2.1. Windows Installation"
+          <a href="anacondaUser.html" title="2.1.1. Binary Installation Using Anaconda: For Basic Users"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../introduction.html" title="1. Introduction"
@@ -75,40 +75,35 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p class="first admonition-title">Note</p>
 <p class="last">RMG has been tested on the Python 2.5, 2.6, and 2.7 releases; dependency issues render it incompatible with Python 3.x releases</p>
 </div>
-<p>Briefly, RMG depends on the following packages:</p>
-<ul class="simple">
-<li><strong>NumPy:</strong> fast matrix operations</li>
-<li><strong>SciPy:</strong> fast mathematical toolkit</li>
-<li><strong>matplotlib:</strong> generating plots</li>
-<li><strong>rdkit:</strong> open-source cheminformatics toolkit</li>
-<li><strong>guppy:</strong> memory profiling tools</li>
-<li><strong>Cython:</strong> compiling Python modules to C</li>
-<li><strong>quantities:</strong> unit conversion</li>
-<li><strong>nose:</strong> advanced unit test controls</li>
-<li><strong>Sphinx:</strong> documentation generation</li>
-<li><strong>pydot:</strong> interface to Dot graph language</li>
-<li><strong>cairo:</strong> molecular diagram generation</li>
-<li><strong>psutil:</strong> system utilization diagnostic tool</li>
-<li><strong>xlwt:</strong> generating Excel output files</li>
-<li><strong>Graphviz:</strong> generating flux diagrams</li>
-<li><strong>MEncoder:</strong> encode video flux diagrams</li>
-<li><strong>PyDAS:</strong> differential algebraic system solver</li>
-<li><strong>PyDQED:</strong> constrained nonlinear optimization</li>
-<li><strong>RMG-database:</strong> thermodynamic and kinetic libraries</li>
-</ul>
-<p>Refer to these platform-specific instructions for details on the best ways to install these packages before attempting to build RMG-Py:</p>
+<div class="section" id="recommended-installation-using-anaconda">
+<h2>2.1. Recommended: Installation Using Anaconda<a class="headerlink" href="#recommended-installation-using-anaconda" title="Permalink to this headline">¶</a></h2>
+<p>It is highly recommended to use the Python platform Anaconda to perform the installation of RMG-Py.
+Currently, this installation method is available only for unix-based systems: Linux and MacOSX.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="windows.html">2.1. Windows Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linux.html">2.2. Linux Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="macos.html">2.3. MacOS X Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="anacondaUser.html">2.1.1. Binary Installation Using Anaconda: For Basic Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="anacondaDeveloper.html">2.1.2. Installation by Source Using Anaconda: For Developers</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation-using-dependencies-built-by-source">
+<h2>2.2. Installation Using Dependencies Built By Source<a class="headerlink" href="#installation-using-dependencies-built-by-source" title="Permalink to this headline">¶</a></h2>
+<p>RMG-Py can also be installed using dependencies built by source, but requires several more steps.
+It is recommended to use Anaconda to install RMG if you use either Linux or MacOSX.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">2.2.1. Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windows.html">2.2.2. Windows Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linux.html">2.2.3. Linux Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="macos.html">2.2.4. MacOS X Installation</a></li>
 </ul>
 </div>
 <p>See also the instructions for installing these optional components:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="QMthermo.html">2.4. Quantum Mechanical Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="QMthermo.html">2.2.5. Quantum Mechanical Calculations</a></li>
 </ul>
+</div>
 </div>
 </div>
 
@@ -121,12 +116,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2. Installation</a><ul>
+<li><a class="reference internal" href="#recommended-installation-using-anaconda">2.1. Recommended: Installation Using Anaconda</a></li>
+<li><a class="reference internal" href="#installation-using-dependencies-built-by-source">2.2. Installation Using Dependencies Built By Source</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="../introduction.html"
                         title="previous chapter">1. Introduction</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="windows.html"
-                        title="next chapter">2.1. Windows Installation</a></p>
+  <p class="topless"><a href="anacondaUser.html"
+                        title="next chapter">2.1.1. Binary Installation Using Anaconda: For Basic Users</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/index.rst"
@@ -150,7 +156,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

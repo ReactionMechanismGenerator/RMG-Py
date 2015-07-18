@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.thermo.ThermoLibrary &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>rmgpy.data.thermo.ThermoLibrary &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="Kinetics (rmgpy.kinetics)" href="../kinetics/index.html" />
     <link rel="prev" title="rmgpy.data.thermo.ThermoGroups" href="thermogroups.html" />
@@ -199,29 +199,31 @@ the functional group represented by <cite>node</cite> has an equivalent labeled
 atom in <cite>structure</cite>.</p>
 <p>Matching to structure is more strict than to node.  All labels in structure must 
 be found in node.  However the reverse is not true, unless <cite>strict</cite> is set to True.</p>
-<dl class="docutils">
-<dt>Usage: node = either an Entry or a key in the self.entries dictionary which has</dt>
-<dd><blockquote class="first">
-<div>a Group or LogicNode as its Entry.item</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/thermo.py:docstring of rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure</tt>, line 15)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>structure = a Group or a Molecule
-atoms = dictionary of {label: atom} in the structure.  A possible dictionary</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/thermo.py:docstring of rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure</tt>, line 17)</p>
-Unexpected indentation.</div>
-<blockquote>
-<div>is the one produced by structure.getLabeledAtoms()</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/thermo.py:docstring of rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure</tt>, line 18)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<dl class="last docutils">
-<dt>strict = if set to True, ensures that all the node&#8217;s atomLabels are matched by</dt>
-<dd>in the structure.</dd>
-</dl>
-</dd>
-</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>node</cite></td>
+<td>Either an Entry or a key in the self.entries dictionary which has a Group or LogicNode as its Entry.item</td>
+</tr>
+<tr class="row-odd"><td><cite>structure</cite></td>
+<td>A Group or a Molecule</td>
+</tr>
+<tr class="row-even"><td><cite>atoms</cite></td>
+<td>Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()</td>
+</tr>
+<tr class="row-odd"><td><cite>strict</cite></td>
+<td>If set to <code class="docutils literal"><span class="pre">True</span></code>, ensures that all the node&#8217;s atomLabels are matched by in the structure</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -328,7 +330,7 @@ syntax.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

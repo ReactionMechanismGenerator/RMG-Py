@@ -1,6 +1,6 @@
-****************
-RMG Theory Guide
-****************
+************
+Theory Guide
+************
 
 The theoretical foundations to some of the parts of RMG and Cantherm
 are described in greater detail in these sections.

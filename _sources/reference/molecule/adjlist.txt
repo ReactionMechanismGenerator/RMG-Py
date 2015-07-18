@@ -58,6 +58,7 @@ e.g. the following two group adjlists represent identical groups. ::
     group1
     multiplicity x
     1    R!H u0
+
 ::
 
     group2
@@ -93,8 +94,8 @@ The number of lone pairs and the formal charge are assumed to be zero if omitted
 
 For :class:`~rmgpy.molecule.Group` definitions:
 The value can be an integer or a list of integers (with signs, for charges),
- eg. ``u[0,1,2]`` or ``c[0,+1,+2,+3,+4]``, or may be a wildcard ``x`` 
- which matches any valid value, 
+eg. ``u[0,1,2]`` or ``c[0,+1,+2,+3,+4]``, or may be a wildcard ``x`` 
+which matches any valid value, 
 eg. ``px`` is the same as ``p[0,1,2,3,4, ...]`` and ``cx`` is the same as
 ``c[...,-4,-3,-2,-1,0,+1,+2,+3,+4,...]``. Lists must be enclosed is square brackets,
 and separated by commas, without spaces.

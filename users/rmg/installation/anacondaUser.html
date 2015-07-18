@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2.1.1. Binary Installation Using Anaconda: For Basic Users &mdash; RMG Py 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../../contents.html" />
+    <link rel="up" title="2. Installation" href="index.html" />
+    <link rel="next" title="2.1.2. Installation by Source Using Anaconda: For Developers" href="anacondaDeveloper.html" />
+    <link rel="prev" title="2. Installation" href="index.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body role="document">
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="anacondaDeveloper.html" title="2.1.2. Installation by Source Using Anaconda: For Developers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="2. Installation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">2. Installation</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="binary-installation-using-anaconda-for-basic-users">
+<span id="anacondauser"></span><h1>2.1.1. Binary Installation Using Anaconda: For Basic Users<a class="headerlink" href="#binary-installation-using-anaconda-for-basic-users" title="Permalink to this headline">¶</a></h1>
+<p>RMG-Py can now be installed in binary format using the Anaconda Python Platform.
+This is recommended for a basic user who will not be altering the source code
+or making many additions to RMG&#8217;s thermodynamic and kinetics databases.</p>
+<ul>
+<li><p class="first">Download and install the <a class="reference external" href="http://continuum.io/downloads">Anaconda Python Platform</a>. When prompted to append Anaconda to your PATH, select or type Yes.</p>
+</li>
+<li><p class="first">Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  Type the following into your Terminal to do so</p>
+<div class="highlight-python"><div class="highlight"><pre>conda install -c rmg -y rmg rmgdatabase
+</pre></div>
+</div>
+</li>
+<li><p class="first">Optional: If you wish to use the <a class="reference internal" href="../thermo.html#qm"><span>QMTP interface</span></a> with <a class="reference external" href="http://openmopac.net/">MOPAC</a> to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the <a class="reference external" href="http://openmopac.net/form.php">MOPAC License Request Form</a>.  Once you have it, type the following into your Terminal</p>
+<div class="highlight-python"><div class="highlight"><pre>mopac password_string_here
+</pre></div>
+</div>
+</li>
+<li><p class="first">You may now run an RMG test job. Save the <a class="reference external" href="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/1.0.0/examples/rmg/minimal/input.py">Minimal Example Input File</a>
+to a local directory.  Use the Terminal to run your RMG job inside that folder using the following command</p>
+<div class="highlight-python"><div class="highlight"><pre>rmg.py input.py
+</pre></div>
+</div>
+</li>
+</ul>
+<p>You may now use RMG-Py, CanTherm, as well as any of the
+<a class="reference internal" href="../modules/index.html#modules"><span>Standalone Modules</span></a> included in the RMG-Py package.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">2. Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="anacondaDeveloper.html"
+                        title="next chapter">2.1.2. Installation by Source Using Anaconda: For Developers</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/anacondaUser.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

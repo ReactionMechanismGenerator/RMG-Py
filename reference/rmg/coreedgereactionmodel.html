@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.rmg.model.CoreEdgeReactionModel &mdash; RMG Py 1.0.alpha documentation</title>
+    <title>rmgpy.rmg.model.CoreEdgeReactionModel &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.alpha',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.alpha documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
     <link rel="next" title="RMG input files" href="input.html" />
     <link rel="prev" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
@@ -71,288 +71,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-rmg-model-coreedgereactionmodel">
 <h1>rmgpy.rmg.model.CoreEdgeReactionModel<a class="headerlink" href="#rmgpy-rmg-model-coreedgereactionmodel" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">CoreEdgeReactionModel</code><span class="sig-paren">(</span><em>core=None</em>, <em>edge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a reaction model constructed using a rate-based screening
-algorithm. The species and reactions in the model itself are called the
-<em>core</em>; the species and reactions identified as candidates for inclusion in
-the model are called the <em>edge</em>. The attributes are:</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="20%" />
-<col width="80%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><cite>core</cite></td>
-<td>The species and reactions of the current model core</td>
-</tr>
-<tr class="row-odd"><td><cite>edge</cite></td>
-<td>The species and reactions of the current model edge</td>
-</tr>
-<tr class="row-even"><td><cite>networkDict</cite></td>
-<td>A dictionary of pressure-dependent reaction networks (<code class="xref py py-class docutils literal"><span class="pre">Network</span></code> objects) indexed by source.</td>
-</tr>
-<tr class="row-odd"><td><cite>networkList</cite></td>
-<td>A list of pressure-dependent reaction networks (<code class="xref py py-class docutils literal"><span class="pre">Network</span></code> objects)</td>
-</tr>
-<tr class="row-even"><td><cite>networkCount</cite></td>
-<td>A counter for the number of pressure-dependent networks created</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addReactionLibraryToEdge">
-<code class="descname">addReactionLibraryToEdge</code><span class="sig-paren">(</span><em>reactionLibrary</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addReactionLibraryToEdge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add all species and reactions from <cite>reactionLibrary</cite>, a
-<code class="xref py py-class docutils literal"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the model edge.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addReactionLibraryToOutput">
-<code class="descname">addReactionLibraryToOutput</code><span class="sig-paren">(</span><em>reactionLib</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addReactionLibraryToOutput" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add all species and reactions from <cite>reactionLibrary</cite>, a
-<code class="xref py py-class docutils literal"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the output.
-This does not bring any of the reactions or species into the core itself.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addReactionToCore">
-<code class="descname">addReactionToCore</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addReactionToCore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a reaction <cite>rxn</cite> to the reaction model core (and remove from edge if
-necessary). This function assumes <cite>rxn</cite> has already been checked to
-ensure it is supposed to be a core reaction (i.e. all of its reactants
-AND all of its products are in the list of core species).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addReactionToEdge">
-<code class="descname">addReactionToEdge</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addReactionToEdge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a reaction <cite>rxn</cite> to the reaction model edge. This function assumes
-<cite>rxn</cite> has already been checked to ensure it is supposed to be an edge
-reaction (i.e. all of its reactants OR all of its products are in the
-list of core species, and the others are in either the core or the
-edge).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addReactionToUnimolecularNetworks">
-<code class="descname">addReactionToUnimolecularNetworks</code><span class="sig-paren">(</span><em>newReaction</em>, <em>newSpecies</em>, <em>network=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addReactionToUnimolecularNetworks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a newly-created <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object <cite>newReaction</cite>, update the
-corresponding unimolecular reaction network. If no network exists, a new
-one is created. If the new reaction is an isomerization that connects two
-existing networks, the two networks are merged. This function is called
-whenever a new high-pressure limit edge reaction is created. Returns the
-network containing the new reaction.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addSeedMechanismToCore">
-<code class="descname">addSeedMechanismToCore</code><span class="sig-paren">(</span><em>seedMechanism</em>, <em>react=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addSeedMechanismToCore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add all species and reactions from <cite>seedMechanism</cite>, a 
-<code class="xref py py-class docutils literal"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the model core. If <cite>react</cite>
-is <code class="docutils literal"><span class="pre">True</span></code>, then reactions will also be generated between the seed
-species. For large seed mechanisms this can be prohibitively expensive,
-so it is not done by default.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addSpeciesToCore">
-<code class="descname">addSpeciesToCore</code><span class="sig-paren">(</span><em>spec</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addSpeciesToCore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a species <cite>spec</cite> to the reaction model core (and remove from edge if
-necessary). This function also moves any reactions in the edge that gain
-core status as a result of this change in status to the core.
-If this are any such reactions, they are returned in a list.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addSpeciesToEdge">
-<code class="descname">addSpeciesToEdge</code><span class="sig-paren">(</span><em>spec</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addSpeciesToEdge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a species <cite>spec</cite> to the reaction model edge.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingReaction">
-<code class="descname">checkForExistingReaction</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check to see if an existing reaction has the same reactants, products, and
-family as <cite>rxn</cite>. Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> or <code class="xref py py-data docutils literal"><span class="pre">False</span></code> and the matched
-reaction (if found).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies">
-<code class="descname">checkForExistingSpecies</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check to see if an existing species contains the same
-<code class="xref py py-class docutils literal"><span class="pre">structure.Structure</span></code> as <cite>structure</cite>. Returns <code class="docutils literal"><span class="pre">True</span></code> or
-<code class="docutils literal"><span class="pre">False</span></code> and the matched species (if found, or <code class="docutils literal"><span class="pre">None</span></code> if not).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">
-<code class="descname">enlarge</code><span class="sig-paren">(</span><em>newObject</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enlarge a reaction model by processing the objects in the list <cite>newObject</cite>. 
-If <cite>newObject</cite> is a
-<code class="xref py py-class docutils literal"><span class="pre">rmg.species.Species</span></code> object, then the species is moved from
-the edge to the core and reactions generated for that species, reacting
-with itself and with all other species in the model core. If <cite>newObject</cite>
-is a <code class="xref py py-class docutils literal"><span class="pre">rmg.unirxn.network.Network</span></code> object, then reactions are
-generated for the species in the network with the largest leak flux.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.failsSpeciesConstraints">
-<code class="descname">failsSpeciesConstraints</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.failsSpeciesConstraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pass in either a <cite>Species</cite> or <cite>Molecule</cite> object and checks whether it passes 
-the speciesConstraints set by the user.  If not, returns <cite>True</cite> for failing speciesConstraints.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics">
-<code class="descname">generateKinetics</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate best possible kinetics for the given <cite>reaction</cite> using the kinetics database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getLists">
-<code class="descname">getLists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getLists" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return lists of all of the species and reactions in the core and the
-edge.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getModelSize">
-<code class="descname">getModelSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getModelSize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the numbers of species and reactions in the model core and edge.
-Note that this is not necessarily equal to the lengths of the
-corresponding species and reaction lists.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getReactionRates">
-<code class="descname">getReactionRates</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>Ci</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getReactionRates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an array of reaction rates for each reaction in the model core
-and edge. The id of the reaction is the index into the vector.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix">
-<code class="descname">getStoichiometryMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the stoichiometry matrix for all generated species and reactions.
-The id of each species and reaction is the corresponding row and column,
-respectively, in the matrix.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewPDepReaction">
-<code class="descname">makeNewPDepReaction</code><span class="sig-paren">(</span><em>forward</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewPDepReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a new pressure-dependent reaction based on a list of <cite>reactants</cite> and a
-list of <cite>products</cite>. The reaction belongs to the specified <cite>network</cite> and
-has pressure-dependent kinetics given by <cite>kinetics</cite>.</p>
-<p>No checking for existing reactions is made here. The returned PDepReaction
-object is not added to the global list of reactions, as that is intended
-to represent only the high-pressure-limit set. The reactionCounter is
-incremented, however, since the returned reaction can and will exist in
-the model edge and/or core.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction">
-<code class="descname">makeNewReaction</code><span class="sig-paren">(</span><em>forward</em>, <em>checkExisting=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a new reaction given a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object <cite>forward</cite>. The reaction is added to the global list
-of reactions. Returns the reaction in the direction that corresponds to the
-estimated kinetics, along with whether or not the reaction is new to the
-global reaction list.</p>
-<p>The forward direction is determined using the &#8220;is_reverse&#8221; attribute of the
-reaction&#8217;s family.  If the reaction family is its own reverse, then it is
-made such that the forward reaction is exothermic at 298K.</p>
-<p>The forward reaction is appended to self.newReactionList if it is new.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewSpecies">
-<code class="descname">makeNewSpecies</code><span class="sig-paren">(</span><em>object</em>, <em>label=''</em>, <em>reactive=True</em>, <em>checkForExisting=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Formally create a new species from the specified <cite>object</cite>, which can be
-either a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object or an <a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal"><span class="pre">rmgpy.species.Species</span></code></a>
-object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.markChemkinDuplicates">
-<code class="descname">markChemkinDuplicates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.markChemkinDuplicates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that all reactions that will appear the chemkin output have been checked as duplicates.</p>
-<p>Call this if you&#8217;ve done something that may have introduced undetected duplicate reactions,
-like add a reaction library or seed mechanism.
-Anything added via the <code class="xref py py-meth docutils literal"><span class="pre">expand()</span></code> method should already be detected.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.printEnlargeSummary">
-<code class="descname">printEnlargeSummary</code><span class="sig-paren">(</span><em>newCoreSpecies</em>, <em>newCoreReactions</em>, <em>newEdgeSpecies</em>, <em>newEdgeReactions</em>, <em>reactionsMovedFromEdge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.printEnlargeSummary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Output a summary of a model enlargement step to the log. The details of
-the enlargement are passed in the <cite>newCoreSpecies</cite>, <cite>newCoreReactions</cite>,
-<cite>newEdgeSpecies</cite>, and <cite>newEdgeReactions</cite> objects.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.processNewReactions">
-<code class="descname">processNewReactions</code><span class="sig-paren">(</span><em>newReactions</em>, <em>newSpecies</em>, <em>pdepNetwork=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.processNewReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Process a list of newly-generated reactions involving the new core
-species or explored isomer <cite>newSpecies</cite> in network <cite>pdepNetwork</cite>.</p>
-<p>Makes a reaction and decides where to put it: core, edge, or PDepNetwork.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.prune">
-<code class="descname">prune</code><span class="sig-paren">(</span><em>reactionSystems</em>, <em>toleranceKeepInEdge</em>, <em>maximumEdgeSpecies</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.prune" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove species from the model edge based on the simulation results from
-the list of <cite>reactionSystems</cite>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.react">
-<code class="descname">react</code><span class="sig-paren">(</span><em>database</em>, <em>speciesA</em>, <em>speciesB=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.react" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates reactions involving <a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal"><span class="pre">rmgpy.species.Species</span></code></a> speciesA and speciesB.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge">
-<code class="descname">removeSpeciesFromEdge</code><span class="sig-paren">(</span><em>spec</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove species <cite>spec</cite> from the reaction model edge.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.saveChemkinFile">
-<code class="descname">saveChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>verbose_path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>saveEdgeSpecies=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Chemkin file for the current model as well as any desired output
-species and reactions to <cite>path</cite>. If <cite>saveEdgeSpecies</cite> is True, then 
-a chemkin file and dictionary file for the core and edge species and reactions
-will be saved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.updateUnimolecularReactionNetworks">
-<code class="descname">updateUnimolecularReactionNetworks</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.updateUnimolecularReactionNetworks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterate through all of the currently-existing unimolecular reaction
-networks, updating those that have been marked as invalid. In each update,
-the phenomonological rate coefficients <span class="math">\(k(T,P)\)</span> are computed for
-each net reaction in the network, and the resulting reactions added or
-updated.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="rmgpy.rmg.model.ReactionModel">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">ReactionModel</code><span class="sig-paren">(</span><em>species=None</em>, <em>reactions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represent a generic reaction model. A reaction model consists of <cite>species</cite>,
-a list of species, and <cite>reactions</cite>, a list of reactions.</p>
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/rmg/coreedgereactionmodel.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;CoreEdgeReactionModel&#8217; from module u&#8217;rmgpy.rmg.model&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
+    from rmgpy.quantity import Quantity
+ImportError: cannot import name Quantity
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/rmg/coreedgereactionmodel.rst</tt>, line 7)</p>
+autodoc: failed to import class u&#8217;ReactionModel&#8217; from module u&#8217;rmgpy.rmg.model&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/model.py&#8221;, line 43, in &lt;module&gt;
+    from rmgpy.quantity import Quantity
+ImportError: cannot import name Quantity
+</div>
 </div>
 
 
@@ -393,7 +131,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, William H. Green, Richard H. West, and the RMG Team.
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
