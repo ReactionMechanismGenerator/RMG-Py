@@ -419,8 +419,10 @@ class CoreEdgeReactionModel:
                     if not rxn.duplicate:
                         return True, rxn0
                 else:
-                    return True, rxn0
-            
+                    if set(rxn0.template) == set(rxn.template):
+                        return True, rxn0
+                    
+            # Do not add reverse reaction if it already exists.            
             if isinstance(family,KineticsFamily) and family.ownReverse:
                 if (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
                     return True, rxn0

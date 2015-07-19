@@ -898,8 +898,8 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
-            template = self.getReactionTemplate(item)
+            item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
+            item.template = self.getReactionTemplate(item)
             item.degeneracy = self.calculateDegeneracy(item)
             
             new_entry = Entry(
@@ -1216,16 +1216,13 @@ class KineticsFamily(Database):
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
                 reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, failsSpeciesConstraints=failsSpeciesConstraints)
-                if len(reactions) != 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                    for reactant in rxn.reactants:
-                        logging.info("Reactant")
-                        logging.info(reactant.toAdjacencyList())
-                    for product in rxn.products:
-                        logging.info("Product")
-                        logging.info(product.toAdjacencyList())
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                rxn.reverse = reactions[0]
+                #assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
+                if len(reactions) == 0:
+                    raise Exception("Could not match to reverse reaction due to no matching pairs. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn))
+                   
+                else:
+                    # Use one of the matching reverse reactions
+                    rxn.reverse = reactions[0]
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
@@ -1251,12 +1248,16 @@ class KineticsFamily(Database):
         """
         reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
         if len(reactions) != 1:
-            for reactant in reaction.reactants:
-                logging.error(reactant)
-            for product in reaction.products:
-                logging.error(product)
+            if not reaction.pairs:
+                reaction.pairs = self.getReactionPairs(reaction)
+            for possibleReaction in reactions:
+                # Match the correct reaction if there are multiple reaction pathways
+                if set(possibleReaction.template) == set(reaction.template): return possibleReaction.degeneracy 
+            
             raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
-        return reactions[0].degeneracy
+        
+        else:
+            return reactions[0].degeneracy
         
     def __generateReactions(self, reactants, products=None, forward=True, failsSpeciesConstraints=None):
         """
@@ -1391,6 +1392,29 @@ class KineticsFamily(Database):
                 if match: 
                     rxnList.append(reaction)
             
+        
+                
+        # Determine the reactant-product pairs to use for flux analysis
+        # Also store the reaction template (useful so we can easily get the kinetics later)
+        for reaction in rxnList:
+            
+            # Restore the labeled atoms long enough to generate some metadata
+            for reactant in reaction.reactants:
+                reactant.clearLabeledAtoms()
+            for label, atom in reaction.labeledAtoms:
+                atom.label = label
+            
+            # Generate metadata about the reaction that we will need later
+            reaction.pairs = self.getReactionPairs(reaction)
+            reaction.template = self.getReactionTemplate(reaction)
+
+            # Unlabel the atoms
+            for label, atom in reaction.labeledAtoms:
+                atom.label = ''
+            
+            # We're done with the labeled atoms, so delete the attribute
+            del reaction.labeledAtoms
+            
         # The reaction list may contain duplicates of the same reaction
         # These duplicates should be combined (by increasing the degeneracy of
         # one of the copies and removing the others)
@@ -1428,13 +1452,19 @@ class KineticsFamily(Database):
                 # If we found a match, remove it from the list
                 # Also increment the reaction path degeneracy of the remaining reaction
                 if match:
-                    rxnList.remove(reaction)
-                    reaction0.degeneracy += 1
+                    if set(reaction0.template) == set(reaction.template):
+                        # template must match, otherwise we may have found an alternate transition state
+                        reaction0.degeneracy += 1
+                        rxnList.remove(reaction)
+                    else:
+                        index += 1
                 else:
                     index += 1
             
             index0 += 1
         
+        
+
         # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
         # This is hardcoding of reaction families!
@@ -1445,28 +1475,10 @@ class KineticsFamily(Database):
                 assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
                 
-        # Determine the reactant-product pairs to use for flux analysis
-        # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
-            
-            # Restore the labeled atoms long enough to generate some metadata
-            for reactant in reaction.reactants:
-                reactant.clearLabeledAtoms()
-            for label, atom in reaction.labeledAtoms:
-                atom.label = label
-            
-            # Generate metadata about the reaction that we will need later
-            reaction.pairs = self.getReactionPairs(reaction)
-            reaction.template = self.getReactionTemplate(reaction)
             if not forward:
                 reaction.degeneracy = self.calculateDegeneracy(reaction)
-
-            # Unlabel the atoms
-            for label, atom in reaction.labeledAtoms:
-                atom.label = ''
-            
-            # We're done with the labeled atoms, so delete the attribute
-            del reaction.labeledAtoms
+        
             
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions
