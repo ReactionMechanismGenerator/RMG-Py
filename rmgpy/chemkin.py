@@ -326,12 +326,20 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         reversible = False
     if '(+M)' in reactants: reactants = reactants.replace('(+M)','')
     if '(+m)' in reactants: reactants = reactants.replace('(+m)','')
+    if '(+' in reactants:
+        # Probably has a specific third body collider
+        first, second = reactants.split('(+')
+        reactants = first + second.split(')',1)[1]
     if '(+M)' in products:  products = products.replace('(+M)','')
     if '(+m)' in products:  products = products.replace('(+m)','')
-    
+    if '(+' in products:
+        # Probably has a specific third body collider
+        first, second = products.split('(+')
+        products = first + second.split(')',1)[1]
+
     # Create a new Reaction object for this reaction
     reaction = Reaction(reactants=[], products=[], reversible=reversible)
-    
+
     # Convert the reactants and products to Species objects using the speciesDict
     for reactant in reactants.split('+'):
         reactant = reactant.strip()
