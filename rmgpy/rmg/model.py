@@ -296,8 +296,9 @@ class CoreEdgeReactionModel:
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
-        :class:`structure.Structure` as `structure`. Returns ``True`` or
-        ``False`` and the matched species (if found, or ``None`` if not).
+        :class:`molecule.Molecule` as `molecule`. Returns ``True`` 
+        and the matched species (if found) or
+        ``False`` and ``None`` (if not found).
         """
 
         # First check cache and return if species is found
@@ -460,8 +461,9 @@ class CoreEdgeReactionModel:
 
     def makeNewReaction(self, forward, checkExisting=True):
         """
-        Make a new reaction given a :class:`Reaction` object `forward`. The reaction is added to the global list
-        of reactions. Returns the reaction in the direction that corresponds to the
+        Make a new reaction given a :class:`Reaction` object `forward`. 
+        The reaction is added to the global list of reactions.
+        Returns the reaction in the direction that corresponds to the
         estimated kinetics, along with whether or not the reaction is new to the
         global reaction list.
 

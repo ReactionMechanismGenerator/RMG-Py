@@ -1203,9 +1203,10 @@ class KineticsFamily(Database):
         `reactants`, which should be either single :class:`Molecule` objects
         or lists of same. Does not estimate the kinetics of these reactions
         at this time. Returns a list of :class:`TemplateReaction` objects
-        using :class:`Species` objects for both reactants and products. The
-        reactions are constructed such that the forward direction is consistent
-        with the template of this reaction family.
+        using :class:`Species` objects for both reactants and products
+        (but does not generate resonance isomers of these Species.)
+        The reactions are constructed such that the forward direction is
+        consistent with the template of this reaction family.
         """
         reactionList = []
         
