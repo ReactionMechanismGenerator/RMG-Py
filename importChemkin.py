@@ -313,7 +313,7 @@ class ModelMatcher():
                     # Unread the line (we'll re-read it in readThermoBlock())
                     f.seek(-len(line0), 1)
                     try:
-                        formulaDict = readThermoBlock(f, speciesDict)
+                        formulaDict = readThermoBlock(f, speciesDict)  # updates speciesDict in place
                     except:
                         logging.error("Error reading thermo block around line:\n" + f.readline())
                         raise
@@ -575,7 +575,7 @@ class ModelMatcher():
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
                 method='pm3',
-                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),
+                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),  # ToDo: fix this
                 scratchDirectory=None,  # not currently used
                 onlyCyclics=True,
                 maxRadicalNumber=0,
@@ -1027,6 +1027,8 @@ class ModelMatcher():
     def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
         """
         Return the difference in enthalpy at 298.15K (or lowest valid T) in kJ/mol
+        
+        Returns (CHEMKIN file) - (RMG estimate)
         """
         ck_thermo = self.thermoDict[chemkinLabel]
         rmg_thermo = rmgSpecies.thermo
@@ -1260,25 +1262,33 @@ class ModelMatcher():
         if rmgSpecies.label in self.speciesDict_rmg:
             otherSpecies = self.speciesDict_rmg[rmgSpecies.label]
             if otherSpecies is rmgSpecies:
-                logging.warning("This RMG species has already been matched to the chemkin label {0}".format(otherSpecies.label))
+                logging.warning(("This RMG species has already been matched to the chemkin label"
+                                 " {0}").format(otherSpecies.label))
                 duplicate = otherSpecies.label
                 self.identified_unprocessed_labels.remove(chemkinLabel)
             else:
-                logging.warning("Coincidence that RMG made a species with the same label as some other chemkin species: {0}.".format(rmgSpecies.label))
+                logging.warning(("Coincidence that RMG made a species with the same label "
+                                 "as some other chemkin species: {0}.").format(rmgSpecies.label))
         if duplicate:
-            logging.warning("Will not rename the RMG species with duplicate chemkin labels; leaving as it's first match: {0}".format(rmgSpecies.label))
+            logging.warning(("Will not rename the RMG species with duplicate chemkin labels;"
+                             "leaving as it's first match: {0}").format(rmgSpecies.label))
         else:
             rmgSpecies.label = chemkinLabel
 
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
 
         with open(self.dictionaryFile, 'a') as f:
-            f.write("{0}\t{1}\t{2:.1f}{3}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(),
-                                        enthalpyDiscrepancy, '\tDUPLICATE of ' + duplicate if duplicate else ''))
+            f.write("{0}\t{1}\t{2:.1f}{3}\n".format(
+                        chemkinLabel,
+                        rmgSpecies.molecule[0].toSMILES(),
+                        enthalpyDiscrepancy,
+                        '\tDUPLICATE of ' + duplicate if duplicate else ''))
 
         with open(self.RMGdictionaryFile, 'a') as f:
-            f.write("{2}{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList(removeH=True),
-                                             '// Warning! Duplicate of ' + duplicate + '\n' if duplicate else ''))
+            f.write("{2}{0}\n{1}\n\n".format(
+                         chemkinLabel,
+                         rmgSpecies.molecule[0].toAdjacencyList(removeH=True),
+                        '// Warning! Duplicate of ' + duplicate + '\n' if duplicate else ''))
 
         self.drawSpecies(rmgSpecies)
 
@@ -1305,20 +1315,26 @@ class ModelMatcher():
         else:
             entry.longDesc = ''
         if duplicate:
-            entry.longDesc += "Duplicate of species {0} (i.e. same molecular structure according to RMG)\n".format(duplicate)
-        entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source, smiles=molecule.toSMILES())
+            entry.longDesc += ("Duplicate of species {0} (i.e. same molecular structure"
+                               " according to RMG)\n").format(duplicate)
+        entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source,
+                                                                     smiles=molecule.toSMILES())
         entry.shortDesc = comment.split('\n')[0].strip()
         with open(self.outputThermoFile, 'a') as f:
             saveEntry(f, entry)
 
     def getInvalidatedReactionsAndRemoveVotes(self, chemkinLabel, rmgSpecies):
-        """Remove the votes, and return the list of voting reactions."""
-        # Remove both chemkinLabel and rmgSpecies from the voting dictionaries
+        """
+        Remove the votes cast by/for that chemkinLabel and rmgSpecies,
+        and return the list of voting reactions that need to be re-checked.
+        """
         reactionsToReCheck = set()
+        # First remove the chemkinLabel voting dictionary
         possibles = self.votes.pop(chemkinLabel, {})
         for rxns in possibles.itervalues():
             for rxn in rxns:
                 reactionsToReCheck.add(rxn[1])
+        # Then remove the rmgSpecies from any voting dictionaries it is in
         for ck, possibles in self.votes.iteritems():
             for rxn in possibles.pop(rmgSpecies, {}):
                 reactionsToReCheck.add(rxn[1])
@@ -1343,9 +1359,11 @@ class ModelMatcher():
                 self.suggestedMatches = {}
                 if reactionsMatch(edgeReaction, chemkinReaction):
                     edgeReactionMatchesSomething = True
-                    logging.info("Chemkin reaction     {0}\n matches RMG {2} reaction  {1}".format(chemkinReaction, edgeReaction, edgeReaction.family.name))
+                    logging.info("Chemkin reaction     {0}\n matches RMG {1} reaction  {2}".format(
+                        chemkinReaction, edgeReaction.family.name, edgeReaction))
                     if self.suggestedMatches:
-                        logging.info(" suggesting new species match: {0!r}".format(dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
+                        logging.info(" suggesting new species match: {0!r}".format(
+                           dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
                     else:
                         logging.info(" suggesting no new species matches.")
                         # See if all species have been matched
@@ -1428,7 +1446,8 @@ class ModelMatcher():
 
     def pruneVoting(self):
         """
-        Return a voting matrix with only significant (unique) votes.
+        Return a pruned voting matrix with only significant (unique) votes,
+        for making tentative matches.
         
         If the same reaction is voting for several species, remove it.
         If a match has a large enthalpy discrepancy, remove it.
@@ -1439,7 +1458,8 @@ class ModelMatcher():
         # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
         ckVotes = dict()
         for chemkinLabel, possibleMatches in votes.iteritems():
-            ckVotes[chemkinLabel] = dict((matchingSpecies, set([r[0] for r in votingReactions]))
+            ckVotes[chemkinLabel] = dict(
+                    (matchingSpecies, set([r[0] for r in votingReactions]))
                     for (matchingSpecies, votingReactions) in possibleMatches.iteritems()
                    )
 
@@ -1447,7 +1467,9 @@ class ModelMatcher():
             for rmgSpecies in possibleMatches.keys():
                 dH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
                 if abs(dH) > 150:
-                    logging.info("Removing possible match {0} : {1!s}  because enthalpy discrepancy is {2:.1f} kJ/mol".format(chemkinLabel, rmgSpecies, dH))
+                    logging.info(("Removing possible match {0} : {1!s} "
+                                  " because enthalpy discrepancy is {2:.1f} kJ/mol"
+                                  ).format(chemkinLabel, rmgSpecies, dH))
                     del(possibleMatches[rmgSpecies])
 
         for chemkinLabel, possibleMatches in ckVotes.iteritems():
@@ -1471,8 +1493,7 @@ class ModelMatcher():
                         len(commonVotes), len(possibleMatches), chemkinLabel))
                 prunedVotes[chemkinLabel] = dict(
                     (matchingSpecies, votingReactions.difference(commonVotes))
-                    for (matchingSpecies,
-                         votingReactions) in possibleMatches.iteritems()
+                    for (matchingSpecies, votingReactions) in possibleMatches.iteritems()
                     if votingReactions.difference(commonVotes))
             else:
                 prunedVotes[chemkinLabel] = possibleMatches
@@ -1481,7 +1502,7 @@ class ModelMatcher():
 
     def printVoting(self, votes):
         """
-        Log the passed in voting matrix
+        Log the passed in voting matrix to the console.
         """
         logging.info("Current voting:::")
         chemkinControversy = dict((label, 0) for label in votes.iterkeys())
@@ -1591,6 +1612,9 @@ class ModelMatcher():
         # Process the new reactions
         # While adding to core/edge/pdep network, this clears atom labels:
         rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
+        # this will call rm.checkForExistingSpecies to see if it already
+        # exists in rm.speciesDict and if not there, will add to rm.newSpeciesList
+        # and call .generateResonanceIsomers on each Species.
 
         if objectWasInEdge:
             # moved one species from edge to core
@@ -1677,7 +1701,8 @@ class ModelMatcher():
         
         for species in self.speciesList:
             if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
-                message="Species {sp} in the species file {spf} does not have a valid thermo entry in the thermo file {th}".format(sp=species.label, spf=species_file, th=thermo_file)
+                message = ("Species {sp} in the species file {spf} does not have a valid thermo entry "
+                           "in the thermo file {th}").format(sp=species.label, spf=species_file, th=thermo_file)
                 logging.error(message)
                 raise Exception(message)
 
@@ -1770,7 +1795,7 @@ recommended = False
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
 
-        # Now would be a good time to print identified reactions?
+        # Now would be a good time to print identified reactions to the .kinetics.py file?
         # All the species in self.identified_labels should have been through generateResonanceIsomers and generateThermoData
         for chemkinReaction in chemkinReactionsUnmatched:
             for reagents in (chemkinReaction.reactants, chemkinReaction.products):
@@ -1792,7 +1817,7 @@ recommended = False
 
         # Let's put things in the core by size, smallest first.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecularWeight.value_si)
-        # we want to put inert things in the core first, so we can do PDep calculations.
+        # We want to put inert things in the core first, so we can do PDep calculations with inert colliders.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].reactive)
         reactionsToCheck = set()
         while self.identified_unprocessed_labels:
@@ -1871,15 +1896,24 @@ recommended = False
                             logging.info("Will not make match at this time.")
 
                 for chemkinLabel, matchingSpecies in newMatches:
-                    invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
+                    invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(
+                        chemkinLabel, matchingSpecies)
                     reactionsToCheck.update(invalidatedReactions)
                 logging.info("After making {0} matches, will have to re-check {1} edge reactions".format(len(newMatches), len(reactionsToCheck)))
 
-
-            logging.info("Finished processing species {0}!".format(labelToProcess))
-            logging.info("Have now identified {0} of {1} species ({2:.1%}).".format(len(self.identified_labels), len(self.speciesList), float(len(self.identified_labels)) / len(self.speciesList)))
-            logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), 1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
-            logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
+            logging.info("Finished processing species {0}!".format(
+                            labelToProcess))
+            logging.info("Have now identified {0} of {1} species ({2:.1%}).".format(
+                            len(self.identified_labels),
+                            len(self.speciesList),
+                            float(len(self.identified_labels)) / len(self.speciesList)))
+            logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(
+                            len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched),
+                            len(self.chemkinReactions),
+                            1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
+            logging.info("Still to process {0} matches: {1!r}".format(
+                            len(self.identified_unprocessed_labels),
+                            self.identified_unprocessed_labels))
 
             logging.info("Saving chemkin files")
             rm.saveChemkinFile(os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
@@ -1889,23 +1923,28 @@ recommended = False
             while len(self.identified_unprocessed_labels) == 0:
                 if not self.manualMatchesToProcess :
                     if self.args.quit_when_exhausted:
-                        logging.warning("--quit_when_exhausted option detected. Now exiting without waiting for input.")
+                        logging.warning("--quit_when_exhausted option detected."
+                                        " Now exiting without waiting for input.")
                         break
-                    logging.info("Waiting for input from the web front end... (port {0})".format(self.args.port))
+                    logging.info(("Waiting for input from the web front end..."
+                                 " (port {0})").format(self.args.port))
                 while not self.manualMatchesToProcess:
                     time.sleep(1)
 
-
                 while self.manualMatchesToProcess:
                     chemkinLabel, matchingSpecies = self.manualMatchesToProcess.pop(0)
-                    logging.info("There is a manual match to process: {0} is {1!s}".format(chemkinLabel, matchingSpecies))
+                    logging.info("There is a manual match to process: {0} is {1!s}".format(
+                                    chemkinLabel, matchingSpecies))
                     if chemkinLabel in self.identified_labels:
-                        assert self.speciesDict_rmg[chemkinLabel] == matchingSpecies, "Manual match disagrees with an automatic match!"
+                        assert self.speciesDict_rmg[chemkinLabel] == matchingSpecies, \
+                            "Manual match disagrees with an automatic match!"
                         continue  # don't match something that's already matched.
                     self.setMatch(chemkinLabel, matchingSpecies)
-                    invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
+                    invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(
+                                                        chemkinLabel, matchingSpecies)
                     reactionsToCheck.update(invalidatedReactions)
-                    logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactionsToCheck)))
+                    logging.info(("After making that match, "
+                        "will have to re-check {0} edge reactions").format(len(reactionsToCheck)))
 
                 #After processing all matches, now is a good time to save reactions.
                 while self.chemkinReactionsToSave:
@@ -1913,7 +1952,9 @@ recommended = False
                     self.saveReactionToKineticsFile(chemkinReaction)
 
             terminal_input_enabled = False
-            if len(self.identified_unprocessed_labels) == 0 and self.votes and terminal_input_enabled:
+            if (len(self.identified_unprocessed_labels) == 0
+            and self.votes
+            and terminal_input_enabled):
                 self.printVoting(prunedVotes)
                 logging.info("Run out of options. Asking for help!")
                 speciesLabel = raw_input('Which label would you like to identify? (see voting info above)\n')
