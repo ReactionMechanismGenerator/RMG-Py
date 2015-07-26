@@ -2259,12 +2259,16 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     pending = True
                 deltaH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpec)
                 output.append(
-                    "<tr><td class='confirmed'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
+                    ("<tr><td class='confirmed'>{label}</td>"
+                     "<td class='centered'>{img}</td>"
+                     "<td>{smi}</td>"
+                     "<td title='{Hsource}'>{delH:.1f} kJ/mol</td>").format(
                         img=img(rmgSpec),
                         label=chemkinLabel,
                         delH=deltaH,
                         Hsource=rmgSpec.thermo.comment,
-                        smi=rmgSpec.molecule[0].toSMILES()))
+                        smi='<br/>'.join((m.toSMILES() for m in rmgSpec.molecule))
+                    ))
                 if chemkinLabel in self.identified_unprocessed_labels:
                     output.append("<td>Identified, waiting to react.</td>")
                 elif pending:
@@ -2274,19 +2278,22 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             elif chemkinLabel in tentativeDict:
                 rmgSpec, deltaH = tentativeDict[chemkinLabel]
                 output.append(
-                    "<tr><td class='tentative'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
+                    ("<tr><td class='tentative'>{label}</td>"
+                     "<td class='centered'>{img}</td>"
+                     "<td>{smi}</td>"
+                     "<td title='{Hsource}'>{delH:.1f} kJ/mol</td>").format(
                         img=img(rmgSpec),
                         label=chemkinLabel,
                         delH=deltaH,
                         Hsource=rmgSpec.thermo.comment,
-                        smi=rmgSpec.molecule[0].toSMILES()))
+                        smi='<br/>'.join((m.toSMILES() for m in rmgSpec.molecule))
+                    ))
                 output.append(
                     "<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(
                         ckl=urllib2.quote(chemkinLabel),
                         rmgl=urllib2.quote(str(rmgSpec))))
                 votes = "/ <a href='/votes2.html#{0}'>check votes</a>".format(
-                    urllib2.quote(
-                        chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
+                    urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
                 output.append(
                     "<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a> {votes}</td></tr>".format(
                         ckl=urllib2.quote(chemkinLabel),
@@ -2294,7 +2301,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         votes=votes))
             else:
                 output.append(
-                    "<tr><td class='unknown'>{label}</td><td class='centered'>?</td>".format(
+                    ("<tr><td class='unknown'>{label}</td>"
+                     "<td class='centered'>?</td>").format(
                         label=chemkinLabel))
                 output.append("""
             <form action="edit.html" method="get"><td>
