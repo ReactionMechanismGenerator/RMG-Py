@@ -110,12 +110,13 @@ def parseCommandLineArguments():
     parser = argparse.ArgumentParser(description="""
         Import a set of chemkin files, identifying the species therin.
         """)
-    parser.add_argument('--species',
-                        metavar='FILE',
-                        type=str,
-                        nargs='?',
-                        default=None,
-                        help='the Chemkin file containing the list of species')
+    parser.add_argument(
+        '--species',
+        metavar='FILE',
+        type=str,
+        nargs='?',
+        default=None,
+        help='the Chemkin file containing the list of species')
     parser.add_argument(
         '--reactions',
         metavar='FILE',
@@ -123,11 +124,12 @@ def parseCommandLineArguments():
         nargs='?',
         default=None,
         help='the Chemkin file containing the list of reactions')
-    parser.add_argument('--thermo',
-                        metavar='FILE',
-                        type=str,
-                        required=True,
-                        help='the Chemkin files containing the thermo')
+    parser.add_argument(
+        '--thermo',
+        metavar='FILE',
+        type=str,
+        required=True,
+        help='the Chemkin files containing the thermo')
     parser.add_argument(
         '--known',
         metavar='FILE',
@@ -135,35 +137,40 @@ def parseCommandLineArguments():
         nargs='?',
         default='SMILES.txt',
         help='the file containing the list of already known species')
-    parser.add_argument('--port',
-                        metavar='N',
-                        type=int,
-                        nargs='?',
-                        default=8080,
-                        help='the port to serve the web interface on')
+    parser.add_argument(
+        '--port',
+        metavar='N',
+        type=int,
+        nargs='?',
+        default=8080,
+        help='the port to serve the web interface on')
     parser.add_argument(
         '--quit_when_exhausted',
         action='store_true',
         help=
         "Don't wait for input from the web front end, but quit when exhausted all matches. Can also be enabled by setting the environment variable RMG_QUIT_WHEN_EXHAUSTED")
-    parser.add_argument('-o', '--output-directory',
-                        type=str,
-                        nargs=1,
-                        default='',
-                        metavar='DIR',
-                        help='use DIR as output directory')
-    parser.add_argument('-s', '--scratch-directory',
-                        type=str,
-                        nargs=1,
-                        default='',
-                        metavar='DIR',
-                        help='use DIR as scratch directory')
-    parser.add_argument('--pdep',
-                        action='store_true',
-                        help='run pressure-dependence calculations')
-    parser.add_argument('--noqm',
-                        action='store_true',
-                        help='do NOT run QM thermo calculations')
+    parser.add_argument(
+        '-o', '--output-directory',
+        type=str,
+        nargs=1,
+        default='',
+        metavar='DIR',
+        help='use DIR as output directory')
+    parser.add_argument(
+        '-s', '--scratch-directory',
+        type=str,
+        nargs=1,
+        default='',
+        metavar='DIR',
+        help='use DIR as scratch directory')
+    parser.add_argument(
+        '--pdep',
+        action='store_true',
+        help='run pressure-dependence calculations')
+    parser.add_argument(
+        '--noqm',
+        action='store_true',
+        help='do NOT run QM thermo calculations')
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
