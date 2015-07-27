@@ -2396,6 +2396,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     # structure already matched, so remove from possible matches
                     sortedMatchingSpeciesList.remove(s)
             
+            # Add thermo matches to the start of the table even if no voting reactions
+            for thermoMatch in self.thermoMatches.get(chemkinLabel, []):
+                if thermoMatch not in sortedMatchingSpeciesList:
+                    sortedMatchingSpeciesList.insert(0, thermoMatch)
+
             for chemkinReaction in chemkinReactions:
                 this_reaction_votes_for = dict()
                 myVotingChemkinReactions[chemkinReaction] = this_reaction_votes_for
