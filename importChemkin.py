@@ -2086,6 +2086,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             for rmgSpec, libraries in rmgSpecsDict.iteritems():
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
                 output.append("<tr><td>{label}</td><td>{img}</td><td>{libs}</td>".format(img=img(rmgSpec), label=label, libs=libs))
+                if chemkinLabel in self.votes :
+                    output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)))
+                else:
+                    output.append("<td>No votes yet.</td>")
                 output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("<td><a href='/clearthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("</tr>")
