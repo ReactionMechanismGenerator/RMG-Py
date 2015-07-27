@@ -2402,7 +2402,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 for matchingSpecies, votingReactions in possibleMatches.iteritems():
                     for (chemkinRxn, rmgRxn) in votingReactions:
                         if (chemkinReaction == chemkinRxn):
-                            this_reaction_votes_for[matchingSpecies] = rmgRxn
+                            if matchingSpecies in this_reaction_votes_for:
+                                this_reaction_votes_for[matchingSpecies].append(rmgRxn)
+                            else:
+                                this_reaction_votes_for[matchingSpecies] = [rmgRxn]
 
             output.append("<table>")
             output.append("<tr><td>Structure</td>")
@@ -2466,8 +2469,9 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 this_reaction_votes_for = myVotingChemkinReactions[chemkinReaction]
                 for matchingSpecies in sortedMatchingSpeciesList :
                     if matchingSpecies in this_reaction_votes_for:
-                        rmgRxn = this_reaction_votes_for[matchingSpecies]
-                        output.append("<td>{family}</td>".format(family=rmgRxn.family.label))
+                        rmgRxns = this_reaction_votes_for[matchingSpecies]
+                        output.append("<td style='font-size: small;'>{family}</td>".format(
+                            family='<br/>'.join([r.family.label for r in rmgRxns])))
                     else:
                         output.append("<td>-</td>")
                 output.append("</tr>")
