@@ -2410,14 +2410,14 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<table>")
             output.append("<tr><td>Structure</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
-                output.append("<td>{img}<br/>".format(img=img(matchingSpecies)))
+                output.append("<td>{img}</td>".format(img=img(matchingSpecies)))
             output.append("</tr>")
 
             output.append("<tr><td>Action</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
                 output.append(
                     """<td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a>
-                <a href='/block.html?ckLabel={ckl}&rmgLabel={rmgl}' class='block'>block</a>""".format(
+                <a href='/block.html?ckLabel={ckl}&rmgLabel={rmgl}' class='block'>block</a></td>""".format(
                         ckl=urllib2.quote(chemkinLabel),
                         rmgl=urllib2.quote(str(matchingSpecies))))
             output.append("</tr>")
