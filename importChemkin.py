@@ -2413,6 +2413,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append("<td>{img}</td>".format(img=img(matchingSpecies)))
             output.append("</tr>")
 
+            output.append("<tr><td>SMILES</td>")
+            for matchingSpecies in sortedMatchingSpeciesList:
+                output.append("<td style='font-size: small; white-space: nowrap;'>{smiles}</td>".format(smiles='<br />'.join(
+                    [m.toSMILES() for m in matchingSpecies.molecule])))
+            output.append("</tr>")
+
             output.append("<tr><td>Action</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
                 output.append(
