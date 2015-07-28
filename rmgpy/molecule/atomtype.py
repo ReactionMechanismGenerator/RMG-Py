@@ -164,6 +164,10 @@ with a capital letter [A-Z]
 """
 
 atomTypes = {}
+
+#: Surface sites:
+atomTypes['X'] = AtomType(label='X', generic=[], specific=[])
+
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
     'Val4','Val5','Val6','Val7',    
@@ -253,6 +257,8 @@ atomTypes['Sa'  ] = AtomType('Sa',   generic=['R','R!H','S','Val6'],  specific=[
 atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H','Val7'],      specific=[])
 
 atomTypes['Ar'  ] = AtomType('Ar',   generic=['R','R!H'],      specific=[])
+
+atomTypes['X'].setActions(incrementBond=['X'], decrementBond=['X'], formBond=['X'], breakBond=['X'], incrementRadical=['X'], decrementRadical=['X'], incrementLonePair=['X'], decrementLonePair=['X'])
 
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
@@ -399,6 +405,8 @@ def getAtomType(atom, bonds):
         atomType = 'Cl'
     elif atom.symbol == 'Ar':
         atomType = 'Ar'
+    elif atom.symbol == 'X':
+        atomType = 'X'
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':

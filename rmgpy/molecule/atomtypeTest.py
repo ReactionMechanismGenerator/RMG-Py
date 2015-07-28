@@ -181,6 +181,8 @@ class TestGetAtomType(unittest.TestCase):
                                                      9  H u0 p0 {3,S}
                                                      10 H u0 p0 {4,S}
                                                      11 H u0 p0 {5,S}''')
+        self.mol19 = Molecule().fromAdjacencyList('''1  H u0 p0 {2,S}
+                                                     2  X u0 p0 {1,S}''')
         
     
     def atomType(self, mol, atomID):
@@ -257,6 +259,12 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol6, 0), 'Ar')
         self.assertEqual(self.atomType(self.mol7, 0), 'He')
         self.assertEqual(self.atomType(self.mol8, 0), 'Ne')
+
+    def testSurfaceAtomType(self):
+        """
+        Test that getAtomType() works for surface sites.
+        """
+        self.assertEqual(self.atomType(self.mol19, 1), 'X')
 
 ################################################################################
 
