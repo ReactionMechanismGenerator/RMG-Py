@@ -39,6 +39,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.surface import SurfaceReactor
 
 from model import CoreEdgeReactionModel
 
@@ -209,6 +210,56 @@ def liquidReactor(temperature,
     system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold,constantSpecies)
     rmg.reactionSystems.append(system)
     
+# Reaction systems
+def surfaceReactor(temperature,
+                   initialPressure,
+                  initialGasMoleFractions,
+                  initialSurfaceCoverages,
+                  surfaceVolumeRatio,
+                  surfaceSiteDensity,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3):
+
+    logging.debug('Found SurfaceReactor reaction system')
+
+    for value in initialGasMoleFractions.values():
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
+    totalInitialMoles = sum(initialGasMoleFractions.values())
+    if totalInitialMoles != 1:
+        logging.warning('Initial mole fractions do not sum to one; renormalizing.')
+        for spec in initialGasMoleFractions:
+            initialGasMoleFractions[spec] /= totalInitialMoles
+
+    T = Quantity(temperature)
+    initialP = Quantity(initialPressure)
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
+
+    sensitiveSpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitiveSpecies.append(speciesDict[spec])
+    system = SurfaceReactor(T,
+                            initialP,
+                            initialGasMoleFractions,
+                            initialSurfaceCoverages,
+                            surfaceVolumeRatio,
+                            surfaceSiteDensity,
+                            termination,
+                            sensitiveSpecies,
+                            sensitivityThreshold)
+    rmg.reactionSystems.append(system)
+
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
@@ -376,6 +427,7 @@ def readInputFile(path, rmg0):
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
         'liquidReactor': liquidReactor,
+        'surfaceReactor': surfaceReactor,
         'simulator': simulator,
         'solvation': solvation,
         'model': model,
