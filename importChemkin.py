@@ -2463,7 +2463,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 
             output.append("<tr><td>{num} Reactions</td>".format(num=len(chemkinReactions)))
             for matchingSpecies in sortedMatchingSpeciesList:
-                output.append("<td>{n}</td>".format(n=len(possibleMatches[matchingSpecies])))
+                try:
+                    output.append("<td>{n}</td>".format(n=len(possibleMatches[matchingSpecies])))
+                except KeyError:
+                    output.append("<td>{n}</td>".format(n=0))
             output.append("</tr>")
                 
             for chemkinReaction in sorted(chemkinReactions, key=lambda rxn:-len(myVotingChemkinReactions[rxn])):
