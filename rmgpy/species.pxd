@@ -66,6 +66,8 @@ cdef class Species:
     cpdef fromSMILES(self, smiles)
     
     cpdef toAdjacencyList(self)
+    
+    cpdef bint isSurfaceSpecies(self) except -2
 
     cpdef bint hasStatMech(self) except -2
 

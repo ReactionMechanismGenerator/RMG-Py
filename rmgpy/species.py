@@ -342,6 +342,12 @@ class Species(object):
         """
         return self.thermo is not None
 
+    def isSurfaceSpecies(self):
+        """
+        Return ``True`` if the species is adsorbed on a surface, else ``False``.
+        """
+        return self.molecule[0].isSurfaceMolecule()
+
     def getPartitionFunction(self, T):
         """
         Return the partition function for the species at the specified
