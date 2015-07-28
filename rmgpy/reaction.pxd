@@ -56,6 +56,8 @@ cdef class Reaction:
     cpdef bint isAssociation(self)
     
     cpdef bint isUnimolecular(self)
+    
+    cpdef bint isSurfaceReaction(self)
 
     cpdef bint hasTemplate(self, list reactants, list products)
     

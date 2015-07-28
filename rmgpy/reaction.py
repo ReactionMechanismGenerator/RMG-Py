@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+from __builtin__ import True
 
 ################################################################################
 #
@@ -295,6 +296,18 @@ class Reaction:
         or ``False`` if not.
         """
         return len(self.reactants) == 1 or len(self.products) == 1
+
+    def isSurfaceReaction(self):
+        """
+        Return ``True`` if one or more reactants or products are surface species (or surface sites)
+        """
+        for spec in self.reactants:
+            if spec.isSurfaceSpecies():
+                return True
+        for spec in self.products:
+            if spec.isSurfaceSpecies():
+                return True
+        return False
 
     def hasTemplate(self, reactants, products):
         """
