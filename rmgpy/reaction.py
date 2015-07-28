@@ -1095,3 +1095,245 @@ class Reaction:
         
         return other
 
+                
+################################################################################
+
+class SurfaceReaction(Reaction):
+    """
+    For reactions involving a surface
+    """
+
+    def getEquilibriumConstant(self, T, type='Kc'):
+        """
+        Return the equilibrium constant for the reaction at the specified
+        temperature `T` in K. The `type` parameter lets    you specify the
+        quantities used in the equilibrium constant: ``Ka`` for    activities,
+        ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
+        this function currently assumes an ideal gas mixture.
+        """
+        #ToDo: this is copied from gas phase Reaction
+        cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
+        # Use free energy of reaction to calculate Ka
+        dGrxn = self.getFreeEnergyOfReaction(T)
+        K = numpy.exp(-dGrxn / constants.R / T)
+        # Convert Ka to Kc or Kp if specified
+        P0 = 1e5
+        if type == 'Kc':
+            # Convert from Ka to Kc; C0 is the reference concentration
+            C0 = P0 / constants.R / T
+            K *= C0 ** (len(self.products) - len(self.reactants))
+        elif type == 'Kp':
+            # Convert from Ka to Kp; P0 is the reference pressure
+            K *= P0 ** (len(self.products) - len(self.reactants))
+        elif type != 'Ka' and type != '':
+            raise ReactionError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
+        if K == 0:
+            raise ReactionError('Got equilibrium constant of 0')
+        return K
+
+    def getRateCoefficient(self, T, P=0):
+        """
+        Return the overall rate coefficient for the forward reaction at
+        temperature `T` in K and pressure `P` in Pa, including any reaction
+        path degeneracies.
+        
+        If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+        a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+        coefficient.
+        """
+        #ToDo: this is copied from gas phase Reaction
+        if diffusionLimiter.enabled:
+            try:
+                k = self.__k_effective_cache[T]
+            except KeyError:
+                k = diffusionLimiter.getEffectiveRate(self, T)
+                self.__k_effective_cache[T] = k
+            return k
+        else:
+            return  self.kinetics.getRateCoefficient(T, P)
+
+    def getRate(self, T, P, conc, totalConc=-1.0):
+        """
+        Return the net rate of reaction at temperature `T` and pressure `P`. The
+        parameter `conc` is a map with species as keys and concentrations as
+        values. A reactant not found in the `conc` map is treated as having zero
+        concentration.
+
+        If passed a `totalConc`, it won't bother recalculating it.
+        """
+        #ToDo: this is copied from gas phase Reaction
+        cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
+        cython.declare(forward=cython.double, reverse=cython.double, speciesConc=cython.double)
+
+        # Calculate total concentration
+        if totalConc == -1.0:
+            totalConc = sum(conc.values())
+
+        # Evaluate rate constant
+        if isinstance(self.kinetics, (ThirdBody, Lindemann, Troe)):
+            P = self.kinetics.getEffectivePressure(P, conc)
+        rateConstant = self.getRateCoefficient(T, P)
+
+        # Evaluate equilibrium constant
+        equilibriumConstant = self.getEquilibriumConstant(T)
+
+        # Evaluate forward concentration product
+        forward = 1.0
+        for reactant in self.reactants:
+            if reactant in conc:
+                speciesConc = conc[reactant]
+                forward = forward * speciesConc
+            else:
+                forward = 0.0
+                break
+
+        # Evaluate reverse concentration product
+        reverse = 1.0
+        for product in self.products:
+            if product in conc:
+                speciesConc = conc[product]
+                reverse = reverse * speciesConc
+            else:
+                reverse = 0.0
+                break
+
+        # Return rate
+        return rateConstant * (forward - reverse / equilibriumConstant)
+
+    
+
+class ReactionModel:
+    """
+    A chemical reaction model, composed of a list of species and a list of
+    reactions involving those species. The attributes are:
+
+    =============== =========== ================================================
+    Attribute       Type        Description
+    =============== =========== ================================================
+    `species`       ``list``    The species involved in the reaction model
+    `reactions`     ``list``    The reactions comprising the reaction model
+    =============== =========== ================================================
+
+    """
+
+    def __init__(self, species=None, reactions=None):
+        self.species = species or []
+        self.reactions = reactions or []
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (ReactionModel, (self.species, self.reactions))
+
+    def generateStoichiometryMatrix(self):
+        """
+        Generate the stoichiometry matrix corresponding to the current
+        reaction system. The stoichiometry matrix is defined such that the
+        rows correspond to the `index` attribute of each species object, while
+        the columns correspond to the `index` attribute of each reaction object.
+        """
+        cython.declare(rxn=Reaction, spec=Species, i=cython.int, j=cython.int, nu=cython.int)
+        from scipy import sparse
+
+        # Use dictionary-of-keys format to efficiently assemble stoichiometry matrix
+        stoichiometry = sparse.dok_matrix((len(self.species), len(self.reactions)), numpy.float64)
+        for rxn in self.reactions:
+            j = rxn.index - 1
+            # Only need to iterate over the species involved in the reaction,
+            # not all species in the reaction model
+            for spec in rxn.reactants:
+                i = spec.index - 1
+                nu = rxn.getStoichiometricCoefficient(spec)
+                if nu != 0: stoichiometry[i,j] = nu
+            for spec in rxn.products:
+                i = spec.index - 1
+                nu = rxn.getStoichiometricCoefficient(spec)
+                if nu != 0: stoichiometry[i,j] = nu
+
+        # Convert to compressed-sparse-row format for efficient use in matrix operations
+        stoichiometry.tocsr()
+
+        return stoichiometry
+
+    def getReactionRates(self, T, P, Ci):
+        """
+        Return an array of reaction rates for each reaction in the model core
+        and edge. The id of the reaction is the index into the vector.
+        """
+        cython.declare(rxnRates=numpy.ndarray, rxn=Reaction, j=cython.int)
+        rxnRates = numpy.zeros(len(self.reactions), numpy.float64)
+        for rxn in self.reactions:
+            j = rxn.index - 1
+            rxnRates[j] = rxn.getRate(T, P, Ci)
+        return rxnRates
+
+    def merge(self, other):
+        """
+        Return a new :class:`ReactionModel` object that is the union of this
+        model and `other`.
+        """
+        if not isinstance(other, ReactionModel):
+            raise ValueError('Expected type ReactionModel for other parameter, got {0}'.format(other.__class__))
+
+        # Initialize the merged model
+        finalModel = ReactionModel()
+        
+        # Put the current model into the merged model as-is
+        finalModel.species.extend(self.species)
+        finalModel.reactions.extend(self.reactions)
+        
+        # Determine which species in other are already in self
+        commonSpecies = {}; uniqueSpecies = []
+        for spec in other.species:
+            for spec0 in finalModel.species:
+                if spec.isIsomorphic(spec0):
+                    commonSpecies[spec] = spec0
+                    if spec0.label not in ['Ar','N2','Ne','He']:
+                        if not spec0.thermo.isIdenticalTo(spec.thermo):
+                            print 'Species {0} thermo from model 1 did not match that of model 2.'.format(spec.label)
+                        
+                    break
+            else:
+                uniqueSpecies.append(spec)
+        
+        # Determine which reactions in other are already in self
+        commonReactions = {}; uniqueReactions = []
+        for rxn in other.reactions:
+            for rxn0 in finalModel.reactions:
+                if rxn.isIsomorphic(rxn0, eitherDirection=True):
+                    commonReactions[rxn] = rxn0                    
+                    if not rxn0.kinetics.isIdenticalTo(rxn.kinetics):
+                        print 'Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0))
+                    break
+            else:
+                uniqueReactions.append(rxn)
+        
+        # Add the unique species from other to the final model
+        finalModel.species.extend(uniqueSpecies)
+    
+        # Renumber the unique species (to avoid name conflicts on save)
+        speciesIndex = 0
+        for spec in finalModel.species:
+            if spec.label not in ['Ar','N2','Ne','He']:
+                spec.index = speciesIndex + 1
+                speciesIndex += 1
+        
+        # Make sure unique reactions only refer to species in the final model
+        for rxn in uniqueReactions:
+            for i, reactant in enumerate(rxn.reactants):
+                try:
+                    rxn.reactants[i] = commonSpecies[reactant]
+                except KeyError:
+                    pass
+            for i, product in enumerate(rxn.products):
+                try:
+                    rxn.products[i] = commonSpecies[product]
+                except KeyError:
+                    pass
+        
+        # Add the unique reactions from other to the final model
+        finalModel.reactions.extend(uniqueReactions)
+    
+        # Return the merged model
+        return finalModel
