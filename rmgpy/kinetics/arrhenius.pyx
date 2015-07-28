@@ -249,7 +249,21 @@ cdef class Arrhenius(KineticsModel):
 
         # Set the rate parameter to a cantera Arrhenius object
         ctReaction.rate = self.toCanteraKinetics()
-    
+
+
+cdef class SurfaceArrhenius(Arrhenius):
+    """
+    A kinetics model based on (modified) Arrhenius for surface reactions
+    """
+    property A:
+        """The preexponential factor. 
+   
+        This is the only thing different from a normal Arrhenius class."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.SurfaceRateCoefficient(value)
+
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):
