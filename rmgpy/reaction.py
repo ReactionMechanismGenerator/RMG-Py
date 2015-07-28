@@ -54,7 +54,7 @@ from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.molecule.element import Element
 from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
-from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder  #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, StickingCoefficient  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -1102,7 +1102,6 @@ class SurfaceReaction(Reaction):
     """
     For reactions involving a surface
     """
-
     def getEquilibriumConstant(self, T, type='Kc'):
         """
         Return the equilibrium constant for the reaction at the specified
@@ -1144,7 +1143,7 @@ class SurfaceReaction(Reaction):
         if diffusionLimiter.enabled:
             raise NotImplementedError()
 
-        if isinstance(self.kinetics, rmgpy.kinetics.StickingCoefficient):
+        if isinstance(self.kinetics, StickingCoefficient):
             stickingCoefficient = self.kinetics.getStickingCoefficient(T)
 
             rateCoefficient = stickingCoefficient
@@ -1156,9 +1155,9 @@ class SurfaceReaction(Reaction):
                     adsorbate = r
             if adsorbate.isSurfaceSpecies:
                 raise ReactionError("Couldn't find the adsorbate!")
-            mw = adsorbate.getMolecularWeight()
+            molecularWeight = adsorbate.getMolecularWeight()
 
-            rateCoefficient
+            rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight))
 
             # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
             return rateCoefficient
