@@ -269,7 +269,7 @@ class Atom(Vertex):
         Return ``True`` if the atom does not represent a hydrogen atom or
         ``False`` if not.
         """
-        return self.element.number > 1
+        return self.element.number != 1
 
     def isCarbon(self):
         """
