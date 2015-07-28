@@ -47,12 +47,12 @@ class PeriodicSystem(object):
         
     valence_electrons_third_period_elements  = {'Si':4, 'S':6, 'Cl':7, 'Ar':8}
         
-    valence_electrons = {}
+    valence_electrons = {'X':1}
     valence_electrons.update(valence_electrons_first_period_elements)
     valence_electrons.update(valence_electrons_second_period_elements)
     valence_electrons.update(valence_electrons_third_period_elements)
     
-    lone_pairs         = {'H': 0, 'He':1, 'C': 0, 'N': 1, 'Ne': 4, 'O': 2, 'Si':0, 'S': 2, 'Cl':3, 'Ar':4 }
+    lone_pairs = {'X': 0, 'H': 0, 'He':1, 'C': 0, 'N': 1, 'Ne': 4, 'O': 2, 'Si':0, 'S': 2, 'Cl':3, 'Ar':4 }
     
 class Saturator(object):
     @staticmethod
