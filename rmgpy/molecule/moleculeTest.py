@@ -60,7 +60,7 @@ class TestAtom(unittest.TestCase):
             if element.symbol == 'H':
                 self.assertFalse(atom.isNonHydrogen())
             else:
-                self.assertTrue(atom.isNonHydrogen())
+                self.assertTrue(atom.isNonHydrogen(), "Atom {0!r} isn't reporting isNonHydrogen()".format(atom))
 
     def testIsCarbon(self):
         """
