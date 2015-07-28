@@ -29,10 +29,10 @@ class SurfaceReactorCheck(unittest.TestCase):
             molecule=[Molecule().fromSMILES("[H][H]")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
                                      "K"),
-                              Cpdata=([8.615, 9.687, 10.963, 12.301, 14.841,
-                                       16.976, 20.528], "cal/(mol*K)"),
-                              H298=(-17.714, "kcal/mol"),
-                              S298=(44.472, "cal/(mol*K)")))
+                              Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003,
+                                       7.103, 7.502], "cal/(mol*K)"),
+                              H298=(0, "kcal/mol"),
+                              S298=(31.129  , "cal/(mol*K)")))
         X = Species(
             molecule=[Molecule().fromAdjacencyList("1 X u0 p0")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
@@ -44,16 +44,15 @@ class SurfaceReactorCheck(unittest.TestCase):
             molecule=[Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
                                      "K"),
-                              Cpdata=([12.684, 15.506, 18.326, 20.971, 25.500,
-                                       29.016, 34.595], "cal/(mol*K)"),
-                              H298=(-19.521, "kcal/mol"),
-                              S298=(54.799, "cal/(mol*K)")))
+                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                              H298=(-11.26, "kcal/mol"),
+                              S298=(0.44, "cal/(mol*K)")))
 
         rxn1 = Reaction(reactants=[H2, X, X],
                         products=[HX, HX],
-                        kinetics=SurfaceArrhenius(A=(686.375 * 6, 'm^5/(mol^2*s)'),
-                                           n=0.0,
-                                           Ea=(7.82799, 'kcal/mol'),
+                        kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
+                                           n=0.5,
+                                           Ea=(5.0, 'kJ/mol'),
                                            T0=(1.0, 'K')))
 
         coreSpecies = [H2, X, HX]
@@ -67,7 +66,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             T, initialP,
             initialGasMoleFractions={H2: 1.0},
             initialSurfaceCoverages={X: 1.0},
-            surfaceVolumeRatio=(1, 'm^-1'),
+            surfaceVolumeRatio=(1e1, 'm^-1'),
             surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
             termination=[])
 
@@ -115,16 +114,17 @@ class SurfaceReactorCheck(unittest.TestCase):
         import pylab
         fig = pylab.figure(figsize=(6, 6))
         pylab.subplot(2, 1, 1)
-        pylab.semilogx(t, y)
+        pylab.semilogx(t, y[:, 2])
         pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
-        pylab.legend(['H2', 'X', 'HX'], loc=4)
+        pylab.legend(['HX'], loc=4)
         pylab.subplot(2, 1, 2)
         pylab.semilogx(t, speciesRates)
         pylab.legend(['H2', 'X', 'HX'], loc=4)
         pylab.xlabel('Time (s)')
         pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
         fig.subplots_adjust(left=0.12, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
-        pylab.show()
+        #pylab.show()
+        pylab.savefig('surfaceTest.pdf')
 
 
         return
