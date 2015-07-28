@@ -1131,26 +1131,35 @@ class SurfaceReaction(Reaction):
             raise ReactionError('Got equilibrium constant of 0')
         return K
 
-    def getRateCoefficient(self, T, P=0):
+    def getRateCoefficient(self, T, surfaceSiteDensity):
         """
         Return the overall rate coefficient for the forward reaction at
-        temperature `T` in K and pressure `P` in Pa, including any reaction
-        path degeneracies.
-        
-        If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
-        a diffusion limitation to correct the rate. If not, then use the intrinsic rate
-        coefficient.
+        temperature `T` in K with surface site density surfaceSiteDensity
+
         """
         #ToDo: this is copied from gas phase Reaction
         if diffusionLimiter.enabled:
-            try:
-                k = self.__k_effective_cache[T]
-            except KeyError:
-                k = diffusionLimiter.getEffectiveRate(self, T)
-                self.__k_effective_cache[T] = k
-            return k
-        else:
-            return  self.kinetics.getRateCoefficient(T, P)
+            raise NotImplementedError()
+
+        if isinstance(self.kinetics, rmgpy.kinetics.StickingCoefficient):
+            stickingCoefficient = self.kinetics.getStickingCoefficient(T)
+
+            rateCoefficient = stickingCoefficient
+            adsorbate = None
+            for r in self.reactants:
+                if r.isSurfaceSite():
+                    rateCoefficient /= surfaceSiteDensity
+                else:
+                    adsorbate = r
+            if adsorbate.isSurfaceSpecies:
+                raise ReactionError("Couldn't find the adsorbate!")
+            mw = adsorbate.getMolecularWeight()
+
+            rateCoefficient
+
+            # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
+            return rateCoefficient
+        raise NotImplementedError()
 
     def getRate(self, T, P, conc, totalConc=-1.0):
         """

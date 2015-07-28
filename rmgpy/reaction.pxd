@@ -105,3 +105,20 @@ cdef class Reaction:
     
     cpdef copy(self)
     
+################################################################################
+
+cdef class SurfaceReaction(Reaction):
+    cpdef double getEquilibriumConstant(self, double T, str type=?)
+    cpdef double getRateCoefficient(self, double T, double surfaceSiteDensity)
+    cpdef double getRate(self, double T, double surfaceSiteDensity, dict conc, double totalConc=?) 
+
+cdef class ReactionModel:
+
+    cdef public list species
+    cdef public list reactions
+
+    cpdef generateStoichiometryMatrix(self)
+
+    cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
+
+################################################################################
