@@ -841,3 +841,48 @@ def RateCoefficient(*args, **kwargs):
 
     # Return the Quantity or ArrayQuantity object object
     return quantity
+
+
+# SurfaceRateCoefficient is handled as a special case since it can take various
+# units depending on the reaction order
+SURFACERATECOEFFICIENT_CONVERSION_FACTORS = {
+    (1.0 / pq.s).dimensionality: 1.0,
+    (pq.m ** 3 / pq.s).dimensionality: 1.0,
+    (pq.m ** 6 / pq.s).dimensionality: 1.0,
+    (pq.m ** 9 / pq.s).dimensionality: 1.0,
+    (pq.m ** 3 / (pq.mol * pq.s)).dimensionality: 1.0,
+    (pq.m ** 6 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0,
+    (pq.m ** 9 / (pq.mol ** 3 * pq.s)).dimensionality: 1.0,
+    (pq.m ** 2 / pq.s).dimensionality: 1.0,
+    (pq.m ** 5 / pq.s).dimensionality: 1.0,
+    (pq.m ** 2 / (pq.mol * pq.s)).dimensionality: 1.0,
+    (pq.m ** 5 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0
+}
+SURFACERATECOEFFICIENT_COMMON_UNITS = [
+    's^-1',  # unimolecular
+    'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)',  # single site adsorption
+    'm^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)',  # bimolecular surface (Langmuir-Hinshelwood)
+    'm^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)',  # dissociative adsorption
+    ]
+def SurfaceRateCoefficient(*args, **kwargs):
+    # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
+    quantity = Quantity(*args, **kwargs)
+    if quantity is None:
+        return quantity
+
+    units = quantity.units
+
+    # If the units are in the common units, then we can do the conversion
+    # very quickly and avoid the slow calls to the quantities package
+    if units in SURFACERATECOEFFICIENT_COMMON_UNITS:
+        return quantity
+
+    dimensionality = pq.Quantity(1.0, quantity.units).simplified.dimensionality
+    try:
+        factor = SURFACERATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
+        quantity.value_si *= factor
+    except KeyError:
+        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+
+    # Return the Quantity or ArrayQuantity object object
+    return quantity
