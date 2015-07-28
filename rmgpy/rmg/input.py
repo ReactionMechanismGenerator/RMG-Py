@@ -540,7 +540,16 @@ def saveInputFile(path, rmg):
     f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
+    f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write(')\n\n')
-        
+    
+    # Species Constraints
+    if rmg.speciesConstraints:
+        f.write('generatedSpeciesConstraints(\n')
+        for constraint, value in sorted(rmg.speciesConstraints.items(), key=lambda constraint: constraint[0]):
+            if value is not None: f.write('    {0} = {1},\n'.format(constraint,value))
+        f.write(')\n\n')
+    
+    
     f.close()
