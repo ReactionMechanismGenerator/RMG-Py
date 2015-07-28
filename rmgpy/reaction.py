@@ -1131,10 +1131,13 @@ class SurfaceReaction(Reaction):
             raise ReactionError('Got equilibrium constant of 0')
         return K
 
-    def getRateCoefficient(self, T, surfaceSiteDensity):
+    def getRateCoefficient(self, T, P=0):
+        raise NotImplementedError("Should use getSurfaceRateCoefficient")
+
+    def getSurfaceRateCoefficient(self, T, surfaceSiteDensity):
         """
-        Return the overall rate coefficient for the forward reaction at
-        temperature `T` in K with surface site density surfaceSiteDensity
+        Return the overall surface rate coefficient for the forward reaction at
+        temperature `T` in K with surface site density `surfaceSiteDensity` in mol/m2
 
         """
         #ToDo: this is copied from gas phase Reaction
