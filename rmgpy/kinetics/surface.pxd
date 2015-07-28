@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 ################################################################################
 #
 #   RMG - Reaction Mechanism Generator
@@ -28,11 +25,29 @@
 #
 ################################################################################
 
-from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-                   getRateCoefficientUnitsFromReactionOrder, getReactionOrderFromRateCoefficientUnits
-from .arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, SurfaceArrhenius
-from .chebyshev import Chebyshev
-from .falloff import ThirdBody, Lindemann, Troe
-from .kineticsdata import KineticsData, PDepKineticsData
-from .tunneling import Wigner, Eckart
-from .surface import StickingCoefficient
+cimport numpy
+
+from rmgpy.kinetics.model cimport KineticsModel
+from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+
+################################################################################
+
+cdef class StickingCoefficient(KineticsModel):
+    
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _Ea
+    cdef public ScalarQuantity _T0
+    
+    cpdef double getStickingCoefficient(self, double T) except -1
+
+    cpdef changeT0(self, double T0)
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
+
+################################################################################
+cdef class SurfaceArrhenius(Arrhenius):
+    pass
