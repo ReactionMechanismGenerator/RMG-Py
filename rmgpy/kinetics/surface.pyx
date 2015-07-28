@@ -68,7 +68,7 @@ cdef class StickingCoefficient(KineticsModel):
         Return a string representation that can be used to reconstruct the
         Arrhenius object.
         """
-        string = 'Arrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
+        string = 'StickingCoefficient(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
@@ -81,14 +81,14 @@ cdef class StickingCoefficient(KineticsModel):
         """
         A helper function used when pickling an Arrhenius object.
         """
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (StickingCoefficient, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     property A:
         """The preexponential factor."""
         def __get__(self):
             return self._A
         def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+            self._A = quantity.Dimensionless(value)
 
     property n:
         """The temperature exponent."""
