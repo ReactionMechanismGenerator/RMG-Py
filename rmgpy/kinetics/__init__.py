@@ -35,3 +35,4 @@ from .chebyshev import Chebyshev
 from .falloff import ThirdBody, Lindemann, Troe
 from .kineticsdata import KineticsData, PDepKineticsData
 from .tunneling import Wigner, Eckart
+from .surface import StickingCoefficient
