@@ -671,9 +671,9 @@ class Reaction:
                     rateCoefficient /= surfaceSiteDensity
                 else:
                     adsorbate = r
-            if adsorbate.isSurfaceSpecies:
+            if adsorbate.isSurfaceSpecies():
                 raise ReactionError("Couldn't find the adsorbate!")
-            molecularWeight = adsorbate.getMolecularWeight()
+            molecularWeight = adsorbate.getMolecularWeight().value_si
 
             rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight))
 
