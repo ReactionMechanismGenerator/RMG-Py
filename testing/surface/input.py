@@ -1,6 +1,6 @@
 # Data sources
 database(
-    thermoLibraries = ['primaryThermoLibrary'],
+    thermoLibraries=['surfaceThermo', 'primaryThermoLibrary'],
     reactionLibraries = [],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
