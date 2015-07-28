@@ -33,7 +33,7 @@ surfaceReactor(
     },
     surfaceVolumeRatio = (10., 'm^-1'),
     surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
-    terminationTime=(1e-3,'s'),
+    terminationTime=(1,'s'),
 )
 
 simulator(
@@ -43,7 +43,7 @@ simulator(
 
 model(
     toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.1,
+    toleranceMoveToCore=1e-6,
     toleranceInterruptSimulation=0.1,
     maximumEdgeSpecies=100000
 )

@@ -649,6 +649,90 @@ class Reaction:
             return k
         else:
             return  self.kinetics.getRateCoefficient(T, P)
+    
+    def getSurfaceRateCoefficient(self, T, surfaceSiteDensity):
+        """
+        Return the overall surface rate coefficient for the forward reaction at
+        temperature `T` in K with surface site density `surfaceSiteDensity` in mol/m2
+        """
+        #ToDo: this is copied from gas phase Reaction
+        if diffusionLimiter.enabled:
+            raise NotImplementedError()
+        if not self.isSurfaceReaction():
+            raise ReactionError("This is not a surface reaction!")
+
+        if isinstance(self.kinetics, StickingCoefficient):
+            stickingCoefficient = self.kinetics.getStickingCoefficient(T)
+
+            rateCoefficient = stickingCoefficient
+            adsorbate = None
+            for r in self.reactants:
+                if r.isSurfaceSite():
+                    rateCoefficient /= surfaceSiteDensity
+                else:
+                    adsorbate = r
+            if adsorbate.isSurfaceSpecies:
+                raise ReactionError("Couldn't find the adsorbate!")
+            molecularWeight = adsorbate.getMolecularWeight()
+
+            rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight))
+
+            # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
+            return rateCoefficient
+
+        if isinstance(self.kinetics, SurfaceArrhenius):
+            return self.kinetics.getRateCoefficient(T, P=0)
+
+        raise NotImplementedError()
+
+
+    def getRate(self, T, P, conc, totalConc=-1.0):
+        """
+        Return the net rate of reaction at temperature `T` and pressure `P`. The
+        parameter `conc` is a map with species as keys and concentrations as
+        values. A reactant not found in the `conc` map is treated as having zero
+        concentration.
+
+        If passed a `totalConc`, it won't bother recalculating it.
+        """
+
+        cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
+        cython.declare(forward=cython.double, reverse=cython.double, speciesConc=cython.double)
+
+        # Calculate total concentration
+        if totalConc == -1.0:
+            totalConc=sum( conc.values() )
+
+        # Evaluate rate constant
+        if isinstance(self.kinetics, (ThirdBody, Lindemann, Troe)):
+            P = self.kinetics.getEffectivePressure(P, conc)
+        rateConstant = self.getRateCoefficient(T, P)
+
+        # Evaluate equilibrium constant
+        equilibriumConstant = self.getEquilibriumConstant(T)
+
+        # Evaluate forward concentration product
+        forward = 1.0
+        for reactant in self.reactants:
+            if reactant in conc:
+                speciesConc = conc[reactant]
+                forward = forward * speciesConc
+            else:
+                forward = 0.0
+                break
+
+        # Evaluate reverse concentration product
+        reverse = 1.0
+        for product in self.products:
+            if product in conc:
+                speciesConc = conc[product]
+                reverse = reverse * speciesConc
+            else:
+                reverse = 0.0
+                break
+
+        # Return rate
+        return rateConstant * (forward - reverse / equilibriumConstant)
 
     def fixDiffusionLimitedA(self, T):
         """
@@ -1098,124 +1182,6 @@ class Reaction:
                 
 ################################################################################
 
-class SurfaceReaction(Reaction):
-    """
-    For reactions involving a surface
-    """
-    def getEquilibriumConstant(self, T, type='Kc'):
-        """
-        Return the equilibrium constant for the reaction at the specified
-        temperature `T` in K. The `type` parameter lets    you specify the
-        quantities used in the equilibrium constant: ``Ka`` for    activities,
-        ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
-        this function currently assumes an ideal gas mixture.
-        """
-        #ToDo: this is copied from gas phase Reaction
-        cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
-        # Use free energy of reaction to calculate Ka
-        dGrxn = self.getFreeEnergyOfReaction(T)
-        K = numpy.exp(-dGrxn / constants.R / T)
-        # Convert Ka to Kc or Kp if specified
-        P0 = 1e5
-        if type == 'Kc':
-            # Convert from Ka to Kc; C0 is the reference concentration
-            C0 = P0 / constants.R / T
-            K *= C0 ** (len(self.products) - len(self.reactants))
-        elif type == 'Kp':
-            # Convert from Ka to Kp; P0 is the reference pressure
-            K *= P0 ** (len(self.products) - len(self.reactants))
-        elif type != 'Ka' and type != '':
-            raise ReactionError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
-        if K == 0:
-            raise ReactionError('Got equilibrium constant of 0')
-        return K
-
-    def getRateCoefficient(self, T, P=0):
-        raise NotImplementedError("Should use getSurfaceRateCoefficient")
-
-    def getSurfaceRateCoefficient(self, T, surfaceSiteDensity):
-        """
-        Return the overall surface rate coefficient for the forward reaction at
-        temperature `T` in K with surface site density `surfaceSiteDensity` in mol/m2
-
-        """
-        #ToDo: this is copied from gas phase Reaction
-        if diffusionLimiter.enabled:
-            raise NotImplementedError()
-
-        if isinstance(self.kinetics, StickingCoefficient):
-            stickingCoefficient = self.kinetics.getStickingCoefficient(T)
-
-            rateCoefficient = stickingCoefficient
-            adsorbate = None
-            for r in self.reactants:
-                if r.isSurfaceSite():
-                    rateCoefficient /= surfaceSiteDensity
-                else:
-                    adsorbate = r
-            if adsorbate.isSurfaceSpecies:
-                raise ReactionError("Couldn't find the adsorbate!")
-            molecularWeight = adsorbate.getMolecularWeight()
-
-            rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight))
-
-            # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
-            return rateCoefficient
-
-        if isinstance(self.kinetics, SurfaceArrhenius):
-            return self.kinetics.getRateCoefficient(T, P=0)
-            
-        raise NotImplementedError()
-
-    def getRate(self, T, P, conc, totalConc=-1.0):
-        """
-        Return the net rate of reaction at temperature `T` and pressure `P`. The
-        parameter `conc` is a map with species as keys and concentrations as
-        values. A reactant not found in the `conc` map is treated as having zero
-        concentration.
-
-        If passed a `totalConc`, it won't bother recalculating it.
-        """
-        #ToDo: this is copied from gas phase Reaction
-        cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
-        cython.declare(forward=cython.double, reverse=cython.double, speciesConc=cython.double)
-
-        # Calculate total concentration
-        if totalConc == -1.0:
-            totalConc = sum(conc.values())
-
-        # Evaluate rate constant
-        if isinstance(self.kinetics, (ThirdBody, Lindemann, Troe)):
-            P = self.kinetics.getEffectivePressure(P, conc)
-        rateConstant = self.getRateCoefficient(T, P)
-
-        # Evaluate equilibrium constant
-        equilibriumConstant = self.getEquilibriumConstant(T)
-
-        # Evaluate forward concentration product
-        forward = 1.0
-        for reactant in self.reactants:
-            if reactant in conc:
-                speciesConc = conc[reactant]
-                forward = forward * speciesConc
-            else:
-                forward = 0.0
-                break
-
-        # Evaluate reverse concentration product
-        reverse = 1.0
-        for product in self.products:
-            if product in conc:
-                speciesConc = conc[product]
-                reverse = reverse * speciesConc
-            else:
-                reverse = 0.0
-                break
-
-        # Return rate
-        return rateConstant * (forward - reverse / equilibriumConstant)
-
-    
 
 class ReactionModel:
     """

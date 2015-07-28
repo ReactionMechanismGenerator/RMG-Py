@@ -84,6 +84,8 @@ cdef class Reaction:
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
     cpdef double getRateCoefficient(self, double T, double P=?)
+    
+    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity)
 
     cpdef fixBarrierHeight(self, bint forcePositive=?)
 
@@ -106,12 +108,6 @@ cdef class Reaction:
     cpdef copy(self)
     
 ################################################################################
-
-cdef class SurfaceReaction(Reaction):
-    cpdef double getEquilibriumConstant(self, double T, str type=?)
-    cpdef double getRateCoefficient(self, double T, double P=?)
-    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity)
-    cpdef double getRate(self, double T, double surfaceSiteDensity, dict conc, double totalConc=?) 
 
 cdef class ReactionModel:
 
