@@ -37,7 +37,7 @@ import numpy
 import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           Chebyshev, KineticsData
+                           Chebyshev, KineticsData, StickingCoefficient, SurfaceArrhenius
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
@@ -71,6 +71,8 @@ class KineticsDatabase(object):
             'ThirdBody': ThirdBody,
             'Lindemann': Lindemann,
             'Troe': Troe,
+            'StickingCoefficient': StickingCoefficient,
+            'SurfaceArrhenius': SurfaceArrhenius,
             'R': constants.R,
         }
         self.global_context = {}
