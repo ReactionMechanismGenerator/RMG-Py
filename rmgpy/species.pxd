@@ -59,6 +59,8 @@ cdef class Species:
     
     cpdef bint isSurfaceSpecies(self) except -2
 
+    cpdef bint isSurfaceSite(self) except -2
+
     cpdef bint hasStatMech(self) except -2
 
     cpdef bint hasThermo(self) except -2

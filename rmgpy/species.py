@@ -273,9 +273,13 @@ class Species(object):
 
     def isSurfaceSpecies(self):
         """
-        Return ``True`` if the species is adsorbed on a surface, else ``False``.
+        Return ``True`` if the species is adsorbed on a surface (or is itself a site), else ``False``.
         """
         return self.molecule[0].isSurfaceMolecule()
+
+    def isSurfaceSite(self):
+        "Return ``True`` if the species is a vacant surface site."
+        return self.molecule[0].isSurfaceSite()
 
     def getPartitionFunction(self, T):
         """
