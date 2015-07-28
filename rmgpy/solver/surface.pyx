@@ -169,7 +169,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
-            self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)
+            
             # ToDo: getRateCoefficient should also depend on surface coverages vector
             assert not rxn.kinetics.isPressureDependent(), "Pressure may be varying."
             if rxn.isSurfaceReaction():
@@ -179,8 +179,12 @@ cdef class SurfaceReactor(ReactionSystem):
                 This is to avoid repeatedly multiplying a bunch of things inside every 
                 loop of the ODE solver.
                 """
-                self.kf[j] = self.kf[j] * surfaceVolumeRatioSI
- 
+                self.kf[j] = (surfaceVolumeRatioSI *
+                              rxn.getSurfaceRateCoefficient(self.T.value_si,
+                                                            self.surfaceSiteDensity.value_si
+                                                            ))
+            else:
+                self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)
             if rxn.reversible:
                 # ToDo: getEquilibriumConstant should be coverage dependent
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)

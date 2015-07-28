@@ -8,7 +8,7 @@ import rmgpy.quantity
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
-from rmgpy.reaction import Reaction
+from rmgpy.reaction import Reaction, SurfaceReaction
 from rmgpy.kinetics import SurfaceArrhenius
 from rmgpy.thermo import ThermoData
 from rmgpy.solver.surface import SurfaceReactor
@@ -48,7 +48,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                               H298=(-11.26, "kcal/mol"),
                               S298=(0.44, "cal/(mol*K)")))
 
-        rxn1 = Reaction(reactants=[H2, X, X],
+        rxn1 = SurfaceReaction(reactants=[H2, X, X],
                         products=[HX, HX],
                         kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
                                            n=0.5,

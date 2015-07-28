@@ -54,7 +54,7 @@ from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.molecule.element import Element
 from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
-from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, StickingCoefficient  #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, StickingCoefficient, SurfaceArrhenius  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -1161,6 +1161,10 @@ class SurfaceReaction(Reaction):
 
             # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
             return rateCoefficient
+
+        if isinstance(self.kinetics, SurfaceArrhenius):
+            return self.kinetics.getRateCoefficient(T, P=0)
+            
         raise NotImplementedError()
 
     def getRate(self, T, P, conc, totalConc=-1.0):
