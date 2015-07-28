@@ -28,7 +28,7 @@
 cimport numpy
 
 from rmgpy.kinetics.model cimport KineticsModel
-from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.kinetics.arrhenius cimport Arrhenius
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################

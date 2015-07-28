@@ -30,9 +30,9 @@
 
 from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
                    getRateCoefficientUnitsFromReactionOrder, getReactionOrderFromRateCoefficientUnits
-from .arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, SurfaceArrhenius
+from .arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
 from .chebyshev import Chebyshev
 from .falloff import ThirdBody, Lindemann, Troe
 from .kineticsdata import KineticsData, PDepKineticsData
 from .tunneling import Wigner, Eckart
-from .surface import StickingCoefficient
+from .surface import StickingCoefficient, SurfaceArrhenius
