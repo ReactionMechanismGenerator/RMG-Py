@@ -673,6 +673,15 @@ class Molecule(Graph):
         """
         return self.hasEdge(atom1, atom2)
 
+    def isSurfaceMolecule(self):
+        """
+        Returns ``True`` iff the molecule contains an 'X' surface site.
+        """
+        for atom in self.atoms:
+            if atom.symbol == 'X':
+                return True
+        return False
+
     def removeAtom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does

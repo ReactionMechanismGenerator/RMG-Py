@@ -1276,6 +1276,23 @@ multiplicity 2
         saturated_molecule.saturate()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
+        
+    def testSurfaceMolecules(self):
+        """
+        Test that we can identify surface molecules.
+        """
+        adsorbed = Molecule().fromAdjacencyList("""
+                                                1  H u0 p0 c0 {2,S}
+                                                2  X u0 p0 c0 {1,S}
+                                                """)
+        self.assertTrue(adsorbed.isSurfaceMolecule())
+        gas = Molecule().fromAdjacencyList("""
+                                        1  H u0 p0 c0 {2,S}
+                                        2  H u0 p0 c0 {1,S}
+                                        """)
+        self.assertFalse(gas.isSurfaceMolecule())
+
+        
 
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
