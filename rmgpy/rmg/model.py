@@ -471,6 +471,8 @@ class CoreEdgeReactionModel:
             # distinguish cis and trans isomers, we'll just strip these out
             # so that we can use the label in file paths
             label = molecule.toSMILES().replace('/','').replace('\\','')
+            if getattr(object, 'surface', False):
+                label += '*'
         logging.debug('Creating new species {0}'.format(label))
         if reactive:
             self.speciesCounter += 1   # count only reactive species
