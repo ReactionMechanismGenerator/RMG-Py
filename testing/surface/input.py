@@ -31,14 +31,14 @@ surfaceReactor(
     initialSurfaceCoverages={
         "site": 1.0,
     },
-    surfaceVolumeRatio = (10., 'm^-1'),
+    surfaceVolumeRatio=(1., 'm^-1'),
     surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
-    terminationTime=(1,'s'),
+    terminationTime=(1e-3, 's'),
 )
 
 simulator(
-    atol=1e-16,
-    rtol=1e-8,
+    atol=1e-20,
+    rtol=1e-12,
 )
 
 model(
