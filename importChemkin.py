@@ -571,7 +571,11 @@ class ModelMatcher():
                 pressures=(0.01, 100, 'atm', 3),
                 interpolation=('pdeparrhenius',),
             )
-        if not args.noqm:
+
+        from rdkit import Chem
+        if not Chem.inchi.INCHI_AVAILABLE:
+            logging.warning("RDKit installed without InChI support so running without QM calculations!")
+        elif not args.noqm:
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
                 method='pm3',
