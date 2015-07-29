@@ -2734,6 +2734,9 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
                 break
         else:
+            # Maybe it was just a thermo match with no votes?
+            self.confirmthermomatch_html(ckLabel, rmgLabel)
+            # If that didn't raise a HTTPRedirect, then it wasn't a thermo match either
             return "rmgLabel not a candidate for that ckLabel"
 
         self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
