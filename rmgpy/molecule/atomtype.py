@@ -166,7 +166,11 @@ with a capital letter [A-Z]
 atomTypes = {}
 
 #: Surface sites:
-atomTypes['X'] = AtomType(label='X', generic=[], specific=[])
+atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'])
+#: Vacant surface site
+atomTypes['Xv'] = AtomType(label='Xv', generic=['X'], specific=[])
+#: Occupied surface site
+atomTypes['Xo'] = AtomType(label='Xo', generic=['X'], specific=[])
 
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
@@ -258,7 +262,10 @@ atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H','Val7'],      specific=[
 
 atomTypes['Ar'  ] = AtomType('Ar',   generic=['R','R!H'],      specific=[])
 
-atomTypes['X'].setActions(incrementBond=['X'], decrementBond=['X'], formBond=['X'], breakBond=['X'], incrementRadical=['X'], decrementRadical=['X'], incrementLonePair=['X'], decrementLonePair=['X'])
+atomTypes['X'].setActions(incrementBond=['X'], decrementBond=['X'], formBond=['X'], breakBond=['X'], incrementRadical=[], decrementRadical=[], incrementLonePair=[], decrementLonePair=[])
+atomTypes['Xv'].setActions(incrementBond=[], decrementBond=[], formBond=['Xo'], breakBond=[], incrementRadical=[], decrementRadical=[], incrementLonePair=[], decrementLonePair=[])
+atomTypes['Xo'].setActions(incrementBond=['Xo'], decrementBond=['Xo'], formBond=[], breakBond=['Xv'], incrementRadical=[], decrementRadical=[], incrementLonePair=[], decrementLonePair=[])
+
 
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
@@ -334,7 +341,7 @@ def getAtomType(atom, bonds):
     """
 
     cython.declare(atomType=str)
-    cython.declare(double=cython.int, double0=cython.int, triple=cython.int, benzene=cython.int)
+    cython.declare(double=cython.int, doubleO=cython.int, triple=cython.int, benzene=cython.int, total=cython.int)
     
     atomType = ''
     
@@ -348,6 +355,7 @@ def getAtomType(atom, bonds):
             else:                double += 1
         elif bond12.isTriple(): triple += 1
         elif bond12.isBenzene(): benzene += 1
+    total = single + double + doubleO + triple + benzene
 
     # Use element and counts to determine proper atom type
     if atom.symbol == 'H':
@@ -385,7 +393,7 @@ def getAtomType(atom, bonds):
     elif atom.symbol == 'O':
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Os'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
-        elif len(bonds) == 0:                                        atomType = 'Oa'
+        elif total == 0:                                             atomType = 'Oa'
         elif double + doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
     elif atom.symbol == 'Ne':
         atomType = 'Ne'
@@ -400,13 +408,14 @@ def getAtomType(atom, bonds):
     elif atom.symbol == 'S':
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
-        elif len(bonds) == 0:                                        atomType = 'Sa'
+        elif total == 0:                                             atomType = 'Sa'
     elif atom.symbol == 'Cl':
         atomType = 'Cl'
     elif atom.symbol == 'Ar':
         atomType = 'Ar'
     elif atom.symbol == 'X':
-        atomType = 'X'
+        if   total == 0 : atomType = 'Xv'
+        elif total == 1 : atomType = 'Xo'
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
