@@ -504,7 +504,7 @@ def saveInputFile(path, rmg):
     # Pressure Dependence
     if rmg.pressureDependence:
         f.write('pressureDependence(\n')
-        f.write('    method = "{0!s}",\n'.format(rmg.pressureDependence.method))
+        f.write('    method = {0!r},\n'.format(rmg.pressureDependence.method))
         f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValue(),rmg.pressureDependence.grainSize.units))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
@@ -519,7 +519,7 @@ def saveInputFile(path, rmg):
             rmg.pressureDependence.Pmax.units,
             rmg.pressureDependence.Pcount,
         ))
-        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.model))
+        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))
         f.write(')\n\n')
     
     if rmg.quantumMechanics:
