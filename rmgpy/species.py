@@ -271,11 +271,11 @@ class Species(object):
         """
         return self.thermo is not None
 
-    def isSurfaceSpecies(self):
+    def containsSurfaceSite(self):
         """
         Return ``True`` if the species is adsorbed on a surface (or is itself a site), else ``False``.
         """
-        return self.molecule[0].isSurfaceMolecule()
+        return self.molecule[0].containsSurfaceSite()
 
     def isSurfaceSite(self):
         "Return ``True`` if the species is a vacant surface site."

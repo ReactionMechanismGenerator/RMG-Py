@@ -302,10 +302,10 @@ class Reaction:
         Return ``True`` if one or more reactants or products are surface species (or surface sites)
         """
         for spec in self.reactants:
-            if spec.isSurfaceSpecies():
+            if spec.containsSurfaceSite():
                 return True
         for spec in self.products:
-            if spec.isSurfaceSpecies():
+            if spec.containsSurfaceSite():
                 return True
         return False
 
@@ -671,7 +671,7 @@ class Reaction:
                     rateCoefficient /= surfaceSiteDensity
                 else:
                     adsorbate = r
-            if adsorbate.isSurfaceSpecies():
+            if adsorbate.containsSurfaceSite():
                 raise ReactionError("Couldn't find the adsorbate!")
             molecularWeight = adsorbate.getMolecularWeight().value_si
 

@@ -1285,12 +1285,12 @@ multiplicity 2
                                                 1  H u0 p0 c0 {2,S}
                                                 2  X u0 p0 c0 {1,S}
                                                 """)
-        self.assertTrue(adsorbed.isSurfaceMolecule())
+        self.assertTrue(adsorbed.containsSurfaceSite())
         gas = Molecule().fromAdjacencyList("""
                                         1  H u0 p0 c0 {2,S}
                                         2  H u0 p0 c0 {1,S}
                                         """)
-        self.assertFalse(gas.isSurfaceMolecule())
+        self.assertFalse(gas.containsSurfaceSite())
 
         
 

@@ -673,7 +673,7 @@ class Molecule(Graph):
         """
         return self.hasEdge(atom1, atom2)
 
-    def isSurfaceMolecule(self):
+    def containsSurfaceSite(self):
         """
         Returns ``True`` iff the molecule contains an 'X' surface site.
         """
