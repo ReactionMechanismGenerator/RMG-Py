@@ -10,14 +10,15 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.species import Species, TransitionState
+from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.kinetics import Arrhenius
-from rmgpy.thermo import Wilhoit
+from rmgpy.kinetics import Arrhenius, SurfaceArrhenius
+from rmgpy.thermo import Wilhoit, ThermoData
 import rmgpy.constants as constants
 
 ################################################################################
@@ -84,11 +85,62 @@ class TestReactionIsomorphism(unittest.TestCase):
         self.assertFalse(r1.isIsomorphic(self.makeReaction('abe=cde')))
 
 
+class TestSurfaceReaction(unittest.TestCase):
+    "Test surface reactions"
+    def setUp(self):
+
+        mH2 = Molecule().fromSMILES("[H][H]")
+        mX = Molecule().fromAdjacencyList("1 X u0 p0")
+        mHX = Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+
+        sH2 = Species(
+            molecule=[mH2],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+                                     "K"),
+                              Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003,
+                                       7.103, 7.502], "cal/(mol*K)"),
+                              H298=(0, "kcal/mol"),
+                              S298=(31.129  , "cal/(mol*K)")))
+        sX = Species(
+            molecule=[mX],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+                                     "K"),
+                              Cpdata=([0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
+                              H298=(0.0, "kcal/mol"),
+                              S298=(0.0, "cal/(mol*K)")))
+        sHX = Species(
+            molecule=[mHX],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+                                     "K"),
+                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                              H298=(-11.26, "kcal/mol"),
+                              S298=(0.44, "cal/(mol*K)")))
+
+        rxn1s = Reaction(reactants=[sH2, sX, sX],
+                        products=[sHX, sHX],
+                        kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
+                                           n=0.5,
+                                           Ea=(5.0, 'kJ/mol'),
+                                           T0=(1.0, 'K')))
+        self.rxn1s = rxn1s
+
+        rxn1m = Reaction(reactants=[mH2, mX, mX],
+                        products=[mHX, mHX])
+        self.rxn1m = rxn1m
+        
+    def testIsSurfaceReactionSpecies(self):
+        "Test isSurfaceReaction for reaction based on Species "
+        self.assertTrue(self.rxn1s.isSurfaceReaction())
+
+    def testIsSurfaceReactionMolecules(self):
+        "Test isSurfaceReaction for reaction based on Molecules "
+        self.assertTrue(self.rxn1m.isSurfaceReaction())
+
+
 class TestReaction(unittest.TestCase):
     """
     Contains unit tests of the Reaction class.
     """
-    
     def setUp(self):
         """
         A method that is called prior to each unit test in this class.
