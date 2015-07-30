@@ -6,6 +6,8 @@
 
 DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
 DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
+RDKIT_YEAR=$(shell python -c 'import rdkit; print rdkit.__version__.split(".")[0]')
+
 
 .PHONY : all minimal main solver cantherm clean decython documentation QM mopac_travis
 
@@ -45,6 +47,10 @@ bin/symmetry:
 QM: bin/symmetry
 	@ echo "Checking you have rdkit..."
 	@ python -c 'import rdkit; print rdkit.__file__'
+	@ echo "Checking rdkit version..."
+ifeq ($(shell test $(RDKIT_YEAR) -lt 2015; echo $$?),0)
+	$(error rdkit version out of date, please install rdkit version 2015.03.1 or later);
+endif
 	@ echo "Checking rdkit has InChI support..."
 	@ python -c 'from rdkit import Chem; assert Chem.inchi.INCHI_AVAILABLE, "RDKit installed without InChI Support"'
 
