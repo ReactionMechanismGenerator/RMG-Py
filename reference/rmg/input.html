@@ -71,26 +71,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmg-input-files">
 <h1>RMG input files<a class="headerlink" href="#rmg-input-files" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/rmg/input.rst</tt>, line 5)</p>
-autodoc: failed to import function u&#8217;readInputFile&#8217; from module u&#8217;rmgpy.rmg.input&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/input.py&#8221;, line 32, in &lt;module&gt;
-    import quantities
-ImportError: No module named quantities
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/rmg/input.rst</tt>, line 7)</p>
-autodoc: failed to import function u&#8217;saveInputFile&#8217; from module u&#8217;rmgpy.rmg.input&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/input.py&#8221;, line 32, in &lt;module&gt;
-    import quantities
-ImportError: No module named quantities
-</div>
+<dl class="function">
+<dt id="rmgpy.rmg.input.readInputFile">
+<code class="descclassname">rmgpy.rmg.input.</code><code class="descname">readInputFile</code><span class="sig-paren">(</span><em>path</em>, <em>rmg0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.input.readInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an RMG input file at <cite>path</cite> on disk into the <code class="xref py py-class docutils literal"><span class="pre">RMG</span></code> object 
+<cite>rmg</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.rmg.input.saveInputFile">
+<code class="descclassname">rmgpy.rmg.input.</code><code class="descname">saveInputFile</code><span class="sig-paren">(</span><em>path</em>, <em>rmg</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.input.saveInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an RMG input file at <cite>path</cite> on disk from the <code class="xref py py-class docutils literal"><span class="pre">RMG</span></code> object 
+<cite>rmg</cite>.</p>
+</dd></dl>
+
 </div>
 
 
@@ -102,17 +96,6 @@ ImportError: No module named quantities
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="coreedgereactionmodel.html"
-                        title="previous chapter">rmgpy.rmg.model.CoreEdgeReactionModel</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="main.html"
-                        title="next chapter">rmgpy.rmg.main.RMG</a></p>
-  <h3>This Page </h3>
-  <ul class="this-page-menu">
-    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/input.rst"
-           rel="nofollow">Edit this page</a></li>
-  </ul>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -126,6 +109,89 @@ ImportError: No module named quantities
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/input.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
+        <div class="linkdesc">Draw a group structure from its adjlist</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
         </div>
       </div>
       <div class="clearer"></div>

@@ -71,34 +71,61 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-cantherm-kineticsjob">
 <h1>rmgpy.cantherm.KineticsJob<a class="headerlink" href="#rmgpy-cantherm-kineticsjob" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/cantherm/kinetics.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;KineticsJob&#8217; from module u&#8217;rmgpy.cantherm&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/__init__.py&#8221;, line 30, in &lt;module&gt;
-    from .main import CanTherm
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/main.py&#8221;, line 48, in &lt;module&gt;
-    from rmgpy.cantherm.input import loadInputFile
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/input.py&#8221;, line 56, in &lt;module&gt;
-    from rmgpy.pdep.configuration import Configuration
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/__init__.py&#8221;, line 34, in &lt;module&gt;
-    from .network import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/network.py&#8221;, line 41, in &lt;module&gt;
-    from rmgpy.reaction import Reaction
-  File &#8220;rmgpy/molecule/graph.pxd&#8221;, line 27, in init rmgpy.reaction (build/pyrex/rmgpy/reaction.c:33080)
-    cdef class Vertex(object):
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;rmgpy/molecule/element.pxd&#8221;, line 27, in init rmgpy.molecule.molecule (build/pyrex/rmgpy/molecule/molecule.c:41175)
-    cdef class Element:
-  File &#8220;rmgpy/molecule/element.py&#8221;, line 44, in init rmgpy.molecule.element (build/pyrex/rmgpy/molecule/element.c:5181)
-    from rdkit.Chem import GetPeriodicTable
-ImportError: No module named rdkit.Chem
-</div>
+<dl class="class">
+<dt id="rmgpy.cantherm.KineticsJob">
+<em class="property">class </em><code class="descclassname">rmgpy.cantherm.</code><code class="descname">KineticsJob</code><span class="sig-paren">(</span><em>reaction</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Tlist=None</em>, <em>Tcount=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.KineticsJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a CanTherm kinetics job. This job is used to compute 
+and save the high-pressure-limit kinetics information for a single reaction.</p>
+<dl class="attribute">
+<dt id="rmgpy.cantherm.KineticsJob.Tlist">
+<code class="descname">Tlist</code><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.Tlist" title="Permalink to this definition">¶</a></dt>
+<dd><p>The temperatures at which the k(T) values are computed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.cantherm.KineticsJob.Tmax">
+<code class="descname">Tmax</code><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.Tmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum temperature at which the computed k(T) values are valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.cantherm.KineticsJob.Tmin">
+<code class="descname">Tmin</code><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.Tmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum temperature at which the computed k(T) values are valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.KineticsJob.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the kinetics job, saving the results to the given <cite>outputFile</cite>
+on disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.KineticsJob.generateKinetics">
+<code class="descname">generateKinetics</code><span class="sig-paren">(</span><em>Tlist=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.generateKinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the kinetics data for the reaction and fit it to a modified
+Arrhenius model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.KineticsJob.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outputDirectory</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot both the raw kinetics data and the Arrhenius fit versus 
+temperature. The plot is saved to the file <code class="docutils literal"><span class="pre">kinetics.pdf</span></code> in the
+output directory. The plot is not generated if <code class="docutils literal"><span class="pre">matplotlib</span></code> is not
+installed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.KineticsJob.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the results of the kinetics job to the file located
+at <cite>path</cite> on disk.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -110,17 +137,6 @@ ImportError: No module named rdkit.Chem
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="input.html"
-                        title="previous chapter">CanTherm input files</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="main.html"
-                        title="next chapter">rmgpy.cantherm.CanTherm</a></p>
-  <h3>This Page </h3>
-  <ul class="this-page-menu">
-    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/cantherm/kinetics.rst"
-           rel="nofollow">Edit this page</a></li>
-  </ul>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -134,6 +150,89 @@ ImportError: No module named rdkit.Chem
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/cantherm/kinetics.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
+        <div class="linkdesc">Draw a group structure from its adjlist</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
         </div>
       </div>
       <div class="clearer"></div>

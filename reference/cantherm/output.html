@@ -71,54 +71,72 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="saving-cantherm-output">
 <h1>Saving CanTherm output<a class="headerlink" href="#saving-cantherm-output" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/cantherm/output.rst</tt>, line 5)</p>
-autodoc: failed to import function u&#8217;prettify&#8217; from module u&#8217;rmgpy.cantherm.output&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/__init__.py&#8221;, line 30, in &lt;module&gt;
-    from .main import CanTherm
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/main.py&#8221;, line 48, in &lt;module&gt;
-    from rmgpy.cantherm.input import loadInputFile
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/input.py&#8221;, line 56, in &lt;module&gt;
-    from rmgpy.pdep.configuration import Configuration
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/__init__.py&#8221;, line 35, in &lt;module&gt;
-    from .draw import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/draw.py&#8221;, line 39, in &lt;module&gt;
-    from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/draw.py&#8221;, line 54, in &lt;module&gt;
-    from rmgpy.qm.molecule import Geometry
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/molecule.py&#8221;, line 19, in &lt;module&gt;
-    import qmdata
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/qmdata.py&#8221;, line 4, in &lt;module&gt;
-    from rmgpy.quantity import Energy, Mass, Length, Frequency
-ImportError: cannot import name Energy
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/cantherm/output.rst</tt>, line 7)</p>
-autodoc: failed to import class u&#8217;PrettifyVisitor&#8217; from module u&#8217;rmgpy.cantherm.output&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/__init__.py&#8221;, line 30, in &lt;module&gt;
-    from .main import CanTherm
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/main.py&#8221;, line 48, in &lt;module&gt;
-    from rmgpy.cantherm.input import loadInputFile
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/cantherm/input.py&#8221;, line 56, in &lt;module&gt;
-    from rmgpy.pdep.configuration import Configuration
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/__init__.py&#8221;, line 35, in &lt;module&gt;
-    from .draw import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/draw.py&#8221;, line 39, in &lt;module&gt;
-    from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/draw.py&#8221;, line 54, in &lt;module&gt;
-    from rmgpy.qm.molecule import Geometry
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/molecule.py&#8221;, line 19, in &lt;module&gt;
-    import qmdata
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/qmdata.py&#8221;, line 4, in &lt;module&gt;
-    from rmgpy.quantity import Energy, Mass, Length, Frequency
-ImportError: cannot import name Energy
-</div>
+<dl class="function">
+<dt id="rmgpy.cantherm.output.prettify">
+<code class="descclassname">rmgpy.cantherm.output.</code><code class="descname">prettify</code><span class="sig-paren">(</span><em>string</em>, <em>indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.prettify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a &#8220;pretty&#8221; version of the given <cite>string</cite>, representing a snippet of
+Python code such as a representation of an object or function. This 
+involves splitting of tuples, lists, and dicts (including parameter lists)
+onto multiple lines, indenting as appropriate for readability.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor">
+<em class="property">class </em><code class="descclassname">rmgpy.cantherm.output.</code><code class="descname">PrettifyVisitor</code><span class="sig-paren">(</span><em>level=0</em>, <em>indent=4</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for traversing an abstract syntax tree to assemble a prettier
+version of the code used to create the tree. Used by the <code class="xref py py-func docutils literal"><span class="pre">prettify()</span></code>
+function.</p>
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.generic_visit">
+<code class="descname">generic_visit</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.generic_visit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called if no explicit visitor function exists for a node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit">
+<code class="descname">visit</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visit a node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Call">
+<code class="descname">visit_Call</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the class or function call 
+represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Dict">
+<code class="descname">visit_Dict</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the dict represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_List">
+<code class="descname">visit_List</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the list represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Num">
+<code class="descname">visit_Num</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the number represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Str">
+<code class="descname">visit_Str</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the string represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Tuple">
+<code class="descname">visit_Tuple</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the tuple represented by <cite>node</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -130,17 +148,6 @@ ImportError: cannot import name Energy
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="main.html"
-                        title="previous chapter">rmgpy.cantherm.CanTherm</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pdep.html"
-                        title="next chapter">rmgpy.cantherm.PressureDependenceJob</a></p>
-  <h3>This Page </h3>
-  <ul class="this-page-menu">
-    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/cantherm/output.rst"
-           rel="nofollow">Edit this page</a></li>
-  </ul>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -154,6 +161,89 @@ ImportError: cannot import name Energy
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/cantherm/output.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
+        <div class="linkdesc">Draw a group structure from its adjlist</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
         </div>
       </div>
       <div class="clearer"></div>

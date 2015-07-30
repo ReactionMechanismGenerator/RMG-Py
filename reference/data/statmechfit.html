@@ -73,132 +73,488 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.statmechfit<a class="headerlink" href="#rmgpy-data-statmechfit" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="fitting-functions">
 <h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this headline">¶</a></h2>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 8)</p>
-autodoc: failed to import function u&#8217;fitStatmechToHeatCapacity&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 10)</p>
-autodoc: failed to import function u&#8217;fitStatmechDirect&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 12)</p>
-autodoc: failed to import function u&#8217;fitStatmechPseudoRotors&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 14)</p>
-autodoc: failed to import function u&#8217;fitStatmechPseudo&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechToHeatCapacity">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechToHeatCapacity</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechToHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given set of dimensionless heat capacity data <cite>Cvlist</cite> corresponding
+to temperature list <cite>Tlist</cite> in K, fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite>
+hindered internal rotor modes. External and other previously-known modes
+should have already been removed from <cite>Cvlist</cite> prior to calling this
+function. You must provide at least 7 values for <cite>Cvlist</cite>.</p>
+<p>This function returns a list containing the fitted vibrational frequencies
+in a <code class="xref py py-class docutils literal"><span class="pre">HarmonicOscillator</span></code> object and the fitted 1D hindered rotors
+in <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor</span></code> objects.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechDirect">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechDirect</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechDirect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are enough heat capacity points
+provided that the vibrational frequencies and hindered rotation frequency-
+barrier pairs can be fit directly.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechPseudoRotors">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechPseudoRotors</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudoRotors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are enough heat capacity points
+provided that the vibrational frequencies can be fit directly, but the
+hindered rotors must be combined into a single &#8220;pseudo-rotor&#8221;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechPseudo">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">fitStatmechPseudo</code><span class="sig-paren">(</span><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are relatively few heat capacity points
+provided, so the vibrations must be combined into one real vibration and
+two &#8220;pseudo-vibrations&#8221; and the hindered rotors must be combined into a
+single &#8220;pseudo-rotor&#8221;.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 19)</p>
-autodoc: failed to import function u&#8217;harmonicOscillator_heatCapacity&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 21)</p>
-autodoc: failed to import function u&#8217;harmonicOscillator_d_heatCapacity_d_freq&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 23)</p>
-autodoc: failed to import function u&#8217;hinderedRotor_heatCapacity&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 25)</p>
-autodoc: failed to import function u&#8217;hinderedRotor_d_heatCapacity_d_freq&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 27)</p>
-autodoc: failed to import function u&#8217;hinderedRotor_d_heatCapacity_d_barr&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
-</div>
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.harmonicOscillator_heatCapacity">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">harmonicOscillator_heatCapacity</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
+in K for the harmonic oscillator with a frequency <cite>freq</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">harmonicOscillator_d_heatCapacity_d_freq</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
+temperatures <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hinderedRotor_heatCapacity">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">hinderedRotor_heatCapacity</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em>, <em>barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
+in K for the 1D hindered rotor with a frequency <cite>freq</cite> in cm^-1 and a
+barrier height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">hinderedRotor_d_heatCapacity_d_freq</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em>, <em>barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
+<cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
+height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr">
+<code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">hinderedRotor_d_heatCapacity_d_barr</code><span class="sig-paren">(</span><em>T</em>, <em>freq</em>, <em>barr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
+<cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
+height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="helper-classes">
 <h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this headline">¶</a></h2>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 32)</p>
-autodoc: failed to import class u&#8217;DirectFit&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
+<dl class="class">
+<dt id="rmgpy.data.statmechfit.DirectFit">
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">DirectFit</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for fitting vibrational frequencies and hindered rotor
+frequency-barrier pairs for the case when there are few enough oscillators
+and rotors that their values can be fit directly.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.DirectFit.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Initialize the DQED solver. The required parameters are:</p>
+<ul class="simple">
+<li><cite>Neq</cite> - The number of algebraic equations.</li>
+<li><cite>Nvars</cite> - The number of unknown variables.</li>
+<li><cite>Ncons</cite> - The number of constraint equations.</li>
+</ul>
+<p>The optional parameters are:</p>
+<ul>
+<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
+either direction. If provided, you must give bounds for every unknown
+variable.</p>
+</li>
+<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+residual has absolute length less than <cite>tolf</cite>, i.e.
+:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>|</p>
+<div class="system-message" id="id1">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 16); <em><a href="#id2">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
 </div>
+</li>
+</ul>
+</div></blockquote>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 34)</p>
-autodoc: failed to import class u&#8217;PseudoRotorFit&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{f} | le epsilon_f.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+variables has absolute length less than <cite>told</cite>, i.e.
+:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>| Delta</p>
+<div class="system-message" id="id3">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 21); <em><a href="#id4">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
 </div>
+</li>
+</ul>
+</div></blockquote>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechfit.rst</tt>, line 36)</p>
-autodoc: failed to import class u&#8217;PseudoFit&#8217; from module u&#8217;rmgpy.data.statmechfit&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py&#8221;, line 43, in &lt;module&gt;
-    from pydqed import DQED
-ImportError: No module named pydqed
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{x} | le epsilon_d.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+variables has relative length less than <cite>tolx</cite>, i.e.
+:math:<a href="#id5"><span class="problematic" id="id6">`</span></a>| Delta</p>
+<div class="system-message" id="id5">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 26); <em><a href="#id6">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
 </div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 29)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{x} | le epsilon_x cdot | 
+ector{x} |`.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>maxIter</cite> - The maximum number of iterations to use</li>
+<li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
+solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
+error.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.DirectFit.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
+set of nonlinear algebraic equations defined by the <code class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></code> 
+method of the derived class. This is the method that actually conducts
+the call to DQED. Returns the solution vector and a flag indicating
+the status of the solve. The possible output values of the flag are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>The norm of the residual is zero; the solution vector is a root of the system</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>The bounds on the trust region are being encountered on each step; the solution vector may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>The solution vector is a local minimum</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>A significant amount of noise or uncertainty has been observed in the residual; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>The solution vector is only changing by small absolute amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>The solution vector is only changing by small relative amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>The maximum number of iterations has been reached; the solution is the best found, but may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>9-18</td>
+<td>An error occurred during the solve operation; the solution is not a local minimum</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.statmechfit.PseudoRotorFit">
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">PseudoRotorFit</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for fitting vibrational frequencies and hindered rotor
+frequency-barrier pairs for the case when there are too many oscillators
+and rotors for their values can be fit directly, and where collapsing the
+rotors into a single pseudo-rotor allows for fitting the vibrational
+frequencies directly.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Initialize the DQED solver. The required parameters are:</p>
+<ul class="simple">
+<li><cite>Neq</cite> - The number of algebraic equations.</li>
+<li><cite>Nvars</cite> - The number of unknown variables.</li>
+<li><cite>Ncons</cite> - The number of constraint equations.</li>
+</ul>
+<p>The optional parameters are:</p>
+<ul>
+<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
+either direction. If provided, you must give bounds for every unknown
+variable.</p>
+</li>
+<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+residual has absolute length less than <cite>tolf</cite>, i.e.
+:math:<a href="#id7"><span class="problematic" id="id8">`</span></a>|</p>
+<div class="system-message" id="id7">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 16); <em><a href="#id8">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{f} | le epsilon_f.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+variables has absolute length less than <cite>told</cite>, i.e.
+:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>| Delta</p>
+<div class="system-message" id="id9">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 21); <em><a href="#id10">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{x} | le epsilon_d.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+variables has relative length less than <cite>tolx</cite>, i.e.
+:math:<a href="#id11"><span class="problematic" id="id12">`</span></a>| Delta</p>
+<div class="system-message" id="id11">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 26); <em><a href="#id12">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 29)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{x} | le epsilon_x cdot | 
+ector{x} |`.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>maxIter</cite> - The maximum number of iterations to use</li>
+<li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
+solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
+error.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoRotorFit.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
+set of nonlinear algebraic equations defined by the <code class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></code> 
+method of the derived class. This is the method that actually conducts
+the call to DQED. Returns the solution vector and a flag indicating
+the status of the solve. The possible output values of the flag are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>The norm of the residual is zero; the solution vector is a root of the system</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>The bounds on the trust region are being encountered on each step; the solution vector may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>The solution vector is a local minimum</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>A significant amount of noise or uncertainty has been observed in the residual; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>The solution vector is only changing by small absolute amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>The solution vector is only changing by small relative amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>The maximum number of iterations has been reached; the solution is the best found, but may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>9-18</td>
+<td>An error occurred during the solve operation; the solution is not a local minimum</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.statmechfit.PseudoFit">
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmechfit.</code><code class="descname">PseudoFit</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for fitting vibrational frequencies and hindered rotor
+frequency-barrier pairs for the case when there are too many oscillators
+and rotors for their values can be fit directly, and where we must collapse
+both the vibrations and hindered rotations into &#8220;pseudo-oscillators&#8221; and
+&#8220;pseudo-rotors&#8221;.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoFit.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Initialize the DQED solver. The required parameters are:</p>
+<ul class="simple">
+<li><cite>Neq</cite> - The number of algebraic equations.</li>
+<li><cite>Nvars</cite> - The number of unknown variables.</li>
+<li><cite>Ncons</cite> - The number of constraint equations.</li>
+</ul>
+<p>The optional parameters are:</p>
+<ul>
+<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
+either direction. If provided, you must give bounds for every unknown
+variable.</p>
+</li>
+<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+residual has absolute length less than <cite>tolf</cite>, i.e.
+:math:<a href="#id13"><span class="problematic" id="id14">`</span></a>|</p>
+<div class="system-message" id="id13">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 16); <em><a href="#id14">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{f} | le epsilon_f.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+variables has absolute length less than <cite>told</cite>, i.e.
+:math:<a href="#id15"><span class="problematic" id="id16">`</span></a>| Delta</p>
+<div class="system-message" id="id15">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 21); <em><a href="#id16">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 24)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{x} | le epsilon_d.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+variables has relative length less than <cite>tolx</cite>, i.e.
+:math:<a href="#id17"><span class="problematic" id="id18">`</span></a>| Delta</p>
+<div class="system-message" id="id17">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 26); <em><a href="#id18">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 29)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>ector{x} | le epsilon_x cdot | 
+ector{x} |`.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>maxIter</cite> - The maximum number of iterations to use</li>
+<li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
+solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
+error.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoFit.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
+set of nonlinear algebraic equations defined by the <code class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></code> 
+method of the derived class. This is the method that actually conducts
+the call to DQED. Returns the solution vector and a flag indicating
+the status of the solve. The possible output values of the flag are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>The norm of the residual is zero; the solution vector is a root of the system</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>The bounds on the trust region are being encountered on each step; the solution vector may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>The solution vector is a local minimum</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>A significant amount of noise or uncertainty has been observed in the residual; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>The solution vector is only changing by small absolute amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>The solution vector is only changing by small relative amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>The maximum number of iterations has been reached; the solution is the best found, but may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>9-18</td>
+<td>An error occurred during the solve operation; the solution is not a local minimum</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -221,17 +577,6 @@ ImportError: No module named pydqed
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="statmechdepository.html"
-                        title="previous chapter">rmgpy.data.statmech.StatmechDepository</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="statmechgroups.html"
-                        title="next chapter">rmgpy.data.statmech.StatmechGroups</a></p>
-  <h3>This Page </h3>
-  <ul class="this-page-menu">
-    <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/statmechfit.rst"
-           rel="nofollow">Edit this page</a></li>
-  </ul>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -245,6 +590,89 @@ ImportError: No module named pydqed
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/statmechfit.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
+        <div class="linkdesc">Draw a group structure from its adjlist</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
         </div>
       </div>
       <div class="clearer"></div>
