@@ -1655,6 +1655,18 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
+        elif reaction.isSurfaceReaction():
+            # remove vacant active sites from consideration
+            reactants = [sp for sp in reaction.reactants if not sp.isSurfaceSite()]
+            products =  [sp for sp in reaction.products if not sp.isSurfaceSite()]
+            if len(reactants) == 1 or len(products) == 1:
+                # When there is only one reactant (or one product), it is paired
+                # with each of the products (reactants)
+                for reactant in reactants:
+                    for product in products:
+                        pairs.append([reactant, product])
+            else:
+                error = True
         else:
             error = True
             
