@@ -236,7 +236,7 @@ class KineticsLibrary(Database):
             elif '=>' in rxn_string:
                 products = products[1:]
                 reversible = False
-            assert reversible == rxn.reversible
+            assert reversible == rxn.reversible, "Reaction string reversibility (=>) and entry attribute `reversible` (set to `False`) must agree if reaction is irreversible."
             for reactant in reactants.split('+'):
                 reactant = reactant.strip()
                 if reactant not in speciesDict:
