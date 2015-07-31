@@ -524,10 +524,19 @@ def saveInputFile(path, rmg):
     
     if rmg.quantumMechanics:
         f.write('quantumMechanics(\n')
-        f.write('    software="{0!s}",\n'.format(rmg.quantumMechanics.settings.software))
-        f.write('    method="{0!s}",\n'.format(rmg.quantumMechanics.settings.method))
-        f.write('    onlyCyclics="{0}",\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
-        f.write('    maxRadicalNumber="{0!s}",\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
+        f.write('    software = {0!r},\n'.format(rmg.quantumMechanics.settings.software))
+        f.write('    method = {0!r},\n'.format(rmg.quantumMechanics.settings.method))
+        # Split paths created by QMSettings
+        if rmg.quantumMechanics.settings.fileStore:
+            f.write('    fileStore = {0!r},\n'.format(os.path.split(rmg.quantumMechanics.settings.fileStore)[0]))
+        else:
+            f.write('    fileStore = None,\n')
+        if rmg.quantumMechanics.settings.scratchDirectory:
+            f.write('    scratchDirectory = {0!r},\n'.format(os.path.split(rmg.quantumMechanics.settings.scratchDirectory)[0]))
+        else:
+            f.write('    scratchDirectory = None,\n')
+        f.write('    onlyCyclics = {0},\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
+        f.write('    maxRadicalNumber = {0},\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
         f.write(')\n\n')
         
     # Options
