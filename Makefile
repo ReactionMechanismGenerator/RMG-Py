@@ -52,7 +52,6 @@ ifneq ($(RDKIT_VERSION),)
 else
 	$(error RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support);
 endif
-	@ python -c 'import rdkit; assert float(rdkit.__version__[:7])>=2015, "RDKit version is out of date. Please upgrade to 2015.03.1 or later with InChI support."'
 	@ echo "Checking rdkit has InChI support..."
 	@ python -c 'from rdkit import Chem; assert Chem.inchi.INCHI_AVAILABLE, "RDKit installed without InChI Support. Please install with InChI."'
 
