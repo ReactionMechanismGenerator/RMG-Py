@@ -1254,7 +1254,7 @@ class CoreEdgeReactionModel:
         seedMechanism = database.kinetics.libraries[seedMechanism]
 
         for entry in seedMechanism.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data, duplicate=entry.item.duplicate)
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data, duplicate=entry.item.duplicate, reversible=entry.item.reversible)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             
         # Perform species constraints and forbidden species checks
@@ -1317,7 +1317,7 @@ class CoreEdgeReactionModel:
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
         for entry in reactionLibrary.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data, duplicate=entry.item.duplicate)
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data, duplicate=entry.item.duplicate, reversible=entry.item.reversible)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             
