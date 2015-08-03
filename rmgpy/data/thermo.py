@@ -57,7 +57,7 @@ def saveEntry(f, entry):
     Write a Pythonic string representation of the given `entry` in the thermo
     database to the file object `f`.
     """
-    
+
     f.write('entry(\n')
     f.write('    index = {0:d},\n'.format(entry.index))
     f.write('    label = "{0}",\n'.format(entry.label))
@@ -121,7 +121,7 @@ def saveEntry(f, entry):
     f.write('    longDesc = \n')
     f.write('u"""\n')
     try:
-        f.write(entry.longDesc.strip().encode('utf-8') + "\n")    
+        f.write(entry.longDesc.strip().encode('utf-8') + "\n")
     except:
         f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
@@ -229,18 +229,18 @@ class ThermoLibrary(Database):
                   shortDesc='',
                   longDesc='',
                   ):
-        
+
         molecule = Molecule().fromAdjacencyList(molecule)
-        
+
         # Internal checks for adding entry to the thermo library
         if label in self.entries.keys():
             raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library.  Please correct your library.'.format(label))
-        
+
         for entry in self.entries.values():
             if molecule.isIsomorphic(entry.item):
                 if molecule.multiplicity == entry.item.multiplicity:
                     raise DatabaseError('Adjacency list and multiplicity of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
-        
+
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -306,7 +306,7 @@ class ThermoGroups(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
         )
-    
+
     def saveEntry(self, f, entry):
         """
         Write the given `entry` in the thermo database to the file object `f`.
@@ -318,7 +318,7 @@ class ThermoGroups(Database):
         Return a list of values used to save entries to the old-style RMG
         thermo database based on the thermodynamics object `data`.
         """
-        
+
         return generateOldLibraryEntry(data)
 
     def processOldLibraryEntry(self, data):
@@ -380,7 +380,7 @@ class ThermoDatabase(object):
             self.depository = {}
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
-        
+
     def loadDepository(self, path):
         """
         Load the thermo database from the given `path` on disk, where `path`
@@ -464,7 +464,7 @@ class ThermoDatabase(object):
         self.groups['int15'].save(os.path.join(path, 'int15.py'))
         self.groups['ring'].save(os.path.join(path, 'ring.py'))
         self.groups['radical'].save(os.path.join(path, 'radical.py'))
-        self.groups['polycyclic'].save(os.path.join(path, 'polycyclic.py'))        
+        self.groups['polycyclic'].save(os.path.join(path, 'polycyclic.py'))
         self.groups['other'].save(os.path.join(path, 'other.py'))
 
     def loadOld(self, path):
@@ -476,7 +476,7 @@ class ThermoDatabase(object):
         self.depository = {}
         self.depository['stable']  = ThermoDepository(label='stable', name='Stable Molecules')
         self.depository['radical'] = ThermoDepository(label='radical', name='Radical Molecules')
-        
+
         for (root, dirs, files) in os.walk(os.path.join(path, 'thermo_libraries')):
             if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
                 library = ThermoLibrary(label=os.path.basename(root), name=os.path.basename(root))
@@ -548,11 +548,11 @@ class ThermoDatabase(object):
             numLabels = 1,
             pattern = True,
         )
-        
+
     def pruneHeteroatoms(self, allowed=['C','H','O','S']):
         """
         Remove all species from thermo libraries that contain atoms other than those allowed.
-        
+
         This is useful before saving the database for use in RMG-Java
         """
         allowedElements = [rmgpy.molecule.element.getElement(label) for label in allowed]
@@ -632,19 +632,19 @@ class ThermoDatabase(object):
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
         estimation via group additivity.
-        
+
         Returns: ThermoData
         """
-        
+
         thermo0 = None
-        
+
         thermo0 = self.getThermoDataFromLibraries(species)
-        
+
         if thermo0 is not None:
             logging.info("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
-            
+
         elif quantumMechanics:
             original_molecule = species.molecule[0]
             if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
@@ -657,7 +657,7 @@ class ThermoDatabase(object):
                         species.label,
                         quantumMechanics.settings.maxRadicalNumber,
                         ))
-                    
+
                     # Need to estimate thermo via each resonance isomer
                     thermo = []
                     for molecule in species.molecule:
@@ -673,19 +673,19 @@ class ThermoDatabase(object):
                             # Fall back to group additivity
                             tdata = self.estimateThermoViaGroupAdditivity(molecule)
                             priority = 3
-                        
+
                         thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
-                    
+
                     if len(thermo) > 1:
                         # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1])) 
-                        for i in range(len(thermo)): 
+                        thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                        for i in range(len(thermo)):
                             logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
                         # Save resonance isomers reordered by their thermo
                         species.molecule = [item[2] for item in thermo]
                         original_molecule = species.molecule[0]
-                    thermo0 = thermo[0][3] 
-                    
+                    thermo0 = thermo[0][3]
+
                     # If priority == 2
                     if thermo[0][0] == 2:
                         # Write the QM molecule thermo to a library so that can be used in future RMG jobs.  (Do this only if it came from a QM calculation)
@@ -694,8 +694,8 @@ class ThermoDatabase(object):
                                                         molecule = original_molecule.toAdjacencyList(),
                                                         thermo = thermo0,
                                                         shortDesc = thermo0.comment
-                                                        
-                                                        )                    
+
+                                                        )
 #                    # For writing thermodata HBI check for QM molecules
 #                    with open('thermoHBIcheck.txt','a') as f:
 #                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
@@ -704,7 +704,7 @@ class ThermoDatabase(object):
 
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
-                
+
                     if thermo0 is not None:
                         # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
                         quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
@@ -712,7 +712,7 @@ class ThermoDatabase(object):
                                                         molecule = original_molecule.toAdjacencyList(),
                                                         thermo = thermo0,
                                                         shortDesc = thermo0.comment
-                                                        )                    
+                                                        )
         if thermo0 is None:
             # Use group additivity methods to determine thermo for molecule (or if QM fails completely)
             original_molecule = species.molecule[0]
@@ -729,26 +729,26 @@ class ThermoDatabase(object):
                         tdata = self.estimateThermoViaGroupAdditivity(molecule)
                         priority = 2
                     thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
-                
+
                 if len(thermo) > 1:
                     # Sort thermo first by the priority, then by the most stable H298 value
                     thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
-                    for i in range(len(thermo)): 
+                    for i in range(len(thermo)):
                         logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
                     # Save resonance isomers reordered by their thermo
                     species.molecule = [item[2] for item in thermo]
-                thermo0 = thermo[0][3] 
+                thermo0 = thermo[0][3]
             else:
                 # Saturated molecule, does not need HBI method
                 thermo0 = self.getThermoDataFromGroups(species)
-                
+
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
         self.findCp0andCpInf(species, thermo0)
 
         # Return the resulting thermo parameters
         return thermo0
-    
-        
+
+
     def getThermoDataFromLibraries(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
@@ -757,17 +757,17 @@ class ThermoDatabase(object):
         `trainingSet` is used to identify if function is called during training set or not.
         During training set calculation we want to use gas phase thermo to not affect reverse
         rate calculation.
-        
+
         Returns: ThermoData or None
         """
         thermoData = None
-        
+
         #chatelak 11/15/14: modification to introduce liquid phase thermo libraries
         libraryList=deepcopy(self.libraryOrder) #copy the value to not affect initial object
 
         if rmgpy.rmg.main.solvent is not None:
             liqLibraries=[]
-            #Liquid phase simulation part: 
+            #Liquid phase simulation part:
             #This bloc "for": Identify liquid phase libraries and store them in liqLibraries
             for iterLib in libraryList:
                 if self.libraries[iterLib].solvent:
@@ -782,11 +782,11 @@ class ThermoDatabase(object):
                         thermoData[0].comment += 'Liquid thermo library: ' + label
                         return thermoData
             #Remove liqLibraries from libraryList if: called by training set (trainingSet=True) or if no thermo found in liqLibrairies
-            #if no liquid library found this does nothing.   
+            #if no liquid library found this does nothing.
             for libIter in liqLibraries:
                 libraryList.remove(libIter)
 
-        # Condition to execute this part: gas phase simulation or training set or liquid phase simulation with : noliquid libraries found or no matching species found in liquid libraries       
+        # Condition to execute this part: gas phase simulation or training set or liquid phase simulation with : noliquid libraries found or no matching species found in liquid libraries
         # If gas phase simulation libraryList = self.libraryOrder (just like before modifications) and they are all gas phase, already checked by checkLibrairies function in database.load()
         # Check the libraries in order; return the first successful match
         for label in libraryList:
@@ -800,11 +800,11 @@ class ThermoDatabase(object):
                 return thermoData
 
         return None
-    
+
     def findCp0andCpInf(self, species, thermoData):
         """
         Calculate the Cp0 and CpInf values, and add them to the thermoData object.
-        
+
         Modifies thermoData in place and doesn't return anything
         """
         if not isinstance(thermoData,ThermoData):
@@ -814,18 +814,18 @@ class ThermoDatabase(object):
             Cp0 = species.calculateCp0()
             thermoData.Cp0 = (Cp0,"J/(mol*K)")
         if thermoData.CpInf is None:
-            CpInf = species.calculateCpInf()  
+            CpInf = species.calculateCpInf()
             thermoData.CpInf = (CpInf,"J/(mol*K)")
-                
-                
+
+
     def getAllThermoData(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
         :class:`Species` object `species`. The hits from the depository come
         first, then the libraries (in order), and then the group additivity
         estimate. This method is useful for a generic search job.
-        
-        Returns: a list of tuples (ThermoData, source, entry) 
+
+        Returns: a list of tuples (ThermoData, source, entry)
         (Source is a library or depository, or None)
         """
         thermoDataList = []
@@ -834,7 +834,7 @@ class ThermoDatabase(object):
         # Data from libraries comes second
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
-            if data: 
+            if data:
                 assert len(data) == 3, "thermoData should be a tuple at this point"
                 data[0].comment += label
                 thermoDataList.append(data)
@@ -851,7 +851,7 @@ class ThermoDatabase(object):
         Return all possible sets of thermodynamic parameters for a given
         :class:`Species` object `species` from the depository. If no
         depository is loaded, a :class:`DatabaseError` is raised.
-        
+
         Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.
         """
         items = []
@@ -875,7 +875,7 @@ class ThermoDatabase(object):
         for a library with that name. If no match is found in that library,
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
-        
+
         Returns a tuple: (ThermoData, library, entry)  or None.
         """
         for label, entry in library.entries.iteritems():
@@ -892,12 +892,12 @@ class ThermoDatabase(object):
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
-        
+
         The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
         the resonance isomers (items in `species.molecule` list) are sorted in ascending order.
-        
+
         Returns: ThermoData
-        """       
+        """
         thermo = []
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
@@ -907,27 +907,27 @@ class ThermoDatabase(object):
 
         H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
         indices = H298.argsort()
-        
+
         species.molecule = [species.molecule[ind] for ind in indices]
-        
+
         thermoData = thermo[indices[0]]
         self.findCp0andCpInf(species, thermoData)
         return thermoData
-        
+
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
         Estimate the thermodynamics of a radical by saturating it,
         applying the provided stableThermoEstimator method on the saturated species,
         then applying hydrogen bond increment corrections for the radical
         site(s) and correcting for the symmetry.
-        
+
         """
-        
+
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
         added = saturatedStruct.saturate()
         saturatedStruct.props['saturated'] = True
-        
+
         # Get thermo estimate for saturated form of structure
         if stableThermoEstimator == self.getThermoDataFromLibraries:
             # Get data from libraries
@@ -942,22 +942,22 @@ class ThermoDatabase(object):
             # logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None
         assert thermoData_sat is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
-        
+
         # Convert to ThermoData object if necessary in order to add and subtract from enthalpy and entropy values
         if not isinstance(thermoData_sat, ThermoData):
             thermoData_sat = thermoData_sat.toThermoData()
-        
-        
+
+
         if not stableThermoEstimator == self.computeGroupAdditivityThermo:
             #remove the symmetry contribution to the entropy of the saturated molecule
             ##assumes that the thermo data comes from QMTP or from a thermolibrary
             thermoData_sat.S298.value_si += constants.R * math.log(saturatedStruct.getSymmetryNumber())
-        
+
         thermoData = thermoData_sat
-        
+
         # Correct entropy for symmetry number of radical structure
         thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
-        
+
         # For each radical site, get radical correction
         # Only one radical site should be considered at a time; all others
         # should be saturated with hydrogen atoms
@@ -985,8 +985,8 @@ class ThermoDatabase(object):
                 thermoData.H298.value_si -= 52.103 * 4184
 
         return thermoData
-        
-        
+
+
     def estimateThermoViaGroupAdditivity(self, molecule):
         """
         Return the set of thermodynamic parameters corresponding to a given
@@ -1006,7 +1006,7 @@ class ThermoDatabase(object):
         else: # non-radical species
             thermoData = self.computeGroupAdditivityThermo(molecule)
             # Correct entropy for symmetry number
-            if not 'saturated' in molecule.props: 
+            if not 'saturated' in molecule.props:
                 thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
             return thermoData
 
@@ -1017,7 +1017,7 @@ class ThermoDatabase(object):
         :class:`Molecule` object `molecule` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
-        
+
         The entropy is not corrected for the symmetry of the molecule.
         This should be done later by the calling function.
         """
@@ -1063,8 +1063,8 @@ class ThermoDatabase(object):
 
         # Do ring corrections separately because we only want to match
         # each ring one time
-        
-        if cyclic:                
+
+        if cyclic:
             if molecule.getAllPolycyclicVertices():
                 # If the molecule has fused ring atoms, this implies that we are dealing
                 # with a polycyclic ring system, for which separate ring strain corrections may not
@@ -1100,7 +1100,7 @@ class ThermoDatabase(object):
         """
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
-        
+
         for i in range(thermoData1.Tdata.value_si.shape[0]):
             thermoData1.Cpdata.value_si[i] += thermoData2.Cpdata.value_si[i]
         thermoData1.H298.value_si += thermoData2.H298.value_si
@@ -1110,7 +1110,7 @@ class ThermoDatabase(object):
             thermoData1.comment += ' + {0}'.format(thermoData2.comment)
         else:
             thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
-        
+
         return thermoData1
 
     def __addGroupThermoData(self, thermoData, database, molecule, atom):
@@ -1147,7 +1147,7 @@ class ThermoDatabase(object):
 #           result = ' -> ' + node.label + result
 #           node = node.parent
 #        print result[4:]
-        
+
         if thermoData is None:
             return data
         else:

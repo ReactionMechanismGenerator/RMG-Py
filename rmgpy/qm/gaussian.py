@@ -23,15 +23,15 @@ from rmgpy.data.kinetics.transitionstates import DistanceData
 class Gaussian:
     """
     A base class for all QM calculations that use Gaussian.
-    
+
     Classes such as :class:`GaussianMol` will inherit from this class.
     """
-    
+
     inputFileExtension = '.gjf'
     outputFileExtension = '.log'
-    
+
     gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-    
+
     # GAUSS_EXEDIR may be a list like "path1:path2:path3"
     for possibleDir in gaussEnv.split(':'):
         if os.path.exists(os.path.join(possibleDir , 'g09')):
@@ -44,20 +44,20 @@ class Gaussian:
         executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
     usePolar = False
-    
+
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
     failureKeys = [
                    'ERROR TERMINATION',
                    'IMAGINARY FREQUENCIES'
                    ]
-    
+
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
     successKeys = [
                    'Normal termination of Gaussian'
                   ]
- 
+
     def testReady(self):
         if not os.path.exists(self.executablePath):
             raise Exception("Couldn't find Gaussian executable at {0}. Try setting your GAUSS_EXEDIR environment variable.".format(self.executablePath))
@@ -67,9 +67,9 @@ class Gaussian:
         for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
             outputString.append("{0:8s} {1: .6f}  {2: .6f}  {3: .6f}".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
             atomCount += 1
-        
+
         return outputString, atomCount
-    
+
     def run(self):
         self.testReady()
 
@@ -83,10 +83,10 @@ class Gaussian:
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
-        
-        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
+
+        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the
         given (augmented) InChI Key.
-        
+
         The definition of finding a successful simulation is based on these criteria:
         1) finding an output file with the file name equal to the InChI Key
         2) NOT finding any of the keywords that are denote a calculation failure
@@ -100,26 +100,26 @@ class Gaussian:
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
             return False
-    
+
         InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
-        
-        # Initialize dictionary with "False"s 
+
+        # Initialize dictionary with "False"s
         successKeysFound = dict([(key, False) for key in self.successKeys])
-        
+
         with open(self.outputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
+
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("Gaussian output file contains the following error: {0}".format(element) )
                         return False
-                    
+
                 for element in self.successKeys: #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
-               
+
                 if line.startswith("InChI="):
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
@@ -129,7 +129,7 @@ class Gaussian:
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
                         InChIMatch = True
                     else:
-                        logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
+                        logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))
                         if self.uniqueIDlong.startswith(logFileInChI):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
                             InChIMatch = True
@@ -137,11 +137,11 @@ class Gaussian:
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
             return False
-        
+
         if not InChIFound:
             logging.error("No InChI was found in the Gaussian output file {0}".format(self.outputFilePath))
             return False
-        
+
         if not InChIMatch:
             #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
             return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
@@ -157,7 +157,7 @@ class Gaussian:
 
         logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
-        
+
     def parse(self):
         """
         Parses the results of the Gaussian calculation, and returns a CCLibData object.
@@ -168,18 +168,18 @@ class Gaussian:
         radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
         qmData = CCLibData(cclibData, radicalNumber+1)
         return qmData
-    
+
     def writeInputFile(self, output, attempt=None, top_keys=None, numProcShared=None, memory=None, checkPoint=False, bottomKeys=None, inputFilePath=None):
         """
         Takes the output from the createInputFile method and prints the
-        file. Options provided allow the 
+        file. Options provided allow the
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
         if not top_keys:
             top_keys = self.inputFileKeywords(attempt)
         output = [top_keys] + output
-        
+
         if checkPoint:
             chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID)
             output = [chk_file] + output
@@ -191,45 +191,45 @@ class Gaussian:
             output = [numProc] + output
         if bottomKeys:
             output = output + [bottomKeys]
-        
+
         input_string = '\n'.join(output)
-        
+
         if not inputFilePath:
             inputFilePath = self.inputFilePath
-            
+
         with open(inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(input_string)
-            gaussianFile.write('\n')                
-    
+            gaussianFile.write('\n')
+
 class GaussianMol(QMMolecule, Gaussian):
     """
-    A base Class for calculations of molecules using Gaussian. 
-    
+    A base Class for calculations of molecules using Gaussian.
+
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
-    
+
     def inputFileKeywords(self, attempt):
         """
         Return the top keywords for attempt number `attempt`.
-    
+
         NB. `attempt`s begin at 1, not 0.
         """
         assert attempt <= self.maxAttempts
         if attempt > self.scriptAttempts:
             attempt -= self.scriptAttempts
         return self.keywords[attempt-1]
-    
+
     def createInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        molfile = self.getMolFilePathForCalculation(attempt) 
+        molfile = self.getMolFilePathForCalculation(attempt)
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
+
         output = ['', self.geometry.uniqueIDlong, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
-        
+
         atomCount = 0
         with open(molfile) as molinput:
             for line in molinput:
@@ -238,10 +238,10 @@ class GaussianMol(QMMolecule, Gaussian):
                     output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                     atomCount += 1
         assert atomCount == len(self.molecule.atoms)
-    
+
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=40, memory='10GB')
-    
+        self.writeInputFile(output, attempt, numProcShared=20, memory='5GB')
+
     def generateQMData(self):
         """
         Calculate the QM data and return a QMData object, or None if it fails.
@@ -249,7 +249,7 @@ class GaussianMol(QMMolecule, Gaussian):
         for atom in self.molecule.vertices:
             if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
                 return None
-                
+
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
             source = "QM {0} result file found from previous run.".format(self.__class__.__name__)
@@ -270,7 +270,7 @@ class GaussianMol(QMMolecule, Gaussian):
         result = self.parse() # parsed in cclib
         result.source = source
         return result # a CCLibData object
-        
+
     def getParser(self, outputFile):
         """
         Returns the appropriate cclib parser.
@@ -280,7 +280,7 @@ class GaussianMol(QMMolecule, Gaussian):
 class GaussianMolPM3(GaussianMol):
     """
     Gaussian PM3 calculations for molecules
-    
+
     This is a class of its own in case you wish to do anything differently,
     but for now it's only the 'pm3' in the keywords that differs.
     """
@@ -301,7 +301,7 @@ class GaussianMolPM3(GaussianMol):
                "# pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)", # to address problematic C10H14JJ case
                "# pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm", # for very troublesome RRMZRNPRCUANER-UHFFFAOYAQ (InChI=1/C5H7/c1-3-5-4-2/h3H,1-2H3) case...there were troubles with negative frequencies, where I don't think they should have been; step size of numerical frequency was adjusted to give positive result; accuracy of result is questionable; it is possible that not all of these keywords are needed; note that for this and other nearly free rotor cases, I think heat capacity will be overestimated by R/2 (R vs. R/2) (but this is a separate issue)
                "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm", #  for troublesome QDERTVAGQZYPHT-UHFFFAOYAHmult3(InChI=1/C6H14O4Si/c1-4-8-11(7,9-5-2)10-6-3/h4H,5-6H2,1-3H3/mult3); key aspects appear to be tight (rather than verytight) convergence criteria, no calculation of frequencies during optimization, use of numerical frequencies, and probably also the use of opt=small
-               "# pm3 opt=(verytight,gdiis,calcall) IOP(2/16=3)", # used for troublesome C5H7J case; note that before fixing, I got errors like the following: "Incomplete coordinate system.  Try restarting with Geom=Check Guess=Read Opt=(ReadFC,NewRedundant) Incomplete coordinate system. Error termination via Lnk1e in l103.exe"; we could try to restart, but it is probably preferrable to have each keyword combination standalone; another keyword that may be helpful if additional problematic cases are encountered is opt=small; 6/9/09 note: originally, this had # pm3 opt=(verytight,gdiis,calcall) freq IOP(2/16=3)" (with freq keyword), but I discovered that in this case, there are two thermochemistry sections and cclib parses frequencies twice, giving twice the number of desired frequencies and hence produces incorrect thermo; this turned up on C5H6JJ isomer 
+               "# pm3 opt=(verytight,gdiis,calcall) IOP(2/16=3)", # used for troublesome C5H7J case; note that before fixing, I got errors like the following: "Incomplete coordinate system.  Try restarting with Geom=Check Guess=Read Opt=(ReadFC,NewRedundant) Incomplete coordinate system. Error termination via Lnk1e in l103.exe"; we could try to restart, but it is probably preferrable to have each keyword combination standalone; another keyword that may be helpful if additional problematic cases are encountered is opt=small; 6/9/09 note: originally, this had # pm3 opt=(verytight,gdiis,calcall) freq IOP(2/16=3)" (with freq keyword), but I discovered that in this case, there are two thermochemistry sections and cclib parses frequencies twice, giving twice the number of desired frequencies and hence produces incorrect thermo; this turned up on C5H6JJ isomer
                "# pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm", # worked for troublesome ketene case: CCGKOQOJPYTBIH-UHFFFAOYAO (InChI=1/C2H2O/c1-2-3/h1H2) (could just increase number of iterations for similar keyword combination above (#6 at the time of this writing), allowing symmetry, but nosymm seemed to reduce # of iterations; I think one of nosymm or higher number of iterations would allow the similar keyword combination to converge; both are included here for robustness)
                "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm", # added for case of ZWMVZWMBTVHPBS-UHFFFAOYAEmult3 (InChI=1/C4H4O2/c1-3-5-6-4-2/h1-2H2/mult3)
                "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)", # used to address troublesome FILUFGAZMJGNEN-UHFFFAOYAImult3 case (InChI=1/C5H6/c1-3-5-4-2/h3H,1H2,2H3/mult3)
@@ -310,7 +310,7 @@ class GaussianMolPM3(GaussianMol):
 class GaussianMolPM6(GaussianMol):
     """
     Gaussian PM6 calculations for molecules
-    
+
     This is a class of its own in case you wish to do anything differently,
     but for now it's only the 'pm6' in the keywords that differs.
     """
@@ -401,25 +401,25 @@ class GaussianMolM062X(GaussianMol):
 
 class GaussianTS(QMReaction, Gaussian):
     """
-    A base Class for calculations of transition states using Gaussian. 
+    A base Class for calculations of transition states using Gaussian.
 
     Inherits from both :class:`QMReaction` and :class:`Gaussian`.
     """
-    
+
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
     successKeys = [
                    'Normal termination of Gaussian',
                    '******    1 imaginary frequencies (negative Signs) ******',
                   ]
-    
+
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
     failureKeys = [
                    'Error termination',
                    'Error in internal coordinate system.',
                    ]
-    
+
     """
     This needs some work, to determine options that are best used. Commented out the
     methods for now.
@@ -432,17 +432,17 @@ class GaussianTS(QMReaction, Gaussian):
                 "opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
                 "opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
                 ]
-                
+
     otherKeywords = [
                      "irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
                      "opt=(modredundant,MaxCycles=",
                      "opt=(qst2,calcall,noeigentest,MaxCycles=",
                      ]
-                         
+
     def inputFileKeywords(self, attempt, irc=False, modRed=None, qst2=None):
         """
         Return the top keywords for attempt number `attempt`.
-    
+
         NB. `attempt`s begin at 1, not 0.
         """
         if irc:
@@ -455,7 +455,7 @@ class GaussianTS(QMReaction, Gaussian):
             optionsKeys = optionsKeys + "{N}) nosymm".format(N=max(100,qst2*10))
         else:
             optionsKeys = self.keywords[attempt-1]
-        
+
         if self.basisSet=='':
             top_keys = "# {method} {optionsKeys}".format(
             method = self.method,
@@ -467,9 +467,9 @@ class GaussianTS(QMReaction, Gaussian):
             basisSet = self.basisSet,
             optionsKeys = optionsKeys,
             )
-                
+
         return top_keys
-    
+
     def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False, optEst=False):
         """
         Using the :class:`Geometry` object, write the input file
@@ -481,7 +481,7 @@ class GaussianTS(QMReaction, Gaussian):
         """
         output = ['', self.uniqueID, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-        
+
         if fromDoubleEnded:
             xyzFile = self.getFilePath('.xyz')
             assert os.path.exists(xyzFile)
@@ -496,21 +496,21 @@ class GaussianTS(QMReaction, Gaussian):
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(outputFilePath)
         else:
             molfile = self.reactantGeom.getRefinedMolFilePath()
-        
+
             assert os.path.exists(molfile)
             atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
-        
+
         output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-        
+
         assert atomCount == len(self.reactantGeom.molecule.atoms)
-        
+
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=40, memory='10GB', checkPoint=True)
-    
+        self.writeInputFile(output, attempt, numProcShared=40, memory='2GB', checkPoint=True)
+
     def createIRCFile(self):
         """
-        Using the :class:`Geometry` object, write the input file for the 
-        IRC calculation on the transition state. The geometry is taken 
+        Using the :class:`Geometry` object, write the input file for the
+        IRC calculation on the transition state. The geometry is taken
         from the checkpoint file created during the geometry search.
         """
         output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity )]
@@ -523,17 +523,17 @@ class GaussianTS(QMReaction, Gaussian):
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
             output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
             assert atomCount == len(self.reactantGeom.molecule.atoms)
-        
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', checkPoint=True, inputFilePath=self.ircInputFilePath)
-    
+
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='2GB', checkPoint=True, inputFilePath=self.ircInputFilePath)
+
     def createGeomInputFile(self, freezeAtoms, otherGeom=False):
-        
+
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
+
         if otherGeom:
             output = [ '', self.productGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.productGeom.molecule.multiplicity ) ]
             molfile = self.productGeom.getRefinedMolFilePath() # Now get the product geometry
-            
+
             atomCount = 0
             with open(molfile) as molinput:
                 for line in molinput:
@@ -546,7 +546,7 @@ class GaussianTS(QMReaction, Gaussian):
         else:
             output = [ '', self.reactantGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ) ]
             molfile = self.reactantGeom.getRefinedMolFilePath() # Get the reactant geometry
-            
+
             atomCount = 0
             with open(molfile) as molinput:
                 for line in molinput:
@@ -556,111 +556,111 @@ class GaussianTS(QMReaction, Gaussian):
                         atomCount += 1
             inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
             bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-        
+
         assert atomCount == len(self.reactantGeom.molecule.atoms)
-        
+
         output.append('')
         top_keys = self.inputFileKeywords(0, modRed=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottom_keys)
-    
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='2GB', bottomKeys=bottom_keys)
+
     def createQST2InputFile(self):
         # For now we don't do this, until seg faults are fixed on Discovery.
         # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         output = ['', self.reactantGeom.uniqueID, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-        
+
         atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.reactantGeom.getFilePath(self.outputFileExtension))
         output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-        
+
         assert atomCount == len(self.reactantGeom.molecule.atoms)
-        
+
         output.append('')
         output.append(self.productGeom.uniqueIDlong)
         output.append('')
         output.append("{charge}   {mult}".format(charge=0, mult=(self.productGeom.molecule.getRadicalCount() + 1) ))
-        
+
         atomsymbols, atomcoords = self.productGeom.parseLOG(self.productGeom.getFilePath(self.outputFileExtension))
         output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-        
+
         assert atomCount == len(self.reactantGeom.molecule.atoms)
-        
+
         output.append('')
         top_keys = self.inputFileKeywords(0, qst2=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB')
-        
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='2GB')
+
     def optEstimate(self, labels):
         """
         Writes and runs a loose optimization of the transition state estimate with frozen reaction
         center distances.
         """
-        
+
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-        
+
         if not os.path.exists(outputFilePath):
             attempt = 1
-            
+
             output = ['', self.uniqueID, '' ]
             output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-            
+
             # molfile = self.reactantGeom.getRefinedMolFilePath()
             molfile = self.reactantGeom.getCrudeMolFilePath()
-            
+
             assert os.path.exists(molfile)
             atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
-            
+
             output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-            
+
             assert atomCount == len(self.reactantGeom.molecule.atoms)
-            
+
             output.append('')
-            
+
             if self.basisSet:
                 top_keys = '# {0}/{1} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method, self.basisSet)
             else:
                 top_keys = '# {0} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method)
-            
+
             dist_combo_it = itertools.combinations(labels, 2)
             dist_combo_l = list(dist_combo_it)
             bottomKeys = ''
             for combo in dist_combo_l:
                 bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
-            
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
-            
+
+            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=40, memory='2GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+
             outputFilePath = self.runDouble(inputFilePath)
-        
+
         return outputFilePath
-        
+
     def setImages(self):
         """
         Set and return the initial and final ase images for the NEB calculation
         """
         import ase
         from ase import io, Atoms
-        
+
         # Give ase the atom positions for each side of the reaction path
         atomsymbols, atomcoords = self.reactantGeometry.parseLOG(self.outputFilePath)
-        
+
         newImage = Atoms([getElement(i).number for i in atomsymbols])
         newImage.set_positions(atomcoords)
         initial = newImage.copy()
-        
+
         atomsymbols, atomcoords = self.productGeom.parseLOG(self.outputFilePath)
-        
+
         newImage = Atoms([getElement(i).number for i in atomsymbols])
         newImage.set_positions(atomcoords)
         final = newImage.copy()
-        
+
         return initial, final
-    
+
     def setCalculator(self, images):
         """
         Set up the Gaussian calculator for the Atomic Simulation Environment
         """
         import ase
         from ase.calculators.gaussian import Gaussian
-        
+
         label=os.path.join(os.path.abspath(self.settings.fileStore), 'g09')
         for image in images[1:len(images)-1]:
             image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< ' + label + '.com' + ' > ' + label + '.log', label=label))
@@ -693,32 +693,32 @@ class GaussianTS(QMReaction, Gaussian):
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        
+
         logFilePath = os.path.splitext(inputFilePath)[0]+self.outputFileExtension
-        
+
         return logFilePath
-        
+
     def runQST2(self):
         self.testReady()
-        
+
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        
-        logFilePath = self.outputFilePath
-        
-        return self.verifyQST2OutputFile(), logFilePath
-    
 
-        
+        logFilePath = self.outputFilePath
+
+        return self.verifyQST2OutputFile(), logFilePath
+
+
+
     def runIRC(self):
         self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.ircInputFilePath, self.ircOutputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        
+
         return self.verifyIRCOutputFile()
-    
+
     def prepDoubleEnded(self, labels, notes):
         """
         Optimize the reactant and product geometries while freeezing the distances between
@@ -731,7 +731,7 @@ class GaussianTS(QMReaction, Gaussian):
             logFilePath = self.runDouble(self.inputFilePath)
             rightReactant = self.checkGeometry(logFilePath, self.reactantGeom.molecule)
             shutil.copy(logFilePath, logFilePath+'.reactant.log')
-        
+
         if os.path.exists(self.productGeom.getFilePath('.log.product.log')):
             rightProduct = self.checkGeometry(self.productGeom.getFilePath('.log.product.log'), self.productGeom.molecule)
         else:
@@ -739,7 +739,7 @@ class GaussianTS(QMReaction, Gaussian):
             logFilePath = self.runDouble(self.productGeom.getFilePath(self.inputFileExtension))
             rightProduct = self.checkGeometry(logFilePath, self.productGeom.molecule)
             shutil.copy(logFilePath, logFilePath+'.product.log')
-        
+
         if not (rightReactant and rightProduct):
             """
             Despite freezing the reacting atom distances, the reactant and product can still
@@ -748,197 +748,197 @@ class GaussianTS(QMReaction, Gaussian):
             """
             if not rightReactant:
                 notes = notes + 'Reactant geometry failure\n'
-            
+
             if not rightProduct:
                 notes = notes + 'Product geometry failure\n'
-            
+
             return False, notes
-        
+
         return True, notes
-    
+
     def conductDoubleEnded(self, notes, NEB=False, labels=None):
         check, notes = self.prepDoubleEnded(labels, notes)
-        
+
         if NEB:
             self.runNEB()
         else:
             # Gaussian QST2 Calculation
-                
+
             self.createQST2InputFile()
             qst2, logFilePath = self.runQST2()
             shutil.copy(logFilePath, logFilePath+'.QST2.log')
-            
+
             if not qst2:
                 notes = notes + 'QST3 needed, see {0}\n'.format(self.settings.fileStore)
                 return False, notes
-    
+
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
-        
-        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
+
+        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the
         given file name.
-        
+
         The definition of finding a successful simulation is based on these criteria:
         1) finding an output file with the file name equal to the the reaction unique ID
         2) NOT finding any of the keywords that are denote a calculation failure
         3) finding all the keywords that denote a calculation success.
-        
-        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
+
+        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation
         will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
         This will initiate a subsequent calculation in cartesian coordinates.
         """
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
             return False
-        
-        # Initialize dictionary with "False"s 
+
+        # Initialize dictionary with "False"s
         successKeysFound = dict([(key, False) for key in self.successKeys])
         failureKeysFound = dict([(key, False) for key in self.failureKeys])
-        
+
         with open(self.outputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
+
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("Gaussian output file contains the following error: {0}".format(element) )
                         failureKeysFound[element] = True
-                    
+
                 for element in self.successKeys: #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
-        
+
         if any(failureKeysFound.values()):
             if failureKeysFound['Error in internal coordinate system.']:
                 return False, True
             else:
                 return False, False
-        
+
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
             return False, False
         else:
             return True, False
-    
+
     def verifyOptOutputFile(self):
         """
         Check's that an output file exists and was successful.
-        
-        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
+
+        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the
         given file name.
-        
+
         The definition of finding a successful simulation is based on these criteria:
         1) finding an output file with the file name equal to the the reaction unique ID
         2) NOT finding any of the keywords that are denote a calculation failure
         3) verifying the file terminated normally.
-        
-        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
+
+        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation
         will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
         This will initiate a subsequent calculation in cartesian coordinates.
         """
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-        
+
         if not os.path.exists(outputFilePath):
             logging.info("Output file {0} does not exist.".format(outputFilePath))
             return False
-        
+
         failureKeysFound = dict([(key, False) for key in self.failureKeys])
         successKeysFound = dict([('Normal termination of Gaussian', False)])
-        
+
         with open(outputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
+
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("Gaussian output file contains the following error: {0}".format(element) )
                         failureKeysFound[element] = True
-                    
+
                 for element in successKeysFound.iterkeys(): #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
-        
+
         if any(failureKeysFound.values()):
             return False
-        
+
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
             return False
-        
+
         return True
-            
+
     def verifyQST2OutputFile(self):
         """
         Check's that a qst2 output file exists and was successful.
-        
-        Returns a boolean flag that states whether a QST2 GAUSSIAN simulation that hasn't failed already exists for the molecule with the 
+
+        Returns a boolean flag that states whether a QST2 GAUSSIAN simulation that hasn't failed already exists for the molecule with the
         given file name.
-        
+
         This checks that the calculation was attempted, only checking that a QST3 calculation is not required.
-        
+
         If QST3 is required, False will be returned and the double-ended procedure has failed for the reaction.
         """
-        
+
         failureKeys = [
                        '***** Convergence failure in GTrans *****',
                        'Try using 3 structures as input for',
                        ]
-        
+
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
             return False
-        
-        # Initialize dictionary with "False"s 
+
+        # Initialize dictionary with "False"s
         failureKeysFound = dict([(key, False) for key in failureKeys])
-        
+
         with open(self.outputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
+
                 for element in failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("Gaussian output file contains the following error: {0}".format(element) )
                         failureKeysFound[element] = True
-        
+
         if any(failureKeysFound.values()):
             return False
         else:
             return True
-    
+
     def verifyIRCOutputFile(self):
         """
         Check's that the resulting geometries of the path analysis match the reaction.
         """
-        
+
         """
         Compares IRC geometries to input geometries.
         """
         if not os.path.exists(self.ircOutputFilePath):
             logging.info("Output file {0} does not exist.".format(self.ircOutputFilePath))
             return False
-        
-        # Initialize dictionary with "False"s 
+
+        # Initialize dictionary with "False"s
         successKeysFound = dict([(key, False) for key in self.successKeys])
-        
+
         pth1 = list()
         steps = list()
         with open(self.ircOutputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
+
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("Gaussian IRC output file contains the following error: {0}".format(element) )
                         return False
-                    
+
                 for element in self.successKeys: #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
-                
+
                 if line.startswith('Point Number:'):
                     if int(line.split()[2]) > 0:
                         if int(line.split()[-1]) == 1:
@@ -949,7 +949,7 @@ class GaussianTS(QMReaction, Gaussian):
                 elif line.startswith('# OF STEPS ='):
                     numStp = int(line.split()[-1])
                     steps.append(numStp)
-        
+
         # Check that ALL 'success' keywords were found in the file.
         if not successKeysFound['Normal termination of Gaussian']:
             logging.error('Not all of the required keywords for success were found in the IRC output file!')
@@ -959,14 +959,14 @@ class GaussianTS(QMReaction, Gaussian):
             logging.error('No steps taken in the IRC calculation!')
             return False
         else:
-            pth1End = sum(steps[:pth1[-1]])		
+            pth1End = sum(steps[:pth1[-1]])
             # Compare the reactants and products
             ircParse = cclib.parser.Gaussian(self.ircOutputFilePath)
             ircParse.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
             ircParse = ircParse.parse()
-            molfile = self.getFilePath('.crude.mol')
+            molfile = self.reactantGeom.getCrudeMolFilePath()
             atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-            
+
             atomCount = 0
             atomnosPrep = []
             with open(molfile) as molinput:
@@ -975,7 +975,7 @@ class GaussianTS(QMReaction, Gaussian):
                     if match:
                         atomnosPrep.append(match.group(2))
                         atomCount += 1
-            
+
             atomnos = []
             for atom in atomnosPrep:
                 if atom == 'H':
@@ -984,7 +984,7 @@ class GaussianTS(QMReaction, Gaussian):
                     atomnos.append(6)
                 elif atom == 'O':
                     atomnos.append(8)
-            
+
             atomcoords = ircParse.atomcoords
             atomnos = numpy.array(atomnos)
             # Convert the IRC geometries into RMG molecules
@@ -994,12 +994,12 @@ class GaussianTS(QMReaction, Gaussian):
             mol1.fromXYZ(atomnos, atomcoords[pth1End])
             mol2 = Molecule()
             mol2.fromXYZ(atomnos, atomcoords[-1])
-            
+
             testReaction = Reaction(
                                     reactants = mol1.split(),
-                                    products = mol2.split(),                     
+                                    products = mol2.split(),
                                     )
-            
+
             if isinstance(self.reaction.reactants[0], Molecule):
                 targetReaction = Reaction(
                                         reactants = [reactant.toSingleBonds() for reactant in self.reaction.reactants],
@@ -1010,12 +1010,12 @@ class GaussianTS(QMReaction, Gaussian):
                                         reactants = [reactant.molecule[0].toSingleBonds() for reactant in self.reaction.reactants],
                                         products = [product.molecule[0].toSingleBonds() for product in self.reaction.products],
                                         )
-                                                                      
+
             if targetReaction.isIsomorphic(testReaction):
                 return True
             else:
                 return False
-    
+
     def testTSGeometry(self, reactant):
         """
         Generates a dictionary of distances between all labeled atoms pairs. This may help identify
@@ -1027,19 +1027,19 @@ class GaussianTS(QMReaction, Gaussian):
         labeledAtoms = labeledList.values()
         labels = labeledList.keys()
         atomSymbols, atomCoords = self.reactantGeom.parseLOG(self.outputFilePath)
-        
+
         distances = {}
         dist_combo_it = itertools.combinations(labels, 2)
         dist_combo_l = list(dist_combo_it)
         for combo in dist_combo_l[:len(labels)]:
             atom1 = reactant.getLabeledAtom(combo[0])
             atom2 = reactant.getLabeledAtom(combo[1])
-            
+
             coords1 = atomCoords[atom1.sortingLabel]
             coords2 = atomCoords[atom2.sortingLabel]
-            
+
             distances[combo] = self.reactantGeom.getDistance(coords1, coords2)
-    
+
     def checkGeometry(self, outputFilePath, molecule):
         """
         Takes an output file, and extracts the geometry from it to ensure it has the same structure as the molecule provided.
@@ -1047,15 +1047,15 @@ class GaussianTS(QMReaction, Gaussian):
         parser = cclib.parser.Gaussian(outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
-        
+
         mol = Molecule()
         mol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
-                                                        
+
         if mol.isIsomorphic(molecule.toSingleBonds()):
             return True
         else:
             return False
-    
+
     def parse(self):
         """
         Parses the results of the Gaussian calculation, and returns a CCLibData object.
@@ -1069,39 +1069,39 @@ class GaussianTS(QMReaction, Gaussian):
                 radicalNumber += molecule.getRadicalCount()
         elif isinstance(self.reaction.reactants[0], Species):
             for molecule in self.reaction.reactants:
-                radicalNumber += molecule.molecule[0].getRadicalCount() 
-        
+                radicalNumber += molecule.molecule[0].getRadicalCount()
+
         self.qmData = CCLibData(cclibData, radicalNumber+1)
         return self.qmData
-    
+
     def parseTS(self, labels):
-        
+
         def getDistance(coordinates1, coordinates2):
             """
             Return the square of the distance (in Angstrom) between the two atoms.
             """
             diff = (coordinates1.coords - coordinates2.coords)
             return math.sqrt(sum(diff * diff))
-        
+
         self.parse()
         atomCoords = self.qmData.atomCoords.getValue()
         atomNums = self.qmData.atomicNumbers
-        
+
         atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
         atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
         atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-        
+
         at12 = getDistance(atom1, atom2)
         at23 = getDistance(atom2, atom3)
         at13 = getDistance(atom1, atom3)
-        
+
         atomDist = [at12, at23, at13]
-        
+
         return atomDist
-    
-    def writeRxnOutputFile(self, labels, doubleEnd=False):                
+
+    def writeRxnOutputFile(self, labels, doubleEnd=False):
         atomDist = self.parseTS(labels)
-        
+
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
         user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
         if doubleEnd:
@@ -1114,11 +1114,11 @@ class GaussianTS(QMReaction, Gaussian):
             data = DistanceData(distances=distances, method='{method}/{basis}'.format(method=self.method, basis=self.basisSet)),
             shortDesc = "M06-2X/6-311+G(2df,2p) calculation via group additive TS generator.",
         )
-        
+
         outputDataFile = os.path.join(self.settings.fileStore, self.uniqueID + '.data')
         with open(outputDataFile, 'w') as parseFile:
             saveEntry(parseFile, entry)
-        
+
 class GaussianTSM062X(GaussianTS):
     """
     M06-2X requires a minimally augmented basis set for good prediction of interatomic distances.
@@ -1126,10 +1126,10 @@ class GaussianTSM062X(GaussianTS):
     """
     method = 'm062x'
     basisSet = '6-311+g(2df,2p)'# It's suppoed to be "6-311+g(3d2f,2df,2p)" to include 3rd row elements, but I get an error when I use that.
-    
+
     # Before using the '6-311+G(2df,2p)', gen was being used and the basis set was explicitly
     # written in the input file
-    
+
     # mg3s = {
     #         'H'  : """H  0 \nS  3 1.00\n  3.386500000000E+01 2.549380000000E-02\n  5.094790000000E+00 1.903730000000E-01\n  1.158790000000E+00 8.521610000000E-01\nS  1 1.00\n  3.258400000000E-01 1.000000000000E+00\nS  1 1.00\n  1.027410000000E-01 1.000000000000E+00\nP  1 1.00\n  1.500000000000E+00 1.000000000000E+00\nP  1 1.00\n  3.750000000000E-01 1.000000000000E+00\n****\n""",
     #         'He' : """He 0 \nS  3 1.00\n  9.812430000000E+01 2.874520000000E-02\n  1.476890000000E+01 2.080610000000E-01\n  3.318830000000E+00 8.376350000000E-01\nS  1 1.00\n  8.740470000000E-01 1.000000000000E+00\nS  1 1.00\n  2.445640000000E-01 1.000000000000E+00\nS  1 1.00\n  8.600000000000E-02 1.000000000000E+00\nP  1 1.00\n  1.500000000000E+00 1.000000000000E+00\nP  1 1.00\n  3.750000000000E-01 1.000000000000E+00\n****\n""",
@@ -1150,9 +1150,9 @@ class GaussianTSM062X(GaussianTS):
     #         'Cl' : """Cl 0 \nS  6 1.00\n  1.058190000000E+05 7.423627000000E-04\n  1.587200000000E+04 5.747318000000E-03\n  3.619650000000E+03 2.964876000000E-02\n  1.030800000000E+03 1.178998000000E-01\n  3.399000000000E+02 3.648532000000E-01\n  1.245300000000E+02 5.816968000000E-01\nS  3 1.00\n  1.245300000000E+02 1.370443000000E-01\n  4.951000000000E+01 6.231380000000E-01\n  2.080000000000E+01 2.903279000000E-01\nS  1 1.00\n  6.460000000000E+00 1.000000000000E+00\nS  1 1.00\n  2.520000000000E+00 1.000000000000E+00\nS  1 1.00\n  5.300000000000E-01 1.000000000000E+00\nS  1 1.00\n  1.900000000000E-01 1.000000000000E+00\nS  1 1.00\n  4.830000000000E-02 1.000000000000E+00\nP  4 1.00\n  5.897800000000E+02 7.873332000000E-03\n  1.398500000000E+02 6.155460000000E-02\n  4.479000000000E+01 2.742514000000E-01\n  1.661000000000E+01 7.498994000000E-01\nP  2 1.00\n  6.590000000000E+00 6.147640000000E-01\n  2.710000000000E+00 4.413416000000E-01\nP  1 1.00\n  9.500000000000E-01 1.000000000000E+00\nP  1 1.00\n  3.500000000000E-01 1.000000000000E+00\nP  1 1.00\n  1.200000000000E-01 1.000000000000E+00\nP  1 1.00\n  4.830000000000E-02 1.000000000000E+00\nD  1 1.00\n  3.000000000000E+00 1.000000000000E+00\nD  1 1.00\n  7.500000000000E-01 1.000000000000E+00\nD  1 1.00\n  1.875000000000E-01 1.000000000000E+00\nF  1 1.00\n  1.400000000000E+00 1.000000000000E+00\nF  1 1.00\n  3.500000000000E-01 1.000000000000E+00\n****\n""",
     #         'Ar' : """Ar 0 \nS  6 1.00\n  1.180220000000E+05 7.461902000000E-04\n  1.768350000000E+04 5.786362000000E-03\n  4.027770000000E+03 2.990098000000E-02\n  1.145400000000E+03 1.191287000000E-01\n  3.771600000000E+02 3.687839000000E-01\n  1.381600000000E+02 5.767726000000E-01\nS  3 1.00\n  1.381600000000E+02 1.435931000000E-01\n  5.498000000000E+01 6.231142000000E-01\n  2.317000000000E+01 2.840810000000E-01\nS  1 1.00\n  7.370000000000E+00 1.000000000000E+00\nS  1 1.00\n  2.920000000000E+00 1.000000000000E+00\nS  1 1.00\n  6.500000000000E-01 1.000000000000E+00\nS  1 1.00\n  2.300000000000E-01 1.000000000000E+00\nS  1 1.00\n  6.000000000000E-02 1.000000000000E+00\nP  4 1.00\n  6.630600000000E+02 7.820021000000E-03\n  1.570900000000E+02 6.148333000000E-02\n  5.023000000000E+01 2.754731000000E-01\n  1.863000000000E+01 7.488402000000E-01\nP  2 1.00\n  7.440000000000E+00 -6.282210000000E-01\n  3.090000000000E+00 -4.260202000000E-01\nP  1 1.00\n  1.100000000000E+00 1.000000000000E+00\nP  1 1.00\n  4.100000000000E-01 1.000000000000E+00\nP  1 1.00\n  1.400000000000E-01 1.000000000000E+00\nP  1 1.00\n  6.000000000000E-02 1.000000000000E+00\nD  1 1.00\n  3.400000000000E+00 1.000000000000E+00\nD  1 1.00\n  8.500000000000E-01 1.000000000000E+00\nD  1 1.00\n  2.125000000000E-01 1.000000000000E+00\nF  1 1.00\n  1.700000000000E+00 1.000000000000E+00\nF  1 1.00\n  4.250000000000E-01 1.000000000000E+00\n****""",
     #         }
-    
+
     # Below was used to find the atom types and write the basis set functions
-    
+
     # atomTypes = []
     # for atom in self.geometry.molecule.atoms:
     #     if not atom.element.symbol in atomTypes:
@@ -1163,11 +1163,11 @@ class GaussianTSM062X(GaussianTS):
         reactant species as the transition state. This method will ensure this by creating
         and returning the corresponding QMMolecule from the child class GaussianMolM062X.
         """
-        
+
         qmMolecule = GaussianMolM062X(molecule, self.settings)
         return qmMolecule
-    
-    
+
+
 class GaussianTSB3LYP(GaussianTS):
     """
     B3LYP, with the 6-31+G(d,p) basis set, provides good transition state geometries
@@ -1175,15 +1175,15 @@ class GaussianTSB3LYP(GaussianTS):
     """
     method = 'b3lyp'
     basisSet = '6-31+g(d,p)'
-    
-    
+
+
     def getQMMolecule(self, molecule):
         """
         The TST calculation must use the same electronic structure and basis set for the
         reactant species as the transition state. This method will ensure this by creating
         and returning the corresponding QMMolecule from the child class GaussianMolB3LYP.
         """
-        
+
         qmMolecule = GaussianMolB3LYP(molecule, self.settings)
         return qmMolecule
 
@@ -1201,15 +1201,14 @@ class GaussianTSPM6(GaussianTS):
 
         qmMolecule = GaussianMolPM6(molecule, self.settings)
         return qmMolecule
-    
+
     def setCalculator(self, images):
         """
         Set up the Gaussian calculator for the Atomic Simulation Environment
         """
         import ase
         from ase.calculators.gaussian import Gaussian
-        
+
         for image in images[1:len(images)+1]:
             image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< g09.com > g09.log'))
             image.get_calculator().set(multiplicity=self.reactantGeom.molecule.getRadicalCount() + 1, method=self.method, basis='')
-            
