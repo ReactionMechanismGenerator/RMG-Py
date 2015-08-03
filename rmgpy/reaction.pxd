@@ -82,8 +82,6 @@ cdef class Reaction:
 
     cpdef double getRateCoefficient(self, double T, double P=?)
 
-    cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
-
     cpdef fixBarrierHeight(self, bint forcePositive=?)
 
     cpdef generateReverseRateCoefficient(self)
@@ -110,7 +108,5 @@ cdef class ReactionModel:
     cdef public list reactions
 
     cpdef generateStoichiometryMatrix(self)
-
-    cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
 
 ################################################################################

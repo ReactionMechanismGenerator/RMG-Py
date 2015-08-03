@@ -1222,18 +1222,6 @@ class CoreEdgeReactionModel:
                 if nu != 0: stoichiometry[i,j] = nu
         return stoichiometry.tocsr()
 
-    def getReactionRates(self, T, P, Ci):
-        """
-        Return an array of reaction rates for each reaction in the model core
-        and edge. The id of the reaction is the index into the vector.
-        """
-        speciesList, reactionList = self.getLists()
-        rxnRate = numpy.zeros(self.reactionCounter, float)
-        for rxn in reactionList:
-            j = rxn.index - 1
-            rxnRate[j] = rxn.getRate(T, P, Ci)
-        return rxnRate
-
     def addSeedMechanismToCore(self, seedMechanism, react=False):
         """
         Add all species and reactions from `seedMechanism`, a 

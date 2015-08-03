@@ -557,54 +557,6 @@ class Reaction:
             return k
         else:
             return  self.kinetics.getRateCoefficient(T, P)
-    
-    def getRate(self, T, P, conc, totalConc=-1.0):
-        """
-        Return the net rate of reaction at temperature `T` and pressure `P`. The
-        parameter `conc` is a map with species as keys and concentrations as
-        values. A reactant not found in the `conc` map is treated as having zero
-        concentration.
-
-        If passed a `totalConc`, it won't bother recalculating it.
-        """
-
-        cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
-        cython.declare(forward=cython.double, reverse=cython.double, speciesConc=cython.double)
-
-        # Calculate total concentration
-        if totalConc == -1.0:
-            totalConc=sum( conc.values() )
-
-        # Evaluate rate constant
-        if isinstance(self.kinetics, (ThirdBody, Lindemann, Troe)):
-            P = self.kinetics.getEffectivePressure(P, conc)
-        rateConstant = self.getRateCoefficient(T, P)
-
-        # Evaluate equilibrium constant
-        equilibriumConstant = self.getEquilibriumConstant(T)
-
-        # Evaluate forward concentration product
-        forward = 1.0
-        for reactant in self.reactants:
-            if reactant in conc:
-                speciesConc = conc[reactant]
-                forward = forward * speciesConc
-            else:
-                forward = 0.0
-                break
-
-        # Evaluate reverse concentration product
-        reverse = 1.0
-        for product in self.products:
-            if product in conc:
-                speciesConc = conc[product]
-                reverse = reverse * speciesConc
-            else:
-                reverse = 0.0
-                break
-
-        # Return rate
-        return rateConstant * (forward - reverse / equilibriumConstant)
 
     def fixDiffusionLimitedA(self, T):
         """
@@ -1063,18 +1015,6 @@ class ReactionModel:
         stoichiometry.tocsr()
 
         return stoichiometry
-
-    def getReactionRates(self, T, P, Ci):
-        """
-        Return an array of reaction rates for each reaction in the model core
-        and edge. The id of the reaction is the index into the vector.
-        """
-        cython.declare(rxnRates=numpy.ndarray, rxn=Reaction, j=cython.int)
-        rxnRates = numpy.zeros(len(self.reactions), numpy.float64)
-        for rxn in self.reactions:
-            j = rxn.index - 1
-            rxnRates[j] = rxn.getRate(T, P, Ci)
-        return rxnRates
 
     def merge(self, other):
         """
