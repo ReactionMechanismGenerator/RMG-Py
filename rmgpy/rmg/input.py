@@ -143,6 +143,7 @@ def simpleReactor(temperature,
     
     sensitiveSpecies = []
     if sensitivity:
+        if isinstance(sensitivity, str): sensitivity = [sensitivity]
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
     system = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
@@ -478,9 +479,12 @@ def saveInputFile(path, rmg):
             f.write('    },\n')
         
         # Sensitivity analysis
-        if system.sensitivity:
-            f.write('    sensitivity = {0},\n'.format(system.sensitivity))
-            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))      
+        if system.sensitiveSpecies:
+            sensitivity = []
+            for item in system.sensitiveSpecies:
+                sensitivity.append(item.label)
+            f.write('    sensitivity = {0},\n'.format(sensitivity))
+            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))
         
         f.write(')\n\n')
     
