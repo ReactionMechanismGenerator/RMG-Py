@@ -522,6 +522,7 @@ def saveInputFile(path, rmg):
         f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))
         f.write(')\n\n')
     
+    # Quantum Mechanics
     if rmg.quantumMechanics:
         f.write('quantumMechanics(\n')
         f.write('    software = {0!r},\n'.format(rmg.quantumMechanics.settings.software))
@@ -538,7 +539,14 @@ def saveInputFile(path, rmg):
         f.write('    onlyCyclics = {0},\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
         f.write('    maxRadicalNumber = {0},\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
         f.write(')\n\n')
-        
+    
+    # Species Constraints
+    if rmg.speciesConstraints:
+        f.write('generatedSpeciesConstraints(\n')
+        for constraint, value in sorted(rmg.speciesConstraints.items(), key=lambda constraint: constraint[0]):
+            if value is not None: f.write('    {0} = {1},\n'.format(constraint,value))
+        f.write(')\n\n')
+    
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
@@ -552,13 +560,5 @@ def saveInputFile(path, rmg):
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write(')\n\n')
-    
-    # Species Constraints
-    if rmg.speciesConstraints:
-        f.write('generatedSpeciesConstraints(\n')
-        for constraint, value in sorted(rmg.speciesConstraints.items(), key=lambda constraint: constraint[0]):
-            if value is not None: f.write('    {0} = {1},\n'.format(constraint,value))
-        f.write(')\n\n')
-    
     
     f.close()
