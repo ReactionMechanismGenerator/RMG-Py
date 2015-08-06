@@ -354,6 +354,29 @@ cdef class PDepKineticsModel(KineticsModel):
         Peff *= P / total_frac
         
         return Peff
+    
+    cpdef numpy.ndarray getEffectiveColliderEfficiencies(self, list species):
+        """
+        Return the effective collider efficiencies for all species in the form of
+        a numpy array.  This function helps assist rapid effective pressure calculations in the solver.
+        """
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] all_efficiencies        
+        cdef double eff
+        cdef int i
+        
+        all_efficiencies = numpy.ones(len(species), numpy.float64)
+        for spec, eff in self.efficiencies.items():
+            try:
+                i = species.index(spec)
+            except ValueError:
+                # Species not in list of fractions, so assume fraction of zero
+                # and skip to the next species
+                continue 
+            
+            # override default unity value to the actual efficiency of the collider
+            all_efficiencies[i] = eff 
+            
+        return all_efficiencies
         
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
         """
