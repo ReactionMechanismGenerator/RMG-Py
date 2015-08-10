@@ -326,8 +326,8 @@ cdef class PDepKineticsModel(KineticsModel):
     cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1:
         """
         Return the effective pressure in Pa for a system at a given pressure
-        `P` in Pa composed of the given list of `species` with the given
-        `fractions`.
+        `P` in Pa composed of the given list of `species` (Species or Molecule objects) with the given
+        `fractions`.  
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=1] _fractions
         cdef double Peff, frac, eff, total_frac, eff_frac
@@ -341,17 +341,17 @@ cdef class PDepKineticsModel(KineticsModel):
         # iterating over the species with efficiencies is faster
         Peff = 0.0
         eff_frac = 0.0
-        for spec, eff in self.efficiencies.items():
-            try:
-                i = species.index(spec)
-            except ValueError:
-                # Species not in list of fractions, so assume fraction of zero
-                # and skip to the next species
-                continue
-            
-            frac = _fractions[i]
-            Peff += eff * frac
-            eff_frac += frac
+        for mol, eff in self.efficiencies.iteritems():
+            for spec in species:
+                if spec.isIsomorphic(mol):
+                    i = species.index(spec)
+                    frac = _fractions[i]
+                    Peff += eff * frac
+                    eff_frac += frac
+                    break
+
+            # If species not in list of fractions, assume fraction of zero
+            # and skip to the next species
         
         # For the species with no efficiency data, assume an efficiency of 
         # unity and add to the calculation of the effective pressure
@@ -374,17 +374,14 @@ cdef class PDepKineticsModel(KineticsModel):
         cdef int i
         
         all_efficiencies = numpy.ones(len(species), numpy.float64)
-        for spec, eff in self.efficiencies.items():
-            try:
-                i = species.index(spec)
-            except ValueError:
-                # Species not in list of fractions, so assume fraction of zero
-                # and skip to the next species
-                continue 
-            
-            # override default unity value to the actual efficiency of the collider
-            all_efficiencies[i] = eff 
-            
+        for mol, eff in self.efficiencies.iteritems():
+            for spec in species:
+                if spec.isIsomorphic(mol):
+                    i = species.index(spec)
+                    # override default unity value to the actual efficiency of the collider
+                    all_efficiencies[i] = eff 
+                    break
+                
         return all_efficiencies
         
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
