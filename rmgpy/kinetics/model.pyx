@@ -33,9 +33,9 @@ models.
 """
 
 import numpy
-import quantities as pq
 
 import rmgpy.quantity as quantity
+from rmgpy.molecule import Molecule
 
 from libc.math cimport log10
 
@@ -273,7 +273,7 @@ cdef class PDepKineticsModel(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
-    `efficiencies`  A dict associating chemical species with associated efficiencies
+    `efficiencies`  A dict associating chemical species with associated efficiencies.  The keys of the dictionary are stored Molecule objects. They can be initialized as either Molecule objects or SMILES strings
     `highPlimit`    The high-pressure limit kinetics (optional)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
@@ -282,7 +282,16 @@ cdef class PDepKineticsModel(KineticsModel):
     
     def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, comment=''):
         KineticsModel.__init__(self, Tmin, Tmax, Pmin, Pmax, comment)
-        self.efficiencies = efficiencies or {}
+        self.efficiencies = {}
+        if efficiencies: 
+            for mol, eff in efficiencies.iteritems():
+                if isinstance(mol, str):
+                    # Assume it is a SMILES string
+                    self.efficiencies[Molecule().fromSMILES(mol)] = eff
+                elif isinstance(mol, Molecule):
+                    self.efficiencies[mol] = eff
+                else: 
+                    raise ValueError("Efficiencies must be declared as a dictionary of chemical species with associated efficiencies. The keys of the dictionary must be Molecule objects or SMILES strings.")
         self.highPlimit = highPlimit
         
     def __repr__(self):
