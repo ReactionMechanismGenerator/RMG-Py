@@ -729,6 +729,9 @@ class ThermoDatabase(object):
             logging.info("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
+
+        elif species.containsSurfaceSite():
+            self.getThermoDataForSurfaceSpecies(species, quantumMechanics=quantumMechanics)
             
         elif quantumMechanics:
             original_molecule = species.molecule[0]
@@ -833,6 +836,13 @@ class ThermoDatabase(object):
         # Return the resulting thermo parameters
         return thermo0
     
+    def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
+        assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
+        dummySpecies = Species()
+        for molecule in species.molecule:
+            raise NotImplementedError("To be continued...")
+        self.getThermoData(species, quantumMechanics=None)
+
         
     def getThermoDataFromLibraries(self, species, trainingSet=None):
         """
@@ -1262,7 +1272,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in database.')
+            raise KeyError('Node not found in thermo database for atom {0} in molecule {1}.'.format(atom, molecule))
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an

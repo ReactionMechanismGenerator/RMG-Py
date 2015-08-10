@@ -804,6 +804,36 @@ class Molecule(Graph):
         for atom in self.vertices:
             numRadicals += atom.radicalElectrons
         return numRadicals
+    
+    def getGasCopiesOfSurfaceMolecule(self):
+        """
+        Create an iterable of gas-phase (desorbed) copies of a surface-bound molecule.
+        
+        This will likely be a radical, because of the dangling bond which used
+        to be to the surface. It's a list because we don't know which electronic 
+        state to return, e.g. two radicals or a lone pair when a "double-bond" 
+        desorbs, so we return both in an iterable.
+        """
+        mol = cython.declare(Molecule)
+        mol = self.copy(deep=True)
+        toDelete = []
+        for atom in mol.atoms:
+            if atom.element.symbol=='X':
+                toDelete.append(atom)
+        for atom in toDelete:
+            for bonded, bond in atom.bonds.iteritems():
+                order = bond.order
+                if order == 'S':
+                    bonded.incrementRadical()
+                elif order == 'D':
+                    bonded.incrementRadical()
+                    bonded.incrementRadical()
+                elif order == 'T':
+                    bonded.incrementRadical()
+                    bonded.incrementLonePairs()
+            mol.removeAtom(atom)
+                
+            
 
     def copy(self, deep=False):
         """
