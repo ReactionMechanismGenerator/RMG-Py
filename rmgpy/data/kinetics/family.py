@@ -984,7 +984,7 @@ class KineticsFamily(Database):
                     identicalCenterCounter += 1
                     atom.label = '*' + str(identicalCenterCounter)
             if identicalCenterCounter != 2:
-                raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
+                raise KineticsError('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
 
         # Generate the product structure by applying the recipe
         if forward:
@@ -1256,7 +1256,9 @@ class KineticsFamily(Database):
                 logging.error(reactant)
             for product in reaction.products:
                 logging.error(product)
-            raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
+            raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
+                                 'in reaction family {1}. Expected 1 reaction '
+                                 'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
         
     def __generateReactions(self, reactants, products=None, forward=True, failsSpeciesConstraints=None):
