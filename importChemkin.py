@@ -39,6 +39,7 @@ from rmgpy.reaction import ReactionModel
 from rmgpy.data.thermo import Entry, saveEntry
 from rmgpy.data.base import Entry as kinEntry
 from rmgpy.data.kinetics.common import saveEntry as kinSaveEntry
+from rmgpy.data.kinetics.common import KineticsError
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
 
@@ -1575,7 +1576,12 @@ class ModelMatcher():
 
             # Find reactions involving the new species as unimolecular reactant
             # or product (e.g. A <---> products)
-            newReactions.extend(rm.react(database, newSpecies))
+            try:
+                newReactions.extend(rm.react(database, newSpecies))
+            except KineticsError as e:
+                logging.error(str(e))
+                logging.error("Not reacting {0!r} on its own".format(newSpecies))
+                
             # Find reactions involving the new species as bimolecular reactants
             # or products with other core species (e.g. A + B <---> products)
             # This is the primary difference from a standard enlarge, where
@@ -1584,12 +1590,20 @@ class ModelMatcher():
             for coreSpecies in rm.core.species:
                 if coreSpecies.reactive:
                     if self.speciesReactAccordingToChemkin(newSpecies, coreSpecies):
-                        newReactions.extend(rm.react(database, newSpecies, coreSpecies))
+                        try:
+                            newReactions.extend(rm.react(database, newSpecies, coreSpecies))
+                        except KineticsError as e:
+                            logging.error(str(e))
+                            logging.error("Not reacting {0!r} with {1!r}".format(newSpecies, coreSpecies))
             # Find reactions involving the new species as bimolecular reactants
             # or products with itself (e.g. A + A <---> products)
             # This is also limited to only reactions that occur in the chemkin file.
             if self.speciesReactAccordingToChemkin(newSpecies, newSpecies):
-                newReactions.extend(rm.react(database, newSpecies, newSpecies))
+                try:
+                    newReactions.extend(rm.react(database, newSpecies, newSpecies))
+                except KineticsError as e:
+                    logging.error(str(e))
+                    logging.error("Not reacting {0!r} with itself".format(newSpecies))
 
         # Add new species
         reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
