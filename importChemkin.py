@@ -1996,6 +1996,10 @@ recommended = False
 
             while len(self.identified_unprocessed_labels) == 0:
                 if not self.manualMatchesToProcess :
+                    logging.info("Updating Java thermo library")
+                    self.saveJavaThermoLibrary()
+                    logging.info("Updating Java kinetics library")
+                    self.saveJavaKineticsLibrary()
                     if self.args.quit_when_exhausted:
                         logging.warning("--quit_when_exhausted option detected."
                                         " Now exiting without waiting for input.")
