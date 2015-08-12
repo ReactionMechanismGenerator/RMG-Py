@@ -671,6 +671,9 @@ class Database:
             entries = self.entries.values()
             entries.sort(key=lambda x: (x.index, x.label))
 
+        def comment(s):
+            "Return the string, with each line prefixed with '// '"
+            return '\n'.join('// ' + line if line else '' for line in s.split('\n'))
         try:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
@@ -682,9 +685,13 @@ class Database:
             for entry in entries:
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
-                    f.write(entry.item.toAdjacencyList(removeH=False) + '\n')
+                    try:
+                        f.write(entry.item.toAdjacencyList(removeH=True, oldStyle=True) + '\n')
+                    except InvalidAdjacencyListError:
+                        f.write("// Couldn't save in old syntax adjacency list. Here it is in new syntax:\n")
+                        f.write(comment(entry.item.toAdjacencyList(removeH=False, oldStyle=False) + '\n'))
                 elif isinstance(entry.item, Group):
-                    f.write(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n')
+                    f.write(entry.item.toAdjacencyList(oldStyle=True).replace('{2S,2T}', '2') + '\n')
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':
@@ -693,9 +700,6 @@ class Database:
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
             
-            def comment(s):
-                "Return the string, with each line prefixed with '// '"
-                return '\n'.join('// '+line if line else '' for line in s.split('\n'))
             if entriesNotInTree:
                 f.write(comment("These entries do not appear in the tree:\n\n"))
             for entry in entriesNotInTree:
