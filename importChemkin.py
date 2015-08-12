@@ -1432,6 +1432,7 @@ class ModelMatcher():
             os.makedirs(kinetics_library_path)
 
         reactionsToSave = []
+        reactionsCantYetSave = []
         for chemkinReaction in self.chemkinReactions:
             for reagents in (chemkinReaction.reactants, chemkinReaction.products):
                 for reagent in reagents:
@@ -1439,6 +1440,7 @@ class ModelMatcher():
                         break  # if something hasn't been identified
                 else:  # didn't break inner loop so these reagents have all been identified
                     continue  # to the other side of the reaction
+                reactionsCantYetSave.append(chemkinReaction)
                 break  # did break inner loop, so break outer loop as there's an unidentified species
             else:  # didn't break outer loop, so all species have been identified
                 reactionsToSave.append(chemkinReaction)
@@ -1448,6 +1450,15 @@ class ModelMatcher():
         rmgpy.chemkin.saveJavaKineticsLibrary(os.path.join(kinetics_library_path, 'put_it_here'),
                                               speciesToSave,
                                               reactionsToSave)
+        with open(os.path.join(kinetics_library_path,'unidentified_reactions.txt'),'w') as out_file:
+            out_file.write("Couldn't save these reactions because not yet identified all species\n")
+            for reaction in reactionsCantYetSave:
+
+                out_file.write(rmgpy.chemkin.writeKineticsEntry(reaction,
+                                                                speciesList=speciesToSave,
+                                                                verbose=False,
+                                                                javaLibrary=True))
+                out_file.write('\n')
 
     def saveReactionToKineticsFile(self, chemkinReaction):
         """
