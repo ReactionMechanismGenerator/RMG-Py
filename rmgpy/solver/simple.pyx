@@ -193,8 +193,8 @@ cdef class SimpleReactor(ReactionSystem):
                         pdepColliderReactionIndices.append(j)
                         pdepColliderKinetics.append(rxn.kinetics)
                         colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
-        pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int) 
-        colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)
+        pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int) if pdepColliderReactionIndices else None
+        colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64) if colliderEfficiencies else None
         # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)
         reactantIndices = -numpy.ones((numCoreReactions + numEdgeReactions, 3), numpy.int )
@@ -277,7 +277,7 @@ cdef class SimpleReactor(ReactionSystem):
         kr = self.reverseRateCoefficients
         
         # Recalculate any forward and reverse rate coefficients that involve pdep collision efficiencies
-        if self.pdepColliderReactionIndices:
+        if self.pdepColliderReactionIndices is not None:
             T = self.T.value_si
             pdepColliderReactionIndices = self.pdepColliderReactionIndices
             pdepColliderKinetics = self.pdepColliderKinetics
