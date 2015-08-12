@@ -1686,18 +1686,28 @@ def markDuplicateReactions(reactions):
         markDuplicateReaction(reaction1, remainingList)
  
 
-def saveSpeciesDictionary(path, species):
+def saveSpeciesDictionary(path, species, oldStyle=False):
     """
     Save the given list of `species` as adjacency lists in a text file `path` 
     on disk.
+    
+    If `oldStyle==True` then it saves it in the old RMG-Java syntax.
     """
     with open(path, 'w') as f:
         for spec in species:
-            try:
-                f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
-                f.write('\n')
-            except:
-                raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
+            if oldStyle:
+                try:
+                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True, oldStyle=True))
+                except:
+                    newAdjList = spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False)
+                    f.write("// Couldn't save {0} in old RMG-Java syntax, but here it is in newer RMG-Py syntax:".format(getSpeciesIdentifier(spec)))
+                    f.write("\n// " + "\n// ".join(newAdjList.splitlines()) + '\n')
+            else:
+                try:
+                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                except:
+                    raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
+            f.write('\n')
 
 def saveTransportFile(path, species):
     r"""
@@ -1814,7 +1824,8 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
 def saveJavaKineticsLibrary(path, species, reactions):
     """
     Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
-    and reactions.txt given a list of reactions.
+    and reactions.txt given a list of reactions, with species.txt containing the
+    RMG-Java formatted dictionary.
     """
     # Check for duplicate
     markDuplicateReactions(reactions)
@@ -1848,4 +1859,4 @@ def saveJavaKineticsLibrary(path, species, reactions):
     f.close()
     f2.close()
     
-    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species)
+    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species, oldStyle=True)
