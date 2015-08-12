@@ -1393,6 +1393,29 @@ class ModelMatcher():
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
+    def saveJavaThermoLibrary(self):
+        """
+        Save an RMG-Java style thermo library
+        """
+        thermo_library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-java-thermo-library')
+        if os.path.exists(thermo_library_path):
+            # empty it out
+            for root, dirs, files in os.walk(thermo_library_path, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+        else:
+            os.makedirs(thermo_library_path)
+
+        #speciesToSave = [s for s in self.speciesList if s.molecule]
+
+        self.thermoLibrary.saveOld(
+                dictstr=os.path.join(thermo_library_path, 'Dictionary.txt'),
+                treestr='',
+                libstr=os.path.join(thermo_library_path, 'Library.txt'),
+            )
+
     def saveJavaKineticsLibrary(self):
         """
         Save an RMG-Java style kinetics library
@@ -1858,6 +1881,7 @@ recommended = False
                 chemkinReactionsUnmatched.remove(chemkinReaction)
                 self.saveReactionToKineticsFile(chemkinReaction)
 
+        self.saveJavaThermoLibrary()
         self.saveJavaKineticsLibrary()
 
         self.pruneInertSpecies()
