@@ -268,6 +268,8 @@ class ModelMatcher():
         """Filename of the known species file"""
         self.blocked_matches_file = ""
         """Filename of the blocked matches file"""
+        self.thermoLibrary = None
+        """An rmgpy.data.thermo.ThermoLibrary object containing identified species and their chemkin-defined thermo"""
 
 
     def loadSpecies(self, species_file):
@@ -1279,6 +1281,7 @@ class ModelMatcher():
 
         self.drawSpecies(rmgSpecies)
 
+        # Make an entry for the thermo database
         entry = Entry()
         entry.index = len(self.identified_labels)
         entry.label = chemkinLabel
@@ -1307,6 +1310,10 @@ class ModelMatcher():
         entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source,
                                                                      smiles=molecule.toSMILES())
         entry.shortDesc = comment.split('\n')[0].strip()
+
+        # store in the thermoLibrary
+        self.thermoLibrary.entries[entry.label] = entry
+        # write to the constantly-updated file
         with open(self.outputThermoFile, 'a') as f:
             saveEntry(f, entry)
 
@@ -1791,6 +1798,14 @@ recommended = False
            shortDesc=os.path.abspath(reactions_file).replace('"', ''),
            longDesc=source.strip())
           )
+
+        self.thermoLibrary = rmgpy.data.thermo.ThermoLibrary(
+            label=thermo_file.replace('"', ''),
+            name=reactions_file.replace('"', ''),
+            solvent=None,
+            shortDesc=os.path.abspath(thermo_file).replace('"', ''),
+            longDesc=source.strip(),
+            )
 
         self.loadBlockedMatches()
 
