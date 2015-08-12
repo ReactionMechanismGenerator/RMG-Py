@@ -2464,6 +2464,13 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         def replacer(match):
             return self._img(match.group(1))
 
+        userProposedMatches = {}
+        for match in self.tentativeMatches:
+            label = match['label']
+            species = match['species']
+            user = match['username']
+            userProposedMatches[label] = (species, user)
+
         for chemkinLabel, possibleMatches in votes.iteritems():
             for matchingSpecies, votingReactions in possibleMatches.iteritems():
                 flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
@@ -2493,6 +2500,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             for thermoMatch in self.thermoMatches.get(chemkinLabel, []):
                 if thermoMatch not in sortedMatchingSpeciesList:
                     sortedMatchingSpeciesList.insert(0, thermoMatch)
+            # Add user-proposed matches to the start
+            if chemkinLabel in userProposedMatches:
+                species, proposer = userProposedMatches[chemkinLabel]
+                if species not in sortedMatchingSpeciesList:
+                    sortedMatchingSpeciesList.insert(0, species)
 
             for chemkinReaction in chemkinReactions:
                 this_reaction_votes_for = dict()
@@ -2526,6 +2538,16 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         rmgl=urllib2.quote(str(matchingSpecies))))
             output.append("</tr>")
 
+            if chemkinLabel in userProposedMatches:
+                proposedSpecies, proposer = userProposedMatches[chemkinLabel]
+                output.append("<tr><td>Proposed by...</td>")
+                for matchingSpecies in sortedMatchingSpeciesList:
+                    if matchingSpecies == proposedSpecies:
+                        output.append("<td class='goodmatch'>{0}</td>".format(proposer))
+                    else:
+                        output.append("<td></td>")
+                output.append("</tr>")
+
             output.append("<tr><td>&Delta;H(298K)</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
                 output.append(
@@ -2549,7 +2571,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 except KeyError:
                     output.append("</td>")
             output.append("</tr>")
-                
+
             output.append("<tr><td>{num} Reactions</td>".format(num=len(chemkinReactions)))
             for matchingSpecies in sortedMatchingSpeciesList:
                 try:
