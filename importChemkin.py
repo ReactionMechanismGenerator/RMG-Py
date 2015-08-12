@@ -33,6 +33,7 @@ import rmgpy.rmg
 import rmgpy.rmg.input
 from rmgpy.display import display
 
+import rmgpy.chemkin
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.reaction import ReactionModel
 
@@ -1385,6 +1386,39 @@ class ModelMatcher():
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
+    def saveJavaKineticsLibrary(self):
+        """
+        Save an RMG-Java style kinetics library
+        """
+        kinetics_library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-java-kinetics-library')
+        if os.path.exists(kinetics_library_path):
+            # empty it out
+            for root, dirs, files in os.walk(kinetics_library_path, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+        else:
+            os.makedirs(kinetics_library_path)
+
+        reactionsToSave = []
+        for chemkinReaction in self.chemkinReactions:
+            for reagents in (chemkinReaction.reactants, chemkinReaction.products):
+                for reagent in reagents:
+                    if not reagent.molecule:
+                        break  # if something hasn't been identified
+                else:  # didn't break inner loop so these reagents have all been identified
+                    continue  # to the other side of the reaction
+                break  # did break inner loop, so break outer loop as there's an unidentified species
+            else:  # didn't break outer loop, so all species have been identified
+                reactionsToSave.append(chemkinReaction)
+
+        speciesToSave = [s for s in self.speciesList if s.molecule]
+
+        rmgpy.chemkin.saveJavaKineticsLibrary(os.path.join(kinetics_library_path, 'put_it_here'),
+                                              speciesToSave,
+                                              reactionsToSave)
+
     def saveReactionToKineticsFile(self, chemkinReaction):
         """
         Output to the kinetics.py library file
@@ -1808,6 +1842,8 @@ recommended = False
                 # remove it from the list of useful unmatched reactions.
                 chemkinReactionsUnmatched.remove(chemkinReaction)
                 self.saveReactionToKineticsFile(chemkinReaction)
+
+        self.saveJavaKineticsLibrary()
 
         self.pruneInertSpecies()
 
