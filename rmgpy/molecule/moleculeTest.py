@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
 from external.wip import work_in_progress
-from rmgpy.molecule.molecule import Atom, Bond, Molecule, ActionError
-from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
+from rmgpy.molecule.group import Group
+from rmgpy.molecule.molecule import Atom, Bond, Molecule, ActionError
+
 
 ################################################################################
-
 class TestAtom(unittest.TestCase):
     """
     Contains unit tests of the Atom class.
@@ -1547,7 +1548,14 @@ multiplicity 2
 32 H u0 p0 c0 {16,S}
 """)
         perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
-        self.assertTrue(perylene.isIsomorphic(perylene2))
+        for isomer in perylene2.getAromaticResonanceIsomers():
+            if perylene.isIsomorphic(isomer):
+                break
+        else:  # didn't break
+            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(
+                            perylene.toSMILES(),
+                            perylene2.toSMILES()
+                        ))
 
 ################################################################################
 
