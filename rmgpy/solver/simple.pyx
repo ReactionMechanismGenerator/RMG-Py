@@ -193,8 +193,8 @@ cdef class SimpleReactor(ReactionSystem):
                         pdepColliderReactionIndices.append(j)
                         pdepColliderKinetics.append(rxn.kinetics)
                         colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
-        pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int) if pdepColliderReactionIndices else None
-        colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64) if colliderEfficiencies else None
+        pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int)
+        colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)
         # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)
         reactantIndices = -numpy.ones((numCoreReactions + numEdgeReactions, 3), numpy.int )
@@ -277,16 +277,15 @@ cdef class SimpleReactor(ReactionSystem):
         kr = self.reverseRateCoefficients
         
         # Recalculate any forward and reverse rate coefficients that involve pdep collision efficiencies
-        if self.pdepColliderReactionIndices is not None:
-            T = self.T.value_si
-            pdepColliderReactionIndices = self.pdepColliderReactionIndices
-            pdepColliderKinetics = self.pdepColliderKinetics
-            colliderEfficiencies = self.colliderEfficiencies
-            for i in range(pdepColliderReactionIndices.shape[0]):
-                # Calculate effective pressure
-                P = numpy.sum(colliderEfficiencies[i]*y[:numCoreSpecies] / numpy.sum(y[:numCoreSpecies])) 
-                kf[pdepColliderReactionIndices[i]] = pdepColliderKinetics[i].getRateCoefficient(T, P)
-                kr[pdepColliderReactionIndices[i]] = kf[pdepColliderReactionIndices[i]]/equilibriumConstants[pdepColliderReactionIndices[i]]
+        T = self.T.value_si
+        pdepColliderReactionIndices = self.pdepColliderReactionIndices
+        pdepColliderKinetics = self.pdepColliderKinetics
+        colliderEfficiencies = self.colliderEfficiencies
+        for i in range(pdepColliderReactionIndices.shape[0]):
+            # Calculate effective pressure
+            P = numpy.sum(colliderEfficiencies[i]*y[:numCoreSpecies] / numpy.sum(y[:numCoreSpecies])) 
+            kf[pdepColliderReactionIndices[i]] = pdepColliderKinetics[i].getRateCoefficient(T, P)
+            kr[pdepColliderReactionIndices[i]] = kf[pdepColliderReactionIndices[i]]/equilibriumConstants[pdepColliderReactionIndices[i]]
                 
             # Update object's forward and reverse rate coefficients
             self.forwardRateCoefficients = kr
