@@ -136,11 +136,15 @@ class KineticsLibrary(Database):
                     r1.duplicate = True
                     r2.duplicate = True
                     
-    def checkForDuplicates(self):
+    def checkForDuplicates(self, markDuplicates=False):
         """
         Check that all duplicate reactions in the kinetics library are
         properly marked (i.e. with their ``duplicate`` attribute set to 
         ``True``).
+        If ``markDuplicates`` is set to ``True``, then ignore and mark reactions as duplicate
+        that have mixed pressure-dependent and non-pdep kinetics.  Still
+        raise an error when the reactions are both pressure dependent, or
+        both non-pressure dependent.
         """
         for entry0 in self.entries.values():
             reaction0 = entry0.item
@@ -151,7 +155,15 @@ class KineticsLibrary(Database):
                     reaction = entry.item
                     if reaction0 is not reaction and reaction0.isIsomorphic(reaction): 
                         # We found a duplicate reaction that wasn't marked!
-                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))        
+                        if markDuplicates:
+                            # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
+                            # Even though CHEMKIN does not require a duplicate flag, RMG needs it
+                            if reaction0.kinetics.isPressureDependent() != reaction.kinetics.isPressureDependent():
+                                reaction0.duplicate = reaction.duplicate = True
+                                continue
+                            
+                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}. \
+                         \nReaction index {2} matches index {3}. Note that mixed pdep and non-pdep reactions must still be declared as duplicates.'.format(reaction0, self.label, entry.index, entry0.index))        
 
     def convertDuplicatesToMulti(self):
         """
