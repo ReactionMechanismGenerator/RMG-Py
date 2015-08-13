@@ -438,14 +438,13 @@ cdef class SimpleReactor(ReactionSystem):
         Return the analytical Jacobian for the reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C, equilibriumConstants
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
         cdef int numCoreReactions, numCoreSpecies, i, j
         cdef double k, V, Ctot, deriv, corr
         
         ir = self.reactantIndices
         ip = self.productIndices
-        equilibriumConstants = self.equilibriumConstants
 
         kf = self.forwardRateCoefficients
         kr = self.reverseRateCoefficients
