@@ -33,7 +33,7 @@ adjacency list format used by Reaction Mechanism Generator (RMG).
 """
 import logging
 import re
-from .molecule import Atom, Bond
+from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
 from .element import getElement
 #import chempy.molecule.atomtype as atomtypes
@@ -101,6 +101,9 @@ class ConsistencyChecker(object):
             the theoretical one:
             
             '''
+            if getAtomType(atom, atom.edges).label == 'Cbf':
+                logging.warning("Skipping consistency check for fused benzene atom type")
+                return True
             global bond_orders
             valence = PeriodicSystem.valence_electrons[atom.symbol]
             order = 0
@@ -111,9 +114,10 @@ class ConsistencyChecker(object):
 
             if atom.charge != theoretical:
                 raise InvalidAdjacencyListError(
-                    ('Invalid valency for atom {symbol} with {radicals} unpaired electrons, '
+                    ('Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
                     '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'
                     ).format(symbol=atom.symbol,
+                             type=getAtomType(atom, atom.edges).label,
                              radicals=atom.radicalElectrons,
                              lonePairs=atom.lonePairs,
                              charge=atom.charge,
