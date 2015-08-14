@@ -1282,7 +1282,7 @@ def getSpeciesIdentifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(species.label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*]+', species.label):
+        if len(species.label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', species.label):
             if len(species.label) <= 10:
                 return species.label
             elif len(species.label) <= 15:
@@ -1302,8 +1302,8 @@ def getSpeciesIdentifier(species):
         # (at the expense of the current label or formula if need be)
 
         # First try to use the label and index
-        # The label can only contain alphanumeric characters, hyphens, and underscores
-        if len(species.label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*]+', species.label):
+        # The label can only contain alphanumeric characters, and -()*#_,
+        if len(species.label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', species.label):
             name = '{0}({1:d})'.format(species.label, species.index)
             if len(name) <= 10:
                 return name
