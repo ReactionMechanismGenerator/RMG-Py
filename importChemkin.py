@@ -56,6 +56,18 @@ sys.path.insert(0, databaseProjectDirectory)
 
 ################################################################################
 
+def makeOrEmptyDirectory(path):
+    """Either create a directory at `path` or delete everything in it if it exists"""
+    if os.path.exists(path):
+        assert os.path.isdir(path), "Path {0} exists but is not a directory".format(path)
+        # empty it out
+        for root, dirs, files in os.walk(path, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+    else:
+        os.makedirs(path)
 
 class MagicSpeciesDict(dict):
     """
@@ -1397,39 +1409,20 @@ class ModelMatcher():
         """
         Save an RMG-Java style thermo library
         """
-        thermo_library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-java-thermo-library')
-        if os.path.exists(thermo_library_path):
-            # empty it out
-            for root, dirs, files in os.walk(thermo_library_path, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-        else:
-            os.makedirs(thermo_library_path)
-
-        #speciesToSave = [s for s in self.speciesList if s.molecule]
-
+        library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-java-thermo-library')
+        makeOrEmptyDirectory(library_path)
         self.thermoLibrary.saveOld(
-                dictstr=os.path.join(thermo_library_path, 'Dictionary.txt'),
+                dictstr=os.path.join(library_path, 'Dictionary.txt'),
                 treestr='',
-                libstr=os.path.join(thermo_library_path, 'Library.txt'),
+                libstr=os.path.join(library_path, 'Library.txt'),
             )
 
     def saveJavaKineticsLibrary(self):
         """
         Save an RMG-Java style kinetics library
         """
-        kinetics_library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-java-kinetics-library')
-        if os.path.exists(kinetics_library_path):
-            # empty it out
-            for root, dirs, files in os.walk(kinetics_library_path, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-        else:
-            os.makedirs(kinetics_library_path)
+        library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-java-kinetics-library')
+        makeOrEmptyDirectory(library_path)
 
         reactionsToSave = []
         reactionsCantYetSave = []
@@ -1447,13 +1440,12 @@ class ModelMatcher():
 
         speciesToSave = [s for s in self.speciesList if s.molecule]
 
-        rmgpy.chemkin.saveJavaKineticsLibrary(os.path.join(kinetics_library_path, 'put_it_here'),
+        rmgpy.chemkin.saveJavaKineticsLibrary(os.path.join(library_path, 'put_it_here'),
                                               speciesToSave,
                                               reactionsToSave)
-        with open(os.path.join(kinetics_library_path,'unidentified_reactions.txt'),'w') as out_file:
-            out_file.write("Couldn't save these reactions because not yet identified all species\n")
+        with open(os.path.join(library_path, 'unidentified_reactions.txt'), 'w') as out_file:
+            out_file.write("// Couldn't use these {0} reactions because not yet identified all species\n".format(len(reactionsCantYetSave)))
             for reaction in reactionsCantYetSave:
-
                 out_file.write(rmgpy.chemkin.writeKineticsEntry(reaction,
                                                                 speciesList=speciesToSave,
                                                                 verbose=False,
