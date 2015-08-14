@@ -1329,9 +1329,7 @@ class ModelMatcher():
 
         # store in the thermoLibrary
         self.thermoLibrary.entries[entry.label] = entry
-        # write to the constantly-updated file
-        with open(self.outputThermoFile, 'a') as f:
-            saveEntry(f, entry)
+
 
     def getInvalidatedReactionsAndRemoveVotes(self, chemkinLabel, rmgSpecies):
         """
@@ -1431,6 +1429,29 @@ class ModelMatcher():
         self.kineticsLibrary.save(os.path.join(library_path, 'reactions.py'))
         self.kineticsLibrary.saveDictionary(os.path.join(library_path, 'dictionary.txt'))
 
+        savedReactions = [self.kineticsLibrary.entries[key].item 
+                          for key in sorted(self.kineticsLibrary.entries.keys())
+                          ]
+        with open(os.path.join(library_path, 'unidentified_reactions.txt'), 'w') as out_file:
+            out_file.write("// Couldn't use these reactions because not yet identified all species\n")
+            for index, reaction in enumerate(self.chemkinReactions):
+                if reaction in savedReactions:
+                    continue
+                out_file.write('//{0:4d}\n'.format(index + 1))
+                out_file.write(rmgpy.chemkin.writeKineticsEntry(reaction,
+                                                                speciesList=self.speciesList,
+                                                                verbose=False,
+                                                                javaLibrary=False))
+                out_file.write('\n')
+        
+        with open(self.outputKineticsFile, 'w') as out_file:
+            out_file.write('"Extra information about kinetics, as a list of dicts"\n\n')
+            out_file.write("info = [\n")
+        for reaction in savedReactions:
+            self.saveReactionToKineticsInfoFile(reaction)
+        with open(self.outputKineticsFile, 'a') as out_file:
+            out_file.write(']\n\n')
+
     def saveJavaThermoLibrary(self):
         """
         Save an RMG-Java style thermo library
@@ -1481,8 +1502,6 @@ class ModelMatcher():
     def addReactionToKineticsLibrary(self, chemkinReaction):
         """
         Add the chemkin reaction (once species are identified) to the reactionLibrary
-        
-        This should replace saveReactionToKineticsFile method below.
         """
         entry = kinEntry()
         #source = self.args.reactions
@@ -1499,50 +1518,29 @@ class ModelMatcher():
 
         self.kineticsLibrary.entries[entry.index] = entry
 
-    def saveReactionToKineticsFile(self, chemkinReaction):
+    def saveReactionToKineticsInfoFile(self, chemkinReaction):
         """
-        Output to the kinetics.py library file
+        Output to the kinetics.py information file
         """
         from rmgpy.cantherm.output import prettify
-#         with open(self.outputKineticsFile, 'a') as f:
-#             f.write('{\n')
-#             f.write(' reaction: {!r},\n'.format(str(chemkinReaction)))
-#             #f.write(' chemkinKinetics: """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
-#             #f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
-#             f.write(' possibleReactionFamilies: [')
-#             reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
-#             product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
-#             f.flush()
-#             logging.info("Trying to generate reactions for " + str(chemkinReaction))
-#             generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
-#             for reaction in generated_reactions:
-#                 f.write('{0!r}, '.format(reaction.family.label))
-#             f.write(' ],\n')
-#             f.write('},\n\n')
-#             del generated_reactions
-#         return True
-
-        entry = kinEntry()
-        source = self.args.reactions
-        entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
-        entry.item = chemkinReaction
-        entry.data = chemkinReaction.kinetics
-        comment = getattr(chemkinReaction, 'comment', '')  # This should ideally return the chemkin file comment but currently does not
-        if comment:
-            entry.longDesc = comment + '.\n'
-        else:
-            entry.longDesc = ''
-        entry.shortDesc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
-        user = 'Importer'
-        event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=source)]
-        entry.history = [event]
         with open(self.outputKineticsFile, 'a') as f:
-            try:
-                kinSaveEntry(f, entry)
-            except:
-                logging.exception("Couldn't save reaction {0} to kinetics.py file".format(str(chemkinReaction)))
-                f.write("\n# COULD NOT SAVE THE REACTION \n # {0}\n".format(entry.shortDesc))
-                traceback.print_exc(file=f)
+            f.write('{\n')
+            f.write(' reaction: {!r},\n'.format(str(chemkinReaction)))
+            f.write(' chemkinKinetics: """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
+            f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
+            f.write(' possibleReactionFamilies: [')
+            reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
+            product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
+            f.flush()
+            logging.info("Trying to generate reactions for " + str(chemkinReaction))
+            generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
+            for reaction in generated_reactions:
+                f.write('{0!r}, '.format(reaction.family.label))
+            f.write(' ],\n')
+            f.write('},\n\n')
+            del generated_reactions
+        return True
+
 
     def pruneVoting(self):
         """
@@ -1902,7 +1900,6 @@ class ModelMatcher():
             else:  # didn't break outer loop, so all species have been identified
                 # remove it from the list of useful unmatched reactions.
                 chemkinReactionsUnmatched.remove(chemkinReaction)
-                self.saveReactionToKineticsFile(chemkinReaction)
                 self.addReactionToKineticsLibrary(chemkinReaction)
 
         self.saveLibraries()
@@ -2049,7 +2046,6 @@ class ModelMatcher():
                 #After processing all matches, now is a good time to save reactions.
                 while self.chemkinReactionsToSave:
                     chemkinReaction = self.chemkinReactionsToSave.pop(0)
-                    self.saveReactionToKineticsFile(chemkinReaction)
                     self.addReactionToKineticsLibrary(chemkinReaction)
 
             terminal_input_enabled = False
