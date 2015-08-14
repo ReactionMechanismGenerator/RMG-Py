@@ -618,17 +618,17 @@ class ModelMatcher():
         logging.info("Looking in {dir} for additional thermo libraries to import".format(dir=dir))
         for root, dirs, files in os.walk(directory):
             for filename in files:
-                if not filename.endswith(".thermo.py"):
+                if not filename == 'ThermoLibrary.py':
                     continue
                 path = os.path.join(root, filename)
                 logging.info("I think I found a thermo library at {0}".format(path))
-                if os.path.split(path)[0] == os.path.split(os.path.abspath(args.thermo))[0]:
+                if os.path.abspath(path).startswith(os.path.split(os.path.abspath(args.thermo))[0]):
                     logging.info("But it's the model currently being imported, so not loading.")
                     break
                 library = rmgpy.data.thermo.ThermoLibrary()
                 library.SKIP_DUPLICATES = True
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
-                library.label = root.split('/')[-1]
+                library.label = root.split('/')[-2]
                 rmg.database.thermo.libraries[library.label] = library
                 # Load them (for the checkThermoLibraries method) but don't trust them
                 self.thermo_libraries_to_check.append(library.label)
@@ -1508,6 +1508,7 @@ class ModelMatcher():
         #entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
         entry.index = self.chemkinReactions.index(chemkinReaction)
         entry.item = chemkinReaction
+        entry.label = str(chemkinReaction)
         entry.data = chemkinReaction.kinetics
         comment = getattr(chemkinReaction, 'comment', '')  # This should ideally return the chemkin file comment but currently does not
         if comment:
@@ -1532,7 +1533,7 @@ class ModelMatcher():
             reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
             product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
             f.flush()
-            logging.info("Trying to generate reactions for " + str(chemkinReaction))
+            # logging.info("Trying to generate reactions for " + str(chemkinReaction))
             generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
             for reaction in generated_reactions:
                 f.write('{0!r}, '.format(reaction.family.label))
