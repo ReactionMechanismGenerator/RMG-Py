@@ -282,7 +282,8 @@ class ModelMatcher():
         """Filename of the blocked matches file"""
         self.thermoLibrary = None
         """An rmgpy.data.thermo.ThermoLibrary object containing identified species and their chemkin-defined thermo"""
-
+        self.kineticsLibrary = None
+        """An rmgpy.data.kinetics.KineticsLibrary object containing chemkin-defined reactions of identified species"""
 
     def loadSpecies(self, species_file):
         """
@@ -1452,6 +1453,27 @@ class ModelMatcher():
                                                                 javaLibrary=True))
                 out_file.write('\n')
 
+    def addReactionToKineticsLibrary(self, chemkinReaction):
+        """
+        Add the chemkin reaction (once species are identified) to the reactionLibrary
+        
+        This should replace saveReactionToKineticsFile method below.
+        """
+        entry = kinEntry()
+        #source = self.args.reactions
+        #entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
+        entry.index = self.chemkinReactions.index(chemkinReaction)
+        entry.item = chemkinReaction
+        entry.data = chemkinReaction.kinetics
+        comment = getattr(chemkinReaction, 'comment', '')  # This should ideally return the chemkin file comment but currently does not
+        if comment:
+            entry.longDesc = comment + '.\n'
+        else:
+            entry.longDesc = ''
+        entry.shortDesc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
+
+        self.kineticsLibrary.entries[entry.index] = entry
+
     def saveReactionToKineticsFile(self, chemkinReaction):
         """
         Output to the kinetics.py library file
@@ -1833,6 +1855,14 @@ recommended = False
             longDesc=source.strip(),
             )
 
+        self.kineticsLibrary = rmgpy.data.kinetics.KineticsLibrary(
+            label=reactions_file.replace('"', ''),
+            name=reactions_file.replace('"', ''),
+            solvent=None,
+            shortDesc=os.path.abspath(reactions_file).replace('"', ''),
+            longDesc=source.strip(),
+            )
+
         self.loadBlockedMatches()
 
         self.identifySmallMolecules()
@@ -1883,6 +1913,7 @@ recommended = False
                 # remove it from the list of useful unmatched reactions.
                 chemkinReactionsUnmatched.remove(chemkinReaction)
                 self.saveReactionToKineticsFile(chemkinReaction)
+                self.addReactionToKineticsLibrary(chemkinReaction)
 
         self.saveJavaThermoLibrary()
         self.saveJavaKineticsLibrary()
@@ -2031,6 +2062,7 @@ recommended = False
                 while self.chemkinReactionsToSave:
                     chemkinReaction = self.chemkinReactionsToSave.pop(0)
                     self.saveReactionToKineticsFile(chemkinReaction)
+                    self.addReactionToKineticsLibrary(chemkinReaction)
 
             terminal_input_enabled = False
             if (len(self.identified_unprocessed_labels) == 0
