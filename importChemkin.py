@@ -32,8 +32,10 @@ import rmgpy
 import rmgpy.rmg
 import rmgpy.rmg.input
 from rmgpy.display import display
-
+import rmgpy.kinetics
 import rmgpy.chemkin
+import rmgpy.data
+import rmgpy.data.kinetics
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.reaction import ReactionModel
 
