@@ -422,6 +422,7 @@ cdef class Graph:
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
         else:
+            self.vertices.sort(key=getVertexSortingLabel)
             return
         # If we need to sort then let's also update the connecitivities so
         # we're sure they are right, since the sorting labels depend on them
