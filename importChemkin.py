@@ -1406,6 +1406,28 @@ class ModelMatcher():
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
+    def saveLibraries(self):
+        """
+        Save the thermo and kinetics libraries in new and old format
+        """
+        self.saveJavaThermoLibrary()
+        self.saveJavaKineticsLibrary()
+        self.savePyThermoLibrary()
+        self.savePyKineticsLibrary()
+
+    def savePyThermoLibrary(self):
+        "Save an RMG-Py style thermo library"
+        library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-Py-thermo-library')
+        makeOrEmptyDirectory(library_path)
+        self.thermoLibrary.save(os.path.join(library_path, 'ThermoLibrary.py'))
+
+    def savePyKineticsLibrary(self):
+        "Save an RMG-Py style kinetics library"
+        library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-Py-kinetics-library')
+        makeOrEmptyDirectory(library_path)
+        self.kineticsLibrary.save(os.path.join(library_path, 'reactions.py'))
+        self.kineticsLibrary.saveDictionary(os.path.join(library_path, 'dictionary.txt'))
+
     def saveJavaThermoLibrary(self):
         """
         Save an RMG-Java style thermo library
@@ -1811,45 +1833,10 @@ class ModelMatcher():
                 print source
         except IOError:
             source = "Unknown source"
-        with open(self.outputThermoFile, 'w') as f:
-            f.write("""#!/usr/bin/env python
-# encoding: utf-8
-
-name = "{name}"
-
-shortDesc = u"{shortDesc}"
-
-longDesc = u"\""
-{longDesc}
-"\""
-recommended = False
-
-""".format(name=thermo_file.replace('"', ''),
-           shortDesc=os.path.abspath(thermo_file).replace('"', ''),
-           longDesc=source.strip())
-          )
-
-        with open(self.outputKineticsFile, 'w') as f:
-            f.write("""#!/usr/bin/env python
-# encoding: utf-8
-
-name = "{name}"
-
-shortDesc = u"{shortDesc}"
-
-longDesc = u"\""
-{longDesc}
-"\""
-recommended = False
-
-""".format(name=reactions_file.replace('"', ''),
-           shortDesc=os.path.abspath(reactions_file).replace('"', ''),
-           longDesc=source.strip())
-          )
 
         self.thermoLibrary = rmgpy.data.thermo.ThermoLibrary(
             label=thermo_file.replace('"', ''),
-            name=reactions_file.replace('"', ''),
+            name=thermo_file.replace('"', ''),
             solvent=None,
             shortDesc=os.path.abspath(thermo_file).replace('"', ''),
             longDesc=source.strip(),
@@ -1915,8 +1902,7 @@ recommended = False
                 self.saveReactionToKineticsFile(chemkinReaction)
                 self.addReactionToKineticsLibrary(chemkinReaction)
 
-        self.saveJavaThermoLibrary()
-        self.saveJavaKineticsLibrary()
+        self.saveLibraries()
 
         self.pruneInertSpecies()
 
@@ -2030,10 +2016,9 @@ recommended = False
 
             while len(self.identified_unprocessed_labels) == 0:
                 if not self.manualMatchesToProcess :
-                    logging.info("Updating Java thermo library")
-                    self.saveJavaThermoLibrary()
-                    logging.info("Updating Java kinetics library")
-                    self.saveJavaKineticsLibrary()
+                    logging.info("Updating exported library files...")
+                    self.saveLibraries()
+
                     if self.args.quit_when_exhausted:
                         logging.warning("--quit_when_exhausted option detected."
                                         " Now exiting without waiting for input.")
