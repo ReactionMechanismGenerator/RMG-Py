@@ -267,9 +267,10 @@ class ModelMatcher():
         """A dictionary such that self.chemkinReactionsDict[chemkinLabel] = {set of chemkin reactions it is part of}"""
         self.suggestedMatches = {}
         self.votes = {}
-        """self.votes is a dict of dicts of lists of tuples: {'ch3':{<Species CH3>: [ voting_reactions ]}}
-           so self.votes[chemkinLabel][rmgSpecies][0] = (chemkinReaction, rmgReaction)
-           """
+        """
+        self.votes is a dict of dicts of lists of tuples: {'ch3':{<Species CH3>: [ voting_reactions ]}}
+        so self.votes[chemkinLabel][rmgSpecies][0] = (chemkinReaction, rmgReaction)
+        """
         self.prunedVotes = {}
         self.manualMatchesToProcess = []
         """A list of tuples of matches not yet processed: [(chemkinLabel, rmgSpecies),...]"""
@@ -1434,7 +1435,7 @@ class ModelMatcher():
         """
         Save an RMG-Java style thermo library
         """
-        library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-java-thermo-library')
+        library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-Java-thermo-library')
         makeOrEmptyDirectory(library_path)
         self.thermoLibrary.saveOld(
                 dictstr=os.path.join(library_path, 'Dictionary.txt'),
@@ -1446,7 +1447,7 @@ class ModelMatcher():
         """
         Save an RMG-Java style kinetics library
         """
-        library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-java-kinetics-library')
+        library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-Java-kinetics-library')
         makeOrEmptyDirectory(library_path)
 
         reactionsToSave = []
