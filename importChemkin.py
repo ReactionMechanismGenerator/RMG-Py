@@ -615,7 +615,7 @@ class ModelMatcher():
         # if that's some subfolder of RMG-models, move up to RMG-models level
         if directory.find('RMG-models'):
             directory = directory[:directory.find('RMG-models')]+'RMG-models'
-        logging.info("Looking in {dir} for additional thermo libraries to import".format(dir=dir))
+        logging.info("Looking in {dir} for additional thermo libraries to import".format(dir=directory))
         for root, dirs, files in os.walk(directory):
             for filename in files:
                 if not filename == 'ThermoLibrary.py':
