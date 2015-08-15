@@ -1548,7 +1548,11 @@ class ModelMatcher():
             product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
             f.flush()
             # logging.info("Trying to generate reactions for " + str(chemkinReaction))
-            generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
+            try:
+                generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
+            except KineticsError as e:
+                f.write('{0!r}'.format('Bug!: ' + str(e)))
+                generated_reactions = []
             for reaction in generated_reactions:
                 f.write('{0!r}, '.format(reaction.family.label))
             f.write(' ],\n')
