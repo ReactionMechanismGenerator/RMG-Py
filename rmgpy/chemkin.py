@@ -1286,7 +1286,7 @@ def getSpeciesIdentifier(species):
             if len(label) <= 10:
                 return label
             elif len(label) <= 15:
-                logging.warning('Species label {0} is longer than 10 characters and may exceed chemkin string limit'.format(label))
+                #logging.warning('Species label {0} is longer than 10 characters and may exceed chemkin string limit'.format(label))
                 return label            
             else:
                 logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
@@ -1456,7 +1456,9 @@ def writeReactionString(reaction, javaLibrary = False):
         reaction_string += '=>' if not reaction.reversible else '='
         reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
         reaction_string += thirdBody
-        
+
+    if len(reaction_string) > 52:
+        logging.warning("Chemkin reaction string {0!r} is too long for Chemkin 2!".format(reaction_string))
     return reaction_string
 
 ################################################################################
