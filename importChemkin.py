@@ -1363,7 +1363,7 @@ class ModelMatcher():
         reactionsToPrune = set()
         for edgeReaction in reactionsToCheck:
             edgeReactionMatchesSomething = False
-            for chemkinReaction in chemkinReactionsUnmatched:
+            for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list
                 self.suggestedMatches = {}
                 if reactionsMatch(edgeReaction, chemkinReaction):
                     edgeReactionMatchesSomething = True
@@ -1509,7 +1509,7 @@ class ModelMatcher():
         entry = kinEntry()
         #source = self.args.reactions
         #entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
-        entry.index = self.chemkinReactions.index(chemkinReaction)
+        entry.index = self.chemkinReactions.index(chemkinReaction) + 1
         entry.item = chemkinReaction
         entry.label = str(chemkinReaction)
         entry.data = chemkinReaction.kinetics
@@ -1893,7 +1893,7 @@ class ModelMatcher():
 
         # Now would be a good time to print identified reactions to the .kinetics.py file?
         # All the species in self.identified_labels should have been through generateResonanceIsomers and generateThermoData
-        for chemkinReaction in chemkinReactionsUnmatched:
+        for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
             for reagents in (chemkinReaction.reactants, chemkinReaction.products):
                 for reagent in reagents:
                     if reagent.label not in self.identified_labels:
