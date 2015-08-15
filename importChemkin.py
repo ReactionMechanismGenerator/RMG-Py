@@ -1427,6 +1427,9 @@ class ModelMatcher():
         library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-Py-kinetics-library')
         makeOrEmptyDirectory(library_path)
         self.kineticsLibrary.save(os.path.join(library_path, 'reactions.py'))
+        for species in self.speciesList:
+            if species.molecule:
+                species.molecule[0].clearLabeledAtoms()  # don't want '*1' labels in the dictionary
         self.kineticsLibrary.saveDictionary(os.path.join(library_path, 'dictionary.txt'))
 
         savedReactions = [self.kineticsLibrary.entries[key].item 
