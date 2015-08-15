@@ -1271,10 +1271,10 @@ def getSpeciesIdentifier(species):
     species identifier, this function uses a maximum of 10 to ensure that all
     reaction equations fit in the maximum limit of 52 characters.
     """
-
+    label = species.label
     # Special case for inert colliders - just use the label if possible
-    if not species.reactive and 0 < len(species.label) <= 10:
-        return species.label
+    if not species.reactive and 0 < len(label) <= 10:
+        return label
 
     # The algorithm is slightly different depending on whether or not the
     # species has an index
@@ -1282,15 +1282,15 @@ def getSpeciesIdentifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(species.label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', species.label):
-            if len(species.label) <= 10:
-                return species.label
-            elif len(species.label) <= 15:
-                logging.warning('Species label is longer than 10 characters and may exceed chemkin string limit')
-                return species.label            
+        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+            if len(label) <= 10:
+                return label
+            elif len(label) <= 15:
+                logging.warning('Species label {0} is longer than 10 characters and may exceed chemkin string limit'.format(label))
+                return label            
             else:
                 logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
-                return species.label
+                return label
         else:
             # try the chemical formula if the species label is not present
             if len(species.molecule) > 0:
@@ -1303,8 +1303,8 @@ def getSpeciesIdentifier(species):
 
         # First try to use the label and index
         # The label can only contain alphanumeric characters, and -()*#_,
-        if len(species.label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', species.label):
-            name = '{0}({1:d})'.format(species.label, species.index)
+        if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+            name = '{0}({1:d})'.format(label, species.index)
             if len(name) <= 10:
                 return name
     
