@@ -2109,6 +2109,7 @@ class ModelMatcher():
 
     @cherrypy.expose
     def index(self):
+        location = os.path.abspath(self.args.reactions or self.args.species)
         name = self.name
         output = [self.html_head() , """
 <script>
@@ -2898,11 +2899,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
     def html_head(self):
         location = os.path.abspath(self.args.reactions or self.args.species)
-        name = os.path.split(location)[0]
-        try:
-            name = name[(name.index('RMG-models') + 11):]
-        except ValueError:
-            pass
+        name = self.name
         return """
 <html>
 <head>
