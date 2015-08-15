@@ -288,6 +288,17 @@ class ModelMatcher():
         self.kineticsLibrary = None
         """An rmgpy.data.kinetics.KineticsLibrary object containing chemkin-defined reactions of identified species"""
 
+
+        # Determine what to call this model, based on its path
+        location = os.path.abspath(self.args.reactions or self.args.species)
+        name = os.path.split(location)[0]
+        try:
+            name = name[(name.index('RMG-models') + 11):]
+        except ValueError:
+            pass
+        self.name = name
+        "The name of the model (based on its source path)"
+
     def loadSpecies(self, species_file):
         """
         Load the chemkin list of species
@@ -1806,7 +1817,6 @@ class ModelMatcher():
         known_species_file = args.known or species_file + '.SMILES.txt'
         self.known_species_file = known_species_file
         self.blocked_matches_file = os.path.splitext(known_species_file)[0] + '-BLOCKED.txt'
-
         self.outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
         self.outputKineticsFile = os.path.splitext(reactions_file)[0] + '.kinetics.py'
 
@@ -1841,7 +1851,7 @@ class ModelMatcher():
 
         self.thermoLibrary = rmgpy.data.thermo.ThermoLibrary(
             label=thermo_file.replace('"', ''),
-            name=thermo_file.replace('"', ''),
+            name=self.name,
             solvent=None,
             shortDesc=os.path.abspath(thermo_file).replace('"', ''),
             longDesc=source.strip(),
@@ -1849,7 +1859,7 @@ class ModelMatcher():
 
         self.kineticsLibrary = rmgpy.data.kinetics.KineticsLibrary(
             label=reactions_file.replace('"', ''),
-            name=reactions_file.replace('"', ''),
+            name=self.name,
             solvent=None,
             shortDesc=os.path.abspath(reactions_file).replace('"', ''),
             longDesc=source.strip(),
@@ -2096,12 +2106,7 @@ class ModelMatcher():
     @cherrypy.expose
     def index(self):
         location = os.path.abspath(self.args.reactions or self.args.species)
-        name = os.path.split(location)[0]
-        try:
-            name = name[(name.index('RMG-models')+11):]
-        except ValueError:
-            pass
-        
+        name = self.name
         output = [self.html_head() , """
 <script>
 function alsoUpdate(json) {
@@ -2112,7 +2117,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
 $('#thermomatches_count').html("("+json.thermomatches+")");
 }
 </script>
-<h1>Mechanism importer:"""+name+"""</h1>
+<h1>Mechanism importer: """ + name + """</h1>
 <ul>
 <li><a href="species.html">All species.</a> (Sorted by <a href="species.html?sort=name">name</a> or <a href="species.html?sort=formula">formula</a>.)</li>
 <li><a href="identified.html">Identified species.</a> <span id="identified_count"></span></li>
@@ -2890,11 +2895,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
     def html_head(self):
         location = os.path.abspath(self.args.reactions or self.args.species)
-        name = os.path.split(location)[0]
-        try:
-            name = name[(name.index('RMG-models') + 11):]
-        except ValueError:
-            pass
+        name = self.name
         return """
 <html>
 <head>
