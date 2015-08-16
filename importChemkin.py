@@ -163,8 +163,10 @@ def parseCommandLineArguments():
     parser.add_argument(
         '--quit_when_exhausted',
         action='store_true',
-        help=
-        "Don't wait for input from the web front end, but quit when exhausted all matches. Can also be enabled by setting the environment variable RMG_QUIT_WHEN_EXHAUSTED")
+        help=("Don't wait for input from the web front end, "
+              "but quit when exhausted all matches. "
+              "Can also be enabled by setting the environment "
+              "variable RMG_QUIT_WHEN_EXHAUSTED"))
     parser.add_argument(
         '-o', '--output-directory',
         type=str,
@@ -1458,13 +1460,19 @@ class ModelMatcher():
                                                                 javaLibrary=False))
                 out_file.write('\n')
         
-        with open(self.outputKineticsFile, 'w') as out_file:
-            out_file.write('"Extra information about kinetics, as a list of dicts"\n\n')
-            out_file.write("info = [\n")
-        for reaction in savedReactions:
-            self.saveReactionToKineticsInfoFile(reaction)
-        with open(self.outputKineticsFile, 'a') as out_file:
-            out_file.write(']\n\n')
+        if 'RMG_MAKE_INFO_FILES' not in os.environ:
+            # By default don't write it, because it's slow (and not always helpful)
+            with open(self.outputKineticsFile, 'w') as out_file:
+                out_file.write('"To generate extra information file, '
+                               'run with RMG_MAKE_INFO_FILES environment variable"')
+        else:
+            with open(self.outputKineticsFile, 'w') as out_file:
+                out_file.write('"Extra information about kinetics, as a list of dicts"\n\n')
+                out_file.write("info = [\n")
+            for reaction in savedReactions:
+                self.saveReactionToKineticsInfoFile(reaction)
+            with open(self.outputKineticsFile, 'a') as out_file:
+                out_file.write(']\n\n')
 
     def saveJavaThermoLibrary(self):
         """
