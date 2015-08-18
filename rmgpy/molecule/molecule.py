@@ -2129,7 +2129,7 @@ class Molecule(Graph):
         # changing atom types, but it doesn't hurt anything and is not
         # very expensive, so will do it anyway)
         self.updateConnectivityValues()
-        self.sortVertices()
+        self.sortAtoms()
         self.updateAtomTypes()
         self.updateLonePairs()
         self.multiplicity = 1
