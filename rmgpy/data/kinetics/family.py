@@ -984,7 +984,7 @@ class KineticsFamily(Database):
                     identicalCenterCounter += 1
                     atom.label = '*' + str(identicalCenterCounter)
             if identicalCenterCounter != 2:
-                raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
+                raise KineticsError('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
 
         # Generate the product structure by applying the recipe
         if forward:
@@ -1203,9 +1203,10 @@ class KineticsFamily(Database):
         `reactants`, which should be either single :class:`Molecule` objects
         or lists of same. Does not estimate the kinetics of these reactions
         at this time. Returns a list of :class:`TemplateReaction` objects
-        using :class:`Species` objects for both reactants and products. The
-        reactions are constructed such that the forward direction is consistent
-        with the template of this reaction family.
+        using :class:`Species` objects for both reactants and products
+        (but does not generate resonance isomers of these Species.)
+        The reactions are constructed such that the forward direction is
+        consistent with the template of this reaction family.
         """
         reactionList = []
         
@@ -1255,7 +1256,9 @@ class KineticsFamily(Database):
                 logging.error(reactant)
             for product in reaction.products:
                 logging.error(product)
-            raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
+            raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
+                                 'in reaction family {1}. Expected 1 reaction '
+                                 'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
         
     def __generateReactions(self, reactants, products=None, forward=True, failsSpeciesConstraints=None):
@@ -1636,8 +1639,13 @@ class KineticsFamily(Database):
                     kineticsList.append([kinetics, depository, entry, isForward])
         
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
-        if estimator:        
-            kinetics, entry = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+        if estimator:
+            try:
+                kinetics, entry = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+            except Exception:
+                logging.error("Error getting kinetics for reaction {0!s}.\n{0!r}".format(reaction))
+                raise
+
             if kinetics:
                 if not returnAllKinetics:
                     return kinetics, estimator, entry, True

@@ -115,15 +115,15 @@ def saveEntry(f, entry):
     f.write('    shortDesc = u"""')
     try:
         f.write(entry.shortDesc.encode('utf-8'))
-    except:
-        f.write(entry.shortDesc.strip().encode('ascii', 'ignore'))
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        f.write(entry.shortDesc.strip().encode('ascii', 'replace'))
     f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
     try:
         f.write(entry.longDesc.strip().encode('utf-8') + "\n")    
-    except:
-        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        f.write(entry.longDesc.strip().encode('ascii', 'replace') + "\n")
     f.write('""",\n')
 
     f.write(')\n\n')

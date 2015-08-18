@@ -58,7 +58,7 @@ class DatabaseError(Exception):
 
 ################################################################################
 
-class Entry:
+class Entry(object):
     """
     A class for representing individual records in an RMG database. Each entry
     in the database associates a chemical item (generally a species, functional
@@ -106,8 +106,8 @@ class Entry:
         self.data = data
         self.reference = reference
         self.referenceType = referenceType
-        self.shortDesc = shortDesc
-        self.longDesc = longDesc
+        self._shortDesc = unicode(shortDesc)
+        self._longDesc = unicode(longDesc)
         self.rank = rank
 
     def __str__(self):
@@ -115,6 +115,25 @@ class Entry:
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
+    
+    @property
+    def longDesc(self):
+        return self._longDesc
+    @longDesc.setter
+    def longDesc(self, value):
+        if value is None:
+            self._longDesc = None
+        else:
+            self._longDesc = unicode(value)
+    @property
+    def shortDesc(self):
+        return self._shortDesc
+    @shortDesc.setter
+    def shortDesc(self, value):
+        if value is None:
+            self._shortDesc = None
+        else:
+            self._shortDesc = unicode(value)
 
 ################################################################################
 

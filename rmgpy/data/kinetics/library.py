@@ -227,7 +227,7 @@ class KineticsLibrary(Database):
     def load(self, path, local_context=None, global_context=None):
         Database.load(self, path, local_context, global_context)
         
-        # Generate a unique set of the species in the kinetics library
+        # Load a unique set of the species in the kinetics library
         speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'))
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()

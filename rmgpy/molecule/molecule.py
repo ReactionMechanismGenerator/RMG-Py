@@ -53,7 +53,7 @@ import rmgpy.constants as constants
 import numpy
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
-_known_smiles_molecules = {
+_known_smiles_molecules = {  # for things that are NOT radicals
                  'N2': 'N#N',
                  'CH4': 'C',
                  'H2O': 'O',
@@ -1179,6 +1179,15 @@ class Molecule(Graph):
             multiplicity 1
             1 He u0 p1
             """)
+            return self
+        elif smilesstr == '[C]':
+            # RDKit would return the quintet C with four radicals
+            self.fromAdjacencyList(
+                """
+                C(T)
+                multiplicity 3
+                1 C u2 p1
+                """)
             return self
         
         else:
