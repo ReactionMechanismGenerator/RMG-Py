@@ -403,7 +403,7 @@ temperature and pressure, use the line ::
 To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line ::
 
-	interpolation=('PDepArrhenius')
+	interpolation=('PDepArrhenius',)
 	
 The auxillary information printed to the Chemkin chem.inp file will have the "PLOG"
 format.  Refer to Section 3.5.3 of the :file:`CHEMKIN_Input.pdf` document and/or 
