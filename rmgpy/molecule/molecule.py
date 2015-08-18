@@ -45,7 +45,7 @@ try:
 except:
     pass
 from rdkit import Chem
-from .graph import Vertex, Edge, Graph
+from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
@@ -212,6 +212,12 @@ class Atom(Vertex):
                 else:
                     return False
             return True
+    
+    def getDescriptor(self):
+        return (self.getAtomConnectivityValue(), self.symbol, self.radicalElectrons, self.lonePairs, self.charge)
+
+    def getAtomConnectivityValue(self):
+        return getVertexConnectivityValue(self)
 
     def isSpecificCaseOf(self, other):
         """
@@ -700,7 +706,10 @@ class Molecule(Graph):
         Sort the atoms in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
-        return self.sortVertices()
+        self.sortVertices()
+        self.atoms.sort(key=lambda k: k.getDescriptor())
+        for index, vertex in enumerate(self.vertices):
+            vertex.sortingLabel = index
 
     def getFormula(self):
         """
