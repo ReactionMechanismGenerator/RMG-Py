@@ -275,10 +275,11 @@ class SimpleReactorCheck(unittest.TestCase):
         rxnSystem.initializeModel(speciesList, reactionList, [], [])
         
         # Advance to time = 5 s
-        rxnSystem.advance(5)
+        rxnSystem.advance(5)  
+
         # Compare simulated mole fractions with expected mole fractions from CHEMKIN
         simulatedMoleFracs = rxnSystem.y/numpy.sum(rxnSystem.y)
-        expectedMoleFracs = numpy.array([0,0,0,0.5333408, 0.1333352,0, 0.1333211, 0.06665354, 1.406624000000000E-05,  0,0,0,  0.1333352, 5.559206000000000E-11])
+        expectedMoleFracs = numpy.array([0,0,0,0.5487241, 0.137181,0, 0.1083234, 0.0685777, 1.280687000000000E-05,  0,0,0,   0.1083362, 0.02884481])
         for i in range(len(simulatedMoleFracs)):
             self.assertAlmostEqual(simulatedMoleFracs[i],expectedMoleFracs[i])
             
