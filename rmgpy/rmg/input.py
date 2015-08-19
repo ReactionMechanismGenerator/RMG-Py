@@ -243,6 +243,8 @@ def pressureDependence(
     rmg.pressureDependence.method = method
     
     # Process interpolation model
+    if isinstance(interpolation, str):
+        interpolation = (interpolation,)
     rmg.pressureDependence.interpolationModel = interpolation
 
     # Process temperatures
