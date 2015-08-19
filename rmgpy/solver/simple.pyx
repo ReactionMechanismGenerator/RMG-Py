@@ -188,9 +188,9 @@ cdef class SimpleReactor(ReactionSystem):
         colliderEfficiencies = []
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
-                j = reactionIndex[rxn]
                 if rxn.kinetics.isPressureDependent():
                     if rxn.kinetics.efficiencies:
+                        j = reactionIndex[rxn]
                         pdepColliderReactionIndices.append(j)
                         pdepColliderKinetics.append(rxn.kinetics)
                         colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
