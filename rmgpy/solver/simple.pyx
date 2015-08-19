@@ -177,7 +177,9 @@ cdef class SimpleReactor(ReactionSystem):
         
         y0_coreSpecies = y0[:numCoreSpecies]
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y0_coreSpecies) / self.P.value_si
+        P = self.P.value_si
+        T = self.T.value_si
+        V = constants.R * T * numpy.sum(y0_coreSpecies) / P
         self.V = V # volume in m^3
         for j in range(numCoreSpecies):
             self.coreSpeciesConcentrations[j] = y0[j] / V
@@ -203,8 +205,7 @@ cdef class SimpleReactor(ReactionSystem):
         forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
         reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
         equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
-        P = self.P.value_si
-        T = self.T.value_si
+
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
                 j = reactionIndex[rxn]
