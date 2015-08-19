@@ -1548,10 +1548,10 @@ class ModelMatcher():
         from rmgpy.cantherm.output import prettify
         with open(self.outputKineticsFile, 'a') as f:
             f.write('{\n')
-            f.write(' reaction: {!r},\n'.format(str(chemkinReaction)))
-            f.write(' chemkinKinetics: """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
-            f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
-            f.write(' possibleReactionFamilies: [')
+            f.write(' "reaction": {!r},\n'.format(str(chemkinReaction)))
+            f.write(' "chemkinKinetics": """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
+            f.write(' "rmgPyKinetics": {!s},\n'.format(prettify(repr(chemkinReaction.kinetics))))
+            f.write(' "possibleReactionFamilies": [')
             reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
             product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
             f.flush()
