@@ -604,15 +604,13 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None ,SMILES='', InChI='', SMARTS=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None, SMILES=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
         self._fingerprint = None
         self.InChI = ''
         if SMILES != '': self.fromSMILES(SMILES)
-        elif InChI != '': self.fromInChI(InChI)
-        elif SMARTS != '': self.fromSMARTS(SMARTS)
         self.props = props or {}
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
