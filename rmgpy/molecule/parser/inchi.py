@@ -16,9 +16,6 @@ augmented InChI:
 
 InChI=1/.../mult1
 
-For closed shell molecules (multiplicity 1) and monoradicals (multiplicity 2),
-the multiplicity layer is optional.
-
 """
 MULT_PREFIX = '/mult'
 
@@ -32,8 +29,8 @@ will have the following unpaired electron layer in the augmented InChI:
 
 InChI=1/.../mult3/u1,3
 
-For monoradicals (multiplicity 2),
-the multiplicity layer is optional.
+The indices refer to the 1-based indices in the InChI string (NOT the 0-based
+    indices of the Molecule container!)
 
 """
 U_LAYER_PREFIX = '/u'
@@ -73,13 +70,35 @@ def ignore_prefix(string):
     and returns the last part.
     """
 
-    assert INCHI_PREFIX in string, 'Not a valid InChI: {}'.format(string)
+    if not INCHI_PREFIX in string:
+        raise InchiException('Not a valid InChI: {}'.format(string))
+
     return re.split(r"(InChI=1+)(S*)/", string)[-1]
+
+def compose_aug_inchi(inchi, mult_layer, ulayer=None):
+    prefix = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
+    if ulayer is not None:
+        return prefix + inchi + mult_layer + ulayer
+    else:
+        return prefix + inchi + mult_layer 
+
+
+def compose_aug_inchi_key(inchi_key, mult_layer, ulayer=None):
+    if ulayer is not None:
+        return inchi_key + mult_layer + ulayer
+    else:
+        return inchi_key + mult_layer 
+
+class InchiException(Exception):
+    pass
 
 class InChI(str):
     """InChI is a type of string in which the InChI=1 prefix is ignored."""
     def __new__(self, inchi):
-      assert INCHI_PREFIX in inchi, 'Not a valid InChI: {}'.format(inchi)
+
+      if not INCHI_PREFIX in inchi:
+        raise InchiException('Not a valid InChI: {}'.format(inchi))
+
       return str.__new__(self, ignore_prefix(inchi))
 
 class AugmentedInChI(InChI):
