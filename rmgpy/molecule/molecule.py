@@ -617,6 +617,26 @@ class Molecule(Graph):
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
     
+    
+    def __hash__(self):
+        return hash((self.getFingerprint()))
+            
+    def __richcmp__(x, y, op):
+        if op == 2:#Py_EQ
+            return x.is_equal(y)
+        if op == 3:#Py_NE
+            return not x.is_equal(y)
+        else:
+            assert False
+    
+    def is_equal(self,other):
+        """Method to test equality of two Molecule objects."""
+        if not isinstance(other, Molecule): return False #different type
+        elif self is other: return True #same reference in memory
+        elif self.getFingerprint() != other.getFingerprint(): return False
+        else:
+            return self.isIsomorphic(other)   
+
     def __str__(self):
         """
         Return a human-readable string representation of the object.
