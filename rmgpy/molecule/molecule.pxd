@@ -32,7 +32,6 @@ cimport rmgpy.constants as constants
 cimport numpy
 
 ################################################################################
-cdef public dict _known_smiles
 
 cdef class Atom(Vertex):
 
@@ -74,8 +73,6 @@ cdef class Atom(Vertex):
     cpdef setSpinMultiplicity(self, int spinMultiplicity)
     
 ################################################################################
-
-cpdef object SMILEwriter
     
 cdef class Bond(Edge):
 
@@ -166,11 +163,9 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef fromInChI(self, str inchistr)
+    cpdef fromInChI(self, str inchistr, backend=?)
 
-    cpdef fromSMILES(self, str smilesstr)
-
-    cpdef fromRDKitMol(self, rdkitmol)
+    cpdef fromSMILES(self, str smilesstr, backend=?)
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
 
@@ -185,8 +180,6 @@ cdef class Molecule(Graph):
     cpdef str toAugmentedInChIKey(self)
 
     cpdef str toSMILES(self)
-
-#    cpdef tRDKitMol(self)
 
     cpdef toAdjacencyList(self, str label=?, bint removeH=?, bint removeLonePairs=?, bint oldStyle=?)
 

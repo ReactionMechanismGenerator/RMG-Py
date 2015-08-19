@@ -838,7 +838,7 @@ class TestMolecule(unittest.TestCase):
         Make sure that H radical is produced properly from its InChI
         representation.
         """
-        molecule = Molecule(InChI='InChI=1/H')
+        molecule = Molecule().fromInChI('InChI=1/H')
         self.assertEqual(len(molecule.atoms), 1)
         H = molecule.atoms[0]
         self.assertTrue(H.isHydrogen())
@@ -997,7 +997,6 @@ class TestMolecule(unittest.TestCase):
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
-            #molecule.toRDKitMol(sanitize=False).Debug()
             self.assertEqual(s, molecule.toSMILES(), "Started with {0} but ended with {1}".format(s, molecule.toSMILES()))
 
     def testInChIKey(self):
@@ -1017,7 +1016,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
+        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3/u1,2')
         
     def testAugmentedInChIKey(self):
         """
@@ -1028,7 +1027,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-mult3')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-mult3-u1,2')
 
     def testLinearMethane(self):
         """
@@ -1160,7 +1159,7 @@ class TestMolecule(unittest.TestCase):
         
         mol = Molecule().fromAdjacencyList(ch2_t)
     
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3/u1')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
 

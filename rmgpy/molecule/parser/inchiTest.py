@@ -1,6 +1,6 @@
 import unittest
 
-from rmgpy.molecule.parser.inchi import AugmentedInChI, InChI, ignore_prefix
+from rmgpy.molecule.parser.inchi import AugmentedInChI, InChI, ignore_prefix, compose_aug_inchi, INCHI_PREFIX, U_LAYER_PREFIX
 
 
 class InChITest(unittest.TestCase):
@@ -77,6 +77,16 @@ class IgnorePrefixTest(unittest.TestCase):
 
         with self.assertRaises(AssertionError):
             ignore_prefix('foo')
+
+class ComposeTest(unittest.TestCase):
+
+    def test_compose_aug_inchi(self):
+        inchi = 'C2H5/c1-2/h1H2,2H3'
+        mult = 2
+
+        aug_inchi = compose_aug_inchi(inchi, U_LAYER_PREFIX + str(mult))
+        assert aug_inchi  == INCHI_PREFIX + '/' + inchi + U_LAYER_PREFIX + str(mult), aug_inchi
+
 
 if __name__ == '__main__':
     unittest.main()
