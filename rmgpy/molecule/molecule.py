@@ -609,6 +609,7 @@ class Molecule(Graph):
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
         self._fingerprint = None
+        self.InChI = ''
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
         elif SMARTS != '': self.fromSMARTS(SMARTS)

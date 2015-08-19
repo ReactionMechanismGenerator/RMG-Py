@@ -107,6 +107,7 @@ cdef class Molecule(Graph):
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
+    cdef public str InChI
     cdef public dict props
     
     cpdef str getFingerprint(self)
