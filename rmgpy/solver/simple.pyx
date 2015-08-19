@@ -295,9 +295,6 @@ cdef class SimpleReactor(ReactionSystem):
                 j = pdepColliderReactionIndices[i]
                 kf[j] = pdepColliderKinetics[i].getRateCoefficient(T, Peff)
                 kr[j] = kf[j] / equilibriumConstants[j]
-            # Update object's forward and reverse rate coefficients
-            self.forwardRateCoefficients = kr
-            self.reverseRateCoefficients = kf
             
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
