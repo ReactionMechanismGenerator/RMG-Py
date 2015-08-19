@@ -33,9 +33,9 @@ models.
 """
 
 import numpy
-import quantities as pq
 
 import rmgpy.quantity as quantity
+from rmgpy.molecule import Molecule
 
 from libc.math cimport log10
 
@@ -273,7 +273,7 @@ cdef class PDepKineticsModel(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
-    `efficiencies`  A dict associating chemical species with associated efficiencies
+    `efficiencies`  A dict associating chemical species with associated efficiencies.  The keys of the dictionary are stored Molecule objects. They can be initialized as either Molecule objects or SMILES strings
     `highPlimit`    The high-pressure limit kinetics (optional)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
@@ -282,7 +282,16 @@ cdef class PDepKineticsModel(KineticsModel):
     
     def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, comment=''):
         KineticsModel.__init__(self, Tmin, Tmax, Pmin, Pmax, comment)
-        self.efficiencies = efficiencies or {}
+        self.efficiencies = {}
+        if efficiencies: 
+            for mol, eff in efficiencies.iteritems():
+                if isinstance(mol, str):
+                    # Assume it is a SMILES string
+                    self.efficiencies[Molecule().fromSMILES(mol)] = eff
+                elif isinstance(mol, Molecule):
+                    self.efficiencies[mol] = eff
+                else: 
+                    raise ValueError("Efficiencies must be declared as a dictionary of chemical species with associated efficiencies. The keys of the dictionary must be Molecule objects or SMILES strings.")
         self.highPlimit = highPlimit
         
     def __repr__(self):
@@ -317,8 +326,8 @@ cdef class PDepKineticsModel(KineticsModel):
     cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1:
         """
         Return the effective pressure in Pa for a system at a given pressure
-        `P` in Pa composed of the given list of `species` with the given
-        `fractions`.
+        `P` in Pa composed of the given list of `species` (Species or Molecule objects) with the given
+        `fractions`.  
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=1] _fractions
         cdef double Peff, frac, eff, total_frac, eff_frac
@@ -332,17 +341,17 @@ cdef class PDepKineticsModel(KineticsModel):
         # iterating over the species with efficiencies is faster
         Peff = 0.0
         eff_frac = 0.0
-        for spec, eff in self.efficiencies.items():
-            try:
-                i = species.index(spec)
-            except ValueError:
-                # Species not in list of fractions, so assume fraction of zero
-                # and skip to the next species
-                continue
-            
-            frac = _fractions[i]
-            Peff += eff * frac
-            eff_frac += frac
+        for mol, eff in self.efficiencies.iteritems():
+            for spec in species:
+                if spec.isIsomorphic(mol):
+                    i = species.index(spec)
+                    frac = _fractions[i]
+                    Peff += eff * frac
+                    eff_frac += frac
+                    break
+
+            # If species not in list of fractions, assume fraction of zero
+            # and skip to the next species
         
         # For the species with no efficiency data, assume an efficiency of 
         # unity and add to the calculation of the effective pressure
@@ -354,6 +363,26 @@ cdef class PDepKineticsModel(KineticsModel):
         Peff *= P / total_frac
         
         return Peff
+    
+    cpdef numpy.ndarray getEffectiveColliderEfficiencies(self, list species):
+        """
+        Return the effective collider efficiencies for all species in the form of
+        a numpy array.  This function helps assist rapid effective pressure calculations in the solver.
+        """
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] all_efficiencies        
+        cdef double eff
+        cdef int i
+        
+        all_efficiencies = numpy.ones(len(species), numpy.float64)
+        for mol, eff in self.efficiencies.iteritems():
+            for spec in species:
+                if spec.isIsomorphic(mol):
+                    i = species.index(spec)
+                    # override default unity value to the actual efficiency of the collider
+                    all_efficiencies[i] = eff 
+                    break
+                
+        return all_efficiencies
         
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
         """
