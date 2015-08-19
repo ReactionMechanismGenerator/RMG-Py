@@ -291,10 +291,10 @@ cdef class SimpleReactor(ReactionSystem):
             colliderEfficiencies = self.colliderEfficiencies
             for i in range(pdepColliderReactionIndices.shape[0]):
                 # Calculate effective pressure
-                Peff = P*numpy.sum(colliderEfficiencies[i]*y_coreSpecies / numpy.sum(y_coreSpecies)) 
-                kf[pdepColliderReactionIndices[i]] = pdepColliderKinetics[i].getRateCoefficient(T, Peff)
-                kr[pdepColliderReactionIndices[i]] = kf[pdepColliderReactionIndices[i]]/equilibriumConstants[pdepColliderReactionIndices[i]]
-                
+                Peff = P*numpy.sum(colliderEfficiencies[i]*y_coreSpecies / numpy.sum(y_coreSpecies))
+                j = pdepColliderReactionIndices[i]
+                kf[j] = pdepColliderKinetics[i].getRateCoefficient(T, Peff)
+                kr[j] = kf[j] / equilibriumConstants[j]
             # Update object's forward and reverse rate coefficients
             self.forwardRateCoefficients = kr
             self.reverseRateCoefficients = kf
