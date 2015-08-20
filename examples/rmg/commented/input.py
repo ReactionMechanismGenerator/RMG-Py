@@ -170,8 +170,7 @@ pressureDependence(
  	#parameter order is: low_value, high_value, units, internal points
  	temperatures=(300,2200,'K',2),
  	pressures=(0.01,100,'bar',3),
- 	#If you only care about the rate at the 'simplereactor' conditions, use False.  
- 	#Other two options are 'PDepArrhenius' (no extra arguments) and 
+ 	#The two options for interpolation are 'PDepArrhenius' (no extra arguments) and 
  	#'Chebyshev' which is followed by the number of basis sets in 
  	#Temperature and Pressure. These values must be less than the number of 
  	#internal points specified above

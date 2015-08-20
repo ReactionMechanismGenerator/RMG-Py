@@ -246,6 +246,8 @@ def pressureDependence(
     # Process interpolation model
     if isinstance(interpolation, str):
         interpolation = (interpolation,)
+    if interpolation[0].lower() not in ("chebyshev","pdeparrhenius"):
+        raise InputError("Interpolation model must be set to either 'Chebyshev' or 'PDepArrhenius'.")
     rmg.pressureDependence.interpolationModel = interpolation
 
     # Process temperatures
