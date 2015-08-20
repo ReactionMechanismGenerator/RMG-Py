@@ -32,8 +32,6 @@ the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
 """
 
-from collections import Counter
-
 import logging
 from .vf2 cimport VF2
 
@@ -417,8 +415,8 @@ cdef class Graph:
             for vertex2 in vertex1.edges: count += old_values[self.vertices.index(vertex2)]
             new_values.append(count)
 
-        element_count_old = len(Counter(old_values).keys())
-        element_count_new = len(Counter(new_values).keys())
+        element_count_old = len(set(old_values))
+        element_count_new = len(set(new_values))
 
         if element_count_new > element_count_old:
             return self.__update(new_values, 0)
