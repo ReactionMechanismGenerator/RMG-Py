@@ -181,8 +181,8 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
         if label in reactionDict:
             raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
     logging.info('Loading reaction {0}...'.format(label))
-    reactants = sorted([speciesDict[spec] for spec in reactants])
-    products = sorted([speciesDict[spec] for spec in products])
+    reactants = sorted([speciesDict[spec] for spec in reactants], key= lambda x: id(x))
+    products = sorted([speciesDict[spec] for spec in products], key= lambda x: id(x))
     transitionState = transitionStateDict[transitionState]
     if tunneling.lower() == 'wigner':
         transitionState.tunneling = Wigner(frequency=None)
@@ -210,7 +210,7 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     for reactant in reactants0:
         if not isinstance(reactant, (list,tuple)):
             reactant = [reactant]
-        reactants.append(sorted([speciesDict[spec] for spec in reactant]))
+        reactants.append(sorted([speciesDict[spec] for spec in reactant], key= lambda x: id(x)))
     
     if pathReactions is None:
         # If not explicitly given, use all reactions in input file
@@ -227,8 +227,8 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
             # Sort bimolecular configurations so that we always encounter them in the
             # same order
             # The actual order doesn't matter, as long as it is consistent
-            rxn.reactants.sort()
-            rxn.products.sort()
+            rxn.reactants.sort(key = lambda x: id(x))
+            rxn.products.sort(key = lambda x: id(x))
             # All reactant configurations not already defined as reactants or 
             # isomers are assumed to be product channels
             if len(rxn.reactants) == 1 and rxn.reactants[0] not in isomers and rxn.reactants not in products:
@@ -246,7 +246,7 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
         for product in products0:
             if not isinstance(product, (list,tuple)):
                 product = [product]
-            products.append(sorted([speciesDict[spec] for spec in product]))
+            products.append(sorted([speciesDict[spec] for spec in product], key= lambda x: id(x)))
 
     isomers = [Configuration(species) for species in isomers]
     reactants = [Configuration(*species) for species in reactants]
