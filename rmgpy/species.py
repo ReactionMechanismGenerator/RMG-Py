@@ -44,6 +44,7 @@ transition states (first-order saddle points on a potential energy surface).
 
 import numpy
 import cython
+from sets import Set
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
@@ -114,6 +115,53 @@ class Species(object):
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
 
+    def __hash__(self):
+        return hash(tuple([mol.getFingerprint() for mol in self.molecule]))
+    
+    def __richcmp__(x, y, op):
+        if op == 2:#Py_EQ
+            return x.is_equal(y)
+        if op == 3:#Py_NE
+            return not x.is_equal(y)
+        else:
+            assert False
+        
+
+    def is_equal(self,other):
+        """Private method to test equality of two Species objects."""
+        if not isinstance(other, Species): return False #different type
+        elif self is other: return True #same reference in memory
+        else:
+            return self.__compare_molecules(other)
+            
+    
+    def __compare_molecules(self, other):
+        """
+        Generates the product of the resonance isomers of both species and checks equality of the resonance
+        isomers of both species. Converts the list of resonance isomers into a set and uses set equality.
+        """
+        [spc.generateResonanceIsomers() for spc in (self, other)]
+        
+        # if both species do not have any resonance isomers use species labels for comparison instead.
+        if (not self.molecule) and (not other.molecule):
+            return self.label == other.label
+
+        return Set(self.molecule) == Set(other.molecule)
+    
+    
+    def compare(self, molecule_or_species):
+        """
+        Compares the molecules of this Species object to the parameter Molecule object.
+        Generates resonance isomers if necessary.
+        """
+        self.generateResonanceIsomers()
+        if isinstance(molecule_or_species, Species):
+            molecule_or_species.generateResonanceIsomers() 
+            return self.__compare_molecules(molecule_or_species)
+        elif isinstance(molecule_or_species, Molecule): return molecule_or_species in Set(self.molecule)
+        else: return False
+    
+    
         
 
 
