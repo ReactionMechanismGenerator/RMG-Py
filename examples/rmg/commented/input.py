@@ -170,13 +170,12 @@ pressureDependence(
  	#parameter order is: low_value, high_value, units, internal points
  	temperatures=(300,2200,'K',2),
  	pressures=(0.01,100,'bar',3),
- 	#If you only care about the rate at the 'simplereactor' conditions, use False.  
- 	#Other two options are 'PDepArrhenius' (no extra arguments) and 
+ 	#The two options for interpolation are 'PDepArrhenius' (no extra arguments) and 
  	#'Chebyshev' which is followed by the number of basis sets in 
  	#Temperature and Pressure. These values must be less than the number of 
  	#internal points specified above
  	interpolation=('Chebyshev', 6, 4),
- 	#turns off pressure dependence for molecules greater than the number specified below
+ 	#turns off pressure dependence for molecules with number of atoms greater than the number specified below
  	#this is due to faster internal rate of energy transfer for larger molecules
  	maximumAtoms=15,
  )
@@ -199,7 +198,7 @@ generatedSpeciesConstraints(
     maximumRadicalElectrons=1,
     #If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered 
     #which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
-    #allowsSingletO2=False,
+    #allowSingletO2=False,
 )
 
 #optional block allows thermo to be estimated through quantum calculations

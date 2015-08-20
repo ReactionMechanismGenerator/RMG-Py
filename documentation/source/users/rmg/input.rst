@@ -395,11 +395,6 @@ For typical combustion model temperatures of the experiments range from 300 - 20
 Interpolation scheme
 --------------------
 
-To disregard all temperature and pressure dependence and simply output the rate at the provided
-temperature and pressure, use the line ::
-
-	interpolation=False
-
 To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line ::
 
