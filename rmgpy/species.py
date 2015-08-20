@@ -108,13 +108,9 @@ class Species(object):
         self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
+          
+        self.__initialize()
         
-        # Check multiplicity of each molecule is the same
-        if molecule is not None and len(molecule)>1:
-            mult = molecule[0].multiplicity
-            for m in molecule[1:]:
-                if mult != m.multiplicity:
-                    raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
 
     def __hash__(self):
         return hash(tuple([mol.getFingerprint() for mol in self.molecule]))
@@ -165,7 +161,38 @@ class Species(object):
         else: return False
     
     
+    def __generate_label(self):
+        """
+        Private method that generates a string and stores it in the attribute label.
+        Should only be called when the Species is constructed.
+        """
+        if self.label == '': 
+            mol = self.molecule[0]
+            # Use SMILES as default format for label
+            # However, SMILES can contain slashes (to describe the
+            # stereochemistry around double bonds); since RMG doesn't 
+            # distinguish cis and trans isomers, we'll just strip these out
+            # so that we can use the label in file paths
+            self.label = mol.toSMILES().replace('/','').replace('\\','')
+            
+    
+    def __initialize(self):
+        """Initializes the Species object."""
+        self.generateResonanceIsomers()
         
+        if self.molecule:
+            # Check multiplicity of each molecule is the same
+            if len(self.molecule)>1:
+                mult = self.molecule[0].multiplicity
+                for m in self.molecule[1:]:
+                    if mult != m.multiplicity:
+                        raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=self.label))
+                    
+            self.__generate_label()
+            
+            self.molecularWeight = quantity.Quantity(self.molecule[0].getMolecularWeight()*1000.,"amu")
+            
+            self.props['formula'] = self.molecule[0].getFormula()
 
 
     def __repr__(self):
