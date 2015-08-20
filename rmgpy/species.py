@@ -290,6 +290,13 @@ class Species(object):
         # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
         return self
     
+
+    def getInChI(self):
+        return self.molecule[0].toInChI() if self.molecule else ''
+    
+    def getAugmentedInChI(self):
+        return self.molecule[0].toAugmentedInChI() if self.molecule else ''
+
     def toAdjacencyList(self):
         """
         Return a string containing each of the molecules' adjacency lists.
