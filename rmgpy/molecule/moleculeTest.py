@@ -985,7 +985,6 @@ class TestMolecule(unittest.TestCase):
 16 H u0 p0 c0 {8,S}
 """
 
-    @work_in_progress
     def testKekuleRoundTripSMILES(self):
         """
         Test that we can round-trip SMILES strings of Kekulized aromatics
