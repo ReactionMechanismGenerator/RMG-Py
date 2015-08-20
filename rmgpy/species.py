@@ -44,6 +44,7 @@ transition states (first-order saddle points on a potential energy surface).
 
 import numpy
 import cython
+from copy import deepcopy
 from sets import Set
 
 import rmgpy.quantity as quantity
@@ -126,6 +127,8 @@ class Species(object):
         else:
             assert False
         
+    def copy(self):
+        return deepcopy(self)
 
     def is_equal(self,other):
         """Private method to test equality of two Species objects."""
