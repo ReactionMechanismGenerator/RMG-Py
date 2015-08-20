@@ -51,7 +51,7 @@ cdef class Species:
     cdef public dict props
     
     cpdef generateResonanceIsomers(self)
-    
+
     cpdef bint isIsomorphic(self, other)
     
     cpdef fromAdjacencyList(self, adjlist)
