@@ -403,8 +403,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             # Sort bimolecular configurations so that we always encounter them in the
             # same order
             # The actual order doesn't matter, as long as it is consistent
-            rxn.reactants.sort()
-            rxn.products.sort()
+            rxn.reactants.sort(key=lambda x: x.label)
+            rxn.products.sort(key=lambda x: x.label)
             # Reactants of the path reaction
             if len(rxn.reactants) == 1 and rxn.reactants[0] not in isomers and rxn.reactants not in products:
                 # We've encountered a unimolecular reactant that is not classified
