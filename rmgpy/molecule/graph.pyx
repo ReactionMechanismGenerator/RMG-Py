@@ -445,7 +445,7 @@ cdef class Graph:
         # we're sure they are right, since the sorting labels depend on them
         self.updateConnectivityValues()
 
-        self.vertices = sorted(self.vertices, key=getVertexConnectivityValue)
+        self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 
