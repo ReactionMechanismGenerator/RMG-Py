@@ -198,7 +198,7 @@ generatedSpeciesConstraints(
     maximumRadicalElectrons=1,
     #If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered 
     #which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
-    #allowsSingletO2=False,
+    #allowSingletO2=False,
 )
 
 #optional block allows thermo to be estimated through quantum calculations
