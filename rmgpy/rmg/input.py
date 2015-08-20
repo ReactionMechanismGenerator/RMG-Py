@@ -495,6 +495,8 @@ def saveInputFile(path, rmg):
     f.write('simulator(\n')
     f.write('    atol = {0:g},\n'.format(rmg.absoluteTolerance))
     f.write('    rtol = {0:g},\n'.format(rmg.relativeTolerance))
+    f.write('    sens_atol = {0:g},\n'.format(rmg.sensitivityAbsoluteTolerance))
+    f.write('    sens_rtol = {0:g},\n'.format(rmg.sensitivityRelativeTolerance))
     f.write(')\n\n')
 
     # Model
