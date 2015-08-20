@@ -175,7 +175,7 @@ pressureDependence(
  	#Temperature and Pressure. These values must be less than the number of 
  	#internal points specified above
  	interpolation=('Chebyshev', 6, 4),
- 	#turns off pressure dependence for molecules greater than the number specified below
+ 	#turns off pressure dependence for molecules with number of atoms greater than the number specified below
  	#this is due to faster internal rate of energy transfer for larger molecules
  	maximumAtoms=15,
  )

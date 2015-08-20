@@ -527,7 +527,8 @@ def saveInputFile(path, rmg):
             rmg.pressureDependence.Pmax.units,
             rmg.pressureDependence.Pcount,
         ))
-        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))
+        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))     
+        f.write('    maximumAtoms = {0}, \n'.format(rmg.pressureDependence.maximumAtoms))
         f.write(')\n\n')
     
     # Quantum Mechanics
