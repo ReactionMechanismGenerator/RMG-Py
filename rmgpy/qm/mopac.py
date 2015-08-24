@@ -25,7 +25,9 @@ class Mopac:
         executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
     elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
         executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
-    else:
+    elif os.path.exists(os.path.join(mopacEnv , 'mopac')):
+        executablePath = os.path.join(mopacEnv , 'mopac')
+    else:      
         executablePath = distutils.spawn.find_executable('mopac') or \
                          distutils.spawn.find_executable('MOPAC2009.exe') or \
                          distutils.spawn.find_executable('MOPAC2012.exe') or \
