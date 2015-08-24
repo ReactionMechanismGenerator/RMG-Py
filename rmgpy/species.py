@@ -229,6 +229,15 @@ class Species(object):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.props))
 
+    def containsLabeledAtom(self, label):
+        """
+        Return :data:`True` if the species (one of the resonance isomers) contains an atom with the label
+        `label` and :data:`False` otherwise.
+        """
+        for mol in self.molecule:
+            if mol.containsLabeledAtom(label): return True
+        return False
+
     def getMolecularWeight(self):
         return self._molecularWeight
 
