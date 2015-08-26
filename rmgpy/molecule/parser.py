@@ -13,8 +13,8 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from rmgpy.molecule.molecule import Atom, Bond
-from rmgpy.molecule.molecule.util import retrieveElementCount, VALENCES, ORDERS
-from rmgpy.molecule.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
+from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
+from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
 # constants
 
