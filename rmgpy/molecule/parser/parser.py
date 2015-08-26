@@ -16,10 +16,6 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
-from rmgpy.molecule.graph import Vertex, Edge, Graph, getVertexConnectivityValue
-from rmgpy.molecule.group import GroupAtom, GroupBond, Group, ActionError
-from rmgpy.molecule.atomtype import AtomType, atomTypes, getAtomType
-import rmgpy.constants as constants
 from rmgpy.molecule.parser.util import retrieveElementCount, VALENCES, ORDERS
 from rmgpy.molecule.parser.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
