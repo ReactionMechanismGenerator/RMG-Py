@@ -1,8 +1,7 @@
 import unittest
 
 from rmgpy.molecule import Molecule
-import rmgpy.molecule.parser.inchi as ip
-from rmgpy.molecule.parser.parser import fromAugmentedInChI, createMultiplicityLayer
+from rmgpy.molecule.parser.parser import fromAugmentedInChI
 
 class InChITest(unittest.TestCase):
 
