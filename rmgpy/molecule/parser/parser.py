@@ -2,9 +2,6 @@
 
 import cython
 import logging
-import os
-import re
-import numpy
 import itertools
 
 # local imports
@@ -15,7 +12,7 @@ except:
 from rdkit import Chem
 
 from rmgpy.molecule import element as elements
-from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.molecule import Atom, Bond
 from rmgpy.molecule.parser.util import retrieveElementCount, VALENCES, ORDERS
 from rmgpy.molecule.parser.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
