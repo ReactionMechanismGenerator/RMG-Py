@@ -13,8 +13,8 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from rmgpy.molecule.molecule import Atom, Bond
-from rmgpy.molecule.parser.util import retrieveElementCount, VALENCES, ORDERS
-from rmgpy.molecule.parser.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
+from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
+from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
 # constants
 
@@ -431,9 +431,9 @@ def fromRDKitMol(mol, rdkitmol):
     This Kekulizes everything, removing all aromatic atom types.
     """
     # Below are the declared variables for cythonizing the module
-    cython.declare(i=cython.int)
-    cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+    # cython.declare(i=cython.int)
+    # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
+    # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
     
     mol.vertices = []
     
@@ -490,9 +490,9 @@ def fromOBMol(mol, obmol):
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
     # Below are the declared variables for cythonizing the module
-    cython.declare(i=cython.int)
-    cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+    # cython.declare(i=cython.int)
+    # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
+    # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
     
     mol.vertices = []
     
@@ -593,8 +593,8 @@ def toOBMol(mol):
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
-    cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
-    cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
+    # cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
+    # cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
 
     # Sort the atoms before converting to ensure output is consistent
     # between different runs

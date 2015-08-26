@@ -51,7 +51,7 @@ from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
-from rmgpy.molecule.parser import parser
+import rmgpy.molecule.parser as parser
 
 
 

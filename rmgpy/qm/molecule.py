@@ -18,7 +18,7 @@ import rmgpy.molecule
 import symmetry
 import qmdata
 from qmdata import CCLibData
-from rmgpy.molecule.parser import parser
+from rmgpy.molecule import parser
 
 class Geometry:
     """

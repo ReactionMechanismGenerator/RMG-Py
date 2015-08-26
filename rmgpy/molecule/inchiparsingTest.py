@@ -1,7 +1,7 @@
 import unittest
 
 from rmgpy.molecule import Molecule
-from rmgpy.molecule.parser.parser import fromAugmentedInChI
+from rmgpy.molecule.parser import fromAugmentedInChI
 
 class InChITest(unittest.TestCase):
 
