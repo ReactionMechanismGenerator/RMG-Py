@@ -189,7 +189,6 @@ class Species(object):
             self.molecularWeight = quantity.Quantity(self.molecule[0].getMolecularWeight()*1000.,"amu")
             self.props['formula'] = self.molecule[0].getFormula()
 
-
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -232,6 +231,14 @@ class Species(object):
 
     def getMolecularWeight(self):
         return self._molecularWeight
+
+    def getFormula(self):
+        if 'formula' in self.props:
+            return self.props['formula']
+        else:
+            self.props['formula'] = self.molecule[0].getFormula()
+            return self.props['formula']
+
     def setMolecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")

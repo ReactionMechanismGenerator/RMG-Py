@@ -85,6 +85,8 @@ cdef class Species:
     cpdef str getAugmentedInChI(self)
 
     cpdef str getDescriptor(self)
+
+    cpdef str getFormula(self)
     
 ################################################################################
 
