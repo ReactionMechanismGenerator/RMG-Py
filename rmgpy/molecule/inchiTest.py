@@ -29,7 +29,7 @@ class AugmentedInChITest(unittest.TestCase):
         aug_inchi1 = AugmentedInChI('InChI=1S/foo')
 
         self.assertTrue( aug_inchi1 == 'foo', aug_inchi1)
-        self.assertTrue( aug_inchi1.mult == 1)
+        self.assertTrue( aug_inchi1.mult == -1)
         self.assertTrue( aug_inchi1.u_indices is None)
 
         aug_inchi2 = AugmentedInChI('InChI=1S/foo/mult100')
@@ -69,6 +69,13 @@ class AugmentedInChITest(unittest.TestCase):
         self.assertTrue( aug_inchi.mult == aug_inchi2.mult)
         self.assertTrue( aug_inchi.u_indices == aug_inchi2.u_indices)
         
+
+    def testDefaultMultiplicity(self):
+        """Test that default multiplicity equals 1."""
+        aug_inchi = AugmentedInChI('InChI=1S/CH4/h1H4')
+
+        self.assertTrue( aug_inchi.mult == -1)
+
 class IgnorePrefixTest(unittest.TestCase):
 
     def test_ignore(self):

@@ -109,8 +109,8 @@ class AugmentedInChI(InChI):
 
         self.inchi = str(inchi)
 
-        # default to multiplicity 1
-        self.mult = mult or 1
+        # default to multiplicity -1
+        self.mult = mult or -1
 
         # default to None
         self.u_indices = u_indices or None
