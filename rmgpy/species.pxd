@@ -49,6 +49,7 @@ cdef class Species:
     cdef public bint reactive
     cdef public object energyTransferModel
     cdef public dict props
+    cdef public str aug_inchi
     
     cpdef generateResonanceIsomers(self)
 
@@ -80,6 +81,9 @@ cdef class Species:
     cpdef double calculateCp0(self) except -1
 
     cpdef double calculateCpInf(self) except -1
+
+    cpdef str getAugmentedInChI(self)
+
     
 ################################################################################
 

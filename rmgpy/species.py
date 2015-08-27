@@ -108,6 +108,7 @@ class Species(object):
         self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
+        self.aug_inchi = None
           
         self.__initialize()
         
@@ -323,7 +324,11 @@ class Species(object):
         return self.molecule[0].toInChI() if self.molecule else ''
     
     def getAugmentedInChI(self):
-        return self.molecule[0].toAugmentedInChI() if self.molecule else ''
+        if self.aug_inchi is not None:
+            return self.aug_inchi
+        else:
+            self.aug_inchi = self.molecule[0].toAugmentedInChI() if self.molecule else ''
+            return self.aug_inchi
 
     def toAdjacencyList(self):
         """
