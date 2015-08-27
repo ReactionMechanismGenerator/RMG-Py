@@ -186,15 +186,7 @@ class Species(object):
         self.generateResonanceIsomers()
         
         if self.molecule:
-            # Check multiplicity of each molecule is the same
-            if len(self.molecule)>1:
-                mult = self.molecule[0].multiplicity
-                for m in self.molecule[1:]:
-                    if mult != m.multiplicity:
-                        raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=self.label))
-            
             self.molecularWeight = quantity.Quantity(self.molecule[0].getMolecularWeight()*1000.,"amu")
-            
             self.props['formula'] = self.molecule[0].getFormula()
 
 
@@ -271,6 +263,14 @@ class Species(object):
         """
         if len(self.molecule) == 1:
             self.molecule = self.molecule[0].generateResonanceIsomers()
+
+        if self.molecule:
+            # Check multiplicity of each molecule is the same
+            if len(self.molecule)>1:
+                mult = self.molecule[0].multiplicity
+                for m in self.molecule[1:]:
+                    if mult != m.multiplicity:
+                        raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=self.label))
     
     def isIsomorphic(self, other):
         """
