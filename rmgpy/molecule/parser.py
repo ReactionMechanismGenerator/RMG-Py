@@ -348,6 +348,14 @@ def fromAugmentedInChI(mol, aug_inchi):
         aug_inchi = AugmentedInChI(aug_inchi)
 
     mol = fromInChI(mol, aug_inchi.inchi)
+
+    # multiplicity not specified in augmented InChI. Setting 
+    if aug_inchi.mult == -1:
+        logging.debug('Multiplicity not specified in augmented InChI.')
+        logging.debug('Setting the multiplicity equal to the number of unpaired electrons + 1 of the parsed InChI.')
+        mol.multiplicity = mol.getNumberOfRadicalElectrons() + 1
+        return mol        
+
     mol.multiplicity = aug_inchi.mult
 
 
