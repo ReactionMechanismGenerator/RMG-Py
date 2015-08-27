@@ -1,6 +1,6 @@
 import unittest
 
-from rmgpy.molecule.parser.inchi import AugmentedInChI, InChI, InchiException, ignore_prefix, compose_aug_inchi, INCHI_PREFIX, U_LAYER_PREFIX
+from rmgpy.molecule.inchi import AugmentedInChI, InChI, InchiException, ignore_prefix, compose_aug_inchi, INCHI_PREFIX, U_LAYER_PREFIX
 
 
 class InChITest(unittest.TestCase):
