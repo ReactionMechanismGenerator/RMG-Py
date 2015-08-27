@@ -107,7 +107,7 @@ class AugmentedInChI(InChI):
         super(AugmentedInChI, self).__init__()
         inchi, mult, u_indices = decompose(self)
 
-        self.inchi = inchi
+        self.inchi = str(inchi)
 
         # default to multiplicity 1
         self.mult = mult or 1
