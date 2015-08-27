@@ -479,12 +479,10 @@ class KineticsDatabase(object):
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
                 reactant = Species(molecule=[molecule])
-                reactant.generateResonanceIsomers()
                 reactant.thermo = thermoDatabase.getThermoData(reactant)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 product = Species(molecule=[molecule])
-                product.generateResonanceIsomers()
                 product.thermo = thermoDatabase.getThermoData(product)
                 reaction.products.append(product)
 

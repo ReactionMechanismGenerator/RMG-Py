@@ -439,7 +439,6 @@ class CoreEdgeReactionModel:
             speciesIndex = -1
         spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
-        spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         # spec.generateTransportData(database)
         spec.generateEnergyTransferModel()
