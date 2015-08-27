@@ -124,7 +124,11 @@ class Species(object):
             return not x.is_equal(y)
         else:
             assert False
-        
+    
+    def getDescriptor(self):
+        """ A string that can serve as a means to sort a list of species."""
+        return self.getAugmentedInChI()
+
     def copy(self):
         return deepcopy(self)
 
