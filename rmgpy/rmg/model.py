@@ -387,8 +387,8 @@ class CoreEdgeReactionModel:
         """
 
         # Make sure the reactant and product lists are sorted before performing the check
-        rxn.reactants.sort()
-        rxn.products.sort()
+        rxn.reactants.sort(key=lambda x: x.label)
+        rxn.products.sort(key=lambda x: x.label)
 
         # Get the short-list of reactions with the same family, reactant1 and reactant2
         r1 = rxn.reactants[0]
@@ -1396,8 +1396,8 @@ class CoreEdgeReactionModel:
         else:
             reactants = newReaction.products[:]
             products = newReaction.products[:]
-        reactants.sort()
-        products.sort()
+        reactants.sort(key=lambda x: x.label)
+        products.sort(key=lambda x: x.label)
         
         source = tuple(reactants)
 

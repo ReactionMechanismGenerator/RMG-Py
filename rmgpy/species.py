@@ -44,6 +44,8 @@ transition states (first-order saddle points on a potential energy surface).
 
 import numpy
 import cython
+from copy import deepcopy
+from sets import Set
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
@@ -106,15 +108,91 @@ class Species(object):
         self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
+          
+        self.__initialize()
         
-        # Check multiplicity of each molecule is the same
-        if molecule is not None and len(molecule)>1:
-            mult = molecule[0].multiplicity
-            for m in molecule[1:]:
-                if mult != m.multiplicity:
-                    raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
 
+    def __hash__(self):
+        return hash(tuple([mol.getFingerprint() for mol in self.molecule]))
+    
+    def __richcmp__(x, y, op):
+        if op == 2:#Py_EQ
+            return x.is_equal(y)
+        if op == 3:#Py_NE
+            return not x.is_equal(y)
+        else:
+            assert False
         
+    def copy(self):
+        return deepcopy(self)
+
+    def is_equal(self,other):
+        """Private method to test equality of two Species objects."""
+        if not isinstance(other, Species): return False #different type
+        elif self is other: return True #same reference in memory
+        else:
+            return self.__compare_molecules(other)
+            
+    
+    def __compare_molecules(self, other):
+        """
+        Generates the product of the resonance isomers of both species and checks equality of the resonance
+        isomers of both species. Converts the list of resonance isomers into a set and uses set equality.
+        """
+        [spc.generateResonanceIsomers() for spc in (self, other)]
+        
+        # if both species do not have any resonance isomers use species labels for comparison instead.
+        if (not self.molecule) and (not other.molecule):
+            return self.label == other.label
+
+        return Set(self.molecule) == Set(other.molecule)
+    
+    
+    def compare(self, molecule_or_species):
+        """
+        Compares the molecules of this Species object to the parameter Molecule object.
+        Generates resonance isomers if necessary.
+        """
+        self.generateResonanceIsomers()
+        if isinstance(molecule_or_species, Species):
+            molecule_or_species.generateResonanceIsomers() 
+            return self.__compare_molecules(molecule_or_species)
+        elif isinstance(molecule_or_species, Molecule): return molecule_or_species in Set(self.molecule)
+        else: return False
+    
+    
+    def __generate_label(self):
+        """
+        Private method that generates a string and stores it in the attribute label.
+        Should only be called when the Species is constructed.
+        """
+        if self.label == '': 
+            mol = self.molecule[0]
+            # Use SMILES as default format for label
+            # However, SMILES can contain slashes (to describe the
+            # stereochemistry around double bonds); since RMG doesn't 
+            # distinguish cis and trans isomers, we'll just strip these out
+            # so that we can use the label in file paths
+            self.label = mol.toSMILES().replace('/','').replace('\\','')
+            
+    
+    def __initialize(self):
+        """Initializes the Species object."""
+        self.generateResonanceIsomers()
+        
+        if self.molecule:
+            # Check multiplicity of each molecule is the same
+            if len(self.molecule)>1:
+                mult = self.molecule[0].multiplicity
+                for m in self.molecule[1:]:
+                    if mult != m.multiplicity:
+                        raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=self.label))
+                    
+            self.__generate_label()
+            
+            self.molecularWeight = quantity.Quantity(self.molecule[0].getMolecularWeight()*1000.,"amu")
+            
+            self.props['formula'] = self.molecule[0].getFormula()
 
 
     def __repr__(self):
@@ -239,6 +317,13 @@ class Species(object):
         # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
         return self
     
+
+    def getInChI(self):
+        return self.molecule[0].toInChI() if self.molecule else ''
+    
+    def getAugmentedInChI(self):
+        return self.molecule[0].toAugmentedInChI() if self.molecule else ''
+
     def toAdjacencyList(self):
         """
         Return a string containing each of the molecules' adjacency lists.
