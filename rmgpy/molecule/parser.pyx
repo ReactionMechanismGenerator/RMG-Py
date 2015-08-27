@@ -12,9 +12,13 @@ except:
 from rdkit import Chem
 
 from rmgpy.molecule import element as elements
-from rmgpy.molecule.molecule import Atom, Bond
+
 from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
 from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
+
+# cimports
+
+from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 # constants
 
@@ -432,16 +436,19 @@ def fromSMARTS(mol, smartsstr):
     fromRDKitMol(mol, rdkitmol)
     return mol
     
-def fromRDKitMol(mol, rdkitmol):
+cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol):
     """
     Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    # Below are the declared variables for cythonizing the module
-    # cython.declare(i=cython.int)
-    # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-    # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+
+    cdef:
+        int i, radicalElectrons, charge, lonePairs, number
+        str order
+        Atom atom, atom1, atom2
+        Bond bond
+
     
     mol.vertices = []
     
@@ -450,7 +457,7 @@ def fromRDKitMol(mol, rdkitmol):
     Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
     
     # iterate through atoms in rdkitmol
-    for i in range(rdkitmol.GetNumAtoms()):
+    for i in xrange(rdkitmol.GetNumAtoms()):
         rdkitatom = rdkitmol.GetAtomWithIdx(i)
         
         # Use atomic number as key for element
@@ -465,11 +472,11 @@ def fromRDKitMol(mol, rdkitmol):
         mol.vertices.append(atom)
         
         # Add bonds by iterating again through atoms
-        for j in range(0, i):
+        for j in xrange(0, i):
             rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
             rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
             if rdkitbond is not None:
-                order = 0
+                order = ''
     
                 # Process bond type
                 rdbondtype = rdkitbond.GetBondType()
