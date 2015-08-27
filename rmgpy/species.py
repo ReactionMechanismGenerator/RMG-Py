@@ -167,10 +167,9 @@ class Species(object):
         else: return False
     
     
-    def __generate_label(self):
+    def generate_label(self):
         """
-        Private method that generates a string and stores it in the attribute label.
-        Should only be called when the Species is constructed.
+        Method that generates a string and stores it in the attribute label.
         """
         if self.label == '': 
             mol = self.molecule[0]
@@ -193,8 +192,6 @@ class Species(object):
                 for m in self.molecule[1:]:
                     if mult != m.multiplicity:
                         raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=self.label))
-                    
-            self.__generate_label()
             
             self.molecularWeight = quantity.Quantity(self.molecule[0].getMolecularWeight()*1000.,"amu")
             
