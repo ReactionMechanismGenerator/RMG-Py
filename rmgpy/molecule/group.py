@@ -90,9 +90,7 @@ class GroupAtom(Vertex):
         """
         d = {
             'edges': self.edges,
-            'connectivity1': self.connectivity1,
-            'connectivity2': self.connectivity2,
-            'connectivity3': self.connectivity3,
+            'connectivity': self.connectivity,
             'sortingLabel': self.sortingLabel,
         }
         atomType = self.atomType
@@ -105,9 +103,7 @@ class GroupAtom(Vertex):
         A helper function used when unpickling an object.
         """
         self.edges = d['edges']
-        self.connectivity1 = d['connectivity1']
-        self.connectivity2 = d['connectivity2']
-        self.connectivity3 = d['connectivity3']
+        self.connectivity = d['connectivity']
         self.sortingLabel = d['sortingLabel']
 
     def __str__(self):
@@ -537,9 +533,8 @@ class Group(Graph):
     def __init__(self, atoms=None):
         Graph.__init__(self, atoms)
         self.multiplicity = []
-        self.updateConnectivityValues()
-        self.updateFingerprint()
-    
+        self.update()
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -624,6 +619,12 @@ class Group(Graph):
         other = Group(g.vertices)
         return other
 
+    def update(self):
+
+        self.updateConnectivityValues()
+        self.updateFingerprint()
+
+
     def merge(self, other):
         """
         Merge two groups so as to store them in a single
@@ -697,8 +698,7 @@ class Group(Graph):
         self.vertices, multiplicity = fromAdjacencyList(adjlist, group=True)
         if multiplicity is not None:
             self.multiplicity = multiplicity
-        self.updateConnectivityValues()
-        self.updateFingerprint()
+        self.update()
         return self
 
     def toAdjacencyList(self, label=''):
@@ -707,6 +707,7 @@ class Group(Graph):
         """
         from .adjlist import toAdjacencyList
         return toAdjacencyList(self.vertices, multiplicity=self.multiplicity, label='', group=True)
+
 
     def updateFingerprint(self):
         """

@@ -18,6 +18,7 @@ import rmgpy.molecule
 import symmetry
 import qmdata
 from qmdata import CCLibData
+from rmgpy.molecule import parser
 
 class Geometry:
     """
@@ -107,7 +108,7 @@ class Geometry:
         """
         Import rmg molecule and create rdkit molecule with the same atom labeling.
         """
-        return self.molecule.toRDKitMol(removeHs=False, returnMapping=True)
+        return parser.toRDKitMol(self.molecule, removeHs=False, returnMapping=True)
 
 
     def rd_embed(self, rdmol, numConfAttempts):
