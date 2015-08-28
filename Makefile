@@ -115,6 +115,15 @@ eg3: all
 	coverage report
 	coverage html
 
+eg5: all
+	mkdir -p testing/heptane-eg5
+	rm -rf testing/heptane-eg5/*
+	cp examples/rmg/heptane-eg5/input.py testing/heptane-eg5/input.py
+	coverage erase
+	@ echo "Running heptane-eg5 example."
+	python rmg.py testing/heptane-eg5/input.py
+
+
 
 ######### 
 # Section for setting up MOPAC calculations on the Travis-CI.org server
