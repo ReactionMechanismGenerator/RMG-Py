@@ -17,7 +17,7 @@ import os.path
 import argparse
 
 from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
-from rmgpy.reaction import ReactionModel
+from rmgpy.rmg.model import ReactionModel
 
 ################################################################################
 if __name__ == '__main__':
