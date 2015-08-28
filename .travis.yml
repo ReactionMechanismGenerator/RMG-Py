@@ -34,6 +34,7 @@ script:
   - make test
   - make test-database
   - make eg1
+  - bash testing/saveModel.sh
   - make eg4
   - make eg5
   - make eg6
