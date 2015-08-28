@@ -27,19 +27,6 @@ species(
 )
 
 simpleReactor(
-    temperature=(1000,'K'),
-    pressure=(400,'Pa'),
-    initialMoleFractions={
-        "n-heptane": 0.02,
-        "Ar": 0.98,
-    },
-    terminationConversion={
-        'n-heptane': 0.99,
-    },
-    terminationTime=(1e6,'s'),
-)
-
-simpleReactor(
     temperature=(1500,'K'),
     pressure=(400,'Pa'),
     initialMoleFractions={
@@ -47,22 +34,9 @@ simpleReactor(
         "Ar": 0.98,
     },
     terminationConversion={
-        'n-heptane': 0.99,
+        'n-heptane': 0.5,
     },
-    terminationTime=(1e6,'s'),
-)
-
-simpleReactor(
-    temperature=(2000,'K'),
-    pressure=(400,'Pa'),
-    initialMoleFractions={
-        "n-heptane": 0.02,
-        "Ar": 0.98,
-    },
-    terminationConversion={
-        'n-heptane': 0.99,
-    },
-    terminationTime=(1e6,'s'),
+    terminationTime=(1e0,'s'),
 )
 
 simulator(
@@ -72,8 +46,7 @@ simulator(
 
 model(
     toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.01,
-    toleranceInterruptSimulation=0.1,
+    toleranceMoveToCore=0.1,
     maximumEdgeSpecies=100000
 )
 
@@ -88,7 +61,6 @@ pressureDependence(
 
 options(
     units='si',
-    saveRestartPeriod=(1,'hour'),
     drawMolecules=False,
     generatePlots=False,
 )
