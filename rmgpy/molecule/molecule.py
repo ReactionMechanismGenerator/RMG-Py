@@ -1313,6 +1313,11 @@ class Molecule(Graph):
         
         return parser.toSMILES(self)
 
+    def toRDKitMol(self, *args, **kwargs):
+        """
+        Convert a molecular structure to a RDKit rdmol object.
+        """
+        return parser.toRDKitMol(self, *args, **kwargs)
 
     def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False, oldStyle=False):
         """
