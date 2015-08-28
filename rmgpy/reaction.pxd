@@ -100,13 +100,3 @@ cdef class Reaction:
     
     cpdef copy(self)
     
-################################################################################
-
-cdef class ReactionModel:
-
-    cdef public list species
-    cdef public list reactions
-
-    cpdef generateStoichiometryMatrix(self)
-
-################################################################################
