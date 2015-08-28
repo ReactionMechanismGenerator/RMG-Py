@@ -701,8 +701,12 @@ class Molecule(Graph):
         Sort the atoms in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
-        self.sortVertices()
-        self.atoms.sort(key=lambda k: k.getDescriptor())
+        cython.declare(vertex=Vertex, a=Atom, index=int)
+        for vertex in self.vertices:
+            if vertex.sortingLabel < 0:
+                self.updateConnectivityValues()
+                break
+        self.atoms.sort(key=lambda a: a.getDescriptor())
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 
