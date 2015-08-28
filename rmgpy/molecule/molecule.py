@@ -589,7 +589,7 @@ class Molecule(Graph):
         if op == 3:#Py_NE
             return not x.is_equal(y)
         else:
-            assert False
+            raise NotImplementedError("Can only check equality of molecules, not > or <")
     
     def is_equal(self,other):
         """Method to test equality of two Molecule objects."""
