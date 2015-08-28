@@ -120,14 +120,14 @@ eg5: all
 	rm -rf testing/heptane-eg5/*
 	cp examples/rmg/heptane-eg5/input.py testing/heptane-eg5/input.py
 	@ echo "Running heptane-eg5 example."
-	python rmg.py testing/heptane-eg5/input.py
+	python rmg.py -q testing/heptane-eg5/input.py
 
 eg6: all
 	mkdir -p testing/ethane-oxidation
 	rm -rf testing/ethane-oxidation/*
 	cp examples/rmg/ethane-oxidation/input.py testing/ethane-oxidation/input.py
 	@ echo "Running ethane-oxidation example."
-	python rmg.py testing/ethane-oxidation/input.py
+	python rmg.py -q testing/ethane-oxidation/input.py
 
 ######### 
 # Section for setting up MOPAC calculations on the Travis-CI.org server
