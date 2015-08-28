@@ -82,7 +82,7 @@ try:
 except:
     pass
 
-def reset_lone_pairs_to_default(at):
+cdef reset_lone_pairs_to_default(at):
     """Resets the atom's lone pair count to its default value."""
 
     bondorder = 0
@@ -92,14 +92,16 @@ def reset_lone_pairs_to_default(at):
     
     at.lonePairs = (VALENCES[at.element.symbol] - bondorder - at.radicalElectrons - at.charge) / 2
 
-def convert_unsaturated_bond_to_biradical(mol, u_indices):
+cdef convert_unsaturated_bond_to_biradical(Molecule mol, list u_indices):
     """
     Convert an unsaturated bond (double, triple) into a bond
     with a lower bond order (single, double), and give an unpaired electron
     to each of the neighboring atoms, with indices referring to the 1-based
     index in the InChI string.
     """
-
+    cdef:
+        int u1, u2
+        Atom atom1, atom2
 
     combos = itertools.combinations(u_indices, 2)
 
