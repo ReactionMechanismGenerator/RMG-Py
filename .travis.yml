@@ -34,3 +34,5 @@ script:
   - make test
   - make eg1
   - make eg4
+  - make eg5
+  - make eg6
