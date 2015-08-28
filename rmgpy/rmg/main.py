@@ -306,6 +306,8 @@ class RMG:
         by the :mod:`argparse` package.
         """
     
+        self.checkDependencies()
+
         # Save initialization time
         self.initializationTime = time.time()
     
@@ -1141,6 +1143,38 @@ class RMG:
                 if '//' in line: line = line[0:line.index('//')]
         return line
     
+
+    def checkDependencies(self):
+        """Checks if the critical dependencies are the right version."""
+
+        try:
+            import rdkit
+            version = rdkit.__version__
+            if not '2015' in version:
+                logging.error('RDKit\'s currently installed version {} cannot be used for RMG.'.format(version))
+                raise Exception
+
+            from rdkit import Chem; 
+            if not Chem.inchi.INCHI_AVAILABLE:
+                logging.error('RDKit installed without InChI Support. Please install with InChI.')
+                raise Exception
+
+        except Exception, e:
+            logging.error('RDKit could not imported.')
+            raise e
+
+        try:
+            import openbabel as ob
+            version = ob.OBReleaseVersion()
+            SUPPORTED_OB_VERSIONS = ['2.3.1', '2.3.2']
+            if not version in SUPPORTED_OB_VERSIONS:
+                logging.error('Openbabel\'s currently installed version {} cannot be used for RMG.'.format(version))
+                raise Exception
+        except Exception, e:
+            logging.error('Openbabel could not imported.')
+            raise e
+
+
 ################################################################################
 
 def initializeLog(verbose, log_file_name):
