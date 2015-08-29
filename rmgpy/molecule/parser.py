@@ -16,9 +16,7 @@ from rmgpy.molecule import element as elements
 from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
 from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
-# cimports
-
-from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+from .molecule import Atom, Bond, Molecule
 
 # constants
 
@@ -82,7 +80,7 @@ try:
 except:
     pass
 
-cdef reset_lone_pairs_to_default(at):
+def reset_lone_pairs_to_default(at):
     """Resets the atom's lone pair count to its default value."""
 
     bondorder = 0
@@ -92,16 +90,16 @@ cdef reset_lone_pairs_to_default(at):
     
     at.lonePairs = (VALENCES[at.element.symbol] - bondorder - at.radicalElectrons - at.charge) / 2
 
-cdef convert_unsaturated_bond_to_biradical(Molecule mol, list u_indices):
+def convert_unsaturated_bond_to_biradical(mol, u_indices):
     """
     Convert an unsaturated bond (double, triple) into a bond
     with a lower bond order (single, double), and give an unpaired electron
     to each of the neighboring atoms, with indices referring to the 1-based
     index in the InChI string.
     """
-    cdef:
-        int u1, u2
-        Atom atom1, atom2
+    cython.declare(u1=cython.int, u2=cython.int)
+    cython.declare(atom1=Atom, atom2=Atom)
+    cython.declare(b=Bond)
 
     combos = itertools.combinations(u_indices, 2)
 
@@ -124,6 +122,13 @@ cdef convert_unsaturated_bond_to_biradical(Molecule mol, list u_indices):
                 return mol        
 
 def isUnsaturated(mol):
+    """Does the molecule have a bond that's not single?
+    
+    (eg. a bond that is double or triple or beneze)"""
+    cython.declare(atom1=Atom,
+                   atom2=Atom,
+                   bonds=dict,
+                   bond=Bond)
     for atom1 in mol.atoms:
         bonds = mol.getBonds(atom1)
         for atom2, bond in bonds.iteritems():
@@ -138,6 +143,8 @@ def check_number_unpaired_electrons(mol):
 
 
 def __fromSMILES(mol, smilesstr, backend):
+    """Replace the Molecule `mol` with that given by the SMILES `smilesstr`
+       using the backend `backend`"""
     if backend.lower() == 'rdkit':
         rdkitmol = Chem.MolFromSmiles(smilesstr)
         if rdkitmol is None:
@@ -147,9 +154,12 @@ def __fromSMILES(mol, smilesstr, backend):
     elif backend.lower() == 'openbabel':
         parse_openbabel(mol, smilesstr, 'smi')
         return mol
+    else:
+        raise NotImplementedError('Unrecognized backend for SMILES parsing: {0}'.format(backend))
 
 def __fromInChI(mol, inchistr, backend):
-    """Redirects the parser to the backend implementation."""
+    """Replace the Molecule `mol` with that given by the InChI `inchistr`
+       using the backend `backend`"""
     if backend.lower() == 'rdkit':
         rdkitmol = Chem.inchi.MolFromInchi(inchistr, removeHs=False)
         mol = fromRDKitMol(mol, rdkitmol)
@@ -157,8 +167,7 @@ def __fromInChI(mol, inchistr, backend):
     elif backend.lower() == 'openbabel':
         return parse_openbabel(mol, inchistr, 'inchi')
     else:
-        logging.error('Unrecognized backend for InChI parsing: %s', backend)
-        raise Exception
+        raise NotImplementedError('Unrecognized backend for InChI parsing: {0}'.format(backend))
 
 
 def __parse(mol, identifier, type_identifier, backend):
@@ -173,34 +182,26 @@ def __parse(mol, identifier, type_identifier, backend):
     or try all backends.
 
     """
-    parser_dict = {
-        'smi': __fromSMILES,
-        'inchi': __fromInChI
-    }
 
     if __lookup(mol, identifier, type_identifier) is not None:
         if isCorrectlyParsed(mol, identifier):
             return mol 
-    else:
-        try:
-            parser = parser_dict[type_identifier]
-        except KeyError:
-            raise Exception
 
-        if backend in BACKENDS:
-            parser(mol, identifier, backend)
-            if isCorrectlyParsed(mol, identifier):
-                return mol
-        elif backend == 'try-all':#try all backends and check for correctness
-            for _backend in BACKENDS:
-                parser(mol, identifier, _backend)
-                if isCorrectlyParsed(mol, identifier):
-                    return mol
-                else:
-                    logging.debug('Backend %s is not able to parse identifier %s', _backend, identifier)
+    for _backend in (BACKENDS if backend=='try-all' else [backend]):
+        if type_identifier == 'smi':
+            __fromSMILES(mol, identifier, _backend)
+        elif type_identifier == 'inchi':
+            __fromInChI(mol, identifier, _backend)
+        else:
+            raise NotImplementedError("Unknown identifier type {0}".format(type_identifier))
 
-        logging.error("Unable to correctly parse %s with backend %s", identifier, backend)
-        raise Exception
+        if isCorrectlyParsed(mol, identifier):
+            return mol
+        else:
+            logging.debug('Backend %s is not able to parse identifier %s', _backend, identifier)
+
+    logging.error("Unable to correctly parse %s with backend %s", identifier, backend)
+    raise Exception("Couldn't parse {0}".format(identifier))
 
 def parse_openbabel(mol, identifier, type_identifier):
     """Converts the identifier to a Molecule using Openbabel."""
@@ -265,6 +266,10 @@ def isZwitterIon(mol):
   
 def check(mol, aug_inchi) :
     """Check if molecule corresponds to the aug. inchi"""
+    cython.declare(conditions=list,
+                   inchi=str,
+                   multi=cython.int,
+                   )
     conditions = []
 
     inchi, mult, u_indices = aug_inchi.inchi, aug_inchi.mult, aug_inchi.u_indices
@@ -283,7 +288,6 @@ def check(mol, aug_inchi) :
             break
 
     conditions.append(condition_electrons)
-
 
     assert all(conditions), 'Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     if not all(conditions):
@@ -437,20 +441,24 @@ def fromSMARTS(mol, smartsstr):
     rdkitmol = Chem.MolFromSmarts(smartsstr)
     fromRDKitMol(mol, rdkitmol)
     return mol
-    
-cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol):
+
+
+def fromRDKitMol(mol, rdkitmol):
     """
     Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-
-    cdef:
-        int i, radicalElectrons, charge, lonePairs, number
-        str order
-        Atom atom, atom1, atom2
-        Bond bond
-
+    cython.declare(i=cython.int,
+                   radicalElectrons=cython.int,
+                   charge=cython.int,
+                   lonePairs=cython.int,
+                   number=cython.int,
+                   order=cython.str,
+                   atom=Atom,
+                   atom1=Atom,
+                   atom2=Atom,
+                   bond=Bond)
     
     mol.vertices = []
     
@@ -597,8 +605,8 @@ def toSMILES(mol):
         pass
     for atom in mol.vertices:
         if atom.isNitrogen():
-            mol = toOBMol(mol)
-            return SMILEwriter.WriteString(mol).strip()
+            obmol = toOBMol(mol)
+            return SMILEwriter.WriteString(obmol).strip()
 
     rdkitmol = toRDKitMol(mol, sanitize=False)
     if not mol.isAromatic():
@@ -646,6 +654,17 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     If returnMapping==True then it also returns a dictionary mapping the 
     atoms to RDKit's atom indices.
     """
+    cython.declare(atoms=list,
+                   rdAtomIndices=dict,
+                   index=cython.int,
+                   atom=Atom,
+                   orders=dict,
+                   atom1=Atom,
+                   atom2=Atom,
+                   index1=cython.int,
+                   index2=cython.int,
+                   )
+                   
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
     mol.sortAtoms()
@@ -778,7 +797,7 @@ def toAugmentedInChIKey(mol):
     
     mult_layer = '-mult'+str(mol.multiplicity) 
     ulayer = [str(i+1) for i, at in enumerate(mol.atoms) if at.radicalElectrons > 0]
-    ulayer = '-u' + ','.join(ulayer) if mol.getNumberOfRadicalElectrons > 1 else None
+    ulayer = '-u' + ','.join(ulayer) if mol.getNumberOfRadicalElectrons() > 1 else None
 
     return compose_aug_inchi_key(key, mult_layer, ulayer)
 
