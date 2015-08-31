@@ -217,6 +217,7 @@ cdef class ReactionSystem(DASx):
                     normSens_array[i].append(normSens)
 
             # Save the species mole fractions to CSV file
+            self.notify()
             if worksheet:
                 row = [self.t, self.V]
                 row.extend(y_coreSpecies/numpy.sum(y_coreSpecies))
