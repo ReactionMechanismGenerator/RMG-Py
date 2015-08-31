@@ -40,6 +40,8 @@ import os
 import sys
 import signal
 
+from rmgpy.scoop_framework.util import logger as logging
+
 try:
 
     import scoop
@@ -49,10 +51,7 @@ try:
     from scoop._types import FutureQueue
     from scoop.broker.structs import BrokerInfo
 
-    from scoop import logger as logging
-
 except ImportError, e:
-    import logging as logging
     logging.debug("Could not properly import SCOOP.")
 
 
