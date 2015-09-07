@@ -39,51 +39,21 @@ import cython
 import logging
 import os
 import re
+import numpy
+
 import element as elements
 try:
     import openbabel
 except:
     pass
 from rdkit import Chem
-from .graph import Vertex, Edge, Graph
+from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
+import rmgpy.molecule.parser as parser
 
-import numpy
 
-#: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
-_known_smiles_molecules = {  # for things that are NOT radicals
-                 'N2': 'N#N',
-                 'CH4': 'C',
-                 'H2O': 'O',
-                 'C2H6': 'CC',
-                 'H2': '[H][H]',
-                 'H2O2': 'OO',
-                 'C3H8': 'CCC',
-                 'Ar': '[Ar]',
-                 'He': '[He]',
-                 'CH4O': 'CO',
-                 'CO2': 'O=C=O',
-                 'CO': '[C-]#[O+]',
-                 'C2H4': 'C=C',
-                 'O2': 'O=O'
-             }
-
-_known_smiles_radicals = {
-                 'CH3': '[CH3]',
-                 'HO': '[OH]',
-                 'C2H5': 'C[CH2]',
-                 'O': '[O]',
-                 'HO2': '[O]O',
-                 'CH': '[CH]',
-                 'H': '[H]',
-                 'C': '[C]',
-                 #'CO2': it could be [O][C][O] or O=[C][O]
-                 #'CO': '[C]=O', could also be [C][O]
-                 #'C2H4': could  be [CH3][CH] or [CH2][CH2]
-                 'O2': '[O][O]',
-             }
 
 ################################################################################
 
@@ -143,9 +113,7 @@ class Atom(Vertex):
         """
         d = {
             'edges': self.edges,
-            'connectivity1': self.connectivity1,
-            'connectivity2': self.connectivity2,
-            'connectivity3': self.connectivity3,
+            'connectivity': self.connectivity,
             'sortingLabel': self.sortingLabel,
             'atomType': self.atomType.label if self.atomType else None,
             'lonePairs': self.lonePairs,
@@ -157,9 +125,7 @@ class Atom(Vertex):
         A helper function used when unpickling an object.
         """
         self.edges = d['edges']
-        self.connectivity1 = d['connectivity1']
-        self.connectivity2 = d['connectivity2']
-        self.connectivity3 = d['connectivity3']
+        self.connectivity = d['connectivity']
         self.sortingLabel = d['sortingLabel']
         self.atomType = atomTypes[d['atomType']] if d['atomType'] else None
         self.lonePairs = d['lonePairs']
@@ -216,6 +182,12 @@ class Atom(Vertex):
                 else:
                     return False
             return True
+    
+    def getDescriptor(self):
+        return (self.getAtomConnectivityValue(), self.symbol, self.radicalElectrons, self.lonePairs, self.charge)
+
+    def getAtomConnectivityValue(self):
+        return getVertexConnectivityValue(self)
 
     def isSpecificCaseOf(self, other):
         """
@@ -578,12 +550,6 @@ class Bond(Edge):
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 #################################################################################
-try:
-    SMILEwriter = openbabel.OBConversion()
-    SMILEwriter.SetOutFormat('smi')
-    SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
-except:
-    pass
     
 class Molecule(Graph):
     """
@@ -602,18 +568,37 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None ,SMILES='', InChI='', SMARTS=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None, SMILES=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
         self._fingerprint = None
+        self.InChI = ''
         if SMILES != '': self.fromSMILES(SMILES)
-        elif InChI != '': self.fromInChI(InChI)
-        elif SMARTS != '': self.fromSMARTS(SMARTS)
         self.props = props or {}
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
     
+    
+    def __hash__(self):
+        return hash((self.getFingerprint()))
+            
+    def __richcmp__(x, y, op):
+        if op == 2:#Py_EQ
+            return x.is_equal(y)
+        if op == 3:#Py_NE
+            return not x.is_equal(y)
+        else:
+            raise NotImplementedError("Can only check equality of molecules, not > or <")
+    
+    def is_equal(self,other):
+        """Method to test equality of two Molecule objects."""
+        if not isinstance(other, Molecule): return False #different type
+        elif self is other: return True #same reference in memory
+        elif self.getFingerprint() != other.getFingerprint(): return False
+        else:
+            return self.isIsomorphic(other)   
+
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -699,12 +684,31 @@ class Molecule(Graph):
         self._fingerprint = None
         return self.removeEdge(bond)
 
+    def update(self):
+        """
+        Update connectivity values, atom types of atoms.
+        Update multiplicity, and sort atoms using the new
+        connectivity values.
+        """
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
+        self.updateMultiplicity()
+        self.sortAtoms()
+
+
     def sortAtoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
-        return self.sortVertices()
+        cython.declare(vertex=Vertex, a=Atom, index=int)
+        for vertex in self.vertices:
+            if vertex.sortingLabel < 0:
+                self.updateConnectivityValues()
+                break
+        self.atoms.sort(key=lambda a: a.getDescriptor())
+        for index, vertex in enumerate(self.vertices):
+            vertex.sortingLabel = index
 
     def getFormula(self):
         """
@@ -1146,56 +1150,26 @@ class Molecule(Graph):
         os.unlink(tempFileName)
         return png
 
-    def fromInChI(self, inchistr):
+    def fromInChI(self, inchistr, backend='try-all'):
         """
-        Convert an InChI string `inchistr` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        This Kekulizes everything, removing all aromatic atom types.
+        Convert an InChI string `inchistr` to a molecular structure.
         """
-        #RDkit was improperly handling the Hydrogen radical from InChI
-        if inchistr == 'InChI=1/H' or inchistr == 'InChI=1S/H':
-            self.fromSMILES('[H]')
-            return self          
-        elif inchistr == 'InChI=1/He' or inchistr == 'InChI=1S/He':
-            self.fromSMILES('[He]')
-            return self
-        else:
-            rdkitmol = Chem.inchi.MolFromInchi(inchistr)
-            self.fromRDKitMol(rdkitmol)
-            return self
+        parser.fromInChI(self, inchistr, backend)
+        return self
 
-    def fromSMILES(self, smilesstr):
+    def fromAugmentedInChI(self, aug_inchi):
         """
-        Convert a SMILES string `smilesstr` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        This Kekulizes everything, removing all aromatic atom types.
+        Convert an Augmented InChI string `aug_inchi` to a molecular structure.
         """
-        # Special handling of helium
-        if smilesstr == '[He]':
-            # RDKit improperly handles helium and returns it in a triplet state
-            self.fromAdjacencyList(
-            """
-            He
-            multiplicity 1
-            1 He u0 p1
-            """)
-            return self
-        elif smilesstr == '[C]':
-            # RDKit would return the quintet C with four radicals
-            self.fromAdjacencyList(
-                """
-                C(T)
-                multiplicity 3
-                1 C u2 p1
-                """)
-            return self
-        
-        else:
-            rdkitmol = Chem.MolFromSmiles(smilesstr)
-            if rdkitmol is None:
-                raise ValueError("Could not interpret the SMILES string {0!r}".format(smilesstr))
-            self.fromRDKitMol(rdkitmol)
-            return self
+        parser.fromAugmentedInChI(self, aug_inchi)
+        return self
+
+    def fromSMILES(self, smilesstr, backend='try-all'):
+        """
+        Convert a SMILES string `smilesstr` to a molecular structure.
+        """
+        parser.fromSMILES(self, smilesstr, backend)
+        return self
         
     def fromSMARTS(self, smartsstr):
         """
@@ -1203,69 +1177,7 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         This Kekulizes everything, removing all aromatic atom types.
         """
-        rdkitmol = Chem.MolFromSmarts(smartsstr)
-        self.fromRDKitMol(rdkitmol)
-        return self
-        
-    def fromRDKitMol(self, rdkitmol):
-        """
-        Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        This Kekulizes everything, removing all aromatic atom types.
-        """
-        # Below are the declared variables for cythonizing the module
-        cython.declare(i=cython.int)
-        cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
-        
-        self.vertices = []
-        
-        # Add hydrogen atoms to complete molecule if needed
-        rdkitmol = Chem.AddHs(rdkitmol)
-        Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
-        
-        # iterate through atoms in rdkitmol
-        for i in range(rdkitmol.GetNumAtoms()):
-            rdkitatom = rdkitmol.GetAtomWithIdx(i)
-            
-            # Use atomic number as key for element
-            number = rdkitatom.GetAtomicNum()
-            element = elements.getElement(number)
-                
-            # Process charge
-            charge = rdkitatom.GetFormalCharge()
-            radicalElectrons = rdkitatom.GetNumRadicalElectrons()
-            
-            atom = Atom(element, radicalElectrons, charge, '', 0)
-            self.vertices.append(atom)
-            
-            # Add bonds by iterating again through atoms
-            for j in range(0, i):
-                rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
-                rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
-                if rdkitbond is not None:
-                    order = 0
-        
-                    # Process bond type
-                    rdbondtype = rdkitbond.GetBondType()
-                    if rdbondtype.name == 'SINGLE': order = 'S'
-                    elif rdbondtype.name == 'DOUBLE': order = 'D'
-                    elif rdbondtype.name == 'TRIPLE': order = 'T'
-                    elif rdbondtype.name == 'AROMATIC': order = 'B'
-        
-                    bond = Bond(self.vertices[i], self.vertices[j], order)
-                    self.addBond(bond)
-        
-        # Set atom types and connectivity values
-        self.updateConnectivityValues()
-        self.updateLonePairs()
-        self.updateAtomTypes()
-        
-        # Assume this is always true
-        # There are cases where 2 radicalElectrons is a singlet, but
-        # the triplet is often more stable, 
-        self.multiplicity = self.getRadicalCount() + 1
-        
+        parser.fromSMARTS(self, smartsstr)
         return self
 
     def fromAdjacencyList(self, adjlist, saturateH=False):
@@ -1338,30 +1250,7 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        try:
-            if not Chem.inchi.INCHI_AVAILABLE:
-                return "RDKitInstalledWithoutInChI"
-            rdkitmol = self.toRDKitMol()
-            return Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
-        except:
-            pass
-
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()
-
-    def createMultiplicityLayer(self):
-        """
-        Creates the string with the multiplicity information
-        that is appended to the InChI to create an augmented InChI.
-        
-        """
-        
-        mult = self.multiplicity
-        return ''.join(['mult', str(mult)])
-            
+        return parser.toInChI(self)            
         
     def toAugmentedInChI(self):
         """
@@ -1370,8 +1259,7 @@ class Molecule(Graph):
         
         Separate layer with a forward slash character.
         """
-        inchi = self.toInChI()
-        return '/'.join([inchi , self.createMultiplicityLayer()])
+        return parser.toAugmentedInChI(self)
         
     
     def toInChIKey(self):
@@ -1387,24 +1275,7 @@ class Molecule(Graph):
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-        try:
-            if not Chem.inchi.INCHI_AVAILABLE:
-                return "RDKitInstalledWithoutInChI"
-            inchi = self.toInChI()
-            return Chem.inchi.InchiToInchiKey(inchi)[:-2]
-        except:
-            pass
-        
-        import openbabel
-
-#        for atom in self.vertices:
- #           if atom.isNitrogen():
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()[:-2]
+        return parser.toInChIKey(self)
     
     def toAugmentedInChIKey(self):
         """
@@ -1414,9 +1285,7 @@ class Molecule(Graph):
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
         """
-        key = self.toInChIKey()
-        
-        return '-'.join([key , self.createMultiplicityLayer()])
+        return parser.toAugmentedInChIKey(self)
     
 
     def toSMARTS(self):
@@ -1425,9 +1294,7 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity and removes Hydrogen atoms.
         """
-        rdkitmol = self.toRDKitMol()
-        
-        return Chem.MolToSmarts(rdkitmol)
+        return parser.toSMARTS(self)
     
     
     def toSMILES(self):
@@ -1444,103 +1311,13 @@ class Molecule(Graph):
         and removes Hydrogen atoms.
         """
         
-        # If we're going to have to check the formula anyway,
-        # we may as well shortcut a few small known molecules.
-        # Dictionary lookups are O(1) so this should be fast:
-        # The dictionary is defined at the top of this file.
-        try:
-            if self.isRadical():
-                return _known_smiles_radicals[self.getFormula()]
-            else:
-                return _known_smiles_molecules[self.getFormula()]
-        except KeyError:
-            # It wasn't in the above list.
-            pass
-        for atom in self.vertices:
-            if atom.isNitrogen():
-                mol = self.toOBMol()
-                return SMILEwriter.WriteString(mol).strip()
+        return parser.toSMILES(self)
 
-        rdkitmol = self.toRDKitMol(sanitize=False)
-        if not self.isAromatic():
-            return Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
-        return Chem.MolToSmiles(rdkitmol)
-
-    def toOBMol(self):
+    def toRDKitMol(self, *args, **kwargs):
         """
-        Convert a molecular structure to an OpenBabel OBMol object. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to a RDKit rdmol object.
         """
-        cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
-        cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
-
-        # Sort the atoms before converting to ensure output is consistent
-        # between different runs
-        self.sortAtoms()
-
-        atoms = self.vertices
-
-        obmol = openbabel.OBMol()
-        for atom in atoms:
-            a = obmol.NewAtom()
-            a.SetAtomicNum(atom.number)
-            a.SetFormalCharge(atom.charge)
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
-        for atom1 in self.vertices:
-            for atom2, bond in atom1.edges.iteritems():
-                index1 = atoms.index(atom1)
-                index2 = atoms.index(atom2)
-                if index1 < index2:
-                    order = orders[bond.order]
-                    obmol.AddBond(index1+1, index2+1, order)
-
-        obmol.AssignSpinMultiplicity(True)
-
-        return obmol
-    
-    def toRDKitMol(self, removeHs=True, returnMapping=False, sanitize=True):
-        """
-        Convert a molecular structure to a RDKit rdmol object. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.
-        
-        If returnMapping==True then it also returns a dictionary mapping the 
-        atoms to RDKit's atom indices.
-        """
-        # Sort the atoms before converting to ensure output is consistent
-        # between different runs
-        self.sortAtoms()
-        atoms = self.vertices
-        rdAtomIndices = {} # dictionary of RDKit atom indices
-        rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
-        for index, atom in enumerate(self.vertices):
-            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
-            rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
-            if atom.element.symbol == 'C' and atom.lonePairs == 1 and self.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
-            rdkitmol.AddAtom(rdAtom)
-            rdAtomIndices[atom] = index
-        
-        rdBonds = Chem.rdchem.BondType
-        orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
-        # Add the bonds
-        for atom1 in self.vertices:
-            for atom2, bond in atom1.edges.iteritems():
-                index1 = atoms.index(atom1)
-                index2 = atoms.index(atom2)
-                if index1 < index2:
-                    order = orders[bond.order]
-                    rdkitmol.AddBond(index1, index2, order)
-        
-        # Make editable mol into a mol and rectify the molecule
-        rdkitmol = rdkitmol.GetMol()
-        if sanitize:
-            Chem.SanitizeMol(rdkitmol)
-        if removeHs:
-            rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
-        
-        if returnMapping:
-            return rdkitmol, rdAtomIndices
-        return rdkitmol
+        return parser.toRDKitMol(self, *args, **kwargs)
 
     def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False, oldStyle=False):
         """
@@ -1769,9 +1546,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     atom1.incrementRadical()
@@ -1813,9 +1588,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     atom1.incrementRadical()
@@ -1861,9 +1634,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     bond12.incrementOrder()
@@ -1893,9 +1664,7 @@ class Molecule(Graph):
                     for index in range(len(self.vertices)):
                         v1 = self.vertices[index]
                         v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
+                        v2.connectivity = v1.connectivity
                         v2.sortingLabel = v1.sortingLabel
                     # Restore current isomer
                     bond12.incrementOrder()
@@ -1923,7 +1692,7 @@ class Molecule(Graph):
         if self.isCyclic():
             molecule = self.copy(deep=True)
             try:
-                rdkitmol, rdAtomIndices = molecule.toRDKitMol(removeHs=True, returnMapping=True)
+                rdkitmol, rdAtomIndices = parser.toRDKitMol(molecule, removeHs=True, returnMapping=True)
             except:
                 return []
             aromatic = False
@@ -1964,8 +1733,9 @@ class Molecule(Graph):
         else:
             return isomers
         
-        rdkitmol = self.toRDKitMol()  # This perceives aromaticity
-        isomers.append(Molecule().fromRDKitMol(rdkitmol))  # This step Kekulizes the molecule
+        rdkitmol = parser.toRDKitMol(self)  # This perceives aromaticity
+        mol = Molecule()
+        isomers.append(parser.fromRDKitMol(mol, rdkitmol))  # This step Kekulizes the molecule
         return isomers
     
     def findAllDelocalizationPaths(self, atom1):
@@ -2132,7 +1902,7 @@ class Molecule(Graph):
         # changing atom types, but it doesn't hurt anything and is not
         # very expensive, so will do it anyway)
         self.updateConnectivityValues()
-        self.sortVertices()
+        self.sortAtoms()
         self.updateAtomTypes()
         self.updateLonePairs()
         self.multiplicity = 1

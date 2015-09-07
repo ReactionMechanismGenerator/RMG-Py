@@ -202,10 +202,10 @@ class TestGetAtomType(unittest.TestCase):
         Test that getAtomType() returns appropriate carbon atom types.
         """
         self.assertEqual(self.atomType(self.mol1, 0), 'Cs')
-        self.assertEqual(self.atomType(self.mol1, 5), 'Cd')
-        self.assertEqual(self.atomType(self.mol1, 6), 'Cdd')
-        self.assertEqual(self.atomType(self.mol1, 8), 'Ct')
-        self.assertEqual(self.atomType(self.mol1, 2), 'CO')
+        self.assertEqual(self.atomType(self.mol1, 6), 'Cd')
+        self.assertEqual(self.atomType(self.mol1, 4), 'Cdd')
+        self.assertEqual(self.atomType(self.mol1, 16), 'Ct')
+        self.assertEqual(self.atomType(self.mol1, 1), 'CO')
         self.assertEqual(self.atomType(self.mol2, 0), 'Cb')
     
     def testNitrogenTypes(self):
@@ -230,25 +230,25 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that getAtomType() returns appropriate oxygen atom types.
         """
-        self.assertEqual(self.atomType(self.mol1, 1), 'Os')
-        self.assertEqual(self.atomType(self.mol1, 3), 'Od')
+        self.assertEqual(self.atomType(self.mol1, 3), 'Os')
+        self.assertEqual(self.atomType(self.mol1, 13), 'Od')
     
     def testSiliconTypes(self):
         """
         Test that getAtomType() returns appropriate silicon atom types.
         """
-        self.assertEqual(self.atomType(self.mol4, 2), 'Sis')
-        self.assertEqual(self.atomType(self.mol4, 3), 'Sid')
-        self.assertEqual(self.atomType(self.mol4, 4), 'Sidd')
-        self.assertEqual(self.atomType(self.mol4, 6), 'Sit')
-        self.assertEqual(self.atomType(self.mol4, 1), 'SiO')
+        self.assertEqual(self.atomType(self.mol4, 6), 'Sis')
+        self.assertEqual(self.atomType(self.mol4, 0), 'Sid')
+        self.assertEqual(self.atomType(self.mol4, 1), 'Sidd')
+        self.assertEqual(self.atomType(self.mol4, 4), 'Sit')
+        self.assertEqual(self.atomType(self.mol4, 8), 'SiO')
     
     def testSulfurTypes(self):
         """
         Test that getAtomType() returns appropriate sulfur atom types.
         """
-        self.assertEqual(self.atomType(self.mol4, 8), 'Ss')
-        self.assertEqual(self.atomType(self.mol4, 9), 'Sd')
+        self.assertEqual(self.atomType(self.mol4, 5), 'Ss')
+        self.assertEqual(self.atomType(self.mol4, 10), 'Sd')
     
     def testOtherTypes(self):
         """

@@ -670,12 +670,12 @@ class TestMoleculeAdjLists(unittest.TestCase):
         adjlist: Check that we can convert back to old style adjacency list
         """
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
-        string = """1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 C 1 {4,S} {6,S}
-6 C 0 {5,S}"""
+        string = """1 C 0 {3,D} {4,S}
+2 C 0 {4,S}
+3 C 0 {1,D} {5,S}
+4 C 1 {1,S} {2,S}
+5 C 0 {3,S} {6,D}
+6 C 0 {5,D}"""
         self.assertEqual(molecule2.toAdjacencyList(removeH=True,oldStyle=True).strip(),string.strip())
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
