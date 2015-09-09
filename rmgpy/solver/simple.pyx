@@ -98,6 +98,15 @@ cdef class SimpleReactor(ReactionSystem):
         self.pdepColliderKinetics = None
         self.colliderEfficiencies = None
         
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (self.__class__, 
+            (self.T, self.P, self.initialMoleFractions, self.termination, self.sensitiveSpecies, self.sensitivityThreshold, ))
+
+
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
         Convert the initialMoleFractions dictionary from species names into species objects,

@@ -76,6 +76,13 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = None
         self.termination = termination or []
     
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (self.__class__, (self.termination,))
+
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
         Initialize a simulation of the reaction system using the provided
@@ -217,6 +224,7 @@ cdef class ReactionSystem(DASx):
                     normSens_array[i].append(normSens)
 
             # Save the species mole fractions to CSV file
+            self.notify()
             if worksheet:
                 row = [self.t, self.V]
                 row.extend(y_coreSpecies/numpy.sum(y_coreSpecies))
