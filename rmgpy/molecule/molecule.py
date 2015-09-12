@@ -1692,7 +1692,7 @@ class Molecule(Graph):
         if self.isCyclic():
             molecule = self.copy(deep=True)
             try:
-                rdkitmol, rdAtomIndices = parser.toRDKitMol(molecule, removeHs=True, returnMapping=True)
+                rdkitmol, rdAtomIndices = parser.toRDKitMol(molecule, removeHs=False, returnMapping=True)
             except:
                 return []
             aromatic = False
