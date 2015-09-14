@@ -676,7 +676,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rdAtom)
-        rdAtomIndices[atom] = index
+        if removeHs and atom.symbol == 'H':
+            pass
+        else:
+            rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
     orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
