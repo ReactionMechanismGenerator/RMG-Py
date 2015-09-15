@@ -45,7 +45,6 @@ try:
 except ImportError:
     logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
-from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
@@ -306,6 +305,8 @@ class RMG:
         by the :mod:`argparse` package.
         """
     
+        self.checkDependencies()
+
         # Save initialization time
         self.initializationTime = time.time()
     
@@ -378,13 +379,13 @@ class RMG:
     
         # Delete previous HTML file
         from rmgpy.rmg.output import saveOutputHTML
+        from rmgpy.molecule import Molecule
         saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
         
         # Initialize reaction model
         if args.restart:
             self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
         else:
-    
             # Seed mechanisms: add species and reactions from seed mechanism
             # DON'T generate any more reactions for the seed species at this time
             for seedMechanism in self.seedMechanisms:
@@ -970,7 +971,7 @@ class RMG:
         Load an RMG-Java job from the input file located at `inputFile`, or
         from the `inputFile` attribute if not given as a parameter.
         """
-        
+        from rmgpy.molecule import Molecule
         # NOTE: This function is currently incomplete!
         # It only loads a subset of the available information.
     
@@ -1141,6 +1142,39 @@ class RMG:
                 if '//' in line: line = line[0:line.index('//')]
         return line
     
+
+    def checkDependencies(self):
+        """
+        Checks if the critical dependencies are the right version.
+        """
+        
+        try:
+            import rdkit
+            version = rdkit.__version__        
+            from rdkit import Chem
+            if not Chem.inchi.INCHI_AVAILABLE:
+                logging.error('RDKit installed without InChI Support. Please install with InChI.')
+                raise Exception
+        except ImportError, e:
+            logging.error('RDKit could not imported.')
+            raise e
+        except AttributeError, e:
+            # As long as rdkit.__version__ attribute exists, that means it is newer than 2015 release.  Some binary builds do not contain the specific year.
+            logging.error('RDKit\'s currently installed version is too outdated for RMG.')
+            raise e
+        
+        try:
+            import openbabel as ob
+            version = ob.OBReleaseVersion()
+            SUPPORTED_OB_VERSIONS = ['2.3.1', '2.3.2']
+            if not version in SUPPORTED_OB_VERSIONS:
+                logging.error('Openbabel\'s currently installed version {} cannot be used for RMG.'.format(version))
+                raise Exception
+        except Exception, e:
+            logging.error('Openbabel could not imported.')
+            raise e
+
+
 ################################################################################
 
 def initializeLog(verbose, log_file_name):
