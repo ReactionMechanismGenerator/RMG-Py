@@ -104,7 +104,7 @@ class RMG:
     `loadRestart`                   ``True`` if restarting a previous job, ``False`` otherwise
     `saveRestartPeriod`             The time period to periodically save a restart file (:class:`Quantity`), or ``None`` for never.
     `units`                         The unit system to use to save output files (currently must be 'si')
-    `drawMolecules`                 ``True`` to draw pictures of the species in the core, ``False`` otherwise
+    `drawMolecules`                 ``True`` to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  ``False`` otherwise
     `generatePlots`                 ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`               ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `saveEdgeSpecies`               ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
@@ -376,9 +376,10 @@ class RMG:
             else:
                 raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
     
-        # Delete previous HTML file
-        from rmgpy.rmg.output import saveOutputHTML
-        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
+        # Delete previous HTML file if that option was on
+        if self.drawMolecules:
+            from rmgpy.rmg.output import saveOutputHTML
+            saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
         
         # Initialize reaction model
         if args.restart:
@@ -658,7 +659,8 @@ class RMG:
                 self.reactionModel.addReactionLibraryToOutput(library)
                 
         # Save the current state of the model to HTML files
-        self.saveOutputHTML()
+        if self.drawMolecules:
+            self.saveOutputHTML()
         # Save a Chemkin filew containing the current model
         self.saveChemkinFiles()
         # Save the restart file if desired

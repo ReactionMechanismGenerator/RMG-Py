@@ -473,7 +473,8 @@ The ``units`` field is set to ``si``.  Currently there are no other unit options
 
 The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
-Setting ``drawMolecules=True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if ``drawMolecules=False``, but the user specifies a ``pressureDependence`` section of the input file, RMG will still generate species files in the ``species`` folder, but only those that pertain to pressure dependent networks that RMG discovers. 
+Setting ``drawMolecules`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
+HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs. 
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 
