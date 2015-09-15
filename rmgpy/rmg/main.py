@@ -154,6 +154,8 @@ class RMG:
         self.sensitivityAbsoluteTolerance = 1.0e-6
         self.sensitivityRelativeTolerance = 1.0e-4
         self.maximumEdgeSpecies = 1000000
+        self.minCoreSizeForPrune = 50
+        self.minSpcExistIterForPrune = 2
         self.termination = []
         
         self.done = False
@@ -484,6 +486,7 @@ class RMG:
             objectsToEnlarge = []
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
+                coreSpecNum = len(self.reactionModel.core.species)
     
                 if self.saveSimulationProfiles:
                     csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
@@ -493,19 +496,34 @@ class RMG:
                 
                 # Conduct simulation
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
-                terminated, obj = reactionSystem.simulate(
-                    coreSpecies = self.reactionModel.core.species,
-                    coreReactions = self.reactionModel.core.reactions,
-                    edgeSpecies = self.reactionModel.edge.species,
-                    edgeReactions = self.reactionModel.edge.reactions,
-                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
-                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
-                    pdepNetworks = self.reactionModel.networkList,
-                    worksheet = worksheet,
-                    absoluteTolerance = self.absoluteTolerance,
-                    relativeTolerance = self.relativeTolerance,
-                )
+                if coreSpecNum <= self.minCoreSizeForPrune:
+                    terminated, obj = reactionSystem.simulate(
+                        coreSpecies = self.reactionModel.core.species,
+                        coreReactions = self.reactionModel.core.reactions,
+                        edgeSpecies = self.reactionModel.edge.species,
+                        edgeReactions = self.reactionModel.edge.reactions,
+                        toleranceKeepInEdge = 0,
+                        toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                        toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                        pdepNetworks = self.reactionModel.networkList,
+                        worksheet = worksheet,
+                        absoluteTolerance = self.absoluteTolerance,
+                        relativeTolerance = self.relativeTolerance,
+                    )
+                else:
+                    terminated, obj = reactionSystem.simulate(
+                        coreSpecies = self.reactionModel.core.species,
+                        coreReactions = self.reactionModel.core.reactions,
+                        edgeSpecies = self.reactionModel.edge.species,
+                        edgeReactions = self.reactionModel.edge.reactions,
+                        toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
+                        toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                        toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                        pdepNetworks = self.reactionModel.networkList,
+                        worksheet = worksheet,
+                        absoluteTolerance = self.absoluteTolerance,
+                        relativeTolerance = self.relativeTolerance,
+                    )
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
@@ -527,7 +545,7 @@ class RMG:
                 # species from the edge
                 if allTerminated:
                     pruneCounter += 1
-                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies)
+                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies, self.minSpcExistIterForPrune)
                     if (pruneCounter % 2) == 1:
                         collected = gc.collect()
                         logging.info('Garbage collector: collected %d objects.' % (collected))
