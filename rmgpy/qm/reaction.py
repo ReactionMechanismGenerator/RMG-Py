@@ -71,8 +71,10 @@ class QMReaction:
             reactants = sorted([s.molecule[0].toSMILES() for s in self.reaction.reactants])
             products = sorted([s.molecule[0].toSMILES() for s in self.reaction.products])
         stringID = "+".join(reactants) + "_" + "+".join(products)
+        revID = "+".join(products) + "_" + "+".join(reactants)
 
         self.uniqueID = stringID
+        self.revID = revID
 
         # self.geometry = None
         self.reactantGeom = None # Geometry(settings, molecule.toAugmentedInChIKey(), molecule)
@@ -571,7 +573,26 @@ class QMReaction:
             notes = 'Success\n'
 
         return validTS, notes
-
+    
+    # def checkIfTSExists(self):
+    #     """
+    #     Check if a transition state already exists, whether in the forward or reverse direction.
+    #     """
+    #     self.settings.fileStore = self.fileStore
+    #     self.settings.scratchDirectory = self.scratchDirectory
+    #     split_path = self.fileStore.split(self.uniqueID)
+    #     revPath = self.revID.join(split_path)
+    #     notes = ''
+    # 
+    #     if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
+    #         logging.info("Transition state geometry already exists.")
+    #         return True, "Forward"
+    #     elif os.path.exists(os.path.join(revPath, self.revID + '.data')):
+    #         logging.info("Transition state geometry already exists.")
+    #         return True, "Reverse"
+    #     else:
+    #         return False, "No TS in the forward or reverse"
+            
     def generateTSGeometryDirectGuess(self):
         """
         Generate a transition state geometry, using the direct guess (group additive) method.
@@ -581,11 +602,26 @@ class QMReaction:
         """
         self.settings.fileStore = self.fileStore
         self.settings.scratchDirectory = self.scratchDirectory
+        split_fileStore = self.fileStore.split(self.uniqueID)
+        rev_fileStore = self.revID.join(split_fileStore)
+        split_scratch = self.scratchDirectory.split(self.uniqueID)
+        rev_scratch = self.revID.join(split_scratch)
         notes = ''
 
         if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
             logging.info("Transition state geometry already exists.")
             return True, "Already done!"
+        # elif os.path.exists(os.path.join(rev_fileStore, self.revID + '.data')):
+        #     logging.info("Transition state geometry already exists for reverse reaction.")
+        #     self.fileStore = rev_fileStore
+        #     self.scratchDirectory = rev_scratch
+        #     self.settings.fileStore = self.fileStore
+        #     self.settings.scratchDirectory = self.scratchDirectory
+        #     rev_id = self.uniqueID
+        #     unique_id = self.revID
+        #     self.uniqueID = unique_id
+        #     self.revID = rev_id
+        #     return True, "Already done for reverse reaction!"
         else:
             if os.path.exists(self.outputFilePath):
                 os.remove(self.outputFilePath)
