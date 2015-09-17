@@ -155,7 +155,7 @@ class RMG:
         self.sensitivityRelativeTolerance = 1.0e-4
         self.maximumEdgeSpecies = 1000000
         self.minCoreSizeForPrune = 50
-        self.minSpcExistIterForPrune = 2
+        self.minSpeciesExistIterationsForPrune = 2
         self.termination = []
         
         self.done = False
@@ -545,7 +545,7 @@ class RMG:
                 # species from the edge
                 if allTerminated:
                     pruneCounter += 1
-                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies, self.minSpcExistIterForPrune)
+                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies, self.minSpeciesExistIterationsForPrune)
                     if (pruneCounter % 2) == 1:
                         collected = gc.collect()
                         logging.info('Garbage collector: collected %d objects.' % (collected))
