@@ -573,25 +573,6 @@ class QMReaction:
             notes = 'Success\n'
 
         return validTS, notes
-    
-    # def checkIfTSExists(self):
-    #     """
-    #     Check if a transition state already exists, whether in the forward or reverse direction.
-    #     """
-    #     self.settings.fileStore = self.fileStore
-    #     self.settings.scratchDirectory = self.scratchDirectory
-    #     split_path = self.fileStore.split(self.uniqueID)
-    #     revPath = self.revID.join(split_path)
-    #     notes = ''
-    # 
-    #     if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
-    #         logging.info("Transition state geometry already exists.")
-    #         return True, "Forward"
-    #     elif os.path.exists(os.path.join(revPath, self.revID + '.data')):
-    #         logging.info("Transition state geometry already exists.")
-    #         return True, "Reverse"
-    #     else:
-    #         return False, "No TS in the forward or reverse"
             
     def generateTSGeometryDirectGuess(self):
         """
@@ -607,7 +588,7 @@ class QMReaction:
         split_scratch = self.scratchDirectory.split(self.uniqueID)
         rev_scratch = self.revID.join(split_scratch)
         notes = ''
-
+        
         if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
             logging.info("Transition state geometry already exists.")
             return True, "Already done!"
@@ -622,12 +603,12 @@ class QMReaction:
         #     self.uniqueID = unique_id
         #     self.revID = rev_id
         #     return True, "Already done for reverse reaction!"
-        else:
-            if os.path.exists(self.outputFilePath):
-                os.remove(self.outputFilePath)
-
-            if os.path.exists(self.ircOutputFilePath):
-                os.remove(self.ircOutputFilePath)
+        # else:
+        #     if os.path.exists(self.outputFilePath):
+        #         os.remove(self.outputFilePath)
+        # 
+        #     if os.path.exists(self.ircOutputFilePath):
+        #         os.remove(self.ircOutputFilePath)
 
         reactant, product = self.setupMolecules()
 
@@ -638,7 +619,10 @@ class QMReaction:
         labels, atomMatch = self.getLabels(reactant)
         tsBM = self.editMatrix(reactant, tsBM, labels)
         atoms = len(reactant.atoms)
-        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+        if atoms>3:
+            distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+        else:
+            distGeomAttempts = 15
 
         setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
 
