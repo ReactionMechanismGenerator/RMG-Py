@@ -103,20 +103,20 @@ class InChITest(unittest.TestCase):
     def testTriRadical2DoubleBondMult4(self):
         inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
         mult = 4
-        u_indices = [3,6]
+        u_indices = [3, 5]
         self.compare(inchi, mult, u_indices)
 
     def testQuadriRadicalDoubleBondZwitterMult5(self):
         inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
         mult = 5
-        u_indices = [3, 5,10, 11]
+        u_indices = [3, 5, 7, 8]
         mol = self.compare(inchi, mult, u_indices)
         print mol.toAdjacencyList()
 
     def testQuadri2DoubleBondMult5(self):
         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
         mult = 5
-        u_indices = [5, 6, 9, 10]
+        u_indices = [5, 6, 7, 8]
         self.compare(inchi, mult, u_indices)
 
     def testC2H3O3(self):
@@ -178,14 +178,17 @@ class InChITest(unittest.TestCase):
     def testC6H6(self):
         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
         mult = 3
-        u_indices = [4,9]
+        u_indices = [4,6]
         mol = self.compare(inchi, mult, u_indices)
         print mol.toAdjacencyList()
 
     def testC4H6O_2(self):
+        """
+        .O-HC.-CH2CH=CH2
+        """
         inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
         mult = 3
-        u_indices = [3,9]
+        u_indices = [3,5]
         mol = self.compare(inchi, mult, u_indices)
         print mol.toAdjacencyList()
 

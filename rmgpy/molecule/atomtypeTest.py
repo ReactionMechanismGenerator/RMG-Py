@@ -204,7 +204,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol1, 0), 'Cs')
         self.assertEqual(self.atomType(self.mol1, 6), 'Cd')
         self.assertEqual(self.atomType(self.mol1, 4), 'Cdd')
-        self.assertEqual(self.atomType(self.mol1, 16), 'Ct')
+        self.assertEqual(self.atomType(self.mol1, 9), 'Ct')
         self.assertEqual(self.atomType(self.mol1, 1), 'CO')
         self.assertEqual(self.atomType(self.mol2, 0), 'Cb')
     
@@ -231,7 +231,7 @@ class TestGetAtomType(unittest.TestCase):
         Test that getAtomType() returns appropriate oxygen atom types.
         """
         self.assertEqual(self.atomType(self.mol1, 3), 'Os')
-        self.assertEqual(self.atomType(self.mol1, 13), 'Od')
+        self.assertEqual(self.atomType(self.mol1, 8), 'Od')
     
     def testSiliconTypes(self):
         """
