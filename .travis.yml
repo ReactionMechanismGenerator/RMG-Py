@@ -36,3 +36,4 @@ script:
   - make eg4
   - make eg5
   - make eg6
+  - make eg7

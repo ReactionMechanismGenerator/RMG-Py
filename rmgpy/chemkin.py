@@ -1584,7 +1584,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     if isinstance(kinetics,
                   (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
-        for collider, efficiency in sorted(kinetics.efficiencies.items()):
+        for collider, efficiency in sorted(kinetics.efficiencies.items(), key=lambda item: id(item[0])):
             for species in speciesList:
                 if any([collider.isIsomorphic(molecule) for molecule in species.molecule]):
                     string += '{0!s}/{1:<4.2f}/ '.format(getSpeciesIdentifier(species), efficiency)

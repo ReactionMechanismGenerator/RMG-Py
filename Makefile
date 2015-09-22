@@ -129,6 +129,13 @@ eg6: all
 	@ echo "Running ethane-oxidation example."
 	python rmg.py -q testing/ethane-oxidation/input.py
 
+eg7: all
+	mkdir -p testing/gri_mech_rxn_lib
+	rm -rf testing/gri_mech_rxn_lib/*
+	cp examples/rmg/gri_mech_rxn_lib/input.py testing/gri_mech_rxn_lib/input.py
+	@ echo "Running gri_mech_rxn_lib example."
+	python rmg.py testing/gri_mech_rxn_lib/input.py
+	
 ######### 
 # Section for setting up MOPAC calculations on the Travis-CI.org server
 ifeq ($(TRAVIS),true)
