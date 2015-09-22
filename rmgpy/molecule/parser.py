@@ -289,9 +289,8 @@ def check(mol, aug_inchi) :
 
     conditions.append(condition_electrons)
 
-    assert all(conditions), 'Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     if not all(conditions):
-        raise Exception
+        raise Exception('Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi))
 
 
 def correct_O_triple_bond(mol):
@@ -410,9 +409,8 @@ def fromAugmentedInChI(mol, aug_inchi):
     indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else None    
     
     if not correct and not indices:
-        logging.error('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
+        raise Exception('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
             .format(mol.toAdjacencyList(), aug_inchi))
-        raise Exception
 
     while not correct and unsaturated and len(indices) > 1:
         mol = convert_unsaturated_bond_to_biradical(mol, indices)
