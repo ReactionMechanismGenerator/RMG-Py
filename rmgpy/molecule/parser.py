@@ -120,6 +120,7 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
                 u_indices.remove(u1)
                 u_indices.remove(u2)
                 return mol        
+    raise Exception('The indices {} did not refer to atoms that are connected in the molecule {}.'.format(u_indices, mol))    
 
 def isUnsaturated(mol):
     """Does the molecule have a bond that's not single?
