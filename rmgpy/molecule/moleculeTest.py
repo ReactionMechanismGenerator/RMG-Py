@@ -1508,6 +1508,32 @@ multiplicity 2
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
 
+    def testMalformedAugmentedInChI(self):
+        """Test that augmented inchi without InChI layer raises Exception."""
+        from rmgpy.molecule.inchi import InchiException
+
+        malform_aug_inchi = 'foo'
+        with self.assertRaises(InchiException):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_InChI_Layer(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/CH3/h1H2'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_Mult(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/CH3/h1H3/mult3'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_Indices(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,5'# should be 6
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
 ################################################################################
 
 if __name__ == '__main__':
