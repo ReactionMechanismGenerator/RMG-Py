@@ -380,20 +380,8 @@ def fromAugmentedInChI(mol, aug_inchi):
                 at.radicalElectrons = 0
 
 
-    # zwitterion to triplet conversion
     if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and isZwitterIon(mol):
-        for at in mol.atoms:
-            if at.charge != 0 and at.radicalElectrons == 0:
-                at.charge = 0
-                at.radicalElectrons += 1
-                if at.element.symbol == 'O':
-                    bonds = mol.getBonds(at)
-                    for atom2, bond in bonds.iteritems():
-                        if bond.isDouble():
-                            bond.order = 'S'
-                            at.radicalElectrons = 0
-                            atom2.radicalElectrons = 1
-                            break
+        fixZwitter(mol)
 
     # reset lone pairs                                
     for at in mol.atoms:
@@ -824,3 +812,26 @@ def createMultiplicityLayer(multiplicity):
     """
     
     return MULT_PREFIX + str(multiplicity)
+
+def fixZwitter(mol):
+    """
+    Fix molecules perceived as zwitterions that in reality are structures
+    with multiple unpaired electrons.
+
+    The simplest case converts atoms with a charge to atoms with one more
+    unpaired electron.
+
+    """
+    # zwitterion to triplet conversion
+    for at in mol.atoms:
+        if at.charge != 0:
+            at.charge += 1 if at.charge < 0 else -1
+            at.radicalElectrons += 1
+            if at.element.symbol == 'O':
+                bonds = mol.getBonds(at)
+                for atom2, bond in bonds.iteritems():
+                    if bond.isDouble():
+                        bond.order = 'S'
+                        at.radicalElectrons = 0
+                        atom2.radicalElectrons = 1
+                        break

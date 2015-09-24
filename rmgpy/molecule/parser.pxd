@@ -74,3 +74,5 @@ cpdef str toInChIKey(Molecule mol)
 cpdef str toAugmentedInChIKey(Molecule mol)
 
 cpdef str createMultiplicityLayer(int multiplicity)
+
+cpdef fixZwitter(Molecule mol)
