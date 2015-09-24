@@ -312,12 +312,13 @@ def correct_O_triple_bond(mol):
     for at in mol.atoms:
         if at.isOxygen() and at.radicalElectrons == 1 and at.lonePairs == 1:
             bonds = mol.getBonds(at)
+            oxygen = at
             for atom2, bond in bonds.iteritems():
                 if bond.isTriple():
                     bond.order = 'D'
-                    at.radicalElectrons = 0
-                    atom2.radicalElectrons = 1
-                    at.lonePairs = 2
+                    oxygen.radicalElectrons -= 1
+                    atom2.radicalElectrons += 1
+                    oxygen.lonePairs += 1
                     return
 
 def fromInChI(mol, inchistr, backend='try-all'):

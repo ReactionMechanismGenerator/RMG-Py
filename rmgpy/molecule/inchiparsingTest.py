@@ -189,6 +189,19 @@ class InChITest(unittest.TestCase):
         u_indices = [3,1]
         mol = self.compare(inchi, mult, u_indices)
 
+    def test_CO_triplet(self):
+        from rmgpy.species import Species
+
+        adjlist = """
+        multiplicity 3
+        1 C u2 p0 c0 {2,D}
+        2 O u0 p2 c0 {1,D}
+
+        """
+        spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
+        aug_inchi = spc.getAugmentedInChI()
+
+        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
         
 
 if __name__ == '__main__':
