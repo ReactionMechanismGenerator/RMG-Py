@@ -203,6 +203,27 @@ class InChITest(unittest.TestCase):
 
         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
         
+    def test_CCCO_triplet(self):
+        from rmgpy.species import Species
+
+        adjlist = """
+        multiplicity 3
+1 C u0 p0 c0 {2,D} {5,S} {6,S}
+2 C u0 p0 c0 {1,D} {3,S} {7,S}
+3 C u1 p0 c0 {2,S} {4,S} {8,S}
+4 O u1 p2 c0 {3,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {1,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {3,S}
+        """
+        mol = Molecule().fromAdjacencyList(adjlist)
+        
+        spc = Species(molecule=[mol])
+        spc.generateResonanceIsomers()
+        aug_inchi = spc.getAugmentedInChI()
+
+        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
 
 if __name__ == '__main__':
     unittest.main()
