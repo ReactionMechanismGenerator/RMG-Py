@@ -126,7 +126,7 @@ cdef class Molecule(Graph):
     cpdef removeBond(self, Bond bond)
 
     cpdef sortAtoms(self)
-
+    
     cpdef str getFormula(self)
 
     cpdef short getRadicalCount(self)

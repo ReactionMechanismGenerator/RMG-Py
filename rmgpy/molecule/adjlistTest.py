@@ -671,11 +671,11 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         string = """1 C 0 {2,D}
-2 C 0 {1,D} {4,S}
-3 C 1 {5,S} {6,S}
-4 C 0 {2,S} {6,D}
-5 C 0 {3,S}
-6 C 0 {3,S} {4,D}"""
+2 C 0 {1,D} {3,S}
+3 C 0 {2,S} {4,D}
+4 C 0 {3,D} {5,S}
+5 C 1 {4,S} {6,S}
+6 C 0 {5,S}"""
         self.assertEqual(molecule2.toAdjacencyList(removeH=True,oldStyle=True).strip(),string.strip())
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):

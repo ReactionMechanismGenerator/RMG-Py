@@ -686,6 +686,13 @@ class Molecule(Graph):
         self._fingerprint = None
         return self.removeEdge(bond)
 
+    def sortAtoms(self):
+        """
+        Sort the atoms in the graph. This can make certain operations, e.g.
+        the isomorphism functions, much more efficient.
+        """
+        return self.sortVertices()
+
     def update(self):
         """
         Update connectivity values, atom types of atoms.
