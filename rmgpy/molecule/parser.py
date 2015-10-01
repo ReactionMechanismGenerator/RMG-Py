@@ -293,8 +293,9 @@ def check(mol, aug_inchi) :
 
     conditions.append(condition_electrons)
 
+    assert all(conditions), 'Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     if not all(conditions):
-        raise Exception('Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi))
+        raise Exception
 
 
 def correct_O_triple_bond(mol):
@@ -394,7 +395,7 @@ def fromAugmentedInChI(mol, aug_inchi):
 
     # unsaturated bond to triplet conversion
     # sort the atoms so that they adopt the order of RMG's algorithm, which was used for the u indices:
-    mol.sortAtoms()
+    sortAtoms(mol)
     correct = check_number_unpaired_electrons(mol)
 
     unsaturated = isUnsaturated(mol)
@@ -402,8 +403,9 @@ def fromAugmentedInChI(mol, aug_inchi):
     indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else None    
     
     if not correct and not indices:
-        raise Exception('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
+        logging.error('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
             .format(mol.toAdjacencyList(), aug_inchi))
+        raise Exception
 
     while not correct and unsaturated and len(indices) > 1:
         mol = convert_unsaturated_bond_to_biradical(mol, indices)
@@ -411,7 +413,7 @@ def fromAugmentedInChI(mol, aug_inchi):
         unsaturated = isUnsaturated(mol)
 
     check(mol, aug_inchi)
-    mol.sortAtoms()
+    sortAtoms(mol)
     return mol
 
 def fromSMILES(mol, smilesstr, backend='try-all'):
@@ -620,7 +622,7 @@ def toOBMol(mol):
 
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
-    mol.sortAtoms()
+    sortAtoms(mol)
 
     atoms = mol.vertices
 
@@ -664,7 +666,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
                    
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
-    mol.sortAtoms()
+    sortAtoms(mol)
     atoms = mol.vertices
     rdAtomIndices = {} # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
@@ -673,10 +675,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rdAtom)
-        if removeHs and atom.symbol == 'H':
-            pass
-        else:
-            rdAtomIndices[atom] = index
+        rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
     orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
@@ -750,10 +749,13 @@ def toAugmentedInChI(mol):
     
     Separate layer with a forward slash character.
     """
-    inchi = toInChI(mol)
+    mol_copy = mol.copy(deep=True)
+    mol_copy = normalize(mol_copy)
+    sortAtoms(mol_copy)
+    inchi = toInChI(mol_copy)
 
-    mult = createMultiplicityLayer(mol.multiplicity)    
-    ulayer = createULayer(mol)
+    mult = createMultiplicityLayer(mol_copy.multiplicity)    
+    ulayer = createULayer(mol_copy)
 
     return compose_aug_inchi(inchi, mult, ulayer)
 
@@ -836,3 +838,131 @@ def fixZwitter(mol):
                         at.radicalElectrons = 0
                         atom2.radicalElectrons = 1
                         break
+
+def moveHs(mol):
+    """
+    Sorts the list of atoms so that heavy atoms always come before H atoms.
+    """
+
+    atoms = mol.atoms
+    heavy_atom_count = sum([1 for at in atoms if at.number != 1])
+    i = 0
+    while True:# continue until the atoms are ordered
+        # search for a (H,nonH) pair and switch:
+
+        # search for H-atom in 0 < i < heavy atom count:
+        while i < heavy_atom_count:
+            if atoms[i].number != 1:
+                i += 1 # increase and go to next
+                continue # ignore heavy atoms
+            h_index = i
+
+            # search for non-H atom in i < j < atom count:
+            j = i + 1
+            while j < len(atoms):
+                if atoms[j].number == 1:
+                    h_index = j
+                    j += 1
+                else:# we have found a (H, nonH) pair
+                    non_h_index = j
+                    atoms[h_index], atoms[non_h_index] = atoms[non_h_index], atoms[h_index]
+                    break
+
+            break
+
+        if i == heavy_atom_count:#all atoms are ordered.
+            break
+
+    mol.atoms = atoms
+
+def updateAtomConnectivityValues(mol):
+    """
+    Update the connectivity values for each atom in the molecule.
+    """
+    cython.declare(atom=Atom, value=int, connectivityValues=list)
+
+    connectivityValues = mol.update_recurse([atom.number * len(atom.bonds) for atom in mol.atoms], 0)
+    for atom, value in zip(mol.atoms, connectivityValues):
+        atom.connectivity = value
+
+def sortAtoms(mol):
+    """
+    Sort the atoms in the graph. This can make certain operations, e.g.
+    the isomorphism functions, much more efficient.
+    """
+    cython.declare(a=Atom)
+    for a in mol.atoms:
+        if a.sortingLabel != 2: break
+    else:
+        return
+        
+    updateAtomConnectivityValues(mol)
+    mol.atoms.sort(key=lambda a: a.getDescriptor())
+    moveHs(mol)
+
+    for a in mol.atoms:
+        a.sortingLabel = 2
+
+def normalize(mol):
+    """
+    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
+    electrons descriptor.
+
+    We generate over all resonance isomers (non-isomorphic as well as isomorphic) and add isomorphic
+    isomers to a list (candidates).
+
+    Next, we search through this list and return the candidate with the lowest unpaired electrons descriptor.
+
+    """
+    candidates = [mol]# resonance isomers that are isomorphic to the parameter isomer.
+
+    isomers = [mol]
+
+    # Iterate over resonance isomers
+    index = 0
+    while index < len(isomers):
+        isomer = isomers[index]
+            
+        newIsomers = isomer.getAdjacentResonanceIsomers()
+        newIsomers += isomer.getLonePairRadicalResonanceIsomers()
+        newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
+        newIsomers += isomer.getKekulizedResonanceIsomers()
+
+        for newIsomer in newIsomers:
+            newIsomer.updateAtomTypes()
+            # Append to isomer list if unique
+            for isom in isomers:
+                isom_copy = isom.copy(deep=True)
+                newIsomer_copy = newIsomer.copy(deep=True)
+                if isom_copy.isIsomorphic(newIsomer_copy):
+                    candidates.append(newIsomer)
+                    break
+            else:
+                isomers.append(newIsomer)        
+                    
+        # Move to next resonance isomer
+        index += 1
+    
+    current_minimum = candidates[0]#isomer with the smallest u-layer descriptor.
+    unpaired_electrons_current_minimum = get_unpaired_electrons(current_minimum)
+    for cand in candidates[1:]:
+       unpaired_electrons_candidate = get_unpaired_electrons(cand)
+       if unpaired_electrons_candidate < unpaired_electrons_current_minimum:
+            current_minimum = cand
+            unpaired_electrons_current_minimum = unpaired_electrons_candidate
+
+
+    return current_minimum
+
+
+def get_unpaired_electrons(mol):
+    """
+    returns a sorted list of the indices of the atoms that bear one or more 
+    unpaired electrons.
+    """
+    locations = []
+    for index, at in enumerate(mol.atoms):
+        if at.radicalElectrons >= 1:
+            locations.append(index)
+
+    return sorted(locations)

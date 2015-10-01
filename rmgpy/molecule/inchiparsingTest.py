@@ -225,5 +225,46 @@ class InChITest(unittest.TestCase):
 
         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
 
+
+    def testNormalize(self):
+        from rmgpy.molecule.parser import normalize, createULayer
+
+        adjlist1 = """
+1  C u0 p0 c0 {2,D} {5,S} {6,S}
+2  C u0 p0 c0 {1,D} {3,S} {7,S}
+3  C u1 p0 c0 {2,S} {4,S} {8,S}
+4  C u1 p0 c0 {3,S} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+
+        """        
+
+        mol1 = Molecule().fromAdjacencyList(adjlist1)
+
+        adjlist2 = """
+1  C u1 p0 c0 {2,S} {5,S} {6,S}
+2  C u1 p0 c0 {1,S} {3,S} {7,S}
+3  C u0 p0 c0 {2,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+        """
+
+        mol2 = Molecule().fromAdjacencyList(adjlist2)
+
+        selected1 = normalize(mol1)
+        selected2 = normalize(mol2)
+        
+        self.assertEqual(createULayer(selected1), createULayer(selected2))
+
+
 if __name__ == '__main__':
     unittest.main()
