@@ -494,7 +494,7 @@ class QMReaction:
 
         return reactant, product
 
-    def optimizeTS(self, fromDoubleEnded=False, optEst=False):
+    def optimizeTS(self, labels, fromDoubleEnded=False):
         """
         Conduct the optimization step of the transition state search.
         """
@@ -511,6 +511,7 @@ class QMReaction:
                 os.remove(checkpointFile) # Checkpoint file path
         
         if not os.path.exists(self.outputFilePath):
+            optEst = self.optEstimate(labels)
             print "Optimizing TS once"
             self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optEst)
             converged, internalCoord = self.run()
@@ -557,10 +558,8 @@ class QMReaction:
         path analysis calculation. The ts estimate can be from the group additive or
         double-ended search methods.
         """
-        optEst = False
-        optEst = self.optEstimate(labels)
 
-        successfulTS = self.optimizeTS(fromDoubleEnded=fromDoubleEnded, optEst=optEst)
+        successfulTS = self.optimizeTS(labels, fromDoubleEnded=fromDoubleEnded)
         if not successfulTS:
             notes = 'TS not converged\n'
             return successfulTS, notes
