@@ -114,11 +114,7 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
             if not b.isSingle():
                 atom1.radicalElectrons += 1
                 atom2.radicalElectrons += 1
-                
-                if b.isTriple():
-                    b.order = 'D'
-                elif b.isDouble():
-                    b.order = 'S'
+                b.decrementOrder()
 
                 u_indices.remove(u1)
                 u_indices.remove(u2)
