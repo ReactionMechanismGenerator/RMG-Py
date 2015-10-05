@@ -57,7 +57,7 @@ class InChITest(unittest.TestCase):
     def test_C3H6_biradical_parsing(self):
         inchi = 'C3H6/c1-3-2/h1-3H2'
         mult = 3
-        u_indices = [1,3]
+        u_indices = [1,2]
         self.compare(inchi, mult, u_indices)
 
     def testC2H3O3(self):
@@ -80,7 +80,6 @@ class InChITest(unittest.TestCase):
         mult = 3
         u_indices = [1,2]
         mol = self.compare(inchi, mult,  u_indices)
-        print mol.toAdjacencyList()
 
     def testO2(self):
         inchi = 'O2/c1-2'
@@ -91,31 +90,32 @@ class InChITest(unittest.TestCase):
     def testTriRadicalZwitterMult4(self):
         inchi = 'C6H11/c1-3-5-6-4-2/h5H,1-4,6H2'
         mult = 4
-        u_indices = []
+        u_indices = [1,3,2]
         self.compare(inchi, mult, u_indices)
 
     def testTriRadicalDoubleBondMult4(self):
         inchi = 'C4H7/c1-3-4-2/h3H,1-2,4H2'
         mult = 4
-        u_indices = [1, 2, 3]
+        u_indices = [1,2,3]
         self.compare(inchi, mult, u_indices)
 
     def testTriRadical2DoubleBondMult4(self):
         inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
         mult = 4
-        u_indices = [1, 2, 4]
+        u_indices = [1, 5, 2]
         self.compare(inchi, mult, u_indices)
 
     def testQuadriRadicalDoubleBondZwitterMult5(self):
         inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
         mult = 5
-        u_indices = [1, 2, 4, 6]
+        u_indices = [1, 6, 2, 5]
         mol = self.compare(inchi, mult, u_indices)
+        print mol.toAdjacencyList()
 
     def testQuadri2DoubleBondMult5(self):
         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
         mult = 5
-        u_indices = [1, 2, 3, 4]
+        u_indices = [1, 5, 6, 2]
         self.compare(inchi, mult, u_indices)
 
     def testC2H3O3(self):
@@ -139,22 +139,30 @@ class InChITest(unittest.TestCase):
     def testC5H6O(self):
         inchi = 'C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2'
         mult = 3
-        self.compare(inchi, mult)
+        u_indices = [3, 6]
+        self.compare(inchi, mult, u_indices)
 
     def testC5H6O_2(self):
         inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
         mult = 3
-        self.compare(inchi, mult)
+        u_indices = [1,3]
+        self.compare(inchi, mult, u_indices)
+
+    def testC5H6O_3(self):
+        inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
+        mult = 5
+        u_indices = [1,2,3,4]
+        self.compare(inchi, mult, u_indices)
 
     def testCO(self):
         inchi = 'CO/c1-2'
         mult = 1
         mol = self.compare(inchi, mult)
 
-        self.assertEqual(mol.atoms[0].lonePairs, 1) # Oxygen
+        assert mol.atoms[1].lonePairs == 1 # Oxygen
 
-        self.assertEqual(mol.atoms[1].charge, -1)
-        self.assertEqual(mol.atoms[0].charge, 1)
+        assert mol.atoms[0].charge == -1
+        assert mol.atoms[1].charge == +1
 
     def testMethylene(self):
         inchi = 'CH2/h1H2'
@@ -169,25 +177,25 @@ class InChITest(unittest.TestCase):
     def testC4H6O(self):
         inchi = 'C4H6O/c1-2-3-4-5/h2H,3H2,1H3'
         mult = 3
-        mol = self.compare(inchi, mult)
+        u_indices = [2,5]
+        mol = self.compare(inchi, mult, u_indices)
         for at in mol.atoms:
             if at.isOxygen():
-                self.assertEqual(at.lonePairs, 2)
+                assert at.lonePairs == 2
     
     def testC6H6(self):
         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
         mult = 3
-        u_indices = [4,5]
+        u_indices = [3, 1]
         mol = self.compare(inchi, mult, u_indices)
+        print mol.toAdjacencyList()
 
     def testC4H6O_2(self):
-        """
-        .O-HC.-CH2CH=CH2
-        """
         inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
         mult = 3
-        u_indices = [3,1]
+        u_indices = [4, 5]
         mol = self.compare(inchi, mult, u_indices)
+        print mol.toAdjacencyList()
 
     def test_CO_triplet(self):
         from rmgpy.species import Species
@@ -226,8 +234,8 @@ class InChITest(unittest.TestCase):
         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
 
 
-    def testNormalize(self):
-        from rmgpy.molecule.parser import normalize, createULayer
+    def testCreateULayer(self):
+        from rmgpy.molecule.parser import createULayer
 
         adjlist1 = """
 1  C u0 p0 c0 {2,D} {5,S} {6,S}
@@ -259,11 +267,8 @@ class InChITest(unittest.TestCase):
         """
 
         mol2 = Molecule().fromAdjacencyList(adjlist2)
+        self.assertEqual(createULayer(mol1), createULayer(mol2))
 
-        selected1 = normalize(mol1)
-        selected2 = normalize(mol2)
-        
-        self.assertEqual(createULayer(selected1), createULayer(selected2))
     def test_find_delocalized_path(self):
         from rmgpy.molecule.parser import find_delocalized_path
 
@@ -357,8 +362,37 @@ class InChITest(unittest.TestCase):
         mult = 3
         u_indices = [1]
         mol = self.compare(inchi, mult, u_indices)
-        print mol.toAdjacencyList()
 
+    def test_Buta13diyl_triplet(self):
+        from rmgpy.species import Species
+        """
+        C=CC.C.
+        """
+        adjlist = """
+        multiplicity 3
+1  C u1 p0 c0 {2,S} {5,S} {6,S}
+2  C u1 p0 c0 {1,S} {3,S} {7,S}
+3  C u0 p0 c0 {2,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        spc = Species(molecule=[mol])
+
+        aug_inchi = spc.getAugmentedInChI()
+        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
+
+
+    def test_C6H8O2(self):
+        inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
+        mult = 3
+        u_indices = [7,8]
+        self.compare(inchi, mult, u_indices)
 
 if __name__ == '__main__':
     unittest.main()
