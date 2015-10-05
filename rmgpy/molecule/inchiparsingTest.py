@@ -264,6 +264,93 @@ class InChITest(unittest.TestCase):
         selected2 = normalize(mol2)
         
         self.assertEqual(createULayer(selected1), createULayer(selected2))
+    def test_find_delocalized_path(self):
+        from rmgpy.molecule.parser import find_delocalized_path
+
+        mol = Molecule().fromSMILES("C=CC=C")#1,3-butadiene
+
+        start, end = mol.atoms[0], mol.atoms[3]
+        path = find_delocalized_path(start, end)
+        self.assertIsNotNone(path)
+
+        mol = Molecule().fromSMILES("C=CC=O")#Acrolein
+
+        start, end = mol.atoms[0], mol.atoms[3]
+        path = find_delocalized_path(start, end)
+        self.assertIsNotNone(path)
+
+        start, end = mol.atoms[0], mol.atoms[4]#wrong end
+        path = find_delocalized_path(start, end)
+        self.assertIsNone(path)
+
+        start, end = mol.atoms[-1], mol.atoms[3]#wrong start
+        path = find_delocalized_path(start, end)
+        self.assertIsNone(path)
+
+        mol = Molecule().fromSMILES("C=CC=CC=C")#1,3,5-hexatriene
+
+        start, end = mol.atoms[0], mol.atoms[5]
+        path = find_delocalized_path(start, end)
+        self.assertIsNotNone(path)        
+
+        adjlist = """
+1  C u0 p0 c0 {2,D} {6,S} {7,S}
+2  C u0 p0 c0 {1,D} {3,S} {8,S}
+3  C u0 p0 c0 {2,S} {4,D} {9,S}
+4  C u0 p0 c0 {3,D} {5,S} {10,S}
+5  C u0 p0 c0 {4,S} {6,S} {11,S} {12,S}
+6  C u0 p0 c0 {1,S} {5,S} {13,S} {14,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {5,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {6,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)#1,3-cyclohexadiene
+
+        start, end = mol.atoms[0], mol.atoms[3]
+        path = find_delocalized_path(start, end)
+        self.assertIsNotNone(path)     
+
+        adjlist = """
+1  C u0 p0 c0 {2,D} {6,S} {7,S}
+2  C u0 p0 c0 {1,D} {3,S} {8,S}
+3  C u0 p0 c0 {2,S} {4,S} {9,S} {10,S}
+4  C u0 p0 c0 {3,S} {5,D} {11,S}
+5  C u0 p0 c0 {4,D} {6,S} {12,S}
+6  C u0 p0 c0 {1,S} {5,S} {13,S} {14,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {4,S}
+12 H u0 p0 c0 {5,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {6,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)#1,4-cyclohexadiene
+
+        start, end = mol.atoms[0], mol.atoms[3]
+        path = find_delocalized_path(start, end)
+        self.assertIsNone(path)   
+
+        mol = Molecule().fromSMILES("C1=CC=CC=C1")#benzene
+
+        start, end = mol.atoms[0], mol.atoms[5]
+        path = find_delocalized_path(start, end)
+        self.assertIsNotNone(path)    
+
+        mol = Molecule().fromSMILES("C=C=C=C")#C4H4
+
+        start, end = mol.atoms[0], mol.atoms[3]
+        path = find_delocalized_path(start, end)
+        self.assertIsNotNone(path)    
+
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@
 import cython
 import logging
 import itertools
+from Queue import Queue
 
 # local imports
 
@@ -973,3 +974,56 @@ def get_unpaired_electrons(mol):
             locations.append(index)
 
     return sorted(locations)
+
+def find_delocalized_path(start, end):
+    """
+    Search for a path between start and end atom that consists of 
+    alternating non-single and single bonds.
+
+    Returns a list with atom and bond elements from start to end, or
+    None if nothing was found.
+    """
+    
+    q = Queue()#FIFO queue of paths that need to be analyzed
+    q.put([start])
+
+    while not q.empty():
+        path = q.get()
+        # search for end atom among the neighbors of the terminal atom of the path:
+        terminal = path[-1]
+        assert isinstance(terminal, Atom)
+        for atom4, bond34 in terminal.bonds.iteritems():
+            if atom4 == end and not bond34.isSingle():# we have found the path we are looking for
+                #add the final bond and atom and return
+                path.append(bond34)
+                path.append(atom4)
+                return path
+        else:#none of the neighbors is the end atom.
+            # Add a new allyl path and try again:
+            new_paths = findAllylPaths(path)
+            [q.put(p) if p is not [] else '' for p in new_paths]
+
+    # Could not find a resonance path from start atom to end atom
+    return None
+
+
+def findAllylPaths(existing_path):
+    """
+    Find all the (3-atom, 2-bond) patterns "C=C-C" starting from the 
+    last atom of the existing path.
+
+    The bond attached to the starting atom should be non single.
+    The second bond should be single.
+    """
+    paths = []
+    start = existing_path[-1]
+    assert isinstance(start, Atom)
+
+    for atom2, bond12 in start.bonds.iteritems():
+        if not bond12.isSingle() and not atom2 in existing_path:
+            for atom3, bond23 in atom2.bonds.iteritems():
+                if start is not atom3 and atom3.number!= 1:
+                    new_path = existing_path[:]#a copy, not a reference
+                    new_path.extend((bond12, atom2, bond23, atom3))
+                    paths.append(new_path)
+    return paths  

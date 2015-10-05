@@ -86,3 +86,7 @@ cpdef updateAtomConnectivityValues(Molecule mol)
 cpdef Molecule normalize(Molecule mol)
 
 cpdef list get_unpaired_electrons(Molecule mol)
+
+cpdef list find_delocalized_path(Atom start, Atom end)
+
+cpdef list findAllylPaths(list existing_path)
