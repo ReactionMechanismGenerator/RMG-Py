@@ -108,7 +108,7 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
     combos = itertools.combinations(u_indices, 2)
 
     for u1, u2 in combos:
-        atom1 = mol.atoms[u1 - 1 ] # convert to 0-based index for atoms in molecule
+        atom1 = mol.atoms[u1 - 1] # convert to 0-based index for atoms in molecule
         atom2 = mol.atoms[u2 - 1] # convert to 0-based index for atoms in molecule
         if mol.hasBond(atom1, atom2):
             b = mol.getBond(atom1, atom2)
@@ -119,8 +119,29 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
 
                 u_indices.remove(u1)
                 u_indices.remove(u2)
-                return mol        
-    raise Exception('The indices {} did not refer to atoms that are connected in the molecule {}.'.format(u_indices, mol))    
+
+                return mol
+        else:
+            path = find_delocalized_path(atom1, atom2)
+            if path is not None:
+                atom1.radicalElectrons += 1
+                atom2.radicalElectrons += 1
+                # filter bonds from path and convert bond orders:
+                bonds = path[1::2]#odd elements
+                for bond in bonds[::2]:# even bonds
+                    assert isinstance(bond, Bond)
+                    bond.decrementOrder()
+                for bond in bonds[1::2]:# odd bonds
+                    assert isinstance(bond, Bond)
+                    bond.incrementOrder()    
+
+                u_indices.remove(u1)
+                u_indices.remove(u2)
+
+                return mol
+
+    raise Exception('The indices {} did not refer to atoms that are connected in the molecule {}.'
+        .format(u_indices, mol.toAdjacencyList()))    
 
 def isUnsaturated(mol):
     """Does the molecule have a bond that's not single?
@@ -393,8 +414,6 @@ def fromAugmentedInChI(mol, aug_inchi):
     correct = check_number_unpaired_electrons(mol)
 
     unsaturated = isUnsaturated(mol)
-
-    indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else None    
     
     if not correct and not indices:
         logging.error('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
