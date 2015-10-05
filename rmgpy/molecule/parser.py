@@ -398,9 +398,9 @@ def fromAugmentedInChI(mol, aug_inchi):
                 at.lonePairs = 1
                 at.radicalElectrons = 0
 
-
+    indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else None
     if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and isZwitterIon(mol):
-        fixZwitter(mol)
+        fixCharge(mol, indices)
 
     # reset lone pairs                                
     for at in mol.atoms:
@@ -861,7 +861,7 @@ def createMultiplicityLayer(multiplicity):
     
     return MULT_PREFIX + str(multiplicity)
 
-def fixZwitter(mol):
+def fixCharge(mol, u_indices):
     """
     Fix molecules perceived as zwitterions that in reality are structures
     with multiple unpaired electrons.
@@ -870,19 +870,41 @@ def fixZwitter(mol):
     unpaired electron.
 
     """
-    # zwitterion to triplet conversion
+    # converting ions to unpaired electrons for atoms in the u-layer
     for at in mol.atoms:
-        if at.charge != 0:
+        if at.charge != 0 and (mol.atoms.index(at) + 1) in u_indices:
             at.charge += 1 if at.charge < 0 else -1
             at.radicalElectrons += 1
-            if at.element.symbol == 'O':
-                bonds = mol.getBonds(at)
-                for atom2, bond in bonds.iteritems():
-                    if bond.isDouble():
-                        bond.order = 'S'
-                        at.radicalElectrons = 0
-                        atom2.radicalElectrons = 1
-                        break
+            u_indices.remove(mol.atoms.index(at) + 1)
+
+    # convert neighboring atoms (or delocalized paths) to unpaired electrons
+    for index in u_indices:
+        start = mol.atoms[index -1]
+        path = find_delocalized_path_to_charged_atom(start)
+        if path is not None:    
+            # we have found the atom we are looking for
+            start.radicalElectrons += 1
+            end = path[-1]
+            end.charge += 1 if end.charge < 0 else -1
+            end.lonePairs += 1
+            # filter bonds from path and convert bond orders:
+            bonds = path[1::2]#odd elements
+            for bond in bonds[::2]:# even bonds
+                assert isinstance(bond, Bond)
+                bond.decrementOrder()
+            for bond in bonds[1::2]:# odd bonds
+                assert isinstance(bond, Bond)
+                bond.incrementOrder()  
+            u_indices.remove(mol.atoms.index(start) + 1)
+
+    for at in mol.atoms:
+        if at.charge != 0:
+            for neigh, bond in at.bonds.iteritems():
+                if neigh.charge != 0:
+                    bond.incrementOrder()
+                    at.charge += 1 if at.charge < 0 else -1
+                    neigh.charge += 1 if neigh.charge < 0 else -1
+
 
 def moveHs(mol):
     """
@@ -1028,7 +1050,7 @@ def find_delocalized_path(start, end):
 
 def findAllylPaths(existing_path):
     """
-    Find all the (3-atom, 2-bond) patterns "C=C-C" starting from the 
+    Find all the (3-atom, 2-bond) patterns "X=X-X" starting from the 
     last atom of the existing path.
 
     The bond attached to the starting atom should be non single.
@@ -1046,3 +1068,30 @@ def findAllylPaths(existing_path):
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
     return paths  
+
+def find_delocalized_path_to_charged_atom(start):
+    """
+
+    """
+
+    q = Queue()#FIFO queue of paths that need to be analyzed
+    q.put([start])
+
+    while not q.empty():
+        path = q.get()
+        # search for end atom among the neighbors of the terminal atom of the path:
+        terminal = path[-1]
+        assert isinstance(terminal, Atom)
+        for atom4, bond34 in terminal.bonds.iteritems():
+            if atom4.charge != 0 and not bond34.isSingle():# we have found the path we are looking for
+                #add the final bond and atom and return
+                path.append(bond34)
+                path.append(atom4)
+                return path
+        else:#none of the neighbors is the end atom.
+            # Add a new allyl path and try again:
+            new_paths = findAllylPaths(path)
+            [q.put(p) if p is not [] else '' for p in new_paths]
+
+    # Could not find a resonance path from start atom to end atom
+    return None
