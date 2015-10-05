@@ -318,11 +318,12 @@ def check(mol, aug_inchi) :
 
 def correct_O_triple_bond(mol):
     """
-    Searches for a radical oxygen atom connected to 
+    Searches for a radical or a charged oxygen atom connected to 
     a closed-shell carbon via a triple bond.
 
     Converts the triple bond into a double bond,
-    transfers the unpaired electron from O to C
+    transfers the unpaired electron from O to C or
+    converts the charge from O to an unpaired electron on C, 
     increases the lone pair count of O to 2.
 
     Only do this once per molecule.
@@ -334,8 +335,18 @@ def correct_O_triple_bond(mol):
             oxygen = at
             for atom2, bond in bonds.iteritems():
                 if bond.isTriple():
-                    bond.order = 'D'
+                    bond.decrementOrder()
                     oxygen.radicalElectrons -= 1
+                    atom2.radicalElectrons += 1
+                    oxygen.lonePairs += 1
+                    return
+        elif at.isOxygen() and at.charge == 1 and at.lonePairs == 1:
+            bonds = mol.getBonds(at)
+            oxygen = at
+            for atom2, bond in bonds.iteritems():
+                if bond.isTriple() and atom2.charge == 0:
+                    bond.decrementOrder()
+                    oxygen.charge -= 1
                     atom2.radicalElectrons += 1
                     oxygen.lonePairs += 1
                     return
