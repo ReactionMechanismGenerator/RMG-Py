@@ -352,6 +352,13 @@ class InChITest(unittest.TestCase):
         self.assertIsNotNone(path)    
 
 
+    def testC3H4(self):
+        inchi = 'C3H4/c1-3-2/h1,3H,2H2/'
+        mult = 3
+        u_indices = [1]
+        mol = self.compare(inchi, mult, u_indices)
+        print mol.toAdjacencyList()
+
 
 if __name__ == '__main__':
     unittest.main()
