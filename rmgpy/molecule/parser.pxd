@@ -39,7 +39,7 @@ cpdef isZwitterIon(Molecule mol)
    
 cpdef check(Molecule mol, aug_inchi)
 
-cpdef correct_O_triple_bond(Molecule mol)
+cpdef correct_O_unsaturated_bond(Molecule mol)
 
 cpdef fromInChI(Molecule mol, str inchistr, backend=*)
 

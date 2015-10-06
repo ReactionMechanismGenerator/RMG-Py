@@ -51,7 +51,7 @@ class InChITest(unittest.TestCase):
     def test_C2H3_triradical_parsing(self):
         inchi = 'C2H3/c1-2/h1H,2H2'
         mult = 4
-        u_indices = [1,2]
+        u_indices = [1,1,2]
         self.compare(inchi, mult, u_indices)
 
     def test_C3H6_biradical_parsing(self):
@@ -110,7 +110,6 @@ class InChITest(unittest.TestCase):
         mult = 5
         u_indices = [1, 6, 2, 5]
         mol = self.compare(inchi, mult, u_indices)
-        print mol.toAdjacencyList()
 
     def testQuadri2DoubleBondMult5(self):
         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
@@ -188,14 +187,12 @@ class InChITest(unittest.TestCase):
         mult = 3
         u_indices = [3, 1]
         mol = self.compare(inchi, mult, u_indices)
-        print mol.toAdjacencyList()
 
     def testC4H6O_2(self):
         inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
         mult = 3
         u_indices = [4, 5]
         mol = self.compare(inchi, mult, u_indices)
-        print mol.toAdjacencyList()
 
     def test_CO_triplet(self):
         from rmgpy.species import Species
@@ -269,33 +266,33 @@ class InChITest(unittest.TestCase):
         mol2 = Molecule().fromAdjacencyList(adjlist2)
         self.assertEqual(createULayer(mol1), createULayer(mol2))
 
-    def test_find_delocalized_path(self):
-        from rmgpy.molecule.parser import find_delocalized_path
+    def test_find_4_atom_3_bond_path(self):
+        from rmgpy.molecule.parser import find_4_atom_3_bond_path
 
         mol = Molecule().fromSMILES("C=CC=C")#1,3-butadiene
 
         start, end = mol.atoms[0], mol.atoms[3]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNotNone(path)
 
         mol = Molecule().fromSMILES("C=CC=O")#Acrolein
 
         start, end = mol.atoms[0], mol.atoms[3]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNotNone(path)
 
         start, end = mol.atoms[0], mol.atoms[4]#wrong end
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNone(path)
 
         start, end = mol.atoms[-1], mol.atoms[3]#wrong start
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNone(path)
 
         mol = Molecule().fromSMILES("C=CC=CC=C")#1,3,5-hexatriene
 
         start, end = mol.atoms[0], mol.atoms[5]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNotNone(path)        
 
         adjlist = """
@@ -318,7 +315,7 @@ class InChITest(unittest.TestCase):
         mol = Molecule().fromAdjacencyList(adjlist)#1,3-cyclohexadiene
 
         start, end = mol.atoms[0], mol.atoms[3]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNotNone(path)     
 
         adjlist = """
@@ -341,19 +338,19 @@ class InChITest(unittest.TestCase):
         mol = Molecule().fromAdjacencyList(adjlist)#1,4-cyclohexadiene
 
         start, end = mol.atoms[0], mol.atoms[3]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNone(path)   
 
         mol = Molecule().fromSMILES("C1=CC=CC=C1")#benzene
 
         start, end = mol.atoms[0], mol.atoms[5]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNotNone(path)    
 
         mol = Molecule().fromSMILES("C=C=C=C")#C4H4
 
         start, end = mol.atoms[0], mol.atoms[3]
-        path = find_delocalized_path(start, end)
+        path = find_4_atom_3_bond_path(start, end)
         self.assertIsNotNone(path)    
 
 
@@ -392,6 +389,12 @@ class InChITest(unittest.TestCase):
         inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
         mult = 3
         u_indices = [7,8]
+        self.compare(inchi, mult, u_indices)
+
+    def test_C3H3O3(self):
+        inchi = 'C3H3O3/c1-2-5-3-6-4/h1-3H'
+        mult = 4
+        u_indices = [1,3,4]
         self.compare(inchi, mult, u_indices)
 
 if __name__ == '__main__':

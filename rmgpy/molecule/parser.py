@@ -317,12 +317,12 @@ def check(mol, aug_inchi) :
         raise Exception
 
 
-def correct_O_triple_bond(mol):
+def correct_O_unsaturated_bond(mol):
     """
     Searches for a radical or a charged oxygen atom connected to 
-    a closed-shell carbon via a triple bond.
+    a closed-shell carbon via an unsatured bond.
 
-    Converts the triple bond into a double bond,
+    Decrements the unsatured bond,
     transfers the unpaired electron from O to C or
     converts the charge from O to an unpaired electron on C, 
     increases the lone pair count of O to 2.
@@ -345,7 +345,7 @@ def correct_O_triple_bond(mol):
             bonds = mol.getBonds(at)
             oxygen = at
             for atom2, bond in bonds.iteritems():
-                if bond.isTriple() and atom2.charge == 0:
+                if not bond.isSingle() and atom2.charge == 0:
                     bond.decrementOrder()
                     oxygen.charge -= 1
                     atom2.radicalElectrons += 1
@@ -423,7 +423,7 @@ def fromAugmentedInChI(mol, aug_inchi):
         reset_lone_pairs_to_default(at)
 
     # correct .O#C to O=C.
-    correct_O_triple_bond(mol)
+    correct_O_unsaturated_bond(mol)
 
 
     # unsaturated bond to triplet conversion
