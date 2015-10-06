@@ -434,7 +434,7 @@ class GaussianTS(QMReaction, Gaussian):
                 ]
 
     otherKeywords = [
-                     "irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
+                     "irc=(calcall,report=read) geom=allcheck guess=check nosymm",
                      "opt=(modredundant,MaxCycles=",
                      "opt=(qst2,calcall,noeigentest,MaxCycles=",
                      ]
