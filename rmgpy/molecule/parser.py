@@ -793,7 +793,9 @@ def createULayer(mol):
     # find the resonance isomer with the lowest u index:
     mol = normalize(mol)
 
-    ulayer = [str(i+1) for i, at in enumerate(mol.atoms) if at.radicalElectrons > 0]
+    ulayer = []
+    for i, at in enumerate(mol.atoms):
+        ulayer.extend([str(i+1)] * at.radicalElectrons)
     if ulayer:
         return (U_LAYER_PREFIX + ','.join(ulayer))
     else:

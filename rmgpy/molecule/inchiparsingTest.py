@@ -360,7 +360,7 @@ class InChITest(unittest.TestCase):
     def testC3H4(self):
         inchi = 'C3H4/c1-3-2/h1,3H,2H2/'
         mult = 3
-        u_indices = [1]
+        u_indices = [1, 1]
         mol = self.compare(inchi, mult, u_indices)
 
     def test_Buta13diyl_triplet(self):
