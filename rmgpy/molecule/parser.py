@@ -767,7 +767,7 @@ def createULayer(mol):
     m = toRDKitMol(mol)
 
     # generate inchi and auxiliary info
-    inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m)
+    inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
 
     # extract the atom numbers
     pieces = auxinfo.split('/')
