@@ -4,6 +4,7 @@ import cython
 import logging
 import itertools
 from Queue import Queue
+from collections import Counter
 
 # local imports
 
@@ -410,6 +411,10 @@ def fromAugmentedInChI(mol, aug_inchi):
                 at.radicalElectrons = 0
 
     indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else None
+    c = Counter(indices)
+    for k,v in c.iteritems():
+        atom = mol.atoms[k - 1]
+        [indices.remove(k) for _ in range(atom.radicalElectrons)]
     if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and isZwitterIon(mol):
         fixCharge(mol, indices)
 
