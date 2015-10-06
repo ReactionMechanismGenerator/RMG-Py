@@ -122,7 +122,7 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
 
                 return mol
         else:
-            path = find_delocalized_path(atom1, atom2)
+            path = find_4_atom_3_bond_path(atom1, atom2)
             if path is not None:
                 atom1.radicalElectrons += 1
                 atom2.radicalElectrons += 1
@@ -883,7 +883,7 @@ def fixCharge(mol, u_indices):
     unpaired electron.
 
     """
-    # converting ions to unpaired electrons for atoms in the u-layer
+    # converting charges to unpaired electrons for atoms in the u-layer
     for at in mol.atoms:
         if at.charge != 0 and (mol.atoms.index(at) + 1) in u_indices:
             at.charge += 1 if at.charge < 0 else -1
@@ -893,7 +893,9 @@ def fixCharge(mol, u_indices):
     # convert neighboring atoms (or delocalized paths) to unpaired electrons
     for index in u_indices:
         start = mol.atoms[index -1]
-        path = find_delocalized_path_to_charged_atom(start)
+
+        # search for 4-atom-3-bond [X=X-X=X] paths
+        path = find_4_atom_3_bond_end_with_charge_path(start)
         if path is not None:    
             # we have found the atom we are looking for
             start.radicalElectrons += 1
@@ -910,6 +912,25 @@ def fixCharge(mol, u_indices):
                 bond.incrementOrder()  
             u_indices.remove(mol.atoms.index(start) + 1)
 
+        # search for 3-atom-2-bond [X=X-X] paths
+        path = find_3_atom_2_bond_end_with_charge_path(start)
+        if path is not None:    
+            # we have found the atom we are looking for
+            start.radicalElectrons += 1
+            end = path[-1]
+            end.charge += 1 if end.charge < 0 else -1
+            end.lonePairs += 1
+            # filter bonds from path and convert bond orders:
+            bonds = path[1::2]#odd elements
+            for bond in bonds[::2]:# even bonds
+                assert isinstance(bond, Bond)
+                bond.decrementOrder()
+            for bond in bonds[1::2]:# odd bonds
+                assert isinstance(bond, Bond)
+                bond.incrementOrder()  
+            u_indices.remove(mol.atoms.index(start) + 1)
+
+    # fix adjacent charges
     for at in mol.atoms:
         if at.charge != 0:
             for neigh, bond in at.bonds.iteritems():
@@ -1029,7 +1050,7 @@ def get_unpaired_electrons(mol):
 
     return sorted(locations)
 
-def find_delocalized_path(start, end):
+def find_4_atom_3_bond_path(start, end):
     """
     Search for a path between start and end atom that consists of 
     alternating non-single and single bonds.
@@ -1054,14 +1075,14 @@ def find_delocalized_path(start, end):
                 return path
         else:#none of the neighbors is the end atom.
             # Add a new allyl path and try again:
-            new_paths = findAllylPaths(path)
+            new_paths = find_allyl_paths(path)
             [q.put(p) if p is not [] else '' for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
     return None
 
 
-def findAllylPaths(existing_path):
+def find_allyl_paths(existing_path):
     """
     Find all the (3-atom, 2-bond) patterns "X=X-X" starting from the 
     last atom of the existing path.
@@ -1080,11 +1101,33 @@ def findAllylPaths(existing_path):
                     new_path = existing_path[:]#a copy, not a reference
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
-    return paths  
+    return paths
 
-def find_delocalized_path_to_charged_atom(start):
+def find_unsaturated_bond_paths(existing_path):
     """
+    Find all the (2-atom, 1-bond) patterns "X=X" starting from the 
+    last atom of the existing path.
 
+    The bond attached to the starting atom should be non single.
+    """
+    paths = []
+    start = existing_path[-1]
+    assert isinstance(start, Atom)
+
+    for atom2, bond12 in start.bonds.iteritems():
+        if not bond12.isSingle() and not atom2 in existing_path and atom2.number!= 1:
+            new_path = existing_path[:]#a copy, not a reference
+            new_path.extend((bond12, atom2))
+            paths.append(new_path)
+    return paths   
+
+def find_4_atom_3_bond_end_with_charge_path(start):
+    """
+    Search for a (4-atom, 3-bond) path between start and end atom that consists of 
+    alternating non-single and single bonds and ends with a charged atom.
+
+    Returns a list with atom and bond elements from start to end, or
+    None if nothing was found.
     """
 
     q = Queue()#FIFO queue of paths that need to be analyzed
@@ -1103,8 +1146,45 @@ def find_delocalized_path_to_charged_atom(start):
                 return path
         else:#none of the neighbors is the end atom.
             # Add a new allyl path and try again:
-            new_paths = findAllylPaths(path)
+            new_paths = find_allyl_paths(path)
             [q.put(p) if p is not [] else '' for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
     return None
+
+def find_3_atom_2_bond_end_with_charge_path(start):
+    """
+    Search for a (3-atom, 2-bond) path between start and end atom that consists of 
+    alternating non-single and single bonds and ends with a charged atom.
+
+    Returns a list with atom and bond elements from start to end, or
+    None if nothing was found.
+    """
+
+    q = Queue()#FIFO queue of paths that need to be analyzed
+    paths = find_unsaturated_bond_paths([start])
+    
+    if paths is []:
+        return None
+    
+    [q.put(path) for path in paths]
+
+    while not q.empty():
+        path = q.get()
+        # search for end atom among the neighbors of the terminal atom of the path:
+        terminal = path[-1]
+        assert isinstance(terminal, Atom)
+
+        for atom3, bond23 in terminal.bonds.iteritems():
+            if atom3.charge != 0 and bond23.isSingle():# we have found the path we are looking for
+                #add the final bond and atom and return
+                path.append(bond23)
+                path.append(atom3)
+                return path
+        else:#none of the neighbors is the end atom.
+            # Add a new allyl path and try again:
+            new_paths = find_allyl_paths(path)
+            [q.put(p) if p is not [] else '' for p in new_paths]
+
+    # Could not find a resonance path from start atom to end atom
+    return None    

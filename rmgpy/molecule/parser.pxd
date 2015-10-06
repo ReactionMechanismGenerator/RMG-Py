@@ -77,8 +77,6 @@ cpdef str createMultiplicityLayer(int multiplicity)
 
 cpdef fixCharge(Molecule mol, list u_indices)
 
-cpdef sortAtoms(Molecule mol)
-
 cpdef moveHs(Molecule mol)
 
 cpdef updateAtomConnectivityValues(Molecule mol)
@@ -87,6 +85,12 @@ cpdef Molecule normalize(Molecule mol)
 
 cpdef list get_unpaired_electrons(Molecule mol)
 
-cpdef list find_delocalized_path(Atom start, Atom end)
+cpdef list find_4_atom_3_bond_path(Atom start, Atom end)
 
-cpdef list findAllylPaths(list existing_path)
+cpdef list find_allyl_paths(list existing_path)
+
+cpdef list find_unsaturated_bond_paths(list existing_path)
+
+cpdef find_4_atom_3_bond_end_with_charge_path(Atom start)
+
+cpdef find_3_atom_2_bond_end_with_charge_path(Atom start)
