@@ -145,7 +145,7 @@ options(
     saveRestartPeriod=None,
 	#Draws images of species and reactions and saves the model output to HTML.  
 	#May consume extra memory when running large models.
-    drawMolecules=True,
+    generateOutputHTML=True,
 	#generates plots of the RMG's performance statistics. Not helpful if you just want a model.
     generatePlots=False,
 	#saves mole fraction of species in 'solver/' to help you create plots

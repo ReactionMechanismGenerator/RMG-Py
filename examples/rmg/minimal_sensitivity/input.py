@@ -53,6 +53,6 @@ options(
     units='si',
     saveRestartPeriod=None,
     saveSimulationProfiles=True,
-    drawMolecules=False,
+    generateOutputHTML=False,
     generatePlots=False,
 )

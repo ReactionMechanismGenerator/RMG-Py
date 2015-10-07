@@ -43,7 +43,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
-    drawMolecules=False,
+    generateOutputHTML=True,
     generatePlots=False,
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,

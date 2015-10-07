@@ -86,7 +86,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=(1,'day'),
-    drawMolecules=False,
+    generateOutputHTML=False,
     generatePlots=False,
 )
 
