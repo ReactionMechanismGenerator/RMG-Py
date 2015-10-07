@@ -61,6 +61,6 @@ pressureDependence(
 
 options(
     units='si',
-    drawMolecules=False,
+    generateOutputHTML=False,
     generatePlots=False,
 )
