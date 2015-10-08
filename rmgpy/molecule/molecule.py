@@ -397,7 +397,7 @@ class Bond(Edge):
 
     """
 
-    def __init__(self, atom1, atom2, order=1):
+    def __init__(self, atom1, atom2, order='S'):
         Edge.__init__(self, atom1, atom2)
         self.order = order
 
