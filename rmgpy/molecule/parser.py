@@ -946,7 +946,8 @@ def fixCharge(mol, u_indices):
             u_indices.remove(mol.atoms.index(at) + 1)
 
     # convert neighboring atoms (or delocalized paths) to unpaired electrons
-    for index in u_indices:
+    u_indices_copy = u_indices[:]
+    for index in u_indices_copy:
         start = mol.atoms[index -1]
 
         # search for 4-atom-3-bond [X=X-X=X] paths
@@ -966,6 +967,7 @@ def fixCharge(mol, u_indices):
                 assert isinstance(bond, Bond)
                 bond.incrementOrder()  
             u_indices.remove(mol.atoms.index(start) + 1)
+            continue
 
         # search for 3-atom-2-bond [X=X-X] paths
         path = find_3_atom_2_bond_end_with_charge_path(start)
@@ -984,6 +986,7 @@ def fixCharge(mol, u_indices):
                 assert isinstance(bond, Bond)
                 bond.incrementOrder()  
             u_indices.remove(mol.atoms.index(start) + 1)
+            continue
 
     # fix adjacent charges
     for at in mol.atoms:
