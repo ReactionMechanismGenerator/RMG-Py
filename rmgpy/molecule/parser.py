@@ -310,16 +310,10 @@ def __lookup(mol, identifier, type_identifier):
             return None
 
 
-def isZwitterIon(mol):
-    """
-    A zwitter ion is a molecule with total net charge 0, 
-    but with some atoms bearing a formal charge.
-    """
-
-    total_charge = sum([at.charge for at in mol.atoms])
+def contains_charge(mol):
     abs_charge = sum([abs(at.charge) for at in mol.atoms])
 
-    return (total_charge == 0) and (abs_charge != 0)
+    return abs_charge != 0
   
 def check(mol, aug_inchi) :
     """Check if molecule corresponds to the aug. inchi"""
@@ -468,7 +462,8 @@ def fromAugmentedInChI(mol, aug_inchi):
     for k,v in c.iteritems():
         atom = mol.atoms[k - 1]
         [indices.remove(k) for _ in range(atom.radicalElectrons)]
-    if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and isZwitterIon(mol):
+
+    if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and contains_charge(mol):
         fixCharge(mol, indices)
 
     # reset lone pairs                                

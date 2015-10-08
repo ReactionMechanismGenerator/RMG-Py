@@ -35,7 +35,7 @@ cpdef isCorrectlyParsed(Molecule mol, str identifier)
 
 cdef __lookup(Molecule mol, str identifier, str type_identifier)
 
-cpdef isZwitterIon(Molecule mol)
+cpdef contains_charge(Molecule mol)
    
 cpdef check(Molecule mol, aug_inchi)
 
