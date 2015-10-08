@@ -397,5 +397,11 @@ class InChITest(unittest.TestCase):
         u_indices = [1,3,4]
         self.compare(inchi, mult, u_indices)
 
+    def test_CH2O2(self):
+        inchi = 'CH2O2/c2-1-3/h1H,(H,2,3)'
+        mult = 3
+        u_indices = [1,3]
+        self.compare(inchi, mult, u_indices)
+
 if __name__ == '__main__':
     unittest.main()

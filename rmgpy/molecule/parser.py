@@ -95,7 +95,7 @@ def reset_lone_pairs_to_default(at):
     
     at.lonePairs = (VALENCES[at.element.symbol] - bondorder - at.radicalElectrons - at.charge) / 2
 
-def convert_unsaturated_bond_to_biradical(mol, u_indices):
+def convert_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """
     Convert an unsaturated bond (double, triple) into a bond
     with a lower bond order (single, double), and give an unpaired electron
@@ -122,6 +122,40 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
                 u_indices.remove(u2)
 
                 return mol
+            else:#maybe it's a mobile H-layer problem
+                all_mobile_h_atoms_couples = parse_H_layer(inchi)
+                """
+                assume that O2=C1-O3H is the keto-enol system
+                    1) find its partner (O2)
+                    2) transfer H atom to partner (O2)
+                    3) change bond order between partner and central carbon
+                    4) add unpaired electrons to central carbon and original O.
+
+                """
+                if all_mobile_h_atoms_couples is not []:
+                    #find central atom:
+                    central, original_atom, new_partner = find_mobile_h_system(mol, 
+                        all_mobile_h_atoms_couples, [u1, u2])
+
+                    # search Hydrogen atom and bond
+                    hydrogen = None
+                    for at, bond in original_atom.bonds.iteritems():
+                        if at.number == 1:
+                            hydrogen = at
+                            mol.removeBond(bond)
+                            break
+
+                    new_h_bond = Bond(new_partner, hydrogen, order='S')
+                    mol.addBond(new_h_bond)
+                    
+                    mol.getBond(central, new_partner).decrementOrder()
+
+                    central.radicalElectrons += 1
+                    original_atom.radicalElectrons += 1
+
+                    u_indices.remove(u1)
+                    u_indices.remove(u2)
+                    return mol
         else:
             path = find_4_atom_3_bond_path(atom1, atom2)
             if path is not None:
@@ -437,7 +471,7 @@ def fromAugmentedInChI(mol, aug_inchi):
         raise Exception
 
     while not correct and unsaturated and len(indices) > 1:
-        mol = convert_unsaturated_bond_to_biradical(mol, indices)
+        mol = convert_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
         correct = check_number_unpaired_electrons(mol)
         unsaturated = isUnsaturated(mol)
 
@@ -1192,4 +1226,41 @@ def find_3_atom_2_bond_end_with_charge_path(start):
             [q.put(p) if p is not [] else '' for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
-    return None    
+    return None
+
+def parse_H_layer(inchistring):
+    pieces = inchistring.split('/')
+    h_layer = None
+    for piece in pieces:
+        if piece.startswith('h'):
+            h_layer = piece
+            break
+
+    # search for (*) pattern
+    import re
+    pattern = re.compile( r'\((.[^\(\)]*)\)')
+
+    all_mobile_h_atoms_couples = []
+    for mobile_h in re.findall(pattern, h_layer):
+        mobile_h_atoms = map(int, mobile_h[2:].split(','))
+        assert len(mobile_h_atoms) == 2
+        all_mobile_h_atoms_couples.append(mobile_h_atoms)
+
+    return all_mobile_h_atoms_couples
+
+def find_mobile_h_system(mol, all_mobile_h_atoms_couples, test_indices):
+    dummy = test_indices[:]
+
+    for mobile_h_atom_couple in all_mobile_h_atoms_couples:
+        for test_index in test_indices:
+            if test_index in mobile_h_atom_couple:
+                original_atom = test_index
+                dummy.remove(test_index)
+                mobile_h_atom_couple.remove(test_index)
+                new_partner = mobile_h_atom_couple[0]
+                central = dummy[0]
+                return mol.atoms[central - 1], mol.atoms[original_atom - 1], mol.atoms[new_partner - 1]
+
+    raise Exception('We should always have found the mobile-H system. All mobile H couples: {}, test indices: {}'
+        .format(all_mobile_h_atoms_couples, test_indices))
+

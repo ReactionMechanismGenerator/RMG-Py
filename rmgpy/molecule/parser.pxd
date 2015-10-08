@@ -17,7 +17,7 @@ cpdef _known_smiles_radicals
 
 cpdef reset_lone_pairs_to_default(Atom at)
 
-cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, list u_indices)
+cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
 
 cpdef bint isUnsaturated(Molecule mol)
     
