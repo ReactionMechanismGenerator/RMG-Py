@@ -39,7 +39,7 @@ cpdef contains_charge(Molecule mol)
    
 cpdef check(Molecule mol, aug_inchi)
 
-cpdef correct_O_unsaturated_bond(Molecule mol)
+cpdef correct_O_unsaturated_bond(Molecule mol, list u_indices)
 
 cpdef fromInChI(Molecule mol, str inchistr, backend=*)
 

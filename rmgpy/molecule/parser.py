@@ -345,7 +345,7 @@ def check(mol, aug_inchi) :
         raise Exception
 
 
-def correct_O_unsaturated_bond(mol):
+def correct_O_unsaturated_bond(mol, u_indices):
     """
     Searches for a radical or a charged oxygen atom connected to 
     a closed-shell carbon via an unsatured bond.
@@ -393,9 +393,11 @@ def correct_O_unsaturated_bond(mol):
             else:
                 for atom2, bond in bonds.iteritems():
                     if not bond.isSingle() and atom2.charge == 0:
-                        bond.decrementOrder()
                         oxygen.charge -= 1
-                        atom2.radicalElectrons += 1
+                        if (mol.atoms.index(atom2) + 1) in u_indices:
+                            bond.decrementOrder()
+                            atom2.radicalElectrons += 1
+                            u_indices.remove(mol.atoms.index(atom2) + 1)
                         oxygen.lonePairs += 1
                         return
 
@@ -471,7 +473,7 @@ def fromAugmentedInChI(mol, aug_inchi):
         reset_lone_pairs_to_default(at)
 
     # correct .O#C to O=C.
-    correct_O_unsaturated_bond(mol)
+    correct_O_unsaturated_bond(mol, indices)
 
 
     # unsaturated bond to triplet conversion

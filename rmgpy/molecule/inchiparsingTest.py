@@ -409,5 +409,11 @@ class InChITest(unittest.TestCase):
         u_indices = [4,5]
         self.compare(inchi, mult, u_indices)
 
+    def test_C6H6O4(self):
+        inchi = 'InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2'
+        mult = 5
+        u_indices = [1,3,4,8]
+        self.compare(inchi, mult, u_indices)
+
 if __name__ == '__main__':
     unittest.main()
