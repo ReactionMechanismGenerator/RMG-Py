@@ -378,13 +378,32 @@ def correct_O_unsaturated_bond(mol):
         elif at.isOxygen() and at.charge == 1 and at.lonePairs == 1:
             bonds = mol.getBonds(at)
             oxygen = at
-            for atom2, bond in bonds.iteritems():
-                if not bond.isSingle() and atom2.charge == 0:
+
+            start = oxygen
+            # search for 3-atom-2-bond [X=X-X] paths
+            path = find_3_atom_2_bond_end_with_charge_path(start)
+            if path is not None:    
+                end = path[-1]
+                start.charge += 1 if start.charge < 0 else -1
+                end.charge += 1 if end.charge < 0 else -1
+                start.lonePairs += 1
+                # filter bonds from path and convert bond orders:
+                bonds = path[1::2]#odd elements
+                for bond in bonds[::2]:# even bonds
+                    assert isinstance(bond, Bond)
                     bond.decrementOrder()
-                    oxygen.charge -= 1
-                    atom2.radicalElectrons += 1
-                    oxygen.lonePairs += 1
-                    return
+                for bond in bonds[1::2]:# odd bonds
+                    assert isinstance(bond, Bond)
+                    bond.incrementOrder()  
+                return
+            else:
+                for atom2, bond in bonds.iteritems():
+                    if not bond.isSingle() and atom2.charge == 0:
+                        bond.decrementOrder()
+                        oxygen.charge -= 1
+                        atom2.radicalElectrons += 1
+                        oxygen.lonePairs += 1
+                        return
 
 def fromInChI(mol, inchistr, backend='try-all'):
     """
