@@ -971,23 +971,52 @@ def fixCharge(mol, u_indices):
 
         # search for 3-atom-2-bond [X=X-X] paths
         paths = find_3_atom_2_bond_end_with_charge_path(start)
-        
-        for path in paths:    
+        from rmgpy.data.kinetics.family import ReactionRecipe
+
+        for path in paths:
+            # label atoms so that we can use the labels in the actions of the recipe
+            for i, at in enumerate(path[::2]):
+                assert isinstance(at, Atom)
+                at.label = str(i)
             # we have found the atom we are looking for
-            start.radicalElectrons += 1
+            fix_charge_recipe = ReactionRecipe()
+            fix_charge_recipe.addAction(['GAIN_RADICAL', start.label, 1])
+
             end = path[-1]
-            end.charge += 1 if end.charge < 0 else -1
-            end.lonePairs += 1
+            end_original_charge = end.charge
+          
             # filter bonds from path and convert bond orders:
             bonds = path[1::2]#odd elements
             for bond in bonds[::2]:# even bonds
                 assert isinstance(bond, Bond)
-                bond.decrementOrder()
+                fix_charge_recipe.addAction(['CHANGE_BOND', bond.atom1.label, -1, bond.atom2.label])
             for bond in bonds[1::2]:# odd bonds
                 assert isinstance(bond, Bond)
-                bond.incrementOrder()  
-            u_indices.remove(mol.atoms.index(start) + 1)
-            continue
+                fix_charge_recipe.addAction(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
+
+            end.charge += 1 if end.charge < 0 else -1
+            fix_charge_recipe.applyForward(mol, update=False)
+
+            if check_bond_order_oxygen(mol):
+                u_indices.remove(mol.atoms.index(start) + 1)
+                # unlabel atoms so that they never cause trouble downstream
+                for i, at in enumerate(path[::2]):
+                    assert isinstance(at, Atom)
+                    at.label = ''
+                break
+            else:
+                fix_charge_recipe.applyReverse(mol, update=False)
+                end.charge = end_original_charge
+
+                # unlabel atoms so that they never cause trouble downstream
+                for i, at in enumerate(path[::2]):
+                    assert isinstance(at, Atom)
+                    at.label = ''
+
+                continue # to next path
+
+            
+        continue # to next index in u-layer
 
     # fix adjacent charges
     for at in mol.atoms:
@@ -1285,3 +1314,16 @@ def find_mobile_h_system(mol, all_mobile_h_atoms_couples, test_indices):
     raise Exception('We should always have found the mobile-H system. All mobile H couples: {}, test indices: {}'
         .format(all_mobile_h_atoms_couples, test_indices))
 
+
+def check_bond_order_oxygen(mol):
+    """Check if total bond order of oxygen atoms is smaller than 4."""
+    from rmgpy.molecule.util import ORDERS
+
+    for at in mol.atoms:
+        if at.number == 8:
+            order = sum([ORDERS[b.order] for _, b in at.bonds.iteritems()])
+            not_correct = order >= 4
+            if not_correct:
+                return False
+
+    return True
