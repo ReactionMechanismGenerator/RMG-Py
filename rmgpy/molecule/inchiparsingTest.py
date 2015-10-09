@@ -6,6 +6,8 @@ from rmgpy.molecule.parser import fromAugmentedInChI
 class InChITest(unittest.TestCase):
 
     def compare(self, inchi, mult, u_indices = None):
+        from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
+
         u_layer = ','.join([str(i) for i in u_indices]) if u_indices else None
 
         if u_layer:
@@ -16,6 +18,15 @@ class InChITest(unittest.TestCase):
         mol = Molecule()
         mol = fromAugmentedInChI(mol, aug_inchi)
         self.assertEqual(mol.getNumberOfRadicalElectrons(), mult - 1)
+
+        for at in mol.atoms:
+            order = 0
+            bonds = at.edges.values()
+            for bond in bonds:
+                order += ORDERS[bond.order]
+
+            self.assertTrue((order + at.radicalElectrons + 2*at.lonePairs + at.charge) == VALENCES[at.symbol])
+
         return mol
 
     def test_Ethane_parsing(self):
