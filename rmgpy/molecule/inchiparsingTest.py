@@ -432,5 +432,17 @@ class InChITest(unittest.TestCase):
         u_indices = [1,3,4,8]
         self.compare(inchi, mult, u_indices)
 
+    def test_C3H2O3(self):
+        from rmgpy.species import Species
+
+        inchi = 'InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2'
+        mult = 3
+        u_indices = [2,5]
+
+        aug_inchi = inchi+'/mult'+str(mult) + '/u2,5'
+        spc = Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)])
+
+        self.compare(inchi, mult, u_indices)
+
 if __name__ == '__main__':
     unittest.main()
