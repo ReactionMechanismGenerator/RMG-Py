@@ -465,6 +465,7 @@ def fromAugmentedInChI(mol, aug_inchi):
         atom = mol.atoms[k - 1]
         [indices.remove(k) for _ in range(atom.radicalElectrons)]
 
+
     if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and contains_charge(mol):
         fixCharge(mol, indices)
 
@@ -1264,19 +1265,22 @@ def find_3_atom_2_bond_end_with_charge_path(start):
         terminal = path[-1]
         assert isinstance(terminal, Atom)
 
+        path_copy = path[:]
         for atom3, bond23 in terminal.bonds.iteritems():
             if atom3.charge != 0 and bond23.isSingle():# we have found the path we are looking for
                 #add the final bond and atom and return
-                path.append(bond23)
-                path.append(atom3)
-                paths.append(path)
+                path_copy_copy = path_copy[:]
+                path_copy_copy.append(bond23)
+
+                path_copy_copy.append(atom3)
+                paths.append(path_copy_copy)
         else:#none of the neighbors is the end atom.
             # Add a new allyl path and try again:
             new_paths = find_allyl_paths(path)
             [q.put(p) if p is not [] else '' for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
-    return paths or None
+    return paths
 
 def parse_H_layer(inchistring):
     pieces = inchistring.split('/')
