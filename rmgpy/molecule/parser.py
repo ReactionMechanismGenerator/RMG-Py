@@ -375,8 +375,8 @@ def correct_O_unsaturated_bond(mol, u_indices):
 
             start = oxygen
             # search for 3-atom-2-bond [X=X-X] paths
-            path = find_3_atom_2_bond_end_with_charge_path(start)
-            if path is not None:    
+            paths = find_3_atom_2_bond_end_with_charge_path(start)
+            for path in paths:    
                 end = path[-1]
                 start.charge += 1 if start.charge < 0 else -1
                 end.charge += 1 if end.charge < 0 else -1
@@ -970,8 +970,9 @@ def fixCharge(mol, u_indices):
             continue
 
         # search for 3-atom-2-bond [X=X-X] paths
-        path = find_3_atom_2_bond_end_with_charge_path(start)
-        if path is not None:    
+        paths = find_3_atom_2_bond_end_with_charge_path(start)
+        
+        for path in paths:    
             # we have found the atom we are looking for
             start.radicalElectrons += 1
             end = path[-1]
@@ -1218,14 +1219,15 @@ def find_3_atom_2_bond_end_with_charge_path(start):
     Returns a list with atom and bond elements from start to end, or
     None if nothing was found.
     """
+    paths = []
 
     q = Queue()#FIFO queue of paths that need to be analyzed
-    paths = find_unsaturated_bond_paths([start])
+    unsaturated_bonds = find_unsaturated_bond_paths([start])
     
-    if paths is []:
+    if unsaturated_bonds is []:
         return None
     
-    [q.put(path) for path in paths]
+    [q.put(path) for path in unsaturated_bonds]
 
     while not q.empty():
         path = q.get()
@@ -1238,14 +1240,14 @@ def find_3_atom_2_bond_end_with_charge_path(start):
                 #add the final bond and atom and return
                 path.append(bond23)
                 path.append(atom3)
-                return path
+                paths.append(path)
         else:#none of the neighbors is the end atom.
             # Add a new allyl path and try again:
             new_paths = find_allyl_paths(path)
             [q.put(p) if p is not [] else '' for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
-    return None
+    return paths or None
 
 def parse_H_layer(inchistring):
     pieces = inchistring.split('/')
