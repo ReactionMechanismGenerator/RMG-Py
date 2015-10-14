@@ -321,12 +321,10 @@ def check(mol, aug_inchi) :
                    inchi=str,
                    multi=cython.int,
                    )
-    conditions = []
 
-    inchi, mult, u_indices = aug_inchi.inchi, aug_inchi.mult, aug_inchi.u_indices
-    conditions.append(mult == mol.getRadicalCount() + 1)
-
-    condition_electrons = True
+    _, mult, __ = aug_inchi.inchi, aug_inchi.mult, aug_inchi.u_indices
+    assert mult == mol.getRadicalCount() + 1,\
+     'Multiplicity of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     
     for at in mol.atoms:
         order = 0
@@ -334,16 +332,8 @@ def check(mol, aug_inchi) :
         for bond in bonds:
             order += ORDERS[bond.order]
 
-        if (order + at.radicalElectrons + 2*at.lonePairs + at.charge) != VALENCES[at.symbol]:
-            condition_electrons = False
-            break
-
-    conditions.append(condition_electrons)
-
-    assert all(conditions), 'Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
-    if not all(conditions):
-        raise Exception
-
+        assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == VALENCES[at.symbol],\
+            'Valency for an atom of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
 
 def correct_O_unsaturated_bond(mol, u_indices):
     """
