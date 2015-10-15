@@ -483,7 +483,7 @@ class RMG:
             objectsToEnlarge = []
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
-                coreSpecNum = len(self.reactionModel.core.species)
+                numCoreSpecies = len(self.reactionModel.core.species)
     
                 if self.saveSimulationProfiles:
                     csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
@@ -493,34 +493,24 @@ class RMG:
                 
                 # Conduct simulation
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
-                if coreSpecNum <= self.minCoreSizeForPrune:
-                    terminated, obj = reactionSystem.simulate(
-                        coreSpecies = self.reactionModel.core.species,
-                        coreReactions = self.reactionModel.core.reactions,
-                        edgeSpecies = self.reactionModel.edge.species,
-                        edgeReactions = self.reactionModel.edge.reactions,
-                        toleranceKeepInEdge = 0,
-                        toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                        toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
-                        pdepNetworks = self.reactionModel.networkList,
-                        worksheet = worksheet,
-                        absoluteTolerance = self.absoluteTolerance,
-                        relativeTolerance = self.relativeTolerance,
-                    )
-                else:
-                    terminated, obj = reactionSystem.simulate(
-                        coreSpecies = self.reactionModel.core.species,
-                        coreReactions = self.reactionModel.core.reactions,
-                        edgeSpecies = self.reactionModel.edge.species,
-                        edgeReactions = self.reactionModel.edge.reactions,
-                        toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
-                        toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                        toleranceInterruptSimulation = self.fluxToleranceInterrupt,
-                        pdepNetworks = self.reactionModel.networkList,
-                        worksheet = worksheet,
-                        absoluteTolerance = self.absoluteTolerance,
-                        relativeTolerance = self.relativeTolerance,
-                    )
+                prune = True
+                if numCoreSpecies < self.minCoreSizeForPrune:
+                    # Turn pruning off if we haven't reached minimum core size.
+                    prune = False
+                    
+                terminated, obj = reactionSystem.simulate(
+                    coreSpecies = self.reactionModel.core.species,
+                    coreReactions = self.reactionModel.core.reactions,
+                    edgeSpecies = self.reactionModel.edge.species,
+                    edgeReactions = self.reactionModel.edge.reactions,
+                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
+                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
+                    pdepNetworks = self.reactionModel.networkList,
+                    worksheet = worksheet,
+                    absoluteTolerance = self.absoluteTolerance,
+                    relativeTolerance = self.relativeTolerance,
+                )
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
