@@ -1219,7 +1219,7 @@ def find_4_atom_3_bond_end_with_charge_path(start):
         terminal = path[-1]
         assert isinstance(terminal, Atom)
         for atom4, bond34 in terminal.bonds.iteritems():
-            if atom4.charge != 0 and not bond34.isSingle():# we have found the path we are looking for
+            if atom4.charge != 0 and not bond34.isSingle() and not atom4 in path:# we have found the path we are looking for
                 #add the final bond and atom and return
                 path.append(bond34)
                 path.append(atom4)
