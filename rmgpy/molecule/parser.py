@@ -1258,16 +1258,14 @@ def find_3_atom_2_bond_end_with_charge_path(start):
 
         path_copy = path[:]
         for atom3, bond23 in terminal.bonds.iteritems():
-            if atom3.charge != 0 and bond23.isSingle():# we have found the path we are looking for
+            if atom3.charge != 0 and not atom3 in path_copy:# we have found the path we are looking for
                 #add the final bond and atom and return
                 path_copy_copy = path_copy[:]
-                path_copy_copy.append(bond23)
-
-                path_copy_copy.append(atom3)
+                path_copy_copy.extend([bond23, atom3])
                 paths.append(path_copy_copy)
         else:#none of the neighbors is the end atom.
-            # Add a new allyl path and try again:
-            new_paths = find_allyl_paths(path)
+            # Add a new inverse allyl path and try again:
+            new_paths = find_inverse_allyl_paths(path)
             [q.put(p) if p is not [] else '' for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
@@ -1322,3 +1320,23 @@ def check_bond_order_oxygen(mol):
                 return False
 
     return True
+
+def find_inverse_allyl_paths(existing_path):
+    """
+    Find all the (3-atom, 2-bond) patterns "start~atom2=atom3" starting from the 
+    last atom of the existing path.
+
+    The second bond should be non-single.
+    """
+    paths = []
+    start = existing_path[-1]
+    assert isinstance(start, Atom)
+
+    for atom2, bond12 in start.bonds.iteritems():
+        if not atom2 in existing_path:
+            for atom3, bond23 in atom2.bonds.iteritems():
+                if not atom3 in existing_path and atom3.number!= 1 and not bond23.isSingle():
+                    new_path = existing_path[:]#a copy, not a reference
+                    new_path.extend((bond12, atom2, bond23, atom3))
+                    paths.append(new_path)
+    return paths
