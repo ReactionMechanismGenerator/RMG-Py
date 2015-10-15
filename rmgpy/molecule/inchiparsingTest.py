@@ -2,6 +2,7 @@ import unittest
 
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.parser import fromAugmentedInChI
+from rmgpy.species import Species
 
 class InChITest(unittest.TestCase):
 
@@ -206,7 +207,6 @@ class InChITest(unittest.TestCase):
         mol = self.compare(inchi, mult, u_indices)
 
     def test_CO_triplet(self):
-        from rmgpy.species import Species
 
         adjlist = """
         multiplicity 3
@@ -220,7 +220,6 @@ class InChITest(unittest.TestCase):
         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
         
     def test_CCCO_triplet(self):
-        from rmgpy.species import Species
 
         adjlist = """
         multiplicity 3
@@ -374,7 +373,6 @@ class InChITest(unittest.TestCase):
         spc.generateResonanceIsomers()
 
     def test_Buta13diyl_triplet(self):
-        from rmgpy.species import Species
         """
         C=CC.C.
         """
@@ -435,7 +433,6 @@ class InChITest(unittest.TestCase):
         self.compare(inchi, mult, u_indices)
 
     def test_C3H2O3(self):
-        from rmgpy.species import Species
 
         inchi = 'InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2'
         mult = 3
