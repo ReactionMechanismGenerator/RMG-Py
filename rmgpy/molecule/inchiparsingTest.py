@@ -370,6 +370,8 @@ class InChITest(unittest.TestCase):
         mult = 3
         u_indices = [1, 1]
         mol = self.compare(inchi, mult, u_indices)
+        spc = Species(molecule=[Molecule().fromAugmentedInChI('InChI=1/'+inchi+'mult3/u1,1')])
+        spc.generateResonanceIsomers()
 
     def test_Buta13diyl_triplet(self):
         from rmgpy.species import Species
