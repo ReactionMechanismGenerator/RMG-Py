@@ -55,6 +55,6 @@ model(
 options(
 	units='si',
 	saveRestartPeriod=None,
-	drawMolecules=False,
+	generateOutputHTML=False,
 	generatePlots=False,
 )

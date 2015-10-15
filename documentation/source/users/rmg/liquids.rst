@@ -244,7 +244,7 @@ This is an example of an input file for a liquid-phase system::
     options(
         units='si',
         saveRestartPeriod=None,
-        drawMolecules=False,
+        generateOutputHTML=False,
         generatePlots=False,
         saveSimulationProfiles=True,
     )
