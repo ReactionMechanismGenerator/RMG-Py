@@ -162,7 +162,7 @@ pressureDependence(
 options(
     units='si',
     saveRestartPeriod=(1,'hour'),
-    drawMolecules=False,
+    generateOutputHTML=False,
     generatePlots=False,
     saveSimulationProfiles=False,
     saveEdgeSpecies=True,

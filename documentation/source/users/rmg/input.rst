@@ -462,7 +462,7 @@ Miscellaneous options::
     options(
         units='si',
         saveRestartPeriod=(1,'hour'),
-        drawMolecules=True,
+        generateOutputHTML=True,
         generatePlots=False,
         saveSimulationProfiles=True,
         verboseComments=False,
@@ -473,7 +473,7 @@ The ``units`` field is set to ``si``.  Currently there are no other unit options
 
 The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
-Setting ``drawMolecules`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
+Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
 HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs. 
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
