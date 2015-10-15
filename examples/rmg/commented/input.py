@@ -134,7 +134,14 @@ model(
     toleranceInterruptSimulation=1,
 	   #number of edge species needed to accumulate before pruning occurs
 	   #larger values require more memory and will prune less often
-    maximumEdgeSpecies=100000
+    maximumEdgeSpecies=100000,
+        #minimum number of core species needed before pruning occurs.
+        #this prevents pruning when kinetic model is far away from completeness
+    minCoreSizeForPrune=50,
+        #make sure that the pruned edge species have existed for a set number of RMG iterations.  
+        #the user can specify to increase it from the default value of 2
+    minSpeciesExistIterationsForPrune=2,
+    
 )
 
 options(
