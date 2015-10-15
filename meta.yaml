@@ -23,7 +23,7 @@ requirements:
     - libgcc # [unix]
     - numpy
     - matplotlib
-    - rdkit
+    - rdkit ==2015.03.1
     - pydas
     - pydqed
     - quantities
@@ -48,7 +48,7 @@ requirements:
     - numpy
     - cython ==0.21
     - matplotlib
-    - rdkit
+    - rdkit ==2015.03.1
     - pydas
     - pydqed
     - quantities
