@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.kinetics.DepositoryReaction &mdash; RMG Py 1.0.0 documentation</title>
+    <title>rmgpy.data.kinetics.DepositoryReaction &mdash; RMG Py 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.0',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="rmgpy.data.base.Entry" href="entry.html" />
     <link rel="prev" title="rmgpy.data.base.Database" href="database.html" />
@@ -284,16 +284,6 @@ temperatures <cite>Tlist</cite> in K.</p>
 <code class="descname">getFreeEnergyOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getFreeEnergyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy of reaction in J/mol evaluated at
 temperature <cite>T</cite> in K.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.DepositoryReaction.getRate">
-<code class="descname">getRate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getRate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the net rate of reaction at temperature <cite>T</cite> and pressure <cite>P</cite>. The
-parameter <cite>conc</cite> is a map with species as keys and concentrations as
-values. A reactant not found in the <cite>conc</cite> map is treated as having zero
-concentration.</p>
-<p>If passed a <cite>totalConc</cite>, it won&#8217;t bother recalculating it.</p>
 </dd></dl>
 
 <dl class="method">

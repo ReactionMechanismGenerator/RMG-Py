@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.Molecule &mdash; RMG Py 1.0.0 documentation</title>
+    <title>rmgpy.molecule.Molecule &mdash; RMG Py 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.0',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.0 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.GroupAtom" href="groupatom.html" />
     <link rel="prev" title="rmgpy.molecule.Bond" href="bond.html" />
@@ -185,13 +185,6 @@ are considered to be internal rotors.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.createMultiplicityLayer">
-<code class="descname">createMultiplicityLayer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.createMultiplicityLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates the string with the multiplicity information
-that is appended to the InChI to create an augmented InChI.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.molecule.Molecule.deleteHydrogens">
 <code class="descname">deleteHydrogens</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.deleteHydrogens" title="Permalink to this definition">¶</a></dt>
 <dd><p>Irreversibly delete all non-labeled hydrogens without updating
@@ -265,19 +258,15 @@ Skips the first line (assuming it&#8217;s a label) unless <cite>withLabel</cite>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.fromInChI">
-<code class="descname">fromInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromInChI" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
-This Kekulizes everything, removing all aromatic atom types.</p>
+<dt id="rmgpy.molecule.Molecule.fromAugmentedInChI">
+<code class="descname">fromAugmentedInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromAugmentedInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an Augmented InChI string <cite>aug_inchi</cite> to a molecular structure.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.fromRDKitMol">
-<code class="descname">fromRDKitMol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromRDKitMol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
-This Kekulizes everything, removing all aromatic atom types.</p>
+<dt id="rmgpy.molecule.Molecule.fromInChI">
+<code class="descname">fromInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure.</p>
 </dd></dl>
 
 <dl class="method">
@@ -291,9 +280,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromSMILES">
 <code class="descname">fromSMILES</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMILES" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
-This Kekulizes everything, removing all aromatic atom types.</p>
+<dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure.</p>
 </dd></dl>
 
 <dl class="method">
@@ -597,6 +584,12 @@ cycles in the graph, or <code class="docutils literal"><span class="pre">False</
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.is_equal">
+<code class="descname">is_equal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_equal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to test equality of two Molecule objects.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.merge">
 <code class="descname">merge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge two molecules so as to store them in a single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code>
@@ -716,20 +709,9 @@ the 14 + 9 characters remain.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.toOBMol">
-<code class="descname">toOBMol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toOBMol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a molecular structure to an OpenBabel OBMol object. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.molecule.Molecule.toRDKitMol">
 <code class="descname">toRDKitMol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toRDKitMol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a molecular structure to a RDKit rdmol object. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
-Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.</p>
-<p>If returnMapping==True then it also returns a dictionary mapping the 
-atoms to RDKit&#8217;s atom indices.</p>
+<dd><p>Convert a molecular structure to a RDKit rdmol object.</p>
 </dd></dl>
 
 <dl class="method">
@@ -759,6 +741,14 @@ and removes Hydrogen atoms.</p>
 <dd><p>Returns a copy of the current molecule, consisting of only single bonds.</p>
 <p>This is useful for isomorphism comparison against something that was made
 via fromXYZ, which does not attempt to perceive bond orders</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update connectivity values, atom types of atoms.
+Update multiplicity, and sort atoms using the new
+connectivity values.</p>
 </dd></dl>
 
 <dl class="method">
