@@ -32,6 +32,7 @@ install:
 
 script: 
   - make test
+  - make test-database
   - make eg1
   - make eg4
   - make eg5
