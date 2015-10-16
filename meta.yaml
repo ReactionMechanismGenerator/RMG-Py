@@ -1,7 +1,7 @@
 # For conda build
 package:
   name: rmg
-  version: "1.0.0"
+  version: "0" # set by build.sh, which gets from rmgpy/__init__.py
 
 source:
   path: .
