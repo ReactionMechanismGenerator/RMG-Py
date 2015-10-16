@@ -14,7 +14,7 @@ import os.path
 import logging
 
 from rmgpy.chemkin import loadChemkinFile
-from rmgpy.reaction import ReactionModel
+from rmgpy.rmg.model import ReactionModel
 from rmgpy.rmg.output import saveDiffHTML
 
 ################################################################################
@@ -208,22 +208,29 @@ if __name__ == '__main__':
         help='the Chemkin file of the first model')
     parser.add_argument('speciesDict1', metavar='SPECIESDICT1', type=str, nargs=1,
         help='the species dictionary file of the first model')
-    parser.add_argument('thermo1', metavar = 'THERMO1', type=str, nargs = 1,
+    parser.add_argument('--thermo1', metavar = 'THERMO1', type=str, nargs = 1,
         help = 'the thermo file of the first model')
     parser.add_argument('chemkin2', metavar='CHEMKIN2', type=str, nargs=1,
         help='the Chemkin file of the second model')
     parser.add_argument('speciesDict2', metavar='SPECIESDICT2', type=str, nargs=1,
         help='the species dictionary file of the second model')
-    parser.add_argument('thermo2', metavar = 'THERMO2', type=str, nargs = 1,
+    parser.add_argument('--thermo2', metavar = 'THERMO2', type=str, nargs = 1,
         help = 'the thermo file of the second model')
+    parser.add_argument('--web', action='store_true', help='Running diff models through the RMG-website')
     
     args = parser.parse_args()
     chemkin1 = args.chemkin1[0]
     speciesDict1 = args.speciesDict1[0]
-    thermo1 = args.thermo1[0]
+    if args.thermo1: 
+        thermo1 = args.thermo1[0]
+    else:
+        thermo1 = None
     chemkin2 = args.chemkin2[0]
     speciesDict2 = args.speciesDict2[0]
-    thermo2 = args.thermo2[0]
+    if args.thermo2: 
+        thermo2 = args.thermo2[0]
+    else:
+        thermo2 = None
     
     model1 = ReactionModel()
     model1.species, model1.reactions = loadChemkinFile(chemkin1, speciesDict1, thermoPath = thermo1)
@@ -232,74 +239,72 @@ if __name__ == '__main__':
     
     commonSpecies, uniqueSpecies1, uniqueSpecies2 = compareModelSpecies(model1, model2)
     commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
-
-    print '{0:d} species were found in both models:'.format(len(commonSpecies))
-    for spec1, spec2 in commonSpecies:
-        print '    {0!s}'.format(spec1)
-        if spec1.thermo and spec2.thermo:
-            spec1.molecule[0].getSymmetryNumber()
-            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
-                spec1.thermo.getEnthalpy(300) / 4184.,
-                spec1.thermo.getEntropy(300) / 4.184,
-                spec1.thermo.getHeatCapacity(300) / 4.184,
-                spec1.thermo.getHeatCapacity(400) / 4.184,
-                spec1.thermo.getHeatCapacity(500) / 4.184,
-                spec1.thermo.getHeatCapacity(600) / 4.184,
-                spec1.thermo.getHeatCapacity(800) / 4.184,
-                spec1.thermo.getHeatCapacity(1000) / 4.184,
-                spec1.thermo.getHeatCapacity(1500) / 4.184,
-            )
-            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
-                spec2.thermo.getEnthalpy(300) / 4184.,
-                spec2.thermo.getEntropy(300) / 4.184,
-                spec2.thermo.getHeatCapacity(300) / 4.184,
-                spec2.thermo.getHeatCapacity(400) / 4.184,
-                spec2.thermo.getHeatCapacity(500) / 4.184,
-                spec2.thermo.getHeatCapacity(600) / 4.184,
-                spec2.thermo.getHeatCapacity(800) / 4.184,
-                spec2.thermo.getHeatCapacity(1000) / 4.184,
-                spec2.thermo.getHeatCapacity(1500) / 4.184,
-            )
-    print '{0:d} species were only found in the first model:'.format(len(uniqueSpecies1))
-    for spec in uniqueSpecies1:
-        print '    {0!s}'.format(spec)
-    print '{0:d} species were only found in the second model:'.format(len(uniqueSpecies2))
-    for spec in uniqueSpecies2:
-        print '    {0!s}'.format(spec)
-
-    print '{0:d} reactions were found in both models:'.format(len(commonReactions))
-    for rxn1, rxn2 in commonReactions:
-        print '    {0!s}'.format(rxn1)
-        if rxn1.kinetics and rxn2.kinetics:
-            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                math.log10(rxn1.kinetics.getRateCoefficient(300, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(400, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(500, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(600, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(800, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(1000, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(1500, 1e5)),
-                math.log10(rxn1.kinetics.getRateCoefficient(2000, 1e5)),
-            )
-            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                math.log10(rxn2.kinetics.getRateCoefficient(300, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(400, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(500, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(600, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(800, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(1000, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(1500, 1e5)),
-                math.log10(rxn2.kinetics.getRateCoefficient(2000, 1e5)),
-            )
-    print '{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1))
-    for rxn in uniqueReactions1:
-        print '    {0!s}'.format(rxn)
-    print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
-    for rxn in uniqueReactions2:
-        print '    {0!s}'.format(rxn)
     
-    #commonSpecies.sort(key = enthalpyDiff)
-    #commonReactions.sort(key = kineticsDiff)
+    if not args.web:
+        print '{0:d} species were found in both models:'.format(len(commonSpecies))
+        for spec1, spec2 in commonSpecies:
+            print '    {0!s}'.format(spec1)
+            if spec1.thermo and spec2.thermo:
+                spec1.molecule[0].getSymmetryNumber()
+                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
+                    spec1.thermo.getEnthalpy(300) / 4184.,
+                    spec1.thermo.getEntropy(300) / 4.184,
+                    spec1.thermo.getHeatCapacity(300) / 4.184,
+                    spec1.thermo.getHeatCapacity(400) / 4.184,
+                    spec1.thermo.getHeatCapacity(500) / 4.184,
+                    spec1.thermo.getHeatCapacity(600) / 4.184,
+                    spec1.thermo.getHeatCapacity(800) / 4.184,
+                    spec1.thermo.getHeatCapacity(1000) / 4.184,
+                    spec1.thermo.getHeatCapacity(1500) / 4.184,
+                )
+                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
+                    spec2.thermo.getEnthalpy(300) / 4184.,
+                    spec2.thermo.getEntropy(300) / 4.184,
+                    spec2.thermo.getHeatCapacity(300) / 4.184,
+                    spec2.thermo.getHeatCapacity(400) / 4.184,
+                    spec2.thermo.getHeatCapacity(500) / 4.184,
+                    spec2.thermo.getHeatCapacity(600) / 4.184,
+                    spec2.thermo.getHeatCapacity(800) / 4.184,
+                    spec2.thermo.getHeatCapacity(1000) / 4.184,
+                    spec2.thermo.getHeatCapacity(1500) / 4.184,
+                )
+        print '{0:d} species were only found in the first model:'.format(len(uniqueSpecies1))
+        for spec in uniqueSpecies1:
+            print '    {0!s}'.format(spec)
+        print '{0:d} species were only found in the second model:'.format(len(uniqueSpecies2))
+        for spec in uniqueSpecies2:
+            print '    {0!s}'.format(spec)
+    
+        print '{0:d} reactions were found in both models:'.format(len(commonReactions))
+        for rxn1, rxn2 in commonReactions:
+            print '    {0!s}'.format(rxn1)
+            if rxn1.kinetics and rxn2.kinetics:
+                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                    math.log10(rxn1.kinetics.getRateCoefficient(300, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(400, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(500, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(600, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(800, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(1000, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(1500, 1e5)),
+                    math.log10(rxn1.kinetics.getRateCoefficient(2000, 1e5)),
+                )
+                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                    math.log10(rxn2.kinetics.getRateCoefficient(300, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(400, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(500, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(600, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(800, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(1000, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(1500, 1e5)),
+                    math.log10(rxn2.kinetics.getRateCoefficient(2000, 1e5)),
+                )
+        print '{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1))
+        for rxn in uniqueReactions1:
+            print '    {0!s}'.format(rxn)
+        print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
+        for rxn in uniqueReactions2:
+            print '    {0!s}'.format(rxn)
 
     print "Saving output in diff.html"
     outputPath = 'diff.html'
