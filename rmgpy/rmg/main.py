@@ -713,10 +713,10 @@ class RMG:
         """
         Output a header containing identifying information about RMG to the log.
         """
-    
+        from rmgpy import __version__
         logging.log(level, '#########################################################')
         logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python       #')
-        logging.log(level, '# Version: 0.1.0                                        #')
+        logging.log(level, '# Version: {0:44s} #'.format(__version__))
         logging.log(level, '# Authors: RMG Developers (rmg_dev@mit.edu)             #')
         logging.log(level, '# P.I.s:   William H. Green (whgreen@mit.edu)           #')
         logging.log(level, '#          Richard H. West (r.west@neu.edu)             #')
