@@ -16,7 +16,7 @@ requirements:
     - setuptools
     - cython ==0.21
     - numpy
-    - pydas
+    - pydas >=1.0.1
     - pydqed
     - boost ==1.56.0
     - rdkit
