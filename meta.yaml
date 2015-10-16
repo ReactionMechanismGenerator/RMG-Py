@@ -7,7 +7,7 @@ source:
   path: .
 
 build:
-  number: 2
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
 
 requirements:
   build:
