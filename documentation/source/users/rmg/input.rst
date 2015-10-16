@@ -220,8 +220,8 @@ The following is an example of a simple reactor system::
 			'CH4': 0.9,
 		},
 		terminationTime=(1e0,'s'),
-	    sensitivity=['CH4','H2'],
-	    sensitivityThreshold=0.001,
+		sensitivity=['CH4','H2'],
+		sensitivityThreshold=0.001,
 
 	)
 
@@ -296,10 +296,14 @@ As a contrast, a typical set of parameters for non-pruning is::
 	    toleranceKeepInEdge=0,
 	    toleranceMoveToCore=0.5,
 	    toleranceInterruptSimulation=0.5,
-	    maximumEdgeSpecies=200000
+	    maximumEdgeSpecies=200000,
+	    minCoreSizeForPrune=50,
+	    minSpeciesExistIterationsForPrune=2,
 	)
 
 where ``toleranceKeepInEdge`` is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. ``toleranceInterruptSimulation`` equals to ``toleranceMoveToCore`` so that ODE simulation get interrupted once discovering a new core species. Because of always interrupted ODE simulation, no pruning is performed, ``maximumEdgeSpecies`` is ignored and can be set to any value.
+
+The parameters ``minCoreSizeForPrune`` and ``minSpeciesExistIterationsForPrune`` are used for advanced pruning parameters.  ``minCoreSizeForPrune`` ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. ``minSpeciesExistIterationsForPrune`` is set so that the edge species stays in the job for at least that many iterations before it can be pruned.  The default value is 2 iterations.  
 
 Please find more details about pruning at :ref:`Pruning Theory <prune>`.
 
