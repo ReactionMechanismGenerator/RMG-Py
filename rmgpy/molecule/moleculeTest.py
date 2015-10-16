@@ -892,7 +892,7 @@ class TestMolecule(unittest.TestCase):
         test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
                        '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
                        'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
-                       'O=C=O', '[C]#N',
+                       'O=C=O', 'N#[C]',
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
@@ -1530,7 +1530,7 @@ multiplicity 2
 
     def testMalformedAugmentedInChI_Wrong_Indices(self):
         """Test that augmented inchi with wrong layer is caught."""
-        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,5'# should be 6
+        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,1'
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
