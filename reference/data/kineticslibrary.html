@@ -83,10 +83,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsLibrary.checkForDuplicates">
-<code class="descname">checkForDuplicates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.checkForDuplicates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">checkForDuplicates</code><span class="sig-paren">(</span><em>markDuplicates=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.checkForDuplicates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that all duplicate reactions in the kinetics library are
 properly marked (i.e. with their <code class="docutils literal"><span class="pre">duplicate</span></code> attribute set to 
-<code class="docutils literal"><span class="pre">True</span></code>).</p>
+<code class="docutils literal"><span class="pre">True</span></code>).
+If <code class="docutils literal"><span class="pre">markDuplicates</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code>, then ignore and
+mark all duplicate reactions as duplicate.</p>
 </dd></dl>
 
 <dl class="method">
@@ -319,7 +321,7 @@ syntax.</p>
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -327,7 +329,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -335,7 +337,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -343,7 +345,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -351,7 +353,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -359,7 +361,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -367,7 +369,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -376,7 +378,7 @@ syntax.</p>
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -384,7 +386,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>

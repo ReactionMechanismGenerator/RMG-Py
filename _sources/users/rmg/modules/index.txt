@@ -19,3 +19,4 @@ The database scripts are located in the ``RMG-database/scripts`` folder.
     thermoEstimation
     convertFAME
     databaseScripts
+    standardizeModelSpeciesNames

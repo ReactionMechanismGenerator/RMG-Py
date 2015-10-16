@@ -225,9 +225,10 @@ the first is used here; it is assumed to be the most generic.</p>
 <cite>reactants</cite>, which should be either single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects
 or lists of same. Does not estimate the kinetics of these reactions
 at this time. Returns a list of <code class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></code> objects
-using <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> objects for both reactants and products. The
-reactions are constructed such that the forward direction is consistent
-with the template of this reaction family.</p>
+using <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> objects for both reactants and products
+(but does not generate resonance isomers of these Species.)
+The reactions are constructed such that the forward direction is
+consistent with the template of this reaction family.</p>
 </dd></dl>
 
 <dl class="method">
@@ -558,7 +559,7 @@ syntax.</p>
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -566,7 +567,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -574,7 +575,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -582,7 +583,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -590,7 +591,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -598,7 +599,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -606,7 +607,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -615,7 +616,7 @@ syntax.</p>
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -623,7 +624,7 @@ syntax.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>

@@ -123,7 +123,7 @@ calculation of pressure-dependent reaction rates.</p>
 <span class="n">options</span><span class="p">(</span>
     <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
@@ -224,7 +224,7 @@ calculation of pressure-dependent reaction rates.</p>
 <span class="n">options</span><span class="p">(</span>
     <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
-    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -379,9 +379,9 @@ for new users to better understand the options of rmg input files</p>
 	<span class="c">#how often you want to save restart files.  </span>
 	<span class="c">#takes significant amount of time. comment out if you don&#39;t want to save </span>
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-	<span class="c">#Shows images of species in the output mechanism.  </span>
-	<span class="c">#Otherwise, the user will see SMILES strings in the output</span>
-    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+	<span class="c">#Draws images of species and reactions and saves the model output to HTML.  </span>
+	<span class="c">#May consume extra memory when running large models.</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
 	<span class="c">#generates plots of the RMG&#39;s performance statistics. Not helpful if you just want a model.</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
 	<span class="c">#saves mole fraction of species in &#39;solver/&#39; to help you create plots</span>
@@ -406,13 +406,12 @@ for new users to better understand the options of rmg input files</p>
  	<span class="c">#parameter order is: low_value, high_value, units, internal points</span>
  	<span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2200</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
  	<span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
- 	<span class="c">#If you only care about the rate at the &#39;simplereactor&#39; conditions, use False.  </span>
- 	<span class="c">#Other two options are &#39;PDepArrhenius&#39; (no extra arguments) and </span>
+ 	<span class="c">#The two options for interpolation are &#39;PDepArrhenius&#39; (no extra arguments) and </span>
  	<span class="c">#&#39;Chebyshev&#39; which is followed by the number of basis sets in </span>
  	<span class="c">#Temperature and Pressure. These values must be less than the number of </span>
  	<span class="c">#internal points specified above</span>
  	<span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
- 	<span class="c">#turns off pressure dependence for molecules greater than the number specified below</span>
+ 	<span class="c">#turns off pressure dependence for molecules with number of atoms greater than the number specified below</span>
  	<span class="c">#this is due to faster internal rate of energy transfer for larger molecules</span>
  	<span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
  <span class="p">)</span>
@@ -435,7 +434,7 @@ for new users to better understand the options of rmg input files</p>
     <span class="n">maximumRadicalElectrons</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="c">#If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered </span>
     <span class="c">#which doesn&#39;t react in the RMG system. normally input O2 as triplet with SMILES [O][O]</span>
-    <span class="c">#allowsSingletO2=False,</span>
+    <span class="c">#allowSingletO2=False,</span>
 <span class="p">)</span>
 
 <span class="c">#optional block allows thermo to be estimated through quantum calculations</span>
@@ -499,7 +498,7 @@ for new users to better understand the options of rmg input files</p>
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -507,7 +506,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -515,7 +514,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -523,7 +522,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -531,7 +530,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -539,7 +538,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -547,7 +546,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -556,7 +555,7 @@ for new users to better understand the options of rmg input files</p>
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -564,7 +563,7 @@ for new users to better understand the options of rmg input files</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>

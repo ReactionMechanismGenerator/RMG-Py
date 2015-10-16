@@ -293,6 +293,7 @@ div.customsidebar {
 .icon_sidebar {
     float: left;
 }
+img.icon_sidebar { max-width: none;}
 
 .biglink_sidebar {
     font-size: 120%;

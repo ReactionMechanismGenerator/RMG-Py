@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>14.3. Generate Reactions &mdash; RMG Py 1.0.0 documentation</title>
+    <title>14.9. Standardize Model Species Names &mdash; RMG Py 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 1.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="14. Standalone Modules" href="index.html" />
-    <link rel="next" title="14.4. Sensitivity Analysis" href="sensitivity.html" />
-    <link rel="prev" title="14.2. Merging Models" href="mergeModels.html" />
+    <link rel="next" title="15. Frequently Asked Questions" href="../faq.html" />
+    <link rel="prev" title="14.8. Database Scripts" href="databaseScripts.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,10 +57,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sensitivity.html" title="14.4. Sensitivity Analysis"
+          <a href="../faq.html" title="15. Frequently Asked Questions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="mergeModels.html" title="14.2. Merging Models"
+          <a href="databaseScripts.html" title="14.8. Database Scripts"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
@@ -70,88 +70,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul>
     </div>
             
-  <div class="section" id="generate-reactions">
-<span id="generatereactions"></span><h1>14.3. Generate Reactions<a class="headerlink" href="#generate-reactions" title="Permalink to this headline">¶</a></h1>
-<p>The script generateReactions.py generates reactions between all species mentioned in an input file.
-To call this method type:</p>
-<div class="highlight-python"><div class="highlight"><pre>python generateReactions.py Input_File
+  <div class="section" id="standardize-model-species-names">
+<span id="standardizemodelspeciesnames"></span><h1>14.9. Standardize Model Species Names<a class="headerlink" href="#standardize-model-species-names" title="Permalink to this headline">¶</a></h1>
+<p>This script enables the automatic renaming of species names of of two or more Chemkin files (and
+associated species dictionaries) so that they use consistent, matching names.  Simply
+pass the paths of the Chemkin files and species dictionaries on the
+command-line, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre>python standardizeModelSpeciesNames.py --model1 /path/to/chem1.inp /path/to/species_dictionary1.txt --model2 /path/to/chem2.inp /path/to/species_dictionary2.txt
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">Input_File</span></code> is a file similar to a general RMG input file which contains all the species
-for RMG to generate reactions between.  An example file is placed in <code class="docutils literal"><span class="pre">$RMGPy/examples/generateReactions/input.py</span></code></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Data sources for kinetics</span>
-<span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;KlippensteinH2O2&#39;</span><span class="p">,</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
-    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>  
-    <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span> 
-    <span class="c">#this section lists possible reaction families to find reactioons with</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!Intra_Disproportionation&#39;</span><span class="p">,</span><span class="s">&#39;!Substitution_O&#39;</span><span class="p">],</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="c"># List all species you want reactions between</span>
-<span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;CC&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-
-<span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[H]&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-
-<span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;butane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;CCCC&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-
-
-<span class="c"># you must list reactor conditions (though this may not effect the output)</span>
-<span class="n">simpleReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">650</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span>
-    <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&quot;ethane&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&#39;butane&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">99</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
-<span class="p">)</span>
-
-<span class="c">#optional module if you want to get pressure dependent kinetics. </span>
-
-<span class="c">#pressureDependence(</span>
-<span class="c">#     method=&#39;modified strong collision&#39;,</span>
-<span class="c">#     maximumGrainSize=(0.5,&#39;kcal/mol&#39;),</span>
-<span class="c">#     minimumNumberOfGrains=250,</span>
-<span class="c">#     temperatures=(300,2200,&#39;K&#39;,2),</span>
-<span class="c">#     pressures=(0.01,100,&#39;bar&#39;,3),</span>
-<span class="c">#     interpolation=(&#39;Chebyshev&#39;, 6, 4),</span>
-<span class="c">#     maximumAtoms=15,</span>
-<span class="c">#)</span>
-
-<span class="c">#optional module if you want to limit species produced in reactions. </span>
-
-<span class="c">#generatedSpeciesConstraints(</span>
-<span class="c">#    allowed=[&#39;input species&#39;,&#39;seed mechanisms&#39;,&#39;reaction libraries&#39;],</span>
-<span class="c">#    maximumCarbonAtoms=4,</span>
-<span class="c">#    maximumHydrogenAtoms=10,</span>
-<span class="c">#    maximumOxygenAtoms=7,</span>
-<span class="c">#    maximumNitrogenAtoms=0,</span>
-<span class="c">#    maximumSiliconAtoms=0,</span>
-<span class="c">#    maximumSulfurAtoms=0,</span>
-<span class="c">#    maximumHeavyAtoms=20,</span>
-<span class="c">#    maximumRadicalElectrons=1,</span>
-<span class="c">#)</span>
-</pre></div>
-</div>
-<p>This method will produce an <code class="docutils literal"><span class="pre">output.html</span></code> file in the directory of <code class="docutils literal"><span class="pre">input.py</span></code> which contains the all the reactions produced between the species.</p>
-<p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/simulate/populate_reactions">Populate Reactions</a>.</p>
+<p>The resulting files are saved as <code class="docutils literal"><span class="pre">chem1.inp</span></code> and
+<code class="docutils literal"><span class="pre">species_dictionary1.txt</span></code>, <code class="docutils literal"><span class="pre">chem2.inp</span></code>, <code class="docutils literal"><span class="pre">species_dictionary2.txt</span></code> and so forth (depending on
+how many models you want to standardize) and will be saved in the execution directory.</p>
 </div>
 
 
@@ -177,7 +107,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/generateReactions.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/standardizeModelSpeciesNames.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>

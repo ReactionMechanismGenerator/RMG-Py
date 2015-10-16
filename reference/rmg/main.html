@@ -177,8 +177,8 @@ attributes are:</p>
 <tr class="row-odd"><td><cite>units</cite></td>
 <td>The unit system to use to save output files (currently must be &#8216;si&#8217;)</td>
 </tr>
-<tr class="row-even"><td><cite>drawMolecules</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> to draw pictures of the species in the core, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
+<tr class="row-even"><td><cite>generateOutputHTML</cite></td>
+<td><code class="docutils literal"><span class="pre">True</span></code> to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
 <tr class="row-odd"><td><cite>generatePlots</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> to generate plots of the job execution statistics after each iteration, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
@@ -406,7 +406,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -414,7 +414,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -422,7 +422,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -430,7 +430,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -438,7 +438,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -446,7 +446,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -454,7 +454,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -463,7 +463,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -471,7 +471,7 @@ Render the result using the program &#8216;dot&#8217; via a command like
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>

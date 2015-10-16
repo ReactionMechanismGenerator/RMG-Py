@@ -190,10 +190,17 @@ model is fit cpdef changeRate(self, double factor)at each pressure.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.kinetics.PDepArrhenius.getEffectiveColliderEfficiencies">
+<code class="descname">getEffectiveColliderEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>list species</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getEffectiveColliderEfficiencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the effective collider efficiencies for all species in the form of
+a numpy array.  This function helps assist rapid effective pressure calculations in the solver.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.getEffectivePressure">
 <code class="descname">getEffectivePressure</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em>, <em>list species</em>, <em>ndarray fractions</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getEffectivePressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective pressure in Pa for a system at a given pressure
-<cite>P</cite> in Pa composed of the given list of <cite>species</cite> with the given
+<cite>P</cite> in Pa composed of the given list of <cite>species</cite> (Species or Molecule objects) with the given
 <cite>fractions</cite>.</p>
 </dd></dl>
 
@@ -296,7 +303,7 @@ returned.</p>
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -304,7 +311,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -312,7 +319,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -320,7 +327,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -328,7 +335,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -336,7 +343,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -344,7 +351,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -353,7 +360,7 @@ returned.</p>
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -361,7 +368,7 @@ returned.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>

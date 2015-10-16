@@ -188,8 +188,9 @@ reaction (if found).</p>
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies">
 <code class="descname">checkForExistingSpecies</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check to see if an existing species contains the same
-<code class="xref py py-class docutils literal"><span class="pre">structure.Structure</span></code> as <cite>structure</cite>. Returns <code class="docutils literal"><span class="pre">True</span></code> or
-<code class="docutils literal"><span class="pre">False</span></code> and the matched species (if found, or <code class="docutils literal"><span class="pre">None</span></code> if not).</p>
+<code class="xref py py-class docutils literal"><span class="pre">molecule.Molecule</span></code> as <cite>molecule</cite>. Returns <code class="docutils literal"><span class="pre">True</span></code> 
+and the matched species (if found) or
+<code class="docutils literal"><span class="pre">False</span></code> and <code class="docutils literal"><span class="pre">None</span></code> (if not found).</p>
 </dd></dl>
 
 <dl class="method">
@@ -233,13 +234,6 @@ corresponding species and reaction lists.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getReactionRates">
-<code class="descname">getReactionRates</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>Ci</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getReactionRates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an array of reaction rates for each reaction in the model core
-and edge. The id of the reaction is the index into the vector.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix">
 <code class="descname">getStoichiometryMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometry matrix for all generated species and reactions.
@@ -263,8 +257,9 @@ the model edge and/or core.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction">
 <code class="descname">makeNewReaction</code><span class="sig-paren">(</span><em>forward</em>, <em>checkExisting=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a new reaction given a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object <cite>forward</cite>. The reaction is added to the global list
-of reactions. Returns the reaction in the direction that corresponds to the
+<dd><p>Make a new reaction given a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object <cite>forward</cite>. 
+The reaction is added to the global list of reactions.
+Returns the reaction in the direction that corresponds to the
 estimated kinetics, along with whether or not the reaction is new to the
 global reaction list.</p>
 <p>The forward direction is determined using the &#8220;is_reverse&#8221; attribute of the
@@ -351,6 +346,13 @@ updated.</p>
 <em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">ReactionModel</code><span class="sig-paren">(</span><em>species=None</em>, <em>reactions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a generic reaction model. A reaction model consists of <cite>species</cite>,
 a list of species, and <cite>reactions</cite>, a list of reactions.</p>
+<dl class="method">
+<dt id="rmgpy.rmg.model.ReactionModel.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <code class="xref py py-class docutils literal"><span class="pre">ReactionModel</span></code> object that is the union of this
+model and <cite>other</cite>.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -385,7 +387,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -393,7 +395,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -401,7 +403,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -409,7 +411,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -417,7 +419,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -425,7 +427,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -433,7 +435,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -442,7 +444,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -450,7 +452,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>

@@ -84,9 +84,10 @@ thus saving time (eg. if you are sure you&#8217;ve already labeled them as dupli
 
 <dl class="function">
 <dt id="rmgpy.chemkin.saveSpeciesDictionary">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveSpeciesDictionary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveSpeciesDictionary" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveSpeciesDictionary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>oldStyle=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveSpeciesDictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the given list of <cite>species</cite> as adjacency lists in a text file <cite>path</cite> 
 on disk.</p>
+<p>If <cite>oldStyle==True</cite> then it saves it in the old RMG-Java syntax.</p>
 </dd></dl>
 
 <dl class="function">
@@ -122,7 +123,8 @@ if it is 2, the molecule is nonlinear.</li>
 <dt id="rmgpy.chemkin.saveJavaKineticsLibrary">
 <code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveJavaKineticsLibrary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveJavaKineticsLibrary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
-and reactions.txt given a list of reactions.</p>
+and reactions.txt given a list of reactions, with species.txt containing the
+RMG-Java formatted dictionary.</p>
 </dd></dl>
 
 </div>
@@ -204,7 +206,7 @@ you may have undetected duplicate reactions.</p>
 <table cellpadding="3">
 
 <tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="75px" alt="Documentation"/></a>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
@@ -212,7 +214,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="75px" alt="Database"/></a>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
@@ -220,7 +222,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="75px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
@@ -228,7 +230,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="75px" alt="Draw Group"/></a>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
@@ -236,7 +238,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="75px" alt="Molecule Search"/></a>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
@@ -244,7 +246,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="75px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
@@ -252,7 +254,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="75px" alt="Solvation Search"/></a>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
@@ -261,7 +263,7 @@ you may have undetected duplicate reactions.</p>
 
 
 <tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="75px" alt="Pressure Dependent Networks"/></a>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
@@ -269,7 +271,7 @@ you may have undetected duplicate reactions.</p>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="75px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
