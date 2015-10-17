@@ -700,6 +700,11 @@ class Molecule(Graph):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
+        
+        This function orders atoms using several attributes in atom.getDescriptor().
+        Currently it sorts by placing heaviest atoms first and hydrogen atoms last.
+        Placing hydrogens last during sorting ensures that functions with hydrogen
+        removal work properly.
         """
         cython.declare(vertex=Vertex, a=Atom, index=int)
         for vertex in self.vertices:
