@@ -120,6 +120,7 @@ def convert_unsaturated_bond_to_biradical(mol, u_indices):
                 u_indices.remove(u1)
                 u_indices.remove(u2)
                 return mol        
+    raise Exception('The indices {} did not refer to atoms that are connected in the molecule {}.'.format(u_indices, mol))    
 
 def isUnsaturated(mol):
     """Does the molecule have a bond that's not single?
@@ -289,9 +290,8 @@ def check(mol, aug_inchi) :
 
     conditions.append(condition_electrons)
 
-    assert all(conditions), 'Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     if not all(conditions):
-        raise Exception
+        raise Exception('Molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi))
 
 
 def correct_O_triple_bond(mol):
@@ -410,9 +410,8 @@ def fromAugmentedInChI(mol, aug_inchi):
     indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else None    
     
     if not correct and not indices:
-        logging.error('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
+        raise Exception('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
             .format(mol.toAdjacencyList(), aug_inchi))
-        raise Exception
 
     while not correct and unsaturated and len(indices) > 1:
         mol = convert_unsaturated_bond_to_biradical(mol, indices)
@@ -676,7 +675,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rdAtom)
-        rdAtomIndices[atom] = index
+        if removeHs and atom.symbol == 'H':
+            pass
+        else:
+            rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
     orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}

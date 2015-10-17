@@ -892,7 +892,7 @@ class TestMolecule(unittest.TestCase):
         test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
                        '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
                        'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
-                       'O=C=O', '[C]#N',
+                       'O=C=O', 'N#[C]',
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
@@ -1507,6 +1507,61 @@ multiplicity 2
         saturated_molecule.saturate()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
+
+    def testMalformedAugmentedInChI(self):
+        """Test that augmented inchi without InChI layer raises Exception."""
+        from rmgpy.molecule.inchi import InchiException
+
+        malform_aug_inchi = 'foo'
+        with self.assertRaises(InchiException):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_InChI_Layer(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/CH3/h1H2'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_Mult(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/CH3/h1H3/mult3'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_Indices(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,1'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testRDKitMolAtomMapping(self):
+        """
+        Test that the atom mapping returned by toRDKitMol contains the correct
+        atom indices of the atoms of the molecule when hydrogens are removed.
+        """
+        from rmgpy.molecule.parser import toRDKitMol
+
+        adjlist = '''
+1 H u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,S} {4,S} {5,S}
+3 H u0 p0 c0 {2,S}
+4 H u0 p0 c0 {2,S}
+5 O u0 p2 c0 {2,S} {6,S}
+6 H u0 p0 c0 {5,S}
+        '''
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        rdkitmol, rdAtomIndices = toRDKitMol(mol, removeHs=True, returnMapping=True)
+
+        heavy_atoms = [at for at in mol.atoms if at.number != 1]
+        for at1 in heavy_atoms:
+            for at2 in heavy_atoms:
+                if mol.hasBond(at1, at2):
+                    try:
+                        rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1],rdAtomIndices[at2])
+                    except RuntimeError:
+                        self.fail("RDKit failed in finding the bond in the original atom!")
+                        
 
 ################################################################################
 
