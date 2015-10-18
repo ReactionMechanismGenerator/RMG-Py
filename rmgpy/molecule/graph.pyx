@@ -57,6 +57,7 @@ cdef class Vertex(object):
     def __init__(self):
         self.edges = {}
         self.resetConnectivityValues()
+        self.ignore = False
 
     def __reduce__(self):
         """

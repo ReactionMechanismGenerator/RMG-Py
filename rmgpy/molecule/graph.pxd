@@ -33,6 +33,7 @@ cdef class Vertex(object):
     cdef public short sortingLabel
     cdef public bint terminal
     cdef public Vertex mapping
+    cdef public bint ignore
 
     cpdef Vertex copy(self)
 
