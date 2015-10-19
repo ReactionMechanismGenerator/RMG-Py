@@ -18,7 +18,7 @@ or making many additions to RMG's thermodynamic and kinetics databases.
     
     mopac password_string_here
 
-* You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/1.0.0/examples/rmg/minimal/input.py>`_  
+* You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_  
   to a local directory.  Use the Terminal to run your RMG job inside that folder using the following command ::
 
     rmg.py input.py
