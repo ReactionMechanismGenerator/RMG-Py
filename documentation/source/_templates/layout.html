@@ -11,7 +11,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 {% endblock %}
 
 {% block rootrellink %}
-<li><a href="{{ pathto('index') }}">Documentation</a> &raquo;</li>
+<li><a href="{{ pathto('index') }}">Documentation {{ release }}</a> &raquo;</li>
 {% endblock %}
 
 {%- block header %}
