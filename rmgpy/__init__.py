@@ -35,8 +35,7 @@ This is the rmg module.
 import os
 import os.path
 import logging
-
-__version__ = '1.0.1'
+from .version import __version__
 
 ################################################################################
 

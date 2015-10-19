@@ -192,8 +192,12 @@ for root, dirs, files in os.walk('rmgpy'):
                     modules.append(module)       
 
 # Initiate the build and/or installation
+
+# Read the version number
+exec(open('rmgpy/version.py').read())
+
 setup(name='RMG-Py',
-    version='1.0.0',
+    version= __version__,
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
