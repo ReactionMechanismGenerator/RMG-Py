@@ -740,7 +740,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rdAtom)
-        rdAtomIndices[atom] = index
+        if removeHs and atom.symbol == 'H':
+            pass
+        else:
+            rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
     orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
@@ -816,23 +819,8 @@ def createULayer(mol):
     # generate inchi and auxiliary info
     inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
 
-    # extract the atom numbers
-    pieces = auxinfo.split('/')
-    original_atom_numbers = None
-    for piece in pieces:
-        if piece.startswith('N'):
-            original_atom_numbers = piece
-            break
-
-    assert original_atom_numbers is not None, "inchi: {}, {}".format(inchi, auxinfo)
-    """
-    definition of N-list: 
-
-    The original number of an atom with identification number n is given as the
-    n-th member of this list for a component; the lists are separated with “;”. 
-    """
-    Nlist = map(int, original_atom_numbers[2:].split(','))
-    new_indices = [Nlist.index(i+1) for i,atom in enumerate(mol.atoms)]
+    # extract the atom numbers from N-layer of auxiliary info:
+    new_indices = parse_N_layer(mol, auxinfo)    
 
     # sort the atoms based on the new inchi order
     mol.atoms = [x for (y,x) in sorted(zip(new_indices,mol.atoms), key=lambda pair: pair[0])]
@@ -1340,3 +1328,22 @@ def find_inverse_allyl_paths(existing_path):
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
     return paths
+
+def parse_N_layer(mol, auxinfo):
+    pieces = auxinfo.split('/')
+    original_atom_numbers = None
+    for piece in pieces:
+        if piece.startswith('N'):
+            original_atom_numbers = piece
+            break
+
+    assert original_atom_numbers is not None, "{}".format(auxinfo)
+    """
+    definition of N-list: 
+
+    The original number of an atom with identification number n is given as the
+    n-th member of this list for a component; the lists are separated with “;”. 
+    """
+    Nlist = map(int, original_atom_numbers[2:].split(','))
+    new_indices = [Nlist.index(i+1) for i,atom in enumerate(mol.atoms)]
+    return new_indices
