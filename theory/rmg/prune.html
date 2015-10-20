@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="enlarger.html" title="1. Rate-Based Model Enlarger"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG Theory Guide</a> &raquo;</li> 
@@ -92,6 +92,12 @@ dynamic simulation.</p>
 <li><p class="first">maximumEdgeSpecies</p>
 <p>If dynamic simulation isn&#8217;t interrupted in half way and total number of the edge species whose peak fluxes are higher than
 toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
+</li>
+<li><p class="first">minCoreSizeForPrune</p>
+<p>Ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species.</p>
+</li>
+<li><p class="first">minSpeciesExistIterationsForPrune</p>
+<p>Set the number of iterations an edge species must stay in the job before it can be pruned.  The default value is 2 iterations.</p>
 </li>
 </ul>
 </div>

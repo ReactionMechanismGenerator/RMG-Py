@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="installation/QMthermo.html" title="2.2.5. Quantum Mechanical Calculations"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
@@ -257,8 +257,8 @@ the model generation will stop when either of the termination criterion is satis
                 <span class="s">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e0</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span><span class="s">&#39;H2&#39;</span><span class="p">],</span>
-    <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span><span class="s">&#39;H2&#39;</span><span class="p">],</span>
+        <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 
 <span class="p">)</span>
 </pre></div>
@@ -324,11 +324,14 @@ The example below shows how to set up pruning parameters:</p>
     <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">200000</span>
+    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">200000</span><span class="p">,</span>
+    <span class="n">minCoreSizeForPrune</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">minSpeciesExistIterationsForPrune</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">toleranceKeepInEdge</span></code> is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. <code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code> equals to <code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code> so that ODE simulation get interrupted once discovering a new core species. Because of always interrupted ODE simulation, no pruning is performed, <code class="docutils literal"><span class="pre">maximumEdgeSpecies</span></code> is ignored and can be set to any value.</p>
+<p>The parameters <code class="docutils literal"><span class="pre">minCoreSizeForPrune</span></code> and <code class="docutils literal"><span class="pre">minSpeciesExistIterationsForPrune</span></code> are used for advanced pruning parameters.  <code class="docutils literal"><span class="pre">minCoreSizeForPrune</span></code> ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. <code class="docutils literal"><span class="pre">minSpeciesExistIterationsForPrune</span></code> is set so that the edge species stays in the job for at least that many iterations before it can be pruned.  The default value is 2 iterations.</p>
 <p>Please find more details about pruning at <a class="reference internal" href="../../theory/rmg/prune.html#prune"><span>Pruning Theory</span></a>.</p>
 </div>
 <div class="section" id="on-the-fly-quantum-calculations">
@@ -473,7 +476,7 @@ of atoms (16 in the above example).</p>
 </pre></div>
 </div>
 <p>Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
-plese refer to the <a class="reference internal" href="../../reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev" title="rmgpy.kinetics.Chebyshev"><code class="xref py py-class docutils literal"><span class="pre">rmgpy.kinetics.Chebyshev</span></code></a> documentation.
+plese refer to the <code class="xref py py-class docutils literal"><span class="pre">rmgpy.kinetics.Chebyshev</span></code> documentation.
 The number of pressures and temperature coefficents should always be smaller
 than the respective number of user-specified temperatures and pressures.</p>
 </div>

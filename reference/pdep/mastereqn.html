@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="network.html" title="rmgpy.pdep.Network"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &raquo;</li> 
@@ -71,12 +71,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="the-master-equation">
 <h1>The master equation<a class="headerlink" href="#the-master-equation" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="rmgpy.pdep.me.generateFullMEMatrix">
-<code class="descclassname">rmgpy.pdep.me.</code><code class="descname">generateFullMEMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.me.generateFullMEMatrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the full master equation matrix for the network.</p>
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/pdep/mastereqn.rst</tt>, line 5)</p>
+autodoc: failed to import function u&#8217;generateFullMEMatrix&#8217; from module u&#8217;rmgpy.pdep.me&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/pdep/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .collision import *
+ImportError: No module named collision
+</div>
 <p>Throughout this document we will utilize the following terminology:</p>
 <ul class="simple">
 <li>An <strong>isomer</strong> is a unimolecular configuration on the potential energy surface.</li>
@@ -243,7 +247,7 @@ reactant channel <span class="math">\(n\)</span> due to chemical reactions:</p>
 \[h_n = - \sum_{i=1}^{N_\mathrm{isom}} \sum_{r=1}^{N_\mathrm{grains}} y_{n\mathrm{B}} f_{in}(E_r) b_n(E_r)\]</div>
 <p>The interested reader is referred to any of a variety of other sources for
 alternative presentations, of which an illustrative sampling is given here
-<a class="reference internal" href="../../theory/pdep/master_equation.html#gilbert1990" id="id1">[Gilbert1990]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#baer1996" id="id2">[Baer1996]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#holbrook1996" id="id3">[Holbrook1996]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#forst2003" id="id4">[Forst2003]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#pilling2003" id="id5">[Pilling2003]</a>.</p>
+<a class="reference internal" href="#gilbert1990" id="id1">[Gilbert1990]</a> <a class="reference internal" href="#baer1996" id="id2">[Baer1996]</a> <a class="reference internal" href="#holbrook1996" id="id3">[Holbrook1996]</a> <a class="reference internal" href="#forst2003" id="id4">[Forst2003]</a> <a class="reference internal" href="#pilling2003" id="id5">[Pilling2003]</a>.</p>
 <table class="docutils citation" frame="void" id="gilbert1990" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">

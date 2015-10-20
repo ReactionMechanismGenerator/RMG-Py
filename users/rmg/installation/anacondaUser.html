@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="2. Installation"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -78,8 +78,12 @@ or making many additions to RMG&#8217;s thermodynamic and kinetics databases.</p
 <ul>
 <li><p class="first">Download and install the <a class="reference external" href="http://continuum.io/downloads">Anaconda Python Platform</a>. When prompted to append Anaconda to your PATH, select or type Yes.</p>
 </li>
-<li><p class="first">Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  Type the following into your Terminal to do so</p>
-<div class="highlight-python"><div class="highlight"><pre>conda install -c rmg -y rmg rmgdatabase
+<li><p class="first">Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. Type the following into your Terminal to create a new environment named &#8216;rmgtest&#8217; containing all that you need:</p>
+<div class="highlight-python"><div class="highlight"><pre>conda create -c rdkit -c rmg --name rmgtest rdkit rmg rmgdatabase
+</pre></div>
+</div>
+<p>Whenever you wish to use it you must first activate the environment:</p>
+<div class="highlight-python"><div class="highlight"><pre>source activate rmgtest
 </pre></div>
 </div>
 </li>
@@ -88,7 +92,7 @@ or making many additions to RMG&#8217;s thermodynamic and kinetics databases.</p
 </pre></div>
 </div>
 </li>
-<li><p class="first">You may now run an RMG test job. Save the <a class="reference external" href="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/1.0.0/examples/rmg/minimal/input.py">Minimal Example Input File</a>
+<li><p class="first">You may now run an RMG test job. Save the <a class="reference external" href="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py">Minimal Example Input File</a>
 to a local directory.  Use the Terminal to run your RMG job inside that folder using the following command</p>
 <div class="highlight-python"><div class="highlight"><pre>rmg.py input.py
 </pre></div>

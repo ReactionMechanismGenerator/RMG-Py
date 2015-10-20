@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="14. Standalone Modules"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -75,13 +75,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>The script <code class="docutils literal"><span class="pre">diffModels</span></code> compares two RMG generated models to determine their differences.
 To use this method you will need the chemkin and species dictionary outputs from RMG. These can be found in the
 <code class="docutils literal"><span class="pre">chemkin</span></code> folder from the directory of the <code class="docutils literal"><span class="pre">input.py</span></code> file used for the RMG run.  The syntax is as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre>python diffModels.py CHEMKIN1 SPECIESDICT1 THERMO1 CHEMKIN2 SPECIESDICT2 THERMO2
+<div class="highlight-python"><div class="highlight"><pre>python diffModels.py CHEMKIN1 SPECIESDICT1 --thermo1 THERMO1 CHEMKIN2 SPECIESDICT2 --thermo2 THERMO2 --web
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">CHEMKIN</span></code> represents the chemkin input file (<code class="docutils literal"><span class="pre">chem00XX.inp</span></code>), <code class="docutils literal"><span class="pre">SPECIESDICT</span></code>
-is the species diectionary from RMG (<code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>) and <code class="docutils literal"><span class="pre">THERMO</span></code>
-is input as the chemkin file again (<code class="docutils literal"><span class="pre">chem00XX.inp</span></code>).  The numbers (<code class="docutils literal"><span class="pre">1</span></code> and <code class="docutils literal"><span class="pre">2</span></code>) represent
-which model to each file is from.</p>
+is the species diectionary from RMG (<code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>) and  the optional <code class="docutils literal"><span class="pre">--thermo</span></code> flag can be used
+to add separate thermo CHEMKIN files <code class="docutils literal"><span class="pre">THERMO</span></code>.  The numbers (<code class="docutils literal"><span class="pre">1</span></code> and <code class="docutils literal"><span class="pre">2</span></code>) represent
+which model to each file is from.  The optional <code class="docutils literal"><span class="pre">--web</span></code> flag is used for running this script through the
+RMG-website.</p>
+<p>Running the script without any optional flags looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre>python diffModels.py CHEMKIN1 SPECIESDICT1 CHEMKIN2 SPECIESDICT2
+</pre></div>
+</div>
 <p>Output of each comparison is printed, and the method then produces a html file (<code class="docutils literal"><span class="pre">diff.html</span></code>)
 for easy viewing of the comparison.</p>
 <p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/simulate/compare">Model Comparison Tool</a>.</p>

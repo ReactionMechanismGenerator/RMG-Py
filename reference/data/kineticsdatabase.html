@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="groupfrequencies.html" title="rmgpy.data.statmech.GroupFrequencies"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
@@ -71,139 +71,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-kinetics-kineticsdatabase">
 <h1>rmgpy.data.kinetics.KineticsDatabase<a class="headerlink" href="#rmgpy-data-kinetics-kineticsdatabase" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.data.kinetics.KineticsDatabase">
-<em class="property">class </em><code class="descclassname">rmgpy.data.kinetics.</code><code class="descname">KineticsDatabase</code><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class for working with the RMG kinetics database.</p>
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactions">
-<code class="descname">generateReactions</code><span class="sig-paren">(</span><em>reactants</em>, <em>products=None</em>, <em>failsSpeciesConstraints=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-searches the depository, libraries, and groups, in that order.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromFamilies">
-<code class="descname">generateReactionsFromFamilies</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em>, <em>only_families=None</em>, <em>failsSpeciesConstraints=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromFamilies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-applies the reaction family.
-If <cite>only_families</cite> is a list of strings, only families with those labels
-are used.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibraries">
-<code class="descname">generateReactionsFromLibraries</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em>, <em>failsSpeciesConstraints=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-searches the depository.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibrary">
-<code class="descname">generateReactionsFromLibrary</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em>, <em>library</em>, <em>failsSpeciesConstraints=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibrary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-searches the depository.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.getForwardReactionForFamilyEntry">
-<code class="descname">getForwardReactionForFamilyEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>family</em>, <em>thermoDatabase</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.getForwardReactionForFamilyEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>For a given <cite>entry</cite> for a reaction of the given reaction <cite>family</cite> (the
-string label of the family), return the reaction with kinetics and
-degeneracy for the &#8220;forward&#8221; direction as defined by the reaction 
-family. For families that are their own reverse, the direction the
-kinetics is given in will be preserved. If the entry contains 
-functional groups for the reactants, assume that it is given in the 
-forward direction and do nothing. Returns the reaction in the direction
-consistent with the reaction family template, and the matching template.
-Note that the returned reaction will have its kinetics and degeneracy
-set appropriately.</p>
-<p>In order to reverse the reactions that are given in the reverse of the
-direction the family is defined, we need to compute the thermodynamics
-of the reactants and products. For this reason you must also pass
-the <cite>thermoDatabase</cite> to use to generate the thermo data.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>path</em>, <em>families=None</em>, <em>libraries=None</em>, <em>depositories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the kinetics database from the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the families database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.loadFamilies">
-<code class="descname">loadFamilies</code><span class="sig-paren">(</span><em>path</em>, <em>families=None</em>, <em>depositories=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadFamilies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the kinetics families from the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the kinetics families.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.loadLibraries">
-<code class="descname">loadLibraries</code><span class="sig-paren">(</span><em>path</em>, <em>libraries=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the listed kinetics libraries from the given <cite>path</cite> on disk.</p>
-<p>Loads them all if <cite>libraries</cite> list is not specified or <cite>None</cite>.
-The <cite>path</cite> points to the folder of kinetics libraries in the database,
-and the libraries should be in files like <code class="file docutils literal"><span class="pre">&lt;path&gt;/&lt;library&gt;.py</span></code>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.loadOld">
-<code class="descname">loadOld</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadOld" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the old RMG kinetics database from the given <cite>path</cite> on disk, where
-<cite>path</cite> points to the top-level folder of the old RMG database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.loadRecommendedFamiliesList">
-<code class="descname">loadRecommendedFamiliesList</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadRecommendedFamiliesList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the list of recommended families from the given file</p>
-<p>The file is usually &#8216;kinetics/families/recommended.py&#8217;.
-This is stored as a dictionary of True or False values (checked here),
-and should contain entries for every available family (checked in loadFamilies).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the kinetics database to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the kinetics database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.saveFamilies">
-<code class="descname">saveFamilies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveFamilies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the kinetics families to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the kinetics families.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.saveLibraries">
-<code class="descname">saveLibraries</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the kinetics libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the kinetics libraries.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.saveOld">
-<code class="descname">saveOld</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveOld" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the old RMG kinetics database to the given <cite>path</cite> on disk, where
-<cite>path</cite> points to the top-level folder of the old RMG database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.saveRecommendedFamilies">
-<code class="descname">saveRecommendedFamilies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveRecommendedFamilies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the list of recommended families in a dictionary stored at 
-<cite>path</cite>/recommended.py</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/kineticsdatabase.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;KineticsDatabase&#8217; from module u&#8217;rmgpy.data.kinetics&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/kinetics/__init__.py&#8221;, line 32, in &lt;module&gt;
+    from .common import *
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/kinetics/common.py&#8221;, line 36, in &lt;module&gt;
+    from rmgpy.data.base import DatabaseError, LogicNode
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
+    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .adjlist import *
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
+    from .molecule import Atom, Bond
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
+    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
+ImportError: No module named graph
+</div>
 </div>
 
 

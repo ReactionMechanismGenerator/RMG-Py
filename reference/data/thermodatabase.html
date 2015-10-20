@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="templatereaction.html" title="rmgpy.data.kinetics.TemplateReaction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
@@ -71,191 +71,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-thermo-thermodatabase">
 <h1>rmgpy.data.thermo.ThermoDatabase<a class="headerlink" href="#rmgpy-data-thermo-thermodatabase" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.data.thermo.ThermoDatabase">
-<em class="property">class </em><code class="descclassname">rmgpy.data.thermo.</code><code class="descname">ThermoDatabase</code><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class for working with the RMG thermodynamics database.</p>
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.computeGroupAdditivityThermo">
-<code class="descname">computeGroupAdditivityThermo</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.computeGroupAdditivityThermo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
-additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
-<p>The entropy is not corrected for the symmetry of the molecule.
-This should be done later by the calling function.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.estimateRadicalThermoViaHBI">
-<code class="descname">estimateRadicalThermoViaHBI</code><span class="sig-paren">(</span><em>molecule</em>, <em>stableThermoEstimator</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateRadicalThermoViaHBI" title="Permalink to this definition">¶</a></dt>
-<dd><p>Estimate the thermodynamics of a radical by saturating it,
-applying the provided stableThermoEstimator method on the saturated species,
-then applying hydrogen bond increment corrections for the radical
-site(s) and correcting for the symmetry.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivity">
-<code class="descname">estimateThermoViaGroupAdditivity</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
-additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.findCp0andCpInf">
-<code class="descname">findCp0andCpInf</code><span class="sig-paren">(</span><em>species</em>, <em>thermoData</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.findCp0andCpInf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the Cp0 and CpInf values, and add them to the thermoData object.</p>
-<p>Modifies thermoData in place and doesn&#8217;t return anything</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.getAllThermoData">
-<code class="descname">getAllThermoData</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getAllThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all possible sets of thermodynamic parameters for a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite>. The hits from the depository come
-first, then the libraries (in order), and then the group additivity
-estimate. This method is useful for a generic search job.</p>
-<p>Returns: a list of tuples (ThermoData, source, entry) 
-(Source is a library or depository, or None)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.getThermoData">
-<code class="descname">getThermoData</code><span class="sig-paren">(</span><em>species</em>, <em>trainingSet=None</em>, <em>quantumMechanics=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal"><span class="pre">Species</span></code>
-object <cite>species</cite>. This function first searches the loaded libraries
-in order, returning the first match found, before falling back to
-estimation via group additivity.</p>
-<p>Returns: ThermoData</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromDepository">
-<code class="descname">getThermoDataFromDepository</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromDepository" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all possible sets of thermodynamic parameters for a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite> from the depository. If no
-depository is loaded, a <code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
-<p>Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromGroups">
-<code class="descname">getThermoDataFromGroups</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromGroups" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the group
-additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
-<p>The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
-the resonance isomers (items in <cite>species.molecule</cite> list) are sorted in ascending order.</p>
-<p>Returns: ThermoData</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries">
-<code class="descname">getThermoDataFromLibraries</code><span class="sig-paren">(</span><em>species</em>, <em>trainingSet=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal"><span class="pre">Species</span></code>
-object <cite>species</cite>. This function first searches the loaded libraries
-in order, returning the first match found, before failing and returning None.
-<cite>trainingSet</cite> is used to identify if function is called during training set or not.
-During training set calculation we want to use gas phase thermo to not affect reverse
-rate calculation.</p>
-<p>Returns: ThermoData or None</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibrary">
-<code class="descname">getThermoDataFromLibrary</code><span class="sig-paren">(</span><em>species</em>, <em>library</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibrary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite> from the specified thermodynamics
-<cite>library</cite>. If <cite>library</cite> is a string, the list of libraries is searched
-for a library with that name. If no match is found in that library,
-<code class="docutils literal"><span class="pre">None</span></code> is returned. If no corresponding library is found, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
-<p>Returns a tuple: (ThermoData, library, entry)  or None.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>path</em>, <em>libraries=None</em>, <em>depository=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.loadDepository">
-<code class="descname">loadDepository</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.loadDepository" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.loadGroups">
-<code class="descname">loadGroups</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.loadGroups" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.loadLibraries">
-<code class="descname">loadLibraries</code><span class="sig-paren">(</span><em>path</em>, <em>libraries=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.loadLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.loadOld">
-<code class="descname">loadOld</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.loadOld" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the old RMG thermo database from the given <cite>path</cite> on disk, where
-<cite>path</cite> points to the top-level folder of the old RMG database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.pruneHeteroatoms">
-<code class="descname">pruneHeteroatoms</code><span class="sig-paren">(</span><em>allowed=['C', 'H', 'O', 'S']</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.pruneHeteroatoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove all species from thermo libraries that contain atoms other than those allowed.</p>
-<p>This is useful before saving the database for use in RMG-Java</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the thermo database to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo database.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.saveDepository">
-<code class="descname">saveDepository</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.saveDepository" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the thermo depository to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo depository.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.saveGroups">
-<code class="descname">saveGroups</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.saveGroups" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the thermo groups to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo groups.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.saveLibraries">
-<code class="descname">saveLibraries</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.saveLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the thermo libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
-points to the top-level folder of the thermo libraries.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.saveOld">
-<code class="descname">saveOld</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.saveOld" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the old RMG thermo database to the given <cite>path</cite> on disk, where
-<cite>path</cite> points to the top-level folder of the old RMG database.</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/thermodatabase.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;ThermoDatabase&#8217; from module u&#8217;rmgpy.data.thermo&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/thermo.py&#8221;, line 41, in &lt;module&gt;
+    from base import Database, Entry, makeLogicNode, DatabaseError
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
+    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .adjlist import *
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
+    from .molecule import Atom, Bond
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
+    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
+ImportError: No module named graph
+</div>
 </div>
 
 

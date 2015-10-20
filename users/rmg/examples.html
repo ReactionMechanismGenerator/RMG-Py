@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="input.html" title="3. Creating Input Files"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
@@ -370,7 +370,14 @@ for new users to better understand the options of rmg input files</p>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 	   <span class="c">#number of edge species needed to accumulate before pruning occurs</span>
 	   <span class="c">#larger values require more memory and will prune less often</span>
-    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span>
+    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+        <span class="c">#minimum number of core species needed before pruning occurs.</span>
+        <span class="c">#this prevents pruning when kinetic model is far away from completeness</span>
+    <span class="n">minCoreSizeForPrune</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="c">#make sure that the pruned edge species have existed for a set number of RMG iterations.  </span>
+        <span class="c">#the user can specify to increase it from the default value of 2</span>
+    <span class="n">minSpeciesExistIterationsForPrune</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>

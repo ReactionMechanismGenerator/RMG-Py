@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="Chemkin files (rmgpy.chemkin)"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a> &raquo;</li> 
@@ -73,77 +73,105 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Reading Chemkin files<a class="headerlink" href="#reading-chemkin-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="main-functions">
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.chemkin.loadChemkinFile">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">loadChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>readComments=True</em>, <em>thermoPath=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a Chemkin input file located at <cite>path</cite> on disk to <cite>path</cite>, returning lists of the species
-and reactions in the Chemkin file. The &#8216;thermoPath&#8217; point to a separate thermo file, or, if &#8216;None&#8217; is 
-specified, the function will look for the thermo database within the chemkin mechanism file</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.loadSpeciesDictionary">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">loadSpeciesDictionary</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.loadSpeciesDictionary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load an RMG dictionary - containing species identifiers and the associated
-adjacency lists - from the file located at <cite>path</cite> on disk. Returns a dict
-mapping the species identifiers to the loaded species. Resonance isomers
-for each species are automatically generated.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.loadTransportFile">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">loadTransportFile</code><span class="sig-paren">(</span><em>path</em>, <em>speciesDict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.loadTransportFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a Chemkin transport properties file located at <cite>path</cite> and store the
-properties on the species in <cite>speciesDict</cite>.</p>
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 10)</p>
+autodoc: failed to import function u&#8217;loadChemkinFile&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 12)</p>
+autodoc: failed to import function u&#8217;loadSpeciesDictionary&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 14)</p>
+autodoc: failed to import function u&#8217;loadTransportFile&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="rmgpy.chemkin.readKineticsEntry">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">readKineticsEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>speciesDict</em>, <em>Aunits</em>, <em>Eunits</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readKineticsEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read a kinetics <cite>entry</cite> for a single reaction as loaded from a Chemkin
-file. The associated mapping of labels to species <cite>speciesDict</cite> should also
-be provided. Returns a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object with the reaction and its
-associated kinetics.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.readReactionComments">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">readReactionComments</code><span class="sig-paren">(</span><em>reaction</em>, <em>comments</em>, <em>read=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readReactionComments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the <cite>comments</cite> associated with a given <cite>reaction</cite>. If the comments
-come from RMG (Py or Java), parse them and extract the useful information.
-Return the reaction object based on the information parsed from these
-comments. If <cite>read</cite> if False, the reaction is returned as an &#8220;Unclassified&#8221;
-LibraryReaction.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.readReactionsBlock">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">readReactionsBlock</code><span class="sig-paren">(</span><em>f</em>, <em>speciesDict</em>, <em>readComments=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readReactionsBlock" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read a reactions block from a Chemkin file stream.</p>
-<p>This function can also read the <code class="docutils literal"><span class="pre">reactions.txt</span></code> and <code class="docutils literal"><span class="pre">pdepreactions.txt</span></code>
-files from RMG-Java kinetics libraries, which have a similar syntax.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.readThermoEntry">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">readThermoEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>Tmin=0</em>, <em>Tint=0</em>, <em>Tmax=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readThermoEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read a thermodynamics <cite>entry</cite> for one species in a Chemkin file. Returns
-the label of the species and the thermodynamics model as a <code class="xref py py-class docutils literal"><span class="pre">NASA</span></code>
-object.</p>
-<p>Format specification at <a class="reference external" href="http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html">http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html</a></p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.removeCommentFromLine">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">removeCommentFromLine</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.removeCommentFromLine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove a comment from a line of a Chemkin file or species dictionary file.</p>
-<p>Returns the line and the comment.
-If the comment is encoded with latin-1, it is converted to utf-8.</p>
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 20)</p>
+autodoc: failed to import function u&#8217;readKineticsEntry&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 22)</p>
+autodoc: failed to import function u&#8217;readReactionComments&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 24)</p>
+autodoc: failed to import function u&#8217;readReactionsBlock&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 26)</p>
+autodoc: failed to import function u&#8217;readThermoEntry&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/reader.rst</tt>, line 28)</p>
+autodoc: failed to import function u&#8217;removeCommentFromLine&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
+    import rmgpy.kinetics as _kinetics
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+ImportError: No module named model
+</div>
 </div>
 </div>
 

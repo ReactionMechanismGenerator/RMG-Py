@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="Molecular representations (rmgpy.molecule)"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
@@ -71,57 +71,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-molecule-graph-vertex">
 <h1>rmgpy.molecule.graph.Vertex<a class="headerlink" href="#rmgpy-molecule-graph-vertex" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="rmgpy.molecule.graph.Vertex">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.graph.</code><code class="descname">Vertex</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>A base class for vertices in a graph. Contains several connectivity values
-useful for accelerating isomorphism searches, as proposed by
-<a class="reference external" href="http://dx.doi.org/10.1021/c160017a018">Morgan (1965)</a>.</p>
 <div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.molecule.graph.Vertex</tt>, line 8)</p>
-<p>Malformed table.
-Text in column margin in table line 4.</p>
-<div class="highlight-python"><div class="highlight"><pre>=================== =============== ========================================
-Attribute           Type            Description
-=================== =============== ========================================
-`connectivity`     ``int``         The number of nearest neighbors
-`sortingLabel`      ``int``         An integer label used to sort the vertices
-=================== =============== ========================================
-</pre></div>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/molecule/vertex.rst</tt>, line 5)</p>
+autodoc: failed to import class u&#8217;Vertex&#8217; from module u&#8217;rmgpy.molecule.graph&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+    __import__(self.modname)
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
+    from .adjlist import *
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
+    from .molecule import Atom, Bond
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
+    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
+ImportError: No module named graph
 </div>
-</div>
-<dl class="method">
-<dt id="rmgpy.molecule.graph.Vertex.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a copy of the vertex. The default implementation assumes that no
-semantic information is associated with each vertex, and therefore
-simply returns a new <code class="xref py py-class docutils literal"><span class="pre">Vertex</span></code> object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.molecule.graph.Vertex.equivalent">
-<code class="descname">equivalent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
-equivalent, or <code class="xref py py-data docutils literal"><span class="pre">False</span></code> if not. You should reimplement this
-function in a derived class if your vertices have semantic information.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.molecule.graph.Vertex.isSpecificCaseOf">
-<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
-or <code class="docutils literal"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
-class if your edges have semantic information.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.molecule.graph.Vertex.resetConnectivityValues">
-<code class="descname">resetConnectivityValues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the cached structure information for this vertex.</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 
 
