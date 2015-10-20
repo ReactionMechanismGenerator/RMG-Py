@@ -720,6 +720,11 @@ multiplicity 3
         new_u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
         self.assertEquals([1, 3, 5, 7], new_u_layer)
 
-
+    def test_C3H4(self):
+        inchi = 'InChI=1S/C3H4/c1-3-2/h1,3H,2H2'
+        mult = 3
+        u_indices = [1,1]
+        self.compare(inchi, mult, u_indices)
+    
 if __name__ == '__main__':
     unittest.main()
