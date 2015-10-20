@@ -1466,7 +1466,8 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
             new_u_layer.append(group[0])
             continue
 
-        combos = generate_combos(list(group), equivalent_atoms)
+        combos = generate_combos(group, equivalent_atoms)
+        combos = [combo for combo in combos if combo != group]
         for combo in combos:
             combo = sorted(combo)
             if valid_combo(combo, mol):
