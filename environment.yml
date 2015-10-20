@@ -11,7 +11,7 @@ dependencies:
   - matplotlib
   - rdkit ==2015.03.1
   - pydas >=1.0.1
-  - pydqed
+  - pydqed >=1.0.0
   - quantities
   - scipy
   - xlwt
