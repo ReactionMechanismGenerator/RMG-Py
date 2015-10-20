@@ -10,9 +10,13 @@ or making many additions to RMG's thermodynamic and kinetics databases.
 
 * Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_. When prompted to append Anaconda to your PATH, select or type Yes.
 
-* Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  Type the following into your Terminal to do so ::
+* Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. For example, type the following into your terminal to create a new environment named 'rmg_env' containing all that you need::
 
-    conda install -c rmg -y rmg rmgdatabase
+    conda create -c rdkit -c rmg --name rmg_env rdkit rmg rmgdatabase
+    
+  Whenever you wish to use it you must first activate the environment::
+    
+    source activate rmg_env
     
 * Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your Terminal ::
     
