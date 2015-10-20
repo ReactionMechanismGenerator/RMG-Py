@@ -1370,12 +1370,12 @@ def parse_E_layer(mol, auxinfo):
     import re
     pattern = re.compile( r'\((.[^\(\)]*)\)')
 
-    atomtuples = []
+    equivalent_atoms = []
     for atomtuple in re.findall(pattern, e_layer[2:]):#cut off E:
-        indices = map(int, atomtuple.split(','))
-        atomtuples.append(indices)
+        indices = list(map(int, atomtuple.split(',')))
+        equivalent_atoms.append(indices)
 
-    return atomtuples
+    return equivalent_atoms
 
 def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
 
@@ -1387,7 +1387,7 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
         i = u_layer_copy.pop()
         if not isInEquivalenceList(i, equivalent_atoms):
             # add the atom by itself:
-            pairs.append((i,))
+            pairs.append([i])
             continue
 
         # iterate over neighbors and check if neighbor is in u_layer
@@ -1398,12 +1398,12 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
                 continue
 
             if at_index in u_layer:
-                pair = (i, at_index)
-                pairs.append(pair)
                 u_layer_copy.remove(at_index)
                 break
+                    pair = sorted([i, at_index])
+                    pairs.append(pair)
         else:
-            pairs.append((i,))
+            pairs.append([i])
             
     return pairs
 
@@ -1441,9 +1441,12 @@ def generate_combos(group, equivalent_atoms):
     assert list2 is not None
 
     if list1 == list2:
-        return list(itertools.combinations(list1, 2))
+        combos = [list(tup) for tup in itertools.combinations(list1, 2)]
+        return combos
 
-    else: return list(itertools.product(list1, list2))
+    else: 
+        combos = [list(tup) for tup in itertools.product(list1, list2)]
+        return combos
 
 def valid_combo(combo, mol):
     """
