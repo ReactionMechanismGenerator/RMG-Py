@@ -473,9 +473,8 @@ def fromAugmentedInChI(mol, aug_inchi):
     unsaturated = isUnsaturated(mol)
     
     if not correct and not indices:
-        logging.error('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
+        raise Exception( 'Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
             .format(mol.toAdjacencyList(), aug_inchi))
-        raise Exception
 
     while not correct and unsaturated and len(indices) > 1:
         mol = convert_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
