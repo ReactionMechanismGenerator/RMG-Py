@@ -101,8 +101,6 @@ cpdef parse_N_layer(Molecule mol, str auxinfo)
 
 cpdef parse_E_layer(Molecule mol, str auxinfo)
 
-cpdef isInEquivalenceList(int i, list equivalent_atoms)
-
 cpdef generate_combos(list group, list equivalent_atoms)
 
 cpdef valid_combo(list combo, Molecule mol)

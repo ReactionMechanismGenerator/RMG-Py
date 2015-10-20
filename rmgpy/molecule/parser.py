@@ -1385,7 +1385,7 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
 
     while u_layer_copy:
         i = u_layer_copy.pop()
-        if not isInEquivalenceList(i, equivalent_atoms):
+        if not any(i in x for x in equivalent_atoms):
             # add the atom by itself:
             pairs.append([i])
             continue
@@ -1394,27 +1394,16 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
         for at, bond in mol.atoms[i-1].bonds.iteritems():
             at_index = mol.atoms.index(at)+1
             
-            if not isInEquivalenceList(at_index, equivalent_atoms):
-                continue
-
-            if at_index in u_layer:
-                u_layer_copy.remove(at_index)
-                break
+            if any(i in x for x in equivalent_atoms):
+                if at_index in u_layer:
                     pair = sorted([i, at_index])
                     pairs.append(pair)
+                    u_layer_copy.remove(at_index)
+                    break
         else:
             pairs.append([i])
             
     return pairs
-
-def isInEquivalenceList(i, equivalent_atoms):
-    """Check if atom index i is found in the list of equivalent atoms."""
-
-    for group in equivalent_atoms:
-        if i in group:
-            return True
-
-    return False
 
 
 def generate_combos(group, equivalent_atoms):
