@@ -11,63 +11,64 @@ build:
 
 requirements:
   build:
-    - gcc # [unix]
-    - python
-    - setuptools
-    - cython ==0.21
-    - numpy
-    - pydas >=1.0.1
-    - pydqed
+    - argparse # [py26]
     - boost ==1.56.0
-    - rdkit
-    - libgcc # [unix]
-    - numpy
-    - matplotlib
-    - rdkit ==2015.03.1
-    - quantities
-    - scipy
-    - xlwt
-    - markupsafe
-    - jinja2
-    - argparse # [py26]
-    - pyparsing
-    - pydot
-    - nose
-    - coverage
-    - guppy
-    - gprof2dot
     - cairo
     - cairocffi
-    - openbabel
-    - psutil
-  run:
-    - libgcc # [unix]
-    - python
-    - numpy
+    - coverage
     - cython ==0.21
-    - matplotlib
-    - rdkit ==2015.03.1
-    - pydas >=1.0.1
-    - pydqed
-    - quantities
-    - scipy
-    - xlwt
-    - markupsafe
-    - jinja2
-    - argparse # [py26]
-    - pyparsing
-    - pydot
-    - nose
-    - coverage
-    - guppy
+    - gcc # [unix]
     - gprof2dot
-    - cairo
-    - cairocffi
+    - guppy
+    - jinja2
+    - libgcc # [unix]
+    - markupsafe
+    - matplotlib
+    - nose
+    - numpy
     - openbabel
     - psutil
-    - symmetry
-    - mopac
+    - pydas >=1.0.1
+    - pydot
+    - pydqed
+    - pyparsing
+    - python
+    - quantities
+    - rdkit
+    - rdkit ==2015.03.1
+    - scipy
+    - setuptools
+    - xlwt
+
+  run:
+    - argparse # [py26]
+    - cairo
+    - cairocffi
+    - coverage
+    - cython ==0.21
+    - gprof2dot
     - graphviz
+    - guppy
+    - jinja2
+    - libgcc # [unix]
+    - markupsafe
+    - matplotlib
+    - mopac
+    - nose
+    - numpy
+    - openbabel
+    - psutil
+    - pydas >=1.0.1
+    - pydot
+    - pydqed
+    - pyparsing
+    - python
+    - quantities
+    - rdkit ==2015.03.1
+    - scipy
+    - symmetry
+    - xlwt
+
 test:
   requires:
     - nose
