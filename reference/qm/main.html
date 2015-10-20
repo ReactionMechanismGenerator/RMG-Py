@@ -75,7 +75,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/qm/main.rst</tt>, line 5)</p>
 autodoc: failed to import class u&#8217;QMSettings&#8217; from module u&#8217;rmgpy.qm.main&#8217;; the following exception was raised:
 Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/main.py&#8221;, line 34, in &lt;module&gt;
     import rmgpy.qm.mopac
@@ -85,15 +85,17 @@ Traceback (most recent call last):
     from .adjlist import *
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
     from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 44, in &lt;module&gt;
+    import element as elements
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/element.py&#8221;, line 44, in &lt;module&gt;
+    from rdkit.Chem import GetPeriodicTable
+ImportError: No module named rdkit.Chem
 </div>
 <div class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/qm/main.rst</tt>, line 6)</p>
 autodoc: failed to import class u&#8217;QMCalculator&#8217; from module u&#8217;rmgpy.qm.main&#8217;; the following exception was raised:
 Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
+  File &#8220;/Users/rwest/anaconda/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
     __import__(self.modname)
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/qm/main.py&#8221;, line 34, in &lt;module&gt;
     import rmgpy.qm.mopac
@@ -103,9 +105,11 @@ Traceback (most recent call last):
     from .adjlist import *
   File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
     from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 44, in &lt;module&gt;
+    import element as elements
+  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/element.py&#8221;, line 44, in &lt;module&gt;
+    from rdkit.Chem import GetPeriodicTable
+ImportError: No module named rdkit.Chem
 </div>
 </div>
 
