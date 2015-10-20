@@ -24,8 +24,6 @@ requirements:
     - numpy
     - matplotlib
     - rdkit ==2015.03.1
-    - pydas
-    - pydqed
     - quantities
     - scipy
     - xlwt
@@ -49,7 +47,7 @@ requirements:
     - cython ==0.21
     - matplotlib
     - rdkit ==2015.03.1
-    - pydas
+    - pydas >=1.0.1
     - pydqed
     - quantities
     - scipy
