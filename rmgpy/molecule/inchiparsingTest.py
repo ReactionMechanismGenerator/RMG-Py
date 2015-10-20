@@ -242,7 +242,8 @@ class InChITest(unittest.TestCase):
 
 
     def testCreateULayer(self):
-        from rmgpy.molecule.parser import createULayer
+        from rmgpy.molecule.parser import createULayer, toRDKitMol
+        from rdkit import Chem
 
         adjlist1 = """
 1  C u0 p0 c0 {2,D} {5,S} {6,S}
@@ -273,7 +274,14 @@ class InChITest(unittest.TestCase):
 10 H u0 p0 c0 {4,S}
         """
 
+        m1 = toRDKitMol(mol1)
+        inchi1 , auxinfo1 = Chem.MolToInchiAndAuxInfo(m1, options='-SNon')
+
         mol2 = Molecule().fromAdjacencyList(adjlist2)
+        m2 = toRDKitMol(mol2)
+        inchi2 , auxinfo2 = Chem.MolToInchiAndAuxInfo(m2, options='-SNon')
+
+        print '\n'.join([auxinfo1, auxinfo2])
         self.assertEqual(createULayer(mol1), createULayer(mol2))
 
     def test_find_4_atom_3_bond_path(self):
@@ -454,6 +462,264 @@ class InChITest(unittest.TestCase):
         mult = 3
         u_indices = [1,1]
         self.compare(inchi, mult, u_indices)
+
+    def test_Isomorphic_Different_InChIs(self):
+        from rmgpy.molecule.parser import createULayer, toRDKitMol
+        from rdkit import Chem
+
+        adjlist1 = """
+multiplicity 3
+1  C u1 p0 c0 {2,S} {9,S} {10,S}
+2  C u1 p0 c0 {1,S} {3,S} {11,S}
+3  C u0 p0 c0 {2,S} {4,S} {5,S} {12,S}
+4  C u0 p0 c0 {3,S} {13,S} {14,S} {15,S}
+5  C u0 p0 c0 {3,S} {6,S} {7,S} {16,S}
+6  C u0 p0 c0 {5,S} {17,S} {18,S} {19,S}
+7  C u0 p0 c0 {5,S} {8,D} {20,S}
+8  C u0 p0 c0 {7,D} {21,S} {22,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {4,S}
+16 H u0 p0 c0 {5,S}
+17 H u0 p0 c0 {6,S}
+18 H u0 p0 c0 {6,S}
+19 H u0 p0 c0 {6,S}
+20 H u0 p0 c0 {7,S}
+21 H u0 p0 c0 {8,S}
+22 H u0 p0 c0 {8,S}
+        """
+
+        adjlist2 = """
+multiplicity 3
+1  C u0 p0 c0 {2,D} {9,S} {10,S}
+2  C u0 p0 c0 {1,D} {3,S} {11,S}
+3  C u0 p0 c0 {2,S} {4,S} {5,S} {12,S}
+4  C u0 p0 c0 {3,S} {13,S} {14,S} {15,S}
+5  C u0 p0 c0 {3,S} {6,S} {7,S} {16,S}
+6  C u0 p0 c0 {5,S} {17,S} {18,S} {19,S}
+7  C u1 p0 c0 {5,S} {8,S} {20,S}
+8  C u1 p0 c0 {7,S} {21,S} {22,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {4,S}
+16 H u0 p0 c0 {5,S}
+17 H u0 p0 c0 {6,S}
+18 H u0 p0 c0 {6,S}
+19 H u0 p0 c0 {6,S}
+20 H u0 p0 c0 {7,S}
+21 H u0 p0 c0 {8,S}
+22 H u0 p0 c0 {8,S}
+        """
+
+        spc1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist1)])
+        spc2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist2)])
+
+        inchi1 = spc1.getAugmentedInChI()
+        inchi2 = spc2.getAugmentedInChI()
+
+        print inchi1, inchi2
+
+        m1 = toRDKitMol(spc1.molecule[0])
+        inchi1 , auxinfo1 = Chem.MolToInchiAndAuxInfo(m1, options='-SNon')
+        
+        m2 = toRDKitMol(spc2.molecule[0])
+        inchi2 , auxinfo2 = Chem.MolToInchiAndAuxInfo(m2, options='-SNon')
+
+        print '\n'.join([auxinfo1, auxinfo2])
+
+    def test_parse_E_layer(self):
+        from rmgpy.molecule.parser import createULayer, toRDKitMol, parse_E_layer
+        from rdkit import Chem
+
+        adjlist1 = """
+multiplicity 3
+1  C u1 p0 c0 {2,S} {9,S} {10,S}
+2  C u1 p0 c0 {1,S} {3,S} {11,S}
+3  C u0 p0 c0 {2,S} {4,S} {5,S} {12,S}
+4  C u0 p0 c0 {3,S} {13,S} {14,S} {15,S}
+5  C u0 p0 c0 {3,S} {6,S} {7,S} {16,S}
+6  C u0 p0 c0 {5,S} {17,S} {18,S} {19,S}
+7  C u0 p0 c0 {5,S} {8,D} {20,S}
+8  C u0 p0 c0 {7,D} {21,S} {22,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {4,S}
+16 H u0 p0 c0 {5,S}
+17 H u0 p0 c0 {6,S}
+18 H u0 p0 c0 {6,S}
+19 H u0 p0 c0 {6,S}
+20 H u0 p0 c0 {7,S}
+21 H u0 p0 c0 {8,S}
+22 H u0 p0 c0 {8,S}
+        """
+
+
+        spc1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist1)])
+
+        inchi1 = spc1.getAugmentedInChI()
+
+        m1 = toRDKitMol(spc1.molecule[0])
+        inchi1 , auxinfo1 = Chem.MolToInchiAndAuxInfo(m1, options='-SNon')
+
+        parse_E_layer(spc1.molecule[0], auxinfo1)
+
+
+        
+        adjlist2 = """
+1  C u0 p0 c0 {2,S} {4,S} {6,S} {8,S}
+2  C u0 p0 c0 {1,S} {3,D} {9,S}
+3  C u0 p0 c0 {2,D} {10,S} {11,S}
+4  C u0 p0 c0 {1,S} {5,D} {12,S}
+5  C u0 p0 c0 {4,D} {13,S} {14,S}
+6  C u0 p0 c0 {1,S} {7,D} {15,S}
+7  C u0 p0 c0 {6,D} {16,S} {17,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {5,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {6,S}
+16 H u0 p0 c0 {7,S}
+17 H u0 p0 c0 {7,S}
+        """
+
+
+        spc2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist2)])
+
+        inchi2 = spc2.getAugmentedInChI()
+
+        m2 = toRDKitMol(spc2.molecule[0])
+        inchi2 , auxinfo2 = Chem.MolToInchiAndAuxInfo(m2, options='-SNon')
+
+        parse_E_layer(spc2.molecule[0], auxinfo2)
+
+
+    def test_group_adjacent_unpaired_electrons(self):
+        from rmgpy.molecule.parser import parse_E_layer, toRDKitMol, group_adjacent_unpaired_electrons
+        from rdkit import Chem
+
+
+        adjlist = """
+
+1 C 0 {4,D} 
+2 C 0 {5,D}
+3 C 1 {6,S}
+4 C 0 {1,D} {7,S}
+5 C 0 {2,D} {7,S}
+6 C 1 {3,S} {7,S}
+7 C 1 {4,S} {5,S} {6,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        u_layer = [7, 6, 3]
+
+        m = toRDKitMol(mol)
+        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+
+        equivalent_atoms = parse_E_layer(mol, auxinfo)
+        pairs = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
+        print pairs
+        adjlist = """
+1 C 0 {5,D}
+2 C 1 {6,S}
+3 C 1 {7,S}
+4 C 0 {8,D}
+5 C 0 {1,D} {9,S}
+6 C 1 {2,S} {10,S}
+7 C 1 {3,S} {11,S}
+8 C 0 {4,D} {11,S}
+9 C 0 {5,S} {11,S}
+10 C 0 {6,S} {11,S}
+11 C 0 {7,S} {8,S} {9,S} {10,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        u_layer = [7, 3, 6, 2]
+
+        m = toRDKitMol(mol)
+        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+
+        equivalent_atoms = parse_E_layer(mol, auxinfo)
+        pairs = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
+        print pairs
+
+    def test_generate_combos(self):
+        from rmgpy.molecule.parser import generate_combos
+        
+        group = [2, 6]
+        equivalent_atoms = [[1,2],[3,4],[5,6], [7,8], [9,10]]
+
+        combos = generate_combos(group, equivalent_atoms)
+        self.assertEquals(set([(1,5), (2,6), (1,6), (2,5)]), set(combos))
+
+        group = [2, 6]
+        equivalent_atoms = [[2, 4, 5, 6]]
+
+        combos = generate_combos(group, equivalent_atoms)
+        self.assertEquals(set([(2,4), (2,5), (2,6), (4,5), (4,6),(5,6)]), set(combos))
+    
+    def test_find_lowest_u_layer(self):
+        from rmgpy.molecule.parser import parse_E_layer, toRDKitMol, group_adjacent_unpaired_electrons, find_lowest_u_layer
+        from rdkit import Chem
+
+
+        adjlist = """
+
+1 C 0 {4,D} 
+2 C 0 {5,D}
+3 C 1 {6,S}
+4 C 0 {1,D} {7,S}
+5 C 0 {2,D} {7,S}
+6 C 1 {3,S} {7,S}
+7 C 1 {4,S} {5,S} {6,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        u_layer = [7, 6, 3]
+
+        m = toRDKitMol(mol)
+        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+        equivalent_atoms = parse_E_layer(mol, auxinfo)
+        new_u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
+        self.assertEquals([1, 4, 7], new_u_layer)
+
+        adjlist = """
+1 C 0 {5,D}
+2 C 1 {6,S}
+3 C 1 {7,S}
+4 C 0 {8,D}
+5 C 0 {1,D} {9,S}
+6 C 1 {2,S} {10,S}
+7 C 1 {3,S} {11,S}
+8 C 0 {4,D} {11,S}
+9 C 0 {5,S} {11,S}
+10 C 0 {6,S} {11,S}
+11 C 0 {7,S} {8,S} {9,S} {10,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        u_layer = [7, 3, 6, 2]
+
+        m = toRDKitMol(mol)
+        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+        equivalent_atoms = parse_E_layer(mol, auxinfo)
+        new_u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
+        self.assertEquals([1, 3, 5, 7], new_u_layer)
+
 
 if __name__ == '__main__':
     unittest.main()
