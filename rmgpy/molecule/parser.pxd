@@ -98,3 +98,13 @@ cpdef find_3_atom_2_bond_end_with_charge_path(Atom start)
 cpdef find_inverse_allyl_paths(list existing_path)
 
 cpdef parse_N_layer(Molecule mol, str auxinfo)
+
+cpdef parse_E_layer(Molecule mol, str auxinfo)
+
+cpdef isInEquivalenceList(int i, list equivalent_atoms)
+
+cpdef generate_combos(list group, list equivalent_atoms)
+
+cpdef valid_combo(list combo, Molecule mol)
+
+cpdef find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)

@@ -824,16 +824,22 @@ def createULayer(mol):
     # sort the atoms based on the new inchi order
     mol.atoms = [x for (y,x) in sorted(zip(new_indices,mol.atoms), key=lambda pair: pair[0])]
 
-    # find the resonance isomer with the lowest u index:
-    mol = normalize(mol)
 
-    ulayer = []
+    # create preliminary u-layer:
+    u_layer = []
     for i, at in enumerate(mol.atoms):
-        ulayer.extend([str(i+1)] * at.radicalElectrons)
-    if ulayer:
-        return (U_LAYER_PREFIX + ','.join(ulayer))
-    else:
+        u_layer.extend([i+1] * at.radicalElectrons)
+    
+    # extract equivalent atom pairs from E-layer of auxiliary info:
+    equivalent_atoms = parse_E_layer(mol, auxinfo)
+    if not u_layer:
         return None
+    elif not equivalent_atoms:
+        return (U_LAYER_PREFIX + ','.join(map(str,u_layer)))
+    else:
+        # select lowest u-layer:
+        u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
+        return (U_LAYER_PREFIX + ','.join(map(str,u_layer)))
 
 
 def toAugmentedInChI(mol):
@@ -1346,3 +1352,133 @@ def parse_N_layer(mol, auxinfo):
     Nlist = map(int, original_atom_numbers[2:].split(','))
     new_indices = [Nlist.index(i+1) for i,atom in enumerate(mol.atoms)]
     return new_indices
+
+def parse_E_layer(mol, auxinfo):
+    pieces = auxinfo.split('/')
+    e_layer = None
+    for piece in pieces:
+        if piece.startswith('E'):
+            e_layer = piece
+            break
+    else:
+        return []
+
+    # search for (*) pattern
+    import re
+    pattern = re.compile( r'\((.[^\(\)]*)\)')
+
+    atomtuples = []
+    for atomtuple in re.findall(pattern, e_layer[2:]):#cut off E:
+        indices = map(int, atomtuple.split(','))
+        atomtuples.append(indices)
+
+    return atomtuples
+
+def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
+
+    pairs = []
+
+    u_layer_copy = u_layer[:]
+
+    while u_layer_copy:
+        i = u_layer_copy.pop()
+        if not isInEquivalenceList(i, equivalent_atoms):
+            # add the atom by itself:
+            pairs.append((i,))
+            continue
+
+        # iterate over neighbors and check if neighbor is in u_layer
+        for at, bond in mol.atoms[i-1].bonds.iteritems():
+            at_index = mol.atoms.index(at)+1
+            
+            if not isInEquivalenceList(at_index, equivalent_atoms):
+                continue
+
+            if at_index in u_layer:
+                pair = (i, at_index)
+                pairs.append(pair)
+                u_layer_copy.remove(at_index)
+                break
+        else:
+            pairs.append((i,))
+            
+    return pairs
+
+def isInEquivalenceList(i, equivalent_atoms):
+    """Check if atom index i is found in the list of equivalent atoms."""
+
+    for group in equivalent_atoms:
+        if i in group:
+            return True
+
+    return False
+
+
+def generate_combos(group, equivalent_atoms):
+    """
+    Generate all possible combinations of groups of unpaired electrons
+    based on the information of the equivalent atoms.
+    """
+    
+    index1, index2 = group[0], group[1]
+
+    list1 = None
+    for eq in equivalent_atoms:
+        if index1 in eq:
+            list1 = eq
+            break
+
+    list2 = None
+    for eq in equivalent_atoms:
+        if index2 in eq:
+            list2 = eq
+            break
+
+    assert list1 is not None
+    assert list2 is not None
+
+    if list1 == list2:
+        return list(itertools.combinations(list1, 2))
+
+    else: return list(itertools.product(list1, list2))
+
+def valid_combo(combo, mol):
+    """
+    Check if the combination of atom indices refers to
+    atoms that are adjacent in the molecule.
+    """
+
+    assert len(combo) == 2
+    at1, at2 = mol.atoms[combo[0]-1], mol.atoms[combo[1]-1]
+    return mol.hasBond(at1, at2)
+
+def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
+    """..."""
+
+    if len(set(u_layer)) == 1:
+        return u_layer
+
+    
+    if equivalent_atoms is []:
+        return u_layer
+
+    new_u_layer = []
+    groups = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
+
+    for group in groups:
+        selected_group = group
+        if len(group) == 1:#ignore 1-element groups
+            new_u_layer.append(group[0])
+            continue
+
+        combos = generate_combos(list(group), equivalent_atoms)
+        for combo in combos:
+            combo = sorted(combo)
+            if valid_combo(combo, mol):
+                if combo < selected_group:
+                    selected_group = combo
+
+        new_u_layer.extend(selected_group)
+
+    return sorted(new_u_layer)
+    
