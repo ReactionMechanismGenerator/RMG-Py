@@ -188,11 +188,11 @@ class InChITest(unittest.TestCase):
     def testC4H6O(self):
         inchi = 'C4H6O/c1-2-3-4-5/h2H,3H2,1H3'
         mult = 3
-        u_indices = [2,5]
+        u_indices = [2,4]
         mol = self.compare(inchi, mult, u_indices)
         for at in mol.atoms:
             if at.isOxygen():
-                assert at.lonePairs == 2
+                self.assertTrue(at.lonePairs == 2)
     
     def testC6H6(self):
         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
@@ -662,15 +662,16 @@ multiplicity 3
         
         group = [2, 6]
         equivalent_atoms = [[1,2],[3,4],[5,6], [7,8], [9,10]]
-
+        expected =[[1,5], [2,6], [1,6], [2,5]]
         combos = generate_combos(group, equivalent_atoms)
-        self.assertEquals(set([(1,5), (2,6), (1,6), (2,5)]), set(combos))
+        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
 
         group = [2, 6]
         equivalent_atoms = [[2, 4, 5, 6]]
 
         combos = generate_combos(group, equivalent_atoms)
-        self.assertEquals(set([(2,4), (2,5), (2,6), (4,5), (4,6),(5,6)]), set(combos))
+        expected = [[2,4], [2,5], [2,6], [4,5], [4,6],[5,6]]        
+        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
     
     def test_find_lowest_u_layer(self):
         from rmgpy.molecule.parser import parse_E_layer, toRDKitMol, group_adjacent_unpaired_electrons, find_lowest_u_layer
@@ -725,6 +726,44 @@ multiplicity 3
         mult = 3
         u_indices = [1,1]
         self.compare(inchi, mult, u_indices)
+    
+    def test_C6H8(self):
+        inchi = 'InChI=1S/C6H8/c1-3-5-6-4-2/h1,4H,2,5-6H2'
+        mult = 5
+        u_indices = [1,1,3,3]
+        self.compare(inchi, mult, u_indices)
+
+    def test_C6H10(self):
+        inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2'
+        mult = 3
+        u_indices = [1,3]
+        self.compare(inchi, mult, u_indices)
+
+
+    def test_C6H10_tetrarad(self):
+        adjlist = """
+1  C u1 p0 c0 {3,S} {7,S} {8,S}
+2  C u1 p0 c0 {4,S} {9,S} {10,S}
+3  C u1 p0 c0 {1,S} {5,S} {11,S}
+4  C u1 p0 c0 {2,S} {6,S} {12,S}
+5  C u0 p0 c0 {3,S} {6,S} {13,S} {14,S}
+6  C u0 p0 c0 {4,S} {5,S} {15,S} {16,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {5,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {6,S}
+16 H u0 p0 c0 {6,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+
+        aug_inchi = mol.toAugmentedInChI()
+        self.assertTrue(aug_inchi.endswith('/u1,2,3,4'))
     
 if __name__ == '__main__':
     unittest.main()
