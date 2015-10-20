@@ -12,7 +12,7 @@ or making many additions to RMG's thermodynamic and kinetics databases.
 
 * Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. For example, type the following into your terminal to create a new environment named 'rmg_env' containing all that you need::
 
-    conda create -c rdkit -c rmg --name rmg_env rdkit rmg rmgdatabase
+    conda create -c rmg --name rmg_env rmg rmgdatabase
     
   Whenever you wish to use it you must first activate the environment::
     
