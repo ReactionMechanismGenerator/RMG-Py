@@ -845,6 +845,8 @@ def create_U_layer(mol):
     # sort the atoms based on the order of the atom indices
     molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
 
+    # find the resonance isomer with the lowest u index:
+    molcopy = normalize(molcopy)
     # create preliminary u-layer:
     u_layer = []
     for i, at in enumerate(molcopy.atoms):
