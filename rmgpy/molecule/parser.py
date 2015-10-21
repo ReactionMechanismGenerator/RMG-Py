@@ -820,7 +820,8 @@ def createULayer(mol):
     inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
 
     # extract the atom numbers from N-layer of auxiliary info:
-    new_indices = parse_N_layer(mol, auxinfo)    
+    new_indices = parse_N_layer(auxinfo)    
+    new_indices = [new_indices.index(i+1) for i,atom in enumerate(mol.atoms)]
 
     # sort the atoms based on the new inchi order
     mol.atoms = [x for (y,x) in sorted(zip(new_indices,mol.atoms), key=lambda pair: pair[0])]
@@ -1338,24 +1339,39 @@ def find_inverse_allyl_paths(existing_path):
                     paths.append(new_path)
     return paths
 
-def parse_N_layer(mol, auxinfo):
-    pieces = auxinfo.split('/')
-    original_atom_numbers = None
-    for piece in pieces:
-        if piece.startswith('N'):
-            original_atom_numbers = piece
-            break
-
-    assert original_atom_numbers is not None, "{}".format(auxinfo)
+def parse_N_layer(auxinfo):
     """
-    definition of N-list: 
+    Parses the layer with atom ordering information (N-layer) 
+    and returns a list of atom indices that reflect how the atoms of the original
+    molecule should be ordered according to the InChI algorithm.
+
+
+    Example:
+    Auxiliary info of SMILES OCCC (InChI=1S/C3H8O/c1-2-3-4/h4H,2-3H2,1H3):
+    AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;
+
+    N-layer: 
+    /N:4,3,2,1
 
     The original number of an atom with identification number n is given as the
     n-th member of this list for a component; the lists are separated with “;”. 
+
+    Raises an exception when the N-layer could not be found.
     """
-    Nlist = map(int, original_atom_numbers[2:].split(','))
-    new_indices = [Nlist.index(i+1) for i,atom in enumerate(mol.atoms)]
-    return new_indices
+
+    pieces = auxinfo.split('/')
+    atom_numbers = None
+    for piece in pieces:
+        if piece.startswith('N'):
+            atom_numbers = piece[2:]#cut off N:
+            break
+    else:
+        raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
+
+    indices = map(int, atom_numbers.split(','))
+
+    return indices
+
 
 def parse_E_layer(auxinfo):
     """

@@ -719,5 +719,15 @@ class ParseELayerTest(unittest.TestCase):
         expected = [[1, 2, 3], [4, 5, 6]]
         self.assertTrue(len(e_layer) == len(expected) and sorted(e_layer) == sorted(expected))
 
+
+class ParseNLayerTest(unittest.TestCase):
+    def test_OCCC(self):
+       from rmgpy.molecule.parser import parse_N_layer
+       auxinfo = "AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;"
+       n_layer = parse_N_layer(auxinfo)
+       expected = [4,3,2,1]
+       self.assertTrue(len(n_layer) == len(expected) and sorted(n_layer) == sorted(expected))
+
+
 if __name__ == '__main__':
     unittest.main()

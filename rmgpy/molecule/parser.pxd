@@ -97,7 +97,7 @@ cpdef find_3_atom_2_bond_end_with_charge_path(Atom start)
 
 cpdef find_inverse_allyl_paths(list existing_path)
 
-cpdef parse_N_layer(Molecule mol, str auxinfo)
+cpdef parse_N_layer(str auxinfo)
 
 cpdef parse_E_layer(str auxinfo)
 
