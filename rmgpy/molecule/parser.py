@@ -1465,13 +1465,30 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
     return pairs
 
 
-def generate_combos(group, equivalent_atoms):
+def generate_combos(couple_unpaired_electrons, equivalent_atoms):
     """
     Generate all possible combinations of groups of unpaired electrons
     based on the information of the equivalent atoms.
+
+    Example:
+
+    couple of unpaired electrons: [1,2]
+    equivalent atoms: [[1,3], [2,4]]
+
+    what is returned: the cross product of both lists:
+    [[1,2], [1,4], [3,2], [3,4]]
+
+    if the unpaired electrons appear in the same list of equivalent atoms, 
+    [[1,2,3,4]]
+
+    the combinations of two from that list is returned instead:
+    [[1,2], [1,4], [3,2], [3,4]]
+
+    Returns an empty list of one of the unpaired electrons could not be found
+    in the list of equivalent atoms.
     """
     
-    index1, index2 = group[0], group[1]
+    index1, index2 = couple_unpaired_electrons
 
     list1 = None
     for eq in equivalent_atoms:
@@ -1485,16 +1502,15 @@ def generate_combos(group, equivalent_atoms):
             list2 = eq
             break
 
-    assert list1 is not None
-    assert list2 is not None
+    if not all([list1, list2]):
+        return []
 
     if list1 == list2:
         combos = [list(tup) for tup in itertools.combinations(list1, 2)]
-        return combos
-
     else: 
         combos = [list(tup) for tup in itertools.product(list1, list2)]
-        return combos
+    
+    return combos
 
 def valid_combo(combo, mol):
     """
