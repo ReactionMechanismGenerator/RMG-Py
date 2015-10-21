@@ -4,29 +4,32 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.parser import fromAugmentedInChI
 from rmgpy.species import Species
 
-class InChITest(unittest.TestCase):
+class InChIParsingGenerationTest(unittest.TestCase):
 
-    def compare(self, inchi, mult, u_indices = None):
+    def compare(self, inchi, mult, u_indices=[]):
         from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
-
+        from rmgpy.species import Species
+        import re
+        
+        aug_inchi = 'InChI=1/' + inchi  + '/mult' + str(mult)
         u_layer = ','.join([str(i) for i in u_indices]) if u_indices else None
-
         if u_layer:
-            aug_inchi = 'InChI=1/' + inchi  + '/mult' + str(mult) + '/u' + u_layer
-        else: 
-            aug_inchi = 'InChI=1/' + inchi  + '/mult' + str(mult)
+            aug_inchi += '/u' + u_layer
 
-        mol = Molecule()
-        mol = fromAugmentedInChI(mol, aug_inchi)
+        mol = fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertEqual(mol.getNumberOfRadicalElectrons(), mult - 1)
 
         for at in mol.atoms:
-            order = 0
-            bonds = at.edges.values()
-            for bond in bonds:
-                order += ORDERS[bond.order]
-
+            order = sum([ORDERS[bond.order] for bond in at.edges.values()])
             self.assertTrue((order + at.radicalElectrons + 2*at.lonePairs + at.charge) == VALENCES[at.symbol])
+        
+        spc = Species(molecule=[mol])
+        spc.generateResonanceIsomers()
+
+        ignore_prefix = r"(InChI=1+)(S*)/"
+        aug_inchi_expected = re.split(ignore_prefix, aug_inchi)[-1]
+        aug_inchi_computed = re.split(ignore_prefix, spc.getAugmentedInChI())[-1]
+        self.assertEquals(aug_inchi_expected, aug_inchi_computed)
 
         return mol
 
@@ -36,18 +39,19 @@ class InChITest(unittest.TestCase):
 
         aug_inchi = 'InChI=1/' + inchi  + '/mult' + str(mult)
 
-        # assert aug_inchi == '', aug_inchi
         self.compare(inchi, mult)
         
     def test_Ethyl_parsing(self):
         inchi = 'C2H5/c1-2/h1H2,2H3'
         mult = 2
-        self.compare(inchi, mult)
+        u_indices = [1]
+        self.compare(inchi, mult, u_indices)
 
     def test_CH3_parsing(self):
         inchi = 'CH3/h1H3'
         mult = 2
-        self.compare(inchi, mult)
+        u_indices = [1]
+        self.compare(inchi, mult, u_indices)
 
     def test_H2_parsing(self):
         inchi = 'H2/h1H'
@@ -85,7 +89,8 @@ class InChITest(unittest.TestCase):
         '''
         inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
         mult = 2
-        self.compare(inchi, mult)
+        u_indices = [1]
+        self.compare(inchi, mult, u_indices)
 
     def testC2H2(self):
         inchi = 'C2H2/c1-2/h1-2H'
@@ -102,7 +107,7 @@ class InChITest(unittest.TestCase):
     def testTriRadicalZwitterMult4(self):
         inchi = 'C6H11/c1-3-5-6-4-2/h5H,1-4,6H2'
         mult = 4
-        u_indices = [1,3,2]
+        u_indices = [1,2,5]
         self.compare(inchi, mult, u_indices)
 
     def testTriRadicalDoubleBondMult4(self):
@@ -114,43 +119,25 @@ class InChITest(unittest.TestCase):
     def testTriRadical2DoubleBondMult4(self):
         inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
         mult = 4
-        u_indices = [1, 5, 2]
+        u_indices = [1, 2, 5]
         self.compare(inchi, mult, u_indices)
 
     def testQuadriRadicalDoubleBondZwitterMult5(self):
         inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
         mult = 5
-        u_indices = [1, 6, 2, 5]
+        u_indices = [1, 2, 5, 6]
         mol = self.compare(inchi, mult, u_indices)
 
     def testQuadri2DoubleBondMult5(self):
         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
         mult = 5
-        u_indices = [1, 5, 6, 2]
+        u_indices = [1, 2, 5, 6]
         self.compare(inchi, mult, u_indices)
-
-    def testC2H3O3(self):
-        adjlist = """
-        1 C u0 p0 c0 {2,D} {3,S} {5,S}
-        2 C u0 p0 c0 {1,D} {6,S} {7,S}
-        3 O u0 p2 c0 {1,S} {4,S}
-        4 O u0 p2 c0 {3,S} {8,S}
-        5 O u1 p2 c0 {1,S}
-        6 H u0 p0 c0 {2,S}
-        7 H u0 p0 c0 {2,S}
-        8 H u0 p0 c0 {4,S}
-        """
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-
-        inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
-        mult = 2
-        self.compare(inchi, mult)
 
     def testC5H6O(self):
         inchi = 'C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2'
         mult = 3
-        u_indices = [3, 6]
+        u_indices = [2, 6]
         self.compare(inchi, mult, u_indices)
 
     def testC5H6O_2(self):
@@ -182,7 +169,8 @@ class InChITest(unittest.TestCase):
         self.compare(inchi, mult)        
 
         mult = 3
-        self.compare(inchi, mult)
+        u_indices = [1,1]
+        self.compare(inchi, mult, u_indices)
     
 
     def testC4H6O(self):
@@ -197,7 +185,7 @@ class InChITest(unittest.TestCase):
     def testC6H6(self):
         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
         mult = 3
-        u_indices = [3, 1]
+        u_indices = [1, 3]
         mol = self.compare(inchi, mult, u_indices)
 
     def testC4H6O_2(self):
@@ -330,12 +318,10 @@ class InChITest(unittest.TestCase):
 
 
     def testC3H4(self):
-        inchi = 'C3H4/c1-3-2/h1,3H,2H2/'
+        inchi = 'C3H4/c1-3-2/h1,3H,2H2'
         mult = 3
         u_indices = [1, 1]
         mol = self.compare(inchi, mult, u_indices)
-        spc = Species(molecule=[Molecule().fromAugmentedInChI('InChI=1/'+inchi+'mult3/u1,1')])
-        spc.generateResonanceIsomers()
 
     def test_Buta13diyl_triplet(self):
         """
