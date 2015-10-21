@@ -1437,8 +1437,18 @@ def parse_E_layer(auxinfo):
     return equivalent_atoms
 
 def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
+    """
+    Iterates through the list of unpaired electrons and forms couples of 
+    adjancent unpaired electrons.
 
-    pairs = []
+    If an adjancent unpaired electron cannot be found, the list is 
+    expanded with a the single element, instead of the couple.
+
+    Every time two adjacent electrons have been detected, they are removed
+    from the u-layer. The loop is continued until all electrons have been either
+    assigned to a partner or until all single electrons have been removed.
+    """
+    adjacent_electrons = []
 
     u_layer_copy = u_layer[:]
 
@@ -1446,7 +1456,7 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
         i = u_layer_copy.pop()
         if not any(i in x for x in equivalent_atoms):
             # add the atom by itself:
-            pairs.append([i])
+            adjacent_electrons.append([i])
             continue
 
         # iterate over neighbors and check if neighbor is in u_layer
@@ -1456,13 +1466,13 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
             if any(i in x for x in equivalent_atoms):
                 if at_index in u_layer_copy:
                     pair = sorted([i, at_index])
-                    pairs.append(pair)
+                    adjacent_electrons.append(pair)
                     u_layer_copy.remove(at_index)
                     break
         else:
-            pairs.append([i])
+            adjacent_electrons.append([i])
             
-    return pairs
+    return adjacent_electrons
 
 
 def generate_combos(couple_unpaired_electrons, equivalent_atoms):
