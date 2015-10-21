@@ -99,7 +99,7 @@ cpdef find_inverse_allyl_paths(list existing_path)
 
 cpdef parse_N_layer(Molecule mol, str auxinfo)
 
-cpdef parse_E_layer(Molecule mol, str auxinfo)
+cpdef parse_E_layer(str auxinfo)
 
 cpdef generate_combos(list group, list equivalent_atoms)
 
