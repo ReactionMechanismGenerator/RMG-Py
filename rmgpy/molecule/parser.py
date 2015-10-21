@@ -795,69 +795,90 @@ def toInChI(mol):
     else:
         raise Exception('Could not generate InChI, because Openbabel installation was not found. ')
 
-def createULayer(mol):
+def create_U_layer(mol):
     """
-    Creates a layer with the positions of the atoms that bear unpaired electrons.
+    Creates a string with the positions of the atoms that bear unpaired electrons. The string
+    can be used to complement the InChI with an additional layer that allows for the differentiation
+    between structures with multiple unpaired electrons.
 
-    E.g.: u1,2 means that atoms with indices 1 and 2 bear one or more unpaired electrons
+    The string is composed of a prefix ('u') followed by the positions of each of the unpaired electrons,
+    sorted in numerical order.
 
-    Returns None if the molecule bears less than 2 unpaired electrons
+    The indices in the string refer to the atom indices in the molecule, according to the atom order
+    obtained by sorting the atoms using the InChI canonicalization algorithm.
+
+    Example:
+    - methyl radical ([CH3]) : u1
+    - triplet methylene biradical ([CH2]) : u1,1
+    - ethane-1,2-diyl biradical ([CH2][CH2]): u1,2
+    
+    First a deep copy is created of the original molecule and hydrogen atoms are removed from the molecule.
+    Next, the molecule is converted into an InChI string, and the auxiliary information of the inchification 
+    procedure is retrieved. 
+
+    The N-layer is parsed and used to sort the atoms of the original order according
+    to the order in the InChI. In case, the molecule contains atoms that cannot be distinguished
+    with the InChI algorithm ('equivalent atoms'), the position of the unpaired electrons is changed
+    as to ensure the atoms with the lowest indices are used to compose the string.
+
+    When the molecule does not bear any unpaired electrons, None is returned.
+
     """
 
     if mol.getRadicalCount() == 0:
         return None
     elif mol.getFormula() == 'H':
-        return U_LAYER_PREFIX+str(1)
+        return U_LAYER_PREFIX + '1'
 
-    # remove hydrogens
-    hydrogens = [at for at in mol.atoms if at.number == 1]
-    [mol.removeAtom(h) for h in hydrogens]
-            
-    # sort the atoms based on the inchi canonicalization algorithm
-    m = toRDKitMol(mol)
+    molcopy = mol.copy(deep=True)
 
-    # generate inchi and auxiliary info
-    inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+    hydrogens = [at for at in molcopy.atoms if at.number == 1]
+    [molcopy.removeAtom(h) for h in hydrogens]
 
+    rdkitmol = toRDKitMol(molcopy)
+    _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')# suppress stereo warnings
+    
     # extract the atom numbers from N-layer of auxiliary info:
-    new_indices = parse_N_layer(auxinfo)    
-    new_indices = [new_indices.index(i+1) for i,atom in enumerate(mol.atoms)]
+    atom_indices = parse_N_layer(auxinfo)    
+    atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
 
-    # sort the atoms based on the new inchi order
-    mol.atoms = [x for (y,x) in sorted(zip(new_indices,mol.atoms), key=lambda pair: pair[0])]
-
+    # sort the atoms based on the order of the atom indices
+    molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
 
     # create preliminary u-layer:
     u_layer = []
-    for i, at in enumerate(mol.atoms):
+    for i, at in enumerate(molcopy.atoms):
         u_layer.extend([i+1] * at.radicalElectrons)
     
     # extract equivalent atom pairs from E-layer of auxiliary info:
     equivalent_atoms = parse_E_layer(auxinfo)
-    if not u_layer:
-        return None
-    elif not equivalent_atoms:
-        return (U_LAYER_PREFIX + ','.join(map(str,u_layer)))
-    else:
+    if equivalent_atoms:
         # select lowest u-layer:
-        u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
-        return (U_LAYER_PREFIX + ','.join(map(str,u_layer)))
+        u_layer = find_lowest_u_layer(molcopy, u_layer, equivalent_atoms)
+
+    return (U_LAYER_PREFIX + ','.join(map(str, u_layer)))
 
 
 def toAugmentedInChI(mol):
     """
-    Adds an extra layer to the InChI denoting the multiplicity
-    of the molecule.
-    
-    Separate layer with a forward slash character.
+    This function generates the augmented InChI canonical identifier, and that allows for the differentiation
+    between structures with spin states and multiple unpaired electrons.
+
+    Two additional layers are added to the InChI:
+    - multiplicity layer: the total multiplicity of the molecule
+    - unpaired electrons layer: the position of the unpaired electrons in the molecule
+
     """
-    mol_copy = mol.copy(deep=True)
-    inchi = toInChI(mol_copy)
-    mult = createMultiplicityLayer(mol_copy.multiplicity)    
 
-    ulayer = createULayer(mol_copy)
+    inchi = toInChI(mol)
 
-    return compose_aug_inchi(inchi, mult, ulayer)
+    mult = createMultiplicityLayer(mol.multiplicity)    
+
+    ulayer = create_U_layer(mol)
+
+    aug_inchi = compose_aug_inchi(inchi, mult, ulayer)
+
+    return aug_inchi
 
 def toInChIKey(mol):
     """

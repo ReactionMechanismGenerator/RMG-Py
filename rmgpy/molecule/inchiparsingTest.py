@@ -241,49 +241,6 @@ class InChITest(unittest.TestCase):
         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
 
 
-    def testCreateULayer(self):
-        from rmgpy.molecule.parser import createULayer, toRDKitMol
-        from rdkit import Chem
-
-        adjlist1 = """
-1  C u0 p0 c0 {2,D} {5,S} {6,S}
-2  C u0 p0 c0 {1,D} {3,S} {7,S}
-3  C u1 p0 c0 {2,S} {4,S} {8,S}
-4  C u1 p0 c0 {3,S} {9,S} {10,S}
-5  H u0 p0 c0 {1,S}
-6  H u0 p0 c0 {1,S}
-7  H u0 p0 c0 {2,S}
-8  H u0 p0 c0 {3,S}
-9  H u0 p0 c0 {4,S}
-10 H u0 p0 c0 {4,S}
-
-        """        
-
-        mol1 = Molecule().fromAdjacencyList(adjlist1)
-
-        adjlist2 = """
-1  C u1 p0 c0 {2,S} {5,S} {6,S}
-2  C u1 p0 c0 {1,S} {3,S} {7,S}
-3  C u0 p0 c0 {2,S} {4,D} {8,S}
-4  C u0 p0 c0 {3,D} {9,S} {10,S}
-5  H u0 p0 c0 {1,S}
-6  H u0 p0 c0 {1,S}
-7  H u0 p0 c0 {2,S}
-8  H u0 p0 c0 {3,S}
-9  H u0 p0 c0 {4,S}
-10 H u0 p0 c0 {4,S}
-        """
-
-        m1 = toRDKitMol(mol1)
-        inchi1 , auxinfo1 = Chem.MolToInchiAndAuxInfo(m1, options='-SNon')
-
-        mol2 = Molecule().fromAdjacencyList(adjlist2)
-        m2 = toRDKitMol(mol2)
-        inchi2 , auxinfo2 = Chem.MolToInchiAndAuxInfo(m2, options='-SNon')
-
-        print '\n'.join([auxinfo1, auxinfo2])
-        self.assertEqual(createULayer(mol1), createULayer(mol2))
-
     def test_find_4_atom_3_bond_path(self):
         from rmgpy.molecule.parser import find_4_atom_3_bond_path
 
@@ -464,7 +421,7 @@ class InChITest(unittest.TestCase):
         self.compare(inchi, mult, u_indices)
 
     def test_Isomorphic_Different_InChIs(self):
-        from rmgpy.molecule.parser import createULayer, toRDKitMol
+        from rmgpy.molecule.parser import create_U_layer, toRDKitMol
         from rdkit import Chem
 
         adjlist1 = """
@@ -728,6 +685,52 @@ class ParseNLayerTest(unittest.TestCase):
        expected = [4,3,2,1]
        self.assertTrue(len(n_layer) == len(expected) and sorted(n_layer) == sorted(expected))
 
+class CreateULayerTest(unittest.TestCase):
+    def testC4H6(self):
+        """
+        Test that 3-butene-1,2-diyl biradical is always resulting in the 
+        same u-layer, regardless of the original order.
+        """
+
+        from rmgpy.molecule.parser import create_U_layer, toRDKitMol
+        from rdkit import Chem
+
+        # radical positions 3 and 4
+        adjlist1 = """
+1  C u0 p0 c0 {2,D} {5,S} {6,S}
+2  C u0 p0 c0 {1,D} {3,S} {7,S}
+3  C u1 p0 c0 {2,S} {4,S} {8,S}
+4  C u1 p0 c0 {3,S} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+
+        """        
+
+        # radical positions 1 and 2
+        adjlist2 = """
+1  C u1 p0 c0 {2,S} {5,S} {6,S}
+2  C u1 p0 c0 {1,S} {3,S} {7,S}
+3  C u0 p0 c0 {2,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+        """
+
+        u_layers = []
+        for adjlist in [adjlist1, adjlist2]:
+            mol = Molecule().fromAdjacencyList(adjlist)
+            u_layer = create_U_layer(mol)
+            u_layers.append(u_layer)
+
+        self.assertEquals(u_layers[0], u_layers[1])
 
 if __name__ == '__main__':
     unittest.main()

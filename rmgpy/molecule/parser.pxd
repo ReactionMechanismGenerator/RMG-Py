@@ -64,7 +64,7 @@ cpdef toRDKitMol(Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanit
 
 cpdef str toInChI(Molecule mol)
 
-cpdef createULayer(Molecule mol)
+cpdef str create_U_layer(Molecule mol)
 
 # returns an AugmentedInChI but there's no pxd file for that yet
 cpdef toAugmentedInChI(Molecule mol)
