@@ -679,7 +679,7 @@ class Gaussian(logfileparser.Logfile):
 
             forces = []
             line = next(inputfile)
-            while list(set(line.strip())) != ['-']:
+            while not line.startswith(' -----------'):#list(set(line.strip())) != ['-']: # Cases such as ----------------------------------------- IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC
                 tmpforces = []
                 for N in range(3): # Fx, Fy, Fz
                     force = line[23+N*15:38+N*15]
