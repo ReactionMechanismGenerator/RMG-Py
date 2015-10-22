@@ -169,7 +169,7 @@ class Gaussian:
         qmData = CCLibData(cclibData, radicalNumber+1)
         return qmData
 
-    def writeInputFile(self, output, attempt=None, top_keys=None, numProcShared=None, memory=None, checkPoint=False, bottomKeys=None, inputFilePath=None):
+    def writeInputFile(self, output, attempt=None, top_keys=None, numProcShared=None, memory=None, checkPoint=False, bottomKeys=None, inputFilePath=None, scf=False):
         """
         Takes the output from the createInputFile method and prints the
         file. Options provided allow the
@@ -178,6 +178,8 @@ class Gaussian:
         """
         if not top_keys:
             top_keys = self.inputFileKeywords(attempt)
+        if scf:
+            top_keys = top_keys + ' scf=qc'
         output = [top_keys] + output
 
         if checkPoint:
@@ -240,7 +242,7 @@ class GaussianMol(QMMolecule, Gaussian):
         assert atomCount == len(self.molecule.atoms)
 
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=40, memory='2GB')
+        self.writeInputFile(output, attempt, numProcShared=20, memory='5GB')
 
     def generateQMData(self):
         """
@@ -470,7 +472,7 @@ class GaussianTS(QMReaction, Gaussian):
 
         return top_keys
 
-    def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False, optEst=False):
+    def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False, optEst=False, scf=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -491,7 +493,7 @@ class GaussianTS(QMReaction, Gaussian):
             assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
         elif optEst:
-            outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+            outputFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
             assert os.path.exists(outputFilePath)
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(outputFilePath)
         else:
@@ -505,9 +507,9 @@ class GaussianTS(QMReaction, Gaussian):
         assert atomCount == len(self.reactantGeom.molecule.atoms)
 
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=40, memory='2GB', checkPoint=True)
+        self.writeInputFile(output, attempt, numProcShared=20, memory='5GB', checkPoint=True, scf=scf)
 
-    def createIRCFile(self):
+    def createIRCFile(self, scf=False):
         """
         Using the :class:`Geometry` object, write the input file for the
         IRC calculation on the transition state. The geometry is taken
@@ -524,7 +526,7 @@ class GaussianTS(QMReaction, Gaussian):
             output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
             assert atomCount == len(self.reactantGeom.molecule.atoms)
 
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='2GB', checkPoint=True, inputFilePath=self.ircInputFilePath)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='5GB', checkPoint=True, inputFilePath=self.ircInputFilePath, scf=scf)
 
     def createGeomInputFile(self, freezeAtoms, otherGeom=False):
 
@@ -561,7 +563,7 @@ class GaussianTS(QMReaction, Gaussian):
 
         output.append('')
         top_keys = self.inputFileKeywords(0, modRed=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='2GB', bottomKeys=bottom_keys)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottom_keys)
 
     def createQST2InputFile(self):
         # For now we don't do this, until seg faults are fixed on Discovery.
@@ -586,7 +588,7 @@ class GaussianTS(QMReaction, Gaussian):
 
         output.append('')
         top_keys = self.inputFileKeywords(0, qst2=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='2GB')
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='5GB')
 
     def optEstimate(self, labels):
         """
@@ -626,7 +628,59 @@ class GaussianTS(QMReaction, Gaussian):
             for combo in dist_combo_l:
                 bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
 
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=40, memory='2GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+
+            outputFilePath = self.runDouble(inputFilePath)
+
+        return outputFilePath
+    
+    def optRxnCenter(self, labels):
+        """
+        Writes and runs a ts optimization of the transition state estimate with everything frozen
+        except the reaction center distances.
+        """
+
+        inputFilePath = self.getFilePath('RxnC{0}'.format(self.inputFileExtension))
+        outputFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
+
+        if not os.path.exists(outputFilePath):
+            # Get the geometry from the OptEst file
+            readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+            assert os.path.exists(readFilePath)
+            atomsymbols, atomcoords = self.reactantGeom.parseLOG(readFilePath)
+            
+            attempt = 1
+
+            output = ['', self.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
+            
+            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+
+            assert atomCount == len(self.reactantGeom.molecule.atoms)
+
+            output.append('')
+
+            if self.basisSet:
+                top_keys = '# {0}/{1} opt=(ts,calcfc,noeigentest)'.format(self.method, self.basisSet)
+            else:
+                top_keys = '# {0} opt=(ts,calcfc,noeigentest)'.format(self.method)
+            
+            # Get list of all distances
+            dist_combo_it = itertools.combinations(range(atomCount), 2)
+            dist_combo_all = list(dist_combo_it)
+                
+            # Get list of things we want unfrozen
+            dist_combo_it = itertools.combinations(labels, 2)
+            dist_combo_part = list(dist_combo_it)
+            
+            # Get list of things we want frozen
+            freezeList = [x for x in dist_combo_all if x not in dist_combo_part]
+            
+            bottomKeys = ''
+            for combo in freezeList:
+                bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+
+            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
 
             outputFilePath = self.runDouble(inputFilePath)
 
@@ -779,13 +833,34 @@ class GaussianTS(QMReaction, Gaussian):
         Incomplete IRC files may exist from previous runs, due to the job being prematurely terminated.
         This checks to ensure the job has been completed.
         """
+        convergenceFailure = False
+        complete = False
+        
         f = open(filePath, 'r')
         allLines = f.readlines()
-        for line in allLines[-10]:
-            if line.startswith(' Normal termination') or line.startswith(' Error termination'):
-                return True
         
-        return False
+        lastlines = allLines[-4:]
+        convergence_failed_keys = {"scf": False}
+        finished_keys = {
+            " Job cpu time": False,
+            "termination": False,
+        }
+        
+        for line in lastlines:
+            if line.startswith(' Job cpu time'):
+                finished_keys[" Job cpu time"] = True
+            elif line.startswith(' Normal termination') or line.startswith(' Error termination'):
+                finished_keys["termination"] = True
+            elif line.startswith(' Convergence failure -- run terminated.'):
+                convergence_failed_keys["scf"] = True
+        
+        if not all(convergence_failed_keys):
+            convergenceFailure = True
+            
+        if all(finished_keys):
+            complete = True
+        
+        return complete, convergenceFailure
     
     def verifyOutputFile(self):
         """
