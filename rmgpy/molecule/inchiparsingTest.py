@@ -543,6 +543,18 @@ multiplicity 3
         combos = generate_combos(group, equivalent_atoms)
         expected = [[2,4], [2,5], [2,6], [4,5], [4,6],[5,6]]        
         self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
+
+        group = [1]
+        equivalent_atoms = [[1,2],[3,4]]
+        expected =[[1], [2]]
+        combos = generate_combos(group, equivalent_atoms)
+        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
+
+        group = [4]
+        equivalent_atoms = [[1,2,3,4]]
+        combos = generate_combos(group, equivalent_atoms)
+        expected = [[1],[2],[3],[4]]        
+        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
     
     def test_find_lowest_u_layer(self):
         from rmgpy.molecule.parser import parse_E_layer, toRDKitMol, group_adjacent_unpaired_electrons, find_lowest_u_layer
