@@ -636,6 +636,189 @@ multiplicity 3
         aug_inchi = mol.toAugmentedInChI()
         self.assertTrue(aug_inchi.endswith('/u1,2,3,4'))
     
+    def test_C8H22(self):
+        from rmgpy.molecule.parser import toRDKitMol, parse_E_layer
+        from rdkit import Chem
+
+        adjlist = """
+multiplicity 3
+1  C u1 p0 c0 {2,S} {9,S} {10,S}
+2  C u1 p0 c0 {1,S} {3,S} {11,S}
+3  C u0 p0 c0 {2,S} {4,S} {5,S} {12,S}
+4  C u0 p0 c0 {3,S} {13,S} {14,S} {15,S}
+5  C u0 p0 c0 {3,S} {6,S} {7,S} {16,S}
+6  C u0 p0 c0 {5,S} {17,S} {18,S} {19,S}
+7  C u0 p0 c0 {5,S} {8,D} {20,S}
+8  C u0 p0 c0 {7,D} {21,S} {22,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {4,S}
+16 H u0 p0 c0 {5,S}
+17 H u0 p0 c0 {6,S}
+18 H u0 p0 c0 {6,S}
+19 H u0 p0 c0 {6,S}
+20 H u0 p0 c0 {7,S}
+21 H u0 p0 c0 {8,S}
+22 H u0 p0 c0 {8,S}
+        """
+
+
+        spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
+
+        inchi = spc.getAugmentedInChI()
+
+        m = toRDKitMol(spc.molecule[0])
+        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+        e_layer = parse_E_layer(auxinfo)
+        expected = [[1, 2], [3, 4], [5, 6], [7, 8]]
+        self.assertTrue(len(e_layer) == len(expected) and sorted(e_layer) == sorted(expected))
+
+    def test_C7H17(self):
+        from rmgpy.molecule.parser import toRDKitMol, parse_E_layer
+        from rdkit import Chem
+        
+        adjlist = """
+1  C u0 p0 c0 {2,S} {4,S} {6,S} {8,S}
+2  C u0 p0 c0 {1,S} {3,D} {9,S}
+3  C u0 p0 c0 {2,D} {10,S} {11,S}
+4  C u0 p0 c0 {1,S} {5,D} {12,S}
+5  C u0 p0 c0 {4,D} {13,S} {14,S}
+6  C u0 p0 c0 {1,S} {7,D} {15,S}
+7  C u0 p0 c0 {6,D} {16,S} {17,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {5,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {6,S}
+16 H u0 p0 c0 {7,S}
+17 H u0 p0 c0 {7,S}
+        """
+
+
+        spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
+
+        inchi = spc.getAugmentedInChI()
+
+        m = toRDKitMol(spc.molecule[0])
+        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
+
+        e_layer = parse_E_layer(auxinfo)
+        expected = [[1, 2, 3], [4, 5, 6]]
+        self.assertTrue(len(e_layer) == len(expected) and sorted(e_layer) == sorted(expected))
+
+    def test_C7H8(self):
+        """Looks a lot like toluene but with 1 double bond replaced by a biradical."""
+
+        """unpaired electrons on tertiary carbon, and on carbon in para position."""
+        adjlist = """
+1  C u1 p0 c0 {2,S} {3,S} {4,S}
+2  C u0 p0 c0 {1,S} {7,D} {10,S}
+3  C u0 p0 c0 {1,S} {6,D} {11,S}
+4  C u0 p0 c0 {1,S} {12,S} {13,S} {14,S}
+5  C u1 p0 c0 {6,S} {7,S} {15,S}
+6  C u0 p0 c0 {3,D} {5,S} {8,S}
+7  C u0 p0 c0 {2,D} {5,S} {9,S}
+8  H u0 p0 c0 {6,S}
+9  H u0 p0 c0 {7,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {5,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        spc = Species(molecule=[mol])
+        spc.generateResonanceIsomers()
+        from rmgpy.molecule.parser import create_U_layer
+        for mol in spc.molecule:
+            print create_U_layer(mol)
+        print spc.getAugmentedInChI()
+
+        inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3'
+        mult = 3
+        u_indices = [2,3]
+        self.compare(inchi, mult, u_indices) 
+    
+    def test_C8H8(self):
+        """Looks a lot like cycloctene but with 1 double bond replaced by a biradical."""
+
+        adjlist = """
+1  C u0 p0 c0 {2,S} {5,D} {9,S}
+2  C u0 p0 c0 {1,S} {3,D} {10,S}
+3  C u0 p0 c0 {2,D} {4,S} {11,S}
+4  C u1 p0 c0 {3,S} {6,S} {12,S}
+5  C u0 p0 c0 {1,D} {8,S} {14,S}
+6  C u1 p0 c0 {4,S} {7,S} {15,S}
+7  C u0 p0 c0 {6,S} {8,D} {13,S}
+8  C u0 p0 c0 {5,S} {7,D} {16,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {6,S}
+16 H u0 p0 c0 {8,S}
+        """
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        spc = Species(molecule=[mol])
+        spc.generateResonanceIsomers()
+        from rmgpy.molecule.parser import create_U_layer
+        for mol in spc.molecule:
+            print create_U_layer(mol)
+        print spc.getAugmentedInChI()
+
+        # inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3'
+        # mult = 3
+        # u_indices = [2,3]
+        # self.compare(inchi, mult, u_indices) 
+
+    def test_benzyne(self):
+        benzyne = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
+
+        adjlist = """
+1  C u0 p0 c0 {2,T} {6,S}
+2  C u0 p0 c0 {1,T} {3,S}
+3  C u0 p0 c0 {2,S} {4,D} {7,S}
+4  C u0 p0 c0 {3,D} {5,S} {8,S}
+5  C u0 p0 c0 {4,S} {6,D} {9,S}
+6  C u0 p0 c0 {1,S} {5,D} {10,S}
+7  H u0 p0 c0 {3,S}
+8  H u0 p0 c0 {4,S}
+9  H u0 p0 c0 {5,S}
+10 H u0 p0 c0 {6,S}
+        """
+        mol = Molecule().fromAdjacencyList(adjlist)
+        spc = Species(molecule=[mol])
+        spc.generateResonanceIsomers()
+        from rmgpy.molecule.parser import create_U_layer
+        for mol in spc.molecule:
+            print create_U_layer(mol)
+        print spc.getAugmentedInChI()
+
+        benzatetraene = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
+
+        mult = 1
+        u_indices = []
+        self.compare(benzyne, mult, u_indices)
+
+    def test_H(self):
+        adjlist = """
+multiplicity 2
+1 H u1 p0 c0
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        print mol.toAugmentedInChI()
 
 class ParseELayerTest(unittest.TestCase):
     def test_no_equivalence_layer(self):
