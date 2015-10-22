@@ -1522,9 +1522,16 @@ def valid_combo(combo, mol):
     atoms that are adjacent in the molecule.
     """
 
-    assert len(combo) == 2
-    at1, at2 = mol.atoms[combo[0]-1], mol.atoms[combo[1]-1]
-    return mol.hasBond(at1, at2)
+    assert len(combo) < 3
+    atoms = [mol.atoms[index-1] for index in combo]
+
+    conditions = []
+    conditions.append(any([at.radicalElectrons == 0 for at in atoms]))
+    if len(atoms) == 2:
+        at1, at2 = atoms
+        conditions.append(mol.hasBond(at1, at2))
+    
+    return all(conditions)
 
 def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
     """..."""
