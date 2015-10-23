@@ -98,3 +98,34 @@ class FindButadieneTest(unittest.TestCase):
         start, end = mol.atoms[0], mol.atoms[3]
         path = find_butadiene(start, end)
         self.assertIsNotNone(path)    
+
+class ShortestPathTest(unittest.TestCase):
+
+    def test_CCC(self):
+        smi = 'CCC'
+        mol = Molecule().fromSMILES(smi)
+        start = mol.atoms[0]
+        end = mol.atoms[2]
+
+        path = find_shortest_path(start, end)
+        self.assertEquals(len(path), 3)
+    
+    def test_Cyclohexane(self):
+        smi = 'C1CCCCC1'
+        mol = Molecule().fromSMILES(smi)
+        start = mol.atoms[0]
+        end = mol.atoms[2]
+
+        path = find_shortest_path(start, end)
+        self.assertEquals(len(path), 3)
+        
+    def test_bicyclo420octane(self):
+        smi = 'C12CCC1CCCC2'
+        mol = Molecule().fromSMILES(smi)
+        start = mol.atoms[0]
+        end = mol.atoms[4]
+
+        path = find_shortest_path(start, end)
+        self.assertEquals(len(path), 3)
+        
+    
