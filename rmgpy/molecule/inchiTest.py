@@ -1,7 +1,8 @@
 import unittest
 
-from rmgpy.molecule.inchi import *
+from .molecule import Molecule
 
+from .inchi import *
 
 class InChITest(unittest.TestCase):
 
@@ -126,6 +127,13 @@ class Parse_E_LayerTest(unittest.TestCase):
         expected = [[1, 2, 3], [4, 5, 6]]
         self.assertTrue(e_layer == expected)
 
+
+class ParseNLayerTest(unittest.TestCase):
+    def test_OCCC(self):
+       auxinfo = "AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;"
+       n_layer = parse_N_layer(auxinfo)
+       expected = [4,3,2,1]
+       self.assertTrue(n_layer == expected)
 
 if __name__ == '__main__':
     unittest.main()

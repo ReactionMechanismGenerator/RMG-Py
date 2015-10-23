@@ -505,13 +505,6 @@ multiplicity 3
         u_indices = [1,3]
         self.compare(inchi, mult, u_indices)
 
-class ParseNLayerTest(unittest.TestCase):
-    def test_OCCC(self):
-       from rmgpy.molecule.parser import parse_N_layer
-       auxinfo = "AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;"
-       n_layer = parse_N_layer(auxinfo)
-       expected = [4,3,2,1]
-       self.assertTrue(len(n_layer) == len(expected) and sorted(n_layer) == sorted(expected))
 
 class CreateULayerTest(unittest.TestCase):
     def testC4H6(self):

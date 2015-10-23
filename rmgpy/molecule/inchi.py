@@ -167,7 +167,41 @@ def parse_E_layer(auxinfo):
         equivalent_atoms.append(indices)
 
     return equivalent_atoms
-    
+
+ 
+def parse_N_layer(auxinfo):
+    """
+    Parses the layer with atom ordering information (N-layer) 
+    and returns a list of atom indices that reflect how the atoms of the original
+    molecule should be ordered according to the InChI algorithm.
+
+
+    Example:
+    Auxiliary info of SMILES OCCC (InChI=1S/C3H8O/c1-2-3-4/h4H,2-3H2,1H3):
+    AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;
+
+    N-layer: 
+    /N:4,3,2,1
+
+    The original number of an atom with identification number n is given as the
+    n-th member of this list for a component; the lists are separated with “;”. 
+
+    Raises an exception when the N-layer could not be found.
+    """
+
+    pieces = auxinfo.split('/')
+    atom_numbers = None
+    for piece in pieces:
+        if piece.startswith('N'):
+            atom_numbers = piece[2:]#cut off N:
+            break
+    else:
+        raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
+
+    indices = map(int, atom_numbers.split(','))
+
+    return indices
+        
 class InchiException(Exception):
     pass
 
