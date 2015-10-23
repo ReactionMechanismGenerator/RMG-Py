@@ -12,16 +12,9 @@ cpdef list BACKENDS
 cpdef dict INSTALLED_BACKENDS
 cpdef dict INCHI_LOOKUPS
 cpdef dict SMILES_LOOKUPS
-cpdef dict _known_smiles_molecules
-cpdef _known_smiles_radicals
 
-cpdef reset_lone_pairs_to_default(Atom at)
 
-cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
-
-cpdef bint isUnsaturated(Molecule mol)
-    
-cpdef bint check_number_unpaired_electrons(Molecule mol)
+#  from <identifier> functions:
 
 cdef Molecule __fromSMILES(Molecule mol, str smilesstr, str backend)
 
@@ -31,64 +24,36 @@ cdef __parse(Molecule mol, str identifier, str type_identifier, str backend)
 
 cpdef parse_openbabel(Molecule mol, str identifier, str type_identifier)
 
-cpdef isCorrectlyParsed(Molecule mol, str identifier)
-
-cdef __lookup(Molecule mol, str identifier, str type_identifier)
-
-cpdef contains_charge(Molecule mol)
-   
-cpdef check(Molecule mol, aug_inchi)
-
-cpdef correct_O_unsaturated_bond(Molecule mol, list u_indices)
-
 cpdef fromInChI(Molecule mol, str inchistr, backend=*)
-
-cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
 
 cpdef fromSMILES(Molecule mol, str smilesstr, str backend=*)
 
-
 cpdef fromSMARTS(Molecule mol, str smartsstr)
+
+cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
     
 cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol)
 
 cpdef fromOBMol(Molecule mol, object obmol)
 
-cpdef str toSMARTS(Molecule mol)
+cdef __lookup(Molecule mol, str identifier, str type_identifier)
 
-cpdef str toSMILES(Molecule mol)
+# parser helper functions: 
 
-cpdef toOBMol(Molecule mol)
+cpdef reset_lone_pairs_to_default(Atom at)
 
-cpdef toRDKitMol(Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanitize=*)
+cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
 
-cpdef str toInChI(Molecule mol)
+cpdef bint isUnsaturated(Molecule mol)
+    
+cpdef bint check_number_unpaired_electrons(Molecule mol)
 
-cpdef str create_U_layer(Molecule mol)
+cpdef isCorrectlyParsed(Molecule mol, str identifier)
+   
+cpdef check(Molecule mol, aug_inchi)
 
-# returns an AugmentedInChI but there's no pxd file for that yet
-cpdef toAugmentedInChI(Molecule mol)
-
-cpdef str toInChIKey(Molecule mol)
-
-cpdef str toAugmentedInChIKey(Molecule mol)
-
-cpdef str createMultiplicityLayer(int multiplicity)
-
-cpdef fixCharge(Molecule mol, list u_indices)
-
-cpdef moveHs(Molecule mol)
-
-cpdef updateAtomConnectivityValues(Molecule mol)
-
-cpdef Molecule normalize(Molecule mol)
-
-cpdef list get_unpaired_electrons(Molecule mol)
-
-cpdef parse_N_layer(str auxinfo)
-
-cpdef generate_combos(list group, list equivalent_atoms)
-
-cpdef valid_combo(list combo, Molecule mol, list u_layer)
+cpdef correct_O_unsaturated_bond(Molecule mol, list u_indices)
 
 cpdef find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)
+
+cpdef fixCharge(Molecule mol, list u_indices)

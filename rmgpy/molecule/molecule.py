@@ -54,6 +54,7 @@ from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
+import rmgpy.molecule.generator as generator
 
 
 
@@ -186,10 +187,10 @@ class Atom(Vertex):
             return True
     
     def getDescriptor(self):
-        return (self.number, self.getAtomConnectivityValue(), self.radicalElectrons, self.lonePairs, self.charge)
+        return (self.getAtomConnectivityValue(), self.number)
 
     def getAtomConnectivityValue(self):
-        return getVertexConnectivityValue(self)
+        return -1*self.connectivity
 
     def isSpecificCaseOf(self, other):
         """
@@ -702,28 +703,7 @@ class Molecule(Graph):
         self.updateConnectivityValues()
         self.updateAtomTypes()
         self.updateMultiplicity()
-        self.sortAtoms()
-
-
-    def sortAtoms(self):
-        """
-        Sort the atoms in the graph. This can make certain operations, e.g.
-        the isomorphism functions, much more efficient.
-        
-        This function orders atoms using several attributes in atom.getDescriptor().
-        Currently it sorts by placing heaviest atoms first and hydrogen atoms last.
-        Placing hydrogens last during sorting ensures that functions with hydrogen
-        removal work properly.
-        """
-        cython.declare(vertex=Vertex, a=Atom, index=int)
-        for vertex in self.vertices:
-            if vertex.sortingLabel < 0:
-                self.updateConnectivityValues()
-                break
-        self.atoms.sort(key=lambda a: a.getDescriptor(), reverse=True)
-        # self.moveHs()
-        for index, vertex in enumerate(self.vertices):
-            vertex.sortingLabel = index
+        self.sortVertices()
 
     def getFormula(self):
         """
@@ -1265,7 +1245,7 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        return parser.toInChI(self)            
+        return generator.toInChI(self)            
         
     def toAugmentedInChI(self):
         """
@@ -1274,7 +1254,7 @@ class Molecule(Graph):
         
         Separate layer with a forward slash character.
         """
-        return parser.toAugmentedInChI(self)
+        return generator.toAugmentedInChI(self)
         
     
     def toInChIKey(self):
@@ -1290,7 +1270,7 @@ class Molecule(Graph):
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-        return parser.toInChIKey(self)
+        return generator.toInChIKey(self)
     
     def toAugmentedInChIKey(self):
         """
@@ -1300,7 +1280,7 @@ class Molecule(Graph):
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
         """
-        return parser.toAugmentedInChIKey(self)
+        return generator.toAugmentedInChIKey(self)
     
 
     def toSMARTS(self):
@@ -1309,7 +1289,7 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity and removes Hydrogen atoms.
         """
-        return parser.toSMARTS(self)
+        return generator.toSMARTS(self)
     
     
     def toSMILES(self):
@@ -1326,13 +1306,13 @@ class Molecule(Graph):
         and removes Hydrogen atoms.
         """
         
-        return parser.toSMILES(self)
+        return generator.toSMILES(self)
 
     def toRDKitMol(self, *args, **kwargs):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
-        return parser.toRDKitMol(self, *args, **kwargs)
+        return generator.toRDKitMol(self, *args, **kwargs)
 
     def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False, oldStyle=False):
         """
@@ -1707,7 +1687,7 @@ class Molecule(Graph):
         if self.isCyclic():
             molecule = self.copy(deep=True)
             try:
-                rdkitmol, rdAtomIndices = parser.toRDKitMol(molecule, removeHs=True, returnMapping=True)
+                rdkitmol, rdAtomIndices = generator.toRDKitMol(molecule, removeHs=False, returnMapping=True)
             except:
                 return []
             aromatic = False
@@ -1748,7 +1728,7 @@ class Molecule(Graph):
         else:
             return isomers
         
-        rdkitmol = parser.toRDKitMol(self)  # This perceives aromaticity
+        rdkitmol = generator.toRDKitMol(self)  # This perceives aromaticity
         mol = Molecule()
         isomers.append(parser.fromRDKitMol(mol, rdkitmol))  # This step Kekulizes the molecule
         return isomers
@@ -1917,7 +1897,7 @@ class Molecule(Graph):
         # changing atom types, but it doesn't hurt anything and is not
         # very expensive, so will do it anyway)
         self.updateConnectivityValues()
-        self.sortAtoms()
+        self.sortVertices()
         self.updateAtomTypes()
         self.updateLonePairs()
         self.multiplicity = 1
