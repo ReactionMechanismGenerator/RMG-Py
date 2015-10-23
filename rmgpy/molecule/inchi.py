@@ -89,6 +89,43 @@ def compose_aug_inchi_key(inchi_key, mult_layer, ulayer=None):
     else:
         return inchi_key + mult_layer 
 
+def parse_H_layer(inchi):
+    """
+    Converts the Mobile H layer of an inchi string into a 
+    list of atom indices couples that carry a mobile hydrogen.
+
+    Example:
+    The hydrogen of the hydroxyl group can migrate to the carbonyl 
+    oxygen.
+
+    O=C-O
+    InChI=1S/CH2O2/c2-1-3/h1H,(H,2,3)
+
+    The atoms bearing a mobile hydrogen will be found in
+    the hydrogen layer, within the parentheses.
+
+    An empty list will be returned when there are no mobile hydrogens.
+
+    """
+    pieces = inchi.split('/')
+    h_layer = None
+    for piece in pieces:
+        if piece.startswith('h'):
+            h_layer = piece
+            break
+    else: 
+        raise Exception('Could not find the hydrogen layer in the inchi: {}'.format(inchi))
+
+    # search for (*) pattern
+    pattern = re.compile( r'\((.[^\(\)]*)\)')
+
+    couples = []
+    for match in re.findall(pattern, h_layer):
+        mobile_h_atoms = map(int, match[2:].split(','))
+        couples.append(mobile_h_atoms)
+
+    return couples
+
 class InchiException(Exception):
     pass
 

@@ -1,6 +1,6 @@
 import unittest
 
-from rmgpy.molecule.inchi import AugmentedInChI, InChI, InchiException, ignore_prefix, compose_aug_inchi, INCHI_PREFIX, U_LAYER_PREFIX
+from rmgpy.molecule.inchi import *
 
 
 class InChITest(unittest.TestCase):
@@ -94,6 +94,15 @@ class ComposeTest(unittest.TestCase):
         aug_inchi = compose_aug_inchi(inchi, U_LAYER_PREFIX + str(mult))
         self.assertTrue( aug_inchi  == INCHI_PREFIX + '/' + inchi + U_LAYER_PREFIX + str(mult), aug_inchi)
 
+class Parse_H_layerTest(unittest.TestCase):
+
+    def test_OCO(self):
+
+        smi = 'O=C-O'
+        inchi = Molecule().fromSMILES(smi).toInChI()
+        mobile_hs = parse_H_layer(inchi)
+        expected = [[2,3]]
+        self.assertTrue(mobile_hs == expected)
 
 if __name__ == '__main__':
     unittest.main()

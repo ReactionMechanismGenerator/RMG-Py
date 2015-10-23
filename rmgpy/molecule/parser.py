@@ -24,7 +24,7 @@ from rdkit import Chem
 from rmgpy.molecule import element as elements
 
 from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
-from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
+from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, parse_H_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
 from rmgpy.molecule.pathfinder import \
  find_butadiene,\
@@ -1155,26 +1155,6 @@ def get_unpaired_electrons(mol):
             locations.append(index)
 
     return sorted(locations)
-
-def parse_H_layer(inchistring):
-    pieces = inchistring.split('/')
-    h_layer = None
-    for piece in pieces:
-        if piece.startswith('h'):
-            h_layer = piece
-            break
-
-    # search for (*) pattern
-    import re
-    pattern = re.compile( r'\((.[^\(\)]*)\)')
-
-    all_mobile_h_atoms_couples = []
-    for mobile_h in re.findall(pattern, h_layer):
-        mobile_h_atoms = map(int, mobile_h[2:].split(','))
-        assert len(mobile_h_atoms) == 2
-        all_mobile_h_atoms_couples.append(mobile_h_atoms)
-
-    return all_mobile_h_atoms_couples
 
 def find_mobile_h_system(mol, all_mobile_h_atoms_couples, test_indices):
     dummy = test_indices[:]
