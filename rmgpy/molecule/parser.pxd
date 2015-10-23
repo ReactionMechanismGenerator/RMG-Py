@@ -103,6 +103,6 @@ cpdef parse_E_layer(str auxinfo)
 
 cpdef generate_combos(list group, list equivalent_atoms)
 
-cpdef valid_combo(list combo, Molecule mol)
+cpdef valid_combo(list combo, Molecule mol, list u_layer)
 
 cpdef find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)

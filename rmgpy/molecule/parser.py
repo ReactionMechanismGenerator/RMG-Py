@@ -1516,13 +1516,15 @@ def generate_combos(unpaired_electrons, equivalent_atoms):
     
     return combos
 
-def valid_combo(combo, mol):
+def valid_combo(combo, mol, u_layer):
     """
     Check if the combination of atom indices refers to
     atoms that are adjacent in the molecule.
     """
-
     assert len(combo) < 3
+
+    if len(combo) == 1 and len(u_layer) > 1: return False
+
     atoms = [mol.atoms[index-1] for index in combo]
 
     conditions = []
@@ -1548,7 +1550,7 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
         combos = [combo for combo in combos if combo != group]
         for combo in combos:
             combo = sorted(combo)
-            if valid_combo(combo, mol):
+            if valid_combo(combo, mol, u_layer):
                 if combo < selected_group:
                     selected_group = combo
 
