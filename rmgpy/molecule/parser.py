@@ -24,7 +24,7 @@ from rdkit import Chem
 from rmgpy.molecule import element as elements
 
 from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
-from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, parse_H_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
+from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, parse_E_layer, parse_H_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 
 from rmgpy.molecule.pathfinder import \
  find_butadiene,\
@@ -1218,49 +1218,6 @@ def parse_N_layer(auxinfo):
     indices = map(int, atom_numbers.split(','))
 
     return indices
-
-
-def parse_E_layer(auxinfo):
-    """
-    Converts the layer with equivalence information (E-layer) 
-    on atoms into a list of lists of equivalent atom indices.
-
-    Example:
-    Auxiliary info of InChI=1S/C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3:
-    AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;
-    E-layer: 
-
-    /E:(1,2)(3,4)(5,6)(7,8)/
-
-    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the 
-    implemented canonicalization algorithm.
-
-    Returned object:
-
-    [[1,2],[3,4],[5,6],[7,8]]
-
-    Returns an empty list of the E-layer could not be found.
-
-    """
-
-    pieces = auxinfo.split('/')
-    e_layer = None
-    for piece in pieces:
-        if piece.startswith('E'):
-            e_layer = piece[2:]#cut off /E:
-            break
-    else:
-        return []
-
-    # search for (*) pattern
-    pattern = re.compile( r'\((.[^\(\)]*)\)')
-
-    equivalent_atoms = []
-    for atomtuple in re.findall(pattern, e_layer):
-        indices = list(map(int, atomtuple.split(',')))
-        equivalent_atoms.append(indices)
-
-    return equivalent_atoms
 
 def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
     """

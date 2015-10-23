@@ -104,5 +104,28 @@ class Parse_H_layerTest(unittest.TestCase):
         expected = [[2,3]]
         self.assertTrue(mobile_hs == expected)
 
+class Parse_E_LayerTest(unittest.TestCase):
+    def test_no_equivalence_layer(self):
+        """Test that the absence of an E-layer results in an empty list."""
+
+        auxinfo = "AuxInfo=1/0/N:1/rA:1C/rB:/rC:;"
+        e_layer = parse_E_layer(auxinfo)
+        self.assertFalse(e_layer)
+
+    def test_C8H22(self):
+
+        auxinfo = "AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;"
+        e_layer = parse_E_layer(auxinfo)
+        expected = [[1, 2], [3, 4], [5, 6], [7, 8]]
+        self.assertTrue(e_layer == expected)
+
+    def test_C7H17(self):
+
+        auxinfo = "AuxInfo=1/0/N:3,5,7,2,4,6,1/E:(1,2,3)(4,5,6)/rA:7CCCCCCC/rB:s1;d2;s1;d4;s1;d6;/rC:;;;;;;;"
+        e_layer = parse_E_layer(auxinfo)
+        expected = [[1, 2, 3], [4, 5, 6]]
+        self.assertTrue(e_layer == expected)
+
+
 if __name__ == '__main__':
     unittest.main()

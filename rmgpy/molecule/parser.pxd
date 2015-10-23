@@ -87,8 +87,6 @@ cpdef list get_unpaired_electrons(Molecule mol)
 
 cpdef parse_N_layer(str auxinfo)
 
-cpdef parse_E_layer(str auxinfo)
-
 cpdef generate_combos(list group, list equivalent_atoms)
 
 cpdef valid_combo(list combo, Molecule mol, list u_layer)
