@@ -3,7 +3,6 @@
 import cython
 import logging
 import itertools
-from Queue import Queue
 from collections import Counter
 import re
 
@@ -26,6 +25,11 @@ from rmgpy.molecule import element as elements
 
 from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
 from rmgpy.molecule.inchi import AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
+
+from rmgpy.molecule.pathfinder import \
+ find_butadiene,\
+ find_butadiene_end_with_charge,\
+ find_allyl_end_with_charge
 
 from .molecule import Atom, Bond, Molecule
 
@@ -158,7 +162,7 @@ def convert_unsaturated_bond_to_biradical(mol, inchi, u_indices):
                     u_indices.remove(u2)
                     return mol
         else:
-            path = find_4_atom_3_bond_path(atom1, atom2)
+            path = find_butadiene(atom1, atom2)
             if path is not None:
                 atom1.radicalElectrons += 1
                 atom2.radicalElectrons += 1
@@ -366,7 +370,7 @@ def correct_O_unsaturated_bond(mol, u_indices):
 
             start = oxygen
             # search for 3-atom-2-bond [X=X-X] paths
-            paths = find_3_atom_2_bond_end_with_charge_path(start)
+            paths = find_allyl_end_with_charge(start)
             for path in paths:    
                 end = path[-1]
                 start.charge += 1 if start.charge < 0 else -1
@@ -847,6 +851,7 @@ def create_U_layer(mol):
 
     # find the resonance isomer with the lowest u index:
     molcopy = normalize(molcopy)
+    
     # create preliminary u-layer:
     u_layer = []
     for i, at in enumerate(molcopy.atoms):
@@ -964,7 +969,7 @@ def fixCharge(mol, u_indices):
         start = mol.atoms[index -1]
 
         # search for 4-atom-3-bond [X=X-X=X] paths
-        path = find_4_atom_3_bond_end_with_charge_path(start)
+        path = find_butadiene_end_with_charge(start)
         if path is not None:    
             # we have found the atom we are looking for
             start.radicalElectrons += 1
@@ -983,7 +988,7 @@ def fixCharge(mol, u_indices):
             continue
 
         # search for 3-atom-2-bond [X=X-X] paths
-        paths = find_3_atom_2_bond_end_with_charge_path(start)
+        paths = find_allyl_end_with_charge(start)
         from rmgpy.data.kinetics.family import ReactionRecipe
 
         for path in paths:
@@ -1151,147 +1156,6 @@ def get_unpaired_electrons(mol):
 
     return sorted(locations)
 
-def find_4_atom_3_bond_path(start, end):
-    """
-    Search for a path between start and end atom that consists of 
-    alternating non-single and single bonds.
-
-    Returns a list with atom and bond elements from start to end, or
-    None if nothing was found.
-    """
-    
-    q = Queue()#FIFO queue of paths that need to be analyzed
-    q.put([start])
-
-    while not q.empty():
-        path = q.get()
-        # search for end atom among the neighbors of the terminal atom of the path:
-        terminal = path[-1]
-        assert isinstance(terminal, Atom)
-        for atom4, bond34 in terminal.bonds.iteritems():
-            if atom4 == end and not bond34.isSingle():# we have found the path we are looking for
-                #add the final bond and atom and return
-                path.append(bond34)
-                path.append(atom4)
-                return path
-        else:#none of the neighbors is the end atom.
-            # Add a new allyl path and try again:
-            new_paths = find_allyl_paths(path)
-            [q.put(p) if p else '' for p in new_paths]
-
-    # Could not find a resonance path from start atom to end atom
-    return None
-
-
-def find_allyl_paths(existing_path):
-    """
-    Find all the (3-atom, 2-bond) patterns "X=X-X" starting from the 
-    last atom of the existing path.
-
-    The bond attached to the starting atom should be non single.
-    The second bond should be single.
-    """
-    paths = []
-    start = existing_path[-1]
-    assert isinstance(start, Atom)
-
-    for atom2, bond12 in start.bonds.iteritems():
-        if not bond12.isSingle() and not atom2 in existing_path:
-            for atom3, bond23 in atom2.bonds.iteritems():
-                if start is not atom3 and atom3.number!= 1:
-                    new_path = existing_path[:]#a copy, not a reference
-                    new_path.extend((bond12, atom2, bond23, atom3))
-                    paths.append(new_path)
-    return paths
-
-def find_unsaturated_bond_paths(existing_path):
-    """
-    Find all the (2-atom, 1-bond) patterns "X=X" starting from the 
-    last atom of the existing path.
-
-    The bond attached to the starting atom should be non single.
-    """
-    paths = []
-    start = existing_path[-1]
-    assert isinstance(start, Atom)
-
-    for atom2, bond12 in start.bonds.iteritems():
-        if not bond12.isSingle() and not atom2 in existing_path and atom2.number!= 1:
-            new_path = existing_path[:]#a copy, not a reference
-            new_path.extend((bond12, atom2))
-            paths.append(new_path)
-    return paths   
-
-def find_4_atom_3_bond_end_with_charge_path(start):
-    """
-    Search for a (4-atom, 3-bond) path between start and end atom that consists of 
-    alternating non-single and single bonds and ends with a charged atom.
-
-    Returns a list with atom and bond elements from start to end, or
-    None if nothing was found.
-    """
-
-    q = Queue()#FIFO queue of paths that need to be analyzed
-    q.put([start])
-
-    while not q.empty():
-        path = q.get()
-        # search for end atom among the neighbors of the terminal atom of the path:
-        terminal = path[-1]
-        assert isinstance(terminal, Atom)
-        for atom4, bond34 in terminal.bonds.iteritems():
-            if atom4.charge != 0 and not bond34.isSingle() and not atom4 in path:# we have found the path we are looking for
-                #add the final bond and atom and return
-                path.append(bond34)
-                path.append(atom4)
-                return path
-        else:#none of the neighbors is the end atom.
-            # Add a new allyl path and try again:
-            new_paths = find_allyl_paths(path)
-            [q.put(p) if p else '' for p in new_paths]
-
-    # Could not find a resonance path from start atom to end atom
-    return None
-
-def find_3_atom_2_bond_end_with_charge_path(start):
-    """
-    Search for a (3-atom, 2-bond) path between start and end atom that consists of 
-    alternating non-single and single bonds and ends with a charged atom.
-
-    Returns a list with atom and bond elements from start to end, or
-    an empty list if nothing was found.
-    """
-    paths = []
-
-    q = Queue()#FIFO queue of paths that need to be analyzed
-    unsaturated_bonds = find_unsaturated_bond_paths([start])
-    
-    if not unsaturated_bonds:
-        return []
-    
-    [q.put(path) for path in unsaturated_bonds]
-
-    while not q.empty():
-        path = q.get()
-        # search for end atom among the neighbors of the terminal atom of the path:
-        terminal = path[-1]
-        assert isinstance(terminal, Atom)
-
-        path_copy = path[:]
-        for atom3, bond23 in terminal.bonds.iteritems():
-            if atom3.charge != 0 and not atom3 in path_copy:# we have found the path we are looking for
-                #add the final bond and atom and return
-                path_copy_copy = path_copy[:]
-                path_copy_copy.extend([bond23, atom3])
-                paths.append(path_copy_copy)
-        else:#none of the neighbors is the end atom.
-            # Add a new inverse allyl path and try again:
-            new_paths = find_inverse_allyl_paths(path)
-            [q.put(p) if p else '' for p in new_paths]
-
-    # Could not find a resonance path from start atom to end atom
-    return paths
-
 def parse_H_layer(inchistring):
     pieces = inchistring.split('/')
     h_layer = None
@@ -1341,26 +1205,6 @@ def check_bond_order_oxygen(mol):
                 return False
 
     return True
-
-def find_inverse_allyl_paths(existing_path):
-    """
-    Find all the (3-atom, 2-bond) patterns "start~atom2=atom3" starting from the 
-    last atom of the existing path.
-
-    The second bond should be non-single.
-    """
-    paths = []
-    start = existing_path[-1]
-    assert isinstance(start, Atom)
-
-    for atom2, bond12 in start.bonds.iteritems():
-        if not atom2 in existing_path:
-            for atom3, bond23 in atom2.bonds.iteritems():
-                if not atom3 in existing_path and atom3.number!= 1 and not bond23.isSingle():
-                    new_path = existing_path[:]#a copy, not a reference
-                    new_path.extend((bond12, atom2, bond23, atom3))
-                    paths.append(new_path)
-    return paths
 
 def parse_N_layer(auxinfo):
     """

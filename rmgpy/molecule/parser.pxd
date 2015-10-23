@@ -85,18 +85,6 @@ cpdef Molecule normalize(Molecule mol)
 
 cpdef list get_unpaired_electrons(Molecule mol)
 
-cpdef list find_4_atom_3_bond_path(Atom start, Atom end)
-
-cpdef list find_allyl_paths(list existing_path)
-
-cpdef list find_unsaturated_bond_paths(list existing_path)
-
-cpdef find_4_atom_3_bond_end_with_charge_path(Atom start)
-
-cpdef find_3_atom_2_bond_end_with_charge_path(Atom start)
-
-cpdef find_inverse_allyl_paths(list existing_path)
-
 cpdef parse_N_layer(str auxinfo)
 
 cpdef parse_E_layer(str auxinfo)

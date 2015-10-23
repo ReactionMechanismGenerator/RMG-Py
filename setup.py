@@ -76,6 +76,7 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.pathfinder', ['rmgpy/molecule/pathfinder.py'], include_dirs=['.']),
         # Pressure dependence
         Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
         Extension('rmgpy.pdep.configuration', ['rmgpy/pdep/configuration.pyx']),
