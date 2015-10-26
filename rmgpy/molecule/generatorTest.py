@@ -314,6 +314,46 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/mult3/u1,2'
         self.compare(adjlist, aug_inchi)
 
+    def test_CH2O2(self):
+
+        adjlist = """
+1 C 1 {2,S} {3,S}
+2 O 0 {1,S}
+3 O 1 {1,S}
+"""
+
+        aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/mult3/u1,2'
+        self.compare(adjlist, aug_inchi)
+
+    def test_C7H10(self):
+        adjlist = """
+
+        1 C 1 {2,S}
+2 C 0 {1,S} {3,D} {4,S}
+3 C 0 {2,D}
+4 C 0 {2,S} {5,S}
+5 C 1 {4,S} {6,S} {7,S}
+6 C 1 {5,S}
+7 C 1 {5,S}
+"""
+
+        aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/mult5/u1,2,3,6'
+        self.compare(adjlist, aug_inchi)
+
+    def test_C5H6O(self):
+
+        adjlist = """
+1 C 1 {2,S}
+2 C 0 {1,S} {3,D}
+3 C 0 {2,D} {4,S} {5,S}
+4 O 1 {3,S}
+5 C 0 {3,S} {6,D}
+6 C 0 {5,D}
+"""
+
+        aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/mult3/u1,3'
+        self.compare(adjlist, aug_inchi)
+
 class PartitionTest(unittest.TestCase):
 
     def test_singleton(self):
