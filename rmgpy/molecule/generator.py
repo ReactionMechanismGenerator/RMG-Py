@@ -12,9 +12,8 @@ except:
 from rdkit import Chem
 
 from .inchi import compose_aug_inchi_key, compose_aug_inchi, parse_E_layer, parse_N_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
-
 from .molecule import Atom, Bond, Molecule
-
+from .pathfinder import compute_atom_distance
 
 # global variables:
 
@@ -384,26 +383,26 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
     return adjacent_electrons
 
 
-
-
-def valid_combo(combo, mol, u_layer):
+def is_valid_combo(combo, mol, distances):
     """
     Check if the combination of atom indices refers to
     atoms that are adjacent in the molecule.
     """
-    assert len(combo) < 3
 
-    if len(combo) == 1 and len(u_layer) > 1: return False
+    # compute shortest path between atoms 
+    agglomerates = agglomerate(combo)
+    new_distances = compute_agglomerate_distance(agglomerates, mol)
 
-    atoms = [mol.atoms[index-1] for index in combo]
+    # combo is valid if the distance is equal to the parameter distance
 
-    conditions = []
-    conditions.append(any([at.radicalElectrons == 0 for at in atoms]))
-    if len(atoms) == 2:
-        at1, at2 = atoms
-        conditions.append(mol.hasBond(at1, at2))
-    
-    return all(conditions)
+    if len(distances) != len(new_distances): return False
+
+    for orig_dist, new_dist in zip(distances, new_distances):
+        # only compare the values of the dictionaries:
+        if sorted(orig_dist.values()) != sorted(new_dist.values()):
+            return False
+
+    return True
 
 def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
     """..."""
@@ -412,19 +411,36 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
         return u_layer
 
     new_u_layer = []
-    groups = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
 
-    for group in groups:
-        selected_group = group
-        combos = generate_combos(group, equivalent_atoms)
-        combos = [combo for combo in combos if combo != group]
-        for combo in combos:
-            combo = sorted(combo)
-            if valid_combo(combo, mol, u_layer):
-                if combo < selected_group:
-                    selected_group = combo
+    grouped_electrons, corresponding_E_layers = partition(u_layer, equivalent_atoms)
 
-        new_u_layer.extend(selected_group)
+    # don't process atoms that do not belong to an equivalence layer
+    grouped_electrons_copy = grouped_electrons[:]
+    corresponding_E_layers_copy = corresponding_E_layers[:]
+    for group, e_layer in zip(grouped_electrons_copy, corresponding_E_layers_copy):
+        if not e_layer:
+            new_u_layer.extend(group)
+            grouped_electrons.remove(group)
+            corresponding_E_layers.remove(e_layer)
+
+
+    combos = generate_combo(grouped_electrons, corresponding_E_layers)
+    # compute original distance:
+    orig_agglomerates = agglomerate(grouped_electrons)
+    orig_distances = compute_agglomerate_distance(orig_agglomerates, mol)
+
+    # deflate the list of lists to be able to numerically compare them
+    selected_group = sorted(itertools.chain.from_iterable(grouped_electrons))
+
+    # see if any of the combos is valid and results in a lower numerical combination than the original 
+    for combo in combos:    
+        if is_valid_combo(combo, mol, orig_distances):
+            combo = sorted(itertools.chain.from_iterable(combo))
+            if combo < selected_group:
+                selected_group = combo
+
+    # add the minimized unpaired electron positions to the u-layer:
+    new_u_layer.extend(selected_group)
 
     return sorted(new_u_layer)
 
@@ -550,3 +566,44 @@ def generate_combo(grouped_electrons, corresponding_E_layers):
     combos = [combo for combo in combos if combo != grouped_electrons]
 
     return combos
+
+def agglomerate(groups):
+    """
+
+    Iterates over the lists of the parameter list of lists, and identifies all lists consisting of 
+    exactly 1 element. A new list of lists is created in which all 1-element lists are combined together,
+    while the other lists consisting of more than 1 element are simply copied.
+
+    The newly created collapsed list of 1-element lists is append at the end of the returned list of lists.
+
+    Example:
+
+    [[1,2,3], [4], [5,6], [7]]
+
+    Returns:
+    [[1,2,3], [5,6], [4,7]]
+
+    """
+
+    # agglomerate
+    agglomerates = []
+    single_elements = []
+    for group in groups:
+        if len(group) > 1:
+            agglomerates.append(group)
+        else:
+            single_elements.extend(group)
+    
+    if single_elements:
+        agglomerates.append(single_elements)
+
+    return agglomerates
+
+def compute_agglomerate_distance(agglomerates, mol):
+    distances = []
+    for agglomerate in agglomerates:
+        dist = compute_atom_distance(agglomerate, mol)
+        distances.append(dist)
+
+    return distances
+
