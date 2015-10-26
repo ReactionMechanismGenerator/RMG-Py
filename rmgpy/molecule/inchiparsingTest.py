@@ -1,17 +1,15 @@
 import re
 import unittest
 
-from rmgpy.molecule import Molecule
 from rmgpy.species import Species
-from rmgpy.molecule.util import retrieveElementCount, VALENCES, ORDERS
+from .molecule import Molecule
+from .util import retrieveElementCount, VALENCES, ORDERS
 
-from rmgpy.molecule.parser import *
+from .parser import *
 
 class InChIParsingTest(unittest.TestCase):
 
-    def compare(self, inchi, mult, u_indices=[]):
-        
-        
+    def compare(self, inchi, mult, u_indices=[]):        
         aug_inchi = 'InChI=1/' + inchi  + '/mult' + str(mult)
         u_layer = ','.join([str(i) for i in u_indices]) if u_indices else None
         if u_layer:
@@ -247,7 +245,7 @@ class InChIParsingTest(unittest.TestCase):
     def test_CH2O2(self):
         inchi = 'CH2O2/c2-1-3/h1H,(H,2,3)'
         mult = 3
-        u_indices = [1,3]
+        u_indices = [1,2]
         self.compare(inchi, mult, u_indices)
 
     def test_C2H2O3(self):
