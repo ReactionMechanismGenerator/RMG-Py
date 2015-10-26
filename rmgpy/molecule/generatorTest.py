@@ -340,5 +340,60 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/mult3/u1,2'
         self.compare(adjlist, aug_inchi)
 
+class PartitionTest(unittest.TestCase):
+
+    def test_singleton(self):
+        """
+        Test that a index not part of the parameter list, results in a key-value pair with
+        an empty list.
+        """
+        u_layer = [7]
+        eq_atoms = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_e_layers = [[7]], [[]]
+
+        partitions, e_layers = partition(u_layer, eq_atoms)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(e_layers, expected_e_layers)
+
+    def test_2_elements_in_1_layer(self):
+        u_layer = [1,3]
+        eq_atoms = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_e_layers = [[1,3]], [[1,2,3,4]]
+
+        partitions, e_layers = partition(u_layer, eq_atoms)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(e_layers, expected_e_layers)
+
+    def test_2_elements_in_2_layers(self):
+        u_layer = [1,5]
+        eq_atoms = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_e_layers = [[1], [5]], [[1,2,3,4], [5,6]]
+
+        partitions, e_layers = partition(u_layer, eq_atoms)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(e_layers, expected_e_layers)
+
+    def test_3_elements_in_2_layers(self):
+        u_layer = [1,4,5]
+        eq_atoms = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_e_layers = [[1,4], [5]], [[1,2,3,4], [5,6]]
+
+        partitions, e_layers = partition(u_layer, eq_atoms)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(e_layers, expected_e_layers)
+
+    def test_3_elements_in_2_layers_1_singleton(self):
+        u_layer = [1,5,7]
+        eq_atoms = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_e_layers = [[1], [5], [7]], [[1,2,3,4], [5,6], []]
+
+        partitions, e_layers = partition(u_layer, eq_atoms)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(e_layers, expected_e_layers)
 if __name__ == '__main__':
     unittest.main()

@@ -528,3 +528,40 @@ def get_unpaired_electrons(mol):
             locations.append(index)
 
     return sorted(locations)
+
+def partition(u_layer, eq_atoms):
+    """
+    Group atom indices that belong to the same equivalence list.
+
+    E.g.:
+    u_layer : [1,3]
+    eq_atoms : [[1,2,3,4],[5,6]]
+    returns: [[1,3]], [[1,2,3,4]]
+
+    Atoms not part of equivalence layer should be in singleton elements and have
+    corresponding empty lists:
+
+    u_layer : [7]
+    eq_atoms : [[1,2,3,4],[5,6]]
+    returns: [[7]], [[]]
+
+    """
+
+    partitions, e_layers  = [], []
+
+    for u in u_layer:
+        for one_e_layer in eq_atoms:
+            if u in one_e_layer:
+                try:
+                    index = e_layers.index(one_e_layer)
+                    partitions[index].append(u)
+                except ValueError:
+                    partitions.append([u])
+                    e_layers.append(one_e_layer)                    
+                
+                break
+        else:# u does not belong to any equivalence layer
+            partitions.append([u])
+            e_layers.append([])#atom is equivalent to itself
+
+    return partitions, e_layers    
