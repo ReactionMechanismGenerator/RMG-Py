@@ -1,5 +1,6 @@
 import re
 import unittest
+from scipy.special import comb
 
 from rdkit import Chem
 
@@ -55,33 +56,6 @@ class group_adjacent_unpaired_electronsTest(unittest.TestCase):
         equivalent_atoms = parse_E_layer(auxinfo)
         pairs = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
         print pairs
-
-    def test_generate_combos(self):
-        
-        group = [2, 6]
-        equivalent_atoms = [[1,2],[3,4],[5,6], [7,8], [9,10]]
-        expected =[[1,5], [2,6], [1,6], [2,5]]
-        combos = generate_combos(group, equivalent_atoms)
-        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
-
-        group = [2, 6]
-        equivalent_atoms = [[2, 4, 5, 6]]
-
-        combos = generate_combos(group, equivalent_atoms)
-        expected = [[2,4], [2,5], [2,6], [4,5], [4,6],[5,6]]        
-        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
-
-        group = [1]
-        equivalent_atoms = [[1,2],[3,4]]
-        expected =[[1], [2]]
-        combos = generate_combos(group, equivalent_atoms)
-        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
-
-        group = [4]
-        equivalent_atoms = [[1,2,3,4]]
-        combos = generate_combos(group, equivalent_atoms)
-        expected = [[1],[2],[3],[4]]        
-        self.assertTrue(len(combos) == len(expected) and sorted(combos) == sorted(expected))
     
     def test_find_lowest_u_layer(self):
 
@@ -395,5 +369,23 @@ class PartitionTest(unittest.TestCase):
 
         self.assertEquals(partitions, expected_partitions)
         self.assertEquals(e_layers, expected_e_layers)
+
+class ComboGeneratorTest(unittest.TestCase):
+    def test_2_elements(self):
+
+        grouped_electrons = [[1,2,3],[6]]
+        corresponding_E_layers = [[1,2,3,4], [5,6]]
+
+        combos = generate_combo(grouped_electrons, corresponding_E_layers)
+        
+        expected = 1
+        for group, e_layer in zip(grouped_electrons, corresponding_E_layers):
+            expected *= comb(len(e_layer), len(group), exact=True)
+
+        # we leave out the original combination
+        expected -= 1
+
+        self.assertEquals(len(combos), expected)
+
 if __name__ == '__main__':
     unittest.main()

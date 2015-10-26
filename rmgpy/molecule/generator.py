@@ -384,44 +384,7 @@ def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
     return adjacent_electrons
 
 
-def generate_combos(unpaired_electrons, equivalent_atoms):
-    """
-    Generate all possible combinations of groups of unpaired electrons
-    based on the information of the equivalent atoms.
 
-    Example:
-
-    unpaired electrons: [1,2]
-    equivalent atoms: [[1,3], [2,4]]
-
-    what is returned: the cross product of both lists:
-    [[1,2], [1,4], [3,2], [3,4]]
-
-    if the unpaired electrons appear in the same list of equivalent atoms, 
-    [[1,2,3,4]]
-
-    the combinations of two from that list is returned instead:
-    [[1,2], [1,4], [3,2], [3,4]]
-
-    Returns an empty list of one of the unpaired electrons could not be found
-    in the list of equivalent atoms.
-    """
-
-    # assign the right list with equivalent atoms for each electron:
-    corr_eq_atoms = []
-    for electron in unpaired_electrons:
-        for eq in equivalent_atoms:
-            if electron in eq:
-                corr_eq_atoms.append(eq)
-                break
-        else: return []
-
-    if corr_eq_atoms[1:] == corr_eq_atoms[:-1]:#check if all elements in a list are identical
-        combos = [list(tup) for tup in itertools.combinations(corr_eq_atoms[0], len(unpaired_electrons))]
-    else:#cross product of the elements in the list
-        combos = [list(tup) for tup in itertools.product(*corr_eq_atoms)]
-    
-    return combos
 
 def valid_combo(combo, mol, u_layer):
     """
@@ -565,3 +528,25 @@ def partition(u_layer, eq_atoms):
             e_layers.append([])#atom is equivalent to itself
 
     return partitions, e_layers    
+
+def generate_combo(grouped_electrons, corresponding_E_layers):
+    """
+    First, generate combinations of i indices from the corresponding equivalence layers containing
+    n elements per layer.
+
+    Next, generate the cross product between the elements in the previously generated list.
+
+    Finally, filter out the original combination from the result.
+    """
+    combos = []
+    for group, e_layer in zip(grouped_electrons, corresponding_E_layers):
+        combos_one_group = [list(tup) for tup in itertools.combinations(e_layer, len(group))]
+        combos.append(combos_one_group)
+
+    # cross product of the elements in the list:
+    combos = [list(tup) for tup in itertools.product(*combos)]
+
+    # don't add the original combination
+    combos = [combo for combo in combos if combo != grouped_electrons]
+
+    return combos
