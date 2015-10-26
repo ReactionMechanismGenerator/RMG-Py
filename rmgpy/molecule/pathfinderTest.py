@@ -128,4 +128,29 @@ class ShortestPathTest(unittest.TestCase):
         path = find_shortest_path(start, end)
         self.assertEquals(len(path), 3)
         
+   
+class DistanceComputingTest(unittest.TestCase):
     
+    def test_2_atoms(self):
+        smi = 'CCC'
+        mol = Molecule().fromSMILES(smi)
+        atom_indices = [1,2]
+        distances = compute_atom_distance(atom_indices, mol)
+
+        expected = {(1,2): 1}
+        self.assertEquals(distances, expected)
+
+    def test_3_atoms(self):
+        smi = 'CCC'
+        mol = Molecule().fromSMILES(smi)
+        atom_indices = [1,2,3]
+        distances = compute_atom_distance(atom_indices, mol)
+
+        expected = {
+                    (1,2): 1,
+                    (1,3): 2,
+                    (2,3): 1,
+                    }
+        self.assertEquals(distances, expected)
+
+

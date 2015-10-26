@@ -4,6 +4,7 @@
 This module provides functions for searching paths within a molecule.
 The paths generally consist of alternating atoms and bonds.
 """
+import itertools
 
 from Queue import Queue
 
@@ -181,3 +182,29 @@ def add_inverse_allyls(path):
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
     return paths
+
+def compute_atom_distance(atom_indices, mol):
+    """
+    Compute the distances between each pair of atoms in the atom_indices.
+
+    The distance between two atoms is defined as the length of the shortest path
+    between the two atoms minus 1, because the start atom is part of the path.
+
+    The distance between multiple atoms is defined by generating all possible
+    combinations between two atoms and storing the distance between each combination
+    of atoms in a dictionary.
+
+    The parameter 'atom_indices' is a  list of 1-based atom indices.
+
+    """
+    if len(atom_indices) == 1: return {(atom_indices[0],): 0}
+
+    distances = {}
+    combos = [sorted(tup) for tup in itertools.combinations(atom_indices, 2)]
+    
+    for i1, i2 in combos:
+        start, end = mol.atoms[i1 - 1], mol.atoms[i2 - 1]
+        path = find_shortest_path(start, end)
+        distances[(i1, i2)] = len(path) - 1  
+
+    return distances  
