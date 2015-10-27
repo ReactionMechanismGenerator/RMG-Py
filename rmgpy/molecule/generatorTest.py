@@ -2,105 +2,10 @@ import re
 import unittest
 from scipy.special import comb
 
-from rdkit import Chem
-
 from rmgpy.species import Species
 from .molecule import Molecule
-from .inchi import parse_E_layer
 
 from .generator import *
-
-class group_adjacent_unpaired_electronsTest(unittest.TestCase):
-    def test_group_adjacent_unpaired_electrons(self):
-
-        adjlist = """
-
-1 C 0 {4,D} 
-2 C 0 {5,D}
-3 C 1 {6,S}
-4 C 0 {1,D} {7,S}
-5 C 0 {2,D} {7,S}
-6 C 1 {3,S} {7,S}
-7 C 1 {4,S} {5,S} {6,S}
-        """
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        u_layer = [7, 6, 3]
-
-        m = toRDKitMol(mol)
-        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
-
-        equivalent_atoms = parse_E_layer(auxinfo)
-        pairs = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
-        print pairs
-        adjlist = """
-1 C 0 {5,D}
-2 C 1 {6,S}
-3 C 1 {7,S}
-4 C 0 {8,D}
-5 C 0 {1,D} {9,S}
-6 C 1 {2,S} {10,S}
-7 C 1 {3,S} {11,S}
-8 C 0 {4,D} {11,S}
-9 C 0 {5,S} {11,S}
-10 C 0 {6,S} {11,S}
-11 C 0 {7,S} {8,S} {9,S} {10,S}
-        """
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        u_layer = [7, 3, 6, 2]
-
-        m = toRDKitMol(mol)
-        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
-
-        equivalent_atoms = parse_E_layer(auxinfo)
-        pairs = group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms)
-        print pairs
-    
-    def test_find_lowest_u_layer(self):
-
-        adjlist = """
-
-1 C 0 {4,D} 
-2 C 0 {5,D}
-3 C 1 {6,S}
-4 C 0 {1,D} {7,S}
-5 C 0 {2,D} {7,S}
-6 C 1 {3,S} {7,S}
-7 C 1 {4,S} {5,S} {6,S}
-        """
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        u_layer = [7, 6, 3]
-
-        m = toRDKitMol(mol)
-        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
-        equivalent_atoms = parse_E_layer(auxinfo)
-        new_u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
-        self.assertEquals([1, 4, 7], new_u_layer)
-
-        adjlist = """
-1 C 0 {5,D}
-2 C 1 {6,S}
-3 C 1 {7,S}
-4 C 0 {8,D}
-5 C 0 {1,D} {9,S}
-6 C 1 {2,S} {10,S}
-7 C 1 {3,S} {11,S}
-8 C 0 {4,D} {11,S}
-9 C 0 {5,S} {11,S}
-10 C 0 {6,S} {11,S}
-11 C 0 {7,S} {8,S} {9,S} {10,S}
-        """
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        u_layer = [7, 3, 6, 2]
-
-        m = toRDKitMol(mol)
-        inchi , auxinfo = Chem.MolToInchiAndAuxInfo(m, options='-SNon')
-        equivalent_atoms = parse_E_layer(auxinfo)
-        new_u_layer = find_lowest_u_layer(mol, u_layer, equivalent_atoms)
-        self.assertEquals([1, 3, 5, 7], new_u_layer)
 
 class CreateULayerTest(unittest.TestCase):
     def testC4H6(self):
@@ -352,6 +257,40 @@ multiplicity 2
 """
 
         aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/mult3/u1,3'
+        self.compare(adjlist, aug_inchi)
+
+    def test_C7H9(self):
+
+        adjlist = """
+1 C 0 {4,D} 
+2 C 0 {5,D}
+3 C 1 {6,S}
+4 C 0 {1,D} {7,S}
+5 C 0 {2,D} {7,S}
+6 C 1 {3,S} {7,S}
+7 C 1 {4,S} {5,S} {6,S}
+"""
+
+        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/mult4/u1,4,7'
+        self.compare(adjlist, aug_inchi)
+
+    def test_C7H9(self):
+
+        adjlist = """
+1 C 0 {5,D}
+2 C 1 {6,S}
+3 C 1 {7,S}
+4 C 0 {8,D}
+5 C 0 {1,D} {9,S}
+6 C 1 {2,S} {10,S}
+7 C 1 {3,S} {11,S}
+8 C 0 {4,D} {11,S}
+9 C 0 {5,S} {11,S}
+10 C 0 {6,S} {11,S}
+11 C 0 {7,S} {8,S} {9,S} {10,S}
+"""
+
+        aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/mult5/u1,3,5,7'
         self.compare(adjlist, aug_inchi)
 
 class PartitionTest(unittest.TestCase):
