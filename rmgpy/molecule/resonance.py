@@ -362,3 +362,54 @@ def findAllDelocalizationPathsN5dd_N5ts(mol, atom1):
                     paths.append([atom1, atom2, atom3, bond12, bond13, 2])
     
     return paths
+
+def generate_isomorphic_isomers(mol):
+    """
+    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
+    electrons descriptor.
+
+    We generate over all resonance isomers (non-isomorphic as well as isomorphic) and retain isomorphic
+    isomers.
+
+    WIP: do not generate aromatic resonance isomers.
+    """
+
+    cython.declare(isomorphic_isomers=list,\
+                   isomers=list,
+                    )
+
+    cython.declare(isomer=Molecule,\
+                   newIsomer=Molecule,\
+                   isom=Molecule
+                   )
+
+    cython.declare(index=int)
+
+    isomorphic_isomers = [mol]# resonance isomers that are isomorphic to the parameter isomer.
+
+    isomers = [mol]
+
+    # Iterate over resonance isomers
+    index = 0
+    while index < len(isomers):
+        isomer = isomers[index]
+            
+        newIsomers = getAdjacentResonanceIsomers(isomer)
+        newIsomers += getLonePairRadicalResonanceIsomers(isomer)
+        newIsomers += getN5dd_N5tsResonanceIsomers(isomer)
+        newIsomers += getKekulizedResonanceIsomers(isomer)
+
+        for newIsomer in newIsomers:
+            newIsomer.updateAtomTypes()
+            # Append to isomer list if unique
+            for isom in isomers:
+                if isom.copy(deep=True).isIsomorphic(newIsomer.copy(deep=True)):
+                    isomorphic_isomers.append(newIsomer)
+                    break
+            else:
+                isomers.append(newIsomer)        
+                    
+        # Move to next resonance isomer
+        index += 1
+
+    return isomorphic_isomers

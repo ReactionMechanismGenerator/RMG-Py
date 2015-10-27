@@ -1,4 +1,5 @@
-from .molecule cimport Atom, Molecule
+from .graph cimport Vertex, Edge, Graph
+from .molecule cimport Atom, Bond, Molecule
 
 cpdef list generateResonanceIsomers(Molecule mol)
 
