@@ -194,19 +194,7 @@ cdef class Molecule(Graph):
     cpdef updateAtomTypes(self)
     
     cpdef bint isRadical(self) except -2
-    
-    cpdef list generateResonanceIsomers(self)
-    
-    cpdef list getAdjacentResonanceIsomers(self)
-    
-    cpdef list getLonePairRadicalResonanceIsomers(self)
-    
-    cpdef list getN5dd_N5tsResonanceIsomers(self)
-
-    cpdef findAllDelocalizationPaths(self, Atom atom1)
-    
-    cpdef findAllDelocalizationPathsLonePairRadical(self, Atom atom1)
-    
-    cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1
+
+    cpdef list generateResonanceIsomers(self)

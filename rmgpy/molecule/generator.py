@@ -16,6 +16,7 @@ from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
 from .util import partition, agglomerate, generate_combo
 
+import rmgpy.molecule.resonance as resonance
 # global variables:
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
