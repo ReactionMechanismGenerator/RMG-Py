@@ -1,4 +1,5 @@
 import re
+import itertools
 
 from rmgpy.molecule.molecule import Molecule
 
@@ -71,19 +72,44 @@ def partition(sample, list_of_samples):
 
     partitions, sample_lists  = [], []
 
-    for index in sample:
+    for s in sample:
         for one_sample_list in list_of_samples:
-            if index in one_sample_list:
+            if s in one_sample_list:
                 try:
                     index = sample_lists.index(one_sample_list)
-                    partitions[index].append(index)
+                    partitions[index].append(s)
                 except ValueError:
-                    partitions.append([index])
+                    partitions.append([s])
                     sample_lists.append(one_sample_list)                    
                 
                 break
-        else:# index does not belong to any list of samples
-            partitions.append([index])
+        else:# s does not belong to any list of samples
+            partitions.append([s])
             sample_lists.append([])
 
     return partitions, sample_lists          
+
+
+def agglomerate(groups):
+    """
+    Iterates over the parameter list of lists, and identifies all singletons.
+    A new list of lists is created in which all singletons are combined together,
+    while the other lists consisting of more than 1 element are simply copied.
+    The newly created collapsed list singletons is appended at the end.
+
+    Example:
+
+    [[1,2,3], [4], [5,6], [7]]
+
+    Returns:
+    [[1,2,3], [5,6], [4,7]]
+    """
+
+    result = filter(lambda x: len(x) > 1, groups)
+    singletons = filter(lambda x: len(x) == 1, groups)
+    
+    # collapse singletons:
+    singletons = list(itertools.chain.from_iterable(singletons))
+
+    result.append(singletons)
+    return result

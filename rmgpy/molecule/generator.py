@@ -14,7 +14,7 @@ from rdkit import Chem
 from .inchi import compose_aug_inchi_key, compose_aug_inchi, parse_E_layer, parse_N_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
-from .util import partition
+from .util import partition, agglomerate
 
 # global variables:
 
@@ -491,38 +491,6 @@ def generate_combo(grouped_electrons, corresponding_E_layers):
     combos = [combo for combo in combos if combo != grouped_electrons]
 
     return combos
-
-def agglomerate(groups):
-    """
-
-    Iterates over the lists of the parameter list of lists, and identifies all lists consisting of 
-    exactly 1 element. A new list of lists is created in which all 1-element lists are combined together,
-    while the other lists consisting of more than 1 element are simply copied.
-
-    The newly created collapsed list of 1-element lists is append at the end of the returned list of lists.
-
-    Example:
-
-    [[1,2,3], [4], [5,6], [7]]
-
-    Returns:
-    [[1,2,3], [5,6], [4,7]]
-
-    """
-
-    # agglomerate
-    agglomerates = []
-    single_elements = []
-    for group in groups:
-        if len(group) > 1:
-            agglomerates.append(group)
-        else:
-            single_elements.extend(group)
-    
-    if single_elements:
-        agglomerates.append(single_elements)
-
-    return agglomerates
 
 def compute_agglomerate_distance(agglomerates, mol):
     distances = []

@@ -58,3 +58,12 @@ class PartitionTest(unittest.TestCase):
 
         self.assertEquals(partitions, expected_partitions)
         self.assertEquals(sample_lists, expected_sample_lists)
+
+class AgglomerateTest(unittest.TestCase):
+
+    def test_normal(self):
+        groups = [[1,2,3], [4], [5,6], [7]]
+        agglomerates = agglomerate(groups)
+        expected = [[1,2,3], [5,6], [4,7]]
+
+        self.assertEquals(agglomerates, expected)
