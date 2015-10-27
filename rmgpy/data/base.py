@@ -315,8 +315,11 @@ class Database:
             
         with open(path, 'w') as f:
             for label in speciesDict.keys():
-                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
-                f.write('\n')
+                try:
+                    f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+                    f.write('\n')
+                except IndexError:
+                   print label, speciesDict[label]
 
     def save(self, path):
         """
