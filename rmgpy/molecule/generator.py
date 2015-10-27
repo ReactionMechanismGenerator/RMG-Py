@@ -344,45 +344,6 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
         return rdkitmol, rdAtomIndices
     return rdkitmol
 
-def group_adjacent_unpaired_electrons(mol, u_layer, equivalent_atoms):
-    """
-    Iterates through the list of unpaired electrons and forms couples of 
-    adjancent unpaired electrons.
-
-    If an adjancent unpaired electron cannot be found, the list is 
-    expanded with a the single element, instead of the couple.
-
-    Every time two adjacent electrons have been detected, they are removed
-    from the u-layer. The loop is continued until all electrons have been either
-    assigned to a partner or until all single electrons have been removed.
-    """
-    adjacent_electrons = []
-
-    u_layer_copy = u_layer[:]
-
-    while u_layer_copy:
-        i = u_layer_copy.pop()
-        if not any(i in x for x in equivalent_atoms):
-            # add the atom by itself:
-            adjacent_electrons.append([i])
-            continue
-
-        # iterate over neighbors and check if neighbor is in u_layer
-        for at, bond in mol.atoms[i-1].bonds.iteritems():
-            at_index = mol.atoms.index(at)+1
-            
-            if any(i in x for x in equivalent_atoms):
-                if at_index in u_layer_copy:
-                    pair = sorted([i, at_index])
-                    adjacent_electrons.append(pair)
-                    u_layer_copy.remove(at_index)
-                    break
-        else:
-            adjacent_electrons.append([i])
-            
-    return adjacent_electrons
-
-
 def is_valid_combo(combo, mol, distances):
     """
     Check if the combination of atom indices refers to
