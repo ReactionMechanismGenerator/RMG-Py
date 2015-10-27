@@ -113,3 +113,23 @@ def agglomerate(groups):
 
     result.append(singletons)
     return result
+
+def generate_combo(samples, sample_spaces):
+    """
+    First, generate combinations of i samples from the corresponding sample_spaces.
+    Next, generate the cross product between the elements in the previously generated list.
+
+    Finally, filter out the original combination from the result.
+    """
+    combos = []
+    for sample, sample_space in zip(samples, sample_spaces):
+        combos_one_sample = [list(tup) for tup in itertools.combinations(sample_space, len(sample))]
+        combos.append(combos_one_sample)
+
+    # cross product of the elements in the list:
+    combos = [list(tup) for tup in itertools.product(*combos)]
+
+    # don't add the original samples
+    combos = filter(lambda x: x != samples, combos)
+
+    return combos    

@@ -1,5 +1,6 @@
 
 import unittest
+from scipy.special import comb
 
 from .util import *
 
@@ -67,3 +68,20 @@ class AgglomerateTest(unittest.TestCase):
         expected = [[1,2,3], [5,6], [4,7]]
 
         self.assertEquals(agglomerates, expected)
+
+class ComboGeneratorTest(unittest.TestCase):
+    def test_2_elements(self):
+
+        samples = [[1,2,3],[6]]
+        sample_spaces = [[1,2,3,4], [5,6]]
+
+        combos = generate_combo(samples, sample_spaces)
+        
+        expected = 1
+        for sample, sample_space in zip(samples, sample_spaces):
+            expected *= comb(len(sample_space), len(sample), exact=True)
+
+        # we leave out the original combination
+        expected -= 1
+
+        self.assertEquals(len(combos), expected)        

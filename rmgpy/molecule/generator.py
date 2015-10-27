@@ -14,7 +14,7 @@ from rdkit import Chem
 from .inchi import compose_aug_inchi_key, compose_aug_inchi, parse_E_layer, parse_N_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
-from .util import partition, agglomerate
+from .util import partition, agglomerate, generate_combo
 
 # global variables:
 
@@ -469,28 +469,6 @@ def get_unpaired_electrons(mol):
             locations.append(index)
 
     return sorted(locations)  
-
-def generate_combo(grouped_electrons, corresponding_E_layers):
-    """
-    First, generate combinations of i indices from the corresponding equivalence layers containing
-    n elements per layer.
-
-    Next, generate the cross product between the elements in the previously generated list.
-
-    Finally, filter out the original combination from the result.
-    """
-    combos = []
-    for group, e_layer in zip(grouped_electrons, corresponding_E_layers):
-        combos_one_group = [list(tup) for tup in itertools.combinations(e_layer, len(group))]
-        combos.append(combos_one_group)
-
-    # cross product of the elements in the list:
-    combos = [list(tup) for tup in itertools.product(*combos)]
-
-    # don't add the original combination
-    combos = [combo for combo in combos if combo != grouped_electrons]
-
-    return combos
 
 def compute_agglomerate_distance(agglomerates, mol):
     distances = []

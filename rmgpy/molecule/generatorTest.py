@@ -1,6 +1,5 @@
 import re
 import unittest
-from scipy.special import comb
 
 from rmgpy.species import Species
 from .molecule import Molecule
@@ -292,24 +291,6 @@ multiplicity 2
 
         aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/mult5/u1,3,5,7'
         self.compare(adjlist, aug_inchi)
-
-
-class ComboGeneratorTest(unittest.TestCase):
-    def test_2_elements(self):
-
-        grouped_electrons = [[1,2,3],[6]]
-        corresponding_E_layers = [[1,2,3,4], [5,6]]
-
-        combos = generate_combo(grouped_electrons, corresponding_E_layers)
-        
-        expected = 1
-        for group, e_layer in zip(grouped_electrons, corresponding_E_layers):
-            expected *= comb(len(e_layer), len(group), exact=True)
-
-        # we leave out the original combination
-        expected -= 1
-
-        self.assertEquals(len(combos), expected)
 
 if __name__ == '__main__':
     unittest.main()
