@@ -1,0 +1,60 @@
+
+import unittest
+
+from .util import *
+
+class PartitionTest(unittest.TestCase):
+
+    def test_singleton(self):
+        """
+        Test that a index not part of the parameter list, results in a key-value pair with
+        an empty list.
+        """
+        indices = [7]
+        list_of_samples = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_sample_lists = [[7]], [[]]
+
+        partitions, sample_lists = partition(indices, list_of_samples)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(sample_lists, expected_sample_lists)
+
+    def test_2_elements_in_1_layer(self):
+        indices = [1,3]
+        list_of_samples = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_sample_lists = [[1,3]], [[1,2,3,4]]
+
+        partitions, sample_lists = partition(indices, list_of_samples)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(sample_lists, expected_sample_lists)
+
+    def test_2_elements_in_2_layers(self):
+        indices = [1,5]
+        list_of_samples = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_sample_lists = [[1], [5]], [[1,2,3,4], [5,6]]
+
+        partitions, sample_lists = partition(indices, list_of_samples)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(sample_lists, expected_sample_lists)
+
+    def test_3_elements_in_2_layers(self):
+        indices = [1,4,5]
+        list_of_samples = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_sample_lists = [[1,4], [5]], [[1,2,3,4], [5,6]]
+
+        partitions, sample_lists = partition(indices, list_of_samples)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(sample_lists, expected_sample_lists)
+
+    def test_3_elements_in_2_layers_1_singleton(self):
+        indices = [1,5,7]
+        list_of_samples = [[1,2,3,4],[5,6]]
+        expected_partitions, expected_sample_lists = [[1], [5], [7]], [[1,2,3,4], [5,6], []]
+
+        partitions, sample_lists = partition(indices, list_of_samples)
+
+        self.assertEquals(partitions, expected_partitions)
+        self.assertEquals(sample_lists, expected_sample_lists)

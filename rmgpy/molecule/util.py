@@ -45,3 +45,45 @@ def retrieveElementCount(obj):
 
     else:
         raise Exception
+
+def partition(sample, list_of_samples):
+    """
+    Group indices from the parameter sample 
+    that belong to the same list.
+
+    Returns a list of lists with partitioned indices, and 
+    a list of lists with the corresponding sample list they were found in.
+
+    E.g.:
+    sample : [1,3]
+    list_of_samples : [[1,2,3,4],[5,6]]
+    returns: [[1,3]], [[1,2,3,4]]
+
+    Indices not part of any of the lists should be in singleton list and 
+    have corresponding empty list:
+
+    E.g.:
+    sample : [7]
+    list_of_samples : [[1,2,3,4],[5,6]]
+    returns: [[7]], [[]]
+
+    """
+
+    partitions, sample_lists  = [], []
+
+    for index in sample:
+        for one_sample_list in list_of_samples:
+            if index in one_sample_list:
+                try:
+                    index = sample_lists.index(one_sample_list)
+                    partitions[index].append(index)
+                except ValueError:
+                    partitions.append([index])
+                    sample_lists.append(one_sample_list)                    
+                
+                break
+        else:# index does not belong to any list of samples
+            partitions.append([index])
+            sample_lists.append([])
+
+    return partitions, sample_lists          

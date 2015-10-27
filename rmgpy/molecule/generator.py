@@ -14,6 +14,7 @@ from rdkit import Chem
 from .inchi import compose_aug_inchi_key, compose_aug_inchi, parse_E_layer, parse_N_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
+from .util import partition
 
 # global variables:
 
@@ -467,44 +468,7 @@ def get_unpaired_electrons(mol):
         if at.radicalElectrons >= 1:
             locations.append(index)
 
-    return sorted(locations)
-
-def partition(u_layer, eq_atoms):
-    """
-    Group atom indices that belong to the same equivalence list.
-
-    E.g.:
-    u_layer : [1,3]
-    eq_atoms : [[1,2,3,4],[5,6]]
-    returns: [[1,3]], [[1,2,3,4]]
-
-    Atoms not part of equivalence layer should be in singleton elements and have
-    corresponding empty lists:
-
-    u_layer : [7]
-    eq_atoms : [[1,2,3,4],[5,6]]
-    returns: [[7]], [[]]
-
-    """
-
-    partitions, e_layers  = [], []
-
-    for u in u_layer:
-        for one_e_layer in eq_atoms:
-            if u in one_e_layer:
-                try:
-                    index = e_layers.index(one_e_layer)
-                    partitions[index].append(u)
-                except ValueError:
-                    partitions.append([u])
-                    e_layers.append(one_e_layer)                    
-                
-                break
-        else:# u does not belong to any equivalence layer
-            partitions.append([u])
-            e_layers.append([])#atom is equivalent to itself
-
-    return partitions, e_layers    
+    return sorted(locations)  
 
 def generate_combo(grouped_electrons, corresponding_E_layers):
     """
