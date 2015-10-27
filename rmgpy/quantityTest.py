@@ -796,29 +796,24 @@ class TestTemperature(unittest.TestCase):
         """
         Test the creation of a temperature quantity with units of degrees C.
         """
-        q = quantity.Temperature(1.0,"degC")
-        self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
-        self.assertEqual(q.units, "degC")
+        with self.assertRaises(NotImplementedError):
+            q = quantity.Temperature(1.0,"degC")
+
 
     def test_degF(self):
         """
         Test the creation of a temperature quantity with units of degrees F.
         """
-        q = quantity.Temperature(1.0,"degF")
-        self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si, 5.0/9.0, delta=1e-6)
-        self.assertEqual(q.units, "degF")
-
+        with self.assertRaises(NotImplementedError):
+            q = quantity.Temperature(1.0,"degF")
+        
     def test_degR(self):
         """
         Test the creation of a temperature quantity with units of degrees R.
         """
-        q = quantity.Temperature(1.0,"degR")
-        self.assertAlmostEqual(q.value, 1.0, 6)
-        self.assertAlmostEqual(q.value_si, 5.0/9.0, delta=1e-6)
-        self.assertEqual(q.units, "degR")
-
+        with self.assertRaises(NotImplementedError):
+            q = quantity.Temperature(1.0,"degR")
+        
 ################################################################################
 
 class TestTime(unittest.TestCase):

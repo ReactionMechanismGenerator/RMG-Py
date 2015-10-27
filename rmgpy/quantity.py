@@ -53,6 +53,16 @@ pq.UnitQuantity('debye', 1.0/(constants.c*1e21)*pq.C*pq.m, symbol='De')
 
 ################################################################################
 
+# Units that should not be used in RMG-Py:
+NOT_IMPLEMENTED_UNITS = [
+                        'degC',
+                        'C',
+                        'degF',
+                        'F',
+                        'degR',
+                        'R'
+                        ]
+
 class QuantityError(Exception):
     """
     An exception to be raised when an error occurs while working with physical
@@ -83,6 +93,10 @@ class Units(object):
     conversionFactors = {'cm^-1': 1.0}
     
     def __init__(self, units=''):
+        if units in NOT_IMPLEMENTED_UNITS:
+            raise NotImplementedError(
+        'The units {} are not yet supported. Please choose SI units.'.format(units)
+                                     )
         self.units = units
 
     def getConversionFactorToSI(self):
@@ -641,7 +655,7 @@ Power = UnitType('W')
 
 Pressure = UnitType('Pa', commonUnits=['bar', 'atm', 'torr', 'psi', 'mbar'])
 
-Temperature = UnitType('K', commonUnits=['degC', 'degF', 'degR'])
+Temperature = UnitType('K', commonUnits=[])
 
 Time = UnitType('s')
 
