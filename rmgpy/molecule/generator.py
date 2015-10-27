@@ -418,34 +418,7 @@ def normalize(mol):
     Next, we search through this list and return the candidate with the lowest unpaired electrons descriptor.
 
     """
-    candidates = [mol]# resonance isomers that are isomorphic to the parameter isomer.
-
-    isomers = [mol]
-
-    # Iterate over resonance isomers
-    index = 0
-    while index < len(isomers):
-        isomer = isomers[index]
-            
-        newIsomers = isomer.getAdjacentResonanceIsomers()
-        newIsomers += isomer.getLonePairRadicalResonanceIsomers()
-        newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
-        newIsomers += isomer.getKekulizedResonanceIsomers()
-
-        for newIsomer in newIsomers:
-            newIsomer.updateAtomTypes()
-            # Append to isomer list if unique
-            for isom in isomers:
-                isom_copy = isom.copy(deep=True)
-                newIsomer_copy = newIsomer.copy(deep=True)
-                if isom_copy.isIsomorphic(newIsomer_copy):
-                    candidates.append(newIsomer)
-                    break
-            else:
-                isomers.append(newIsomer)        
-                    
-        # Move to next resonance isomer
-        index += 1
+    candidates = resonance.generate_isomorphic_isomers(mol)
     
     current_minimum = candidates[0]#isomer with the smallest u-layer descriptor.
     unpaired_electrons_current_minimum = get_unpaired_electrons(current_minimum)
