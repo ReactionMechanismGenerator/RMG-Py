@@ -275,7 +275,7 @@ class ScalarQuantity(Units):
 
 class ArrayQuantity(Units):
     """
-    The :class:`ScalarQuantity` class provides a representation of an array of
+    The :class:`ArrayQuantity` class provides a representation of an array of
     physical quantity values, with optional units and uncertainty information. 
     The attributes are:
 
