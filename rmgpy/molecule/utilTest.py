@@ -85,3 +85,13 @@ class ComboGeneratorTest(unittest.TestCase):
         expected -= 1
 
         self.assertEquals(len(combos), expected)        
+
+class SwapTest(unittest.TestCase):
+
+    def test_2_elements_sets(self):
+        to_be_swapped = [2,3]
+        sample = [1,3]
+
+        result = swap(to_be_swapped, sample)
+        expected = (1,3,2)
+        self.assertEquals(result, expected)

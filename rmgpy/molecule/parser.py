@@ -21,9 +21,9 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
-from .util import retrieveElementCount, VALENCES, ORDERS
 from .inchi import AugmentedInChI, parse_H_layer, INCHI_PREFIX
 
+import rmgpy.molecule.util as util
 import rmgpy.molecule.pathfinder as pathfinder
 
 # constants
@@ -201,8 +201,8 @@ def isCorrectlyParsed(mol, identifier):
         conditions.append(False)
 
     if 'InChI' in identifier:
-        inchi_elementcount = retrieveElementCount(identifier)
-        mol_elementcount = retrieveElementCount(mol)
+        inchi_elementcount = util.retrieveElementCount(identifier)
+        mol_elementcount = util.retrieveElementCount(mol)
         conditions.append(inchi_elementcount == mol_elementcount)
 
     return all(conditions)
@@ -249,8 +249,8 @@ def check(mol, aug_inchi) :
      'Multiplicity of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     
     for at in mol.atoms:
-        order = sum([ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
-        assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == VALENCES[at.symbol],\
+        order = sum([util.ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
+        assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == util.VALENCES[at.symbol],\
             'Valency for an atom of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
 
 def fix_oxygen_unsaturated_bond(mol, u_indices):
@@ -648,7 +648,7 @@ def convert_3_atom_2_bond_path(start, mol):
 
         for at in mol.atoms:
             if at.number == 8:
-                order = sum([ORDERS[b.order] for _, b in at.bonds.iteritems()])
+                order = sum([util.ORDERS[b.order] for _, b in at.bonds.iteritems()])
                 not_correct = order >= 4
                 if not_correct:
                     return False
@@ -767,23 +767,38 @@ def fix_butadiene_path(start, end):
 
 def fix_mobile_h(mol, inchi, u1, u2):
     """
-    assume that O2=C1-O3H is the keto-enol system
-        1) find its partner (O2)
-        2) transfer H atom to partner (O2)
-        3) change bond order between partner and central carbon
-        4) add unpaired electrons to central carbon and original O.
 
+    Identifies a system of atoms bearing unpaired electrons and mobile hydrogens
+    at the same time.
+
+    The system will consist of a central atom that does not bear any mobile hydrogens,
+    but that is bound to an atom that does bear a mobile hydrogen, called the "original atom".
+
+    The algorithm identifies the "new partner" atom that is part of the mobile hydrogen 
+    system.
+
+    Next, the mobile hydrogen is transferred from the original atom, to the new partner,
+    and a bond is removed and added respectively.
+
+    Finally, the central atom and the original atom will each receive an unpaired electron,
+    and the bond between them will decrease in order.
     """
 
-    all_mobile_h_atoms_couples = parse_H_layer(inchi)
-    if all_mobile_h_atoms_couples:
-        #find central atom:
-        central, original_atom, new_partner = find_mobile_h_system(mol, 
-            all_mobile_h_atoms_couples, [u1, u2])
+    mobile_hydrogens = parse_H_layer(inchi)
 
-        # search Hydrogen atom and bond
+    if mobile_hydrogens:
+        # WIP: only consider the first system of mobile hydrogens:
+        mobile_hydrogens = mobile_hydrogens[0]
+
+        #find central atom:
+        central, original, new_partner = util.swap(mobile_hydrogens, [u1, u2])
+
+        central, original, new_partner = \
+        mol.atoms[central - 1], mol.atoms[original - 1], mol.atoms[new_partner - 1]
+
+        # search hydrogen atom and bond
         hydrogen = None
-        for at, bond in original_atom.bonds.iteritems():
+        for at, bond in original.bonds.iteritems():
             if at.number == 1:
                 hydrogen = at
                 mol.removeBond(bond)
@@ -795,7 +810,7 @@ def fix_mobile_h(mol, inchi, u1, u2):
         mol.getBond(central, new_partner).decrementOrder()
 
         central.radicalElectrons += 1
-        original_atom.radicalElectrons += 1
+        original.radicalElectrons += 1
         return True
 
     return False
@@ -816,8 +831,8 @@ def reset_lone_pairs_to_default(mol):
     """Resets the atom's lone pair count to its default value."""
 
     for at in mol.atoms:
-        order = sum([ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
-        at.lonePairs = (VALENCES[at.element.symbol] - order - at.radicalElectrons - at.charge) / 2
+        order = sum([util.ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
+        at.lonePairs = (util.VALENCES[at.element.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """

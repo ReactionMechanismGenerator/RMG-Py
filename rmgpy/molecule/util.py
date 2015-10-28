@@ -133,3 +133,26 @@ def generate_combo(samples, sample_spaces):
     combos = filter(lambda x: x != samples, combos)
 
     return combos    
+
+def swap(to_be_swapped, sample):
+    """
+    Identifies which index of the list samples  is present in
+    the list to be swapped. 
+
+    E.g.:
+    to be swapped: [2,3]
+    sample: [1,3]
+
+    Returns: 
+    1, 3, 2
+    
+    """
+
+    to_be_swapped = set(to_be_swapped)
+    sample = set(sample)
+
+    original = (sample.intersection(to_be_swapped)).pop()
+    central = (sample - to_be_swapped).pop()
+    new_partner = (to_be_swapped - sample).pop()
+    
+    return central, original, new_partner
