@@ -1,5 +1,6 @@
 import re
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy.species import Species
 from .molecule import Molecule
@@ -291,6 +292,33 @@ multiplicity 2
 
         aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/mult5/u1,3,5,7'
         self.compare(adjlist, aug_inchi)
+
+    @work_in_progress
+    def test_singlet_vs_closed_shell(self):
+        adjlist_singlet = """
+1 C u0 p0 c0 {2,D} {3,S} {4,S}
+2 C u0 p0 c0 {1,D} {3,S} {5,S}
+3 C u0 p1 c0 {1,S} {2,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {2,S}
+        """
+
+        adjlist_closed_shell = """
+1 C u0 p0 c0 {2,D} {3,S} {4,S}
+2 C u0 p0 c0 {1,D} {3,D}
+3 C u0 p0 c0 {1,S} {2,D} {5,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {3,S}
+        """
+
+        singlet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_singlet)])
+        singlet.generateResonanceIsomers()
+        closed_shell = Species(molecule=[Molecule().fromAdjacencyList(adjlist_closed_shell)])
+        closed_shell.generateResonanceIsomers()
+
+        singlet_aug_inchi = singlet.getAugmentedInChI()
+        closed_shell_aug_inchi = closed_shell.getAugmentedInChI()
+        self.assertTrue(singlet_aug_inchi != closed_shell_aug_inchi)
 
 if __name__ == '__main__':
     unittest.main()
