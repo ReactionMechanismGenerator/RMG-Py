@@ -22,7 +22,7 @@ except :
 from rdkit import Chem
 
 from rmgpy.molecule import element as elements
-
+from .molecule import Atom, Bond, Molecule
 from .util import retrieveElementCount, VALENCES, ORDERS
 from .inchi import AugmentedInChI, parse_H_layer, INCHI_PREFIX
 
@@ -30,8 +30,6 @@ from .pathfinder import \
  find_butadiene,\
  find_butadiene_end_with_charge,\
  find_allyl_end_with_charge
-
-from .molecule import Atom, Bond, Molecule
 
 # constants
 
@@ -591,95 +589,17 @@ def fromOBMol(mol, obmol):
 
 def fixCharge(mol, u_indices):
     """
-    Fix molecules perceived as zwitterions that in reality are structures
-    with multiple unpaired electrons.
-
-    The simplest case converts atoms with a charge to atoms with one more
-    unpaired electron.
-
+    Tries to fix a number of structural features in the molecule related to charge, 
+    based on the information from the parameter list of atom indices with unpaired electrons.
     """
     if not u_indices:
         return
 
     # converting charges to unpaired electrons for atoms in the u-layer
-    for at in mol.atoms:
-        if at.charge != 0 and (mol.atoms.index(at) + 1) in u_indices:
-            at.charge += 1 if at.charge < 0 else -1
-            at.radicalElectrons += 1
-            u_indices.remove(mol.atoms.index(at) + 1)
+    convert_charge_to_unpaired_electron(mol, u_indices)
 
     # convert neighboring atoms (or delocalized paths) to unpaired electrons
-    u_indices_copy = u_indices[:]
-    for index in u_indices_copy:
-        start = mol.atoms[index -1]
-
-        # search for 4-atom-3-bond [X=X-X=X] paths
-        path = find_butadiene_end_with_charge(start)
-        if path is not None:    
-            # we have found the atom we are looking for
-            start.radicalElectrons += 1
-            end = path[-1]
-            end.charge += 1 if end.charge < 0 else -1
-            end.lonePairs += 1
-            # filter bonds from path and convert bond orders:
-            bonds = path[1::2]#odd elements
-            for bond in bonds[::2]:# even bonds
-                assert isinstance(bond, Bond)
-                bond.decrementOrder()
-            for bond in bonds[1::2]:# odd bonds
-                assert isinstance(bond, Bond)
-                bond.incrementOrder()  
-            u_indices.remove(mol.atoms.index(start) + 1)
-            continue
-
-        # search for 3-atom-2-bond [X=X-X] paths
-        paths = find_allyl_end_with_charge(start)
-        from rmgpy.data.kinetics.family import ReactionRecipe
-
-        for path in paths:
-            # label atoms so that we can use the labels in the actions of the recipe
-            for i, at in enumerate(path[::2]):
-                assert isinstance(at, Atom)
-                at.label = str(i)
-            # we have found the atom we are looking for
-            fix_charge_recipe = ReactionRecipe()
-            fix_charge_recipe.addAction(['GAIN_RADICAL', start.label, 1])
-
-            end = path[-1]
-            end_original_charge = end.charge
-          
-            # filter bonds from path and convert bond orders:
-            bonds = path[1::2]#odd elements
-            for bond in bonds[::2]:# even bonds
-                assert isinstance(bond, Bond)
-                fix_charge_recipe.addAction(['CHANGE_BOND', bond.atom1.label, -1, bond.atom2.label])
-            for bond in bonds[1::2]:# odd bonds
-                assert isinstance(bond, Bond)
-                fix_charge_recipe.addAction(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
-
-            end.charge += 1 if end.charge < 0 else -1
-            fix_charge_recipe.applyForward(mol, update=False)
-
-            if check_bond_order_oxygen(mol):
-                u_indices.remove(mol.atoms.index(start) + 1)
-                # unlabel atoms so that they never cause trouble downstream
-                for i, at in enumerate(path[::2]):
-                    assert isinstance(at, Atom)
-                    at.label = ''
-                break
-            else:
-                fix_charge_recipe.applyReverse(mol, update=False)
-                end.charge = end_original_charge
-
-                # unlabel atoms so that they never cause trouble downstream
-                for i, at in enumerate(path[::2]):
-                    assert isinstance(at, Atom)
-                    at.label = ''
-
-                continue # to next path
-
-            
-        continue # to next index in u-layer
+    convert_delocalized_charge_to_unpaired_electron(mol, u_indices)
 
     fix_adjacent_charges(mol)
 
@@ -695,6 +615,22 @@ def check_bond_order_oxygen(mol):
                 return False
 
     return True
+
+def find_mobile_h_system(mol, all_mobile_h_atoms_couples, test_indices):
+    dummy = test_indices[:]
+
+    for mobile_h_atom_couple in all_mobile_h_atoms_couples:
+        for test_index in test_indices:
+            if test_index in mobile_h_atom_couple:
+                original_atom = test_index
+                dummy.remove(test_index)
+                mobile_h_atom_couple.remove(test_index)
+                new_partner = mobile_h_atom_couple[0]
+                central = dummy[0]
+                return mol.atoms[central - 1], mol.atoms[original_atom - 1], mol.atoms[new_partner - 1]
+
+    raise Exception('We should always have found the mobile-H system. All mobile H couples: {}, test indices: {}'
+        .format(all_mobile_h_atoms_couples, test_indices))
     
 def fix_adjacent_charges(mol):
     """
@@ -710,3 +646,135 @@ def fix_adjacent_charges(mol):
                     bond.incrementOrder()
                     at.charge += 1 if at.charge < 0 else -1
                     neigh.charge += 1 if neigh.charge < 0 else -1
+
+def convert_charge_to_unpaired_electron(mol, u_indices):
+    """
+    Iterates over the atoms foundin the parameter list and
+    converts a unit of charge on atoms into an unpaired electron.
+
+    Removes treated atoms from the parameter list.
+    """
+    for at in mol.atoms:
+        at_index = mol.atoms.index(at) + 1
+        if at.charge != 0 and at_index in u_indices:
+            at.charge += 1 if at.charge < 0 else -1
+            at.radicalElectrons += 1
+            u_indices.remove(at_index)                    
+
+def convert_delocalized_charge_to_unpaired_electron(mol, u_indices):
+    """
+    Iterates over the atom indices of the parameter list and searches 
+    a charged atom that is connected to that atom via some kind of
+    delocalization path.
+
+    """
+    u_indices_copy = u_indices[:]
+    for index in u_indices_copy:
+        start = mol.atoms[index -1]
+
+        found = convert_4_atom_3_bond_path(start)
+        if found: 
+            u_indices.remove(index)
+            continue
+
+        found = convert_3_atom_2_bond_path(start, mol)
+        if found:
+            u_indices.remove(index)
+            continue
+
+def convert_4_atom_3_bond_path(start):
+    """
+    Searches for 4-atom-3-bond [X=X-X=X+] paths starting from the parameter atom.
+    If a path is found, the starting atom receives an unpaired electron while
+    the bonds in the delocalization path are "inverted". A unit of charge on the 
+    end atom is neutralized and a lone pair is added.
+    """
+    path = find_butadiene_end_with_charge(start)
+
+    if path is not None:    
+        start.radicalElectrons += 1
+        end = path[-1]
+        end.charge += 1 if end.charge < 0 else -1
+        end.lonePairs += 1
+
+        # filter bonds from path and convert bond orders:
+        bonds = path[1::2]#odd
+        for bond in bonds[::2]:# even
+            assert isinstance(bond, Bond)
+            bond.decrementOrder()
+        for bond in bonds[1::2]:# odd bonds
+            assert isinstance(bond, Bond)
+            bond.incrementOrder()  
+
+        return True
+
+    return False
+
+def convert_3_atom_2_bond_path(start, mol):
+    """
+    Searches for 3-atom-2-bond [X=X-X+] paths paths starting from the parameter atom.
+    If a correct path is found, the starting atom receives an unpaired electron while
+    the bonds in the delocalization path are "inverted". A unit of charge on the 
+    end atom is neutralized and a lone pair is added.
+
+    If it turns out the path was invalid, the actions are reverted, and another path
+    is tried instead.
+
+    To facilitate reverting the changes, we use a reaction recipe and populate it
+    with a number of actions that reflect the changes in bond orders and unpaired
+    electrons that the molecule should undergo.
+    """
+    from rmgpy.data.kinetics.family import ReactionRecipe
+
+    def is_valid(mol):
+        """Check if total bond order of oxygen atoms is smaller than 4."""
+
+        for at in mol.atoms:
+            if at.number == 8:
+                order = sum([ORDERS[b.order] for _, b in at.bonds.iteritems()])
+                not_correct = order >= 4
+                if not_correct:
+                    return False
+
+        return True
+
+    index = mol.atoms.index(start) + 1
+
+    paths = find_allyl_end_with_charge(start)
+
+    for path in paths:
+        # label atoms so that we can use the labels in the actions of the recipe
+        for i, at in enumerate(path[::2]):
+            at.label = str(i)
+        # we have found the atom we are looking for
+        recipe = ReactionRecipe()
+        recipe.addAction(['GAIN_RADICAL', start.label, 1])
+
+        end = path[-1]
+        end_original_charge = end.charge
+      
+        # filter bonds from path and convert bond orders:
+        bonds = path[1::2]#odd elements
+        for bond in bonds[::2]:# even
+            recipe.addAction(['CHANGE_BOND', bond.atom1.label, -1, bond.atom2.label])
+        for bond in bonds[1::2]:# odd
+            recipe.addAction(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
+
+        end.charge += 1 if end.charge < 0 else -1
+        recipe.applyForward(mol, update=False)
+
+        if is_valid(mol):
+            # unlabel atoms so that they never cause trouble downstream
+            for i, at in enumerate(path[::2]):
+                at.label = ''
+            return True
+        else:
+            recipe.applyReverse(mol, update=False)
+            end.charge = end_original_charge
+
+            # unlabel atoms so that they never cause trouble downstream
+            for i, at in enumerate(path[::2]):
+                assert isinstance(at, Atom)
+                at.label = ''
+
+    return False
