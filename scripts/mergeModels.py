@@ -7,7 +7,7 @@ associated species dictionaries) into a single unified Chemkin file. Simply
 pass the paths of the Chemkin files and species dictionaries on the 
 command-line, e.g.
 
-    $ python mergeModels.py /path/to/chem1.inp /path/to/species_dictionary1.txt /path/to/chem2.inp /path/to/species_dictionary2.txt
+    $ python mergeModels.py --model1 /path/to/chem1.inp /path/to/species_dictionary1.txt --model2 /path/to/chem2.inp /path/to/species_dictionary2.txt
 
 The resulting merged files are placed in ``chem.inp`` and
 ``species_dictionary.txt`` in the execution directory.
@@ -17,7 +17,7 @@ import os.path
 import argparse
 
 from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
-from rmgpy.reaction import ReactionModel
+from rmgpy.rmg.model import ReactionModel
 
 ################################################################################
 

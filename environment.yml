@@ -9,9 +9,9 @@ dependencies:
   - numpy
   - cython ==0.21
   - matplotlib
-  - rdkit
-  - pydas
-  - pydqed
+  - rdkit ==2015.03.1
+  - pydas >=1.0.1
+  - pydqed >=1.0.0
   - quantities
   - scipy
   - xlwt

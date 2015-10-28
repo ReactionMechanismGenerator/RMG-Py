@@ -86,7 +86,8 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     '1,4_Cyclic_birad_scission',
     '1,4_Linear_birad_scission',
     'Intra_Diels_alder',
-    'ketoenol'
+    'ketoenol',
+    'Retroen'
 ]
 
 ################################################################################

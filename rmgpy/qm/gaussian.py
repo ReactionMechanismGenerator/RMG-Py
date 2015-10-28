@@ -103,9 +103,9 @@ class Gaussian:
                 if line.startswith("InChI="):
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
-                    if self.geometry.uniqueIDlong in logFileInChI:
+                    if self.uniqueIDlong in logFileInChI:
                         InChIMatch = True
-                    elif self.geometry.uniqueIDlong.startswith(logFileInChI):
+                    elif self.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
                         InChIMatch = True
                     else:
@@ -212,7 +212,7 @@ class GaussianMol(QMMolecule, Gaussian):
                 
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
-            source = "QM {0} result file found from previous run.".format(self.__class__.__name__)
+            source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
             self.createGeometry()
             success = False

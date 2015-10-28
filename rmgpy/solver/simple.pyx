@@ -61,7 +61,8 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public dict initialMoleFractions
     cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
-
+    cdef public list pdepColliderKinetics
+    
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
     cdef public numpy.ndarray networkIndices
@@ -70,6 +71,8 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray equilibriumConstants
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
+    cdef public numpy.ndarray pdepColliderReactionIndices
+    cdef public numpy.ndarray colliderEfficiencies
 
     def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
@@ -91,7 +94,19 @@ cdef class SimpleReactor(ReactionSystem):
         self.equilibriumConstants = None
         self.networkLeakCoefficients = None
         self.jacobianMatrix = None
+        self.pdepColliderReactionIndices = None
+        self.pdepColliderKinetics = None
+        self.colliderEfficiencies = None
         
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (self.__class__, 
+            (self.T, self.P, self.initialMoleFractions, self.termination, self.sensitiveSpecies, self.sensitivityThreshold, ))
+
+
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
         Convert the initialMoleFractions dictionary from species names into species objects,
@@ -114,11 +129,11 @@ cdef class SimpleReactor(ReactionSystem):
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index, neq
-        cdef double V
+        cdef double V, T, P, Peff
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar
-        
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar, y0, y0_coreSpecies
+        cdef list pdepColliderKinetics
         pdepNetworks = pdepNetworks or []
 
         numCoreSpecies = len(coreSpecies)
@@ -139,7 +154,59 @@ cdef class SimpleReactor(ReactionSystem):
             reactionIndex[rxn] = index
         for index, rxn in enumerate(edgeReactions):
             reactionIndex[rxn] = index + numCoreReactions
-
+        
+        # Set initial conditions
+        t0 = 0.0
+        # Compute number of equations    
+        if sensitivity:    
+            # Set DASPK sensitivity analysis to ON
+            self.sensitivity = True
+            # Compute number of variables
+            neq = numCoreSpecies*(numCoreReactions+numCoreSpecies+1)
+            
+            atol_array = numpy.ones(neq, numpy.float64)*sens_atol
+            atol_array[:numCoreSpecies] = atol
+            
+            rtol_array = numpy.ones(neq, numpy.float64)*sens_rtol
+            rtol_array[:numCoreSpecies] = rtol
+            
+            senpar = numpy.zeros(numCoreReactions + numCoreSpecies, numpy.float64)
+            
+        else:
+            neq = numCoreSpecies
+            
+            atol_array = numpy.ones(neq,numpy.float64)*atol
+            rtol_array = numpy.ones(neq,numpy.float64)*rtol
+            
+            senpar = numpy.zeros(numCoreReactions, numpy.float64)
+            
+        y0 = numpy.zeros(neq, numpy.float64)
+        for spec, moleFrac in self.initialMoleFractions.iteritems():
+            y0[speciesIndex[spec]] = moleFrac
+        
+        y0_coreSpecies = y0[:numCoreSpecies]
+        # Use ideal gas law to compute volume
+        P = self.P.value_si
+        T = self.T.value_si
+        V = constants.R * T * numpy.sum(y0_coreSpecies) / P
+        self.V = V # volume in m^3
+        for j in range(numCoreSpecies):
+            self.coreSpeciesConcentrations[j] = y0[j] / V
+        
+        # Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies
+        pdepColliderReactionIndices = []
+        pdepColliderKinetics = []
+        colliderEfficiencies = []
+        for rxnList in [coreReactions, edgeReactions]:
+            for rxn in rxnList:
+                if rxn.kinetics.isPressureDependent():
+                    if rxn.kinetics.efficiencies:
+                        j = reactionIndex[rxn]
+                        pdepColliderReactionIndices.append(j)
+                        pdepColliderKinetics.append(rxn.kinetics)
+                        colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
+        pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int)
+        colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)
         # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)
         reactantIndices = -numpy.ones((numCoreReactions + numEdgeReactions, 3), numpy.int )
@@ -147,12 +214,19 @@ cdef class SimpleReactor(ReactionSystem):
         forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
         reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
         equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
+
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
                 j = reactionIndex[rxn]
-                forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+                for i in range(pdepColliderReactionIndices.shape[0]):
+                    if j == pdepColliderReactionIndices[i]:
+                        # Calculate effective pressure
+                        Peff = P *numpy.sum(colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
+                        forwardRateCoefficients[j] = rxn.getRateCoefficient(T, Peff)
+                else:                    
+                    forwardRateCoefficients[j] = rxn.getRateCoefficient(T, P)
                 if rxn.reversible:
-                    equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                    equilibriumConstants[j] = rxn.getEquilibriumConstant(T)
                     reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
                 for l, spec in enumerate(rxn.reactants):
                     i = speciesIndex[spec]
@@ -164,7 +238,7 @@ cdef class SimpleReactor(ReactionSystem):
         networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
         networkLeakCoefficients = numpy.zeros((numPdepNetworks), numpy.float64)
         for j, network in enumerate(pdepNetworks):
-            networkLeakCoefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
+            networkLeakCoefficients[j] = network.getLeakCoefficient(T, P)
             for l, spec in enumerate(network.source):
                 i = speciesIndex[spec]
                 networkIndices[j,l] = i
@@ -175,42 +249,10 @@ cdef class SimpleReactor(ReactionSystem):
         self.reverseRateCoefficients = reverseRateCoefficients
         self.equilibriumConstants = equilibriumConstants
         self.networkIndices = networkIndices
-        self.networkLeakCoefficients = networkLeakCoefficients
-        
-        # Set initial conditions
-        t0 = 0.0
-        # Compute number of equations    
-        if sensitivity:    
-            # Set DASPK sensitivity analysis to ON
-            self.sensitivity = True
-            # Compute number of variables
-            neq = numCoreSpecies*(len(forwardRateCoefficients)+numCoreSpecies+1)
-            
-            atol_array = numpy.ones(neq, numpy.float64)*sens_atol
-            atol_array[:numCoreSpecies] = atol
-            
-            rtol_array = numpy.ones(neq, numpy.float64)*sens_rtol
-            rtol_array[:numCoreSpecies] = rtol
-            
-            senpar = numpy.zeros(len(forwardRateCoefficients)+numCoreSpecies, numpy.float64)
-            
-        else:
-            neq = numCoreSpecies
-            
-            atol_array = numpy.ones(neq,numpy.float64)*atol
-            rtol_array = numpy.ones(neq,numpy.float64)*rtol
-            
-            senpar = numpy.zeros(len(forwardRateCoefficients), numpy.float64)
-            
-        y0 = numpy.zeros(neq, numpy.float64)
-        for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac
-            
-        # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y0[:numCoreSpecies]) / self.P.value_si
-        self.V = V # volume in m^3
-        for j in range(numCoreSpecies):
-            self.coreSpeciesConcentrations[j] = y0[j] / V
+        self.networkLeakCoefficients = networkLeakCoefficients        
+        self.pdepColliderReactionIndices = pdepColliderReactionIndices
+        self.pdepColliderKinetics = pdepColliderKinetics 
+        self.colliderEfficiencies = colliderEfficiencies
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros(neq, numpy.float64), senpar)[0]
@@ -227,26 +269,44 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
-        cdef double k, V, reactionRate
+        cdef double k, V, reactionRate, T, P, Peff
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] C
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] C, y_coreSpecies
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, colliderEfficiencies
+        cdef numpy.ndarray[numpy.int_t, ndim=1] pdepColliderReactionIndices
+        cdef list pdepColliderKinetics
 
         ir = self.reactantIndices
         ip = self.productIndices
-        equilibriumConstants = self.equilibriumConstants
-
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
         
-        inet = self.networkIndices
-        knet = self.networkLeakCoefficients
-
         numCoreSpecies = len(self.coreSpeciesRates)
         numCoreReactions = len(self.coreReactionRates)
         numEdgeSpecies = len(self.edgeSpeciesRates)
         numEdgeReactions = len(self.edgeReactionRates)
         numPdepNetworks = len(self.networkLeakRates)
+        
+        kf = self.forwardRateCoefficients
+        kr = self.reverseRateCoefficients
+        
+        y_coreSpecies = y[:numCoreSpecies]
+        
+        # Recalculate any forward and reverse rate coefficients that involve pdep collision efficiencies
+        if self.pdepColliderReactionIndices.shape[0] != 0:
+            T = self.T.value_si
+            P = self.P.value_si
+            equilibriumConstants = self.equilibriumConstants
+            pdepColliderReactionIndices = self.pdepColliderReactionIndices
+            pdepColliderKinetics = self.pdepColliderKinetics
+            colliderEfficiencies = self.colliderEfficiencies
+            for i in range(pdepColliderReactionIndices.shape[0]):
+                # Calculate effective pressure
+                Peff = P*numpy.sum(colliderEfficiencies[i]*y_coreSpecies / numpy.sum(y_coreSpecies))
+                j = pdepColliderReactionIndices[i]
+                kf[j] = pdepColliderKinetics[i].getRateCoefficient(T, Peff)
+                kr[j] = kf[j] / equilibriumConstants[j]
+            
+        inet = self.networkIndices
+        knet = self.networkLeakCoefficients
         
         
         res = numpy.zeros(numCoreSpecies, numpy.float64)
@@ -261,7 +321,7 @@ cdef class SimpleReactor(ReactionSystem):
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
+        V = constants.R * self.T.value_si * numpy.sum(y_coreSpecies) / self.P.value_si
         self.V = V
 
         for j in range(numCoreSpecies):
@@ -385,14 +445,13 @@ cdef class SimpleReactor(ReactionSystem):
         Return the analytical Jacobian for the reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C, equilibriumConstants
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
         cdef int numCoreReactions, numCoreSpecies, i, j
         cdef double k, V, Ctot, deriv, corr
         
         ir = self.reactantIndices
         ip = self.productIndices
-        equilibriumConstants = self.equilibriumConstants
 
         kf = self.forwardRateCoefficients
         kr = self.reverseRateCoefficients

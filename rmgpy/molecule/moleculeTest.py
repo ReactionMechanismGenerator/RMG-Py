@@ -838,7 +838,7 @@ class TestMolecule(unittest.TestCase):
         Make sure that H radical is produced properly from its InChI
         representation.
         """
-        molecule = Molecule(InChI='InChI=1/H')
+        molecule = Molecule().fromInChI('InChI=1/H')
         self.assertEqual(len(molecule.atoms), 1)
         H = molecule.atoms[0]
         self.assertTrue(H.isHydrogen())
@@ -850,8 +850,7 @@ class TestMolecule(unittest.TestCase):
         unpickled with no loss of information.
         """
         molecule0 = Molecule().fromSMILES('C=CC=C[CH2]C')
-        molecule0.updateAtomTypes()
-        molecule0.updateConnectivityValues()
+        molecule0.update()
         import cPickle
         molecule = cPickle.loads(cPickle.dumps(molecule0))
         
@@ -893,7 +892,7 @@ class TestMolecule(unittest.TestCase):
         test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
                        '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
                        'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
-                       'O=C=O', '[C]#N',
+                       'O=C=O', 'N#[C]',
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
@@ -986,7 +985,6 @@ class TestMolecule(unittest.TestCase):
 16 H u0 p0 c0 {8,S}
 """
 
-    @work_in_progress
     def testKekuleRoundTripSMILES(self):
         """
         Test that we can round-trip SMILES strings of Kekulized aromatics
@@ -998,7 +996,6 @@ class TestMolecule(unittest.TestCase):
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
-            #molecule.toRDKitMol(sanitize=False).Debug()
             self.assertEqual(s, molecule.toSMILES(), "Started with {0} but ended with {1}".format(s, molecule.toSMILES()))
 
     def testInChIKey(self):
@@ -1018,7 +1015,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
+        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3/u1,2')
         
     def testAugmentedInChIKey(self):
         """
@@ -1029,7 +1026,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-mult3')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-mult3-u1,2')
 
     def testLinearMethane(self):
         """
@@ -1161,7 +1158,7 @@ class TestMolecule(unittest.TestCase):
         
         mol = Molecule().fromAdjacencyList(ch2_t)
     
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3/u1')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
 
@@ -1548,6 +1545,61 @@ multiplicity 2
 """)
         perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
         self.assertTrue(perylene.isIsomorphic(perylene2))
+
+    def testMalformedAugmentedInChI(self):
+        """Test that augmented inchi without InChI layer raises Exception."""
+        from rmgpy.molecule.inchi import InchiException
+
+        malform_aug_inchi = 'foo'
+        with self.assertRaises(InchiException):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_InChI_Layer(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/CH3/h1H2'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_Mult(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/CH3/h1H3/mult3'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testMalformedAugmentedInChI_Wrong_Indices(self):
+        """Test that augmented inchi with wrong layer is caught."""
+        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,1'
+        with self.assertRaises(Exception):
+            mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
+
+    def testRDKitMolAtomMapping(self):
+        """
+        Test that the atom mapping returned by toRDKitMol contains the correct
+        atom indices of the atoms of the molecule when hydrogens are removed.
+        """
+        from rmgpy.molecule.parser import toRDKitMol
+
+        adjlist = '''
+1 H u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,S} {4,S} {5,S}
+3 H u0 p0 c0 {2,S}
+4 H u0 p0 c0 {2,S}
+5 O u0 p2 c0 {2,S} {6,S}
+6 H u0 p0 c0 {5,S}
+        '''
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        rdkitmol, rdAtomIndices = toRDKitMol(mol, removeHs=True, returnMapping=True)
+
+        heavy_atoms = [at for at in mol.atoms if at.number != 1]
+        for at1 in heavy_atoms:
+            for at2 in heavy_atoms:
+                if mol.hasBond(at1, at2):
+                    try:
+                        rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1],rdAtomIndices[at2])
+                    except RuntimeError:
+                        self.fail("RDKit failed in finding the bond in the original atom!")
+                        
 
 ################################################################################
 

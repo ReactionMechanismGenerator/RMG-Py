@@ -1,75 +1,74 @@
 # For conda build
 package:
   name: rmg
-  version: "1.0.0"
+  version: "0" # set by build.sh, which gets from rmgpy/__init__.py
 
 source:
   path: .
 
 build:
-  number: 1
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
 
 requirements:
   build:
-    - gcc # [unix]
-    - python
-    - setuptools
-    - cython ==0.21
-    - numpy
-    - pydas
-    - pydqed
+    - argparse # [py26]
     - boost ==1.56.0
-    - rdkit
-    - libgcc # [unix]
-    - numpy
-    - matplotlib
-    - rdkit
-    - pydas
-    - pydqed
-    - quantities
-    - scipy
-    - xlwt
-    - markupsafe
-    - jinja2
-    - argparse # [py26]
-    - pyparsing
-    - pydot
-    - nose
-    - coverage
-    - guppy
-    - gprof2dot
     - cairo
     - cairocffi
-    - openbabel
-    - psutil
-  run:
-    - libgcc # [unix]
-    - python
-    - numpy
+    - coverage
     - cython ==0.21
-    - matplotlib
-    - rdkit
-    - pydas
-    - pydqed
-    - quantities
-    - scipy
-    - xlwt
-    - markupsafe
-    - jinja2
-    - argparse # [py26]
-    - pyparsing
-    - pydot
-    - nose
-    - coverage
-    - guppy
+    - gcc # [unix]
     - gprof2dot
-    - cairo
-    - cairocffi
+    - guppy
+    - jinja2
+    - libgcc # [unix]
+    - markupsafe
+    - matplotlib
+    - nose
+    - numpy
     - openbabel
     - psutil
-    - symmetry
-    - mopac
+    - pydas >=1.0.1
+    - pydot
+    - pydqed
+    - pyparsing
+    - python
+    - quantities
+    - rdkit
+    - rdkit ==2015.03.1
+    - scipy
+    - setuptools
+    - xlwt
+
+  run:
+    - argparse # [py26]
+    - cairo
+    - cairocffi
+    - coverage
+    - cython ==0.21
+    - gprof2dot
     - graphviz
+    - guppy
+    - jinja2
+    - libgcc # [unix]
+    - markupsafe
+    - matplotlib
+    - mopac
+    - nose
+    - numpy
+    - openbabel
+    - psutil
+    - pydas >=1.0.1
+    - pydot
+    - pydqed
+    - pyparsing
+    - python
+    - quantities
+    - rdkit ==2015.03.1
+    - scipy
+    - symmetry
+    - xlwt
+
 test:
   requires:
     - nose

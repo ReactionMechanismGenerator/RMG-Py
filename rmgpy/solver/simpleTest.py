@@ -3,6 +3,7 @@
 
 import unittest
 import numpy
+import os
 
 import rmgpy.quantity
 
@@ -14,6 +15,7 @@ from rmgpy.thermo import ThermoData
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 import rmgpy.constants as constants
+from rmgpy.chemkin import loadChemkinFile
 
 ################################################################################
 
@@ -210,3 +212,74 @@ class SimpleReactorCheck(unittest.TestCase):
 #        pylab.ylabel('Rate (mol/m$^\\mathdefault{3}$*s)')
 #        fig.subplots_adjust(left=0.12, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
 #        pylab.show()
+
+
+    def testColliderModel(self):
+        """
+        Test the solver's ability to simulate a model with collision efficiencies.
+        """
+        chemFile = os.path.join(os.path.dirname(__file__),'files','collider_model','chem.inp')
+        dictionaryFile = os.path.join(os.path.dirname(__file__),'files','collider_model','species_dictionary.txt')
+        speciesList, reactionList = loadChemkinFile(chemFile, dictionaryFile)
+
+        
+        smilesDict = {'H':'[H]','HO2':'[O]O','O2':'[O][O]','Ar':'[Ar]','N2':'N#N','CO2':'O=C=O','CH3':'[CH3]','CH4':'C'}
+        speciesDict = {}
+        for name, smiles in smilesDict.iteritems():
+            mol = Molecule(SMILES=smiles)
+            for species in speciesList:
+                if species.isIsomorphic(mol):
+                    speciesDict[name] = species
+                    break
+                
+                
+        T = 1000 # K
+        P = 10 # Pa            
+        initialMoleFractions = {speciesDict['O2']:0.5,
+                        speciesDict['H']:0.5,
+                        speciesDict['CO2']:1.0, 
+                        speciesDict['Ar']:4.0}
+        
+        # Initialize the model
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,termination=None)
+        rxnSystem.initializeModel(speciesList, reactionList, [], [])
+        
+        # Advance to time = 0.1 s
+        rxnSystem.advance(0.1)
+        # Compare simulated mole fractions with expected mole fractions from CHEMKIN
+        simulatedMoleFracs = rxnSystem.y/numpy.sum(rxnSystem.y)
+        expectedMoleFracs = numpy.array([0.6666667,0,0,0,0.1666667,0, 0.08333333,0.08333333,2.466066000000000E-10,0,0,0,0,0])
+        for i in range(len(simulatedMoleFracs)):
+            self.assertAlmostEqual(simulatedMoleFracs[i],expectedMoleFracs[i])
+            
+        # Advance to time = 5 s
+        rxnSystem.advance(5)
+        # Compare simulated mole fractions with expected mole fractions from CHEMKIN
+        simulatedMoleFracs = rxnSystem.y/numpy.sum(rxnSystem.y)
+        expectedMoleFracs = numpy.array([0.6666667,0,0,0, 0.1666667,0,0.08333332,0.08333332,1.233033000000000E-08,0,0,0,0,0])
+        for i in range(len(simulatedMoleFracs)):
+            self.assertAlmostEqual(simulatedMoleFracs[i],expectedMoleFracs[i])
+        
+        # Try a new set of conditions
+        
+        T = 850 # K
+        P = 200 # Pa        
+        initialMoleFractions = {speciesDict['O2']:0.5,
+                        speciesDict['H']:1,
+                        speciesDict['CO2']:1, 
+                        speciesDict['N2']:4,
+                        speciesDict['CH3']:1}
+        
+        # Initialize the model
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,termination=None)
+        rxnSystem.initializeModel(speciesList, reactionList, [], [])
+        
+        # Advance to time = 5 s
+        rxnSystem.advance(5)  
+
+        # Compare simulated mole fractions with expected mole fractions from CHEMKIN
+        simulatedMoleFracs = rxnSystem.y/numpy.sum(rxnSystem.y)
+        expectedMoleFracs = numpy.array([0,0,0,0.5487241, 0.137181,0, 0.1083234, 0.0685777, 1.280687000000000E-05,  0,0,0,   0.1083362, 0.02884481])
+        for i in range(len(simulatedMoleFracs)):
+            self.assertAlmostEqual(simulatedMoleFracs[i],expectedMoleFracs[i])
+            

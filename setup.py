@@ -73,6 +73,9 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
+        Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
         # Pressure dependence
         Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
         Extension('rmgpy.pdep.configuration', ['rmgpy/pdep/configuration.pyx']),
@@ -189,8 +192,12 @@ for root, dirs, files in os.walk('rmgpy'):
                     modules.append(module)       
 
 # Initiate the build and/or installation
+
+# Read the version number
+exec(open('rmgpy/version.py').read())
+
 setup(name='RMG-Py',
-    version='1.0.0',
+    version= __version__,
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',

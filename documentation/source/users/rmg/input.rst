@@ -220,8 +220,8 @@ The following is an example of a simple reactor system::
 			'CH4': 0.9,
 		},
 		terminationTime=(1e0,'s'),
-	    sensitivity=['CH4','H2'],
-	    sensitivityThreshold=0.001,
+		sensitivity=['CH4','H2'],
+		sensitivityThreshold=0.001,
 
 	)
 
@@ -296,10 +296,14 @@ As a contrast, a typical set of parameters for non-pruning is::
 	    toleranceKeepInEdge=0,
 	    toleranceMoveToCore=0.5,
 	    toleranceInterruptSimulation=0.5,
-	    maximumEdgeSpecies=200000
+	    maximumEdgeSpecies=200000,
+	    minCoreSizeForPrune=50,
+	    minSpeciesExistIterationsForPrune=2,
 	)
 
 where ``toleranceKeepInEdge`` is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. ``toleranceInterruptSimulation`` equals to ``toleranceMoveToCore`` so that ODE simulation get interrupted once discovering a new core species. Because of always interrupted ODE simulation, no pruning is performed, ``maximumEdgeSpecies`` is ignored and can be set to any value.
+
+The parameters ``minCoreSizeForPrune`` and ``minSpeciesExistIterationsForPrune`` are used for advanced pruning parameters.  ``minCoreSizeForPrune`` ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. ``minSpeciesExistIterationsForPrune`` is set so that the edge species stays in the job for at least that many iterations before it can be pruned.  The default value is 2 iterations.  
 
 Please find more details about pruning at :ref:`Pruning Theory <prune>`.
 
@@ -395,15 +399,10 @@ For typical combustion model temperatures of the experiments range from 300 - 20
 Interpolation scheme
 --------------------
 
-To disregard all temperature and pressure dependence and simply output the rate at the provided
-temperature and pressure, use the line ::
-
-	interpolation=False
-
 To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line ::
 
-	interpolation=('PDepArrhenius')
+	interpolation=('PDepArrhenius',)
 	
 The auxillary information printed to the Chemkin chem.inp file will have the "PLOG"
 format.  Refer to Section 3.5.3 of the :file:`CHEMKIN_Input.pdf` document and/or 
@@ -467,7 +466,7 @@ Miscellaneous options::
     options(
         units='si',
         saveRestartPeriod=(1,'hour'),
-        drawMolecules=True,
+        generateOutputHTML=True,
         generatePlots=False,
         saveSimulationProfiles=True,
         verboseComments=False,
@@ -478,7 +477,8 @@ The ``units`` field is set to ``si``.  Currently there are no other unit options
 
 The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
-Setting ``drawMolecules=True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if ``drawMolecules=False``, but the user specifies a ``pressureDependence`` section of the input file, RMG will still generate species files in the ``species`` folder, but only those that pertain to pressure dependent networks that RMG discovers. 
+Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
+HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs. 
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 

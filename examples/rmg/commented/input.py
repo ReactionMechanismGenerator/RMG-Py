@@ -134,7 +134,14 @@ model(
     toleranceInterruptSimulation=1,
 	   #number of edge species needed to accumulate before pruning occurs
 	   #larger values require more memory and will prune less often
-    maximumEdgeSpecies=100000
+    maximumEdgeSpecies=100000,
+        #minimum number of core species needed before pruning occurs.
+        #this prevents pruning when kinetic model is far away from completeness
+    minCoreSizeForPrune=50,
+        #make sure that the pruned edge species have existed for a set number of RMG iterations.  
+        #the user can specify to increase it from the default value of 2
+    minSpeciesExistIterationsForPrune=2,
+    
 )
 
 options(
@@ -143,9 +150,9 @@ options(
 	#how often you want to save restart files.  
 	#takes significant amount of time. comment out if you don't want to save 
     saveRestartPeriod=None,
-	#Shows images of species in the output mechanism.  
-	#Otherwise, the user will see SMILES strings in the output
-    drawMolecules=True,
+	#Draws images of species and reactions and saves the model output to HTML.  
+	#May consume extra memory when running large models.
+    generateOutputHTML=True,
 	#generates plots of the RMG's performance statistics. Not helpful if you just want a model.
     generatePlots=False,
 	#saves mole fraction of species in 'solver/' to help you create plots
@@ -170,13 +177,12 @@ pressureDependence(
  	#parameter order is: low_value, high_value, units, internal points
  	temperatures=(300,2200,'K',2),
  	pressures=(0.01,100,'bar',3),
- 	#If you only care about the rate at the 'simplereactor' conditions, use False.  
- 	#Other two options are 'PDepArrhenius' (no extra arguments) and 
+ 	#The two options for interpolation are 'PDepArrhenius' (no extra arguments) and 
  	#'Chebyshev' which is followed by the number of basis sets in 
  	#Temperature and Pressure. These values must be less than the number of 
  	#internal points specified above
  	interpolation=('Chebyshev', 6, 4),
- 	#turns off pressure dependence for molecules greater than the number specified below
+ 	#turns off pressure dependence for molecules with number of atoms greater than the number specified below
  	#this is due to faster internal rate of energy transfer for larger molecules
  	maximumAtoms=15,
  )
@@ -199,7 +205,7 @@ generatedSpeciesConstraints(
     maximumRadicalElectrons=1,
     #If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered 
     #which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
-    #allowsSingletO2=False,
+    #allowSingletO2=False,
 )
 
 #optional block allows thermo to be estimated through quantum calculations

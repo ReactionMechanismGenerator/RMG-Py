@@ -31,6 +31,14 @@ Key Parameters in Pruning
   If dynamic simulation isn't interrupted in half way and total number of the edge species whose peak fluxes are higher than 
   toleranceKeepInEdge :math:`*` characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.
   
+* minCoreSizeForPrune
+
+  Ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. 
+
+* minSpeciesExistIterationsForPrune
+
+  Set the number of iterations an edge species must stay in the job before it can be pruned.  The default value is 2 iterations.  
+
 
 How Pruning Works
 =================

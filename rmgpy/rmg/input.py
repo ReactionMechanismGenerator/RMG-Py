@@ -143,6 +143,7 @@ def simpleReactor(temperature,
     
     sensitiveSpecies = []
     if sensitivity:
+        if isinstance(sensitivity, str): sensitivity = [sensitivity]
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
     system = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
@@ -192,7 +193,7 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
+def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
     """
@@ -205,6 +206,8 @@ def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptS
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
+    rmg.minCoreSizeForPrune = minCoreSizeForPrune
+    rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
 
 def quantumMechanics(
                     software,
@@ -243,6 +246,10 @@ def pressureDependence(
     rmg.pressureDependence.method = method
     
     # Process interpolation model
+    if isinstance(interpolation, str):
+        interpolation = (interpolation,)
+    if interpolation[0].lower() not in ("chebyshev","pdeparrhenius"):
+        raise InputError("Interpolation model must be set to either 'Chebyshev' or 'PDepArrhenius'.")
     rmg.pressureDependence.interpolationModel = interpolation
 
     # Process temperatures
@@ -270,10 +277,10 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
+def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
-    rmg.drawMolecules = drawMolecules
+    rmg.generateOutputHTML = generateOutputHTML 
     rmg.generatePlots = generatePlots
     rmg.saveSimulationProfiles = saveSimulationProfiles
     rmg.verboseComments = verboseComments
@@ -476,9 +483,12 @@ def saveInputFile(path, rmg):
             f.write('    },\n')
         
         # Sensitivity analysis
-        if system.sensitivity:
-            f.write('    sensitivity = {0},\n'.format(system.sensitivity))
-            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))      
+        if system.sensitiveSpecies:
+            sensitivity = []
+            for item in system.sensitiveSpecies:
+                sensitivity.append(item.label)
+            f.write('    sensitivity = {0},\n'.format(sensitivity))
+            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))
         
         f.write(')\n\n')
     
@@ -489,6 +499,8 @@ def saveInputFile(path, rmg):
     f.write('simulator(\n')
     f.write('    atol = {0:g},\n'.format(rmg.absoluteTolerance))
     f.write('    rtol = {0:g},\n'.format(rmg.relativeTolerance))
+    f.write('    sens_atol = {0:g},\n'.format(rmg.sensitivityAbsoluteTolerance))
+    f.write('    sens_rtol = {0:g},\n'.format(rmg.sensitivityRelativeTolerance))
     f.write(')\n\n')
 
     # Model
@@ -497,12 +509,14 @@ def saveInputFile(path, rmg):
     f.write('    toleranceKeepInEdge = {0:g},\n'.format(rmg.fluxToleranceKeepInEdge))
     f.write('    toleranceInterruptSimulation = {0:g},\n'.format(rmg.fluxToleranceInterrupt))
     f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.maximumEdgeSpecies))
+    f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.minCoreSizeForPrune))
+    f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.minSpeciesExistIterationsForPrune))
     f.write(')\n\n')
 
     # Pressure Dependence
     if rmg.pressureDependence:
         f.write('pressureDependence(\n')
-        f.write('    method = "{0!s}",\n'.format(rmg.pressureDependence.method))
+        f.write('    method = {0!r},\n'.format(rmg.pressureDependence.method))
         f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValue(),rmg.pressureDependence.grainSize.units))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
@@ -517,17 +531,35 @@ def saveInputFile(path, rmg):
             rmg.pressureDependence.Pmax.units,
             rmg.pressureDependence.Pcount,
         ))
-        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.model))
+        f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.interpolationModel))     
+        f.write('    maximumAtoms = {0}, \n'.format(rmg.pressureDependence.maximumAtoms))
         f.write(')\n\n')
     
+    # Quantum Mechanics
     if rmg.quantumMechanics:
         f.write('quantumMechanics(\n')
-        f.write('    software="{0!s}",\n'.format(rmg.quantumMechanics.settings.software))
-        f.write('    method="{0!s}",\n'.format(rmg.quantumMechanics.settings.method))
-        f.write('    onlyCyclics="{0}",\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
-        f.write('    maxRadicalNumber="{0!s}",\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
+        f.write('    software = {0!r},\n'.format(rmg.quantumMechanics.settings.software))
+        f.write('    method = {0!r},\n'.format(rmg.quantumMechanics.settings.method))
+        # Split paths created by QMSettings
+        if rmg.quantumMechanics.settings.fileStore:
+            f.write('    fileStore = {0!r},\n'.format(os.path.split(rmg.quantumMechanics.settings.fileStore)[0]))
+        else:
+            f.write('    fileStore = None,\n')
+        if rmg.quantumMechanics.settings.scratchDirectory:
+            f.write('    scratchDirectory = {0!r},\n'.format(os.path.split(rmg.quantumMechanics.settings.scratchDirectory)[0]))
+        else:
+            f.write('    scratchDirectory = None,\n')
+        f.write('    onlyCyclics = {0},\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
+        f.write('    maxRadicalNumber = {0},\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
         f.write(')\n\n')
-        
+    
+    # Species Constraints
+    if rmg.speciesConstraints:
+        f.write('generatedSpeciesConstraints(\n')
+        for constraint, value in sorted(rmg.speciesConstraints.items(), key=lambda constraint: constraint[0]):
+            if value is not None: f.write('    {0} = {1},\n'.format(constraint,value))
+        f.write(')\n\n')
+    
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
@@ -535,10 +567,11 @@ def saveInputFile(path, rmg):
         f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValue(), rmg.saveRestartPeriod.units))
     else:
         f.write('    saveRestartPeriod = None,\n')
-    f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
+    f.write('    generateOutputHTML = {0},\n'.format(rmg.generateOutputHTML))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
+    f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write(')\n\n')
-        
+    
     f.close()

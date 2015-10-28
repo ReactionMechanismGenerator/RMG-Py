@@ -951,18 +951,17 @@ class Database:
                 # Passed semantic checks, so add to maps of already-matched atoms
                 initialMap[atom] = center
             # Labeled atoms in the structure that are not in the group should
-            # not be considered in the isomorphism check, so remove them temporarily
+            # not be considered in the isomorphism check, so flag them temporarily
             # Without this we would hit a lot of nodes that are ambiguous
-            removedAtoms = []
-            for label, atom in structure.getLabeledAtoms().iteritems():
-                if label not in centers:
-                    removedAtoms.append(atom)
-                    structure.atoms.remove(atom)
+            flaggedAtoms = [atom for label, atom in structure.getLabeledAtoms().iteritems() if label not in centers]
+            for atom in flaggedAtoms: atom.ignore = True
+            
             # use mapped (labeled) atoms to try to match subgraph
             result = structure.isSubgraphIsomorphic(group, initialMap)
-            # Restore atoms removed in previous step
-            for atom in removedAtoms:
-                structure.atoms.append(atom)
+            
+            # Restore atoms flagged in previous step
+            for atom in flaggedAtoms: atom.ignore = False
+                
             return result
 
     def descendTree(self, structure, atoms, root=None, strict=False):
