@@ -128,7 +128,7 @@ def create_U_layer(mol):
     molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
 
     # find the resonance isomer with the lowest u index:
-    molcopy = normalize(molcopy)
+    molcopy = generate_minimum_resonance_isomer(molcopy)
     
     # create preliminary u-layer:
     u_layer = []
@@ -410,29 +410,27 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
 
     return sorted(new_u_layer)
 
-def normalize(mol):
+def generate_minimum_resonance_isomer(mol):
     """
     Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
     electrons descriptor.
 
-    We generate over all resonance isomers (non-isomorphic as well as isomorphic) and add isomorphic
-    isomers to a list (candidates).
+    First, we generate all isomorphic resonance isomers.
+    Next, we return the candidate with the lowest unpaired electrons metric.
 
-    Next, we search through this list and return the candidate with the lowest unpaired electrons descriptor.
-
+    The metric is a sorted list with indices of the atoms that bear an unpaired electron
     """
     candidates = resonance.generate_isomorphic_isomers(mol)
     
-    current_minimum = candidates[0]#isomer with the smallest u-layer descriptor.
-    unpaired_electrons_current_minimum = get_unpaired_electrons(current_minimum)
+    sel = candidates[0]
+    metric_sel = get_unpaired_electrons(sel)
     for cand in candidates[1:]:
-       unpaired_electrons_candidate = get_unpaired_electrons(cand)
-       if unpaired_electrons_candidate < unpaired_electrons_current_minimum:
-            current_minimum = cand
-            unpaired_electrons_current_minimum = unpaired_electrons_candidate
+       metric_cand = get_unpaired_electrons(cand)
+       if metric_cand < metric_sel:
+            sel = cand
+            metric_sel = metric_cand
 
-
-    return current_minimum
+    return sel
 
 
 def get_unpaired_electrons(mol):
