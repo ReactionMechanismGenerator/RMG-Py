@@ -310,7 +310,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     If returnMapping==True then it also returns a dictionary mapping the 
     atoms to RDKit's atom indices.
     """
-                    
+    
+    # Sort the atoms before converting to ensure output is consistent
+    # between different runs
+    mol.sortAtoms()           
     atoms = mol.vertices
     rdAtomIndices = {} # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
