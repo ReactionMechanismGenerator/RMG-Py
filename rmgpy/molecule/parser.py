@@ -71,74 +71,35 @@ def convert_unsaturated_bond_to_biradical(mol, inchi, u_indices):
 
     combos = itertools.combinations(u_indices, 2)
 
+    isFixed = False
     for u1, u2 in combos:
         atom1 = mol.atoms[u1 - 1] # convert to 0-based index for atoms in molecule
         atom2 = mol.atoms[u2 - 1] # convert to 0-based index for atoms in molecule
         if mol.hasBond(atom1, atom2):
             b = mol.getBond(atom1, atom2)
-            if not b.isSingle():
-                atom1.radicalElectrons += 1
-                atom2.radicalElectrons += 1
-                b.decrementOrder()
-                u_indices.remove(u1)
-                u_indices.remove(u2)
-
-                return mol
-            else:#maybe it's a mobile H-layer problem
-                all_mobile_h_atoms_couples = parse_H_layer(inchi)
-                """
-                assume that O2=C1-O3H is the keto-enol system
-                    1) find its partner (O2)
-                    2) transfer H atom to partner (O2)
-                    3) change bond order between partner and central carbon
-                    4) add unpaired electrons to central carbon and original O.
-
-                """
-                if all_mobile_h_atoms_couples:
-                    #find central atom:
-                    central, original_atom, new_partner = find_mobile_h_system(mol, 
-                        all_mobile_h_atoms_couples, [u1, u2])
-
-                    # search Hydrogen atom and bond
-                    hydrogen = None
-                    for at, bond in original_atom.bonds.iteritems():
-                        if at.number == 1:
-                            hydrogen = at
-                            mol.removeBond(bond)
-                            break
-
-                    new_h_bond = Bond(new_partner, hydrogen, order='S')
-                    mol.addBond(new_h_bond)
-                    
-                    mol.getBond(central, new_partner).decrementOrder()
-
-                    central.radicalElectrons += 1
-                    original_atom.radicalElectrons += 1
-
-                    u_indices.remove(u1)
-                    u_indices.remove(u2)
-                    return mol
+            isFixed = fix_unsaturated_bond(b)
+            if isFixed:
+                break
+                
+            else:
+                isFixed = fix_mobile_h(mol, inchi, u1, u2)
+                if isFixed:
+                    break
         else:
-            path = find_butadiene(atom1, atom2)
-            if path is not None:
-                atom1.radicalElectrons += 1
-                atom2.radicalElectrons += 1
-                # filter bonds from path and convert bond orders:
-                bonds = path[1::2]#odd elements
-                for bond in bonds[::2]:# even bonds
-                    assert isinstance(bond, Bond)
-                    bond.decrementOrder()
-                for bond in bonds[1::2]:# odd bonds
-                    assert isinstance(bond, Bond)
-                    bond.incrementOrder()    
+            isFixed = convert_butadiene_path(atom1, atom2)
+            if isFixed:
+                break
 
-                u_indices.remove(u1)
-                u_indices.remove(u2)
-
-                return mol
-
-    raise Exception('The indices {} did not refer to atoms that are connected in the molecule {}.'
-        .format(u_indices, mol.toAdjacencyList()))    
+    if isFixed:
+        u_indices.remove(u1)
+        u_indices.remove(u2)
+        return mol                
+    else:
+        raise Exception(
+            'Could not convert an unsaturated bond into a biradical for the \
+            indices {} provided in the molecule: {}.'
+            .format(u_indices, mol.toAdjacencyList())
+            )    
 
 def isUnsaturated(mol):
     """Does the molecule have a bond that's not single?
@@ -752,7 +713,7 @@ def fix(mol, aug_inchi):
     fixCharge(mol, indices)
                                 
     reset_lone_pairs_to_default(mol)
-    
+
     correct_O_unsaturated_bond(mol, indices)
 
     # unsaturated bond to triplet conversion
@@ -778,3 +739,68 @@ def fix_triplet_to_singlet(mol, aug_inchi):
             if at.radicalElectrons == 2:
                 at.lonePairs = 1
                 at.radicalElectrons = 0    
+
+def convert_butadiene_path(atom1, atom2):
+    path = find_butadiene(atom1, atom2)
+    if path is not None:
+        atom1.radicalElectrons += 1
+        atom2.radicalElectrons += 1
+        # filter bonds from path and convert bond orders:
+        bonds = path[1::2]#odd elements
+        for bond in bonds[::2]:# even bonds
+            assert isinstance(bond, Bond)
+            bond.decrementOrder()
+        for bond in bonds[1::2]:# odd bonds
+            assert isinstance(bond, Bond)
+            bond.incrementOrder()    
+
+        return True
+
+    return False
+
+def fix_mobile_h(mol, inchi, u1, u2):
+    """
+    assume that O2=C1-O3H is the keto-enol system
+        1) find its partner (O2)
+        2) transfer H atom to partner (O2)
+        3) change bond order between partner and central carbon
+        4) add unpaired electrons to central carbon and original O.
+
+    """
+
+    all_mobile_h_atoms_couples = parse_H_layer(inchi)
+    if all_mobile_h_atoms_couples:
+        #find central atom:
+        central, original_atom, new_partner = find_mobile_h_system(mol, 
+            all_mobile_h_atoms_couples, [u1, u2])
+
+        # search Hydrogen atom and bond
+        hydrogen = None
+        for at, bond in original_atom.bonds.iteritems():
+            if at.number == 1:
+                hydrogen = at
+                mol.removeBond(bond)
+                break
+
+        new_h_bond = Bond(new_partner, hydrogen, order='S')
+        mol.addBond(new_h_bond)
+        
+        mol.getBond(central, new_partner).decrementOrder()
+
+        central.radicalElectrons += 1
+        original_atom.radicalElectrons += 1
+        return True
+
+    return False
+
+def fix_unsaturated_bond(bond):
+    """
+    Decrements the bond if it is unsatured, and adds an unpaired
+    electron to each of the atoms connected by the bond.
+    """
+    if not bond.isSingle():
+        for at in (bond.atom1, bond.atom2):
+            at.radicalElectrons += 1
+        bond.decrementOrder()    
+        return True
+    return False
