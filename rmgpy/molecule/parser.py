@@ -681,14 +681,7 @@ def fixCharge(mol, u_indices):
             
         continue # to next index in u-layer
 
-    # fix adjacent charges
-    for at in mol.atoms:
-        if at.charge != 0:
-            for neigh, bond in at.bonds.iteritems():
-                if neigh.charge != 0:
-                    bond.incrementOrder()
-                    at.charge += 1 if at.charge < 0 else -1
-                    neigh.charge += 1 if neigh.charge < 0 else -1
+    fix_adjacent_charges(mol)
 
 def check_bond_order_oxygen(mol):
     """Check if total bond order of oxygen atoms is smaller than 4."""
@@ -702,3 +695,18 @@ def check_bond_order_oxygen(mol):
                 return False
 
     return True
+    
+def fix_adjacent_charges(mol):
+    """
+    Searches for pairs of charged atoms.
+    Neutralizes one unit of charge on each atom,
+    and increments the bond order of the bond in between
+    the atoms.
+    """
+    for at in mol.atoms:
+        if at.charge != 0:
+            for neigh, bond in at.bonds.iteritems():
+                if neigh.charge != 0:
+                    bond.incrementOrder()
+                    at.charge += 1 if at.charge < 0 else -1
+                    neigh.charge += 1 if neigh.charge < 0 else -1
