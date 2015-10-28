@@ -40,7 +40,7 @@ cdef __lookup(Molecule mol, str identifier, str type_identifier)
 
 # parser helper functions: 
 
-cpdef reset_lone_pairs_to_default(Atom at)
+cpdef reset_lone_pairs_to_default(Molecule mol)
 
 cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
 

@@ -3,8 +3,6 @@
 import cython
 import logging
 import itertools
-from collections import Counter
-import re
 
 # local imports
 
@@ -53,15 +51,12 @@ SMILES_LOOKUPS = {
             """
 }
 
-def reset_lone_pairs_to_default(at):
+def reset_lone_pairs_to_default(mol):
     """Resets the atom's lone pair count to its default value."""
 
-    bondorder = 0
-    bonds = at.edges.values()
-    for bond in bonds:
-        bondorder += ORDERS[bond.order]
-    
-    at.lonePairs = (VALENCES[at.element.symbol] - bondorder - at.radicalElectrons - at.charge) / 2
+    for at in mol.atoms:
+        order = sum([ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
+        at.lonePairs = (VALENCES[at.element.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def convert_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """
@@ -368,21 +363,15 @@ def fromAugmentedInChI(mol, aug_inchi):
     """
     Creates a Molecule object from the augmented inchi.
 
-    First, split off the multiplicity.
-    Next, prepend the version layer to the inchi.
-    Next, convert the inchi into a Molecule and
-    set the multiplicity.
+    First, the inchi is converted into a Molecule using
+    the backend parsers.
 
-    Correct singlet one-center biradicals by replacing
-    (u2, p0) by (u0, p1).
+    Next, the multiplicity and unpaired electron information
+    is used to fix a number of parsing errors made by the backends.
 
-    Correct triplet two-center biradicals perceived as a
-    zwitter ion by replacing (u0, c+/-1) by (u1, c0)
+    Finally, the atom types of the corrected molecule are perceived.
 
-    Correct two-center triplet biradicals perceived as 
-    a singlet double bond by replacing (u0)=(u0) by (u1)-(u1). 
-    
-    returns Molecule
+    Returns a Molecule object
     """
 
     if not isinstance(aug_inchi, AugmentedInChI):
@@ -390,57 +379,10 @@ def fromAugmentedInChI(mol, aug_inchi):
 
     mol = fromInChI(mol, aug_inchi.inchi)
 
-    # multiplicity not specified in augmented InChI. Setting 
-    if aug_inchi.mult == -1:
-        logging.debug('Multiplicity not specified in augmented InChI.')
-        logging.debug('Setting the multiplicity equal to the number of unpaired electrons + 1 of the parsed InChI.')
-        mol.multiplicity = mol.getNumberOfRadicalElectrons() + 1
-        return mol        
+    fix(mol, aug_inchi)
 
-    mol.multiplicity = aug_inchi.mult
-
-    #triplet to singlet conversion
-    if mol.multiplicity == 1 and mol.getNumberOfRadicalElectrons() == 2:
-        for at in mol.atoms:
-            if at.radicalElectrons == 2:
-                at.lonePairs = 1
-                at.radicalElectrons = 0
-
-    indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else []
-    c = Counter(indices)
-    for k,v in c.iteritems():
-        atom = mol.atoms[k - 1]
-        [indices.remove(k) for _ in range(atom.radicalElectrons)]
-
-
-    contains_charge = sum([abs(at.charge) for at in mol.atoms]) != 0
-    if mol.multiplicity >= 3 and not check_number_unpaired_electrons(mol) and contains_charge:
-        fixCharge(mol, indices)
-
-    # reset lone pairs                                
-    for at in mol.atoms:
-        reset_lone_pairs_to_default(at)
-
-    # correct .O#C to O=C.
-    correct_O_unsaturated_bond(mol, indices)
-
-
-    # unsaturated bond to triplet conversion
-    correct = check_number_unpaired_electrons(mol)
-
-    unsaturated = isUnsaturated(mol)
-    
-    if not correct and not indices:
-        raise Exception( 'Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
-            .format(mol.toAdjacencyList(), aug_inchi))
-
-    while not correct and unsaturated and len(indices) > 1:
-        mol = convert_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
-        correct = check_number_unpaired_electrons(mol)
-        unsaturated = isUnsaturated(mol)
-
-    check(mol, aug_inchi)
     mol.updateAtomTypes()
+
     return mol
 
 def fromSMILES(mol, smilesstr, backend='try-all'):
@@ -592,7 +534,12 @@ def fixCharge(mol, u_indices):
     Tries to fix a number of structural features in the molecule related to charge, 
     based on the information from the parameter list of atom indices with unpaired electrons.
     """
+
     if not u_indices:
+        return
+
+    is_charged = sum([abs(at.charge) for at in mol.atoms]) != 0
+    if mol.multiplicity < 3 or check_number_unpaired_electrons(mol) or not is_charged:
         return
 
     # converting charges to unpaired electrons for atoms in the u-layer
@@ -778,3 +725,56 @@ def convert_3_atom_2_bond_path(start, mol):
                 at.label = ''
 
     return False
+
+def fix(mol, aug_inchi):
+    """
+    Fixes a number of structural features of the erroneous Molecule
+    parsed by the backends, based on multiplicity and unpaired electron information
+    stored in the augmented inchi.
+    """
+
+    # multiplicity not specified in augmented InChI. Setting 
+    if aug_inchi.mult == -1:
+        logging.debug('Multiplicity not specified in augmented InChI.')
+        logging.debug('Setting the multiplicity equal to the number of unpaired electrons + 1 of the parsed InChI.')
+        mol.multiplicity = mol.getNumberOfRadicalElectrons() + 1
+        return mol        
+
+    fix_triplet_to_singlet(mol, aug_inchi)
+
+    indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else []
+
+    # ignore atoms that bear already unpaired electrons:
+    for i in set(indices[:]):
+        atom = mol.atoms[i - 1]
+        [indices.remove(i) for _ in range(atom.radicalElectrons)]        
+
+    fixCharge(mol, indices)
+                                
+    reset_lone_pairs_to_default(mol)
+    
+    correct_O_unsaturated_bond(mol, indices)
+
+    # unsaturated bond to triplet conversion
+    correct = check_number_unpaired_electrons(mol)
+
+    unsaturated = isUnsaturated(mol)
+    
+    if not correct and not indices:
+        raise Exception( 'Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
+            .format(mol.toAdjacencyList(), aug_inchi))
+
+    while not correct and unsaturated and len(indices) > 1:
+        mol = convert_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
+        correct = check_number_unpaired_electrons(mol)
+        unsaturated = isUnsaturated(mol)
+
+    check(mol, aug_inchi)    
+
+def fix_triplet_to_singlet(mol, aug_inchi):
+    mol.multiplicity = aug_inchi.mult
+    if mol.multiplicity == 1 and mol.getNumberOfRadicalElectrons() == 2:
+        for at in mol.atoms:
+            if at.radicalElectrons == 2:
+                at.lonePairs = 1
+                at.radicalElectrons = 0    
