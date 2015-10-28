@@ -87,7 +87,6 @@ def convert_unsaturated_bond_to_biradical(mol, inchi, u_indices):
                 atom1.radicalElectrons += 1
                 atom2.radicalElectrons += 1
                 b.decrementOrder()
-
                 u_indices.remove(u1)
                 u_indices.remove(u2)
 
@@ -281,9 +280,9 @@ def __lookup(mol, identifier, type_identifier):
 
 def check(mol, aug_inchi) :
     """Check if molecule corresponds to the aug. inchi"""
-    cython.declare(conditions=list,
-                   inchi=str,
+    cython.declare(inchi=str,
                    multi=cython.int,
+                   at=Atom
                    )
 
     _, mult, __ = aug_inchi.inchi, aug_inchi.mult, aug_inchi.u_indices
@@ -291,11 +290,7 @@ def check(mol, aug_inchi) :
      'Multiplicity of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     
     for at in mol.atoms:
-        order = 0
-        bonds = at.edges.values()
-        for bond in bonds:
-            order += ORDERS[bond.order]
-
+        order = sum([ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
         assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == VALENCES[at.symbol],\
             'Valency for an atom of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
 
