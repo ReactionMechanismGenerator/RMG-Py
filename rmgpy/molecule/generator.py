@@ -371,7 +371,22 @@ def is_valid_combo(combo, mol, distances):
     return True
 
 def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
-    """..."""
+    """
+    Searches for the "minimum" combination of indices of atoms that bear unpaired electrons.
+
+    It does so by using the information on equivalent atoms to permute equivalent atoms to 
+    obtain a combination of atoms that is the (numerically) lowest possible combination.
+
+    Each possible combination is valid if and only if the distances between the atoms of the
+    combination is identical to the distances between the original combination.
+
+    First, the algorithm partitions equivalent atoms that bear an unpaired electron.
+    Next, the combinations are generated, and for each combination it is verified whether
+    it pertains to a "valid" combination.
+
+    Returns a list of indices corresponding to the lowest combination of atom indices bearing
+    unpaired electrons.
+    """
 
     if not equivalent_atoms:
         return u_layer
@@ -435,7 +450,7 @@ def generate_minimum_resonance_isomer(mol):
 
 def get_unpaired_electrons(mol):
     """
-    returns a sorted list of the indices of the atoms that bear one or more 
+    Returns a sorted list of the indices of the atoms that bear one or more 
     unpaired electrons.
     """
     locations = []
@@ -446,6 +461,12 @@ def get_unpaired_electrons(mol):
     return sorted(locations)  
 
 def compute_agglomerate_distance(agglomerates, mol):
+    """
+    Iterates over a list of lists containing atom indices.
+    For each list the distances between the atoms is computed.
+    A list of distances is returned.
+
+    """
     distances = []
     for agglomerate in agglomerates:
         dist = compute_atom_distance(agglomerate, mol)
