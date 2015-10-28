@@ -42,17 +42,15 @@ cdef __lookup(Molecule mol, str identifier, str type_identifier)
 
 cpdef reset_lone_pairs_to_default(Molecule mol)
 
-cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
+cdef Molecule fix_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
 
 cpdef bint isUnsaturated(Molecule mol)
-    
-cpdef bint check_number_unpaired_electrons(Molecule mol)
 
 cpdef isCorrectlyParsed(Molecule mol, str identifier)
    
 cpdef check(Molecule mol, aug_inchi)
 
-cpdef correct_O_unsaturated_bond(Molecule mol, list u_indices)
+cpdef fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
 
 cpdef find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)
 
