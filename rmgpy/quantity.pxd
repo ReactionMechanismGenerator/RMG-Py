@@ -26,6 +26,8 @@
 
 cimport numpy
 
+cpdef list NOT_IMPLEMENTED_UNITS
+
 ################################################################################
 
 cdef class Units(object):
