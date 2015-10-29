@@ -11,7 +11,7 @@ import csv
 from time import time
 
 from rmgpy.rmg.main import RMG
-from generateFluxDiagram import loadRMGPyJob
+from rmgpy.tools.loader import loadRMGJob
 
 ################################################################################
 
