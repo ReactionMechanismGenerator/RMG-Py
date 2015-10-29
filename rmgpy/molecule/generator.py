@@ -1,8 +1,8 @@
 # global imports
 
+import cython
 import logging
 import itertools
-from collections import Counter
 
 # local imports
 try:
@@ -11,11 +11,11 @@ except:
     pass
 from rdkit import Chem
 
-from .inchi import compose_aug_inchi_key, compose_aug_inchi, parse_E_layer, parse_N_layer, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
 from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
 from .util import partition, agglomerate, generate_combo
 
+import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.resonance as resonance
 # global variables:
 
@@ -107,21 +107,33 @@ def create_U_layer(mol):
 
     """
 
+    cython.declare(
+                molcopy=Molecule,
+                hydrogens=list,
+                #rdkitmol=,
+                auxinfo=str,
+                atom_indices=list,
+                u_layer=list,
+                i=int,
+                at=Atom,
+                equivalent_atoms=list,
+               )
+
     if mol.getRadicalCount() == 0:
         return None
     elif mol.getFormula() == 'H':
-        return U_LAYER_PREFIX + '1'
+        return inchiutil.U_LAYER_PREFIX + '1'
 
     molcopy = mol.copy(deep=True)
 
-    hydrogens = [at for at in molcopy.atoms if at.number == 1]
+    hydrogens = filter(lambda at: at.number == 1, molcopy.atoms)
     [molcopy.removeAtom(h) for h in hydrogens]
 
     rdkitmol = toRDKitMol(molcopy)
     _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')# suppress stereo warnings
     
     # extract the atom numbers from N-layer of auxiliary info:
-    atom_indices = parse_N_layer(auxinfo)    
+    atom_indices = inchiutil.parse_N_layer(auxinfo)    
     atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
 
     # sort the atoms based on the order of the atom indices
@@ -136,12 +148,12 @@ def create_U_layer(mol):
         u_layer.extend([i+1] * at.radicalElectrons)
     
     # extract equivalent atom pairs from E-layer of auxiliary info:
-    equivalent_atoms = parse_E_layer(auxinfo)
+    equivalent_atoms = inchiutil.parse_E_layer(auxinfo)
     if equivalent_atoms:
         # select lowest u-layer:
         u_layer = find_lowest_u_layer(molcopy, u_layer, equivalent_atoms)
 
-    return (U_LAYER_PREFIX + ','.join(map(str, u_layer)))
+    return (inchiutil.U_LAYER_PREFIX + ','.join(map(str, u_layer)))
 
 
 def toAugmentedInChI(mol):
@@ -155,13 +167,19 @@ def toAugmentedInChI(mol):
 
     """
 
+    cython.declare(
+                inchi=str,
+                mult=str,
+                ulayer=str,
+                aug_inchi=str,
+               )
     inchi = toInChI(mol)
 
-    mult = createMultiplicityLayer(mol.multiplicity)    
+    mult_layer = inchiutil.MULT_PREFIX + str(mol.multiplicity)
 
     ulayer = create_U_layer(mol)
 
-    aug_inchi = compose_aug_inchi(inchi, mult, ulayer)
+    aug_inchi = inchiutil.compose_aug_inchi(inchi, mult_layer, ulayer)
 
     return aug_inchi
 
@@ -204,23 +222,21 @@ def toAugmentedInChIKey(mol):
     Simply append the multiplicity string, do not separate by a
     character like forward slash.
     """
+    
+    cython.declare(
+            key=str,
+            mult_layer=list,
+            ulayer=list
+        )
+
+
     key = toInChIKey(mol)
     
     mult_layer = '-mult'+str(mol.multiplicity) 
     ulayer = [str(i+1) for i, at in enumerate(mol.atoms) if at.radicalElectrons > 0]
     ulayer = '-u' + ','.join(ulayer) if mol.getNumberOfRadicalElectrons() > 1 else None
 
-    return compose_aug_inchi_key(key, mult_layer, ulayer)
-
-def createMultiplicityLayer(multiplicity):
-    """
-    Creates the string with the multiplicity information
-    that is appended to the InChI to create an augmented InChI.
-    
-    """
-    
-    return MULT_PREFIX + str(multiplicity)
-
+    return inchiutil.compose_aug_inchi_key(key, mult_layer, ulayer)
 
 def toSMARTS(mol):
     """
@@ -251,6 +267,13 @@ def toSMILES(mol):
     # we may as well shortcut a few small known molecules.
     # Dictionary lookups are O(1) so this should be fast:
     # The dictionary is defined at the top of this file.
+
+    cython.declare(
+            atom=Atom,
+            # obmol=,
+            # rdkitmol=,
+        )
+
     try:
         if mol.isRadical():
             return _known_smiles_radicals[mol.getFormula()]
@@ -354,6 +377,12 @@ def is_valid_combo(combo, mol, distances):
     Check if the combination of atom indices refers to
     atoms that are adjacent in the molecule.
     """
+    cython.declare(
+        agglomerates=list,
+        new_distances=list,
+        orig_dist=dict,
+        new_dist=dict,
+        )
 
     # compute shortest path between atoms 
     agglomerates = agglomerate(combo)
@@ -388,6 +417,18 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
     unpaired electrons.
     """
 
+    cython.declare(
+        new_u_layer=list,
+        grouped_electrons=list,
+        corresponding_E_layers=list,
+        group=list,
+        e_layer=list,
+        combos=list,
+        orig_agglomerates=list,
+        orig_distances=list,
+        selected_group=list,
+        combo=list,
+        )
     if not equivalent_atoms:
         return u_layer
 
@@ -396,9 +437,7 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
     grouped_electrons, corresponding_E_layers = partition(u_layer, equivalent_atoms)
 
     # don't process atoms that do not belong to an equivalence layer
-    grouped_electrons_copy = grouped_electrons[:]
-    corresponding_E_layers_copy = corresponding_E_layers[:]
-    for group, e_layer in zip(grouped_electrons_copy, corresponding_E_layers_copy):
+    for group, e_layer in zip(grouped_electrons[:], corresponding_E_layers[:]):
         if not e_layer:
             new_u_layer.extend(group)
             grouped_electrons.remove(group)
@@ -435,6 +474,16 @@ def generate_minimum_resonance_isomer(mol):
 
     The metric is a sorted list with indices of the atoms that bear an unpaired electron
     """
+
+    cython.declare(
+        candidates=list,
+        sel=Molecule,
+        cand=Molecule,
+        metric_sel=list,
+        metric_cand=list,
+        )
+
+
     candidates = resonance.generate_isomorphic_isomers(mol)
     
     sel = candidates[0]
@@ -453,6 +502,12 @@ def get_unpaired_electrons(mol):
     Returns a sorted list of the indices of the atoms that bear one or more 
     unpaired electrons.
     """
+
+    cython.declare(
+        locations=list,
+        index=int,
+        at=Atom,
+        )
     locations = []
     for index, at in enumerate(mol.atoms):
         if at.radicalElectrons >= 1:
@@ -467,6 +522,13 @@ def compute_agglomerate_distance(agglomerates, mol):
     A list of distances is returned.
 
     """
+
+    cython.declare(
+        distances=list,
+        agglomerate=list,
+        dist=dict,
+        )
+
     distances = []
     for agglomerate in agglomerates:
         dist = compute_atom_distance(agglomerate, mol)

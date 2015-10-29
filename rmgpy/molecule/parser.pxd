@@ -1,6 +1,7 @@
 # global imports
 
 cimport element as elements
+cimport inchi as inchiutil
 
 # no .pxd files for these:
 #from .util cimport retrieveElementCount, VALENCES, ORDERS
@@ -20,23 +21,23 @@ cdef Molecule __fromSMILES(Molecule mol, str smilesstr, str backend)
 
 cdef Molecule __fromInChI(Molecule mol, str inchistr, str backend)
 
-cdef __parse(Molecule mol, str identifier, str type_identifier, str backend)
+cdef Molecule __parse(Molecule mol, str identifier, str type_identifier, str backend)
 
-cpdef parse_openbabel(Molecule mol, str identifier, str type_identifier)
+cpdef Molecule parse_openbabel(Molecule mol, str identifier, str type_identifier)
 
-cpdef fromInChI(Molecule mol, str inchistr, backend=*)
+cpdef Molecule fromInChI(Molecule mol, str inchistr, backend=*)
 
-cpdef fromSMILES(Molecule mol, str smilesstr, str backend=*)
+cpdef Molecule fromSMILES(Molecule mol, str smilesstr, str backend=*)
 
-cpdef fromSMARTS(Molecule mol, str smartsstr)
+cpdef Molecule fromSMARTS(Molecule mol, str smartsstr)
 
 cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
     
 cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol)
 
-cpdef fromOBMol(Molecule mol, object obmol)
+cpdef Molecule fromOBMol(Molecule mol, object obmol)
 
-cdef __lookup(Molecule mol, str identifier, str type_identifier)
+cdef Molecule __lookup(Molecule mol, str identifier, str type_identifier)
 
 # parser helper functions: 
 

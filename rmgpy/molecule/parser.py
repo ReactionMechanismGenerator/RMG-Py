@@ -21,8 +21,8 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
-from .inchi import AugmentedInChI, parse_H_layer, INCHI_PREFIX
 
+import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
 import rmgpy.molecule.pathfinder as pathfinder
 
@@ -318,10 +318,10 @@ def fromInChI(mol, inchistr, backend='try-all'):
 
     mol.InChI = inchistr
 
-    if INCHI_PREFIX in inchistr:
+    if inchiutil.INCHI_PREFIX in inchistr:
         return __parse(mol, inchistr, 'inchi', backend)
     else:
-        return __parse(mol, INCHI_PREFIX + '/' + inchistr, 'inchi', backend)
+        return __parse(mol, inchiutil.INCHI_PREFIX + '/' + inchistr, 'inchi', backend)
 
 
 
@@ -340,8 +340,8 @@ def fromAugmentedInChI(mol, aug_inchi):
     Returns a Molecule object
     """
 
-    if not isinstance(aug_inchi, AugmentedInChI):
-        aug_inchi = AugmentedInChI(aug_inchi)
+    if not isinstance(aug_inchi, inchiutil.AugmentedInChI):
+        aug_inchi = inchiutil.AugmentedInChI(aug_inchi)
 
     mol = fromInChI(mol, aug_inchi.inchi)
 
@@ -784,7 +784,7 @@ def fix_mobile_h(mol, inchi, u1, u2):
     and the bond between them will decrease in order.
     """
 
-    mobile_hydrogens = parse_H_layer(inchi)
+    mobile_hydrogens = inchiutil.parse_H_layer(inchi)
 
     if mobile_hydrogens:
         # WIP: only consider the first system of mobile hydrogens:

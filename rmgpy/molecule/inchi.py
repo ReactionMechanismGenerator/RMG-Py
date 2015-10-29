@@ -1,4 +1,8 @@
+import cython
 import re
+
+# search for (*) PARENTHESES
+PARENTHESES = re.compile( r'\((.[^\(\)]*)\)')
 
 INCHI_PREFIX = 'InChI=1'
 
@@ -48,6 +52,14 @@ def decompose(string):
     - indices array for the atoms bearing unpaired electrons.
 
     """
+    cython.declare(
+            inchi=str,
+            mult_layer=str,
+            mult=str,
+            multiplicity=int,
+            u_indices=list,
+            ulayer=str
+        )
 
     if not MULT_PREFIX in string:
         return string, None, []
@@ -55,14 +67,14 @@ def decompose(string):
     inchi, mult_ulayer = string.split(MULT_PREFIX)
     
     if not U_LAYER_PREFIX in mult_ulayer:
-        mult = int(mult_ulayer)
+        multiplicity = int(mult_ulayer)
         u_indices = []    
-        return inchi, mult, u_indices
+        return inchi, multiplicity, u_indices
 
     mult, ulayer = mult_ulayer.split(U_LAYER_PREFIX)
-    mult = int(mult)
-    u_indices = [int(i) for i in ulayer.split(U_LAYER_SEPARATOR)]
-    return inchi, mult, u_indices
+    multiplicity = int(mult)
+    u_indices = map(int, ulayer.split(U_LAYER_SEPARATOR))
+    return inchi, multiplicity, u_indices
 
 def ignore_prefix(string):
     """
@@ -76,6 +88,13 @@ def ignore_prefix(string):
     return re.split(r"(InChI=1+)(S*)/", string)[-1]
 
 def compose_aug_inchi(inchi, mult_layer, ulayer=None):
+    """
+
+    """
+    cython.declare(
+            prefix=str,
+        )
+
     prefix = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
     if ulayer is not None:
         return prefix + inchi + mult_layer + ulayer
@@ -84,6 +103,9 @@ def compose_aug_inchi(inchi, mult_layer, ulayer=None):
 
 
 def compose_aug_inchi_key(inchi_key, mult_layer, ulayer=None):
+    """
+
+    """
     if ulayer is not None:
         return inchi_key + mult_layer + ulayer
     else:
@@ -107,6 +129,17 @@ def parse_H_layer(inchi):
     An empty list will be returned when there are no mobile hydrogens.
 
     """
+
+    cython.declare(
+            pieces=list,
+            h_layer=str,
+            piece=str,
+            couples=list,
+            match=str,
+            mobile_h_atoms=list,
+        )
+
+
     pieces = inchi.split('/')
     h_layer = None
     for piece in pieces:
@@ -116,11 +149,8 @@ def parse_H_layer(inchi):
     else: 
         raise Exception('Could not find the hydrogen layer in the inchi: {}'.format(inchi))
 
-    # search for (*) pattern
-    pattern = re.compile( r'\((.[^\(\)]*)\)')
-
     couples = []
-    for match in re.findall(pattern, h_layer):
+    for match in re.findall(PARENTHESES, h_layer):
         mobile_h_atoms = map(int, match[2:].split(','))
         couples.append(mobile_h_atoms)
 
@@ -149,6 +179,15 @@ def parse_E_layer(auxinfo):
 
     """
 
+    cython.declare(
+            pieces=list,
+            e_layer=str,
+            piece=str,
+            equivalent_atoms=list,
+            atomtuple=str,
+            indices=list,
+        )
+
     pieces = auxinfo.split('/')
     e_layer = None
     for piece in pieces:
@@ -158,11 +197,8 @@ def parse_E_layer(auxinfo):
     else:
         return []
 
-    # search for (*) pattern
-    pattern = re.compile( r'\((.[^\(\)]*)\)')
-
     equivalent_atoms = []
-    for atomtuple in re.findall(pattern, e_layer):
+    for atomtuple in re.findall(PARENTHESES, e_layer):
         indices = list(map(int, atomtuple.split(',')))
         equivalent_atoms.append(indices)
 
@@ -188,6 +224,14 @@ def parse_N_layer(auxinfo):
 
     Raises an exception when the N-layer could not be found.
     """
+
+
+    cython.declare(
+            pieces=list,
+            atom_numbers=str,
+            piece=str,
+            indices=list,
+        )
 
     pieces = auxinfo.split('/')
     atom_numbers = None
