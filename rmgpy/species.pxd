@@ -49,9 +49,10 @@ cdef class Species:
     cdef public bint reactive
     cdef public object energyTransferModel
     cdef public dict props
+    cdef public str aug_inchi
     
     cpdef generateResonanceIsomers(self)
-    
+
     cpdef bint isIsomorphic(self, other)
     
     cpdef fromAdjacencyList(self, adjlist)
@@ -80,6 +81,12 @@ cdef class Species:
     cpdef double calculateCp0(self) except -1
 
     cpdef double calculateCpInf(self) except -1
+
+    cpdef str getAugmentedInChI(self)
+
+    cpdef str getDescriptor(self)
+
+    cpdef str getFormula(self)
     
 ################################################################################
 

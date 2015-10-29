@@ -241,13 +241,11 @@ def filterReactions(reactants, products, reactionList):
     reactant_species = []
     for mol in reactants:
         s = Species(molecule=[mol])
-        s.generateResonanceIsomers()
         reactant_species.append(s)
     reactants = reactant_species
     product_species = []
     for mol in products:
         s = Species(molecule=[mol])
-        s.generateResonanceIsomers()
         product_species.append(s)
     products = product_species
     
