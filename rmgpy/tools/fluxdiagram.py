@@ -489,7 +489,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)), 
                                 centralSpecies, speciesPath, settings)
 
-def run(inputFile, useJava=False):
+def run(inputFile, speciesPath=None, useJava=False):
     
     rmg = loadRMGJob(inputFile, useJava)
         
@@ -504,7 +504,6 @@ def run(inputFile, useJava=False):
         if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
             reactionSystem.termination.append(TerminationTime((1e10,'s')))
         
-        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
         
         print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates =\
