@@ -214,7 +214,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             if concentration < concentrationTolerance:
                 penwidth = 0.0
             else:
-                penwidth = slope * math.log10(concentration) + maximumNodePenWidth
+                penwidth = round(slope * math.log10(concentration) + maximumNodePenWidth,3)
             node.set_penwidth(penwidth)
         # Update the edges
         slope = -maximumEdgePenWidth / math.log10(speciesRateTolerance)
@@ -247,7 +247,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                     penwidth = 0.0
                     edge.set_dir("none")
                 else:
-                    penwidth = slope * math.log10(speciesRate) + maximumEdgePenWidth
+                    penwidth = round(slope * math.log10(speciesRate) + maximumEdgePenWidth,3)
                 edge.set_penwidth(penwidth)
         # Save the graph at this time to a dot file and a PNG image
         if times[t] == 0:
