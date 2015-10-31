@@ -1381,26 +1381,26 @@ class Molecule(Graph):
     def isAromatic(self):
         """ 
         Returns ``True`` if the molecule is aromatic, or ``False`` if not.  
-        Iterates over the SSSR's and searches for rings that consist solely of Cb 
-        atoms.  Assumes that aromatic rings always consist of 6 atoms. 
-        In cases of naphthalene, where a 6 + 4 aromatic system exists,
-        there will be at least one 6 membered aromatic ring so this algorithm
-        will not fail for fused aromatic rings.
+        Iterates over the SSSR's and searches for rings that consist solely of Xb 
+        atoms, where X could be anything (i.e. Cb, Ob, N3b, N5b).
+        If at least one ring of 'b' atoms is found, then it's Aromatic.
+        Be sure to call updateAtomTypes() before using this.
         """
-        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
+        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list, label=str)
         SSSR = self.getSmallestSetOfSmallestRings()
         if SSSR:
             for cycle in SSSR:
-                if len(cycle) == 6:
                     for atom in cycle:
-                        #print atom.atomType.label
-                        if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
-                            continue                        
-                        # Go onto next cycle if a non Cb atomtype was discovered in this cycle
-                        break 
+                        label = atom.atomType.label
+                        #print 'in isAromatic cycle: '+label
+                        if label[-1] == 'b' or label[-2:] == 'bf':
+                            continue
+                        # Go on to next cycle if a non-b atomtype was discovered in this cycle
+                        break
                     else:
-                        # Molecule is aromatic when all 6 atoms are type 'Cb'
-                        return True    
+                        # All n atoms in this ring are some type of 'b'
+                        return True 
+            # exhausted all rings without finding an aromatic one
         return False
 
     def countInternalRotors(self):
@@ -1704,24 +1704,18 @@ class Molecule(Graph):
             aromatic = False
             rings = molecule.getSmallestSetOfSmallestRings()            
             for ring0 in rings:
-                # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings                
                 aromaticBonds = []
-                if len(ring0) == 6:
-                    # Figure out which atoms and bonds are aromatic and reassign appropriately:
-                    for i, atom1 in enumerate(ring0):
-                        if not atom1.isCarbon():
-                            # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                            break
-                        for atom2 in ring0[i+1:]:
-                            if molecule.hasBond(atom1, atom2):
-                                if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
-                                    aromaticBonds.append(molecule.getBond(atom1, atom2))
-                if len(aromaticBonds) == 6:
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    for atom2 in ring0[i+1:]:
+                        if molecule.hasBond(atom1, atom2):
+                            if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
+                                aromaticBonds.append(molecule.getBond(atom1, atom2))
+                if len(aromaticBonds) == len(ring0):
                     aromatic = True
-                    # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
+                    # Only change bonds if there are all aromatic.  Otherwise don't do anything
                     for bond in aromaticBonds:
                         bond.order = 'B'
-                        
             if aromatic:              
                 isomers.append(molecule)
 

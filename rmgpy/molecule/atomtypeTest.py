@@ -258,6 +258,21 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol6, 0), 'Ar')
         self.assertEqual(self.atomType(self.mol7, 0), 'He')
         self.assertEqual(self.atomType(self.mol8, 0), 'Ne')
+        
+    def testFuranOxygen(self):
+        """
+        Test the O in aromatic resonance form of furan is Ob
+        """
+        furan = Molecule().fromSMILES('C1=COC=C1')
+        aromatics = furan.getAromaticResonanceIsomers()
+        self.assertEqual(len(aromatics), 1)
+        aromatic = aromatics[0]
+        aromatic.updateAtomTypes()
+        #self.assertTrue(aromatic.isAromatic())
+        for atom in aromatic.atoms:
+            if atom.isOxygen():
+                type = getAtomType(atom, aromatic.getBonds(atom))
+                self.assertEqual(type.label, 'Ob')
 
 ################################################################################
 

@@ -170,7 +170,7 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'H','He',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
-    'O','Os','Od','Oa','Ot',
+    'O','Os','Od','Oa','Ot','Ob',
     'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa',
@@ -181,7 +181,7 @@ atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'Val4','Val5','Val6','Val7',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
-    'O','Os','Od','Oa','Ot',
+    'O','Os','Od','Oa','Ot','Ob',
     'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa',
@@ -195,7 +195,7 @@ atomTypes['Val5'] = AtomType(label='Val5', generic=['R','R!H'], specific=[
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b']
 )
 atomTypes['Val6'] = AtomType(label='Val6', generic=['R','R!H'], specific=[
-    'O','Os','Od','Oa','Ot',
+    'O','Os','Od','Oa','Ot','Ob',
     'S','Ss','Sd','Sa']
 )
 atomTypes['Val7'] = AtomType(label='Val7', generic=['R','R!H'], specific=[
@@ -228,11 +228,12 @@ atomTypes['N5dd'] = AtomType('N5dd', generic=['R','R!H','N','Val5'],  specific=[
 atomTypes['N5t' ] = AtomType('N5t',  generic=['R','R!H','N','Val5'],  specific=[])
 atomTypes['N5b' ] = AtomType('N5b',  generic=['R','R!H','N','Val5'],  specific=[])
 
-atomTypes['O'   ] = AtomType('O',    generic=['R','R!H','Val6'],      specific=['Os','Od','Oa','Ot'])
+atomTypes['O'   ] = AtomType('O',    generic=['R','R!H','Val6'],      specific=['Os','Od','Oa','Ot','Ob'])
 atomTypes['Os'  ] = AtomType('Os',   generic=['R','R!H','O','Val6'],  specific=[])
 atomTypes['Od'  ] = AtomType('Od',   generic=['R','R!H','O','Val6'],  specific=[])
 atomTypes['Oa'  ] = AtomType('Oa',   generic=['R','R!H','O','Val6'],  specific=[])
 atomTypes['Ot'  ] = AtomType('Ot',   generic=['R','R!H','O','Val6'],  specific=[])
+atomTypes['Ob'  ] = AtomType('Ob',   generic=['R','R!H','O','Val6'],  specific=[])
 
 atomTypes['Ne'  ] = AtomType('Ne',   generic=['R','R!H'],      specific=[])
 
@@ -293,6 +294,8 @@ atomTypes['Os'  ].setActions(incrementBond=['Od'],           decrementBond=[],  
 atomTypes['Od'  ].setActions(incrementBond=[],               decrementBond=['Os'],           formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=['Od'],  decrementLonePair=['Od'])
 atomTypes['Oa'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Ot'  ].setActions(incrementBond=[],               decrementBond=['Od'],           formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=['Ot'],  decrementLonePair=['Ot'])
+atomTypes['Ob'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['Ob'],        breakBond=['Ob'],        incrementRadical=['Ob'],   decrementRadical=['Ob'],   incrementLonePair=['Ob'],  decrementLonePair=['Ob']) # not sure if we should have incrementLonePair and dercementLonePair options here?
+
 
 atomTypes['Ne'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=['Ne'],   decrementRadical=['Ne'],   incrementLonePair=[],    decrementLonePair=[])
 
@@ -379,6 +382,7 @@ def getAtomType(atom, bonds):
     elif atom.symbol == 'O':
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Os'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
+        elif double + doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Ob'
         elif len(bonds) == 0:                                        atomType = 'Oa'
         elif double + doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
     elif atom.symbol == 'Ne':
