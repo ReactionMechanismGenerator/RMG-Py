@@ -320,5 +320,25 @@ multiplicity 2
         closed_shell_aug_inchi = closed_shell.getAugmentedInChI()
         self.assertTrue(singlet_aug_inchi != closed_shell_aug_inchi)
 
+    def test_C6H5(self):
+        """Test that the u-layer of phenyl shows atom 1."""
+        adjlist = """
+multiplicity 2
+1  C u0 p0 c0 {2,D} {3,S} {10,S}
+2  C u0 p0 c0 {1,D} {5,S} {7,S}
+3  C u0 p0 c0 {1,S} {6,D} {8,S}
+4  C u0 p0 c0 {5,D} {6,S} {11,S}
+5  C u0 p0 c0 {2,S} {4,D} {9,S}
+6  C u1 p0 c0 {3,D} {4,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {5,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {4,S}
+"""
+
+        aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/mult2/u1'
+        self.compare(adjlist, aug_inchi)
+
 if __name__ == '__main__':
     unittest.main()
