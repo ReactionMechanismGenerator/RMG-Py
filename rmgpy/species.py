@@ -374,6 +374,44 @@ class Species(object):
         """
         return self.molecule[0].calculateCpInf()
 
+    def copy(self, deep=False):
+        """
+        Create a copy of the current species. If the 
+        kw argument 'deep' is True, then a deep copy will be made of the 
+        Molecule objects in self.molecule.
+
+        For other complex attributes, a deep copy will always be made.
+        """
+        from copy import deepcopy
+
+        cython.declare(other=Species)
+
+        other = Species.__new__(Species)
+
+        other.index = self.index
+
+        other.label = self.label
+
+        other.thermo = deepcopy(self.thermo)
+
+        other.molecule = []
+        for mol in self.molecule:
+            other.molecule.append(mol.copy(deep=deep))
+
+        other.conformer = deepcopy(self.conformer)
+
+        other.transportData = deepcopy(self.transportData)
+
+        other.molecularWeight = deepcopy(self.molecularWeight)
+        other.dipoleMoment = deepcopy(self.dipoleMoment)
+        other.polarizability = deepcopy(self.polarizability)
+        other.Zrot = deepcopy(self.Zrot)
+        other.energyTransferModel = deepcopy(self.energyTransferModel)
+        other.reactive = self.reactive        
+        other.props = deepcopy(self.props)
+        
+
+        return other
 ################################################################################
 
 class TransitionState():
