@@ -46,6 +46,7 @@ import logging
 import re
 import os.path
 from copy import copy, deepcopy
+import urllib
 
 import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -179,13 +180,17 @@ class Reaction:
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        base_url = "http://rmg.mit.edu/database/kinetics/reaction/"
+
+        rxn_string = ''
         for i,species in enumerate(self.reactants):
             adjlist = species.molecule[0].toAdjacencyList(removeH=False)
-            url += "reactant{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+            rxn_string += "reactant{0}={1}__".format(i+1, adjlist)
         for i,species in enumerate(self.products):
             adjlist = species.molecule[0].toAdjacencyList(removeH=False)
-            url += "product{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+            rxn_string += "product{0}={1}__".format(i+1, adjlist)
+
+        url = base_url + urllib.quote(rxn_string)
         return url.strip('_')
         
     def isIsomerization(self):

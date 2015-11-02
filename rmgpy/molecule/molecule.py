@@ -40,6 +40,8 @@ import logging
 import os
 import re
 import numpy
+import urllib
+
 
 import element as elements
 try:
@@ -1837,9 +1839,9 @@ class Molecule(Graph):
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        url = "http://rmg.mit.edu/database/molecule/"
+        base_url = "http://rmg.mit.edu/database/molecule/"
         adjlist = self.toAdjacencyList(removeH=False)
-        url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+        url = base_url + urllib.quote(adjlist)
         return url.strip('_')
                     
     def getRadicalAtoms(self):
