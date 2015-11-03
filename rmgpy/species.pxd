@@ -80,6 +80,8 @@ cdef class Species:
     cpdef double calculateCp0(self) except -1
 
     cpdef double calculateCpInf(self) except -1
+
+    cpdef Species copy(self, bint deep=?)
     
 ################################################################################
 

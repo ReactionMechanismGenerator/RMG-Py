@@ -149,6 +149,20 @@ class TestSpecies(unittest.TestCase):
         for i, j in zip(spec.molecule, spec2.molecule):
             self.assertTrue(i.isIsomorphic(j))
 
+    def testCopy(self):
+        """Test that we can make a copy of a Species object."""
+
+        spc_cp = self.species.copy()
+
+        self.assertTrue(id(self.species) != id(spc_cp))
+        self.assertTrue(self.species.isIsomorphic(spc_cp))
+        self.assertEquals(self.species.label, spc_cp.label)
+        self.assertEquals(self.species.index, spc_cp.index)
+
+        self.assertTrue(self.species.molecularWeight.equals(spc_cp.molecularWeight))
+        self.assertEquals(self.species.reactive, spc_cp.reactive)
+
+
 ################################################################################
 
 if __name__ == '__main__':
