@@ -514,16 +514,18 @@ class QMReaction:
             #     checkpointFile = os.path.join(self.settings.fileStore, self.uniqueID + ".chk")
             #     assert os.path.exists(checkpointFile)
             #     os.remove(checkpointFile) # Checkpoint file path
+        if os.path.exists(self.outputFilePath):
+            converged, internalCoord = self.verifyOutputFile()
+        else:
+            optEst = self.optEstimate(labels)
+            optRC = self.optRxnCenter(labels)
+            print "Optimizing TS once"
+            self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optRC)
+            converged, internalCoord = self.run()
+            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
         
-        optEst = self.optEstimate(labels)
-        optRC = self.optRxnCenter(labels)
-        print "Optimizing TS once"
-        self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optRC)
-        converged, internalCoord = self.run()
-        shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-        
-        if os.path.exists(self.ircOutputFilePath):# Remove it
-            os.remove(self.ircOutputFilePath)
+            if os.path.exists(self.ircOutputFilePath):# Remove it
+                os.remove(self.ircOutputFilePath)
 
         if internalCoord and not converged:
             notes = 'Internal coordinate error, trying cartesian\n'
