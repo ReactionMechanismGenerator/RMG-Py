@@ -82,7 +82,40 @@ def parseCommandLineArguments():
     return args
 
 
-def run():
+def main():
+    """
+    Driver function that parses command line arguments and passes them to the execute function.
+    """
+    # Parse the command-line arguments (requires the argparse module)
+    args = parseCommandLineArguments()
+
+    # For output and scratch directories, if they are empty strings, set them
+    # to match the input file location
+    inputFile = args.file[0]
+
+    inputDirectory = os.path.abspath(os.path.dirname(inputFile))
+
+    if args.output_directory == '':
+        args.output_directory = inputDirectory
+    if args.scratch_directory == '':
+        args.scratch_directory = inputDirectory
+    
+    # Initialize the logging system (resets the RMG.log file)
+    level = logging.INFO
+    if args.debug: level = 0
+    elif args.verbose: level = logging.DEBUG
+    elif args.quiet: level = logging.WARNING
+
+    kwargs = {
+            'scratch_directory': args.scratch_directory,
+            'restart': args.restart,
+            'walltime': args.walltime,
+            'log': level,
+            }
+
+    execute(inputFile, args.output_directory, **kwargs)
+
+def execute(inputFile, output_directory, **kwargs):
     """
 
     Generates all the possible reactions involving a given
@@ -93,27 +126,16 @@ def run():
 
     Returns an RMG object.
     """
+    try:
+        log_level = kwargs['log'] 
+    except KeyError:
+        log_level = logging.WARNING
+    
+    initializeLog(log_level, os.path.join(output_directory,'RMG.log'))
 
-    # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
-
-    # For output and scratch directories, if they are empty strings, set them
-    # to match the input file location
-    inputDirectory = os.path.abspath(os.path.dirname(args.file[0]))
-    if args.output_directory == '':
-        args.output_directory = inputDirectory
-    if args.scratch_directory == '':
-        args.scratch_directory = inputDirectory
-
-    # Initialize the logging system (resets the RMG.log file)
-    level = logging.INFO
-    if args.debug: level = 0
-    elif args.verbose: level = logging.DEBUG
-    elif args.quiet: level = logging.WARNING
-    initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
 
     rmg = RMG()
-    rmg.initialize(args)
+    rmg.initialize(inputFile, output_directory, **kwargs)
     
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
