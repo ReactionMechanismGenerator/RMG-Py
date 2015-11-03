@@ -35,89 +35,14 @@ effectively the first step in the RMG rate-based mechanism generation algorithm.
 
 The input file is a subset of that used with regular RMG jobs. 
 """
-
-import os.path
-import sys
-import argparse
-import logging
-
-from rmgpy.rmg.main import *
+import rmgpy.tools.generate_reactions as generate_reactions
 
 ################################################################################
 
-def parseCommandLineArguments():
-    """
-    Parse the command-line arguments being passed to RMG Py. This uses the
-    :mod:`argparse` module, which ensures that the command-line arguments are
-    sensible, parses them, and returns them.
-    """
-
-    parser = argparse.ArgumentParser(description=
-    """
-    Reaction Mechanism Generator (RMG) is an automatic chemical reaction
-    mechanism generator that constructs kinetic models composed of
-    elementary chemical reaction steps using a general understanding of
-    how molecules react.
-    """)
-    parser.add_argument('file', metavar='FILE', type=str, nargs=1,
-        help='a file describing the job to execute')
-
-    # Options for controlling the amount of information printed to the console
-    # By default a moderate level of information is printed; you can either
-    # ask for less (quiet), more (verbose), or much more (debug)
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
-    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
-    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
-
-    # Add options for controlling what directories files are written to
-    parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as output directory')
-    parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as scratch directory')
-    parser.add_argument('-l', '--library-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as library directory')
-    
-    args = parser.parse_args()
-    args.walltime = '0'
-    args.restart = False
-
-    return args
-
-################################################################################
+def main():
+    generate_reactions.run()
 
 if __name__ == '__main__':
-
-    # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    main()
     
-    # For output and scratch directories, if they are empty strings, set them
-    # to match the input file location
-    import os.path
-    inputDirectory = os.path.abspath(os.path.dirname(args.file[0]))
-    if args.output_directory == '':
-        args.output_directory = inputDirectory
-    if args.scratch_directory == '':
-        args.scratch_directory = inputDirectory
-
-    # Initialize the logging system (resets the RMG.log file)
-    level = logging.INFO
-    if args.debug: level = 0
-    elif args.verbose: level = logging.DEBUG
-    elif args.quiet: level = logging.WARNING
-    initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
-
-    rmg = RMG()
-    rmg.initialize(args)
-    
-    # Show all core and edge species and reactions in the output
-    rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
-    rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
-            
-    # Save the current state of the model core to a pretty HTML file
-    rmg.saveOutputHTML()
-    # Save a Chemkin file containing the current model core
-    rmg.saveChemkinFiles()
-
-    rmg.finish()
     
