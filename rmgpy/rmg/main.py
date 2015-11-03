@@ -305,7 +305,7 @@ class RMG:
             for family in self.database.kinetics.families.values():
                 family.fillKineticsRulesByAveragingUp()
     
-    def initialize(self, args):
+    def initialize(self, inputFile, output_directory, **kwargs):
         """
         Initialize an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
@@ -321,16 +321,24 @@ class RMG:
         self.logHeader()
         
         # Set directories
-        self.outputDirectory = args.output_directory
-        self.scratchDirectory = args.scratch_directory
+        self.outputDirectory = output_directory
+        try:
+            self.scratchDirectory = kwargs['scratch_directory']
+        except KeyError:
+            self.scratchDirectory = output_directory
         
-        if args.restart:
+        try:
+            restart = kwargs['restart']
+        except KeyError:
+            restart = False
+
+        if restart:
             if not os.path.exists(os.path.join(self.outputDirectory,'restart.pkl')):
                 logging.error("Could not find restart file (restart.pkl). Please run without --restart option.")
                 raise Exception("No restart file")
             
         # Read input file
-        self.loadInput(args.file[0])
+        self.loadInput(inputFile)
         
         # Check input file 
         self.checkInput()
@@ -366,10 +374,15 @@ class RMG:
         	logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time
-        if args.walltime == '0': 
+        try:
+            walltime = kwargs['walltime']
+        except KeyError:
+            walltime = '0'
+
+        if walltime  == '0': 
             self.wallTime = 0
         else:
-            data = args.walltime[0].split(':')
+            data = walltime[0].split(':')
             if len(data) == 1:
                 self.wallTime = int(data[-1])
             elif len(data) == 2:
@@ -387,7 +400,7 @@ class RMG:
             saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
         
         # Initialize reaction model
-        if args.restart:
+        if restart:
             self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
         else:
     
@@ -459,13 +472,13 @@ class RMG:
             if self.saveRestartPeriod:
                 self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel)
     
-    def execute(self, args):
+    def execute(self, inputFile, output_directory, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
         """
     
-        self.initialize(args)
+        self.initialize(inputFile, output_directory, **kwargs)
         
         # RMG execution statistics
         coreSpeciesCount = []

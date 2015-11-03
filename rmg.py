@@ -108,7 +108,9 @@ if __name__ == '__main__':
     # For output and scratch directories, if they are empty strings, set them
     # to match the input file location
     import os.path
-    inputDirectory = os.path.abspath(os.path.dirname(args.file[0]))
+    inputFile = args.file[0]
+
+    inputDirectory = os.path.abspath(os.path.dirname(inputFile))
     if args.output_directory == '':
         args.output_directory = inputDirectory
     if args.scratch_directory == '':
@@ -127,11 +129,25 @@ if __name__ == '__main__':
 
     logging.info(rmgpy.settings.report())
 
+    output_dir = args.output_directory
+    kwargs = {
+        'scratch_directory': args.scratch_directory,
+        'restart': args.restart,
+        'walltime': args.walltime,
+        }
+
     if args.profile:
         import cProfile, sys, pstats, os
         global_vars = {}
-        local_vars = {'args': args, 'RMG': RMG}
-        command = """rmg = RMG(); rmg.execute(args)"""
+        local_vars = {
+            'inputFile': inputFile, 
+            'output_dir': output_dir, 
+            'kwargs': kwargs,
+            'RMG': RMG
+            }
+
+        command = """rmg = RMG(); rmg.execute(inputFile, output_dir, **kwargs)"""
+
         stats_file = os.path.join(args.output_directory,'RMG.profile')
         print("Running under cProfile")
         if not args.postprocess:
@@ -143,5 +159,7 @@ if __name__ == '__main__':
         makeProfileGraph(stats_file)
         
     else:
+
         rmg = RMG()
-        rmg.execute(args)
+
+        rmg.execute(inputFile, output_dir, **kwargs)
