@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -29,18 +29,18 @@
 ################################################################################
 
 """
-RMG is an automatic chemical mechanism generator. It is awesomely awesome.
+This script is used to generate all the possible reactions involving a given
+set of reactants, including pressure-dependent effects if desired. This is
+effectively the first step in the RMG rate-based mechanism generation algorithm.
+
+The input file is a subset of that used with regular RMG jobs. 
 """
 
 import os.path
-import sys
 import argparse
 import logging
-import rmgpy
 
-from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
-
-################################################################################
+from rmgpy.rmg.main import initializeLog, RMG
 
 def parseCommandLineArguments():
     """
@@ -74,92 +74,78 @@ def parseCommandLineArguments():
         metavar='DIR', help='use DIR as scratch directory')
     parser.add_argument('-l', '--library-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as library directory')
+    
+    args = parser.parse_args()
+    args.walltime = '0'
+    args.restart = False
 
-    # Add restart option
-    parser.add_argument('-r', '--restart', action='store_true', help='restart an incomplete job')
+    return args
 
-    parser.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
-    parser.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
 
-    parser.add_argument('-t', '--walltime', type=str, nargs=1, default='0',
-        metavar='HH:MM:SS', help='set the maximum execution time')
-
-    return parser.parse_args()
-
-################################################################################
-
-if __name__ == '__main__':
-
-    """ GUPPY PROFILING DISABLED FOR NOW
-    # Initialize the memory profiler
-    # It works best if we do this as the very first thing
-    # If the memory profiler package is not installed then carry on
-    try:
-        from guppy import hpy
-        hp = hpy()
-        hp.heap()
-    except ImportError:
-        pass
+def main():
     """
-
+    Driver function that parses command line arguments and passes them to the execute function.
+    """
     # Parse the command-line arguments (requires the argparse module)
     args = parseCommandLineArguments()
 
     # For output and scratch directories, if they are empty strings, set them
     # to match the input file location
-    import os.path
     inputFile = args.file[0]
 
     inputDirectory = os.path.abspath(os.path.dirname(inputFile))
+
     if args.output_directory == '':
         args.output_directory = inputDirectory
     if args.scratch_directory == '':
         args.scratch_directory = inputDirectory
+    
+    # Initialize the logging system (resets the RMG.log file)
+    level = logging.INFO
+    if args.debug: level = 0
+    elif args.verbose: level = logging.DEBUG
+    elif args.quiet: level = logging.WARNING
 
-    if args.postprocess:
-        print "Postprocessing the profiler statistics (will be appended to RMG.log)"
-        args.profile = True
-    else:
-        # Initialize the logging system (resets the RMG.log file)
-        level = logging.INFO
-        if args.debug: level = 0
-        elif args.verbose: level = logging.DEBUG
-        elif args.quiet: level = logging.WARNING
-        initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
-
-    logging.info(rmgpy.settings.report())
-
-    output_dir = args.output_directory
     kwargs = {
-        'scratch_directory': args.scratch_directory,
-        'restart': args.restart,
-        'walltime': args.walltime,
-        }
-
-    if args.profile:
-        import cProfile, sys, pstats, os
-        global_vars = {}
-        local_vars = {
-            'inputFile': inputFile, 
-            'output_dir': output_dir, 
-            'kwargs': kwargs,
-            'RMG': RMG
+            'scratch_directory': args.scratch_directory,
+            'restart': args.restart,
+            'walltime': args.walltime,
+            'log': level,
             }
 
-        command = """rmg = RMG(); rmg.execute(inputFile, output_dir, **kwargs)"""
+    execute(inputFile, args.output_directory, **kwargs)
 
-        stats_file = os.path.join(args.output_directory,'RMG.profile')
-        print("Running under cProfile")
-        if not args.postprocess:
-            # actually run the program!
-            cProfile.runctx(command, global_vars, local_vars, stats_file)
-        # postprocess the stats
-        log_file = os.path.join(args.output_directory,'RMG.log')
-        processProfileStats(stats_file, log_file)
-        makeProfileGraph(stats_file)
-        
-    else:
+def execute(inputFile, output_directory, **kwargs):
+    """
 
-        rmg = RMG()
+    Generates all the possible reactions involving a given
+    set of reactants, including pressure-dependent effects if desired. This is
+    effectively the first step in the RMG rate-based mechanism generation algorithm.
 
-        rmg.execute(inputFile, output_dir, **kwargs)
+    The input file is a subset of that used with regular RMG jobs. 
+
+    Returns an RMG object.
+    """
+    try:
+        log_level = kwargs['log'] 
+    except KeyError:
+        log_level = logging.WARNING
+    
+    initializeLog(log_level, os.path.join(output_directory,'RMG.log'))
+
+
+    rmg = RMG()
+    rmg.initialize(inputFile, output_directory, **kwargs)
+    
+    # Show all core and edge species and reactions in the output
+    rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
+    rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
+            
+    # Save the current state of the model core to a pretty HTML file
+    rmg.saveOutputHTML()
+    # Save a Chemkin file containing the current model core
+    rmg.saveChemkinFiles()
+
+    rmg.finish()
+    
+    return rmg
