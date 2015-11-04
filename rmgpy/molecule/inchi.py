@@ -89,7 +89,10 @@ def ignore_prefix(string):
 
 def compose_aug_inchi(inchi, mult_layer, ulayer=None):
     """
+    Composes an augmented InChI by concatenating the different pieces
+    as follows:
 
+    InChI=1S/XXXX.../c.../h.../multx/ux,x,...
     """
     cython.declare(
             prefix=str,
@@ -104,12 +107,17 @@ def compose_aug_inchi(inchi, mult_layer, ulayer=None):
 
 def compose_aug_inchi_key(inchi_key, mult_layer, ulayer=None):
     """
+    Composes an augmented InChI Key by concatenating the different pieces
+    as follows:
 
+    XXXXXXXXXXXXXX-XXXXXXXXXX-multx-ux,x,xxx
+
+    Uses hyphens rather than forward slashes to avoid messing up file paths.
     """
     if ulayer is not None:
-        return inchi_key + mult_layer + ulayer
+        return inchi_key + '-mult' + mult_layer + '-' + ulayer[1:]#cut off the '/'
     else:
-        return inchi_key + mult_layer 
+        return inchi_key + '-mult' + mult_layer 
 
 def parse_H_layer(inchi):
     """

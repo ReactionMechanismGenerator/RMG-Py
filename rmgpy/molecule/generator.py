@@ -225,16 +225,16 @@ def toAugmentedInChIKey(mol):
     
     cython.declare(
             key=str,
-            mult_layer=list,
-            ulayer=list
+            mult_layer=str,
+            ulayer=str
         )
 
 
     key = toInChIKey(mol)
     
-    mult_layer = '-mult'+str(mol.multiplicity) 
-    ulayer = [str(i+1) for i, at in enumerate(mol.atoms) if at.radicalElectrons > 0]
-    ulayer = '-u' + ','.join(ulayer) if mol.getNumberOfRadicalElectrons() > 1 else None
+    mult_layer = str(mol.multiplicity)
+
+    ulayer = create_U_layer(mol)
 
     return inchiutil.compose_aug_inchi_key(key, mult_layer, ulayer)
 
