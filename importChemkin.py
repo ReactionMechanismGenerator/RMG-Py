@@ -37,7 +37,7 @@ import rmgpy.chemkin
 import rmgpy.data
 import rmgpy.data.kinetics
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
-from rmgpy.reaction import ReactionModel
+from rmgpy.rmg.model import ReactionModel
 
 from rmgpy.data.thermo import Entry, saveEntry
 from rmgpy.data.base import Entry as kinEntry
