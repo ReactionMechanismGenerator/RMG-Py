@@ -307,20 +307,9 @@ def generate_isomorphic_isomers(mol):
         newIsomers += generateLonePairRadicalResonanceIsomers(isomer)
         newIsomers += generateN5dd_N5tsResonanceIsomers(isomer)
         newIsomers += generateKekulizedResonanceIsomers(isomer)
+        newIsomers += generateAromaticResonanceIsomers(isomer)
         
-        aroisomers = generateAromaticResonanceIsomers(isomer)
-        for aro in aroisomers:
-            try:
-                aro.updateAtomTypes()
-            except:
-                # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
-                # Do not add the new isomer since it is malformed
-                continue 
-            
-            newIsomers.append(aro)
-
         for newIsomer in newIsomers:
-            newIsomer.updateAtomTypes()
             # Append to isomer list if unique
             for isom in isomers:
                 if isom.copy(deep=True).isIsomorphic(newIsomer.copy(deep=True)):
