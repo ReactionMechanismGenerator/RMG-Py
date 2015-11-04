@@ -5,6 +5,7 @@ import rmgpy.molecule.parser as parser
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
+import rmgpy.molecule.pathfinder as pathfinder
 
 def generateResonanceIsomers(mol):
     """
@@ -53,7 +54,7 @@ def getAdjacentResonanceIsomers(mol):
     if mol.isRadical():
         # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = findAllDelocalizationPaths(mol, atom)
+            paths = pathfinder.findAllDelocalizationPaths(atom)
             for atom1, atom2, atom3, bond12, bond23 in paths:
                 # Adjust to (potentially) new resonance isomer
                 atom1.decrementRadical()
@@ -94,7 +95,7 @@ def getLonePairRadicalResonanceIsomers(mol):
     if mol.isRadical():
         # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = findAllDelocalizationPathsLonePairRadical(mol, atom)
+            paths = pathfinder.findAllDelocalizationPathsLonePairRadical(atom)
             for atom1, atom2 in paths:
                 # Adjust to (potentially) new resonance isomer
                 atom1.decrementRadical()
@@ -138,7 +139,7 @@ def getN5dd_N5tsResonanceIsomers(mol):
     
     # Iterate over nitrogen atoms in structure
     for atom in mol.vertices:
-        paths = findAllDelocalizationPathsN5dd_N5ts(mol, atom)
+        paths = pathfinder.findAllDelocalizationPathsN5dd_N5ts(atom)
         for atom1, atom2, atom3, bond12, bond13, direction in paths:
             # from N5dd to N5ts
             if direction == 1:
@@ -270,93 +271,6 @@ def getKekulizedResonanceIsomers(mol):
     isomer.updateAtomTypes()
     isomers.append(isomer)  
     return isomers
-
-def findAllDelocalizationPaths(mol, atom1):
-    """
-    Find all the delocalization paths allyl to the radical center indicated
-    by `atom1`. Used to generate resonance isomers.
-    """
-    cython.declare(paths=list)
-    cython.declare(atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-    
-    # No paths if atom1 is not a radical
-    if atom1.radicalElectrons <= 0:
-        return []
-
-    # Find all delocalization paths
-    paths = []
-    for atom2, bond12 in atom1.edges.items():
-        # Vinyl bond must be capable of gaining an order
-        if (bond12.isSingle() or bond12.isDouble()) and atom1.radicalElectrons == 1:
-            for atom3, bond23 in atom2.edges.items():
-                # Allyl bond must be capable of losing an order without breaking
-                if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
-                    paths.append([atom1, atom2, atom3, bond12, bond23])
-    return paths
-
-def findAllDelocalizationPathsLonePairRadical(mol, atom1):
-    """
-    Find all the delocalization paths of lone electron pairs next to the radical center indicated
-    by `atom1`. Used to generate resonance isomers.
-    """
-    cython.declare(paths=list)
-    cython.declare(atom2=Atom, bond12=Bond)
-    
-    # No paths if atom1 is not a radical
-    if atom1.radicalElectrons <= 0:
-        return []
-    
-    # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
-    if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen())):
-        return []
-    
-    # Find all delocalization paths
-    paths = []
-    for atom2, bond12 in atom1.edges.items():
-        # Only single bonds are considered
-        if bond12.isSingle():
-            # Neighboring atom must posses a lone electron pair to loose it
-            if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen())) and (atom2.radicalElectrons == 0):
-                paths.append([atom1, atom2])
-                
-    return paths
-
-def findAllDelocalizationPathsN5dd_N5ts(mol, atom1):
-    """
-    Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
-    and nitrogen atoms with one triple and one single bond (N5ts)
-    """
-    cython.declare(paths=list)
-    cython.declare(atom2=Atom, bond12=Bond)
-    
-    # No paths if atom1 is not nitrogen
-    if not (atom1.isNitrogen()):
-        return []
-    
-    # Find all delocalization paths
-    paths = []
-    index_atom_2 = 0
-    index_atom_3 = 0
-    
-    for atom2, bond12 in atom1.edges.items():
-        index_atom_2 = index_atom_2 + 1
-        # Only double bonds are considered
-        if bond12.isDouble():
-            for atom3, bond13 in atom1.edges.items():
-                index_atom_3 = index_atom_3 + 1
-                # Only double bonds are considered, at the moment we only consider non-radical nitrogen and oxygen atoms
-                if (bond13.isDouble() and atom3.radicalElectrons == 0 and atom3.lonePairs > 0 and not atom3.isOxygen() and not atom3.isCarbon() and (index_atom_2 != index_atom_3)):
-                    paths.append([atom1, atom2, atom3, bond12, bond13, 1])
-    
-    for atom2, bond12 in atom1.edges.items():
-        # Only triple bonds are considered
-        if bond12.isTriple():
-            for atom3, bond13 in atom1.edges.items():
-                # Only single bonds are considered, at the moment we only consider negatively charged nitrogen and oxygen
-                if (bond13.isSingle() and ((atom3.isNitrogen() and atom3.lonePairs >= 2) or (atom3.isOxygen() and atom3.lonePairs >= 3))):
-                    paths.append([atom1, atom2, atom3, bond12, bond13, 2])
-    
-    return paths
 
 def generate_isomorphic_isomers(mol):
     """

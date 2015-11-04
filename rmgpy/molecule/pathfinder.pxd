@@ -1,4 +1,4 @@
-from .molecule cimport Atom, Molecule
+from .molecule cimport Atom, Bond, Molecule
 
 cpdef list find_butadiene(Atom start, Atom end)
 
@@ -15,3 +15,9 @@ cpdef list add_allyls(list path)
 cpdef list add_inverse_allyls(list path)
 
 cpdef dict compute_atom_distance(list atom_indices, Molecule mol)
+
+cpdef list findAllDelocalizationPaths(Atom atom1)
+
+cpdef list findAllDelocalizationPathsLonePairRadical(Atom atom1)
+
+cpdef list findAllDelocalizationPathsN5dd_N5ts(Atom atom1)
