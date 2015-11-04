@@ -12,45 +12,28 @@ def generateResonanceIsomers(mol):
     """
     cython.declare(isomers=list, newIsomers=list, index=cython.int, atom=Atom)
     cython.declare(isomer=Molecule, newIsomer=Molecule, isom=Molecule)
-    
+        
     isomers = [mol]
 
     # Iterate over resonance isomers
     index = 0
     while index < len(isomers):
         isomer = isomers[index]
-            
+        
         newIsomers = getAdjacentResonanceIsomers(isomer)
         newIsomers += getLonePairRadicalResonanceIsomers(isomer)
         newIsomers += getN5dd_N5tsResonanceIsomers(isomer)
         newIsomers += getKekulizedResonanceIsomers(isomer)
-        
+        newIsomers += getAromaticResonanceIsomers(isomer)
+
         for newIsomer in newIsomers:
-            newIsomer.updateAtomTypes()
             # Append to isomer list if unique
             for isom in isomers:
                 if isom.isIsomorphic(newIsomer):
                     break
             else:
                 isomers.append(newIsomer)
-        
-        newIsomers = getAromaticResonanceIsomers(isomer)
-        # Perform extra check for aromatic isomers when updating atomtypes
-        for newIsomer in newIsomers:
-            try:
-                newIsomer.updateAtomTypes()
-            except:
-                # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
-                # Do not add the new isomer since it is malformed
-                continue 
-            # Append to isomer list if unique
-            for isom in isomers:
-                if isom.isIsomorphic(newIsomer):
-                    break
-            else:
-                isomers.append(newIsomer)
-        
-                    
+    
         # Move to next resonance isomer
         index += 1
     
@@ -92,6 +75,7 @@ def getAdjacentResonanceIsomers(mol):
                 bond12.decrementOrder()
                 bond23.incrementOrder()
                 # Append to isomer list if unique
+                isomer.updateAtomTypes()
                 isomers.append(isomer)
 
     return isomers
@@ -136,6 +120,7 @@ def getLonePairRadicalResonanceIsomers(mol):
                 atom2.incrementLonePairs()
                 atom2.updateCharge()
                 # Append to isomer list if unique
+                isomer.updateAtomTypes()
                 isomers.append(isomer)
 
     return isomers
@@ -183,6 +168,7 @@ def getN5dd_N5tsResonanceIsomers(mol):
                 atom2.updateCharge()
                 atom3.updateCharge()
                 # Append to isomer list if unique
+                isomer.updateAtomTypes()
                 isomers.append(isomer)
             
             # from N5ts to N5dd
@@ -213,6 +199,7 @@ def getN5dd_N5tsResonanceIsomers(mol):
                 atom2.updateCharge()
                 atom3.updateCharge()
                 # Append to isomer list if unique
+                isomer.updateAtomTypes()
                 isomers.append(isomer)
                 
     return isomers
@@ -254,8 +241,14 @@ def getAromaticResonanceIsomers(mol):
                 for bond in aromaticBonds:
                     bond.order = 'B'
                     
-        if aromatic:              
-            isomers.append(molecule)
+        if aromatic:
+            try:
+                molecule.updateAtomTypes()              
+                isomers.append(molecule)
+            except:
+                # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
+                # Do not add the new isomer since it is malformed
+                pass
 
     return isomers
 
@@ -265,15 +258,17 @@ def getKekulizedResonanceIsomers(mol):
     """
     cython.declare(isomers=list, atom=Atom)
     isomers = []
-    for atom in mol.vertices:
+    for atom in mol.atoms:
         if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
             break
     else:
         return isomers
-    
-    rdkitmol = generator.toRDKitMol(mol)  # This perceives aromaticity
-    mol = Molecule()
-    isomers.append(parser.fromRDKitMol(mol, rdkitmol))  # This step Kekulizes the molecule
+   
+
+    rdkitmol = generator.toRDKitMol(mol)  # This perceives aromaticit
+    isomer = parser.fromRDKitMol(Molecule(), rdkitmol)# This step Kekulizes the molecule
+    isomer.updateAtomTypes()
+    isomers.append(isomer)  
     return isomers
 
 def findAllDelocalizationPaths(mol, atom1):
