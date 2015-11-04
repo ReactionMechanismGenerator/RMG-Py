@@ -48,7 +48,7 @@ class ResonanceTest(unittest.TestCase):
     def test_C9H10_aro(self):
         """CyclopropylBenzene, generate aro resonance isomers"""
         mol = Molecule(SMILES="C1CC1c1ccccc1")
-        getAromaticResonanceIsomers(mol)
+        generateAromaticResonanceIsomers(mol)
 
     @work_in_progress
     def testMultipleKekulizedResonanceIsomers(self):
@@ -115,7 +115,7 @@ class ResonanceTest(unittest.TestCase):
 14 H u0 p0 c0 {7,S}
 15 H u0 p0 c0 {7,S}
 """)
-        kekulized_isomer = getKekulizedResonanceIsomers(toluene)[0]
+        kekulized_isomer = generateKekulizedResonanceIsomers(toluene)[0]
         self.assertTrue(kekulized_isomer.isIsomorphic(toluene_kekulized))
 
         for isomer in generateResonanceIsomers(toluene):

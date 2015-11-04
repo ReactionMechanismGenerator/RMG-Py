@@ -21,11 +21,11 @@ def generateResonanceIsomers(mol):
     while index < len(isomers):
         isomer = isomers[index]
         
-        newIsomers = getAdjacentResonanceIsomers(isomer)
-        newIsomers += getLonePairRadicalResonanceIsomers(isomer)
-        newIsomers += getN5dd_N5tsResonanceIsomers(isomer)
-        newIsomers += getKekulizedResonanceIsomers(isomer)
-        newIsomers += getAromaticResonanceIsomers(isomer)
+        newIsomers = generateAdjacentResonanceIsomers(isomer)
+        newIsomers += generateLonePairRadicalResonanceIsomers(isomer)
+        newIsomers += generateN5dd_N5tsResonanceIsomers(isomer)
+        newIsomers += generateKekulizedResonanceIsomers(isomer)
+        newIsomers += generateAromaticResonanceIsomers(isomer)
 
         for newIsomer in newIsomers:
             # Append to isomer list if unique
@@ -40,7 +40,7 @@ def generateResonanceIsomers(mol):
     
     return isomers
 
-def getAdjacentResonanceIsomers(mol):
+def generateAdjacentResonanceIsomers(mol):
     """
     Generate all of the resonance isomers formed by one allyl radical shift.
     """
@@ -81,7 +81,7 @@ def getAdjacentResonanceIsomers(mol):
 
     return isomers
 
-def getLonePairRadicalResonanceIsomers(mol):
+def generateLonePairRadicalResonanceIsomers(mol):
     """
     Generate all of the resonance isomers formed by lone electron pair - radical shifts.
     """
@@ -126,7 +126,7 @@ def getLonePairRadicalResonanceIsomers(mol):
 
     return isomers
 
-def getN5dd_N5tsResonanceIsomers(mol):
+def generateN5dd_N5tsResonanceIsomers(mol):
     """
     Generate all of the resonance isomers formed by shifts between N5dd and N5ts.
     """
@@ -205,7 +205,7 @@ def getN5dd_N5tsResonanceIsomers(mol):
                 
     return isomers
 
-def getAromaticResonanceIsomers(mol):
+def generateAromaticResonanceIsomers(mol):
     """
     Generate the aromatic form of the molecule.
     """
@@ -253,7 +253,7 @@ def getAromaticResonanceIsomers(mol):
 
     return isomers
 
-def getKekulizedResonanceIsomers(mol):
+def generateKekulizedResonanceIsomers(mol):
     """
     Generate the kekulized (single-double bond) form of the molecule.
     """
@@ -303,12 +303,12 @@ def generate_isomorphic_isomers(mol):
     while index < len(isomers):
         isomer = isomers[index]
             
-        newIsomers = getAdjacentResonanceIsomers(isomer)
-        newIsomers += getLonePairRadicalResonanceIsomers(isomer)
-        newIsomers += getN5dd_N5tsResonanceIsomers(isomer)
-        newIsomers += getKekulizedResonanceIsomers(isomer)
+        newIsomers = generateAdjacentResonanceIsomers(isomer)
+        newIsomers += generateLonePairRadicalResonanceIsomers(isomer)
+        newIsomers += generateN5dd_N5tsResonanceIsomers(isomer)
+        newIsomers += generateKekulizedResonanceIsomers(isomer)
         
-        aroisomers = getAromaticResonanceIsomers(isomer)
+        aroisomers = generateAromaticResonanceIsomers(isomer)
         for aro in aroisomers:
             try:
                 aro.updateAtomTypes()
