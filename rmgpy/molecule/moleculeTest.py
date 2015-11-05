@@ -1562,6 +1562,108 @@ multiplicity 2
                     except RuntimeError:
                         self.fail("RDKit failed in finding the bond in the original atom!")
                         
+    def testLargeMolUpdate(self):
+        adjlist = """
+1  C u0 p0 c0 {7,S} {33,S} {34,S} {35,S}
+2  C u0 p0 c0 {8,S} {36,S} {37,S} {38,S}
+3  C u0 p0 c0 {5,S} {9,D} {39,S}
+4  C u0 p0 c0 {6,S} {10,D} {40,S}
+5  C u0 p0 c0 {3,S} {17,S} {41,S} {85,S}
+6  C u0 p0 c0 {4,S} {18,D} {42,S}
+7  C u0 p0 c0 {1,S} {11,S} {43,S} {44,S}
+8  C u0 p0 c0 {2,S} {12,S} {45,S} {46,S}
+9  C u0 p0 c0 {3,D} {31,S} {47,S}
+10 C u0 p0 c0 {4,D} {32,S} {48,S}
+11 C u0 p0 c0 {7,S} {19,S} {51,S} {52,S}
+12 C u0 p0 c0 {8,S} {20,S} {53,S} {54,S}
+13 C u0 p0 c0 {18,S} {32,S} {50,S} {86,S}
+14 C u0 p0 c0 {17,D} {31,S} {49,S}
+15 C u0 p0 c0 {17,S} {25,S} {63,S} {64,S}
+16 C u0 p0 c0 {18,S} {26,S} {65,S} {66,S}
+17 C u0 p0 c0 {5,S} {14,D} {15,S}
+18 C u0 p0 c0 {6,D} {13,S} {16,S}
+19 C u0 p0 c0 {11,S} {23,S} {55,S} {56,S}
+20 C u0 p0 c0 {12,S} {24,S} {57,S} {58,S}
+21 C u0 p0 c0 {25,S} {29,S} {75,S} {76,S}
+22 C u0 p0 c0 {26,S} {30,S} {77,S} {78,S}
+23 C u0 p0 c0 {19,S} {27,S} {71,S} {72,S}
+24 C u0 p0 c0 {20,S} {28,S} {73,S} {74,S}
+25 C u0 p0 c0 {15,S} {21,S} {59,S} {60,S}
+26 C u0 p0 c0 {16,S} {22,S} {61,S} {62,S}
+27 C u0 p0 c0 {23,S} {29,S} {79,S} {80,S}
+28 C u0 p0 c0 {24,S} {30,S} {81,S} {82,S}
+29 C u0 p0 c0 {21,S} {27,S} {67,S} {68,S}
+30 C u0 p0 c0 {22,S} {28,S} {69,S} {70,S}
+31 C u0 p0 c0 {9,S} {14,S} {32,S} {83,S}
+32 C u0 p0 c0 {10,S} {13,S} {31,S} {84,S}
+33 H u0 p0 c0 {1,S}
+34 H u0 p0 c0 {1,S}
+35 H u0 p0 c0 {1,S}
+36 H u0 p0 c0 {2,S}
+37 H u0 p0 c0 {2,S}
+38 H u0 p0 c0 {2,S}
+39 H u0 p0 c0 {3,S}
+40 H u0 p0 c0 {4,S}
+41 H u0 p0 c0 {5,S}
+42 H u0 p0 c0 {6,S}
+43 H u0 p0 c0 {7,S}
+44 H u0 p0 c0 {7,S}
+45 H u0 p0 c0 {8,S}
+46 H u0 p0 c0 {8,S}
+47 H u0 p0 c0 {9,S}
+48 H u0 p0 c0 {10,S}
+49 H u0 p0 c0 {14,S}
+50 H u0 p0 c0 {13,S}
+51 H u0 p0 c0 {11,S}
+52 H u0 p0 c0 {11,S}
+53 H u0 p0 c0 {12,S}
+54 H u0 p0 c0 {12,S}
+55 H u0 p0 c0 {19,S}
+56 H u0 p0 c0 {19,S}
+57 H u0 p0 c0 {20,S}
+58 H u0 p0 c0 {20,S}
+59 H u0 p0 c0 {25,S}
+60 H u0 p0 c0 {25,S}
+61 H u0 p0 c0 {26,S}
+62 H u0 p0 c0 {26,S}
+63 H u0 p0 c0 {15,S}
+64 H u0 p0 c0 {15,S}
+65 H u0 p0 c0 {16,S}
+66 H u0 p0 c0 {16,S}
+67 H u0 p0 c0 {29,S}
+68 H u0 p0 c0 {29,S}
+69 H u0 p0 c0 {30,S}
+70 H u0 p0 c0 {30,S}
+71 H u0 p0 c0 {23,S}
+72 H u0 p0 c0 {23,S}
+73 H u0 p0 c0 {24,S}
+74 H u0 p0 c0 {24,S}
+75 H u0 p0 c0 {21,S}
+76 H u0 p0 c0 {21,S}
+77 H u0 p0 c0 {22,S}
+78 H u0 p0 c0 {22,S}
+79 H u0 p0 c0 {27,S}
+80 H u0 p0 c0 {27,S}
+81 H u0 p0 c0 {28,S}
+82 H u0 p0 c0 {28,S}
+83 H u0 p0 c0 {31,S}
+84 H u0 p0 c0 {32,S}
+85 H u0 p0 c0 {5,S}
+86 H u0 p0 c0 {13,S}
+        """
+        mol = Molecule().fromAdjacencyList(adjlist)
+
+        mol.resetConnectivityValues()
+
+        try:
+            mol.updateConnectivityValues()
+        except OverflowError:
+            self.fail("updateConnectivityValues() raised OverflowError unexpectedly!")
+
+        
+
+
+
 
 ################################################################################
 
