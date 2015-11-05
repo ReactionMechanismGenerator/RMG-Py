@@ -12,3 +12,5 @@ cpdef list generateN5dd_N5tsResonanceIsomers(Molecule mol)
 cpdef list generate_isomorphic_isomers(Molecule mol)
 
 cpdef list generateKekulizedResonanceIsomers(Molecule mol)
+
+cpdef tuple populate_resonance_generation_algorithm()

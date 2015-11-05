@@ -21,11 +21,9 @@ def generateResonanceIsomers(mol):
     while index < len(isomers):
         isomer = isomers[index]
         
-        newIsomers = generateAdjacentResonanceIsomers(isomer)
-        newIsomers += generateLonePairRadicalResonanceIsomers(isomer)
-        newIsomers += generateN5dd_N5tsResonanceIsomers(isomer)
-        newIsomers += generateKekulizedResonanceIsomers(isomer)
-        newIsomers += generateAromaticResonanceIsomers(isomer)
+        newIsomers = []
+        for algo in populate_resonance_generation_algorithm():
+            newIsomers.extend(algo(isomer))
 
         for newIsomer in newIsomers:
             # Append to isomer list if unique
@@ -302,12 +300,10 @@ def generate_isomorphic_isomers(mol):
     index = 0
     while index < len(isomers):
         isomer = isomers[index]
-            
-        newIsomers = generateAdjacentResonanceIsomers(isomer)
-        newIsomers += generateLonePairRadicalResonanceIsomers(isomer)
-        newIsomers += generateN5dd_N5tsResonanceIsomers(isomer)
-        newIsomers += generateKekulizedResonanceIsomers(isomer)
-        newIsomers += generateAromaticResonanceIsomers(isomer)
+        
+        newIsomers = []
+        for algo in populate_resonance_generation_algorithm():
+            newIsomers.extend(algo(isomer))
         
         for newIsomer in newIsomers:
             # Append to isomer list if unique
@@ -322,3 +318,18 @@ def generate_isomorphic_isomers(mol):
         index += 1
 
     return isomorphic_isomers
+
+def populate_resonance_generation_algorithm():
+    """
+    A list with the current set of resonance generation algorithms.
+    """
+    algorithms = (
+        generateAdjacentResonanceIsomers,
+        generateLonePairRadicalResonanceIsomers,
+        generateN5dd_N5tsResonanceIsomers,
+        generateKekulizedResonanceIsomers,
+        generateAromaticResonanceIsomers,
+    )
+
+
+    return algorithms
