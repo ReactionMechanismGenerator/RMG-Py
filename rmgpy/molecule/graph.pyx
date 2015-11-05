@@ -410,7 +410,7 @@ cdef class Graph:
         
         new_values = []
         
-        for vertex1, old_value in zip(self.vertices, old_values):
+        for vertex1 in self.vertices:
             count = 0
             for vertex2 in vertex1.edges: count += old_values[self.vertices.index(vertex2)]
             new_values.append(count)
