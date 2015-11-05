@@ -1252,8 +1252,7 @@ class CoreEdgeReactionModel:
         list of core species, and the others are in either the core or the
         edge).
         """
-        if rxn not in self.edge.reactions:
-            self.edge.reactions.append(rxn)
+        self.edge.reactions.append(rxn)
 
     def getModelSize(self):
         """
