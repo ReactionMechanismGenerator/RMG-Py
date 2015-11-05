@@ -113,7 +113,7 @@ cdef class Vertex(object):
         self.terminal = False
         self.mapping = None
 
-cpdef int getVertexConnectivityValue(Vertex vertex) except 1:
+cpdef long getVertexConnectivityValue(Vertex vertex) except 1:
     """
     Return a value used to sort vertices prior to poposing candidate pairs in
     :meth:`__VF2_pairs`. The value returned is based on the vertex's
@@ -286,12 +286,12 @@ cdef class Graph:
         used to accelerate the isomorphism checking.
         """
         cdef Vertex vertex
-        cdef int value
         cdef list connectivityValues
 
         connectivityValues = self.__update([len(vertex.edges) for vertex in self.vertices], 0)
         for vertex, value in zip(self.vertices, connectivityValues):
             vertex.connectivity = value
+            
 
 
     cpdef Graph copy(self, bint deep=False):
@@ -406,7 +406,6 @@ cdef class Graph:
         of different connectivity values does not increase anymore. 
         """
         cdef Vertex vertex1, vertex2
-        cdef int count
         cdef list new_values
         
         new_values = []
@@ -433,7 +432,7 @@ cdef class Graph:
         the isomorphism functions, much more efficient.
         """
         cdef Vertex vertex
-        cdef int index, value
+        cdef int index
         cdef list connectivityValues
 
         # Only need to conduct sort if there is an invalid sorting label on any vertex
