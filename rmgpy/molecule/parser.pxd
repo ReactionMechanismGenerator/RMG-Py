@@ -9,6 +9,7 @@ cimport element as elements
 from .molecule cimport Atom, Bond, Molecule
 
 cpdef list BACKENDS
+cpdef dict INSTALLED_BACKENDS
 cpdef dict INCHI_LOOKUPS
 cpdef dict SMILES_LOOKUPS
 cpdef dict _known_smiles_molecules

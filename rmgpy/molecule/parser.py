@@ -5,10 +5,18 @@ import logging
 import itertools
 
 # local imports
+
+# Assume that OB is not installed by default
+INSTALLED_BACKENDS = {
+    'OB': False,
+}
+
 try:
     import openbabel
-except:
+    INSTALLED_BACKENDS['OB'] = True
+except :
     pass
+
 from rdkit import Chem
 
 from rmgpy.molecule import element as elements
@@ -21,9 +29,11 @@ from .molecule import Atom, Bond, Molecule
 # constants
 
 BACKENDS = [
-            'openbabel',
             'rdkit',
             ]
+
+if INSTALLED_BACKENDS['OB']:
+    BACKENDS.insert(0,'openbabel')
 
 INCHI_LOOKUPS = {
             'H': '[H]',#RDkit was improperly handling the Hydrogen radical from InChI
