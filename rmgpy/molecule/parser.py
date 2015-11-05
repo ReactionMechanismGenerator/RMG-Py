@@ -730,11 +730,14 @@ def toInChI(mol):
     except:
         pass
 
-    obmol = toOBMol(mol)
-    obConversion = openbabel.OBConversion()
-    obConversion.SetOutFormat('inchi')
-    obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-    return obConversion.WriteString(obmol).strip()
+    if INSTALLED_BACKENDS['OB']: 
+        obmol = toOBMol(mol)
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()
+    else:
+        raise Exception('Could not generate InChI, because Openbabel installation was not found. ')
 
 def createULayer(mol):
     """
@@ -787,15 +790,16 @@ def toInChIKey(mol):
         pass
     
 
-#        for atom in mol.vertices:
-#           if atom.isNitrogen():
-    obmol = toOBMol(mol)
-    obConversion = openbabel.OBConversion()
-    obConversion.SetOutFormat('inchi')
-    obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-    obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-    return obConversion.WriteString(obmol).strip()[:-2]
-
+    if INSTALLED_BACKENDS['OB']:         
+        obmol = toOBMol(mol)
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()[:-2]
+    else:
+        raise Exception('Could not generate InChI Key, because Openbabel installation was not found. ')
+        
 def toAugmentedInChIKey(mol):
     """
     Adds an extra layer to the InChIKey denoting the multiplicity
