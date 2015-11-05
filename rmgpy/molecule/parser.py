@@ -83,13 +83,6 @@ _known_smiles_radicals = {
 
 # global variables:
 
-try:
-    SMILEwriter = openbabel.OBConversion()
-    SMILEwriter.SetOutFormat('smi')
-    SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
-except:
-    pass
-
 def reset_lone_pairs_to_default(at):
     """Resets the atom's lone pair count to its default value."""
 
@@ -599,7 +592,7 @@ def toSMILES(mol):
     While converting to an RDMolecule it will perceive aromaticity
     and removes Hydrogen atoms.
     """
-    
+
     # If we're going to have to check the formula anyway,
     # we may as well shortcut a few small known molecules.
     # Dictionary lookups are O(1) so this should be fast:
@@ -614,8 +607,14 @@ def toSMILES(mol):
         pass
     for atom in mol.vertices:
         if atom.isNitrogen():
-            obmol = toOBMol(mol)
-            return SMILEwriter.WriteString(obmol).strip()
+            try:
+                obmol = toOBMol(mol)
+                SMILEwriter = openbabel.OBConversion()
+                SMILEwriter.SetOutFormat('smi')
+                SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
+                return SMILEwriter.WriteString(obmol).strip()
+            except:
+                break# break from for loop
 
     rdkitmol = toRDKitMol(mol, sanitize=False)
     if not mol.isAromatic():
