@@ -4,16 +4,17 @@ import unittest
 from rmgpy.species import Species
 from .molecule import Molecule
 from .util import retrieveElementCount, VALENCES, ORDERS
+from .inchi import compose_aug_inchi
 
 from .parser import *
 
 class InChIParsingTest(unittest.TestCase):
 
-    def compare(self, inchi, u_indices=[]):        
-        aug_inchi = 'InChI=1/' + inchi
-        u_layer = ','.join([str(i) for i in u_indices]) if u_indices else None
-        if u_layer:
-            aug_inchi += '/u' + u_layer
+    def compare(self, inchi, u_indices=[], p_indices = []):        
+        u_layer = '/u' + ','.join(map(str, u_indices)) if u_indices else None
+        p_layer = '/p' + ','.join(map(str, p_indices)) if p_indices else None
+
+        aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
 
         mol = fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertEqual(mol.getNumberOfRadicalElectrons(), mol.multiplicity - 1)
@@ -132,20 +133,25 @@ class InChIParsingTest(unittest.TestCase):
 
     def testCO(self):
         inchi = 'CO/c1-2'
-        mol = self.compare(inchi)
+        p_indices = [1,2]
+        mol = self.compare(inchi, [], p_indices)
 
         assert mol.atoms[1].lonePairs == 1 # Oxygen
 
         assert mol.atoms[0].charge == -1
         assert mol.atoms[1].charge == +1
 
-    def testMethylene(self):
-        inchi = 'CH2/h1H2'
-
-        self.compare(inchi)        
+    def testTripletMethylene(self):
+        inchi = 'CH2/h1H2'      
 
         u_indices = [1,1]
         self.compare(inchi, u_indices)
+
+    def testSingletMethylene(self):
+        inchi = 'CH2/h1H2'    
+
+        p_indices = [1]
+        self.compare(inchi, u_indices=[], p_indices=p_indices)
     
 
     def testC4H6O(self):

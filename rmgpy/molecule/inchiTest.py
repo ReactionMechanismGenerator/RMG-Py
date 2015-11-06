@@ -118,5 +118,31 @@ class ParseNLayerTest(unittest.TestCase):
        expected = [4,3,2,1]
        self.assertTrue(n_layer == expected)
 
+class DecomposeTest(unittest.TestCase):
+
+    def test_inchi(self):
+        string = 'InChI=1S/C2H6/c1-2/h1-2H3'
+
+        inchi, u_indices, p_indices = decompose(string)
+        self.assertEquals([], u_indices)
+
+    def test_inchi_u_layer(self):
+        string = 'InChI=1S/C2H6/c1-2/h1-2H3/u1,2'
+    
+        inchi, u_indices, p_indices = decompose(string)
+        self.assertEquals([1,2], u_indices)
+
+    def test_inchi_p_layer(self):
+        string = 'InChI=1S/C2H6/c1-2/h1-2H3/p1,2'
+        inchi, u_indices, p_indices = decompose(string)
+        self.assertEquals([1,2], p_indices)
+
+    def test_inchi_u_layer_p_layer(self):
+        string = 'InChI=1S/C2H6/c1-2/h1-2H3/u1,2/p3,4'
+        inchi, u_indices, p_indices = decompose(string)
+        self.assertEquals([1,2], u_indices)
+        self.assertEquals([3,4], p_indices)
+
+
 if __name__ == '__main__':
     unittest.main()

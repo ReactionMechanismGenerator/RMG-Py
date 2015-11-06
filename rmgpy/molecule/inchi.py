@@ -43,31 +43,39 @@ P_LAYER_PREFIX = '/p'
 """The separator that separates the indices of the atoms that bear unpaired electrons."""
 P_LAYER_SEPARATOR = ','
 
+ulayer_pattern = re.compile(r'/u(.*)')
+player_pattern = re.compile(r'/p(.*)')
+
 def decompose(string):
     """
-    Converts an augmented inchi into an inchi and indices array for the atoms
-    bearing unpaired electrons.
-
-    returns: 
-    - inchi
+    Converts an augmented inchi into 
+    - an inchi, 
     - indices array for the atoms bearing unpaired electrons.
+    - indices array for the atoms bearing (unexpected) lone pairs.
+
 
     """
     cython.declare(
             inchi=str,
             u_indices=list,
             p_indices=list,
-            rest=str,
         )
 
-    if not U_LAYER_PREFIX in string:
-        return string, []
+    if U_LAYER_PREFIX in string:
+        inchi = string.split(U_LAYER_PREFIX)[0]
+    elif P_LAYER_PREFIX in string:
+        inchi = string.split(P_LAYER_PREFIX)[0]
+    else:
+        inchi = string
 
-    inchi, rest = string.split(U_LAYER_PREFIX) #rest: "1,2,3/p1,2,3"
+    u_indices, p_indices = [], []
+    matches = re.findall(ulayer_pattern, string)
+    if matches:
+        u_indices = map(int, matches.pop().split('/')[0].split(U_LAYER_SEPARATOR))
 
-    u_indices, p_indices = rest.split(P_LAYER_PREFIX)#p_indices: "1,2,3"
-    u_indices= map(int, u_indices.split(U_LAYER_SEPARATOR))
-    p_indices= map(int, p_indices.split(P_LAYER_SEPARATOR))
+    matches = re.findall(player_pattern, string)
+    if matches:
+        p_indices = map(int, matches.pop().split('/')[0].split(P_LAYER_SEPARATOR))
 
     return inchi, u_indices, p_indices
 
@@ -269,7 +277,7 @@ class AugmentedInChI(InChI):
     """AugmentedInChI is an InChI with inchi, and unpaired electron attributes."""
     def __init__(self, aug_inchi):
         super(AugmentedInChI, self).__init__()
-        inchi, u_indices, p_indices = decompose(self)
+        inchi, u_indices, p_indices = decompose(str(self))
 
         self.inchi = str(inchi)
 
