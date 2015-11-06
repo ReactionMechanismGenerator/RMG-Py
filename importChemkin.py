@@ -2197,7 +2197,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     @cherrypy.expose
     def thermomatches_html(self):
         img = self._img
-        output = [self.html_head(), '<h1>{0} Thermochemistry Matches</h1><table style="width:800px">'.format(len(self.thermoMatches))]
+        output = [self.html_head(), '<h1>{0} Thermochemistry Matches</h1>'.format(len(self.thermoMatches))]
+        output.append('<table style="width:800px; border-collapse:collapse;">')
         for chemkinLabel, rmgSpecsDict in self.thermoMatches.iteritems():
             label = chemkinLabel
             if len(rmgSpecsDict) > 1:
@@ -2209,9 +2210,14 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 else:
                     return "<span class='badmatch'>{0}</span>".format(name)
 
+            first_of_this_name = True
             for rmgSpec, libraries in rmgSpecsDict.iteritems():
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
-                output.append("<tr><td>{label}</td><td>{img}</td><td>{libs}</td>".format(img=img(rmgSpec), label=label, libs=libs))
+                output.append('<tr style="border-top: 1px solid black;">' if first_of_this_name else '<tr>')
+                first_of_this_name = False
+                output.append("<td>{label}</td>".format(label=label))
+                output.append("<td>{img}</td>".format(img=img(rmgSpec)))
+                output.append('<td style="border-top: 1px solid black;">{libs}</td>'.format(libs=libs))
                 if chemkinLabel in self.votes :
                     output.append("<td><a href='/votes2.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)))
                 else:
