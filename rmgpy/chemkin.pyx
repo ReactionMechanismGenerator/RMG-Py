@@ -113,15 +113,24 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         try:
             Tmin = float(lines[0][45:55].strip())
         except ValueError:
+            logging.warning("Couldn't get Tmin from {0!r}".format(lines[0][45:55].strip()))
             pass
         try:
             Tmax = float(lines[0][55:65].strip())
         except ValueError:
+            logging.warning("Couldn't get Tmax from {0!r}".format(lines[0][55:65].strip()))
             pass
         try:
             Tint = float(lines[0][65:73].strip())
         except ValueError:
+            logging.warning("Couldn't get Tint from {0!r}".format(lines[0][65:73].strip()))
             pass
+
+        if Tint is None or Tmin is None or Tmax is None:
+            logging.warning("Temperature ranges not correctly specified for species {0} and no defaults set;".format(species))
+            logging.warning("Skipping thermo entry.")
+            return species, None, None
+
         a0_high = Ffloat(lines[1][0:15].strip())
         a1_high = Ffloat(lines[1][15:30].strip())
         a2_high = Ffloat(lines[1][30:45].strip())
@@ -1104,9 +1113,9 @@ def readThermoBlock(f, speciesDict):
         logging.info("Thermo file has default temperature range {0} to {1} and {1} to {2}".format(Tmin, Tint, Tmax))
         line = f.readline()
     except:
-        logging.info("Thermo file has no default temperature ranges")
-        logging.info("(The line it would be on is {0!r} but that is not formatted as such)".format(line))
-        logging.info("(It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30)")
+        logging.warning("Thermo file has no default temperature ranges")
+        logging.warning("(The line it would be on is {0!r} but that is not formatted as such)".format(line))
+        logging.warning("(It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30)")
     thermoBlock = ''
     comments = ''
     while line != '' and not line.upper().strip().startswith('END'):
