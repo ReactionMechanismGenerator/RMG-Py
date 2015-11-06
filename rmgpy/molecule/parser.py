@@ -704,22 +704,28 @@ def fix(mol, aug_inchi):
     stored in the augmented inchi.
     """   
 
+    u_indices = aug_inchi.u_indices[:] if aug_inchi.u_indices else []
+    p_indices = aug_inchi.p_indices[:] if aug_inchi.p_indices else []
+
     fix_triplet_to_singlet(mol, aug_inchi)
 
-    indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else []
-
     # ignore atoms that bear already unpaired electrons:
-    for i in set(indices[:]):
+    for i in set(u_indices[:]):
         atom = mol.atoms[i - 1]
-        [indices.remove(i) for _ in range(atom.radicalElectrons)]        
+        [u_indices.remove(i) for _ in range(atom.radicalElectrons)]        
 
-    fixCharge(mol, indices)
+    # ignore atoms that bear already lone pairs:
+    for i in set(p_indices[:]):
+        atom = mol.atoms[i - 1]
+        [p_indices.remove(i) for _ in range(atom.lonePairs)]   
+
+    fixCharge(mol, u_indices)
                                 
-    reset_lone_pairs_to_default(mol)
+    reset_lone_pairs(mol, p_indices)
 
-    fix_oxygen_unsaturated_bond(mol, indices)
+    fix_oxygen_unsaturated_bond(mol, u_indices)
 
-    fix_unsaturated_bond(mol, indices, aug_inchi)
+    fix_unsaturated_bond(mol, u_indices, aug_inchi)
 
     check(mol, aug_inchi)    
 
@@ -823,12 +829,22 @@ def convert_unsaturated_bond_to_triplet(bond):
         return True
     return False
 
-def reset_lone_pairs_to_default(mol):
-    """Resets the atom's lone pair count to its default value."""
+def reset_lone_pairs(mol, p_indices):
+    """
+    Iterates over the atoms of the molecule and
+    resets the atom's lone pair count to the value stored in the p_indices list,
+    or to the default value.
+
+    """
 
     for at in mol.atoms:
-        order = sum([util.ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
-        at.lonePairs = (util.VALENCES[at.element.symbol] - order - at.radicalElectrons - at.charge) / 2
+        index = mol.atoms.index(at) + 1 #1-based index
+        count = p_indices.count(index)
+        if count != 0:
+            at.lonePairs = count
+        else:    
+            order = sum([util.ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
+            at.lonePairs = (util.VALENCES[at.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """
@@ -874,9 +890,10 @@ def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
             )    
 
 def isUnsaturated(mol):
-    """Does the molecule have a bond that's not single?
-    
-    (eg. a bond that is double or triple or beneze)"""
+    """
+    Does the molecule have a bond that's not single?
+    Eg. a bond that is double or triple or benzene
+    """
     cython.declare(atom1=Atom,
                    atom2=Atom,
                    bonds=dict,
