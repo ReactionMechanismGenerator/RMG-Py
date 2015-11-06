@@ -52,6 +52,16 @@ _known_smiles_radicals = {
                  'O2': '[O][O]',
              }
 
+EXPECTED_LONE_PAIRS = {
+        'H': 0,
+        'C': 0,
+        'N': 1,
+        'O': 2,
+        'S': 2,
+        'Si': 0,
+
+    }
+
 def toInChI(mol):
     """
     Convert a molecular structure to an InChI string. Uses
@@ -525,3 +535,25 @@ def compute_agglomerate_distance(agglomerates, mol):
 
     return distances
 
+def has_unexpected_lone_pairs(mol):
+    """
+    Iterates over the atoms of the Molecule and returns whether 
+    at least one atom bears an unexpected number of lone pairs.
+
+    E.g. 
+    carbon with > 0 lone pairs
+    nitrogen with > 1 lone pairs
+    oxygen with > 2 lone pairs
+
+    The expected number of lone pairs of an element is equal to
+    """
+
+    for at in mol.atoms:
+        try:
+            exp = EXPECTED_LONE_PAIRS[at.symbol]
+        except KeyError:
+            raise Exception("Unrecognized element: {}".format(at.symbol))
+        else:
+            if at.lonePairs != EXPECTED_LONE_PAIRS[at.symbol]: return True 
+
+    return False

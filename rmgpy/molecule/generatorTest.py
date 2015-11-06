@@ -3,7 +3,7 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.species import Species
-from .molecule import Molecule
+from .molecule import Atom,Molecule
 
 from .generator import *
 
@@ -339,6 +339,28 @@ multiplicity 2
 
         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
         self.compare(adjlist, aug_inchi)
+
+class ExpectedLonePairsTest(unittest.TestCase):
+
+    def test_SingletCarbon(self):
+        mol = Molecule(atoms=[Atom(element='C', lonePairs=1)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertTrue(unexpected)
+
+    def test_NormalCarbon(self):
+        mol = Molecule(atoms=[Atom(element='C', lonePairs=0)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertFalse(unexpected)
+
+    def test_NormalOxygen(self):
+        mol = Molecule(atoms=[Atom(element='O', lonePairs=2)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertFalse(unexpected)
+
+    def test_Oxygen_3LP(self):
+        mol = Molecule(atoms=[Atom(element='O', lonePairs=3)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertTrue(unexpected)
 
 if __name__ == '__main__':
     unittest.main()
