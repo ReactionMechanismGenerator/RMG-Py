@@ -707,8 +707,6 @@ def fix(mol, aug_inchi):
     u_indices = aug_inchi.u_indices[:] if aug_inchi.u_indices else []
     p_indices = aug_inchi.p_indices[:] if aug_inchi.p_indices else []
 
-    fix_triplet_to_singlet(mol, aug_inchi)
-
     # ignore atoms that bear already unpaired electrons:
     for i in set(u_indices[:]):
         atom = mol.atoms[i - 1]
@@ -719,6 +717,9 @@ def fix(mol, aug_inchi):
         atom = mol.atoms[i - 1]
         [p_indices.remove(i) for _ in range(atom.lonePairs)]   
 
+
+    fix_triplet_to_singlet(mol, p_indices)
+    
     fixCharge(mol, u_indices)
                                 
     reset_lone_pairs(mol, p_indices)
@@ -730,18 +731,21 @@ def fix(mol, aug_inchi):
     check(mol, aug_inchi)    
 
 
-def fix_triplet_to_singlet(mol, aug_inchi):
+def fix_triplet_to_singlet(mol, p_indices):
     """
-    Checks whether the stored multiplicity is 1 and the radical count in the molecule is 2. 
-    In that case, it searches for atoms with the 2 unpaired electrons and converts them
-    to a lone pair.
+    Iterates over the atoms and checks whether atoms bearing two unpaired electrons are
+    also present in the p_indices list.
+
+    If so, convert to the two unpaired electrons into a lone pair, and remove that atom
+    index from the p_indices list.
     """
-    mol.multiplicity = aug_inchi.mult
-    if mol.multiplicity == 1 and mol.getNumberOfRadicalElectrons() == 2:
-        for at in mol.atoms:
-            if at.radicalElectrons == 2:
-                at.lonePairs = 1
-                at.radicalElectrons = 0    
+
+    for at in mol.atoms:
+        index = mol.atoms.index(at) + 1
+        if mol.getNumberOfRadicalElectrons() == 2 and index in p_indices:
+            at.lonePairs += 1
+            at.radicalElectrons -= 2
+            p_indices.remove(index)
 
 
 def fix_butadiene_path(start, end):
