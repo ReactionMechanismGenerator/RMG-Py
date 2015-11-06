@@ -162,24 +162,20 @@ def toAugmentedInChI(mol):
     between structures with spin states and multiple unpaired electrons.
 
     Two additional layers are added to the InChI:
-    - multiplicity layer: the total multiplicity of the molecule
     - unpaired electrons layer: the position of the unpaired electrons in the molecule
 
     """
 
     cython.declare(
                 inchi=str,
-                mult=str,
                 ulayer=str,
                 aug_inchi=str,
                )
     inchi = toInChI(mol)
 
-    mult_layer = inchiutil.MULT_PREFIX + str(mol.multiplicity)
-
     ulayer = create_U_layer(mol)
 
-    aug_inchi = inchiutil.compose_aug_inchi(inchi, mult_layer, ulayer)
+    aug_inchi = inchiutil.compose_aug_inchi(inchi, ulayer)
 
     return aug_inchi
 
@@ -216,27 +212,20 @@ def toInChIKey(mol):
 
 def toAugmentedInChIKey(mol):
     """
-    Adds an extra layer to the InChIKey denoting the multiplicity
-    of the molecule.
-
-    Simply append the multiplicity string, do not separate by a
-    character like forward slash.
+    Adds additional layers to the InChIKey,
+    generating the "augmented" InChIKey.
     """
     
     cython.declare(
             key=str,
-            mult_layer=str,
             ulayer=str
         )
 
-
     key = toInChIKey(mol)
-    
-    mult_layer = str(mol.multiplicity)
 
     ulayer = create_U_layer(mol)
 
-    return inchiutil.compose_aug_inchi_key(key, mult_layer, ulayer)
+    return inchiutil.compose_aug_inchi_key(key, ulayer)
 
 def toSMARTS(mol):
     """

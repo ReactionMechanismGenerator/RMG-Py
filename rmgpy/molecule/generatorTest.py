@@ -76,7 +76,7 @@ class InChIGenerationTest(unittest.TestCase):
 5 C 1 {4,S} {1,S}
         """
 
-        aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/mult2/u1'
+        aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/u1'
         self.compare(adjlist, aug_inchi)
 
 
@@ -102,7 +102,7 @@ class InChIGenerationTest(unittest.TestCase):
 15 H u0 p0 c0 {5,S}
         """
 
-        aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/mult3/u2,3'
+        aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/u2,3'
         self.compare(adjlist, aug_inchi)
     
     def test_C8H8(self):
@@ -127,7 +127,7 @@ class InChIGenerationTest(unittest.TestCase):
 16 H u0 p0 c0 {8,S}
         """
 
-        aug_inchi = 'InChI=1S/C8H8/c1-2-4-6-8-7-5-3-1/h1-8H/mult3/u1,2'
+        aug_inchi = 'InChI=1S/C8H8/c1-2-4-6-8-7-5-3-1/h1-8H/u1,2'
         self.compare(adjlist, aug_inchi)
 
     def test_benzyne(self):
@@ -145,7 +145,7 @@ class InChIGenerationTest(unittest.TestCase):
 10 H u0 p0 c0 {6,S}
         """
         benzatetraene = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
-        aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H/mult1'
+        aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
         self.compare(adjlist, aug_inchi)
 
     def test_H(self):
@@ -153,7 +153,7 @@ class InChIGenerationTest(unittest.TestCase):
 multiplicity 2
 1 H u1 p0 c0
 """
-        aug_inchi = 'InChI=1S/H/mult2/u1'
+        aug_inchi = 'InChI=1S/H/u1'
         self.compare(adjlist, aug_inchi)
 
 
@@ -171,7 +171,7 @@ multiplicity 2
 6 C 0 {4,D}
         """
 
-        aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/mult3/u1,3'
+        aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/u1,3'
         self.compare(adjlist, aug_inchi)
 
 
@@ -195,7 +195,7 @@ multiplicity 2
 16 H u0 p0 c0 {6,S}
         """
 
-        aug_inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/mult5/u1,2,3,4'
+        aug_inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/u1,2,3,4'
         self.compare(adjlist, aug_inchi)
 
     def test_Buta13diyl_triplet(self):
@@ -216,7 +216,7 @@ multiplicity 2
 10 H u0 p0 c0 {4,S}
 """
 
-        aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/mult3/u1,2'
+        aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/u1,2'
         self.compare(adjlist, aug_inchi)
 
     def test_CH2O2(self):
@@ -227,7 +227,7 @@ multiplicity 2
 3 O 1 {1,S}
 """
 
-        aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/mult3/u1,2'
+        aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2'
         self.compare(adjlist, aug_inchi)
 
     def test_C7H10(self):
@@ -242,7 +242,7 @@ multiplicity 2
 7 C 1 {5,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/mult5/u1,2,3,6'
+        aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/u1,2,3,6'
         self.compare(adjlist, aug_inchi)
 
     def test_C5H6O(self):
@@ -256,7 +256,7 @@ multiplicity 2
 6 C 0 {5,D}
 """
 
-        aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/mult3/u1,3'
+        aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/u1,3'
         self.compare(adjlist, aug_inchi)
 
     def test_C7H9(self):
@@ -271,7 +271,7 @@ multiplicity 2
 7 C 1 {4,S} {5,S} {6,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/mult4/u1,4,7'
+        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,4,7'
         self.compare(adjlist, aug_inchi)
 
     def test_C7H9(self):
@@ -290,7 +290,7 @@ multiplicity 2
 11 C 0 {7,S} {8,S} {9,S} {10,S}
 """
 
-        aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/mult5/u1,3,5,7'
+        aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/u1,3,5,7'
         self.compare(adjlist, aug_inchi)
 
     @work_in_progress
@@ -337,7 +337,7 @@ multiplicity 2
 11 H u0 p0 c0 {4,S}
 """
 
-        aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/mult2/u1'
+        aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
         self.compare(adjlist, aug_inchi)
 
 if __name__ == '__main__':

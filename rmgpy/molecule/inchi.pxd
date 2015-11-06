@@ -3,9 +3,9 @@ cpdef tuple decompose(string)
 
 cpdef str ignore_prefix(str string)
 
-cpdef str compose_aug_inchi(str inchi, str mult_layer, str ulayer=*)
+cpdef str compose_aug_inchi(str inchi, str ulayer=*)
 
-cpdef str compose_aug_inchi_key(str inchi_key, str mult_layer, str ulayer=*)
+cpdef str compose_aug_inchi_key(str inchi_key, str ulayer=*)
 
 cpdef list parse_H_layer(str inchi)
 

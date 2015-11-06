@@ -985,25 +985,25 @@ class TestMolecule(unittest.TestCase):
         
     def testAugmentedInChI(self):
         """
-        Test that Augmented InChI generation is printing the /mult layer
+        Test the Augmented InChI generation
         """
         mol = Molecule().fromAdjacencyList("""
             1     C     u1 p0 c0 {2,S}
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3/u1,2')
+        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/u1,2')
         
     def testAugmentedInChIKey(self):
         """
-        Test that Augmented InChI Key generation is printing the mult layer
+        Test the Augmented InChI Key generation
         """
         mol = Molecule().fromAdjacencyList("""
             1     C     u1 p0 c0 {2,S}
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-mult3-u1,2')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-u1,2')
 
     def testLinearMethane(self):
         """
@@ -1135,7 +1135,7 @@ class TestMolecule(unittest.TestCase):
         
         mol = Molecule().fromAdjacencyList(ch2_t)
     
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3/u1,1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/u1,1')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
 
@@ -1147,7 +1147,7 @@ class TestMolecule(unittest.TestCase):
         '''
         
         mol = Molecule().fromAdjacencyList(ch2_s)
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
         
@@ -1259,13 +1259,13 @@ multiplicity 2
 
     def testMalformedAugmentedInChI_Wrong_Mult(self):
         """Test that augmented inchi with wrong layer is caught."""
-        malform_aug_inchi = 'InChI=1S/CH3/h1H3/mult3'
+        malform_aug_inchi = 'InChI=1S/CH3/h1H3'
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
     def testMalformedAugmentedInChI_Wrong_Indices(self):
         """Test that augmented inchi with wrong layer is caught."""
-        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,1'
+        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/u4,1'
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 

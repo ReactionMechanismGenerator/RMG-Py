@@ -703,13 +703,6 @@ def fix(mol, aug_inchi):
     stored in the augmented inchi.
     """   
 
-    # multiplicity not specified in augmented InChI. Setting 
-    if aug_inchi.mult == -1:
-        logging.debug('Multiplicity not specified in augmented InChI.')
-        logging.debug('Setting the multiplicity equal to the number of unpaired electrons + 1 of the parsed InChI.')
-        mol.multiplicity = mol.getNumberOfRadicalElectrons() + 1
-        return mol        
-
     fix_triplet_to_singlet(mol, aug_inchi)
 
     indices = aug_inchi.u_indices[:] if aug_inchi.u_indices is not None else []
@@ -729,6 +722,7 @@ def fix(mol, aug_inchi):
 
     check(mol, aug_inchi)    
 
+
 def fix_triplet_to_singlet(mol, aug_inchi):
     """
     Checks whether the stored multiplicity is 1 and the radical count in the molecule is 2. 
@@ -741,6 +735,7 @@ def fix_triplet_to_singlet(mol, aug_inchi):
             if at.radicalElectrons == 2:
                 at.lonePairs = 1
                 at.radicalElectrons = 0    
+
 
 def fix_butadiene_path(start, end):
     """

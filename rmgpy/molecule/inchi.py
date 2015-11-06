@@ -6,24 +6,6 @@ PARENTHESES = re.compile( r'\((.[^\(\)]*)\)')
 
 INCHI_PREFIX = 'InChI=1'
 
-"""
-
-The prefix with the multiplicity information.
-
-For example, a triplet biradical will bear the 
-following multiplicity layer in the augmented InChI:
-
-InChI=1/.../mult3
-
-The singlet equivalent of aforementioned biradical has the following
-augmented InChI:
-
-InChI=1/.../mult1
-
-"""
-MULT_PREFIX = '/mult'
-
-
 
 """
 The prefix with the information on the distribution of unpaired electrons across the atoms.
@@ -31,7 +13,7 @@ The prefix with the information on the distribution of unpaired electrons across
 For example, a triplet biradical with unpaired electrons on atom 1 and atom 3 
 will have the following unpaired electron layer in the augmented InChI:
 
-InChI=1/.../mult3/u1,3
+InChI=1/.../u1,3
 
 The indices refer to the 1-based indices in the InChI string (NOT the 0-based
     indices of the Molecule container!)
@@ -44,37 +26,27 @@ U_LAYER_SEPARATOR = ','
 
 def decompose(string):
     """
-    Converts an augmented inchi into an inchi, multiplicity and indices array for the atoms
+    Converts an augmented inchi into an inchi and indices array for the atoms
     bearing unpaired electrons.
 
     returns: 
-    - multiplicity (int)
+    - inchi
     - indices array for the atoms bearing unpaired electrons.
 
     """
     cython.declare(
             inchi=str,
-            mult_layer=str,
-            mult=str,
-            multiplicity=int,
             u_indices=list,
             ulayer=str
         )
 
-    if not MULT_PREFIX in string:
-        return string, None, []
+    if not U_LAYER_PREFIX in string:
+        return string, []
 
-    inchi, mult_ulayer = string.split(MULT_PREFIX)
-    
-    if not U_LAYER_PREFIX in mult_ulayer:
-        multiplicity = int(mult_ulayer)
-        u_indices = []    
-        return inchi, multiplicity, u_indices
+    inchi, ulayer = string.split(U_LAYER_PREFIX)
 
-    mult, ulayer = mult_ulayer.split(U_LAYER_PREFIX)
-    multiplicity = int(mult)
     u_indices = map(int, ulayer.split(U_LAYER_SEPARATOR))
-    return inchi, multiplicity, u_indices
+    return inchi, u_indices
 
 def ignore_prefix(string):
     """
@@ -87,12 +59,12 @@ def ignore_prefix(string):
 
     return re.split(r"(InChI=1+)(S*)/", string)[-1]
 
-def compose_aug_inchi(inchi, mult_layer, ulayer=None):
+def compose_aug_inchi(inchi, ulayer=None):
     """
     Composes an augmented InChI by concatenating the different pieces
     as follows:
 
-    InChI=1S/XXXX.../c.../h.../multx/ux,x,...
+    InChI=1S/XXXX.../c.../h.../ux,x,...
     """
     cython.declare(
             prefix=str,
@@ -100,24 +72,24 @@ def compose_aug_inchi(inchi, mult_layer, ulayer=None):
 
     prefix = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
     if ulayer is not None:
-        return prefix + inchi + mult_layer + ulayer
+        return prefix + inchi + ulayer
     else:
-        return prefix + inchi + mult_layer 
+        return prefix + inchi 
 
 
-def compose_aug_inchi_key(inchi_key, mult_layer, ulayer=None):
+def compose_aug_inchi_key(inchi_key, ulayer=None):
     """
     Composes an augmented InChI Key by concatenating the different pieces
     as follows:
 
-    XXXXXXXXXXXXXX-XXXXXXXXXX-multx-ux,x,xxx
+    XXXXXXXXXXXXXX-XXXXXXXXXX-ux,x,xxx
 
     Uses hyphens rather than forward slashes to avoid messing up file paths.
     """
     if ulayer is not None:
-        return inchi_key + '-mult' + mult_layer + '-' + ulayer[1:]#cut off the '/'
+        return inchi_key + '-' + ulayer[1:]#cut off the '/'
     else:
-        return inchi_key + '-mult' + mult_layer 
+        return inchi_key 
 
 def parse_H_layer(inchi):
     """
@@ -267,15 +239,12 @@ class InChI(str):
       return str.__new__(self, ignore_prefix(inchi))
 
 class AugmentedInChI(InChI):
-    """AugmentedInChI is an InChI with inchi, multiplicity and unpaired electron attributes."""
+    """AugmentedInChI is an InChI with inchi, and unpaired electron attributes."""
     def __init__(self, aug_inchi):
         super(AugmentedInChI, self).__init__()
-        inchi, mult, u_indices = decompose(self)
+        inchi, u_indices = decompose(self)
 
         self.inchi = str(inchi)
-
-        # default to multiplicity -1
-        self.mult = mult or -1
 
         # default to None
         self.u_indices = u_indices or None

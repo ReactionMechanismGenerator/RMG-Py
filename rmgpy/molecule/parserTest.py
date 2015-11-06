@@ -24,27 +24,27 @@ class parserTest(unittest.TestCase):
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 2)
         
-        aug_inchi = 'InChI=1S/CH3/h1H3/mult2'
+        aug_inchi = 'InChI=1S/CH3/h1H3'
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 2)
         
-        aug_inchi = 'InChI=1S/CH3/h1H3/mult2/u0'
+        aug_inchi = 'InChI=1S/CH3/h1H3/u0'
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 2)
         
-        aug_inchi = 'InChI=1S/CH2/h1H2/mult3'
+        aug_inchi = 'InChI=1S/CH2/h1H2'
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 3)
         
-        aug_inchi = 'InChI=1S/CH2/h1H2/mult1'
+        aug_inchi = 'InChI=1S/CH2/h1H2'
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 1)
         
-        aug_inchi = 'InChI=1S/CH2/h1H2/mult3/u0'
+        aug_inchi = 'InChI=1S/CH2/h1H2/u0'
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 3)
         
-        aug_inchi = 'InChI=1S/CH2/h1H2/mult1/u0'
+        aug_inchi = 'InChI=1S/CH2/h1H2/u0'
         mol = parser.fromAugmentedInChI(Molecule(), aug_inchi)
         self.assertTrue(mol.multiplicity == 1)
 
