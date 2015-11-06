@@ -129,15 +129,24 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
         try:
             Tmin = float(lines[0][45:55].strip())
         except ValueError:
+            logging.warning("Couldn't get Tmin from {0!r}".format(lines[0][45:55].strip()))
             pass
         try:
             Tmax = float(lines[0][55:65].strip())
         except ValueError:
+            logging.warning("Couldn't get Tmax from {0!r}".format(lines[0][55:65].strip()))
             pass
         try:
             Tint = float(lines[0][65:73].strip())
         except ValueError:
+            logging.warning("Couldn't get Tint from {0!r}".format(lines[0][65:73].strip()))
             pass
+
+        if Tint is None or Tmin is None or Tmax is None:
+            logging.warning("Temperature ranges not correctly specified for species {0} and no defaults set;".format(species))
+            logging.warning("Skipping thermo entry.")
+            return species, None, None
+
         a0_high = fortran_float(lines[1][0:15].strip())
         a1_high = fortran_float(lines[1][15:30].strip())
         a2_high = fortran_float(lines[1][30:45].strip())
