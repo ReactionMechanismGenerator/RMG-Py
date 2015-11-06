@@ -87,7 +87,7 @@ def toInChI(mol):
     obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
     return obConversion.WriteString(obmol).strip()
 
-def create_U_layer(mol):
+def create_U_layer(mol, auxinfo):
     """
     Creates a string with the positions of the atoms that bear unpaired electrons. The string
     can be used to complement the InChI with an additional layer that allows for the differentiation
@@ -96,33 +96,18 @@ def create_U_layer(mol):
     The string is composed of a prefix ('u') followed by the positions of each of the unpaired electrons,
     sorted in numerical order.
 
-    The indices in the string refer to the atom indices in the molecule, according to the atom order
-    obtained by sorting the atoms using the InChI canonicalization algorithm.
-
     Example:
     - methyl radical ([CH3]) : u1
     - triplet methylene biradical ([CH2]) : u1,1
     - ethane-1,2-diyl biradical ([CH2][CH2]): u1,2
     
-    First a deep copy is created of the original molecule and hydrogen atoms are removed from the molecule.
-    Next, the molecule is converted into an InChI string, and the auxiliary information of the inchification 
-    procedure is retrieved. 
-
-    The N-layer is parsed and used to sort the atoms of the original order according
-    to the order in the InChI. In case, the molecule contains atoms that cannot be distinguished
-    with the InChI algorithm ('equivalent atoms'), the position of the unpaired electrons is changed
-    as to ensure the atoms with the lowest indices are used to compose the string.
-
     When the molecule does not bear any unpaired electrons, None is returned.
 
     """
 
     cython.declare(
-                molcopy=Molecule,
-                hydrogens=list,
+                minmol=Molecule,
                 #rdkitmol=,
-                auxinfo=str,
-                atom_indices=list,
                 u_layer=list,
                 i=int,
                 at=Atom,
@@ -134,34 +119,20 @@ def create_U_layer(mol):
     elif mol.getFormula() == 'H':
         return inchiutil.U_LAYER_PREFIX + '1'
 
-    molcopy = mol.copy(deep=True)
-
-    hydrogens = filter(lambda at: at.number == 1, molcopy.atoms)
-    [molcopy.removeAtom(h) for h in hydrogens]
-
-    rdkitmol = toRDKitMol(molcopy)
-    _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')# suppress stereo warnings
-    
-    # extract the atom numbers from N-layer of auxiliary info:
-    atom_indices = inchiutil.parse_N_layer(auxinfo)    
-    atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
-
-    # sort the atoms based on the order of the atom indices
-    molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
 
     # find the resonance isomer with the lowest u index:
-    molcopy = generate_minimum_resonance_isomer(molcopy)
+    minmol = generate_minimum_resonance_isomer(mol)
     
     # create preliminary u-layer:
     u_layer = []
-    for i, at in enumerate(molcopy.atoms):
+    for i, at in enumerate(minmol.atoms):
         u_layer.extend([i+1] * at.radicalElectrons)
     
     # extract equivalent atom pairs from E-layer of auxiliary info:
     equivalent_atoms = inchiutil.parse_E_layer(auxinfo)
     if equivalent_atoms:
         # select lowest u-layer:
-        u_layer = find_lowest_u_layer(molcopy, u_layer, equivalent_atoms)
+        u_layer = find_lowest_u_layer(minmol, u_layer, equivalent_atoms)
 
     return (inchiutil.U_LAYER_PREFIX + ','.join(map(str, u_layer)))
 
@@ -183,9 +154,9 @@ def toAugmentedInChI(mol):
                )
     inchi = toInChI(mol)
 
-    ulayer = create_U_layer(mol)
+    ulayer, player = create_augmented_layers(mol)
 
-    aug_inchi = inchiutil.compose_aug_inchi(inchi, ulayer)
+    aug_inchi = inchiutil.compose_aug_inchi(inchi, ulayer, player)
 
     return aug_inchi
 
@@ -233,9 +204,9 @@ def toAugmentedInChIKey(mol):
 
     key = toInChIKey(mol)
 
-    ulayer = create_U_layer(mol)
+    ulayer, player = create_augmented_layers(mol)
 
-    return inchiutil.compose_aug_inchi_key(key, ulayer)
+    return inchiutil.compose_aug_inchi_key(key, ulayer, player)
 
 def toSMARTS(mol):
     """
@@ -557,3 +528,80 @@ def has_unexpected_lone_pairs(mol):
             if at.lonePairs != EXPECTED_LONE_PAIRS[at.symbol]: return True 
 
     return False
+
+def create_augmented_layers(mol):
+    """
+
+    The indices in the string refer to the atom indices in the molecule, according to the atom order
+    obtained by sorting the atoms using the InChI canonicalization algorithm.
+
+    First a deep copy is created of the original molecule and hydrogen atoms are removed from the molecule.
+    Next, the molecule is converted into an InChI string, and the auxiliary information of the inchification 
+    procedure is retrieved. 
+
+    The N-layer is parsed and used to sort the atoms of the original order according
+    to the order in the InChI. In case, the molecule contains atoms that cannot be distinguished
+    with the InChI algorithm ('equivalent atoms'), the position of the unpaired electrons is changed
+    as to ensure the atoms with the lowest indices are used to compose the string.
+
+    """
+
+    if mol.getRadicalCount() == 0 and not has_unexpected_lone_pairs(mol):
+        return None, None
+    elif mol.getFormula() == 'H':
+        return inchiutil.U_LAYER_PREFIX + '1', None
+    else:
+        molcopy = mol.copy(deep=True)
+
+        hydrogens = filter(lambda at: at.number == 1, molcopy.atoms)
+        [molcopy.removeAtom(h) for h in hydrogens]
+
+        rdkitmol = toRDKitMol(molcopy)
+        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')# suppress stereo warnings
+        
+        # extract the atom numbers from N-layer of auxiliary info:
+        atom_indices = inchiutil.parse_N_layer(auxinfo)    
+        atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
+
+        # sort the atoms based on the order of the atom indices
+        molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
+    
+        ulayer = create_U_layer(molcopy, auxinfo)
+
+        player = create_P_layer(molcopy, auxinfo)
+
+        return ulayer, player
+
+def create_P_layer(mol, auxinfo):
+    """
+
+    Creates a string with the positions of the atoms that bear an unexpected number of lone pairs. The string
+    can be used to complement the InChI with an additional layer that allows for the differentiation
+    between structures with lone pairs.
+
+    The string is composed of a prefix ('p') followed by the positions of each of the atoms with an
+    unexpected number of lone pairs, sorted in numerical order.
+
+    Example:
+    - singlet methylene biradical ([CH2]) : p1
+
+    When the molecule does not bear any atoms with an unexpected number of lone pairs,
+    None is returned.
+
+
+    """
+    # create preliminary p-layer:
+    p_layer = []
+    for i, at in enumerate(mol.atoms):
+        try:
+            exp = EXPECTED_LONE_PAIRS[at.symbol]
+        except KeyError:
+            raise Exception("Unrecognized element: {}".format(at.symbol))
+        else:
+            if at.lonePairs != EXPECTED_LONE_PAIRS[at.symbol]:
+                p_layer.extend([i+1] * at.lonePairs)
+
+    if p_layer:
+        return (inchiutil.P_LAYER_PREFIX + inchiutil.P_LAYER_SEPARATOR.join(map(str, p_layer)))
+    else:
+        return None

@@ -24,6 +24,25 @@ U_LAYER_PREFIX = '/u'
 """The separator that separates the indices of the atoms that bear unpaired electrons."""
 U_LAYER_SEPARATOR = ','
 
+
+"""
+The prefix with the information on the distribution of the atoms 
+with an unexpected number of lone pairs.
+
+For example, a singlet methylene with a lone pair on atom 1
+will have the following lone pair layer in the augmented InChI:
+
+InChI=1/.../p1
+
+The indices refer to the 1-based indices in the InChI string (NOT the 0-based
+    indices of the Molecule container!)
+
+"""
+P_LAYER_PREFIX = '/p'
+
+"""The separator that separates the indices of the atoms that bear unpaired electrons."""
+P_LAYER_SEPARATOR = ','
+
 def decompose(string):
     """
     Converts an augmented inchi into an inchi and indices array for the atoms
@@ -37,16 +56,20 @@ def decompose(string):
     cython.declare(
             inchi=str,
             u_indices=list,
-            ulayer=str
+            p_indices=list,
+            rest=str,
         )
 
     if not U_LAYER_PREFIX in string:
         return string, []
 
-    inchi, ulayer = string.split(U_LAYER_PREFIX)
+    inchi, rest = string.split(U_LAYER_PREFIX) #rest: "1,2,3/p1,2,3"
 
-    u_indices = map(int, ulayer.split(U_LAYER_SEPARATOR))
-    return inchi, u_indices
+    u_indices, p_indices = rest.split(P_LAYER_PREFIX)#p_indices: "1,2,3"
+    u_indices= map(int, u_indices.split(U_LAYER_SEPARATOR))
+    p_indices= map(int, p_indices.split(P_LAYER_SEPARATOR))
+
+    return inchi, u_indices, p_indices
 
 def ignore_prefix(string):
     """
@@ -59,7 +82,7 @@ def ignore_prefix(string):
 
     return re.split(r"(InChI=1+)(S*)/", string)[-1]
 
-def compose_aug_inchi(inchi, ulayer=None):
+def compose_aug_inchi(inchi, ulayer=None, player=None):
     """
     Composes an augmented InChI by concatenating the different pieces
     as follows:
@@ -67,17 +90,18 @@ def compose_aug_inchi(inchi, ulayer=None):
     InChI=1S/XXXX.../c.../h.../ux,x,...
     """
     cython.declare(
-            prefix=str,
+            temp=str,
         )
 
-    prefix = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
-    if ulayer is not None:
-        return prefix + inchi + ulayer
-    else:
-        return prefix + inchi 
+    aug_inchi = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
+    aug_inchi += inchi
+    
+    for layer in filter(None, [ulayer, player]):
+        aug_inchi += layer
 
+    return aug_inchi
 
-def compose_aug_inchi_key(inchi_key, ulayer=None):
+def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
     """
     Composes an augmented InChI Key by concatenating the different pieces
     as follows:
@@ -86,10 +110,13 @@ def compose_aug_inchi_key(inchi_key, ulayer=None):
 
     Uses hyphens rather than forward slashes to avoid messing up file paths.
     """
-    if ulayer is not None:
-        return inchi_key + '-' + ulayer[1:]#cut off the '/'
-    else:
-        return inchi_key 
+
+    aug_inchi_key = inchi_key
+
+    for layer in filter(None, [ulayer, player]):
+        aug_inchi_key += '-' + layer[1:]#cut off the '/'
+
+    return aug_inchi_key 
 
 def parse_H_layer(inchi):
     """
@@ -242,10 +269,11 @@ class AugmentedInChI(InChI):
     """AugmentedInChI is an InChI with inchi, and unpaired electron attributes."""
     def __init__(self, aug_inchi):
         super(AugmentedInChI, self).__init__()
-        inchi, u_indices = decompose(self)
+        inchi, u_indices, p_indices = decompose(self)
 
         self.inchi = str(inchi)
 
         # default to None
         self.u_indices = u_indices or None
+        self.p_indices = p_indices or None
         

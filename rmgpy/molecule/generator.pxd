@@ -5,7 +5,7 @@ cpdef dict _known_smiles_radicals
 
 cpdef str toInChI(Molecule mol)
 
-cpdef str create_U_layer(Molecule mol)
+cpdef str create_U_layer(Molecule mol, str auxinfo)
 
 cpdef str toAugmentedInChI(Molecule mol)
 
@@ -30,3 +30,5 @@ cpdef Molecule generate_minimum_resonance_isomer(Molecule mol)
 cpdef list get_unpaired_electrons(Molecule mol)
 
 cpdef list compute_agglomerate_distance(list agglomerates, Molecule mol)
+
+cpdef str create_P_layer(Molecule mol, str auxinfo)

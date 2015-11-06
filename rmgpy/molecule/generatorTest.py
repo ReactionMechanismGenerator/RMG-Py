@@ -46,7 +46,7 @@ class CreateULayerTest(unittest.TestCase):
         u_layers = []
         for adjlist in [adjlist1, adjlist2]:
             mol = Molecule().fromAdjacencyList(adjlist)
-            u_layer = create_U_layer(mol)
+            u_layer = create_augmented_layers(mol)[0]
             u_layers.append(u_layer)
 
         self.assertEquals(u_layers[0], u_layers[1])
@@ -293,7 +293,6 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/u1,3,5,7'
         self.compare(adjlist, aug_inchi)
 
-    @work_in_progress
     def test_singlet_vs_closed_shell(self):
         adjlist_singlet = """
 1 C u0 p0 c0 {2,D} {3,S} {4,S}
@@ -361,6 +360,38 @@ class ExpectedLonePairsTest(unittest.TestCase):
         mol = Molecule(atoms=[Atom(element='O', lonePairs=3)])
         unexpected = has_unexpected_lone_pairs(mol)
         self.assertTrue(unexpected)
+
+class CreateAugmentedLayersTest(unittest.TestCase):
+    def test_Methane(self):
+        smi = 'C'
+        mol = Molecule().fromSMILES(smi)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertTrue(not player)
+
+    def test_SingletMethylene(self):
+        adjlist = """
+multiplicity 1
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertEquals('/p1', player)
+
+    def test_TripletMethylene(self):
+        adjlist = """
+multiplicity 3
+1 C u2 p0 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertEquals('/u1,1', ulayer)
+        self.assertTrue(not player)
 
 if __name__ == '__main__':
     unittest.main()
