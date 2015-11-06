@@ -538,6 +538,7 @@ class ModelMatcher():
             'tripletC=[C]': "1 C 0 {2,D}\n2 C 2T {1,D}",
             'singlet[CH]O': "1 C 2S {2,S}\n2 O 0  {1,S}",
             'triplet[CH]O': "1 C 2T {2,S}\n2 O 0  {1,S}",
+            '[C]': "1 C u0 p2 c0",
             }
 
         for species_label in known_names:
@@ -955,7 +956,10 @@ class ModelMatcher():
             while formula != Molecule(SMILES=smiles).getFormula():
                 smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formula))
             species = self.speciesDict[species_label]
-            species.molecule = [Molecule(SMILES=smiles)]
+            if smiles == '[C]':  # The SMILES is interpreted as a quintuplet and we can't estimate the thermo
+                species.molecule = [Molecule().fromAdjacencyList('1 C u0 p2 c0')]
+            else:
+                species.molecule = [Molecule(SMILES=smiles)]
             species.generateResonanceIsomers()
             identified_labels.append(species_label)
             self.saveMatchToFile(species_label, species)
@@ -1899,7 +1903,11 @@ class ModelMatcher():
                 old_species.reactive = False
                 # when this occurs in collider lists it's still the old species?
             rmg_species.generateResonanceIsomers()
-            rmg_species.generateThermoData(self.rmg_object.database)
+            try:
+                rmg_species.generateThermoData(self.rmg_object.database)
+            except:
+                logging.error("Couldn't generate thermo for RMG species {}".format(rmg_species))
+                raise
         # Set match using the function to get all the side-effects.
         labelsToProcess = self.identified_labels
         self.identified_labels = []
