@@ -1199,7 +1199,10 @@ def read_thermo_block(f, species_dict):
             else:
                 if thermo is None:
                     logging.error("Problematic thermo block:\n{0}".format(thermo_block))
-                    raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
+                    logging.warning("Skipping broken thermo for species {0}".format(label))
+                    thermo_block = ''
+                    line = f.readline()
+                    continue
             try:
                 formula_dict[label] = formula
                 species_dict[label].thermo = thermo
