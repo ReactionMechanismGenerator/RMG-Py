@@ -244,8 +244,7 @@ def check(mol, aug_inchi) :
                    at=Atom
                    )
 
-    _, mult, __ = aug_inchi.inchi, aug_inchi.mult, aug_inchi.u_indices
-    assert mult == mol.getRadicalCount() + 1,\
+    assert mol.multiplicity == mol.getRadicalCount() + 1,\
      'Multiplicity of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     
     for at in mol.atoms:
@@ -344,6 +343,8 @@ def fromAugmentedInChI(mol, aug_inchi):
         aug_inchi = inchiutil.AugmentedInChI(aug_inchi)
 
     mol = fromInChI(mol, aug_inchi.inchi)
+
+    mol.multiplicity = len(aug_inchi.u_indices) + 1 if aug_inchi.u_indices else 1
 
     fix(mol, aug_inchi)
 
