@@ -1,5 +1,6 @@
 import re
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy.species import Species
 from .molecule import Molecule
@@ -131,6 +132,7 @@ class InChIParsingTest(unittest.TestCase):
         u_indices = [1,2,3,4]
         self.compare(inchi, u_indices)
 
+    @work_in_progress
     def testCO(self):
         inchi = 'CO/c1-2'
         p_indices = [1,2]
