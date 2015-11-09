@@ -275,5 +275,46 @@ class InChIParsingTest(unittest.TestCase):
         u_indices = [1,3]
         self.compare(inchi, u_indices)
 
+    def test_ammonia(self):
+        inchi = 'InChI=1S/H3N/h1H3'
+        self.compare(inchi)
+
+    @work_in_progress
+    def test_ammonium(self):
+        """
+        has same inchi as ammonia but gets a proton layer: /p+1
+        """
+        inchi = 'InChI=1S/H3N/h1H3/p+1'
+        self.compare(inchi)
+
+    def test_H2S(self):
+        inchi = 'InChI=1S/H2S/h1H2'
+        self.compare(inchi)
+        
+    def test_pyridine(self):
+        inchi = 'InChI=1S/C5H5N/c1-2-4-6-5-3-1/h1-5H'
+        self.compare(inchi)
+
+    def test_pyrimidine(self):
+        inchi = 'InChI=1S/C4H4N2/c1-2-5-4-6-3-1/h1-4H'
+        self.compare(inchi)
+
+    @work_in_progress
+    def test_nitrate(self):
+        """
+        - Mobile H spread over oxygen 2, 3, 4
+        - Negative charge (3 lone pairs) spread out over oxygen 2, 3, 4
+        - Nitrogen 1 positively charged
+
+        """
+        inchi = 'InChI=1S/HNO3/c2-1(3)4/h(H,2,3,4)'
+        p_indices = [-1, 3, 3, 3]#???
+        mol = self.compare(inchi, [], p_indices)
+
+    def test_NO(self):
+        inchi = 'InChI=1S/NO/c1-2'
+        u_indices = [1]
+        mol = self.compare(inchi, u_indices)
+
 if __name__ == '__main__':
     unittest.main()
