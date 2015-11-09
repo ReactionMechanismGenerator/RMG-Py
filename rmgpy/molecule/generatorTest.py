@@ -339,6 +339,35 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
         self.compare(adjlist, aug_inchi)
 
+    @work_in_progress
+    def test_C5H6_triplet_singlet(self):
+        """
+        n-C5 chain with 2 unpaired electrons at the terminal carbon atoms,
+        and 2 carbon atoms with each a lone pair, next to a terminal
+        carbon atom.
+
+        InChI generation currently generates:
+        "InChI=1S/C5H10/c1-3-5-4-2/h1-5H2/u1,2/lp4,5"
+        """
+
+        adjlist = """
+multiplicity 3
+1 C u1 p0 c0 {2,S} {6,S} {7,S}
+2 C u0 p1 c0 {1,S} {3,S}
+3 C u0 p1 c0 {2,S} {5,S}
+4 C u1 p0 c0 {5,S} {8,S} {9,S}
+5 C u0 p0 c0 {3,S} {4,S} {10,S} {11,S}
+6 H u0 p0 c0 {1,S}
+7 H u0 p0 c0 {1,S}
+8 H u0 p0 c0 {4,S}
+9 H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {5,S}
+        """
+
+        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp4,5'
+        self.compare(adjlist, aug_inchi)
+
 class ExpectedLonePairsTest(unittest.TestCase):
 
     def test_SingletCarbon(self):
