@@ -599,7 +599,10 @@ def create_P_layer(mol, auxinfo):
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
             if at.lonePairs != EXPECTED_LONE_PAIRS[at.symbol]:
-                p_layer.extend([i+1] * at.lonePairs)
+                if at.lonePairs == 0:
+                    p_layer.append('{}{}'.format(i, '(0)'))
+                else:
+                    p_layer.extend([i+1] * at.lonePairs)
 
     if p_layer:
         return (inchiutil.P_LAYER_PREFIX + inchiutil.P_LAYER_SEPARATOR.join(map(str, p_layer)))

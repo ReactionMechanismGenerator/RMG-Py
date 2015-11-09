@@ -53,6 +53,11 @@ def decompose(string):
     - indices array for the atoms bearing unpaired electrons.
     - indices array for the atoms bearing (unexpected) lone pairs.
 
+    Atoms that unexpectedly bear zero lone pairs will be mentioned as follows:
+    "x(0)", with x the index of the atom, and (0) denoting that the atom does not 
+    bear any lone pairs.
+
+    The "x(0)" will be parsed into a tuple (x, 0).
 
     """
     cython.declare(
@@ -75,7 +80,13 @@ def decompose(string):
 
     matches = re.findall(player_pattern, string)
     if matches:
-        p_indices = map(int, matches.pop().split('/')[0].split(P_LAYER_SEPARATOR))
+        dummy = matches.pop().split('/')[0].split(P_LAYER_SEPARATOR)
+        for index in dummy:
+            if '(0)' in str(index):
+                index = int(str(index).split('(0)')[0])
+                p_indices.append((index,0))
+            else:
+                p_indices.append(int(index))
 
     return inchi, u_indices, p_indices
 
@@ -95,7 +106,7 @@ def compose_aug_inchi(inchi, ulayer=None, player=None):
     Composes an augmented InChI by concatenating the different pieces
     as follows:
 
-    InChI=1S/XXXX.../c.../h.../ux,x,...
+    InChI=1S/XXXX.../c.../h.../ux,x,/...
     """
     cython.declare(
             temp=str,

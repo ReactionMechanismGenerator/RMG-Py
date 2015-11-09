@@ -393,5 +393,24 @@ multiplicity 3
         self.assertEquals(U_LAYER_PREFIX + '1,1', ulayer)
         self.assertTrue(not player)
 
+    @work_in_progress
+    def test_Nitrate(self):
+        """
+        Test that N atom in the p-layer has correct symbol.
+        """
+        
+        adjlist = """
+1 O u0 p2 c0 {4,D}
+2 O u0 p3 c-1 {4,S}
+3 O u0 p3 c-1 {4,S}
+4 N u0 p0 c+1 {1,D} {2,S} {3,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertTrue(player.contains(P_LAYER_PREFIX + '1(0)'))
+
+
+
 if __name__ == '__main__':
     unittest.main()
