@@ -5,10 +5,18 @@ import logging
 import itertools
 
 # local imports
+
+# Assume that OB is not installed by default
+INSTALLED_BACKENDS = {
+    'OB': False,
+}
+
 try:
     import openbabel
-except:
+    INSTALLED_BACKENDS['OB'] = True
+except :
     pass
+
 from rdkit import Chem
 
 from rmgpy.molecule import element as elements
@@ -21,9 +29,11 @@ from .molecule import Atom, Bond, Molecule
 # constants
 
 BACKENDS = [
-            'openbabel',
             'rdkit',
             ]
+
+if INSTALLED_BACKENDS['OB']:
+    BACKENDS.insert(0,'openbabel')
 
 INCHI_LOOKUPS = {
             'H': '[H]',#RDkit was improperly handling the Hydrogen radical from InChI
@@ -72,13 +82,6 @@ _known_smiles_radicals = {
              }
 
 # global variables:
-
-try:
-    SMILEwriter = openbabel.OBConversion()
-    SMILEwriter.SetOutFormat('smi')
-    SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
-except:
-    pass
 
 def reset_lone_pairs_to_default(at):
     """Resets the atom's lone pair count to its default value."""
@@ -589,7 +592,7 @@ def toSMILES(mol):
     While converting to an RDMolecule it will perceive aromaticity
     and removes Hydrogen atoms.
     """
-    
+
     # If we're going to have to check the formula anyway,
     # we may as well shortcut a few small known molecules.
     # Dictionary lookups are O(1) so this should be fast:
@@ -604,8 +607,14 @@ def toSMILES(mol):
         pass
     for atom in mol.vertices:
         if atom.isNitrogen():
-            obmol = toOBMol(mol)
-            return SMILEwriter.WriteString(obmol).strip()
+            try:
+                obmol = toOBMol(mol)
+                SMILEwriter = openbabel.OBConversion()
+                SMILEwriter.SetOutFormat('smi')
+                SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
+                return SMILEwriter.WriteString(obmol).strip()
+            except:
+                break# break from for loop
 
     rdkitmol = toRDKitMol(mol, sanitize=False)
     if not mol.isAromatic():
@@ -721,11 +730,14 @@ def toInChI(mol):
     except:
         pass
 
-    obmol = toOBMol(mol)
-    obConversion = openbabel.OBConversion()
-    obConversion.SetOutFormat('inchi')
-    obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-    return obConversion.WriteString(obmol).strip()
+    if INSTALLED_BACKENDS['OB']: 
+        obmol = toOBMol(mol)
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()
+    else:
+        raise Exception('Could not generate InChI, because Openbabel installation was not found. ')
 
 def createULayer(mol):
     """
@@ -778,15 +790,16 @@ def toInChIKey(mol):
         pass
     
 
-#        for atom in mol.vertices:
-#           if atom.isNitrogen():
-    obmol = toOBMol(mol)
-    obConversion = openbabel.OBConversion()
-    obConversion.SetOutFormat('inchi')
-    obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-    obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-    return obConversion.WriteString(obmol).strip()[:-2]
-
+    if INSTALLED_BACKENDS['OB']:         
+        obmol = toOBMol(mol)
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()[:-2]
+    else:
+        raise Exception('Could not generate InChI Key, because Openbabel installation was not found. ')
+        
 def toAugmentedInChIKey(mol):
     """
     Adds an extra layer to the InChIKey denoting the multiplicity
