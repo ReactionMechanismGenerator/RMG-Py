@@ -579,11 +579,11 @@ def create_P_layer(mol, auxinfo):
     can be used to complement the InChI with an additional layer that allows for the differentiation
     between structures with lone pairs.
 
-    The string is composed of a prefix ('p') followed by the positions of each of the atoms with an
+    The string is composed of a prefix ('P_LAYER_PREFIX') followed by the positions of each of the atoms with an
     unexpected number of lone pairs, sorted in numerical order.
 
     Example:
-    - singlet methylene biradical ([CH2]) : p1
+    - singlet methylene biradical ([CH2]) : 'P_LAYER_PREFIX'1
 
     When the molecule does not bear any atoms with an unexpected number of lone pairs,
     None is returned.

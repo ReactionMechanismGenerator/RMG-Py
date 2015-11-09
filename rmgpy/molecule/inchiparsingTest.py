@@ -5,15 +5,15 @@ from external.wip import work_in_progress
 from rmgpy.species import Species
 from .molecule import Molecule
 from .util import retrieveElementCount, VALENCES, ORDERS
-from .inchi import compose_aug_inchi
+from .inchi import compose_aug_inchi, P_LAYER_PREFIX, P_LAYER_SEPARATOR, U_LAYER_PREFIX, U_LAYER_SEPARATOR
 
 from .parser import *
 
 class InChIParsingTest(unittest.TestCase):
 
     def compare(self, inchi, u_indices=[], p_indices = []):        
-        u_layer = '/u' + ','.join(map(str, u_indices)) if u_indices else None
-        p_layer = '/p' + ','.join(map(str, p_indices)) if p_indices else None
+        u_layer = U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices)) if u_indices else None
+        p_layer = P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices)) if p_indices else None
 
         aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
 

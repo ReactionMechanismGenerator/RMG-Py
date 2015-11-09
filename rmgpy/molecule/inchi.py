@@ -32,19 +32,19 @@ with an unexpected number of lone pairs.
 For example, a singlet methylene with a lone pair on atom 1
 will have the following lone pair layer in the augmented InChI:
 
-InChI=1/.../p1
+InChI=1/.../lp1
 
 The indices refer to the 1-based indices in the InChI string (NOT the 0-based
     indices of the Molecule container!)
 
 """
-P_LAYER_PREFIX = '/p'
+P_LAYER_PREFIX = '/lp'
 
 """The separator that separates the indices of the atoms that bear unpaired electrons."""
 P_LAYER_SEPARATOR = ','
 
-ulayer_pattern = re.compile(r'/u(.*)')
-player_pattern = re.compile(r'/p(.*)')
+ulayer_pattern = re.compile(U_LAYER_PREFIX + r'(.*)')
+player_pattern = re.compile(P_LAYER_PREFIX + r'(.*)')
 
 def decompose(string):
     """

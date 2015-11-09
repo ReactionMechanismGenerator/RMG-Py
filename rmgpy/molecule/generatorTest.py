@@ -3,8 +3,8 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.species import Species
-from .molecule import Atom,Molecule
-
+from .molecule import Atom, Molecule
+from .inchi import P_LAYER_PREFIX, U_LAYER_PREFIX
 from .generator import *
 
 class CreateULayerTest(unittest.TestCase):
@@ -379,7 +379,7 @@ multiplicity 1
         mol = Molecule().fromAdjacencyList(adjlist)
         ulayer, player = create_augmented_layers(mol)
         self.assertTrue(not ulayer)
-        self.assertEquals('/p1', player)
+        self.assertEquals(P_LAYER_PREFIX + '1', player)
 
     def test_TripletMethylene(self):
         adjlist = """
@@ -390,7 +390,7 @@ multiplicity 3
 """
         mol = Molecule().fromAdjacencyList(adjlist)
         ulayer, player = create_augmented_layers(mol)
-        self.assertEquals('/u1,1', ulayer)
+        self.assertEquals(U_LAYER_PREFIX + '1,1', ulayer)
         self.assertTrue(not player)
 
 if __name__ == '__main__':
