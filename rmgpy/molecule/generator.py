@@ -590,6 +590,10 @@ def create_P_layer(mol, auxinfo):
 
 
     """
+
+    # TODO: find the resonance isomer with the lowest p index:
+    minmol = mol
+
     # create preliminary p-layer:
     p_layer = []
     for i, at in enumerate(mol.atoms):
@@ -604,7 +608,22 @@ def create_P_layer(mol, auxinfo):
                 else:
                     p_layer.extend([i+1] * at.lonePairs)
 
+    # extract equivalent atom pairs from E-layer of auxiliary info:
+    equivalent_atoms = inchiutil.parse_E_layer(auxinfo)
+    if equivalent_atoms:
+        # select lowest u-layer:
+        u_layer = find_lowest_p_layer(minmol, p_layer, equivalent_atoms)
+
     if p_layer:
         return (inchiutil.P_LAYER_PREFIX + inchiutil.P_LAYER_SEPARATOR.join(map(str, p_layer)))
     else:
         return None
+
+def find_lowest_p_layer(minmol, p_layer, equivalent_atoms):
+    """
+    Permute the equivalent atoms and return the combination with the 
+    lowest p-layer.
+
+    TODO: The presence of unpaired electrons complicates stuff. 
+    """
+    return minmol
