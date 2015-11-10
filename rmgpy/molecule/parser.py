@@ -46,77 +46,7 @@ SMILES_LOOKUPS = {
             multiplicity 1
             1 He u0 p1
             """
-}
-
-def reset_lone_pairs_to_default(mol):
-    """Resets the atom's lone pair count to its default value."""
-
-    for at in mol.atoms:
-        order = sum([ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
-        at.lonePairs = (VALENCES[at.element.symbol] - order - at.radicalElectrons - at.charge) / 2
-
-def convert_unsaturated_bond_to_biradical(mol, inchi, u_indices):
-    """
-    Convert an unsaturated bond (double, triple) into a bond
-    with a lower bond order (single, double), and give an unpaired electron
-    to each of the neighboring atoms, with indices referring to the 1-based
-    index in the InChI string.
-    """
-    cython.declare(u1=cython.int, u2=cython.int)
-    cython.declare(atom1=Atom, atom2=Atom)
-    cython.declare(b=Bond)
-
-    combos = itertools.combinations(u_indices, 2)
-
-    isFixed = False
-    for u1, u2 in combos:
-        atom1 = mol.atoms[u1 - 1] # convert to 0-based index for atoms in molecule
-        atom2 = mol.atoms[u2 - 1] # convert to 0-based index for atoms in molecule
-        if mol.hasBond(atom1, atom2):
-            b = mol.getBond(atom1, atom2)
-            isFixed = fix_unsaturated_bond(b)
-            if isFixed:
-                break
-                
-            else:
-                isFixed = fix_mobile_h(mol, inchi, u1, u2)
-                if isFixed:
-                    break
-        else:
-            isFixed = convert_butadiene_path(atom1, atom2)
-            if isFixed:
-                break
-
-    if isFixed:
-        u_indices.remove(u1)
-        u_indices.remove(u2)
-        return mol                
-    else:
-        raise Exception(
-            'Could not convert an unsaturated bond into a biradical for the \
-            indices {} provided in the molecule: {}.'
-            .format(u_indices, mol.toAdjacencyList())
-            )    
-
-def isUnsaturated(mol):
-    """Does the molecule have a bond that's not single?
-    
-    (eg. a bond that is double or triple or beneze)"""
-    cython.declare(atom1=Atom,
-                   atom2=Atom,
-                   bonds=dict,
-                   bond=Bond)
-    for atom1 in mol.atoms:
-        bonds = mol.getBonds(atom1)
-        for atom2, bond in bonds.iteritems():
-            if not bond.isSingle():
-                return True
-
-    return False
-
-def check_number_unpaired_electrons(mol):
-    """Check if the number of unpaired electrons equals (m - 1)"""
-    return mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)        
+}     
 
 def __fromSMILES(mol, smilesstr, backend):
     """Replace the Molecule `mol` with that given by the SMILES `smilesstr`

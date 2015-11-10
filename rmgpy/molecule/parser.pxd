@@ -53,8 +53,6 @@ cpdef check(Molecule mol, aug_inchi)
 
 cpdef fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
 
-cpdef find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)
-
 cpdef fixCharge(Molecule mol, list u_indices)
 
 cpdef fix_triplet_to_singlet(Molecule mol, list p_indices)
