@@ -49,6 +49,7 @@ cdef class Species:
     cdef public bint reactive
     cdef public object energyTransferModel
     cdef public dict props
+    cdef public str aug_inchi
     
     cpdef generateResonanceIsomers(self)
     

@@ -1,0 +1,82 @@
+pick 1212549 move zwitterion correction to its own function in parser
+pick 92a7a68 make correct_O_triple_bond more robust
+pick 472ddd8 add C=CC=O test case to inchi parsing test
+pick 0ea912c add normalization step for isomorphic resonance isomers
+pick ce8fa90 use inchi sorting in createULayer
+pick 3667135 use decrementOrder in convert_unsaturated_bond_to_biradical
+pick 46e2d82 create find_delocalized_path function in parser
+pick e5ee883 extend convert_unsaturated_bond_to_biradical
+pick 58ec7c1 rename fixZwitter to fixCharge and extend
+pick c8deb55 extend correct_O_triple_bond(mol)
+pick a01ff4f new inchi parsing test C3H4
+pick 0429e15 correct/add some inchi parsing tests
+pick d33aed0 modify the u-layer by adding multiple electrons per center
+pick cdf4ee2 search for 3_atom_2_bond_paths in fixCharge
+pick 91485f6 silence rdkit's stereo info in parser
+pick 45c13a3 remove indices from u-layer that already have unpaired electrons
+pick 94d765e rename correct_O_triple_bond to correct_O_unsaturated_bond
+pick dd2e17e fix inchi parser dealing with mobile-H's
+pick 42bd8ec expand correct_O_unsaturated_bond functionality
+pick 9e52903 reduce the constraint to call fixCharge
+pick c09d18a add u-layer as a parameter to correct_O_unsaturated_bond
+pick d364e34 make a copy of u-layer when iterating over it in fixCharge
+pick 69e8a5e add test_C2H2O3 in inchi parsing test
+pick 497f8a4 loop over all discovered 3_atom_2_bond_end_with_charge_paths
+pick b0fe990 only update molecule when the flag is set to True
+pick dd97955 iterate over all 3-a-2-b paths in fixCharge
+pick 58f8a27 make a copy every time multiple possibilities exist to extend a path
+pick a4ace4f expand the compare method of inchiparsingTest
+pick a1d2045 add test_C3H2O3 in inchiparsing test
+pick 6005ced update atom types before returning the parsed molecule
+pick c31d276 redesign condition checking in parser check
+pick 7b774ed do not allow the path to return to the original atom
+pick 5d257ce add find_inverse_allyl_paths and fix find_3_atom_2_bond_end_with_charge
+pick be2277b add 2 new tests in inchi parsing test
+pick 193daa9 expand testC3H4 in inchiparsing test
+pick db81236 add global import of Species in inchiparsing Test
+pick 76ffe60 refactor N-layer parsing into its own function
+pick 49cc690 replace logging.erorr by Exception message
+pick 9fe06d4 replace normalize by a more general parsing of the E-layer
+pick 129507d add new inchi parsing tests
+pick b3de7df replace erroneous empty list checking in parser
+pick 86d737e add C3H4 inchi parsing test
+pick c07058b check if the atoms already have unpaired electrons for a valid combo
+pick 3f0279f convert tuples to lists in parser
+pick 52a6e5d remove isInEquivalenceList, use any instead
+pick ef66a4d do not iterate over the original combo in find_lowest_u_layer
+pick 34ec615 correct some inchi parsing tests and add some more
+pick c87a840 add documentation to parse_E_layer and refactor related tests
+pick ee265b7 add documentation to parse_N_layer and refactor related tests
+pick 9010366 refactor create_U_layer, add documentation
+pick 78638da add documentation to generate_combos
+pick 11ff5bb expand inchi parsing test with inchi comparison after generation
+pick 9d7f72d add documentation to group_adjacent_unpaired_electrons
+pick 0c92106 add normalize function again, before parsing the E-layer
+pick 1f83a68 correct moleculeTest testCarbeneIdentifiers
+pick 2b6ee08 add some inchi parsing tests
+pick 1759d87 generalize generate_combos
+pick 0b4cc7d add unit test for generate combos
+pick 953392a rework function valid_combo
+pick 194050e expand find_lowest_u_layer for combinations with 1 element
+pick 7b9943f a single-element combo with a multiple element u-layer is not a valid combo
+pick 1948f58 Create InChIGenerationTest class within inchiparsingTest
+pick 5770b86 refactor the path finder algorithms into own module
+pick 1116c43 move parse H layer to inchi module
+pick b457e4f move parse_E_layer to inchi module
+pick df30caf move parse_N_layer to inchi module
+pick 579a1ad refactor the identifier generation from molecules into own module
+pick 4d5988e add shortest path finding algorithm
+pick 225db61 create partition function
+pick 6effb0c create compute_atom_distance function in pathfinder
+pick e171b85 rework generation of unpaired electron combinations
+pick 7c02204 redesign find_lowest_u_layer and is_valid_combo
+pick 35b3723 add 3 new inchi generation unit tests
+pick 193a862 fix u-layer of test_CH2O2 case in inchi parsing test
+pick 29219f0 remove deprecated group_adjacent_unpaired_electrons function
+pick d1d69df refactor some tests in generatorTest
+pick 177bc76 move generator.partition function to util
+pick 3ff1bee move generator.agglomerate function to util module
+pick 6149e15 move generator.generate_combo to util module
+pick 52da514 create resonance module and algorithms here from molecule module
+pick 967ec46 create generate_isomorphic_isomers function in resonance
+pick 33459d4 call generate_isomorphic_isomers in generator.normalize
