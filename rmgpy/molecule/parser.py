@@ -21,7 +21,7 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
-from .adjList import PeriodicSystem, bond_orders
+from .adjList import PeriodicSystem, bond_orders, ConsistencyChecker
 
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
@@ -171,17 +171,13 @@ def check(mol, aug_inchi) :
 
     """
     cython.declare(inchi=str,
-                   multi=cython.int,
                    at=Atom
                    )
 
-    assert mol.multiplicity == mol.getRadicalCount() + 1,\
-     'Multiplicity of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
+    ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
     
     for at in mol.atoms:
-        order = sum([bond_orders[b.order] for _,b in mol.getBonds(at).iteritems()])
-        assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == PeriodicSystem.valence_electrons[at.symbol],\
-            'Valency for an atom of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
+        ConsistencyChecker.check_partial_charge(at)
 
 def fix_oxygen_unsaturated_bond(mol, u_indices):
     """

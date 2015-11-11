@@ -3,8 +3,9 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.species import Species
+from .adjList import ConsistencyChecker
 from .molecule import Molecule
-from .util import retrieveElementCount, VALENCES, ORDERS
+from .util import retrieveElementCount
 from .inchi import compose_aug_inchi, P_LAYER_PREFIX, P_LAYER_SEPARATOR, U_LAYER_PREFIX, U_LAYER_SEPARATOR
 
 from .parser import *
@@ -18,11 +19,10 @@ class InChIParsingTest(unittest.TestCase):
         aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
 
         mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        self.assertEqual(mol.getNumberOfRadicalElectrons(), mol.multiplicity - 1)
+        ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
 
         for at in mol.atoms:
-            order = sum([ORDERS[bond.order] for bond in at.edges.values()])
-            self.assertTrue((order + at.radicalElectrons + 2*at.lonePairs + at.charge) == VALENCES[at.symbol])
+            ConsistencyChecker.check_partial_charge(at)
         
         spc = Species(molecule=[mol])
         spc.generateResonanceIsomers()
