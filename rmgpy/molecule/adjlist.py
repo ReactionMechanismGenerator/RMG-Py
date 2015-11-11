@@ -131,7 +131,7 @@ class ConsistencyChecker(object):
                 raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
         elif nRad == 2:
             if not int(multiplicity) in [1,3]: raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
-        else: logging.info("Consistency checking of multiplicity of molecules with more than 2 unpaired electrons is not implemented yet!")
+        else: logging.debug("Consistency checking of multiplicity of molecules with more than 2 unpaired electrons is not implemented yet!")
     
     @staticmethod
     def check_hund_rule(atom, multiplicity):
