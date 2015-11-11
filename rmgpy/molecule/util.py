@@ -1,20 +1,7 @@
 import re
 import itertools
 
-from rmgpy.molecule.molecule import Molecule
-
-
-"""
-Number of valence electrons of the elements
-"""
-VALENCES = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6,  'Ne': 8, 
-            'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8
-            }
-
-"""
-Bond orders of single, double, triple bonds.
-"""            
-ORDERS = {'S': 1, 'D': 2, 'T': 3}
+from .molecule import Molecule
 
 def retrieveElementCount(obj):
     """Converts an (augmented) inchi or Molecule into a dictionary element -> count"""

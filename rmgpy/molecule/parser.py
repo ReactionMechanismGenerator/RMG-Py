@@ -21,6 +21,7 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
+from .adjList import PeriodicSystem, bond_orders
 
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
@@ -178,8 +179,8 @@ def check(mol, aug_inchi) :
      'Multiplicity of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
     
     for at in mol.atoms:
-        order = sum([util.ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
-        assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == util.VALENCES[at.symbol],\
+        order = sum([bond_orders[b.order] for _,b in mol.getBonds(at).iteritems()])
+        assert (order + at.radicalElectrons + 2*at.lonePairs + at.charge) == PeriodicSystem.valence_electrons[at.symbol],\
             'Valency for an atom of molecule \n {0} does not correspond to aug. inchi {1}'.format(mol.toAdjacencyList(), aug_inchi)
 
 def fix_oxygen_unsaturated_bond(mol, u_indices):
@@ -579,7 +580,7 @@ def convert_3_atom_2_bond_path(start, mol):
 
         for at in mol.atoms:
             if at.number == 8:
-                order = sum([util.ORDERS[b.order] for _, b in at.bonds.iteritems()])
+                order = sum([bond_orders[b.order] for _, b in at.bonds.iteritems()])
                 not_correct = order >= 4
                 if not_correct:
                     return False
@@ -777,8 +778,8 @@ def reset_lone_pairs(mol, p_indices):
         if count != 0:
             at.lonePairs = count
         else:    
-            order = sum([util.ORDERS[b.order] for _,b in mol.getBonds(at).iteritems()])
-            at.lonePairs = (util.VALENCES[at.symbol] - order - at.radicalElectrons - at.charge) / 2
+            order = sum([bond_orders[b.order] for _,b in mol.getBonds(at).iteritems()])
+            at.lonePairs = (PeriodicSystem.valence_electrons[at.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """
