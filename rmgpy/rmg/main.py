@@ -183,6 +183,8 @@ class RMG(Subject):
         self.speciesConstraints = {}
         self.wallTime = 0
         self.initializationTime = 0
+
+        self.execTime = []
     
     def loadInput(self, path=None):
         """
@@ -500,8 +502,6 @@ class RMG(Subject):
         """
     
         self.initialize(inputFile, output_directory, **kwargs)
-        
-        self.execTime = []
 
         self.done = False
         self.saveEverything()
@@ -574,11 +574,12 @@ class RMG(Subject):
 
             self.saveEverything()
 
+
             # Consider stopping gracefully if the next iteration might take us
             # past the wall time
-            if self.wallTime > 0 and len(execTime) > 1:
-                t = execTime[-1]
-                dt = execTime[-1] - execTime[-2]
+            if self.wallTime > 0 and len(self.execTime) > 1:
+                t = self.execTime[-1]
+                dt = self.execTime[-1] - self.execTime[-2]
                 if t + 3 * dt > self.wallTime:
                     logging.info('MODEL GENERATION TERMINATED')
                     logging.info('')
@@ -644,7 +645,9 @@ class RMG(Subject):
         for library, option in self.reactionLibraries:
             if option:
                 self.reactionModel.addReactionLibraryToOutput(library)
-                
+        
+        self.execTime.append(time.time() - self.initializationTime)
+
         # Notify registered listeners:
         self.notify()
             

@@ -42,7 +42,6 @@ class ExecutionStatsWriter(object):
         self.coreReactionCount = []
         self.edgeSpeciesCount = []
         self.edgeReactionCount = []
-        self.execTime = []
         self.restartSize = []
         self.memoryUse = []
     
@@ -58,8 +57,7 @@ class ExecutionStatsWriter(object):
         self.coreReactionCount.append(coreReac)
         self.edgeSpeciesCount.append(edgeSpec)
         self.edgeReactionCount.append(edgeReac)
-        self.execTime.append(time.time() - rmg.initializationTime)
-        elapsed = self.execTime[-1]
+        elapsed = rmg.execTime[-1]
         seconds = elapsed % 60
         minutes = (elapsed - seconds) % 3600 / 60
         hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
@@ -107,7 +105,7 @@ class ExecutionStatsWriter(object):
 
         # First column is execution time
         sheet.write(0,0,'Execution time (s)')
-        for i, etime in enumerate(self.execTime):
+        for i, etime in enumerate(rmg.execTime):
             sheet.write(i+1,0,etime)
 
         # Second column is number of core species
@@ -156,30 +154,30 @@ class ExecutionStatsWriter(object):
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        ax1.semilogx(self.execTime, self.coreSpeciesCount, 'o-b')
+        ax1.semilogx(rmg.execTime, self.coreSpeciesCount, 'o-b')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Number of core species')
         ax2 = ax1.twinx()
-        ax2.semilogx(self.execTime, self.coreReactionCount, 'o-r')
+        ax2.semilogx(rmg.execTime, self.coreReactionCount, 'o-r')
         ax2.set_ylabel('Number of core reactions')
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/coreSize.svg'))
         plt.clf()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        ax1.loglog(self.execTime, self.edgeSpeciesCount, 'o-b')
+        ax1.loglog(rmg.execTime, self.edgeSpeciesCount, 'o-b')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Number of edge species')
         ax2 = ax1.twinx()
-        ax2.loglog(self.execTime, self.edgeReactionCount, 'o-r')
+        ax2.loglog(rmg.execTime, self.edgeReactionCount, 'o-r')
         ax2.set_ylabel('Number of edge reactions')
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/edgeSize.svg'))
         plt.clf()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        ax1.semilogx(self.execTime, self.memoryUse, 'o-k')
-        ax1.semilogx(self.execTime, self.restartSize, 'o-g')
+        ax1.semilogx(rmg.execTime, self.memoryUse, 'o-k')
+        ax1.semilogx(rmg.execTime, self.restartSize, 'o-g')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Memory (MB)')
         ax1.legend(['RAM', 'Restart file'], loc=2)
