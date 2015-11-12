@@ -190,7 +190,7 @@ class ReactionRecipe:
                 other.addAction(['LOSE_PAIR', action[1], action[2]])
         return other
 
-    def __apply(self, struct, doForward, unique, update=True):
+    def __apply(self, struct, doForward, unique):
         """
         Apply the reaction recipe to the set of molecules contained in
         `structure`, a single Structure object that contains one or more
@@ -281,19 +281,19 @@ class ReactionRecipe:
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
 
-    def applyForward(self, struct, unique=True, update=True):
+    def applyForward(self, struct, unique=True):
         """
         Apply the forward reaction recipe to `molecule`, a single
         :class:`Molecule` object.
         """
-        return self.__apply(struct, True, unique, update)
+        return self.__apply(struct, True, unique)
 
-    def applyReverse(self, struct, unique=True, update=True):
+    def applyReverse(self, struct, unique=True):
         """
         Apply the reverse reaction recipe to `molecule`, a single
         :class:`Molecule` object.
         """
-        return self.__apply(struct, False, unique, update)
+        return self.__apply(struct, False, unique)
 
 
 ################################################################################
