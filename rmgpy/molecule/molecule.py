@@ -699,7 +699,6 @@ class Molecule(Graph):
         Update multiplicity, and sort atoms using the new
         connectivity values.
         """
-        self.updateConnectivityValues()
         self.updateAtomTypes()
         self.updateMultiplicity()
         self.sortVertices()
