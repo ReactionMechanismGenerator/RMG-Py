@@ -1042,8 +1042,6 @@ class KineticsFamily(Database):
 
         # Split product structure into multiple species if necessary
         productStructures = productStructure.split()
-        for product in productStructures:
-            product.updateConnectivityValues()
 
         # Make sure we've made the expected number of products
         if len(template.products) != len(productStructures):
