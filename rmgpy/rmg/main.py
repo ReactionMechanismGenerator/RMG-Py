@@ -62,6 +62,8 @@ from pydas.observer import Subject
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
+from rmgpy.restart import RestartWriter
+
 ################################################################################
 
 solvent = None
@@ -469,10 +471,6 @@ class RMG(Subject):
             for spec in self.initialSpecies:
                 if spec.reactive:
                     self.reactionModel.enlarge(spec)
-            
-            # Save a restart file if desired
-            if self.saveRestartPeriod:
-                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel)
     
     def register_listeners(self):
         """
@@ -484,6 +482,9 @@ class RMG(Subject):
 
         if self.generateOutputHTML:
             self.attach(OutputHTMLWriter())
+
+        if self.saveRestartPeriod:
+            self.attach(RestartWriter()) 
 
 
     def execute(self, inputFile, output_directory, **kwargs):
@@ -702,12 +703,6 @@ class RMG(Subject):
         # Notify registered listeners:
         self.notify()
 
-        # Save the restart file if desired
-        if self.saveRestartPeriod or self.done:
-            self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
-                                  self.reactionModel,
-                                  delay=0 if self.done else self.saveRestartPeriod.value_si
-                                )
         # Save the QM thermo to a library if QM was turned on
         if self.quantumMechanics:
             logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
@@ -839,29 +834,6 @@ class RMG(Subject):
                             reactionDict[family][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
-        
-        
-    def saveRestartFile(self, path, reactionModel, delay=0):
-        """
-        Save a restart file to `path` on disk containing the contents of the
-        provided `reactionModel`. The `delay` parameter is a time in seconds; if
-        the restart file is not at least that old, the save is aborted. (Use the
-        default value of 0 to force the restart file to be saved.)
-        """
-        import cPickle
-        
-        # Saving of a restart file is very slow (likely due to all the Quantity objects)
-        # Therefore, to save it less frequently, don't bother if the restart file is less than an hour old
-        if os.path.exists(path) and time.time() - os.path.getmtime(path) < delay:
-            logging.info('Not saving restart file in this iteration.')
-            return
-        
-        # Pickle the reaction model to the specified file
-        # We also compress the restart file to save space (and lower the disk read/write time)
-        logging.info('Saving restart file...')
-        f = open(path, 'wb')
-        cPickle.dump(reactionModel, f, cPickle.HIGHEST_PROTOCOL)
-        f.close()
     
     def saveExecutionStatistics(self, execTime, coreSpeciesCount, coreReactionCount,
         edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
