@@ -3,7 +3,7 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.species import Species
-from .adjList import ConsistencyChecker
+from .adjlist import ConsistencyChecker
 from .molecule import Molecule
 from .util import retrieveElementCount
 from .inchi import compose_aug_inchi, P_LAYER_PREFIX, P_LAYER_SEPARATOR, U_LAYER_PREFIX, U_LAYER_SEPARATOR
