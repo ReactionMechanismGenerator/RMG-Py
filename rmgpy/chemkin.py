@@ -1925,10 +1925,10 @@ def saveChemkinFiles(rmg):
                 os.unlink(latest_chemkin_path)
             shutil.copy2(this_chemkin_path,latest_chemkin_path)
 
-class ChemkinListener(object):
-    """docstring for ChemkinListener"""
+class ChemkinWriter(object):
+    """docstring for ChemkinWriter"""
     def __init__(self):
-        super(ChemkinListener, self).__init__()
+        super(ChemkinWriter, self).__init__()
     
     def update(self, rmg):
         saveChemkinFiles(rmg)

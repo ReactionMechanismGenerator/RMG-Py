@@ -60,7 +60,7 @@ from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
 from pydas.observer import Subject
 
-from rmgpy.chemkin import ChemkinListener
+from rmgpy.chemkin import ChemkinWriter
 ################################################################################
 
 solvent = None
@@ -130,7 +130,7 @@ class RMG(Subject):
         self.outputDirectory = outputDirectory
         self.scratchDirectory = scratchDirectory
         self.clear()
-        self.attach(ChemkinListener())
+        self.attach(ChemkinWriter())
     
     def clear(self):
         """
