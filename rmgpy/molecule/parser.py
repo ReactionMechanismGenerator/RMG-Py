@@ -21,7 +21,7 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
-from .adjList import PeriodicSystem, bond_orders, ConsistencyChecker
+from .adjlist import PeriodicSystem, bond_orders, ConsistencyChecker
 
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
