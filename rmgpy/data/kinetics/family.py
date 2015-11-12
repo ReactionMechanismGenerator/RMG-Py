@@ -280,8 +280,6 @@ class ReactionRecipe:
 
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
-        if update:
-            struct.update()
 
     def applyForward(self, struct, unique=True, update=True):
         """
