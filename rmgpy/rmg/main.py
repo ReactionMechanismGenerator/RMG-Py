@@ -61,6 +61,7 @@ from pdep import PDepNetwork
 from pydas.observer import Subject
 
 from rmgpy.chemkin import ChemkinWriter
+from rmgpy.rmg.output import OutputHTMLWriter
 ################################################################################
 
 solvent = None
@@ -400,11 +401,6 @@ class RMG(Subject):
             else:
                 raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
     
-        # Delete previous HTML file if that option was on
-        if self.generateOutputHTML:
-            from rmgpy.rmg.output import saveOutputHTML
-            saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
-        
         # Initialize reaction model
         if restart:
             self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
@@ -485,6 +481,9 @@ class RMG(Subject):
         """
 
         self.attach(ChemkinWriter())
+
+        if self.generateOutputHTML:
+            self.attach(OutputHTMLWriter())
 
 
     def execute(self, inputFile, output_directory, **kwargs):
@@ -700,10 +699,6 @@ class RMG(Subject):
             if option:
                 self.reactionModel.addReactionLibraryToOutput(library)
                 
-        # Save the current state of the model to HTML files
-        if self.generateOutputHTML:
-            self.saveOutputHTML()
-
         # Notify registered listeners:
         self.notify()
 
@@ -844,19 +839,6 @@ class RMG(Subject):
                             reactionDict[family][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
-    
-    def saveOutputHTML(self):
-        """
-        Save the current reaction model to a pretty HTML file.
-        """
-        logging.info('Saving current model core to HTML file...')
-        from rmgpy.rmg.output import saveOutputHTML
-        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
-        
-        if self.saveEdgeSpecies ==True:
-            logging.info('Saving current model edge to HTML file...')
-            from rmgpy.rmg.output import saveOutputHTML
-            saveOutputHTML(os.path.join(self.outputDirectory, 'output_edge.html'), self.reactionModel, 'edge')
         
         
     def saveRestartFile(self, path, reactionModel, delay=0):
