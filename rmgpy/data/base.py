@@ -43,7 +43,8 @@ try:
 except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
-from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
+from rmgpy.molecule import Molecule, Group
+from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 
 from reference import Reference, Article, Book, Thesis
 
