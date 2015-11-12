@@ -64,6 +64,7 @@ from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
+from rmgpy.stats import ExecutionStatsWriter
 
 ################################################################################
 
@@ -488,7 +489,9 @@ class RMG(Subject):
             self.attach(RestartWriter()) 
 
         if self.quantumMechanics:
-            self.attach(QMDatabaseWriter())             
+            self.attach(QMDatabaseWriter()) 
+
+        self.attach(ExecutionStatsWriter())            
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
@@ -498,14 +501,7 @@ class RMG(Subject):
     
         self.initialize(inputFile, output_directory, **kwargs)
         
-        # RMG execution statistics
-        coreSpeciesCount = []
-        coreReactionCount = []
-        edgeSpeciesCount = []
-        edgeReactionCount = []
-        execTime = []
-        restartSize = []
-        memoryUse = []
+        self.execTime = []
 
         self.done = False
         self.saveEverything()
@@ -578,40 +574,6 @@ class RMG(Subject):
 
             self.saveEverything()
 
-            # Update RMG execution statistics
-            logging.info('Updating RMG execution statistics...')
-            coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
-            coreSpeciesCount.append(coreSpec)
-            coreReactionCount.append(coreReac)
-            edgeSpeciesCount.append(edgeSpec)
-            edgeReactionCount.append(edgeReac)
-            execTime.append(time.time() - self.initializationTime)
-            elapsed = execTime[-1]
-            seconds = elapsed % 60
-            minutes = (elapsed - seconds) % 3600 / 60
-            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
-            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
-            logging.info('    Execution time (DD:HH:MM:SS): '
-                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
-            try:
-                import psutil
-                process = psutil.Process(os.getpid())
-                rss, vms = process.memory_info()
-                memoryUse.append(rss / 1.0e6)
-                logging.info('    Memory used: %.2f MB' % (memoryUse[-1]))
-            except ImportError:
-                memoryUse.append(0.0)
-            if os.path.exists(os.path.join(self.outputDirectory,'restart.pkl.gz')):
-                restartSize.append(os.path.getsize(os.path.join(self.outputDirectory,'restart.pkl.gz')) / 1.0e6)
-                logging.info('    Restart file size: %.2f MB' % (restartSize[-1]))
-            else:
-                restartSize.append(0.0)
-            self.saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-            if self.generatePlots:
-                self.generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-    
-            logging.info('')
-    
             # Consider stopping gracefully if the next iteration might take us
             # past the wall time
             if self.wallTime > 0 and len(execTime) > 1:
@@ -657,26 +619,6 @@ class RMG(Subject):
                     sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
                 )        
-            
-            # Update RMG execution statistics for each time a reactionSystem has sensitivity analysis performed.  
-            # But just provide time and memory used.
-            logging.info('Updating RMG execution statistics...')
-            execTime.append(time.time() - self.initializationTime)
-            elapsed = execTime[-1]
-            seconds = elapsed % 60
-            minutes = (elapsed - seconds) % 3600 / 60
-            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
-            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
-            logging.info('    Execution time (DD:HH:MM:SS): '
-                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
-            try:
-                import psutil
-                process = psutil.Process(os.getpid())
-                rss, vms = process.memory_info()
-                memoryUse.append(rss / 1.0e6)
-                logging.info('    Memory used: %.2f MB' % (memoryUse[-1]))
-            except ImportError:
-                memoryUse.append(0.0)
     
         # Write output file
         logging.info('')
@@ -832,110 +774,6 @@ class RMG(Subject):
                             reactionDict[family][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
-    
-    def saveExecutionStatistics(self, execTime, coreSpeciesCount, coreReactionCount,
-        edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
-        """
-        Save the statistics of the RMG job to an Excel spreadsheet for easy viewing
-        after the run is complete. The statistics are saved to the file
-        `statistics.xls` in the output directory. The ``xlwt`` package is used to
-        create the spreadsheet file; if this package is not installed, no file is
-        saved.
-        """
-    
-        # Attempt to import the xlwt package; return if not installed
-        try:
-            xlwt
-        except NameError:
-            logging.warning('Package xlwt not loaded. Unable to save execution statistics.')
-            return
-    
-        # Create workbook and sheet for statistics to be places
-        workbook = xlwt.Workbook()
-        sheet = workbook.add_sheet('Statistics')
-    
-        # First column is execution time
-        sheet.write(0,0,'Execution time (s)')
-        for i, etime in enumerate(execTime):
-            sheet.write(i+1,0,etime)
-    
-        # Second column is number of core species
-        sheet.write(0,1,'Core species')
-        for i, count in enumerate(coreSpeciesCount):
-            sheet.write(i+1,1,count)
-    
-        # Third column is number of core reactions
-        sheet.write(0,2,'Core reactions')
-        for i, count in enumerate(coreReactionCount):
-            sheet.write(i+1,2,count)
-    
-        # Fourth column is number of edge species
-        sheet.write(0,3,'Edge species')
-        for i, count in enumerate(edgeSpeciesCount):
-            sheet.write(i+1,3,count)
-    
-        # Fifth column is number of edge reactions
-        sheet.write(0,4,'Edge reactions')
-        for i, count in enumerate(edgeReactionCount):
-            sheet.write(i+1,4,count)
-    
-        # Sixth column is memory used
-        sheet.write(0,5,'Memory used (MB)')
-        for i, memory in enumerate(memoryUse):
-            sheet.write(i+1,5,memory)
-    
-        # Seventh column is restart file size
-        sheet.write(0,6,'Restart file size (MB)')
-        for i, memory in enumerate(restartSize):
-            sheet.write(i+1,6,memory)
-    
-        # Save workbook to file
-        fstr = os.path.join(self.outputDirectory, 'statistics.xls')
-        workbook.save(fstr)
-    
-    def generateExecutionPlots(self, execTime, coreSpeciesCount, coreReactionCount,
-        edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
-        """
-        Generate a number of plots describing the statistics of the RMG job,
-        including the reaction model core and edge size and memory use versus
-        execution time. These will be placed in the output directory in the plot/
-        folder.
-        """
-    
-        logging.info('Generating plots of execution statistics...')
-    
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.semilogx(execTime, coreSpeciesCount, 'o-b')
-        ax1.set_xlabel('Execution time (s)')
-        ax1.set_ylabel('Number of core species')
-        ax2 = ax1.twinx()
-        ax2.semilogx(execTime, coreReactionCount, 'o-r')
-        ax2.set_ylabel('Number of core reactions')
-        plt.savefig(os.path.join(self.outputDirectory, 'plot/coreSize.svg'))
-        plt.clf()
-    
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.loglog(execTime, edgeSpeciesCount, 'o-b')
-        ax1.set_xlabel('Execution time (s)')
-        ax1.set_ylabel('Number of edge species')
-        ax2 = ax1.twinx()
-        ax2.loglog(execTime, edgeReactionCount, 'o-r')
-        ax2.set_ylabel('Number of edge reactions')
-        plt.savefig(os.path.join(self.outputDirectory, 'plot/edgeSize.svg'))
-        plt.clf()
-    
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.semilogx(execTime, memoryUse, 'o-k')
-        ax1.semilogx(execTime, restartSize, 'o-g')
-        ax1.set_xlabel('Execution time (s)')
-        ax1.set_ylabel('Memory (MB)')
-        ax1.legend(['RAM', 'Restart file'], loc=2)
-        plt.savefig(os.path.join(self.outputDirectory, 'plot/memoryUse.svg'))
-        plt.clf()
         
     def loadRMGJavaInput(self, path):
         """
