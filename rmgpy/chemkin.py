@@ -1868,16 +1868,37 @@ def saveJavaKineticsLibrary(path, species, reactions):
     
     saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species, oldStyle=True)
 
-class ChemkinListener(object):
-    """docstring for ChemkinListener"""
-    def __init__(self):
-        super(ChemkinListener, self).__init__()
+def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
+    """
+    Save a Chemkin file for the current model as well as any desired output
+    species and reactions to `path`. If `saveEdgeSpecies` is True, then 
+    a chemkin file and dictionary file for the core and edge species and reactions
+    will be saved.  
+    """
     
-    def update(self, rmg):
-        self.saveChemkinFiles(rmg)
-
+    if saveEdgeSpecies == False:
+        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
+        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
+        logging.info('Saving current model to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
         
-    def saveChemkinFiles(self, rmg):
+    else:
+        speciesList = reactionModel.core.species + reactionModel.edge.species + reactionModel.outputSpeciesList
+        rxnList = reactionModel.core.reactions + reactionModel.edge.reactions + reactionModel.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
+        logging.info('Saving current core and edge to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
+
+def saveChemkinFiles(rmg):
         """
         Save the current reaction model to a set of Chemkin files.
         """        
@@ -1887,7 +1908,7 @@ class ChemkinListener(object):
         latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
         latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
         latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
-        rmg.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
+        saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
@@ -1899,7 +1920,18 @@ class ChemkinListener(object):
             latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
             latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_edge_dictionary.txt')
             latest_transport_path = None
-            rmg.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
+            saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
             if os.path.exists(latest_chemkin_path):
                 os.unlink(latest_chemkin_path)
             shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+class ChemkinListener(object):
+    """docstring for ChemkinListener"""
+    def __init__(self):
+        super(ChemkinListener, self).__init__()
+    
+    def update(self, rmg):
+        saveChemkinFiles(rmg)
+
+        
+    
