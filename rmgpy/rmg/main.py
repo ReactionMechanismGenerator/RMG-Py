@@ -60,7 +60,7 @@ from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
 from pydas.observer import Subject
 
-
+from rmgpy.chemkin import ChemkinListener
 ################################################################################
 
 solvent = None
@@ -130,6 +130,7 @@ class RMG(Subject):
         self.outputDirectory = outputDirectory
         self.scratchDirectory = scratchDirectory
         self.clear()
+        self.attach(ChemkinListener())
     
     def clear(self):
         """
@@ -691,8 +692,10 @@ class RMG(Subject):
         # Save the current state of the model to HTML files
         if self.generateOutputHTML:
             self.saveOutputHTML()
-        # Save a Chemkin filew containing the current model
-        self.saveChemkinFiles()
+
+        # Notify registered listeners:
+        self.notify()
+
         # Save the restart file if desired
         if self.saveRestartPeriod or self.done:
             self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
@@ -844,32 +847,6 @@ class RMG(Subject):
             from rmgpy.rmg.output import saveOutputHTML
             saveOutputHTML(os.path.join(self.outputDirectory, 'output_edge.html'), self.reactionModel, 'edge')
         
-    def saveChemkinFiles(self):
-        """
-        Save the current reaction model to a set of Chemkin files.
-        """        
-        logging.info('Saving current model core to Chemkin file...')
-        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(self.reactionModel.core.species)))
-        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
-        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp')
-        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
-        latest_transport_path = os.path.join(self.outputDirectory, 'chemkin', 'tran.dat')
-        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
-        if os.path.exists(latest_chemkin_path):
-            os.unlink(latest_chemkin_path)
-        shutil.copy2(this_chemkin_path,latest_chemkin_path)
-        
-        if self.saveEdgeSpecies ==True:
-            logging.info('Saving current model core and edge to Chemkin file...')
-            this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species)) # len() needs to be core to have unambiguous index
-            latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
-            latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
-            latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
-            latest_transport_path = None
-            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, self.saveEdgeSpecies)
-            if os.path.exists(latest_chemkin_path):
-                os.unlink(latest_chemkin_path)
-            shutil.copy2(this_chemkin_path,latest_chemkin_path)
         
     def saveRestartFile(self, path, reactionModel, delay=0):
         """
