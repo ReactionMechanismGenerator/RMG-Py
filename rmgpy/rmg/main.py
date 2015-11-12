@@ -130,7 +130,6 @@ class RMG(Subject):
         self.outputDirectory = outputDirectory
         self.scratchDirectory = scratchDirectory
         self.clear()
-        self.attach(ChemkinWriter())
     
     def clear(self):
         """
@@ -344,6 +343,9 @@ class RMG(Subject):
         # Read input file
         self.loadInput(inputFile)
         
+        # register listeners
+        self.register_listeners()
+
         # Check input file 
         self.checkInput()
     
@@ -476,6 +478,15 @@ class RMG(Subject):
             if self.saveRestartPeriod:
                 self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel)
     
+    def register_listeners(self):
+        """
+        Attaches listener classes depending on the options 
+        found in the RMG input file.
+        """
+
+        self.attach(ChemkinWriter())
+
+
     def execute(self, inputFile, output_directory, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
