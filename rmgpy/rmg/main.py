@@ -58,12 +58,14 @@ from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
+from pydas.observer import Subject
+
 
 ################################################################################
 
 solvent = None
 
-class RMG:
+class RMG(Subject):
     """
     A representation of a Reaction Mechanism Generator (RMG) job. The 
     attributes are:
@@ -122,6 +124,7 @@ class RMG:
     """
     
     def __init__(self, inputFile=None, logFile=None, outputDirectory=None, scratchDirectory=None):
+        super(RMG, self).__init__()
         self.inputFile = inputFile
         self.logFile = logFile
         self.outputDirectory = outputDirectory
