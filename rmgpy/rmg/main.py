@@ -63,6 +63,7 @@ from pydas.observer import Subject
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.restart import RestartWriter
+from rmgpy.qm.main import QMDatabaseWriter
 
 ################################################################################
 
@@ -486,6 +487,8 @@ class RMG(Subject):
         if self.saveRestartPeriod:
             self.attach(RestartWriter()) 
 
+        if self.quantumMechanics:
+            self.attach(QMDatabaseWriter())             
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
@@ -702,11 +705,6 @@ class RMG(Subject):
                 
         # Notify registered listeners:
         self.notify()
-
-        # Save the QM thermo to a library if QM was turned on
-        if self.quantumMechanics:
-            logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
-            self.quantumMechanics.database.save(os.path.join(self.outputDirectory,'qmThermoLibrary.py'))            
             
     def finish(self):
         """

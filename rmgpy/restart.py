@@ -32,11 +32,12 @@
 import os.path
 import logging
 import cPickle
+import time
 
 def save(rmg):
     # Save the restart file if desired
     if rmg.saveRestartPeriod or rmg.done:
-        rmg.saveRestartFile( os.path.join(rmg.outputDirectory,'restart.pkl'),
+        saveRestartFile( os.path.join(rmg.outputDirectory,'restart.pkl'),
                               rmg.reactionModel,
                               delay=0 if rmg.done else rmg.saveRestartPeriod.value_si
                             )
