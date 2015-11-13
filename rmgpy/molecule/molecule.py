@@ -699,7 +699,6 @@ class Molecule(Graph):
         Update multiplicity, and sort atoms using the new
         connectivity values.
         """
-        self.updateConnectivityValues()
         self.updateAtomTypes()
         self.updateMultiplicity()
         self.sortVertices()
@@ -1183,7 +1182,6 @@ class Molecule(Graph):
         from .adjlist import fromAdjacencyList
         
         self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
-        self.updateConnectivityValues()
         self.updateAtomTypes()
         
         # Check if multiplicity is possible
@@ -1541,7 +1539,6 @@ class Molecule(Graph):
         # this is necessary, because saturating with H shouldn't be
         # changing atom types, but it doesn't hurt anything and is not
         # very expensive, so will do it anyway)
-        self.updateConnectivityValues()
         self.sortVertices()
         self.updateAtomTypes()
         self.updateLonePairs()

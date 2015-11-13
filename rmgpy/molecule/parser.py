@@ -606,7 +606,7 @@ def convert_3_atom_2_bond_path(start, mol):
             recipe.addAction(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
 
         end.charge += 1 if end.charge < 0 else -1
-        recipe.applyForward(mol, update=False)
+        recipe.applyForward(mol)
 
         if is_valid(mol):
             # unlabel atoms so that they never cause trouble downstream
@@ -614,7 +614,7 @@ def convert_3_atom_2_bond_path(start, mol):
                 at.label = ''
             return True
         else:
-            recipe.applyReverse(mol, update=False)
+            recipe.applyReverse(mol)
             end.charge = end_original_charge
 
             # unlabel atoms so that they never cause trouble downstream
