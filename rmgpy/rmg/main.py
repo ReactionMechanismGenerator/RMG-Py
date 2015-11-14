@@ -58,12 +58,19 @@ from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
+from pydas.observer import Subject
+
+from rmgpy.chemkin import ChemkinWriter
+from rmgpy.rmg.output import OutputHTMLWriter
+from rmgpy.restart import RestartWriter
+from rmgpy.qm.main import QMDatabaseWriter
+from rmgpy.stats import ExecutionStatsWriter
 
 ################################################################################
 
 solvent = None
 
-class RMG:
+class RMG(Subject):
     """
     A representation of a Reaction Mechanism Generator (RMG) job. The 
     attributes are:
@@ -122,6 +129,7 @@ class RMG:
     """
     
     def __init__(self, inputFile=None, logFile=None, outputDirectory=None, scratchDirectory=None):
+        super(RMG, self).__init__()
         self.inputFile = inputFile
         self.logFile = logFile
         self.outputDirectory = outputDirectory
@@ -175,6 +183,8 @@ class RMG:
         self.speciesConstraints = {}
         self.wallTime = 0
         self.initializationTime = 0
+
+        self.execTime = []
     
     def loadInput(self, path=None):
         """
@@ -340,6 +350,9 @@ class RMG:
         # Read input file
         self.loadInput(inputFile)
         
+        # register listeners
+        self.register_listeners()
+
         # Check input file 
         self.checkInput()
     
@@ -394,11 +407,6 @@ class RMG:
             else:
                 raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
     
-        # Delete previous HTML file if that option was on
-        if self.generateOutputHTML:
-            from rmgpy.rmg.output import saveOutputHTML
-            saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
-        
         # Initialize reaction model
         if restart:
             self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
@@ -467,11 +475,26 @@ class RMG:
             for spec in self.initialSpecies:
                 if spec.reactive:
                     self.reactionModel.enlarge(spec)
-            
-            # Save a restart file if desired
-            if self.saveRestartPeriod:
-                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel)
     
+    def register_listeners(self):
+        """
+        Attaches listener classes depending on the options 
+        found in the RMG input file.
+        """
+
+        self.attach(ChemkinWriter())
+
+        if self.generateOutputHTML:
+            self.attach(OutputHTMLWriter())
+
+        if self.saveRestartPeriod:
+            self.attach(RestartWriter()) 
+
+        if self.quantumMechanics:
+            self.attach(QMDatabaseWriter()) 
+
+        self.attach(ExecutionStatsWriter())            
+
     def execute(self, inputFile, output_directory, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
@@ -479,15 +502,6 @@ class RMG:
         """
     
         self.initialize(inputFile, output_directory, **kwargs)
-        
-        # RMG execution statistics
-        coreSpeciesCount = []
-        coreReactionCount = []
-        edgeSpeciesCount = []
-        edgeReactionCount = []
-        execTime = []
-        restartSize = []
-        memoryUse = []
 
         self.done = False
         self.saveEverything()
@@ -560,45 +574,12 @@ class RMG:
 
             self.saveEverything()
 
-            # Update RMG execution statistics
-            logging.info('Updating RMG execution statistics...')
-            coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
-            coreSpeciesCount.append(coreSpec)
-            coreReactionCount.append(coreReac)
-            edgeSpeciesCount.append(edgeSpec)
-            edgeReactionCount.append(edgeReac)
-            execTime.append(time.time() - self.initializationTime)
-            elapsed = execTime[-1]
-            seconds = elapsed % 60
-            minutes = (elapsed - seconds) % 3600 / 60
-            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
-            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
-            logging.info('    Execution time (DD:HH:MM:SS): '
-                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
-            try:
-                import psutil
-                process = psutil.Process(os.getpid())
-                rss, vms = process.memory_info()
-                memoryUse.append(rss / 1.0e6)
-                logging.info('    Memory used: %.2f MB' % (memoryUse[-1]))
-            except ImportError:
-                memoryUse.append(0.0)
-            if os.path.exists(os.path.join(self.outputDirectory,'restart.pkl.gz')):
-                restartSize.append(os.path.getsize(os.path.join(self.outputDirectory,'restart.pkl.gz')) / 1.0e6)
-                logging.info('    Restart file size: %.2f MB' % (restartSize[-1]))
-            else:
-                restartSize.append(0.0)
-            self.saveExecutionStatistics(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-            if self.generatePlots:
-                self.generateExecutionPlots(execTime, coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize)
-    
-            logging.info('')
-    
+
             # Consider stopping gracefully if the next iteration might take us
             # past the wall time
-            if self.wallTime > 0 and len(execTime) > 1:
-                t = execTime[-1]
-                dt = execTime[-1] - execTime[-2]
+            if self.wallTime > 0 and len(self.execTime) > 1:
+                t = self.execTime[-1]
+                dt = self.execTime[-1] - self.execTime[-2]
                 if t + 3 * dt > self.wallTime:
                     logging.info('MODEL GENERATION TERMINATED')
                     logging.info('')
@@ -639,26 +620,6 @@ class RMG:
                     sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
                 )        
-            
-            # Update RMG execution statistics for each time a reactionSystem has sensitivity analysis performed.  
-            # But just provide time and memory used.
-            logging.info('Updating RMG execution statistics...')
-            execTime.append(time.time() - self.initializationTime)
-            elapsed = execTime[-1]
-            seconds = elapsed % 60
-            minutes = (elapsed - seconds) % 3600 / 60
-            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
-            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
-            logging.info('    Execution time (DD:HH:MM:SS): '
-                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
-            try:
-                import psutil
-                process = psutil.Process(os.getpid())
-                rss, vms = process.memory_info()
-                memoryUse.append(rss / 1.0e6)
-                logging.info('    Memory used: %.2f MB' % (memoryUse[-1]))
-            except ImportError:
-                memoryUse.append(0.0)
     
         # Write output file
         logging.info('')
@@ -684,22 +645,11 @@ class RMG:
         for library, option in self.reactionLibraries:
             if option:
                 self.reactionModel.addReactionLibraryToOutput(library)
-                
-        # Save the current state of the model to HTML files
-        if self.generateOutputHTML:
-            self.saveOutputHTML()
-        # Save a Chemkin filew containing the current model
-        self.saveChemkinFiles()
-        # Save the restart file if desired
-        if self.saveRestartPeriod or self.done:
-            self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
-                                  self.reactionModel,
-                                  delay=0 if self.done else self.saveRestartPeriod.value_si
-                                )
-        # Save the QM thermo to a library if QM was turned on
-        if self.quantumMechanics:
-            logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
-            self.quantumMechanics.database.save(os.path.join(self.outputDirectory,'qmThermoLibrary.py'))            
+        
+        self.execTime.append(time.time() - self.initializationTime)
+
+        # Notify registered listeners:
+        self.notify()
             
     def finish(self):
         """
@@ -827,172 +777,6 @@ class RMG:
                             reactionDict[family][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
-    
-    def saveOutputHTML(self):
-        """
-        Save the current reaction model to a pretty HTML file.
-        """
-        logging.info('Saving current model core to HTML file...')
-        from rmgpy.rmg.output import saveOutputHTML
-        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
-        
-        if self.saveEdgeSpecies ==True:
-            logging.info('Saving current model edge to HTML file...')
-            from rmgpy.rmg.output import saveOutputHTML
-            saveOutputHTML(os.path.join(self.outputDirectory, 'output_edge.html'), self.reactionModel, 'edge')
-        
-    def saveChemkinFiles(self):
-        """
-        Save the current reaction model to a set of Chemkin files.
-        """        
-        logging.info('Saving current model core to Chemkin file...')
-        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(self.reactionModel.core.species)))
-        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
-        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp')
-        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
-        latest_transport_path = os.path.join(self.outputDirectory, 'chemkin', 'tran.dat')
-        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
-        if os.path.exists(latest_chemkin_path):
-            os.unlink(latest_chemkin_path)
-        shutil.copy2(this_chemkin_path,latest_chemkin_path)
-        
-        if self.saveEdgeSpecies ==True:
-            logging.info('Saving current model core and edge to Chemkin file...')
-            this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species)) # len() needs to be core to have unambiguous index
-            latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
-            latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
-            latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
-            latest_transport_path = None
-            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, self.saveEdgeSpecies)
-            if os.path.exists(latest_chemkin_path):
-                os.unlink(latest_chemkin_path)
-            shutil.copy2(this_chemkin_path,latest_chemkin_path)
-        
-    def saveRestartFile(self, path, reactionModel, delay=0):
-        """
-        Save a restart file to `path` on disk containing the contents of the
-        provided `reactionModel`. The `delay` parameter is a time in seconds; if
-        the restart file is not at least that old, the save is aborted. (Use the
-        default value of 0 to force the restart file to be saved.)
-        """
-        import cPickle
-        
-        # Saving of a restart file is very slow (likely due to all the Quantity objects)
-        # Therefore, to save it less frequently, don't bother if the restart file is less than an hour old
-        if os.path.exists(path) and time.time() - os.path.getmtime(path) < delay:
-            logging.info('Not saving restart file in this iteration.')
-            return
-        
-        # Pickle the reaction model to the specified file
-        # We also compress the restart file to save space (and lower the disk read/write time)
-        logging.info('Saving restart file...')
-        f = open(path, 'wb')
-        cPickle.dump(reactionModel, f, cPickle.HIGHEST_PROTOCOL)
-        f.close()
-    
-    def saveExecutionStatistics(self, execTime, coreSpeciesCount, coreReactionCount,
-        edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
-        """
-        Save the statistics of the RMG job to an Excel spreadsheet for easy viewing
-        after the run is complete. The statistics are saved to the file
-        `statistics.xls` in the output directory. The ``xlwt`` package is used to
-        create the spreadsheet file; if this package is not installed, no file is
-        saved.
-        """
-    
-        # Attempt to import the xlwt package; return if not installed
-        try:
-            xlwt
-        except NameError:
-            logging.warning('Package xlwt not loaded. Unable to save execution statistics.')
-            return
-    
-        # Create workbook and sheet for statistics to be places
-        workbook = xlwt.Workbook()
-        sheet = workbook.add_sheet('Statistics')
-    
-        # First column is execution time
-        sheet.write(0,0,'Execution time (s)')
-        for i, etime in enumerate(execTime):
-            sheet.write(i+1,0,etime)
-    
-        # Second column is number of core species
-        sheet.write(0,1,'Core species')
-        for i, count in enumerate(coreSpeciesCount):
-            sheet.write(i+1,1,count)
-    
-        # Third column is number of core reactions
-        sheet.write(0,2,'Core reactions')
-        for i, count in enumerate(coreReactionCount):
-            sheet.write(i+1,2,count)
-    
-        # Fourth column is number of edge species
-        sheet.write(0,3,'Edge species')
-        for i, count in enumerate(edgeSpeciesCount):
-            sheet.write(i+1,3,count)
-    
-        # Fifth column is number of edge reactions
-        sheet.write(0,4,'Edge reactions')
-        for i, count in enumerate(edgeReactionCount):
-            sheet.write(i+1,4,count)
-    
-        # Sixth column is memory used
-        sheet.write(0,5,'Memory used (MB)')
-        for i, memory in enumerate(memoryUse):
-            sheet.write(i+1,5,memory)
-    
-        # Seventh column is restart file size
-        sheet.write(0,6,'Restart file size (MB)')
-        for i, memory in enumerate(restartSize):
-            sheet.write(i+1,6,memory)
-    
-        # Save workbook to file
-        fstr = os.path.join(self.outputDirectory, 'statistics.xls')
-        workbook.save(fstr)
-    
-    def generateExecutionPlots(self, execTime, coreSpeciesCount, coreReactionCount,
-        edgeSpeciesCount, edgeReactionCount, memoryUse, restartSize):
-        """
-        Generate a number of plots describing the statistics of the RMG job,
-        including the reaction model core and edge size and memory use versus
-        execution time. These will be placed in the output directory in the plot/
-        folder.
-        """
-    
-        logging.info('Generating plots of execution statistics...')
-    
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.semilogx(execTime, coreSpeciesCount, 'o-b')
-        ax1.set_xlabel('Execution time (s)')
-        ax1.set_ylabel('Number of core species')
-        ax2 = ax1.twinx()
-        ax2.semilogx(execTime, coreReactionCount, 'o-r')
-        ax2.set_ylabel('Number of core reactions')
-        plt.savefig(os.path.join(self.outputDirectory, 'plot/coreSize.svg'))
-        plt.clf()
-    
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.loglog(execTime, edgeSpeciesCount, 'o-b')
-        ax1.set_xlabel('Execution time (s)')
-        ax1.set_ylabel('Number of edge species')
-        ax2 = ax1.twinx()
-        ax2.loglog(execTime, edgeReactionCount, 'o-r')
-        ax2.set_ylabel('Number of edge reactions')
-        plt.savefig(os.path.join(self.outputDirectory, 'plot/edgeSize.svg'))
-        plt.clf()
-    
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.semilogx(execTime, memoryUse, 'o-k')
-        ax1.semilogx(execTime, restartSize, 'o-g')
-        ax1.set_xlabel('Execution time (s)')
-        ax1.set_ylabel('Memory (MB)')
-        ax1.legend(['RAM', 'Restart file'], loc=2)
-        plt.savefig(os.path.join(self.outputDirectory, 'plot/memoryUse.svg'))
-        plt.clf()
         
     def loadRMGJavaInput(self, path):
         """

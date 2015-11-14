@@ -954,3 +954,23 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     f = open(path, 'w')
     f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, speciesList=speciesList))
     f.close()
+
+
+def saveOutput(rmg):
+    """
+    Save the current reaction model to a pretty HTML file.
+    """
+    logging.info('Saving current model core to HTML file...')
+    saveOutputHTML(os.path.join(rmg.outputDirectory, 'output.html'), rmg.reactionModel, 'core')
+    
+    if rmg.saveEdgeSpecies == True:
+        logging.info('Saving current model edge to HTML file...')
+        saveOutputHTML(os.path.join(rmg.outputDirectory, 'output_edge.html'), rmg.reactionModel, 'edge')
+
+class OutputHTMLWriter(object):
+    """docstring for OutputHTMLWriter"""
+    def __init__(self):
+        super(OutputHTMLWriter, self).__init__()
+    
+    def update(self, rmg):
+        saveOutput(rmg)
