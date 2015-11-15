@@ -1,5 +1,6 @@
 import unittest
 import os.path
+import shutil
 
 from rmgpy.rmg.main import RMG
 from rmgpy.tools.generate_reactions import *
@@ -17,3 +18,9 @@ class GenerateReactionsTest(unittest.TestCase):
         self.assertIsNotNone(rmg)
         self.assertIsNotNone(rmg.reactionModel.outputSpeciesList)
         self.assertIsNotNone(rmg.reactionModel.outputReactionList)
+
+
+        shutil.rmtree(os.path.join(folder,'pdep'))
+        shutil.rmtree(os.path.join(folder,'species'))
+        shutil.rmtree(os.path.join(folder,'plot'))
+        shutil.rmtree(os.path.join(folder,'solver'))
