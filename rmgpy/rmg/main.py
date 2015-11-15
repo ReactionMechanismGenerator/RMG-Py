@@ -58,7 +58,7 @@ from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
-from pydas.observer import Subject
+from rmgpy.util import Subject
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
