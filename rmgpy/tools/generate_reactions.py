@@ -41,6 +41,8 @@ import argparse
 import logging
 
 from rmgpy.rmg.main import initializeLog, RMG
+from rmgpy.chemkin import ChemkinWriter
+from rmgpy.rmg.output import OutputHTMLWriter
 
 def parseCommandLineArguments():
     """
@@ -135,16 +137,18 @@ def execute(inputFile, output_directory, **kwargs):
 
 
     rmg = RMG()
+
+    # Add output listeners:
+    rmg.attach(ChemkinWriter())
+    rmg.attach(OutputHTMLWriter())
+
     rmg.initialize(inputFile, output_directory, **kwargs)
     
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
             
-    # Save the current state of the model core to a pretty HTML file
-    rmg.saveOutputHTML()
-    # Save a Chemkin file containing the current model core
-    rmg.saveChemkinFiles()
+    rmg.saveEverything()
 
     rmg.finish()
     
