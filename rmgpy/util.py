@@ -27,6 +27,10 @@
 #
 ################################################################################
 
+import os.path
+import shutil
+
+
 class Subject(object):
     """Subject in Observer Pattern"""
     def __init__(self):
@@ -100,3 +104,14 @@ class Subject(object):
         for observer in self._observers:
             if modifier != observer:
                 observer.update(self)
+
+def makeOutputSubdirectory(outputDirectory, folder):
+    """
+    Create a subdirectory `folder` in the output directory. If the folder
+    already exists (e.g. from a previous job) its contents are deleted.
+    """
+    dir = os.path.join(outputDirectory, folder)
+    if os.path.exists(dir):
+        # The directory already exists, so delete it (and all its content!)
+        shutil.rmtree(dir)
+    os.mkdir(dir)

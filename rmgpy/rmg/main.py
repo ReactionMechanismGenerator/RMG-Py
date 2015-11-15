@@ -58,7 +58,7 @@ from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
-from rmgpy.util import Subject
+import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
@@ -70,7 +70,7 @@ from rmgpy.stats import ExecutionStatsWriter
 
 solvent = None
 
-class RMG(Subject):
+class RMG(util.Subject):
     """
     A representation of a Reaction Mechanism Generator (RMG) job. The 
     attributes are:
@@ -361,13 +361,12 @@ class RMG(Subject):
     
         
         # Make output subdirectories
-        self.makeOutputSubdirectory('plot')
-        self.makeOutputSubdirectory('species')
-        self.makeOutputSubdirectory('pdep')
-        self.makeOutputSubdirectory('chemkin')
-        self.makeOutputSubdirectory('solver')
+        util.makeOutputSubdirectory(self.outputDirectory, 'plot')
+        util.makeOutputSubdirectory(self.outputDirectory, 'species')
+        util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
+        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         if self.saveEdgeSpecies:
-            self.makeOutputSubdirectory('species_edge')
+            util.makeOutputSubdirectory(self.outputDirectory, 'species_edge')
         
         # Do any necessary quantum mechanics startup
         if self.quantumMechanics:
@@ -479,7 +478,7 @@ class RMG(Subject):
         found in the RMG input file.
         """
 
-        self.attach(ChemkinWriter())
+        self.attach(ChemkinWriter(self.outputDirectory))
 
         if self.generateOutputHTML:
             self.attach(OutputHTMLWriter())
@@ -694,16 +693,6 @@ class RMG(Subject):
     
         logging.log(level, '')
     
-    def makeOutputSubdirectory(self, folder):
-        """
-        Create a subdirectory `folder` in the output directory. If the folder
-        already exists (e.g. from a previous job) its contents are deleted.
-        """
-        dir = os.path.join(self.outputDirectory, folder)
-        if os.path.exists(dir):
-            # The directory already exists, so delete it (and all its content!)
-            shutil.rmtree(dir)
-        os.mkdir(dir)
     
     def loadRestartFile(self, path):
         """

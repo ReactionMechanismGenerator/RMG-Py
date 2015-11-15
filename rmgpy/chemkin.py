@@ -55,6 +55,8 @@ from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
     
+from rmgpy.util import makeOutputSubdirectory
+
 ################################################################################
 
 class ChemkinError(Exception):
@@ -1927,8 +1929,9 @@ def saveChemkinFiles(rmg):
 
 class ChemkinWriter(object):
     """docstring for ChemkinWriter"""
-    def __init__(self):
+    def __init__(self, outputDirectory):
         super(ChemkinWriter, self).__init__()
+        makeOutputSubdirectory(outputDirectory, 'chemkin')
     
     def update(self, rmg):
         saveChemkinFiles(rmg)
