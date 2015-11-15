@@ -181,6 +181,7 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
+        self.snapshots = []
         
         if worksheet:
             row = ['Time (s)', 'Volume (m^3)']
@@ -229,6 +230,9 @@ cdef class ReactionSystem(DASx):
                 row = [self.t, self.V]
                 row.extend(y_coreSpecies/numpy.sum(y_coreSpecies))
                 worksheet.writerow(row)
+            snapshot = [self.t, self.V]
+            snapshot.extend(y_coreSpecies / numpy.sum(y_coreSpecies))
+            self.snapshots.append(snapshot)            
 
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))

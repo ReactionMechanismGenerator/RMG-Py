@@ -51,6 +51,8 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray maxNetworkLeakRateRatios
     cdef public numpy.ndarray sensitivityCoefficients
     
+    cdef public list snapshots
+
     cdef public list termination
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?)
