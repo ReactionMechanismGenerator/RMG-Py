@@ -33,10 +33,14 @@ import logging
 
 import matplotlib.pyplot as plt
 
+from rmgpy.util import makeOutputSubdirectory
+
 class ExecutionStatsWriter(object):
     """docstring for ExecutionStatsWriter"""
-    def __init__(self):
+    def __init__(self, outputDirectory):
         super(ExecutionStatsWriter, self).__init__()
+        makeOutputSubdirectory(outputDirectory, 'plot')
+
         # RMG execution statistics
         self.coreSpeciesCount = []
         self.coreReactionCount = []

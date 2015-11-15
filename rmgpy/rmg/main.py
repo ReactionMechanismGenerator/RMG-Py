@@ -361,7 +361,6 @@ class RMG(util.Subject):
     
         
         # Make output subdirectories
-        util.makeOutputSubdirectory(self.outputDirectory, 'plot')
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         if self.saveEdgeSpecies:
@@ -488,7 +487,7 @@ class RMG(util.Subject):
         if self.quantumMechanics:
             self.attach(QMDatabaseWriter()) 
 
-        self.attach(ExecutionStatsWriter())            
+        self.attach(ExecutionStatsWriter(self.outputDirectory))            
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
