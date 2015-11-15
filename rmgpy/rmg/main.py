@@ -349,9 +349,6 @@ class RMG(Subject):
             
         # Read input file
         self.loadInput(inputFile)
-        
-        # register listeners
-        self.register_listeners()
 
         # Check input file 
         self.checkInput()
@@ -502,6 +499,9 @@ class RMG(Subject):
         """
     
         self.initialize(inputFile, output_directory, **kwargs)
+
+        # register listeners
+        self.register_listeners()
 
         self.done = False
         self.saveEverything()
