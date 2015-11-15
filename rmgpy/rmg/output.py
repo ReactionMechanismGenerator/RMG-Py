@@ -37,6 +37,8 @@ import os.path
 import logging
 import re
 
+from rmgpy.util import makeOutputSubdirectory
+
 ################################################################################
 
 class OutputError(Exception):
@@ -969,8 +971,9 @@ def saveOutput(rmg):
 
 class OutputHTMLWriter(object):
     """docstring for OutputHTMLWriter"""
-    def __init__(self):
+    def __init__(self, outputDirectory):
         super(OutputHTMLWriter, self).__init__()
+        makeOutputSubdirectory(outputDirectory, 'species')
     
     def update(self, rmg):
         saveOutput(rmg)

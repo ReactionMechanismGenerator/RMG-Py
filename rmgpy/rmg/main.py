@@ -362,7 +362,6 @@ class RMG(util.Subject):
         
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'plot')
-        util.makeOutputSubdirectory(self.outputDirectory, 'species')
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         if self.saveEdgeSpecies:
@@ -481,7 +480,7 @@ class RMG(util.Subject):
         self.attach(ChemkinWriter(self.outputDirectory))
 
         if self.generateOutputHTML:
-            self.attach(OutputHTMLWriter())
+            self.attach(OutputHTMLWriter(self.outputDirectory))
 
         if self.saveRestartPeriod:
             self.attach(RestartWriter()) 
