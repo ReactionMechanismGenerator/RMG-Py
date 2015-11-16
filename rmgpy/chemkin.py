@@ -1928,7 +1928,27 @@ def saveChemkinFiles(rmg):
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
 
 class ChemkinWriter(object):
-    """docstring for ChemkinWriter"""
+    """
+    This class listens to a RMG subject
+    and writes a chemkin file with the current state of the RMG model,
+    to a chemkin subfolder.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = ChemkinWriter()
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
     def __init__(self, outputDirectory):
         super(ChemkinWriter, self).__init__()
         makeOutputSubdirectory(outputDirectory, 'chemkin')

@@ -36,7 +36,32 @@ import matplotlib.pyplot as plt
 from rmgpy.util import makeOutputSubdirectory
 
 class ExecutionStatsWriter(object):
-    """docstring for ExecutionStatsWriter"""
+    """
+    This class listens to a RMG subject
+    and writes an excel file with the memory footprint
+    requirements through the course of an RMG simulation,
+    
+    It also generates a number of images with information on the core/edge
+    species/reaction evolutions through the course of an RMG simulation.
+
+    Files are written to the 'plot' subfolder.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = ExecutionStatsWriter()
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
     def __init__(self, outputDirectory):
         super(ExecutionStatsWriter, self).__init__()
         makeOutputSubdirectory(outputDirectory, 'plot')

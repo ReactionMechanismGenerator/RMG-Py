@@ -66,7 +66,26 @@ def saveRestartFile(path, reactionModel, delay=0):
     f.close()
 
 class RestartWriter(object):
-    """docstring for RestartWriter"""
+    """
+    This class listens to a RMG subject
+    and writes a restart file with the current state of the RMG model.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = RestartWriter()
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
     def __init__(self):
         super(RestartWriter, self).__init__()
     

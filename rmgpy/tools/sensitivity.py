@@ -95,9 +95,25 @@ def runSensitivity(inputFile, chemkinFile, dictFile):
 
 class SimulationProfileWriter(object):
     """
-        SimulationProfileWriter listens to a ReactionSystem subject
-        and writes the species mole fractions as a function of the reaction time
-        to a csv file.
+    SimulationProfileWriter listens to a ReactionSystem subject
+    and writes the species mole fractions as a function of the reaction time
+    to a csv file.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    reactionSystem = ...
+    listener = SimulationProfileWriter()
+    reactionSystem.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    reactionSystem.detach(listener)
+
     """
     def __init__(self, outputDirectory, reaction_sys_index, coreSpecies):
         super(SimulationProfileWriter, self).__init__()
