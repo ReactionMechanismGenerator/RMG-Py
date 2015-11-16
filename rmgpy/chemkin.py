@@ -55,6 +55,8 @@ from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
     
+from rmgpy.util import makeOutputSubdirectory
+
 ################################################################################
 
 class ChemkinError(Exception):
@@ -1899,36 +1901,57 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
             saveTransportFile(transportPath, speciesList)
 
 def saveChemkinFiles(rmg):
-        """
-        Save the current reaction model to a set of Chemkin files.
-        """        
-        logging.info('Saving current model core to Chemkin file...')
-        this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
-        latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem.inp')
-        latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
-        latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
-        latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
-        saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
+    """
+    Save the current reaction model to a set of Chemkin files.
+    """        
+    logging.info('Saving current model core to Chemkin file...')
+    this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
+    latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem.inp')
+    latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
+    latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
+    latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
+    saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
+    if os.path.exists(latest_chemkin_path):
+        os.unlink(latest_chemkin_path)
+    shutil.copy2(this_chemkin_path,latest_chemkin_path)
+    
+    if rmg.saveEdgeSpecies == True:
+        logging.info('Saving current model core and edge to Chemkin file...')
+        this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(rmg.reactionModel.core.species)) # len() needs to be core to have unambiguous index
+        latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+        latest_transport_path = None
+        saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
-        
-        if rmg.saveEdgeSpecies == True:
-            logging.info('Saving current model core and edge to Chemkin file...')
-            this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(rmg.reactionModel.core.species)) # len() needs to be core to have unambiguous index
-            latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem_edge.inp')
-            latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
-            latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_edge_dictionary.txt')
-            latest_transport_path = None
-            saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
-            if os.path.exists(latest_chemkin_path):
-                os.unlink(latest_chemkin_path)
-            shutil.copy2(this_chemkin_path,latest_chemkin_path)
 
 class ChemkinWriter(object):
-    """docstring for ChemkinWriter"""
-    def __init__(self):
+    """
+    This class listens to a RMG subject
+    and writes a chemkin file with the current state of the RMG model,
+    to a chemkin subfolder.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = ChemkinWriter()
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
+    def __init__(self, outputDirectory):
         super(ChemkinWriter, self).__init__()
+        makeOutputSubdirectory(outputDirectory, 'chemkin')
     
     def update(self, rmg):
         saveChemkinFiles(rmg)

@@ -58,19 +58,20 @@ from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
-from pydas.observer import Subject
+import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
+from rmgpy.tools.sensitivity import SimulationProfileWriter
 
 ################################################################################
 
 solvent = None
 
-class RMG(Subject):
+class RMG(util.Subject):
     """
     A representation of a Reaction Mechanism Generator (RMG) job. The 
     attributes are:
@@ -349,9 +350,6 @@ class RMG(Subject):
             
         # Read input file
         self.loadInput(inputFile)
-        
-        # register listeners
-        self.register_listeners()
 
         # Check input file 
         self.checkInput()
@@ -364,13 +362,9 @@ class RMG(Subject):
     
         
         # Make output subdirectories
-        self.makeOutputSubdirectory('plot')
-        self.makeOutputSubdirectory('species')
-        self.makeOutputSubdirectory('pdep')
-        self.makeOutputSubdirectory('chemkin')
-        self.makeOutputSubdirectory('solver')
+        util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         if self.saveEdgeSpecies:
-            self.makeOutputSubdirectory('species_edge')
+            util.makeOutputSubdirectory(self.outputDirectory, 'species_edge')
         
         # Do any necessary quantum mechanics startup
         if self.quantumMechanics:
@@ -482,10 +476,10 @@ class RMG(Subject):
         found in the RMG input file.
         """
 
-        self.attach(ChemkinWriter())
+        self.attach(ChemkinWriter(self.outputDirectory))
 
         if self.generateOutputHTML:
-            self.attach(OutputHTMLWriter())
+            self.attach(OutputHTMLWriter(self.outputDirectory))
 
         if self.saveRestartPeriod:
             self.attach(RestartWriter()) 
@@ -493,7 +487,14 @@ class RMG(Subject):
         if self.quantumMechanics:
             self.attach(QMDatabaseWriter()) 
 
-        self.attach(ExecutionStatsWriter())            
+        self.attach(ExecutionStatsWriter(self.outputDirectory))
+
+        if self.saveSimulationProfiles:
+            util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+
+            for index, reactionSystem in enumerate(self.reactionSystems):
+                    reactionSystem.attach(SimulationProfileWriter(
+                        self.outputDirectory, index, self.reactionModel.core.species))   
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
@@ -502,6 +503,9 @@ class RMG(Subject):
         """
     
         self.initialize(inputFile, output_directory, **kwargs)
+
+        # register listeners
+        self.register_listeners()
 
         self.done = False
         self.saveEverything()
@@ -513,12 +517,6 @@ class RMG(Subject):
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
                 numCoreSpecies = len(self.reactionModel.core.species)
-    
-                if self.saveSimulationProfiles:
-                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
-                    worksheet = csv.writer(csvfile)
-                else:
-                    worksheet = None
                 
                 # Conduct simulation
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
@@ -536,7 +534,6 @@ class RMG(Subject):
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
                     pdepNetworks = self.reactionModel.networkList,
-                    worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                 )
@@ -612,7 +609,6 @@ class RMG(Subject):
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
-                    worksheet = None,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
@@ -694,16 +690,6 @@ class RMG(Subject):
     
         logging.log(level, '')
     
-    def makeOutputSubdirectory(self, folder):
-        """
-        Create a subdirectory `folder` in the output directory. If the folder
-        already exists (e.g. from a previous job) its contents are deleted.
-        """
-        dir = os.path.join(self.outputDirectory, folder)
-        if os.path.exists(dir):
-            # The directory already exists, so delete it (and all its content!)
-            shutil.rmtree(dir)
-        os.mkdir(dir)
     
     def loadRestartFile(self, path):
         """

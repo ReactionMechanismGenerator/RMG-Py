@@ -35,7 +35,7 @@ by reading in files.
 import os.path
 
 from rmgpy.chemkin import loadChemkinFile
-from rmgpy.rmg.main import RMG
+
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 
 def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False):
@@ -54,6 +54,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     """
     Load the results of an RMG-Py job generated from the given `inputFile`.
     """
+    from rmgpy.rmg.main import RMG
     
     # Load the specified RMG input file
     rmg = RMG()
@@ -109,7 +110,7 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None):
     """
     Load the results of an RMG-Java job generated from the given `inputFile`.
     """
-    
+    from rmgpy.rmg.main import RMG
     from rmgpy.molecule import Molecule
     
     # Load the specified RMG-Java input file

@@ -8,7 +8,7 @@ from rmgpy.tools.sensitivity import *
 class SensitivityTest(unittest.TestCase):
 
     def test_minimal(self):
-        folder = os.path.join(os.getcwd(),'rmgpy/tools/data')
+        folder = os.path.join(os.getcwd(),'rmgpy/tools/data/sens')
         
         inputFile = os.path.join(folder,'input.py')
         chemkinFile = os.path.join(folder,'chem.inp')
