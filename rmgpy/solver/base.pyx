@@ -100,6 +100,8 @@ cdef class ReactionSystem(DASx):
         numEdgeReactions = len(edgeReactions)
         numPdepNetworks = len(pdepNetworks)
 
+        self.generate_indices(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+
         self.coreSpeciesConcentrations = numpy.zeros((numCoreSpecies), numpy.float64)
         self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
         self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
@@ -112,6 +114,23 @@ cdef class ReactionSystem(DASx):
         self.maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
+
+    cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions):
+        """
+        Assign an index to each species (core first, then edge)
+        """
+        
+        self.speciesIndex = {}
+        for index, spec in enumerate(coreSpecies):
+            self.speciesIndex[spec] = index
+        for index, spec in enumerate(edgeSpecies):
+            self.speciesIndex[spec] = index + numCoreSpecies
+        # Assign an index to each reaction (core first, then edge)
+        self.reactionIndex = {}
+        for index, rxn in enumerate(coreReactions):
+            self.reactionIndex[rxn] = index
+        for index, rxn in enumerate(edgeReactions):
+            self.reactionIndex[rxn] = index + numCoreReactions
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,

@@ -115,7 +115,6 @@ cdef class LiquidReactor(ReactionSystem):
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index, neq
         cdef double V
-        cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar
         
@@ -126,19 +125,6 @@ cdef class LiquidReactor(ReactionSystem):
         numEdgeSpecies = len(edgeSpecies)
         numEdgeReactions = len(edgeReactions)
         numPdepNetworks = len(pdepNetworks)
-
-        # Assign an index to each species (core first, then edge)
-        speciesIndex = {}
-        for index, spec in enumerate(coreSpecies):
-            speciesIndex[spec] = index
-        for index, spec in enumerate(edgeSpecies):
-            speciesIndex[spec] = index + numCoreSpecies
-        # Assign an index to each reaction (core first, then edge)
-        reactionIndex = {}
-        for index, rxn in enumerate(coreReactions):
-            reactionIndex[rxn] = index
-        for index, rxn in enumerate(edgeReactions):
-            reactionIndex[rxn] = index + numCoreReactions
 
         # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)

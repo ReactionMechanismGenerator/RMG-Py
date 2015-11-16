@@ -64,3 +64,8 @@ cdef class ReactionSystem(DASx):
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 
     cpdef logConversions(self, speciesIndex, y0)
+
+    cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions)
+
+    cdef public dict speciesIndex
+    cdef public dict reactionIndex

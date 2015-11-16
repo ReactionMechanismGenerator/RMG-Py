@@ -130,7 +130,6 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index, neq
         cdef double V, T, P, Peff
-        cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar, y0, y0_coreSpecies
         cdef list pdepColliderKinetics
@@ -142,18 +141,6 @@ cdef class SimpleReactor(ReactionSystem):
         numEdgeReactions = len(edgeReactions)
         numPdepNetworks = len(pdepNetworks)
 
-        # Assign an index to each species (core first, then edge)
-        speciesIndex = {}
-        for index, spec in enumerate(coreSpecies):
-            speciesIndex[spec] = index
-        for index, spec in enumerate(edgeSpecies):
-            speciesIndex[spec] = index + numCoreSpecies
-        # Assign an index to each reaction (core first, then edge)
-        reactionIndex = {}
-        for index, rxn in enumerate(coreReactions):
-            reactionIndex[rxn] = index
-        for index, rxn in enumerate(edgeReactions):
-            reactionIndex[rxn] = index + numCoreReactions
         
         # Set initial conditions
         t0 = 0.0
@@ -182,7 +169,7 @@ cdef class SimpleReactor(ReactionSystem):
             
         y0 = numpy.zeros(neq, numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac
+            y0[self.speciesIndex[spec]] = moleFrac
         
         y0_coreSpecies = y0[:numCoreSpecies]
         # Use ideal gas law to compute volume
@@ -201,7 +188,7 @@ cdef class SimpleReactor(ReactionSystem):
             for rxn in rxnList:
                 if rxn.kinetics.isPressureDependent():
                     if rxn.kinetics.efficiencies:
-                        j = reactionIndex[rxn]
+                        j = self.reactionIndex[rxn]
                         pdepColliderReactionIndices.append(j)
                         pdepColliderKinetics.append(rxn.kinetics)
                         colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
@@ -217,7 +204,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
-                j = reactionIndex[rxn]
+                j = self.reactionIndex[rxn]
                 for i in range(pdepColliderReactionIndices.shape[0]):
                     if j == pdepColliderReactionIndices[i]:
                         # Calculate effective pressure
@@ -229,10 +216,10 @@ cdef class SimpleReactor(ReactionSystem):
                     equilibriumConstants[j] = rxn.getEquilibriumConstant(T)
                     reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
                 for l, spec in enumerate(rxn.reactants):
-                    i = speciesIndex[spec]
+                    i = self.speciesIndex[spec]
                     reactantIndices[j,l] = i
                 for l, spec in enumerate(rxn.products):
-                    i = speciesIndex[spec]
+                    i = self.speciesIndex[spec]
                     productIndices[j,l] = i
 
         networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
@@ -240,7 +227,7 @@ cdef class SimpleReactor(ReactionSystem):
         for j, network in enumerate(pdepNetworks):
             networkLeakCoefficients[j] = network.getLeakCoefficient(T, P)
             for l, spec in enumerate(network.source):
-                i = speciesIndex[spec]
+                i = self.speciesIndex[spec]
                 networkIndices[j,l] = i
 
         self.reactantIndices = reactantIndices
