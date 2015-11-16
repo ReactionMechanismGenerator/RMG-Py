@@ -102,6 +102,8 @@ cdef class ReactionSystem(DASx):
 
         self.generate_indices(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
+        self.generate_reactant_product_indices(coreReactions, edgeReactions)
+
         self.coreSpeciesConcentrations = numpy.zeros((numCoreSpecies), numpy.float64)
         self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
         self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
@@ -113,7 +115,30 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
         self.maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
-        self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)self.
+        self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
+
+        # Compute number of equations    
+        if sensitivity:    
+            # Set DASPK sensitivity analysis to ON
+            self.sensitivity = True
+            # Compute number of variables
+            self.neq = self.numCoreSpecies*(self.numCoreReactions+self.numCoreSpecies+1)
+            
+            self.atol_array = numpy.ones(self.neq, numpy.float64)*sens_atol
+            self.atol_array[:self.numCoreSpecies] = atol
+            
+            self.rtol_array = numpy.ones(self.neq, numpy.float64)*sens_rtol
+            self.rtol_array[:self.numCoreSpecies] = rtol
+            
+            self.senpar = numpy.zeros(self.numCoreReactions + self.numCoreSpecies, numpy.float64)
+            
+        else:
+            self.neq = self.numCoreSpecies
+            
+            self.atol_array = numpy.ones(self.neq,numpy.float64)*atol
+            self.rtol_array = numpy.ones(self.neq,numpy.float64)*rtol
+            
+            self.senpar = numpy.zeros(self.numCoreReactions, numpy.float64)
 
     cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions):
         """
@@ -131,6 +156,10 @@ cdef class ReactionSystem(DASx):
             self.reactionIndex[rxn] = index
         for index, rxn in enumerate(edgeReactions):
             self.reactionIndex[rxn] = index + numCoreReactions
+
+    cpdef set_initial_conditions(self):
+        self.t0 = 0.0            
+        self.y0 = numpy.zeros(self.neq, numpy.float64)
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,

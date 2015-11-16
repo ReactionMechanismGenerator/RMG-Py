@@ -127,7 +127,7 @@ cdef class SimpleReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        cdef int i, j, l, index, neq
+        cdef int i, j, l, index
         cdef double V, T, P, Peff
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar, y0, y0_coreSpecies
@@ -135,42 +135,7 @@ cdef class SimpleReactor(ReactionSystem):
         pdepNetworks = pdepNetworks or []
         
         # Set initial conditions
-        t0 = 0.0
-        # Compute number of equations    
-        if sensitivity:    
-            # Set DASPK sensitivity analysis to ON
-            self.sensitivity = True
-            # Compute number of variables
-            neq = numCoreSpecies*(numCoreReactions+numCoreSpecies+1)
-            
-            atol_array = numpy.ones(neq, numpy.float64)*sens_atol
-            atol_array[:numCoreSpecies] = atol
-            
-            rtol_array = numpy.ones(neq, numpy.float64)*sens_rtol
-            rtol_array[:numCoreSpecies] = rtol
-            
-            senpar = numpy.zeros(numCoreReactions + numCoreSpecies, numpy.float64)
-            
-        else:
-            neq = numCoreSpecies
-            
-            atol_array = numpy.ones(neq,numpy.float64)*atol
-            rtol_array = numpy.ones(neq,numpy.float64)*rtol
-            
-            senpar = numpy.zeros(numCoreReactions, numpy.float64)
-            
-        y0 = numpy.zeros(neq, numpy.float64)
-        for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[self.speciesIndex[spec]] = moleFrac
-        
-        y0_coreSpecies = y0[:numCoreSpecies]
-        # Use ideal gas law to compute volume
-        P = self.P.value_si
-        T = self.T.value_si
-        V = constants.R * T * numpy.sum(y0_coreSpecies) / P
-        self.V = V # volume in m^3
-        for j in range(numCoreSpecies):
-            self.coreSpeciesConcentrations[j] = y0[j] / V
+        self.set_initial_conditions()
         
         # Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies
         pdepColliderReactionIndices = []
@@ -214,6 +179,7 @@ cdef class SimpleReactor(ReactionSystem):
                     i = self.speciesIndex[spec]
                     productIndices[j,l] = i
 
+        compute_network_data()
         networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
         networkLeakCoefficients = numpy.zeros((numPdepNetworks), numpy.float64)
         for j, network in enumerate(pdepNetworks):
@@ -234,8 +200,21 @@ cdef class SimpleReactor(ReactionSystem):
         self.colliderEfficiencies = colliderEfficiencies
         
         # Initialize the model
-        dydt0 = - self.residual(t0, y0, numpy.zeros(neq, numpy.float64), senpar)[0]
-        DASx.initialize(self, t0, y0, dydt0, senpar, atol_array, rtol_array)
+        DASx.initialize(self, self.t0, self.y0, dydt0, self.senpar, self.atol_array, self.rtol_array)
+
+
+    def set_initial_conditions(self):
+        ReactionSystem.set_initial_conditions()
+
+        for spec, moleFrac in self.initialMoleFractions.iteritems():
+            self.y0[self.speciesIndex[spec]] = moleFrac
+        
+        # Use ideal gas law to compute volume
+        self.V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.P.value_si# volume in m^3
+        for j in range(numCoreSpecies):
+            self.coreSpeciesConcentrations[j] = self.y0[j] / self.V
+
+        dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(neq, numpy.float64), self.senpar)[0]
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

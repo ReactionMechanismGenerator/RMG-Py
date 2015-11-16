@@ -112,7 +112,7 @@ cdef class LiquidReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        cdef int i, j, l, index, neq
+        cdef int i, j, l, index
         cdef double V
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar
@@ -157,41 +157,38 @@ cdef class LiquidReactor(ReactionSystem):
         self.networkLeakCoefficients = networkLeakCoefficients
         
         # Set initial conditions
-        t0 = 0.0
-        # Compute number of equations    
-        if sensitivity:    
-            # Set DASPK sensitivity analysis to ON
-            self.sensitivity = True
-            # Compute number of variables
-            neq = numCoreSpecies*(len(forwardRateCoefficients)+numCoreSpecies+1)
-            
-            atol_array = numpy.ones(neq, numpy.float64)*sens_atol
-            atol_array[:numCoreSpecies] = atol
-            
-            rtol_array = numpy.ones(neq, numpy.float64)*sens_rtol
-            rtol_array[:numCoreSpecies] = rtol
-            
-            senpar = numpy.zeros(len(forwardRateCoefficients)+numCoreSpecies, numpy.float64)
-            
-        else:
-            neq = numCoreSpecies
-            
-            atol_array = numpy.ones(neq,numpy.float64)*atol
-            rtol_array = numpy.ones(neq,numpy.float64)*rtol
-            
-            senpar = numpy.zeros(len(forwardRateCoefficients), numpy.float64)
-            
-        y0 = numpy.zeros(neq, numpy.float64)
-        for spec, conc in self.initialConcentrations.iteritems():
-            self.coreSpeciesConcentrations[speciesIndex[spec]] = conc
-        V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
-        self.V = V  #: volume (m3) required to contain one mole total of core species at start
-        for j in range(numCoreSpecies):
-            y0[j] = self.coreSpeciesConcentrations[j] * V
+        self.set_initial_conditions()
         
         # Initialize the model
-        dydt0 = - self.residual(t0, y0, numpy.zeros(neq, numpy.float64), senpar)[0]
         DASx.initialize(self, t0, y0, dydt0, senpar, atol_array, rtol_array)
+
+    def generate_rate_coefficients(self, list coreReactions, list edgeReactions):
+        """
+        Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
+        arrays with the values computed at the temperature and (effective) pressure of the 
+        reacion system.
+        """
+        for rxn in itertools.chain(coreReactions, edgeReactions):
+            j = reactionIndex[rxn]
+            forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+            if rxn.reversible:
+                equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
+
+    def set_initial_conditions(self):
+        ReactionSystem.set_initial_conditions()
+
+        V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
+        self.V = V  #: volume (m3) required to contain one mole total of core species at start
+
+        for spec, conc in self.initialConcentrations.iteritems():
+            self.coreSpeciesConcentrations[self.speciesIndex[spec]] = conc
+        
+            for j in range(self.numCoreSpecies):
+                self.y0[j] = self.coreSpeciesConcentrations[j] * V
+
+
+        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(neq, numpy.float64), self.senpar)[0]
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

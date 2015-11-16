@@ -75,3 +75,12 @@ cdef class ReactionSystem(DASx):
     cdef public int numEdgeSpecies
     cdef public int numEdgeReactions
     cdef public int numPdepNetworks
+
+    cpdef set_initial_conditions(self)
+
+    cdef public int neq
+    cdef public numpy.ndarray atol_array
+    cdef public numpy.ndarray rtol_array
+    cdef public numpy.ndarray senpar
+    cdef public float t0
+    cdef public numpy.ndarray y0
