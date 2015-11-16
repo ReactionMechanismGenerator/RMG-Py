@@ -94,11 +94,11 @@ cdef class ReactionSystem(DASx):
 
         pdepNetworks = pdepNetworks or []
 
-        numCoreSpecies = len(coreSpecies)
-        numCoreReactions = len(coreReactions)
-        numEdgeSpecies = len(edgeSpecies)
-        numEdgeReactions = len(edgeReactions)
-        numPdepNetworks = len(pdepNetworks)
+        self.numCoreSpecies = len(coreSpecies)
+        self.numCoreReactions = len(coreReactions)
+        self.numEdgeSpecies = len(edgeSpecies)
+        self.numEdgeReactions = len(edgeReactions)
+        self.numPdepNetworks = len(pdepNetworks)
 
         self.generate_indices(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
@@ -113,7 +113,7 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
         self.maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
-        self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
+        self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)self.
 
     cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions):
         """

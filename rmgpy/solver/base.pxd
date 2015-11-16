@@ -69,3 +69,9 @@ cdef class ReactionSystem(DASx):
 
     cdef public dict speciesIndex
     cdef public dict reactionIndex
+
+    cdef public int numCoreSpecies
+    cdef public int numCoreReactions
+    cdef public int numEdgeSpecies
+    cdef public int numEdgeReactions
+    cdef public int numPdepNetworks

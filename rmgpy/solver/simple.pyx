@@ -127,20 +127,12 @@ cdef class SimpleReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index, neq
         cdef double V, T, P, Peff
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar, y0, y0_coreSpecies
         cdef list pdepColliderKinetics
         pdepNetworks = pdepNetworks or []
-
-        numCoreSpecies = len(coreSpecies)
-        numCoreReactions = len(coreReactions)
-        numEdgeSpecies = len(edgeSpecies)
-        numEdgeReactions = len(edgeReactions)
-        numPdepNetworks = len(pdepNetworks)
-
         
         # Set initial conditions
         t0 = 0.0
