@@ -89,3 +89,7 @@ cdef class ReactionSystem(DASx):
 
     cdef public numpy.ndarray networkIndices
     cdef public numpy.ndarray networkLeakCoefficients
+
+    cdef public numpy.ndarray pdepColliderReactionIndices
+    cdef public numpy.ndarray pdepColliderKinetics
+    cdef public numpy.ndarray colliderEfficiencies

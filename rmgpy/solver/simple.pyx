@@ -136,20 +136,8 @@ cdef class SimpleReactor(ReactionSystem):
         # Set initial conditions
         self.set_initial_conditions()
         
-        # Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies
-        pdepColliderReactionIndices = []
-        pdepColliderKinetics = []
-        colliderEfficiencies = []
-        for rxnList in [coreReactions, edgeReactions]:
-            for rxn in rxnList:
-                if rxn.kinetics.isPressureDependent():
-                    if rxn.kinetics.efficiencies:
-                        j = self.reactionIndex[rxn]
-                        pdepColliderReactionIndices.append(j)
-                        pdepColliderKinetics.append(rxn.kinetics)
-                        colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
-        pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int)
-        colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)
+        set_colliders(coreReactions, edgeReactions)
+
         # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)
         reactantIndices = -numpy.ones((numCoreReactions + numEdgeReactions, 3), numpy.int )
@@ -185,11 +173,48 @@ cdef class SimpleReactor(ReactionSystem):
         self.forwardRateCoefficients = forwardRateCoefficients
         self.reverseRateCoefficients = reverseRateCoefficients
         self.equilibriumConstants = equilibriumConstants
-        self.pdepColliderKinetics = pdepColliderKinetics 
-        self.colliderEfficiencies = colliderEfficiencies
         
         # Initialize the model
         DASx.initialize(self, self.t0, self.y0, dydt0, self.senpar, self.atol_array, self.rtol_array)
+
+    def generate_rate_coefficients(self, list coreReactions, list edgeReactions):
+        """
+        Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
+        arrays with the values computed at the temperature and (effective) pressure of the 
+        reacion system.
+        """
+        for rxn in itertools.chain(coreReactions, edgeReactions):
+            j = self.reactionIndex[rxn]
+            for i in xrange(pdepColliderReactionIndices.shape[0]):
+                if j == pdepColliderReactionIndices[i]:
+                    # Calculate effective pressure
+                    Peff = P *numpy.sum(colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
+                    forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
+            else:                    
+                forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+            if rxn.reversible:
+                equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
+
+
+    def set_colliders(self, coreReactions, edgeReactions):
+        """
+        Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies
+        """
+        pdepColliderReactionIndices = []
+        pdepColliderKinetics = []
+        colliderEfficiencies = []
+
+        for rxn in itertools.chain(coreReactions, edgeReactions):
+            if rxn.kinetics.isPressureDependent():
+                if rxn.kinetics.efficiencies:
+                    j = self.reactionIndex[rxn]
+                    pdepColliderReactionIndices.append(j)
+                    pdepColliderKinetics.append(rxn.kinetics)
+                    colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
+        
+        self.pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int)
+        self.colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)
 
 
     def set_initial_conditions(self):
