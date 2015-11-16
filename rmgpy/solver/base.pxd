@@ -84,3 +84,8 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray senpar
     cdef public float t0
     cdef public numpy.ndarray y0
+
+    cpdef compute_network_variables(self, pdepNetworks=?)
+
+    cdef public numpy.ndarray networkIndices
+    cdef public numpy.ndarray networkLeakCoefficients

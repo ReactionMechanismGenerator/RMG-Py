@@ -92,7 +92,7 @@ cdef class ReactionSystem(DASx):
         """
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
 
-        pdepNetworks = pdepNetworks or []
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants
 
         self.numCoreSpecies = len(coreSpecies)
         self.numCoreReactions = len(coreReactions)
@@ -160,6 +160,21 @@ cdef class ReactionSystem(DASx):
     cpdef set_initial_conditions(self):
         self.t0 = 0.0            
         self.y0 = numpy.zeros(self.neq, numpy.float64)
+
+    cpdef compute_network_variables(list pdepNetworks=None):
+        """
+        """
+
+        pdepNetworks = pdepNetworks or []
+        
+        self.networkIndices = -numpy.ones((self.numPdepNetworks, 3), numpy.int )
+        self.networkLeakCoefficients = numpy.zeros((self.numPdepNetworks), numpy.float64)
+
+        for j, network in enumerate(pdepNetworks):
+            self.networkLeakCoefficients[j] = network.getLeakCoefficient(T, P)
+            for l, spec in enumerate(network.source):
+                i = self.speciesIndex[spec]
+                self.networkIndices[j,l] = i
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,

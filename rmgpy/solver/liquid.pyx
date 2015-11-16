@@ -114,10 +114,8 @@ cdef class LiquidReactor(ReactionSystem):
 
         cdef int i, j, l, index
         cdef double V
-        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar
-        
-        pdepNetworks = pdepNetworks or []
+        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants
 
         # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)
@@ -140,21 +138,13 @@ cdef class LiquidReactor(ReactionSystem):
                     i = speciesIndex[spec]
                     productIndices[j,l] = i
 
-        networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
-        networkLeakCoefficients = numpy.zeros((numPdepNetworks), numpy.float64)
-        for j, network in enumerate(pdepNetworks):
-            networkLeakCoefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
-            for l, spec in enumerate(network.source):
-                i = speciesIndex[spec]
-                networkIndices[j,l] = i
+        ReactionSystem.compute_network_variables(pdepNetworks)
 
         self.reactantIndices = reactantIndices
         self.productIndices = productIndices
         self.forwardRateCoefficients = forwardRateCoefficients
         self.reverseRateCoefficients = reverseRateCoefficients
         self.equilibriumConstants = equilibriumConstants
-        self.networkIndices = networkIndices
-        self.networkLeakCoefficients = networkLeakCoefficients
         
         # Set initial conditions
         self.set_initial_conditions()

@@ -129,10 +129,9 @@ cdef class SimpleReactor(ReactionSystem):
 
         cdef int i, j, l, index
         cdef double V, T, P, Peff
-        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array, senpar, y0, y0_coreSpecies
-        cdef list pdepColliderKinetics
-        pdepNetworks = pdepNetworks or []
+
+        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, y0, y0_coreSpecies
         
         # Set initial conditions
         self.set_initial_conditions()
@@ -179,23 +178,13 @@ cdef class SimpleReactor(ReactionSystem):
                     i = self.speciesIndex[spec]
                     productIndices[j,l] = i
 
-        compute_network_data()
-        networkIndices = -numpy.ones((numPdepNetworks, 3), numpy.int )
-        networkLeakCoefficients = numpy.zeros((numPdepNetworks), numpy.float64)
-        for j, network in enumerate(pdepNetworks):
-            networkLeakCoefficients[j] = network.getLeakCoefficient(T, P)
-            for l, spec in enumerate(network.source):
-                i = self.speciesIndex[spec]
-                networkIndices[j,l] = i
+        ReactionSystem.compute_network_variables(pdepNetworks)
 
         self.reactantIndices = reactantIndices
         self.productIndices = productIndices
         self.forwardRateCoefficients = forwardRateCoefficients
         self.reverseRateCoefficients = reverseRateCoefficients
         self.equilibriumConstants = equilibriumConstants
-        self.networkIndices = networkIndices
-        self.networkLeakCoefficients = networkLeakCoefficients        
-        self.pdepColliderReactionIndices = pdepColliderReactionIndices
         self.pdepColliderKinetics = pdepColliderKinetics 
         self.colliderEfficiencies = colliderEfficiencies
         
