@@ -65,6 +65,7 @@ from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
+from rmgpy.tools.sensitivity import SimulationProfileWriter
 
 ################################################################################
 
@@ -362,7 +363,6 @@ class RMG(util.Subject):
         
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
-        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         if self.saveEdgeSpecies:
             util.makeOutputSubdirectory(self.outputDirectory, 'species_edge')
         
@@ -487,7 +487,14 @@ class RMG(util.Subject):
         if self.quantumMechanics:
             self.attach(QMDatabaseWriter()) 
 
-        self.attach(ExecutionStatsWriter(self.outputDirectory))            
+        self.attach(ExecutionStatsWriter(self.outputDirectory))
+
+        if self.saveSimulationProfiles:
+            util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+
+            for index, reactionSystem in enumerate(self.reactionSystems):
+                    reactionSystem.attach(SimulationProfileWriter(
+                        self.outputDirectory, index, self.reactionModel.core.species))   
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
@@ -510,12 +517,6 @@ class RMG(util.Subject):
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
                 numCoreSpecies = len(self.reactionModel.core.species)
-    
-                if self.saveSimulationProfiles:
-                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
-                    worksheet = csv.writer(csvfile)
-                else:
-                    worksheet = None
                 
                 # Conduct simulation
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
@@ -533,7 +534,6 @@ class RMG(util.Subject):
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
                     pdepNetworks = self.reactionModel.networkList,
-                    worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                 )
@@ -609,7 +609,6 @@ class RMG(util.Subject):
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
-                    worksheet = None,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,

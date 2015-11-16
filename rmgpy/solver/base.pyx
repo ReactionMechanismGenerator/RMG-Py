@@ -116,7 +116,7 @@ cdef class ReactionSystem(DASx):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
+        list pdepNetworks=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None):
         """
         Simulate the reaction system with the provided reaction model,
@@ -181,14 +181,9 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
+        # a list with the time, Volume, mole fractions of core species
         self.snapshots = []
-        
-        if worksheet:
-            row = ['Time (s)', 'Volume (m^3)']
-            for i in range(numCoreSpecies):
-                row.append(getSpeciesIdentifier(coreSpecies[i]))
-            worksheet.writerow(row)
-        
+
         if sensitivity:
             time_array = []
             normSens_array = [[] for spec in self.sensitiveSpecies]    
@@ -224,12 +219,7 @@ cdef class ReactionSystem(DASx):
                             normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])/c*4184   # no normalization against dG, converstion to kcal/mol units
                     normSens_array[i].append(normSens)
 
-            # Save the species mole fractions to CSV file
-            self.notify()
-            if worksheet:
-                row = [self.t, self.V]
-                row.extend(y_coreSpecies/numpy.sum(y_coreSpecies))
-                worksheet.writerow(row)
+
             snapshot = [self.t, self.V]
             snapshot.extend(y_coreSpecies / numpy.sum(y_coreSpecies))
             self.snapshots.append(snapshot)            
@@ -319,7 +309,10 @@ cdef class ReactionSystem(DASx):
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
                 
-            
+        
+        # notify reaction system listeners
+        self.notify()
+
         if sensitivity:   
             for i in range(len(self.sensitiveSpecies)):
                 reactionsAboveThreshold = []

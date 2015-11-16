@@ -21,4 +21,3 @@ class GenerateReactionsTest(unittest.TestCase):
 
 
         shutil.rmtree(os.path.join(folder,'pdep'))
-        shutil.rmtree(os.path.join(folder,'solver'))
