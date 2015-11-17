@@ -61,35 +61,64 @@ cdef class ReactionSystem(DASx):
 
     def __init__(self, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         DASx.__init__(self)
-        self.sensmethod = 2 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
-        # The reaction and species rates at the current time (in mol/m^3*s)
-        self.coreSpeciesConcentrations = None
-        self.coreSpeciesRates = None
-        self.coreReactionRates = None
-        self.edgeSpeciesRates = None
-        self.edgeReactionRates = None
-        self.networkLeakRates = None
-        self.maxCoreSpeciesRates = None
-        self.maxEdgeSpeciesRates = None
-        self.maxNetworkLeakRates = None
-        self.maxEdgeSpeciesRateRatios = None
-        self.maxNetworkLeakRateRatios = None
-        self.sensitivityCoefficients = None
-        self.termination = termination or []
-    
-        self.sensitiveSpecies = sensitiveSpecies
-        self.sensitivityThreshold = sensitivityThreshold
 
-        # These are helper variables used within the solver
+        # reactor state variables:
+        self.t0 = 0.0
+        self.y0 = None
+        self.dydt0 = None
+
+        #  variables that determine the dimensions of arrays and matrices:
+        self.numCoreSpecies = -1
+        self.numCoreReactions = -1
+        self.numEdgeSpecies = -1
+        self.numEdgeReactions = -1
+        self.numPdepNetworks = -1
+        self.neq = -1
+
+        # variables that store stoichiometry data
+        self.speciesIndex = {}
+        self.reactionIndex = {}
         self.reactantIndices = None
         self.productIndices = None
         self.networkIndices = None
+
+        # matrices that cache kinetic and rate data
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
         self.equilibriumConstants = None
         self.networkLeakCoefficients = None
         self.jacobianMatrix = None
+        
+        self.coreSpeciesConcentrations = None
+        
+        # The reaction and species rates at the current time (in mol/m^3*s)
+        self.coreSpeciesRates = None
+        self.coreReactionRates = None
 
+        self.edgeSpeciesRates = None
+        self.edgeReactionRates = None
+
+        self.networkLeakRates = None
+
+        # variables that cache maximum rate (ratio) data
+        self.maxCoreSpeciesRates = None
+        self.maxEdgeSpeciesRates = None
+        self.maxNetworkLeakRates = None
+        self.maxEdgeSpeciesRateRatios = None
+        self.maxNetworkLeakRateRatios = None
+
+        # sensitivity variables
+        self.sensmethod = 2 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
+        self.sensitivityCoefficients = None    
+        self.sensitiveSpecies = sensitiveSpecies
+        self.sensitivityThreshold = sensitivityThreshold
+        self.senpar = None
+
+        # tolerance settings
+        self.atol_array = None
+        self.rtol_array = None
+
+        self.termination = termination or []
 
     def __reduce__(self):
         """
@@ -109,6 +138,8 @@ cdef class ReactionSystem(DASx):
         self.numCoreReactions = len(coreReactions)
         self.numEdgeSpecies = len(edgeSpecies)
         self.numEdgeReactions = len(edgeReactions)
+
+        pdepNetworks = pdepNetworks or []
         self.numPdepNetworks = len(pdepNetworks)
 
         self.forwardRateCoefficients = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.float64)
@@ -132,6 +163,29 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRateRatios = numpy.zeros((self.numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
 
+        # Compute number of equations    
+        if sensitivity:    
+            # Set DASPK sensitivity analysis to ON
+            self.sensitivity = True
+            # Compute number of variables
+            self.neq = self.numCoreSpecies * (self.numCoreReactions + self.numCoreSpecies + 1)
+            
+            self.atol_array = numpy.ones(self.neq, numpy.float64) * sens_atol
+            self.atol_array[:self.numCoreSpecies] = atol
+            
+            self.rtol_array = numpy.ones(self.neq, numpy.float64) * sens_rtol
+            self.rtol_array[:self.numCoreSpecies] = rtol
+            
+            self.senpar = numpy.zeros(self.numCoreReactions + self.numCoreSpecies, numpy.float64)
+            
+        else:
+            self.neq = self.numCoreSpecies
+            
+            self.atol_array = numpy.ones(self.neq , numpy.float64) * atol
+            self.rtol_array = numpy.ones(self.neq , numpy.float64) * rtol
+            
+            self.senpar = numpy.zeros(self.numCoreReactions, numpy.float64)
+
     def generate_reactant_product_indices(self, coreReactions, edgeReactions):
         """
         Creates a matrix for the reactants and products.
@@ -142,7 +196,6 @@ cdef class ReactionSystem(DASx):
             product side of a reaction.
 
         The values of each row are the indeces of the corresponding molecule.
-
         """
 
         self.reactantIndices = -numpy.ones((self.numCoreReactions + self.numEdgeReactions, 3), numpy.int )
@@ -163,7 +216,6 @@ cdef class ReactionSystem(DASx):
         store the (species, index) pair in a dictionary.
         """
         
-        self.speciesIndex = {}
         for index, spec in enumerate(itertools.chain(coreSpecies, edgeSpecies)):
             self.speciesIndex[spec] = index
 
@@ -173,7 +225,6 @@ cdef class ReactionSystem(DASx):
         store the (reaction, index) pair in a dictionary.
         """
         
-        self.reactionIndex = {}
         for index, rxn in enumerate(itertools.chain(coreReactions, edgeReactions)):
             self.reactionIndex[rxn] = index
 

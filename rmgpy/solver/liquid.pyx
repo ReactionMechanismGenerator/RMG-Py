@@ -61,17 +61,6 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public double V
     cdef public bint constantVolume
     cdef public dict initialConcentrations
-    cdef public list sensitiveSpecies
-    cdef public double sensitivityThreshold
-
-    cdef public numpy.ndarray reactantIndices
-    cdef public numpy.ndarray productIndices
-    cdef public numpy.ndarray networkIndices
-    cdef public numpy.ndarray forwardRateCoefficients
-    cdef public numpy.ndarray reverseRateCoefficients
-    cdef public numpy.ndarray equilibriumConstants
-    cdef public numpy.ndarray networkLeakCoefficients
-    cdef public numpy.ndarray jacobianMatrix
 
     def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
@@ -104,7 +93,7 @@ cdef class LiquidReactor(ReactionSystem):
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
 
-        ReactionSystem.compute_network_variables(pdepNetworks)
+        ReactionSystem.compute_network_variables(self, pdepNetworks)
 
         # Set initial conditions
         self.set_initial_conditions()
@@ -141,7 +130,7 @@ cdef class LiquidReactor(ReactionSystem):
         y0 instance attribute.
 
         """
-        ReactionSystem.set_initial_conditions()
+        ReactionSystem.set_initial_conditions(self)
 
         V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
         self.V = V 

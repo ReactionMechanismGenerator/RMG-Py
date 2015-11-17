@@ -61,18 +61,9 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public double V
     cdef public bint constantVolume
     cdef public dict initialMoleFractions
-    cdef public list sensitiveSpecies
-    cdef public double sensitivityThreshold
+
+    # collider variables
     cdef public list pdepColliderKinetics
-    
-    cdef public numpy.ndarray reactantIndices
-    cdef public numpy.ndarray productIndices
-    cdef public numpy.ndarray networkIndices
-    cdef public numpy.ndarray forwardRateCoefficients
-    cdef public numpy.ndarray reverseRateCoefficients
-    cdef public numpy.ndarray equilibriumConstants
-    cdef public numpy.ndarray networkLeakCoefficients
-    cdef public numpy.ndarray jacobianMatrix
     cdef public numpy.ndarray pdepColliderReactionIndices
     cdef public numpy.ndarray colliderEfficiencies
 
@@ -126,7 +117,7 @@ cdef class SimpleReactor(ReactionSystem):
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
         
-        ReactionSystem.compute_network_variables(pdepNetworks)
+        ReactionSystem.compute_network_variables(self, pdepNetworks)
         
         # Initialize the model
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
@@ -191,7 +182,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         """
 
-        ReactionSystem.set_initial_conditions()
+        ReactionSystem.set_initial_conditions(self)
 
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             self.y0[self.speciesIndex[spec]] = moleFrac

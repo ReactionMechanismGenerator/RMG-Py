@@ -37,24 +37,67 @@ else:
 
 cdef class ReactionSystem(DASx):
 
+    # reactor state variables:
+    cdef public float t0
+    cdef public numpy.ndarray y0
+    cdef public numpy.ndarray dydt0
+
+    #  variables that determine the dimensions of arrays and matrices:
+    cdef public int numCoreSpecies
+    cdef public int numCoreReactions
+    cdef public int numEdgeSpecies
+    cdef public int numEdgeReactions
+    cdef public int numPdepNetworks
+    cdef public int neq
+
+    # variables that store stoichiometry data
+    cdef public dict speciesIndex
+    cdef public dict reactionIndex
+    cdef public numpy.ndarray reactantIndices
+    cdef public numpy.ndarray productIndices
+    cdef public numpy.ndarray networkIndices
+
+    # matrices that cache kinetic and rate data
+    cdef public numpy.ndarray forwardRateCoefficients
+    cdef public numpy.ndarray reverseRateCoefficients
+    cdef public numpy.ndarray equilibriumConstants
+    cdef public numpy.ndarray networkLeakCoefficients
+    cdef public numpy.ndarray jacobianMatrix
+
     cdef public numpy.ndarray coreSpeciesConcentrations
+    
+    # The reaction and species rates at the current time (in mol/m^3*s)
     cdef public numpy.ndarray coreSpeciesRates
     cdef public numpy.ndarray coreReactionRates
+
     cdef public numpy.ndarray edgeSpeciesRates
     cdef public numpy.ndarray edgeReactionRates
-    cdef public numpy.ndarray networkLeakRates
 
+    cdef public numpy.ndarray networkLeakRates    
+
+    # variables that cache maximum rate (ratio) data
     cdef public numpy.ndarray maxCoreSpeciesRates
     cdef public numpy.ndarray maxEdgeSpeciesRates
     cdef public numpy.ndarray maxNetworkLeakRates
     cdef public numpy.ndarray maxEdgeSpeciesRateRatios
     cdef public numpy.ndarray maxNetworkLeakRateRatios
+
+    # sensitivity variables
+    # cdef public int sensmethod
     cdef public numpy.ndarray sensitivityCoefficients
+    cdef public list sensitiveSpecies
+    cdef public double sensitivityThreshold
+    # cdef public numpy.ndarray senpar
+
+    # tolerance settings
+    cdef public numpy.ndarray atol_array
+    cdef public numpy.ndarray rtol_array
     
     cdef public list snapshots
 
     cdef public list termination
 
+    # methods
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
