@@ -117,11 +117,6 @@ cdef class SimpleReactor(ReactionSystem):
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
-
-        cdef int i, j, l, index
-        cdef double V, T, P, Peff
-
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
         
         # Set initial conditions
         self.set_initial_conditions()
@@ -132,30 +127,25 @@ cdef class SimpleReactor(ReactionSystem):
         self.generate_rate_coefficients(coreReactions, edgeReactions)
         
         ReactionSystem.compute_network_variables(pdepNetworks)
-
-        self.reactantIndices = reactantIndices
-        self.productIndices = productIndices
         
         # Initialize the model
-        DASx.initialize(self, self.t0, self.y0, dydt0, self.senpar, self.atol_array, self.rtol_array)
+        DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
 
-    def generate_rate_coefficients(self, list coreReactions, list edgeReactions):
+    def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
         Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
         arrays with the values computed at the temperature and (effective) pressure of the 
         reacion system.
         """
 
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0_coreSpecies
-
         y0_coreSpecies = self.y0[:self.numCoreSpecies]
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
-            for i in xrange(pdepColliderReactionIndices.shape[0]):
-                if j == pdepColliderReactionIndices[i]:
+            for i in xrange(self.pdepColliderReactionIndices.shape[0]):
+                if j == self.pdepColliderReactionIndices[i]:
                     # Calculate effective pressure
-                    Peff = P *numpy.sum(colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
+                    Peff = self.P *numpy.sum(self.colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
                     self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
                     break
             else:                    
@@ -170,7 +160,7 @@ cdef class SimpleReactor(ReactionSystem):
         Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies.
         """
         pdepColliderReactionIndices = []
-        pdepColliderKinetics = []
+        self.pdepColliderKinetics = []
         colliderEfficiencies = []
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
@@ -178,8 +168,8 @@ cdef class SimpleReactor(ReactionSystem):
                 if rxn.kinetics.efficiencies:
                     j = self.reactionIndex[rxn]
                     pdepColliderReactionIndices.append(j)
-                    pdepColliderKinetics.append(rxn.kinetics)
-                    colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
+                    self.pdepColliderKinetics.append(rxn.kinetics)
+                    colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(self.coreSpecies))
         
         self.pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int)
         self.colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)

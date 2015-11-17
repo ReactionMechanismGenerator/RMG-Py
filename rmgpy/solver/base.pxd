@@ -56,7 +56,7 @@ cdef class ReactionSystem(DASx):
     cdef public list termination
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?)
-    
+
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?)
@@ -64,41 +64,3 @@ cdef class ReactionSystem(DASx):
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 
     cpdef logConversions(self, speciesIndex, y0)
-
-    cpdef generate_species_indices(self, list coreSpecies, list edgeSpecies)
-    cpdef generate_reaction_indices(self, list coreReactions, list edgeReactions)
-
-    cdef public dict speciesIndex
-    cdef public dict reactionIndex
-
-    cdef public int numCoreSpecies
-    cdef public int numCoreReactions
-    cdef public int numEdgeSpecies
-    cdef public int numEdgeReactions
-    cdef public int numPdepNetworks
-
-    cpdef set_initial_conditions(self)
-
-    cdef public int neq
-    cdef public numpy.ndarray atol_array
-    cdef public numpy.ndarray rtol_array
-    cdef public numpy.ndarray senpar
-    cdef public float t0
-    cdef public numpy.ndarray y0
-
-    cpdef compute_network_variables(self, pdepNetworks=?)
-
-    cdef public numpy.ndarray networkIndices
-    cdef public numpy.ndarray networkLeakCoefficients
-
-    cdef public numpy.ndarray pdepColliderReactionIndices
-    cdef public numpy.ndarray pdepColliderKinetics
-    cdef public numpy.ndarray colliderEfficiencies
-
-    cpdef generate_reactant_product_indices(self, list coreReactions, list edgeReactions)
-    cdef public numpy.ndarray reactantIndices
-    cdef public numpy.ndarray productIndices
-
-    cdef public numpy.ndarray forwardRateCoefficients
-    cdef public numpy.ndarray reverseRateCoefficients
-    cdef public numpy.ndarray equilibriumConstants

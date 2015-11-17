@@ -101,10 +101,6 @@ cdef class LiquidReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        cdef int i, j, l, index
-        cdef double V
-
-
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
 
@@ -114,9 +110,9 @@ cdef class LiquidReactor(ReactionSystem):
         self.set_initial_conditions()
         
         # Initialize the model
-        DASx.initialize(self, t0, y0, dydt0, senpar, atol_array, rtol_array)
+        DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
 
-    def generate_rate_coefficients(self, list coreReactions, list edgeReactions):
+    def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
         Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
         arrays with the values computed at the temperature and (effective) pressure of the 
@@ -124,7 +120,7 @@ cdef class LiquidReactor(ReactionSystem):
         """
         
         for rxn in itertools.chain(coreReactions, edgeReactions):
-            j = reactionIndex[rxn]
+            j = self.reactionIndex[rxn]
             self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
                 self.equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
@@ -157,7 +153,7 @@ cdef class LiquidReactor(ReactionSystem):
                 self.y0[j] = self.coreSpeciesConcentrations[j] * V
 
 
-        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(neq, numpy.float64), self.senpar)[0]
+        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(self.neq, numpy.float64), self.senpar)[0]
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

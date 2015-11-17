@@ -104,9 +104,6 @@ cdef class ReactionSystem(DASx):
         method in the derived class; don't forget to also call the base class
         version, too.
         """
-        cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
-
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants
 
         self.numCoreSpecies = len(coreSpecies)
         self.numCoreReactions = len(coreReactions)
@@ -122,20 +119,20 @@ cdef class ReactionSystem(DASx):
         self.generate_reaction_indices(coreReactions, edgeReactions)
         self.generate_reactant_product_indices(coreReactions, edgeReactions)
 
-        self.coreSpeciesConcentrations = numpy.zeros((numCoreSpecies), numpy.float64)
-        self.coreReactionRates = numpy.zeros((numCoreReactions), numpy.float64)
-        self.edgeReactionRates = numpy.zeros((numEdgeReactions), numpy.float64)
-        self.coreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
-        self.edgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
-        self.networkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
-        self.maxCoreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
-        self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
-        self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
-        self.maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
-        self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
-        self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
+        self.coreSpeciesConcentrations = numpy.zeros((self.numCoreSpecies), numpy.float64)
+        self.coreReactionRates = numpy.zeros((self.numCoreReactions), numpy.float64)
+        self.edgeReactionRates = numpy.zeros((self.numEdgeReactions), numpy.float64)
+        self.coreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
+        self.edgeSpeciesRates = numpy.zeros((self.numEdgeSpecies), numpy.float64)
+        self.networkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
+        self.maxCoreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
+        self.maxEdgeSpeciesRates = numpy.zeros((self.numEdgeSpecies), numpy.float64)
+        self.maxNetworkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
+        self.maxEdgeSpeciesRateRatios = numpy.zeros((self.numEdgeSpecies), numpy.float64)
+        self.maxNetworkLeakRateRatios = numpy.zeros((self.numPdepNetworks), numpy.float64)
+        self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
 
-    def generate_reactant_product_indices(self, list coreReactions, list edgeReactions):
+    def generate_reactant_product_indices(self, coreReactions, edgeReactions):
         """
         Creates a matrix for the reactants and products.
 
@@ -160,7 +157,7 @@ cdef class ReactionSystem(DASx):
                 i = self.speciesIndex[spec]
                 self.productIndices[j,l] = i
 
-    def generate_species_indices(self, list coreSpecies, list edgeSpecies):
+    def generate_species_indices(self, coreSpecies, edgeSpecies):
         """
         Assign an index to each species (core first, then edge) and 
         store the (species, index) pair in a dictionary.
@@ -170,7 +167,7 @@ cdef class ReactionSystem(DASx):
         for index, spec in enumerate(itertools.chain(coreSpecies, edgeSpecies)):
             self.speciesIndex[spec] = index
 
-    def generate_reaction_indices(self, list coreReactions, list edgeReactions):
+    def generate_reaction_indices(self, coreReactions, edgeReactions):
         """
         Assign an index to each reaction (core first, then edge) and 
         store the (reaction, index) pair in a dictionary.
@@ -186,14 +183,14 @@ cdef class ReactionSystem(DASx):
         represent the reaction system.
 
         - Sets the initial time of the reaction system to 0
-        - Initializes the species quantities to a n x 1 array with zeros
+        - Initializes the species moles to a n x 1 array with zeros
         """
 
         self.t0 = 0.0            
 
         self.y0 = numpy.zeros(self.neq, numpy.float64)
 
-    def compute_network_variables(list pdepNetworks=None):
+    def compute_network_variables(self, pdepNetworks=None):
         """
         Initialize the arrays containing network information:
 
