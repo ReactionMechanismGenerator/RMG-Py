@@ -90,14 +90,16 @@ cdef class LiquidReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
+        # Set initial conditions
+        self.set_initial_conditions()
+
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
 
         ReactionSystem.compute_network_variables(self, pdepNetworks)
-
-        # Set initial conditions
-        self.set_initial_conditions()
         
+        ReactionSystem.set_initial_derivative(self)
+
         # Initialize the model
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
 
@@ -140,9 +142,6 @@ cdef class LiquidReactor(ReactionSystem):
         
             for j in range(self.numCoreSpecies):
                 self.y0[j] = self.coreSpeciesConcentrations[j] * V
-
-
-        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(self.neq, numpy.float64), self.senpar)[0]
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

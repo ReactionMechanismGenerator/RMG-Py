@@ -117,6 +117,7 @@ cdef class SimpleReactor(ReactionSystem):
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
         
+        ReactionSystem.set_initial_derivative(self)
         ReactionSystem.compute_network_variables(self, pdepNetworks)
         
         # Initialize the model
@@ -191,8 +192,6 @@ cdef class SimpleReactor(ReactionSystem):
         self.V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.P.value_si# volume in m^3
         for j in range(self.numCoreSpecies):
             self.coreSpeciesConcentrations[j] = self.y0[j] / self.V
-
-        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(self.neq, numpy.float64), self.senpar)[0]
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

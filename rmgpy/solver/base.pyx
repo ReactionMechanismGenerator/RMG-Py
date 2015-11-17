@@ -241,6 +241,13 @@ cdef class ReactionSystem(DASx):
 
         self.y0 = numpy.zeros(self.neq, numpy.float64)
 
+    def set_initial_derivative(self):
+        """
+        Sets the derivative of the species moles with respect to the independent variable (time)
+        equal to the residual.
+        """
+        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(self.neq, numpy.float64), self.senpar)[0]
+
     def compute_network_variables(self, pdepNetworks=None):
         """
         Initialize the arrays containing network information:
