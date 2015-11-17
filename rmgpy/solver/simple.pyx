@@ -113,13 +113,13 @@ cdef class SimpleReactor(ReactionSystem):
         self.set_initial_conditions()
         
         self.set_colliders(coreReactions, edgeReactions)
+        
+        ReactionSystem.compute_network_variables(self, pdepNetworks)
 
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
         
         ReactionSystem.set_initial_derivative(self)
-        ReactionSystem.compute_network_variables(self, pdepNetworks)
-        
         # Initialize the model
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
 
