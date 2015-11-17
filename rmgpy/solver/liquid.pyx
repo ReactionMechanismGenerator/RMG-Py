@@ -110,10 +110,10 @@ cdef class LiquidReactor(ReactionSystem):
         
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
-            self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+            self.kf[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
-                self.equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
-                self.reverseRateCoefficients[j] = self.forwardRateCoefficients[j] / self.equilibriumConstants[j]
+                self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                self.kb[j] = self.kf[j] / self.Keq[j]
 
     def set_initial_conditions(self):
         """
@@ -162,10 +162,10 @@ cdef class LiquidReactor(ReactionSystem):
 
         ir = self.reactantIndices
         ip = self.productIndices
-        equilibriumConstants = self.equilibriumConstants
+        equilibriumConstants = self.Keq
 
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
+        kf = self.kf
+        kr = self.kb
         
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
@@ -321,8 +321,8 @@ cdef class LiquidReactor(ReactionSystem):
         ir = self.reactantIndices
         ip = self.productIndices
         
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
+        kf = self.kf
+        kr = self.kb
         
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)      

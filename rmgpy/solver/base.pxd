@@ -58,9 +58,9 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray networkIndices
 
     # matrices that cache kinetic and rate data
-    cdef public numpy.ndarray forwardRateCoefficients
-    cdef public numpy.ndarray reverseRateCoefficients
-    cdef public numpy.ndarray equilibriumConstants
+    cdef public numpy.ndarray kf # forward rate coefficients
+    cdef public numpy.ndarray kb # reverse rate coefficients
+    cdef public numpy.ndarray Keq # equilibrium constants
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 

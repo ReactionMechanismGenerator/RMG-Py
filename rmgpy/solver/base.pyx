@@ -83,9 +83,9 @@ cdef class ReactionSystem(DASx):
         self.networkIndices = None
 
         # matrices that cache kinetic and rate data
-        self.forwardRateCoefficients = None
-        self.reverseRateCoefficients = None
-        self.equilibriumConstants = None
+        self.kf = None # forward rate coefficients
+        self.kb = None # reverse rate coefficients
+        self.Keq = None # equilibrium constants
         self.networkLeakCoefficients = None
         self.jacobianMatrix = None
         
@@ -142,9 +142,9 @@ cdef class ReactionSystem(DASx):
         pdepNetworks = pdepNetworks or []
         self.numPdepNetworks = len(pdepNetworks)
 
-        self.forwardRateCoefficients = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.float64)
-        self.reverseRateCoefficients = numpy.zeros_like(self.forwardRateCoefficients)
-        self.equilibriumConstants = numpy.zeros_like(self.forwardRateCoefficients)
+        self.kf = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.float64)
+        self.kb = numpy.zeros_like(self.kf)
+        self.Keq = numpy.zeros_like(self.kf)
 
         self.generate_species_indices(coreSpecies, edgeSpecies)
         self.generate_reaction_indices(coreReactions, edgeReactions)
@@ -327,7 +327,7 @@ cdef class ReactionSystem(DASx):
         maxNetworkLeakRates = self.maxNetworkLeakRates
         maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
         maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
-        forwardRateCoefficients = self.forwardRateCoefficients
+        forwardRateCoefficients = self.kf
         
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()

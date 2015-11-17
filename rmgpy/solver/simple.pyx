@@ -124,9 +124,9 @@ cdef class SimpleReactor(ReactionSystem):
 
     def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
-        Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
-        arrays with the values computed at the temperature and (effective) pressure of the 
-        reacion system.
+        Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
+        and equilibrium constants (Keq) arrays with the values computed at the temperature
+        and (effective) pressure of the reacion system.
         """
 
         y0_coreSpecies = self.y0[:self.numCoreSpecies]
@@ -137,13 +137,13 @@ cdef class SimpleReactor(ReactionSystem):
                 if j == self.pdepColliderReactionIndices[i]:
                     # Calculate effective pressure
                     Peff = self.P *numpy.sum(self.colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
-                    self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
+                    self.kf[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
                     break
             else:                    
-                self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+                self.kf[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
-                self.equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
-                self.reverseRateCoefficients[j] = self.forwardRateCoefficients[j] / self.equilibriumConstants[j]
+                self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                self.kb[j] = self.kf[j] / self.Keq[j]
 
 
     def set_colliders(self, coreReactions, edgeReactions):
@@ -220,9 +220,8 @@ cdef class SimpleReactor(ReactionSystem):
         numEdgeSpecies = len(self.edgeSpeciesRates)
         numEdgeReactions = len(self.edgeReactionRates)
         numPdepNetworks = len(self.networkLeakRates)
-        
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
+        kf = self.kf
+        kr = self.kb
         
         y_coreSpecies = y[:numCoreSpecies]
         
@@ -230,7 +229,7 @@ cdef class SimpleReactor(ReactionSystem):
         if self.pdepColliderReactionIndices.shape[0] != 0:
             T = self.T.value_si
             P = self.P.value_si
-            equilibriumConstants = self.equilibriumConstants
+            equilibriumConstants = self.Keq
             pdepColliderReactionIndices = self.pdepColliderReactionIndices
             pdepColliderKinetics = self.pdepColliderKinetics
             colliderEfficiencies = self.colliderEfficiencies
@@ -389,8 +388,8 @@ cdef class SimpleReactor(ReactionSystem):
         ir = self.reactantIndices
         ip = self.productIndices
 
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
+        kf = self.kf
+        kr = self.kb
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)
         
@@ -882,8 +881,8 @@ cdef class SimpleReactor(ReactionSystem):
         ir = self.reactantIndices
         ip = self.productIndices
         
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients    
+        kf = self.kf
+        kr = self.kb    
         
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)      
