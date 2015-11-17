@@ -93,3 +93,8 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray pdepColliderReactionIndices
     cdef public numpy.ndarray pdepColliderKinetics
     cdef public numpy.ndarray colliderEfficiencies
+
+    cpdef generate_reactant_product_indices(self, list coreReactions, list edgeReactions)
+    cdef public numpy.ndarray reactantIndices
+    cdef public numpy.ndarray productIndices
+

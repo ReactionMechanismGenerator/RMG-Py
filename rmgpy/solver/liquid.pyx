@@ -114,16 +114,17 @@ cdef class LiquidReactor(ReactionSystem):
 
         cdef int i, j, l, index
         cdef double V
-        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants
 
         # Generate reactant and product indices
-        # Generate forward and reverse rate coefficients k(T,P)
-        reactantIndices = -numpy.ones((numCoreReactions + numEdgeReactions, 3), numpy.int )
-        productIndices = -numpy.ones_like(reactantIndices)
         forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
         reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
         equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
+        self.generate_reactant_product_indices()
+
+        # Generate forward and reverse rate coefficients k(T,P)
+        self.generate_rate_coefficients(coreReactions, edgeReactions)
+        
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
                 j = reactionIndex[rxn]
@@ -131,20 +132,8 @@ cdef class LiquidReactor(ReactionSystem):
                 if rxn.reversible:
                     equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
                     reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
-                for l, spec in enumerate(rxn.reactants):
-                    i = speciesIndex[spec]
-                    reactantIndices[j,l] = i
-                for l, spec in enumerate(rxn.products):
-                    i = speciesIndex[spec]
-                    productIndices[j,l] = i
 
         ReactionSystem.compute_network_variables(pdepNetworks)
-
-        self.reactantIndices = reactantIndices
-        self.productIndices = productIndices
-        self.forwardRateCoefficients = forwardRateCoefficients
-        self.reverseRateCoefficients = reverseRateCoefficients
-        self.equilibriumConstants = equilibriumConstants
         
         # Set initial conditions
         self.set_initial_conditions()

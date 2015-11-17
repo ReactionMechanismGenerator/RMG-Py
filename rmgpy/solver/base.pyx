@@ -47,6 +47,7 @@ else:
 import cython
 import logging
 import csv
+import itertools
 
 from rmgpy.quantity import Quantity
 from rmgpy.chemkin import getSpeciesIdentifier
@@ -101,6 +102,9 @@ cdef class ReactionSystem(DASx):
         self.numPdepNetworks = len(pdepNetworks)
 
         self.generate_indices(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        self.forwardRateCoefficients = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.float64)
+        self.reverseRateCoefficients = numpy.zeros_like(self.forwardRateCoefficients)
+        self.equilibriumConstants = numpy.zeros_like(self.forwardRateCoefficients)
 
         self.generate_reactant_product_indices(coreReactions, edgeReactions)
 
@@ -117,6 +121,50 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
 
+    cpdef generate_reactant_product_indices(self, list coreReactions, list edgeReactions):
+        """
+        Creates a matrix for the reactants and products.
+        The matrix has dimensions n x 3, with n the number of core and edge reactions,
+        and 3 the maximum number of molecules allowed in either the reactant or
+        product side of a reaction.
+
+        The values of each row are the index of the corresponding molecule.
+
+        """
+
+        self.reactantIndices = -numpy.ones((self.numCoreReactions + self.numEdgeReactions, 3), numpy.int )
+        self.productIndices = -numpy.ones_like(self.reactantIndices)
+
+        for rxn in itertools.chain(coreReactions, edgeReactions):
+            j = self.reactionIndex[rxn]
+            for l, spec in enumerate(rxn.reactants):
+                i = self.speciesIndex[spec]
+                self.reactantIndices[j,l] = i
+            for l, spec in enumerate(rxn.products):
+                i = self.speciesIndex[spec]
+                self.productIndices[j,l] = i
+
+
+
+    cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions):
+        """
+        Assign an index to each species (core first, then edge)
+        """
+
+        
+        self.speciesIndex = {}
+        for index, spec in enumerate(coreSpecies):
+            self.speciesIndex[spec] = index
+        for index, spec in enumerate(edgeSpecies):
+            self.speciesIndex[spec] = index + numCoreSpecies
+        # Assign an index to each reaction (core first, then edge)
+        self.reactionIndex = {}
+        for index, rxn in enumerate(coreReactions):
+            self.reactionIndex[rxn] = index
+        for index, rxn in enumerate(edgeReactions):
+            self.reactionIndex[rxn] = index + numCoreReactions
+
+    def set_initial_conditions(self):
         # Compute number of equations    
         if sensitivity:    
             # Set DASPK sensitivity analysis to ON
@@ -166,7 +214,7 @@ cdef class ReactionSystem(DASx):
         """
 
         pdepNetworks = pdepNetworks or []
-        
+
         self.networkIndices = -numpy.ones((self.numPdepNetworks, 3), numpy.int )
         self.networkLeakCoefficients = numpy.zeros((self.numPdepNetworks), numpy.float64)
 

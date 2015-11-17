@@ -130,18 +130,14 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int i, j, l, index
         cdef double V, T, P, Peff
 
-        cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, y0, y0_coreSpecies
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, y0_coreSpecies
         
         # Set initial conditions
         self.set_initial_conditions()
         
         set_colliders(coreReactions, edgeReactions)
 
-        # Generate reactant and product indices
         # Generate forward and reverse rate coefficients k(T,P)
-        reactantIndices = -numpy.ones((numCoreReactions + numEdgeReactions, 3), numpy.int )
-        productIndices = -numpy.ones_like(reactantIndices)
         forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
         reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
         equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
@@ -159,12 +155,6 @@ cdef class SimpleReactor(ReactionSystem):
                 if rxn.reversible:
                     equilibriumConstants[j] = rxn.getEquilibriumConstant(T)
                     reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
-                for l, spec in enumerate(rxn.reactants):
-                    i = self.speciesIndex[spec]
-                    reactantIndices[j,l] = i
-                for l, spec in enumerate(rxn.products):
-                    i = self.speciesIndex[spec]
-                    productIndices[j,l] = i
 
         ReactionSystem.compute_network_variables(pdepNetworks)
 
