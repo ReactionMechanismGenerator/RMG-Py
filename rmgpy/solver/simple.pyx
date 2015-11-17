@@ -168,6 +168,7 @@ cdef class SimpleReactor(ReactionSystem):
                     # Calculate effective pressure
                     Peff = P *numpy.sum(colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
                     self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
+                    break
             else:                    
                 self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
