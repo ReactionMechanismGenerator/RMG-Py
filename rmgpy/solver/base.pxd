@@ -98,3 +98,6 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
 
+    cdef public numpy.ndarray forwardRateCoefficients
+    cdef public numpy.ndarray reverseRateCoefficients
+    cdef public numpy.ndarray equilibriumConstants

@@ -101,7 +101,6 @@ cdef class ReactionSystem(DASx):
         self.numEdgeReactions = len(edgeReactions)
         self.numPdepNetworks = len(pdepNetworks)
 
-        self.generate_indices(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         self.forwardRateCoefficients = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.float64)
         self.reverseRateCoefficients = numpy.zeros_like(self.forwardRateCoefficients)
         self.equilibriumConstants = numpy.zeros_like(self.forwardRateCoefficients)

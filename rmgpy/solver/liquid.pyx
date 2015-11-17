@@ -33,6 +33,8 @@ consisting of a homogeneous, isothermal, isobaric batch reactor.
 import numpy
 cimport numpy
 
+import itertools
+
 include "settings.pxi"
 if DASPK == 1:
     from pydas.daspk cimport DASPK as DASx
@@ -114,27 +116,13 @@ cdef class LiquidReactor(ReactionSystem):
 
         cdef int i, j, l, index
         cdef double V
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants
 
-        # Generate reactant and product indices
-        forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
-        reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
-        equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
-        self.generate_reactant_product_indices()
 
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
-        
-        for rxnList in [coreReactions, edgeReactions]:
-            for rxn in rxnList:
-                j = reactionIndex[rxn]
-                forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
-                if rxn.reversible:
-                    equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
-                    reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
 
         ReactionSystem.compute_network_variables(pdepNetworks)
-        
+
         # Set initial conditions
         self.set_initial_conditions()
         
@@ -147,12 +135,13 @@ cdef class LiquidReactor(ReactionSystem):
         arrays with the values computed at the temperature and (effective) pressure of the 
         reacion system.
         """
+        
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = reactionIndex[rxn]
-            forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+            self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
-                equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
-                reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
+                self.equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                self.reverseRateCoefficients[j] = self.forwardRateCoefficients[j] / self.equilibriumConstants[j]
 
     def set_initial_conditions(self):
         ReactionSystem.set_initial_conditions()

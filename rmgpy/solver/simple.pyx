@@ -33,6 +33,8 @@ consisting of a homogeneous, isothermal, isobaric batch reactor.
 import numpy
 cimport numpy
 
+import itertools
+
 include "settings.pxi"
 if DASPK == 1:
     from pydas.daspk cimport DASPK as DASx
@@ -130,39 +132,20 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int i, j, l, index
         cdef double V, T, P, Peff
 
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, y0_coreSpecies
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
         
         # Set initial conditions
         self.set_initial_conditions()
         
-        set_colliders(coreReactions, edgeReactions)
+        self.set_colliders(coreReactions, edgeReactions)
 
         # Generate forward and reverse rate coefficients k(T,P)
-        forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
-        reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
-        equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
-
-        for rxnList in [coreReactions, edgeReactions]:
-            for rxn in rxnList:
-                j = self.reactionIndex[rxn]
-                for i in range(pdepColliderReactionIndices.shape[0]):
-                    if j == pdepColliderReactionIndices[i]:
-                        # Calculate effective pressure
-                        Peff = P *numpy.sum(colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
-                        forwardRateCoefficients[j] = rxn.getRateCoefficient(T, Peff)
-                else:                    
-                    forwardRateCoefficients[j] = rxn.getRateCoefficient(T, P)
-                if rxn.reversible:
-                    equilibriumConstants[j] = rxn.getEquilibriumConstant(T)
-                    reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
-
+        self.generate_rate_coefficients(coreReactions, edgeReactions)
+        
         ReactionSystem.compute_network_variables(pdepNetworks)
 
         self.reactantIndices = reactantIndices
         self.productIndices = productIndices
-        self.forwardRateCoefficients = forwardRateCoefficients
-        self.reverseRateCoefficients = reverseRateCoefficients
-        self.equilibriumConstants = equilibriumConstants
         
         # Initialize the model
         DASx.initialize(self, self.t0, self.y0, dydt0, self.senpar, self.atol_array, self.rtol_array)
@@ -173,18 +156,23 @@ cdef class SimpleReactor(ReactionSystem):
         arrays with the values computed at the temperature and (effective) pressure of the 
         reacion system.
         """
+
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0_coreSpecies
+
+        y0_coreSpecies = self.y0[:self.numCoreSpecies]
+
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
             for i in xrange(pdepColliderReactionIndices.shape[0]):
                 if j == pdepColliderReactionIndices[i]:
                     # Calculate effective pressure
                     Peff = P *numpy.sum(colliderEfficiencies[i]*y0_coreSpecies / numpy.sum(y0_coreSpecies))
-                    forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
+                    self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, Peff)
             else:                    
-                forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+                self.forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
             if rxn.reversible:
-                equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
-                reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
+                self.equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                self.reverseRateCoefficients[j] = self.forwardRateCoefficients[j] / self.equilibriumConstants[j]
 
 
     def set_colliders(self, coreReactions, edgeReactions):
@@ -215,10 +203,10 @@ cdef class SimpleReactor(ReactionSystem):
         
         # Use ideal gas law to compute volume
         self.V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.P.value_si# volume in m^3
-        for j in range(numCoreSpecies):
+        for j in range(self.numCoreSpecies):
             self.coreSpeciesConcentrations[j] = self.y0[j] / self.V
 
-        dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(neq, numpy.float64), self.senpar)[0]
+        self.dydt0 = - self.residual(self.t0, self.y0, numpy.zeros(self.neq, numpy.float64), self.senpar)[0]
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
