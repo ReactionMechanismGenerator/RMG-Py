@@ -105,6 +105,8 @@ cdef class ReactionSystem(DASx):
         self.reverseRateCoefficients = numpy.zeros_like(self.forwardRateCoefficients)
         self.equilibriumConstants = numpy.zeros_like(self.forwardRateCoefficients)
 
+        self.generate_species_indices(coreSpecies, edgeSpecies)
+        self.generate_reaction_indices(coreReactions, edgeReactions)
         self.generate_reactant_product_indices(coreReactions, edgeReactions)
 
         self.coreSpeciesConcentrations = numpy.zeros((numCoreSpecies), numpy.float64)
@@ -120,14 +122,16 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
 
-    cpdef generate_reactant_product_indices(self, list coreReactions, list edgeReactions):
+    def generate_reactant_product_indices(self, list coreReactions, list edgeReactions):
         """
         Creates a matrix for the reactants and products.
-        The matrix has dimensions n x 3, with n the number of core and edge reactions,
-        and 3 the maximum number of molecules allowed in either the reactant or
-        product side of a reaction.
 
-        The values of each row are the index of the corresponding molecule.
+        The matrix has dimensions n x 3, with :
+        - n the number of core and edge reactions,
+        - 3 the maximum number of molecules allowed in either the reactant or
+            product side of a reaction.
+
+        The values of each row are the indeces of the corresponding molecule.
 
         """
 
@@ -143,72 +147,40 @@ cdef class ReactionSystem(DASx):
                 i = self.speciesIndex[spec]
                 self.productIndices[j,l] = i
 
-
-
-    cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions):
+    def generate_species_indices(self, list coreSpecies, list edgeSpecies):
         """
-        Assign an index to each species (core first, then edge)
+        Assign an index to each species (core first, then edge) and 
+        store the (species, index) pair in a dictionary.
         """
-
         
         self.speciesIndex = {}
-        for index, spec in enumerate(coreSpecies):
+        for index, spec in enumerate(itertools.chain(coreSpecies, edgeSpecies)):
             self.speciesIndex[spec] = index
-        for index, spec in enumerate(edgeSpecies):
-            self.speciesIndex[spec] = index + numCoreSpecies
-        # Assign an index to each reaction (core first, then edge)
+
+    def generate_reaction_indices(self, list coreReactions, list edgeReactions):
+        """
+        Assign an index to each reaction (core first, then edge) and 
+        store the (reaction, index) pair in a dictionary.
+        """
+        
         self.reactionIndex = {}
-        for index, rxn in enumerate(coreReactions):
+        for index, rxn in enumerate(itertools.chain(coreReactions, edgeReactions)):
             self.reactionIndex[rxn] = index
-        for index, rxn in enumerate(edgeReactions):
-            self.reactionIndex[rxn] = index + numCoreReactions
 
     def set_initial_conditions(self):
-        # Compute number of equations    
-        if sensitivity:    
-            # Set DASPK sensitivity analysis to ON
-            self.sensitivity = True
-            # Compute number of variables
-            self.neq = self.numCoreSpecies*(self.numCoreReactions+self.numCoreSpecies+1)
-            
-            self.atol_array = numpy.ones(self.neq, numpy.float64)*sens_atol
-            self.atol_array[:self.numCoreSpecies] = atol
-            
-            self.rtol_array = numpy.ones(self.neq, numpy.float64)*sens_rtol
-            self.rtol_array[:self.numCoreSpecies] = rtol
-            
-            self.senpar = numpy.zeros(self.numCoreReactions + self.numCoreSpecies, numpy.float64)
-            
-        else:
-            self.neq = self.numCoreSpecies
-            
-            self.atol_array = numpy.ones(self.neq,numpy.float64)*atol
-            self.rtol_array = numpy.ones(self.neq,numpy.float64)*rtol
-            
-            self.senpar = numpy.zeros(self.numCoreReactions, numpy.float64)
-
-    cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions):
         """
-        Assign an index to each species (core first, then edge)
-        """
-        
-        self.speciesIndex = {}
-        for index, spec in enumerate(coreSpecies):
-            self.speciesIndex[spec] = index
-        for index, spec in enumerate(edgeSpecies):
-            self.speciesIndex[spec] = index + numCoreSpecies
-        # Assign an index to each reaction (core first, then edge)
-        self.reactionIndex = {}
-        for index, rxn in enumerate(coreReactions):
-            self.reactionIndex[rxn] = index
-        for index, rxn in enumerate(edgeReactions):
-            self.reactionIndex[rxn] = index + numCoreReactions
+        Sets the common initial conditions of the rate equations that 
+        represent the reaction system.
 
-    cpdef set_initial_conditions(self):
+        - Sets the initial time of the reaction system to 0
+        - Initializes the species quantities to a n x 1 array with zeros
+        """
+
         self.t0 = 0.0            
+
         self.y0 = numpy.zeros(self.neq, numpy.float64)
 
-    cpdef compute_network_variables(list pdepNetworks=None):
+    def compute_network_variables(list pdepNetworks=None):
         """
         """
 

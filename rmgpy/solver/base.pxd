@@ -65,7 +65,8 @@ cdef class ReactionSystem(DASx):
 
     cpdef logConversions(self, speciesIndex, y0)
 
-    cpdef generate_indices(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions)
+    cpdef generate_species_indices(self, list coreSpecies, list edgeSpecies)
+    cpdef generate_reaction_indices(self, list coreReactions, list edgeReactions)
 
     cdef public dict speciesIndex
     cdef public dict reactionIndex
