@@ -80,19 +80,6 @@ cdef class LiquidReactor(ReactionSystem):
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = 0 # will be set from initialConcentrations in initializeModel
         self.constantVolume = True
-      
-        self.sensitiveSpecies = sensitiveSpecies
-        self.sensitivityThreshold = sensitivityThreshold
-        
-        # These are helper variables used within the solver
-        self.reactantIndices = None
-        self.productIndices = None
-        self.networkIndices = None
-        self.forwardRateCoefficients = None
-        self.reverseRateCoefficients = None
-        self.equilibriumConstants = None
-        self.networkLeakCoefficients = None
-        self.jacobianMatrix = None
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """

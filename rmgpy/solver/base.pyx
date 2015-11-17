@@ -59,7 +59,7 @@ cdef class ReactionSystem(DASx):
     A base class for all RMG reaction systems.
     """
 
-    def __init__(self, termination=None):
+    def __init__(self, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         DASx.__init__(self)
         self.sensmethod = 2 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
         # The reaction and species rates at the current time (in mol/m^3*s)
@@ -77,6 +77,19 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = None
         self.termination = termination or []
     
+        self.sensitiveSpecies = sensitiveSpecies
+        self.sensitivityThreshold = sensitivityThreshold
+
+        # These are helper variables used within the solver
+        self.reactantIndices = None
+        self.productIndices = None
+        self.networkIndices = None
+        self.forwardRateCoefficients = None
+        self.reverseRateCoefficients = None
+        self.equilibriumConstants = None
+        self.networkLeakCoefficients = None
+        self.jacobianMatrix = None
+
 
     def __reduce__(self):
         """

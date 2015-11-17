@@ -84,18 +84,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         self.V = 0 # will be set in initializeModel
         self.constantVolume = False
-        self.sensitiveSpecies = sensitiveSpecies
-        self.sensitivityThreshold = sensitivityThreshold
-        
-        # These are helper variables used within the solver
-        self.reactantIndices = None
-        self.productIndices = None
-        self.networkIndices = None
-        self.forwardRateCoefficients = None
-        self.reverseRateCoefficients = None
-        self.equilibriumConstants = None
-        self.networkLeakCoefficients = None
-        self.jacobianMatrix = None
+
         self.pdepColliderReactionIndices = None
         self.pdepColliderKinetics = None
         self.colliderEfficiencies = None
