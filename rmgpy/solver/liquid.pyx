@@ -144,10 +144,24 @@ cdef class LiquidReactor(ReactionSystem):
                 self.reverseRateCoefficients[j] = self.forwardRateCoefficients[j] / self.equilibriumConstants[j]
 
     def set_initial_conditions(self):
+        """
+        Sets the initial conditions of the rate equations that represent the 
+        current reactor model.
+
+        The volume is set to the value in m3 required to contain 
+        one mole total of core species at start.
+
+        The coreSpeciesConcentrations array is set to the values stored in the
+        initial concentrations dictionary.
+
+        The initial number of moles of a species j is computed and stored in the
+        y0 instance attribute.
+
+        """
         ReactionSystem.set_initial_conditions()
 
         V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
-        self.V = V  #: volume (m3) required to contain one mole total of core species at start
+        self.V = V 
 
         for spec, conc in self.initialConcentrations.iteritems():
             self.coreSpeciesConcentrations[self.speciesIndex[spec]] = conc

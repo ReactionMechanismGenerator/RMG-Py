@@ -182,6 +182,14 @@ cdef class ReactionSystem(DASx):
 
     def compute_network_variables(list pdepNetworks=None):
         """
+        Initialize the arrays containing network information:
+
+        - NetworkLeakCoefficients is a n x 1 array with 
+            n the number of pressure-dependent networks.
+        - NetworkIndices is a n x 3 matrix with 
+            n the number of pressure-dependent networks and 
+            3 the maximum number of molecules allowed in either the reactant or
+            product side of a reaction. 
         """
 
         pdepNetworks = pdepNetworks or []
@@ -190,7 +198,7 @@ cdef class ReactionSystem(DASx):
         self.networkLeakCoefficients = numpy.zeros((self.numPdepNetworks), numpy.float64)
 
         for j, network in enumerate(pdepNetworks):
-            self.networkLeakCoefficients[j] = network.getLeakCoefficient(T, P)
+            self.networkLeakCoefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
             for l, spec in enumerate(network.source):
                 i = self.speciesIndex[spec]
                 self.networkIndices[j,l] = i

@@ -177,7 +177,7 @@ cdef class SimpleReactor(ReactionSystem):
 
     def set_colliders(self, coreReactions, edgeReactions):
         """
-        Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies
+        Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies.
         """
         pdepColliderReactionIndices = []
         pdepColliderKinetics = []
@@ -196,6 +196,21 @@ cdef class SimpleReactor(ReactionSystem):
 
 
     def set_initial_conditions(self):
+        """
+        Sets the initial conditions of the rate equations that represent the 
+        current reactor model.
+
+        The volume is set to the value derived from the ideal gas law, using the 
+        user-defined pressure, temperature, and the number of moles of initial species.
+
+        The species moles array (y0) is set to the values stored in the
+        initial mole fractions dictionary.
+
+        The initial species concentration is computed and stored in the
+        coreSpeciesConcentrations array.
+
+        """
+
         ReactionSystem.set_initial_conditions()
 
         for spec, moleFrac in self.initialMoleFractions.iteritems():
