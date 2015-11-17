@@ -1446,6 +1446,8 @@ class ModelMatcher():
         "Save an RMG-Py style kinetics library"
         library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-Py-kinetics-library')
         makeOrEmptyDirectory(library_path)
+        self.kineticsLibrary.checkForDuplicates(markDuplicates=True)
+        self.kineticsLibrary.convertDuplicatesToMulti()
         self.kineticsLibrary.save(os.path.join(library_path, 'reactions.py'))
         for species in self.speciesList:
             if species.molecule:
