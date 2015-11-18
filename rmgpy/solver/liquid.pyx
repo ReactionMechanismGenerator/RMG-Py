@@ -35,12 +35,6 @@ cimport numpy
 
 import itertools
 
-include "settings.pxi"
-if DASPK == 1:
-    from pydas.daspk cimport DASPK as DASx
-else:
-    from pydas.dassl cimport DASSL as DASx
-    
 from base cimport ReactionSystem
 cimport cython
 
@@ -101,7 +95,7 @@ cdef class LiquidReactor(ReactionSystem):
         ReactionSystem.set_initial_derivative(self)
 
         # Initialize the model
-        DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
+        ReactionSystem.initialize_solver(self)
 
     def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
