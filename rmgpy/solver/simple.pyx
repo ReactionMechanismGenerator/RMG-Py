@@ -63,9 +63,33 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public dict initialMoleFractions
 
     # collider variables
+
+    """
+    pdepColliderKinetics:
+    an array that contains a reference to the kinetics object of the reaction
+    that has pressure dependent kinetics.
+    """
     cdef public list pdepColliderKinetics
-    cdef public numpy.ndarray pdepColliderReactionIndices
+
+
+    """
+    colliderEfficiencies:
+    an array consisting of array elements, each element corresponding to a reaction.
+    Each element is an array with each position in the array corresponding to the collider efficiency
+    of the core species. The collider efficiency is set to 1 if the species was not found in the list
+    of colliders.
+
+    """
     cdef public numpy.ndarray colliderEfficiencies
+    
+
+    """
+    pdepColliderReactionIndices: 
+    array that contains the indices of those reactions that 
+    have pressure dependent kinetics. E.g. [4, 10, 2, 123]
+    """
+    cdef public numpy.ndarray pdepColliderReactionIndices
+
 
     def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
@@ -165,16 +189,6 @@ cdef class SimpleReactor(ReactionSystem):
     def set_colliders(self, coreReactions, edgeReactions, coreSpecies):
         """
         Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies.
-
-        - pdepColliderReactionIndices : array that contains the indices of those reactions that 
-            have pressure dependent kinetics. E.g. [4, 10, 2, 123]
-        - pdepColliderKinetics: an array that contains a reference to the kinetics object of the reaction
-            that has pressure dependent kinetics.
-        - colliderEfficiencies: an array consisting of array elements, each element corresponding to a reaction.
-            Each element is an array with each position in the array corresponding to the collider efficiency
-            of the core species. The collider efficiency is set to 1 if the species was not found in the list
-            of colliders.
-
         """
         pdepColliderReactionIndices = []
         self.pdepColliderKinetics = []

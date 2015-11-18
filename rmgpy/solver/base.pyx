@@ -76,8 +76,34 @@ cdef class ReactionSystem(DASx):
         self.neq = -1
 
         # variables that store stoichiometry data
+        """
+        speciesIndex is a dictionary with species as keys, and 
+        values equal to the index integer that is generated
+        when enumerating the core and edge species .
+        """
         self.speciesIndex = {}
+
+        """
+        reactionIndex is a dictionary with reactions as keys, and 
+        values equal to the index integer that is generated
+        when enumerating the core and edge reactions .
+        """
         self.reactionIndex = {}
+
+
+        """
+        A matrix for the reactants and products.
+
+        The matrix has dimensions n x 3, with :
+        - n the sum of the number of core and edge reactions,
+        - 3 the maximum number of molecules allowed in either the reactant or
+            product side of a reaction.
+
+        The matrix element (j,l), with
+        - j the index of the reaction and 
+        - l the index of the lth reactant/product in the reaction contains the index
+            of the molecule in the speciesIndex dictionary.
+        """
         self.reactantIndices = None
         self.productIndices = None
         self.networkIndices = None
@@ -189,13 +215,6 @@ cdef class ReactionSystem(DASx):
     def generate_reactant_product_indices(self, coreReactions, edgeReactions):
         """
         Creates a matrix for the reactants and products.
-
-        The matrix has dimensions n x 3, with :
-        - n the number of core and edge reactions,
-        - 3 the maximum number of molecules allowed in either the reactant or
-            product side of a reaction.
-
-        The values of each row are the indeces of the corresponding molecule.
         """
 
         self.reactantIndices = -numpy.ones((self.numCoreReactions + self.numEdgeReactions, 3), numpy.int )
