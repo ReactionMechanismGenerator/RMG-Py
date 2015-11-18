@@ -128,15 +128,15 @@ cdef class LiquidReactor(ReactionSystem):
         """
         ReactionSystem.set_initial_conditions(self)
 
-        V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
-        self.V = V 
-
         for spec, conc in self.initialConcentrations.iteritems():
             i = self.get_species_index(spec)
             self.coreSpeciesConcentrations[i] = conc
         
-            for j in xrange(self.numCoreSpecies):
-                self.y0[j] = self.coreSpeciesConcentrations[j] * V
+        V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
+        self.V = V 
+        
+        for j in xrange(self.numCoreSpecies):
+            self.y0[j] = self.coreSpeciesConcentrations[j] * V
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
