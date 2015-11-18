@@ -138,7 +138,8 @@ cdef class LiquidReactor(ReactionSystem):
         self.V = V 
 
         for spec, conc in self.initialConcentrations.iteritems():
-            self.coreSpeciesConcentrations[self.speciesIndex[spec]] = conc
+            i = self.get_species_index(spec)
+            self.coreSpeciesConcentrations[i] = conc
         
             for j in range(self.numCoreSpecies):
                 self.y0[j] = self.coreSpeciesConcentrations[j] * V

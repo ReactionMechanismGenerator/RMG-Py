@@ -233,6 +233,12 @@ cdef class ReactionSystem(DASx):
             
             self.senpar = numpy.zeros(self.numCoreReactions, numpy.float64)
 
+    def get_species_index(self, spc):
+        """
+        Retrieves the index that is associated with the parameter species
+        from the species index dictionary.
+        """
+        return self.speciesIndex[spc]
 
     def generate_reactant_product_indices(self, coreReactions, edgeReactions):
         """
@@ -245,10 +251,10 @@ cdef class ReactionSystem(DASx):
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
             for l, spec in enumerate(rxn.reactants):
-                i = self.speciesIndex[spec]
+                i = self.get_species_index(spec)
                 self.reactantIndices[j,l] = i
             for l, spec in enumerate(rxn.products):
-                i = self.speciesIndex[spec]
+                i = self.get_species_index(spec)
                 self.productIndices[j,l] = i
 
     def generate_species_indices(self, coreSpecies, edgeSpecies):
@@ -309,7 +315,7 @@ cdef class ReactionSystem(DASx):
         for j, network in enumerate(pdepNetworks):
             self.networkLeakCoefficients[j] = network.getLeakCoefficient(self.T.value_si, self.P.value_si)
             for l, spec in enumerate(network.source):
-                i = self.speciesIndex[spec]
+                i = self.get_species_index(spec)
                 self.networkIndices[j,l] = i
 
     @cython.boundscheck(False)

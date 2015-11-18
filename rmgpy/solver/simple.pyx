@@ -136,7 +136,6 @@ cdef class SimpleReactor(ReactionSystem):
         # Set initial conditions
         self.set_initial_conditions()
         
-
         self.set_colliders(coreReactions, edgeReactions, coreSpecies)
         
         ReactionSystem.compute_network_variables(self, pdepNetworks)
@@ -225,7 +224,8 @@ cdef class SimpleReactor(ReactionSystem):
         ReactionSystem.set_initial_conditions(self)
 
         for spec, moleFrac in self.initialMoleFractions.iteritems():
-            self.y0[self.speciesIndex[spec]] = moleFrac
+            i = self.get_species_index(spec)
+            self.y0[i] = moleFrac
         
         # Use ideal gas law to compute volume
         self.V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.P.value_si# volume in m^3
