@@ -68,7 +68,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray colliderEfficiencies
 
     def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
-        ReactionSystem.__init__(self, termination)
+        ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
@@ -86,7 +86,7 @@ cdef class SimpleReactor(ReactionSystem):
         A helper function used when pickling an object.
         """
         return (self.__class__, 
-            (self.T, self.P, self.initialMoleFractions, self.termination, self.sensitiveSpecies, self.sensitivityThreshold, ))
+            (self.T, self.P, self.initialMoleFractions, self.termination, ))
 
 
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
