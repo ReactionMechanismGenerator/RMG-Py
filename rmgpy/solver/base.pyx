@@ -412,15 +412,15 @@ cdef class ReactionSystem(DASx):
                 
                 dVdk = numpy.zeros(numCoreReactions + numCoreSpecies, numpy.float64)
                 if not self.constantVolume:
-                    for j in range(numCoreReactions + numCoreSpecies):
+                    for j in xrange(numCoreReactions + numCoreSpecies):
                         dVdk[j] = numpy.sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*RTP   # Contains [ dV_dk and dV_dG ]
-                for i in range(len(self.sensitiveSpecies)):
+                for i in xrange(len(self.sensitiveSpecies)):
                     normSens = numpy.zeros(numCoreReactions + numCoreSpecies, numpy.float64)
                     c = self.coreSpeciesConcentrations[sensSpeciesIndices[i]]
                     if c != 0:                        
-                        for j in range(numCoreReactions):
+                        for j in xrange(numCoreReactions):
                             normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])*forwardRateCoefficients[j]/c
-                        for j in range(numCoreReactions,numCoreReactions+numCoreSpecies):
+                        for j in xrange(numCoreReactions,numCoreReactions+numCoreSpecies):
                             normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])/c*4184   # no normalization against dG, converstion to kcal/mol units
                     normSens_array[i].append(normSens)
 
@@ -439,19 +439,19 @@ cdef class ReactionSystem(DASx):
             networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
 
             # Update the maximum species rate and maximum network leak rate arrays
-            for index in range(numCoreSpecies):
+            for index in xrange(numCoreSpecies):
                 if maxCoreSpeciesRates[index] < coreSpeciesRates[index]:
                     maxCoreSpeciesRates[index] = coreSpeciesRates[index]
-            for index in range(numEdgeSpecies):
+            for index in xrange(numEdgeSpecies):
                 if maxEdgeSpeciesRates[index] < edgeSpeciesRates[index]:
                     maxEdgeSpeciesRates[index] = edgeSpeciesRates[index]
-            for index in range(numPdepNetworks):
+            for index in xrange(numPdepNetworks):
                 if maxNetworkLeakRates[index] < networkLeakRates[index]:
                     maxNetworkLeakRates[index] = networkLeakRates[index]
-            for index in range(numEdgeSpecies):
+            for index in xrange(numEdgeSpecies):
                 if maxEdgeSpeciesRateRatios[index] < edgeSpeciesRateRatios[index]:
                     maxEdgeSpeciesRateRatios[index] = edgeSpeciesRateRatios[index]
-            for index in range(numPdepNetworks):
+            for index in xrange(numPdepNetworks):
                 if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
                     maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
 
@@ -519,10 +519,10 @@ cdef class ReactionSystem(DASx):
         self.notify()
 
         if sensitivity:   
-            for i in range(len(self.sensitiveSpecies)):
+            for i in xrange(len(self.sensitiveSpecies)):
                 reactionsAboveThreshold = []
-                for j in range(numCoreReactions + numCoreSpecies):
-                    for k in range(len(time_array)):
+                for j in xrange(numCoreReactions + numCoreSpecies):
+                    for k in xrange(len(time_array)):
                         if abs(normSens_array[i][k][j]) > self.sensitivityThreshold:
                             reactionsAboveThreshold.append(j)
                             break
@@ -532,7 +532,7 @@ cdef class ReactionSystem(DASx):
                                 else 'dln[{0}]/dG[{1}]'.format(species_name, getSpeciesIdentifier(coreSpecies[j-numCoreReactions])) for j in reactionsAboveThreshold])
                 sensWorksheet[i].writerow(headers)               
             
-                for k in range(len(time_array)):
+                for k in xrange(len(time_array)):
                     row = [time_array[k]]
                     row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
                     sensWorksheet[i].writerow(row)  

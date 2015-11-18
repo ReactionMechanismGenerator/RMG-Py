@@ -141,7 +141,7 @@ cdef class LiquidReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.coreSpeciesConcentrations[i] = conc
         
-            for j in range(self.numCoreSpecies):
+            for j in xrange(self.numCoreSpecies):
                 self.y0[j] = self.coreSpeciesConcentrations[j] * V
 
     @cython.boundscheck(False)
@@ -189,11 +189,11 @@ cdef class LiquidReactor(ReactionSystem):
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         V =  self.V # constant volume reactor
 
-        for j in range(numCoreSpecies):
+        for j in xrange(numCoreSpecies):
             C[j] = y[j] / V
             coreSpeciesConcentrations[j] = C[j]
         
-        for j in range(ir.shape[0]):
+        for j in xrange(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
                 reactionRate = 0.0
@@ -263,7 +263,7 @@ cdef class LiquidReactor(ReactionSystem):
                     if third != -1:
                         if third >= numCoreSpecies: edgeSpeciesRates[third-numCoreSpecies] += reactionRate
 
-        for j in range(inet.shape[0]):
+        for j in xrange(inet.shape[0]):
             k = knet[j]
             if inet[j,1] == -1: # only one reactant
                 reactionRate = k * C[inet[j,0]]
@@ -291,9 +291,9 @@ cdef class LiquidReactor(ReactionSystem):
             else:
                 jacobian = self.jacobianMatrix
             dgdk = self.computeRateDerivative()
-            for j in range(numCoreReactions+numCoreSpecies):
-                for i in range(numCoreSpecies):
-                    for z in range(numCoreSpecies):
+            for j in xrange(numCoreReactions+numCoreSpecies):
+                for i in xrange(numCoreSpecies):
+                    for z in xrange(numCoreSpecies):
                         delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*y[(j+1)*numCoreSpecies + z] 
                     delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
 
@@ -335,7 +335,7 @@ cdef class LiquidReactor(ReactionSystem):
         
         rateDeriv = numpy.zeros((numCoreSpecies,numCoreReactions+numCoreSpecies), numpy.float64)
         
-        for j in range(numCoreReactions):
+        for j in xrange(numCoreReactions):
             if ir[j,1] == -1: # only one reactant
                 fderiv = C[ir[j,0]]
             elif ir[j,2] == -1: # only two reactants
