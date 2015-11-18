@@ -392,7 +392,7 @@ cdef class SimpleReactor(ReactionSystem):
                 jacobian = self.jacobian(t,y,dydt,0,senpar)
             else:
                 jacobian = self.jacobianMatrix
-            dgdk = self.computeRateDerivative()
+            dgdk = ReactionSystem.computeRateDerivative(self)
             for j in xrange(numCoreReactions+numCoreSpecies):
                 for i in xrange(numCoreSpecies):
                     for z in xrange(numCoreSpecies):
@@ -895,88 +895,3 @@ cdef class SimpleReactor(ReactionSystem):
 
         self.jacobianMatrix = pd + cj * numpy.identity(numCoreSpecies, numpy.float64)
         return pd
-    
-    @cython.boundscheck(False)
-    def computeRateDerivative(self):
-        """
-        Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
-        k_j is the rate parameter for the jth core reaction.
-        """
-        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C, deriv
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] rateDeriv
-        cdef double fderiv, rderiv, flux, V
-        cdef int j, numCoreReactions, numCoreSpecies
-        
-        cdef double RT_inverse, gderiv
-        
-        ir = self.reactantIndices
-        ip = self.productIndices
-        
-        kf = self.kf
-        kr = self.kb    
-        
-        numCoreReactions = len(self.coreReactionRates)
-        numCoreSpecies = len(self.coreSpeciesConcentrations)      
-        
-        # Use stored volume, since this function is only called from residual function. 
-        RT_inverse = 1/(constants.R * self.T.value_si)
-        V = self.V
-
-        C = self.coreSpeciesConcentrations
-
-        rateDeriv = numpy.zeros((numCoreSpecies,numCoreReactions+numCoreSpecies), numpy.float64)
-        
-        for j in xrange(numCoreReactions):
-            if ir[j,1] == -1: # only one reactant
-                fderiv = C[ir[j,0]]
-            elif ir[j,2] == -1: # only two reactants
-                fderiv = C[ir[j,0]] * C[ir[j,1]]                             
-            else: # three reactants!! (really?)
-                fderiv = C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]          
-                
-            if ip[j,1] == -1: # only one reactant
-                rderiv = kr[j] / kf[j] * C[ip[j,0]]
-            elif ip[j,2] == -1: # only two reactants
-                rderiv = kr[j] / kf[j] * C[ip[j,0]] * C[ip[j,1]]
-            else: # three reactants!! (really?)
-                rderiv = kr[j] / kf[j] * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
-            
-            flux = fderiv - rderiv
-            gderiv = rderiv * kf[j] * RT_inverse
-            
-            deriv = numpy.zeros(numCoreSpecies, numpy.float64) # derivative for reaction j with respect to dG_species i
-
-            deriv[ir[j,0]] += gderiv
-            if ir[j,1] != -1: # only two reactants
-                deriv[ir[j,1]] += gderiv
-                if ir[j,2] != -1: # three reactants!! (really?)
-                    deriv[ir[j,2]] += gderiv
-            
-            deriv[ip[j,0]] -= gderiv
-            if ip[j,1] != -1: # only two reactants
-                deriv[ip[j,1]] -= gderiv
-                if ip[j,2] != -1: # three reactants!! (really?)
-                    deriv[ip[j,2]] -= gderiv
-            
-            rateDeriv[ir[j,0], j] -= flux
-            rateDeriv[ir[j,0], numCoreReactions:numCoreReactions+numCoreSpecies] -= deriv
-            if ir[j,1] != -1:
-                rateDeriv[ir[j,1], j] -= flux
-                rateDeriv[ir[j,1], numCoreReactions:numCoreReactions+numCoreSpecies] -= deriv
-                if ir[j,2] != -1:
-                    rateDeriv[ir[j,2], j] -= flux
-                    rateDeriv[ir[j,2], numCoreReactions:numCoreReactions+numCoreSpecies] -= deriv
-                
-            rateDeriv[ip[j,0], j] += flux
-            rateDeriv[ip[j,0], numCoreReactions:numCoreReactions+numCoreSpecies] += deriv
-            if ip[j,1] != -1:
-                rateDeriv[ip[j,1], j] += flux
-                rateDeriv[ip[j,1], numCoreReactions:numCoreReactions+numCoreSpecies] += deriv
-                if ip[j,2] != -1:
-                    rateDeriv[ip[j,2], j] += flux  
-                    rateDeriv[ip[j,2], numCoreReactions:numCoreReactions+numCoreSpecies] += deriv
-                        
-        rateDeriv = V * rateDeriv
-
-        return rateDeriv
