@@ -73,6 +73,12 @@ cdef class ReactionSystem(DASx):
         self.numEdgeSpecies = -1
         self.numEdgeReactions = -1
         self.numPdepNetworks = -1
+
+        """
+        The number of differential equations that will 
+        be solved simulatenously by the solver.
+
+        """
         self.neq = -1
 
         # variables that store stoichiometry data
@@ -106,6 +112,8 @@ cdef class ReactionSystem(DASx):
         """
         self.reactantIndices = None
         self.productIndices = None
+
+
         self.networkIndices = None
 
         # matrices that cache kinetic and rate data
@@ -141,6 +149,12 @@ cdef class ReactionSystem(DASx):
         self.senpar = None
 
         # tolerance settings
+
+        """
+        Arrays containing the absolute and relative tolerances.
+        The dimension of the arrays correspond to the number of 
+        differential equations in the system.
+        """
         self.atol_array = None
         self.rtol_array = None
 
@@ -165,6 +179,8 @@ cdef class ReactionSystem(DASx):
         self.numEdgeSpecies = len(edgeSpecies)
         self.numEdgeReactions = len(edgeReactions)
 
+        self.initiate_tolerances(atol, rtol, sensitivity, sens_atol, sens_rtol)
+
         pdepNetworks = pdepNetworks or []
         self.numPdepNetworks = len(pdepNetworks)
 
@@ -188,7 +204,12 @@ cdef class ReactionSystem(DASx):
         self.maxEdgeSpeciesRateRatios = numpy.zeros((self.numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((self.numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
+        
 
+    def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
+        """
+        Computes the number of differential equations and initializes the tolerance arrays.        
+        """
         # Compute number of equations    
         if sensitivity:    
             # Set DASPK sensitivity analysis to ON
@@ -211,6 +232,7 @@ cdef class ReactionSystem(DASx):
             self.rtol_array = numpy.ones(self.neq , numpy.float64) * rtol
             
             self.senpar = numpy.zeros(self.numCoreReactions, numpy.float64)
+
 
     def generate_reactant_product_indices(self, coreReactions, edgeReactions):
         """
