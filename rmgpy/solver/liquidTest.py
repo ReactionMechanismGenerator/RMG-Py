@@ -21,40 +21,54 @@ from rmgpy.chemkin import loadChemkinFile
 
 class LiquidReactorCheck(unittest.TestCase):
 
-    def testSolve(self):
+    def setUp(self):
         """
-        Test the liquid batch reactor with a simple kinetic model. Here we
-        choose a kinetic model consisting of the hydrogen abstraction reaction
+        Here we choose a kinetic model consisting of the hydrogen abstraction reaction
         CH4 + C2H5 <=> CH3 + C2H6.
         """
-        CH4 = Species(
+
+        Tlist = [300,400,500,600,800,1000,1500]
+        self.CH4 = Species(
             molecule=[Molecule().fromSMILES("C")],
-            thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([ 8.615, 9.687,10.963,12.301,14.841,16.976,20.528],"cal/(mol*K)"), H298=(-17.714,"kcal/mol"), S298=(44.472,"cal/(mol*K)"))
+            thermo=ThermoData(Tdata=(Tlist,"K"), Cpdata=([ 8.615, 9.687,10.963,12.301,14.841,16.976,20.528],"cal/(mol*K)"), H298=(-17.714,"kcal/mol"), S298=(44.472,"cal/(mol*K)"))
             )
-        CH3 = Species(
+        self.CH3 = Species(
             molecule=[Molecule().fromSMILES("[CH3]")],
-            thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([ 9.397,10.123,10.856,11.571,12.899,14.055,16.195],"cal/(mol*K)"), H298=(  9.357,"kcal/mol"), S298=(45.174,"cal/(mol*K)"))
+            thermo=ThermoData(Tdata=(Tlist,"K"), Cpdata=([ 9.397,10.123,10.856,11.571,12.899,14.055,16.195],"cal/(mol*K)"), H298=(  9.357,"kcal/mol"), S298=(45.174,"cal/(mol*K)"))
             )
-        C2H6 = Species(
+        self.C2H6 = Species(
             molecule=[Molecule().fromSMILES("CC")],
-            thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([12.684,15.506,18.326,20.971,25.500,29.016,34.595],"cal/(mol*K)"), H298=(-19.521,"kcal/mol"), S298=(54.799,"cal/(mol*K)"))
+            thermo=ThermoData(Tdata=(Tlist,"K"), Cpdata=([12.684,15.506,18.326,20.971,25.500,29.016,34.595],"cal/(mol*K)"), H298=(-19.521,"kcal/mol"), S298=(54.799,"cal/(mol*K)"))
             )
-        C2H5 = Species(
+        self.C2H5 = Species(
             molecule=[Molecule().fromSMILES("C[CH2]")],
-            thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([11.635,13.744,16.085,18.246,21.885,24.676,29.107],"cal/(mol*K)"), H298=( 29.496,"kcal/mol"), S298=(56.687,"cal/(mol*K)"))
+            thermo=ThermoData(Tdata=(Tlist,"K"), Cpdata=([11.635,13.744,16.085,18.246,21.885,24.676,29.107],"cal/(mol*K)"), H298=( 29.496,"kcal/mol"), S298=(56.687,"cal/(mol*K)"))
+            )
+
+        self.H2 = Species(
+            molecule=[Molecule().fromSMILES("[H][H]")],
+            thermo=ThermoData(Tdata=(Tlist,"K"), Cpdata=([6.89,6.97,6.99,7.01,7.08,7.22,7.72],"cal/(mol*K)"), H298=( 0,"kcal/mol"), S298=(31.23,"cal/(mol*K)"))
             )
         
+        self.T = 1000
+        
+    def testComputeFlux(self):
+        """
+        Test the liquid batch reactor with a simple kinetic model. 
+        """
+        
+        rxn1 = Reaction(reactants=[self.C2H6,self.CH3], products=[self.C2H5,self.CH4], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))
 
-        rxn1 = Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))
-
-        coreSpecies = [CH4,CH3,C2H6,C2H5]
+        coreSpecies = [self.CH4,self.CH3,self.C2H6,self.C2H5]
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
 
-        T = 1000; P = 1.0e5
-        c0={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}
-        rxnSystem = LiquidReactor(T, c0, termination=[])
+        
+        c0={self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
+
+
+        rxnSystem = LiquidReactor(self.T, c0, termination=[])
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
@@ -88,42 +102,49 @@ class LiquidReactorCheck(unittest.TestCase):
         # Check that we've reached equilibrium 
         self.assertAlmostEqual(reactionRates[-1,0], 0.0, delta=1e-2)
         
-        #######        
-        # Unit test for the jacobian function:
-        # Solve a reaction system and check if the analytical jacobian matches the finite difference jacobian
-        
-        H2 = Species(
-            molecule=[Molecule().fromSMILES("[H][H]")],
-            thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([6.89,6.97,6.99,7.01,7.08,7.22,7.72],"cal/(mol*K)"), H298=( 0,"kcal/mol"), S298=(31.23,"cal/(mol*K)"))
-            )
-        
+
+    def test_jacobian(self):
+        """
+        Unit test for the jacobian function:
+        Solve a reaction system and check if the analytical jacobian matches the finite difference jacobian
+
+        """
+
+        coreSpecies = [self.CH4,self.CH3,self.C2H6,self.C2H5]
+        edgeSpecies = []
+
+        rxn1 = Reaction(reactants=[self.C2H6,self.CH3], products=[self.C2H5,self.CH4], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))
+        coreReactions = [rxn1]
+        edgeReactions = []
+        numCoreSpecies = len(coreSpecies)
+
         rxnList = []
-        rxnList.append(Reaction(reactants=[C2H6], products=[CH3,CH3], kinetics=Arrhenius(A=(686.375*6,'1/s'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K'))))
-        rxnList.append(Reaction(reactants=[CH3,CH3], products=[C2H6], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.C2H6], products=[self.CH3,self.CH3], kinetics=Arrhenius(A=(686.375*6,'1/s'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.CH3,self.CH3], products=[self.C2H6], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K'))))
         
-        rxnList.append(Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
-        rxnList.append(Reaction(reactants=[C2H5,CH4], products=[C2H6,CH3], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
+        rxnList.append(Reaction(reactants=[self.C2H6,self.CH3], products=[self.C2H5,self.CH4], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
+        rxnList.append(Reaction(reactants=[self.C2H5,self.CH4], products=[self.C2H6,self.CH3], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
         
-        rxnList.append(Reaction(reactants=[C2H5,CH4], products=[CH3,CH3,CH3], kinetics=Arrhenius(A=(246.375*6,'m^3/(mol*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15,'K'))))       
-        rxnList.append(Reaction(reactants=[CH3,CH3,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(246.375*6,'m^6/(mol^2*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15,'K'))))#        
+        rxnList.append(Reaction(reactants=[self.C2H5,self.CH4], products=[self.CH3,self.CH3,self.CH3], kinetics=Arrhenius(A=(246.375*6,'m^3/(mol*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15,'K'))))       
+        rxnList.append(Reaction(reactants=[self.CH3,self.CH3,self.CH3], products=[self.C2H5,self.CH4], kinetics=Arrhenius(A=(246.375*6,'m^6/(mol^2*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15,'K'))))#        
         
-        rxnList.append(Reaction(reactants=[C2H6,CH3,CH3], products=[C2H5,C2H5,H2], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
-        rxnList.append(Reaction(reactants=[C2H5,C2H5,H2], products=[C2H6,CH3,CH3], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.C2H6,self.CH3,self.CH3], products=[self.C2H5,self.C2H5,self.H2], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.C2H5,self.C2H5,self.H2], products=[self.C2H6,self.CH3,self.CH3], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
         
-        rxnList.append(Reaction(reactants=[C2H6,C2H6], products=[CH3,CH4,C2H5], kinetics=Arrhenius(A=(1246.375*6,'m^3/(mol*s)'), n=0.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
-        rxnList.append(Reaction(reactants=[CH3,CH4,C2H5], products=[C2H6,C2H6], kinetics=Arrhenius(A=(46.375*6,'m^6/(mol^2*s)'), n=0.10721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.C2H6,self.C2H6], products=[self.CH3,self.CH4,self.C2H5], kinetics=Arrhenius(A=(1246.375*6,'m^3/(mol*s)'), n=0.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.CH3,self.CH4,self.C2H5], products=[self.C2H6,self.C2H6], kinetics=Arrhenius(A=(46.375*6,'m^6/(mol^2*s)'), n=0.10721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
         
 
         for rxn in rxnList:
-            coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
+            coreSpecies = [self.CH4,self.CH3,self.C2H6,self.C2H5,self.H2]
             edgeSpecies = []
             coreReactions = [rxn]
             
-            c0={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2}
-            rxnSystem0 = LiquidReactor(T, c0,termination=[])
+            c0={self.CH4:0.2,self.CH3:0.1,self.C2H6:0.35,self.C2H5:0.15, self.H2:0.2}
+            rxnSystem0 = LiquidReactor(self.T, c0,termination=[])
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
-            numCoreSpecies = len(coreSpecies)
+            
             dN = .000001*sum(rxnSystem0.y)
             dN_array = dN*numpy.eye(numCoreSpecies)
             
@@ -146,22 +167,25 @@ class LiquidReactorCheck(unittest.TestCase):
         #print solverJacobian
         #print 'Numerical jacobian'
         #print jacobian
-        
-        ###
-        # Unit test for the compute rate derivative
+
+     
+    def test_compute_derivative(self):
+
         rxnList = []
-        rxnList.append(Reaction(reactants=[C2H6], products=[CH3,CH3], kinetics=Arrhenius(A=(686.375e6,'1/s'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))) 
-        rxnList.append(Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
-        rxnList.append(Reaction(reactants=[C2H6,CH3,CH3], products=[C2H5,C2H5,H2], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
+        rxnList.append(Reaction(reactants=[self.C2H6], products=[self.CH3,self.CH3], kinetics=Arrhenius(A=(686.375e6,'1/s'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))) 
+        rxnList.append(Reaction(reactants=[self.C2H6,self.CH3], products=[self.C2H5,self.CH4], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
+        rxnList.append(Reaction(reactants=[self.C2H6,self.CH3,self.CH3], products=[self.C2H5,self.C2H5,self.H2], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
         
         
-        coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
+        coreSpecies = [self.CH4,self.CH3,self.C2H6,self.C2H5, self.H2]
         edgeSpecies = []
         coreReactions = rxnList
+        edgeReactions = []
+        numCoreSpecies = len(coreSpecies)
         
-        c0={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2}
+        c0={self.CH4:0.2,self.CH3:0.1,self.C2H6:0.35,self.C2H5:0.15, self.H2:0.2}
 
-        rxnSystem0 = LiquidReactor(T, c0,termination=[])
+        rxnSystem0 = LiquidReactor(self.T, c0,termination=[])
         rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
@@ -176,14 +200,14 @@ class LiquidReactorCheck(unittest.TestCase):
         
         dfdk = numpy.zeros((numCoreSpecies,len(rxnList)))   # d(dy/dt)/dk
         
-        c0={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2}
+        c0={self.CH4:0.2,self.CH3:0.1,self.C2H6:0.35,self.C2H5:0.15, self.H2:0.2}
 
         for i in xrange(len(rxnList)):
-            k0 = rxnList[i].getRateCoefficient(T,P)
+            k0 = rxnList[i].getRateCoefficient(self.T)
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si*(1+1e-3)               
-            dk = rxnList[i].getRateCoefficient(T,P) - k0
+            dk = rxnList[i].getRateCoefficient(self.T) - k0
 
-            rxnSystem = LiquidReactor(T, c0,termination=[])
+            rxnSystem = LiquidReactor(self.T, c0,termination=[])
             rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
             dfdt = rxnSystem.residual(0.0, rxnSystem.y, numpy.zeros(rxnSystem.y.shape))[0]  
