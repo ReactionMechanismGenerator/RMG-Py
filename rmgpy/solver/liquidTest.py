@@ -4,6 +4,7 @@
 import unittest
 import numpy
 import os
+from external.wip import work_in_progress
 
 import rmgpy.quantity
 
@@ -103,6 +104,7 @@ class LiquidReactorCheck(unittest.TestCase):
         self.assertAlmostEqual(reactionRates[-1,0], 0.0, delta=1e-2)
         
 
+    @work_in_progress
     def test_jacobian(self):
         """
         Unit test for the jacobian function:
