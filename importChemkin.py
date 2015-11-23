@@ -370,6 +370,33 @@ class ModelMatcher():
         with open(reactions_file) as f:
             reactionList = readReactionsBlock(f, self.speciesDict, readComments=True)
         logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
+
+        # convert from list to Library, so we can detect duplicates
+        temporary_library = rmgpy.data.kinetics.library.KineticsLibrary()
+        temporary_library.entries = {}
+        for index, reaction in enumerate(reactionList):
+            entry = Entry(
+                index = index+1,
+                item = reaction,
+                data = reaction.kinetics,
+                label = str(reaction)
+            )
+            entry.longDesc = reaction.kinetics.comment
+            reaction.kinetics.comment = ''
+            temporary_library.entries[index+1] = entry
+            reaction.kinetics = None
+        temporary_library.checkForDuplicates() # markDuplicates=True
+        temporary_library.convertDuplicatesToMulti()
+        # convert back to list
+        newReactionList = []
+        for entry in temporary_library.entries.values():
+            reaction = entry.item
+            reaction.kinetics = entry.data
+            newReactionList.append(reaction)
+        logging.info("Read {} reactions. After converting duplicates, have {} reactions".format(
+                                                            len(reactionList), len(newReactionList)))
+        reactionList = newReactionList
+
         self.chemkinReactions = reactionList
         self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
 
