@@ -1486,15 +1486,18 @@ class ModelMatcher():
                           ]
         with open(os.path.join(library_path, 'unidentified_reactions.txt'), 'w') as out_file:
             out_file.write("// Couldn't use these reactions because not yet identified all species\n")
+            count = 0
             for index, reaction in enumerate(self.chemkinReactions):
                 if reaction in savedReactions:
                     continue
+                count += 1
                 out_file.write('//{0:4d}\n'.format(index + 1))
                 out_file.write(rmgpy.chemkin.writeKineticsEntry(reaction,
                                                                 speciesList=self.speciesList,
                                                                 verbose=False,
                                                                 javaLibrary=False))
                 out_file.write('\n')
+            out_file.write("// Total {} reactions unidentified\n".format(count))
         
         if 'RMG_MAKE_INFO_FILES' not in os.environ:
             # By default don't write it, because it's slow (and not always helpful)
