@@ -507,8 +507,10 @@ class KineticsLibrary(Database):
                                     'Reaction {0} in kinetics library {1} has {2} reactants.'
                                     .format(rxn, self.label, len(rxn.products)))
 
-        if not self.auto_generated:
-            self.check_for_duplicates()
+        if self.auto_generated:
+            self.check_for_duplicates(mark_duplicates=True)
+        else:
+            # self.check_for_duplicates()
             self.convert_duplicates_to_multi()
 
     def load_entry(self,
