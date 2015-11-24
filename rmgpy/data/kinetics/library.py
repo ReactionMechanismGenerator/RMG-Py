@@ -495,7 +495,7 @@ class KineticsLibrary(Database):
         if self.auto_generated:
             self.check_for_duplicates(mark_duplicates=True)
         else:
-            self.check_for_duplicates()
+            # self.check_for_duplicates()
             self.convert_duplicates_to_multi()
 
     def load_entry(self,
