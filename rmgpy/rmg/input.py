@@ -322,6 +322,8 @@ def readInputFile(path, rmg0):
         raise e
 
     logging.info('Reading input file "{0}"...'.format(full_path))
+    logging.info(f.read())
+    f.seek(0)# return to beginning of file
 
     rmg = rmg0
     rmg.reactionModel = CoreEdgeReactionModel()
