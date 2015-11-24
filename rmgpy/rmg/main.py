@@ -634,9 +634,10 @@ class RMG(util.Subject):
         # file as well as the chemkin file
         self.reactionModel.outputSpeciesList = []
         self.reactionModel.outputReactionList = []
-        for library, option in self.reactionLibraries:
-            if option:
-                self.reactionModel.addReactionLibraryToOutput(library)
+        if self.reactionLibraries:
+            for library, option in self.reactionLibraries:
+                if option:
+                    self.reactionModel.addReactionLibraryToOutput(library)
         
         self.execTime.append(time.time() - self.initializationTime)
 
