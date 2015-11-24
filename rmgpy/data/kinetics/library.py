@@ -259,7 +259,7 @@ class KineticsLibrary(Database):
             if not rxn.isBalanced():
                 raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
             
-        self.checkForDuplicates()
+        #self.checkForDuplicates()
         
     def loadEntry(self,
                   index,
