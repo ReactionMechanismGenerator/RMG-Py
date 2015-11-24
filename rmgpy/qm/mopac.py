@@ -229,7 +229,12 @@ class MopacMol(QMMolecule, Mopac):
             if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
                 return None
 
-        if self.verifyOutputFile():
+        try:
+            success = self.verifyOutputFile()
+        except:
+            logging.exception("Error when reading output file {}".format(self.outputFilePath))
+            success = False
+        if success:
             logging.info("Found a successful output file already; using that.")
             source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
