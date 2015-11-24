@@ -388,7 +388,7 @@ class ModelMatcher():
             reaction.kinetics.comment = ''
             temporary_library.entries[index+1] = entry
             reaction.kinetics = None
-        temporary_library.checkForDuplicates() # markDuplicates=True
+        temporary_library.checkForDuplicates(markDuplicates=True)  # markDuplicates=True
         temporary_library.convertDuplicatesToMulti()
         # convert back to list
         newReactionList = []
