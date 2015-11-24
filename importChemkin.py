@@ -261,6 +261,9 @@ class ModelMatcher():
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
         self.chemkinReactionsUnmatched = []
+        "Reactions that contain species that haven't been identified yet."
+        #self.chemkinReactionsUnmatchable = []
+        #"Reactions that did not match an RMG-generated reaction, despite all the species being known"
         self.chemkinReactionsToSave = []
         """A list of chemkin reactions that have been fully identified but not yet saved to a file.
         (because the reagents may not have been properly processed yet we have to defer the saving)
@@ -1421,19 +1424,7 @@ class ModelMatcher():
                            dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
                     else:
                         logging.info(" suggesting no new species matches.")
-                        # See if all species have been matched
-                        for reagents in (chemkinReaction.reactants,
-                                         chemkinReaction.products):
-                            for reagent in reagents:
-                                if reagent.label not in self.identified_labels:
-                                    break
-                            else:  # didn't break inner loop so these reagents have all been identified
-                                continue
-                            break  # did break inner loop, so break outer loop as there's an unidentified species
-                        else:  # didn't break outer loop, so all species have been identified
-                            # remove it from the list of useful unmatched reactions.
-                            chemkinReactionsUnmatched.remove(chemkinReaction)
-                            self.chemkinReactionsToSave.append(chemkinReaction)
+
                     for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
                         if chemkinLabel not in votes:
                             votes[chemkinLabel] = {rmgSpecies: set([(chemkinReaction, edgeReaction)])}
@@ -1453,6 +1444,12 @@ class ModelMatcher():
                 prune(rxn)
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
+
+        for chemkinReaction in self.chemkinReactionsUnmatched[:]:  # iterate over a copy
+            if self.reagentsAreAllIdentified(chemkinReaction):
+                # remove it from the list of useful unmatched reactions.
+                self.chemkinReactionsUnmatched.remove(chemkinReaction)
+                self.chemkinReactionsToSave.append(chemkinReaction)
 
     def saveLibraries(self):
         """
@@ -1559,6 +1556,26 @@ class ModelMatcher():
                                                                 verbose=False,
                                                                 javaLibrary=True))
                 out_file.write('\n')
+
+
+    def reagentsAreAllIdentified(self, chemkinReaction, require_molecules=False):
+        """
+        Determines if a reaction contains only species that have been identified
+        by default by comparing against the list in self.identified_labels.
+        If you specify require_molecules=True then the test is also that the 
+        species all contain a molecule definition, i.e. they are not only in the 
+        list of identified labels but also have been processed and given a molecular
+        structure.        
+        Returns True if all the reagents have been identified, else False.
+        """
+        for reagents in (chemkinReaction.reactants, chemkinReaction.products):
+            for reagent in reagents:
+                if reagent.label not in self.identified_labels:
+                    return False
+                if require_molecules and not reagent.molecule:
+                    return False
+        return True
+
 
     def addReactionToKineticsLibrary(self, chemkinReaction):
         """
@@ -1956,19 +1973,12 @@ class ModelMatcher():
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
 
-        # Now would be a good time to print identified reactions to the .kinetics.py file?
+        # Now would be a good time to save identified reactions?
         # All the species in self.identified_labels should have been through generateResonanceIsomers and generateThermoData
         for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
-            for reagents in (chemkinReaction.reactants, chemkinReaction.products):
-                for reagent in reagents:
-                    if reagent.label not in self.identified_labels:
-                        break # if something hasn't been identified
-                else:  # didn't break inner loop so these reagents have all been identified
-                    continue # to the other side of the reaction
-                break  # did break inner loop, so break outer loop as there's an unidentified species
-            else:  # didn't break outer loop, so all species have been identified
-                # remove it from the list of useful unmatched reactions.
+            if self.reagentsAreAllIdentified(chemkinReaction):
                 chemkinReactionsUnmatched.remove(chemkinReaction)
+                assert self.reagentsAreAllIdentified(chemkinReaction, require_molecules=True)
                 self.addReactionToKineticsLibrary(chemkinReaction)
 
         self.saveLibraries()
@@ -2113,9 +2123,14 @@ class ModelMatcher():
                         "will have to re-check {0} edge reactions").format(len(reactionsToCheck)))
 
                 #After processing all matches, now is a good time to save reactions.
+                couldnt_save = []
                 while self.chemkinReactionsToSave:
                     chemkinReaction = self.chemkinReactionsToSave.pop(0)
-                    self.addReactionToKineticsLibrary(chemkinReaction)
+                    if self.reagentsAreAllIdentified(chemkinReaction, require_molecules=True):
+                        self.addReactionToKineticsLibrary(chemkinReaction)
+                    else:
+                        couldnt_save.append(chemkinReaction)
+                self.chemkinReactionsToSave = couldnt_save  # try again later!
 
             terminal_input_enabled = False
             if (len(self.identified_unprocessed_labels) == 0
