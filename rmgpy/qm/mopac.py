@@ -296,7 +296,12 @@ class MopacMol(QMMolecule, Mopac):
             if atom.charge != 0:
                 return None
 
-        if self.verify_output_file():
+        try:
+            success = self.verify_output_file()
+        except:
+            logging.exception("Error when reading output file {}".format(self.output_file_path))
+            success = False
+        if success:
             logging.info("Found a successful output file already; using that.")
             source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
