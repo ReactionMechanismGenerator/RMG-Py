@@ -41,10 +41,6 @@ import shutil
 import numpy
 import csv
 import gc
-try:
-    import xlwt
-except ImportError:
-    logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
