@@ -32,13 +32,14 @@
 This module contains functions for generating flux diagrams.
 """
 
-
+import os
 import os.path
 import re
 import math
 import numpy
 import pydot
 
+from rmgpy.util import makeOutputSubdirectory
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 
@@ -475,8 +476,6 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             # Fail silently on any OS errors
                 pass
 
-            #rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
-
             # If there is no termination time, then add one to prevent jobs from
             # running forever
             if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
@@ -491,13 +490,13 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
 
 def run(inputFile, speciesPath=None, useJava=False):
     
-    rmg = loadRMGJob(inputFile, useJava)
+    rmg = loadRMGJob(inputFile, useJava=useJava)
         
     # Generate a flux diagram video for each reaction system
-    rmg.makeOutputSubdirectory('flux')
+    makeOutputSubdirectory(rmg.outputDirectory, 'flux')
     for index, reactionSystem in enumerate(rmg.reactionSystems):
         
-        rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+        makeOutputSubdirectory(rmg.outputDirectory, 'flux/{0:d}'.format(index+1))
         
         # If there is no termination time, then add one to prevent jobs from
         # running forever
