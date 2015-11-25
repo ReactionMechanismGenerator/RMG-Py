@@ -1481,6 +1481,25 @@ class ModelMatcher():
         savedReactions = [self.kineticsLibrary.entries[key].item 
                           for key in sorted(self.kineticsLibrary.entries.keys())
                           ]
+        
+        with open(os.path.join(library_path, 'reversed_rates.txt'), 'w') as out_file:
+            for reaction in savedReactions:
+                out_file.write("Forwards reaction:   {!s}".format(reaction.toChemkin(speciesList=self.speciesList)))
+                out_file.write("Forwards rate:       {!r}\n".format(reaction.kinetics))
+                try:
+                    reverse_rate = reaction.generateReverseRateCoefficient()
+                except rmgpy.reaction.ReactionError:
+                    out_file.write("Couldn't reverse reaction rate of type {}\n\n".format(type(reaction.kinetics)))
+                else:
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                    reaction.kinetics, reverse_rate = reverse_rate, reaction.kinetics
+                    out_file.write("Reversed reaction:   {!s}".format(reaction.toChemkin(speciesList=self.speciesList)))
+                    out_file.write("Reversed rate:       {!r}\n\n".format(reaction.kinetics))
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                    reaction.kinetics, reverse_rate = reverse_rate, reaction.kinetics
+                out_file.write("="*80 + '\n')
+            
+            
         with open(os.path.join(library_path, 'unidentified_reactions.txt'), 'w') as out_file:
             out_file.write("// Couldn't use these reactions because not yet identified all species\n")
             count = 0
