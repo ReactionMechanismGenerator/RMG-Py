@@ -53,7 +53,7 @@ from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.molecule.element import Element
 from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
-from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -604,24 +604,38 @@ class Reaction:
             self.kinetics.Ea.value_si = 0
 
 
+    def reverseThisArrheniusRate(self, kForward, reverseUnits):
+        """
+        Reverses the given kForward, which must be an Arrhenius type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(kf=Arrhenius, kr=Arrhenius)
+        cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
+        kf = kForward
+        assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
+        if kf.Tmin is not None and kf.Tmax is not None:
+            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
+        else:
+            Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
+        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+        klist = numpy.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+        kr = Arrhenius()
+        kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
+        return kr
+        
     def generateReverseRateCoefficient(self):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
-        Currently this only works if the `kinetics` attribute is an 
-        :class:`Arrhenius` or :class:`KineticsData` object.
+        Currently this only works if the `kinetics` attribute is one of several
+        (but not necessarily all) kinetics types.
         """
-        
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
-            
+
         # Get the units for the reverse rate coefficient
-        if len(self.products) == 1:
-            kunits = 's^-1'
-        elif len(self.products) == 2:
-            kunits = 'm^3/(mol*s)'
-        elif len(self.products) == 3:
-            kunits = 'm^6/(mol^2*s)'
-        else:
-            kunits = ''
+        kunits = getRateCoefficientUnitsFromReactionOrder(len(self.products))
             
         kf = self.kinetics
         if isinstance(kf, KineticsData):
@@ -637,20 +651,7 @@ class Reaction:
             return kr
             
         elif isinstance(kf, Arrhenius):
-            
-            if kf.Tmin is not None and kf.Tmax is not None:
-                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
-            else:
-                Tlist = 1.0/numpy.arange(0.0005, 0.0034, 0.0001)
-                
-            # Determine the values of the reverse rate coefficient k_r(T) at each temperature
-            klist = numpy.zeros_like(Tlist)
-            for i in range(len(Tlist)):
-                klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
-    
-            kr = Arrhenius()
-            kr.fitToData(Tlist, klist, kunits, kf.T0.value_si)
-            return kr
+            return self.reverseThisArrheniusRate(kf, kunits)
                     
         elif isinstance (kf, Chebyshev):
             Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
@@ -694,9 +695,33 @@ class Reaction:
                 rxn.kinetics = kinetics
                 kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
-        
+
+        elif isinstance(kf, ThirdBody):
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = ThirdBody(krLow, *parameters[1:])
+            return kr
+
+        elif isinstance(kf, Lindemann):
+            krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = Lindemann(krHigh, krLow, *parameters[2:])
+            return kr
+
+        elif isinstance(kf, Troe):
+            krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = Troe(krHigh, krLow, *parameters[2:])
+            return kr
         else:
-            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius, Chebyshev, PDepArrhenius, or KineticsData.".format(self.kinetics.__class__))
+            raise ReactionError(("Unexpected kinetics type {0}; should be KineticsData, Arrhenius, "
+                                 "MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, "
+                                 "ThirdBody, Lindemann, or Troe!").format(self.kinetics.__class__))
 
     def calculateTSTRateCoefficients(self, Tlist):
         return numpy.array([self.calculateTSTRateCoefficient(T) for T in Tlist], numpy.float64)
