@@ -30,6 +30,13 @@
 
 import os.path
 import logging
+try:
+    import xlwt
+except ImportError:
+    logging.warning(
+        'Optional package dependency "xlwt" not loaded;\
+         Some output features will not work.'
+         )
 
 import matplotlib.pyplot as plt
 

@@ -41,10 +41,6 @@ import shutil
 import numpy
 import csv
 import gc
-try:
-    import xlwt
-except ImportError:
-    logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
@@ -638,9 +634,10 @@ class RMG(util.Subject):
         # file as well as the chemkin file
         self.reactionModel.outputSpeciesList = []
         self.reactionModel.outputReactionList = []
-        for library, option in self.reactionLibraries:
-            if option:
-                self.reactionModel.addReactionLibraryToOutput(library)
+        if self.reactionLibraries:
+            for library, option in self.reactionLibraries:
+                if option:
+                    self.reactionModel.addReactionLibraryToOutput(library)
         
         self.execTime.append(time.time() - self.initializationTime)
 
