@@ -42,6 +42,8 @@ from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
 
+from rmgpy.parallel import broadcast
+
 # Module-level variable to store the (only) instance of RMGDatabase in use.
 database = None
 
@@ -110,6 +112,7 @@ class RMGDatabase:
         """
         self.thermo = ThermoDatabase()
         self.thermo.load(path, thermoLibraries, depository)
+        broadcast(self.thermo, 'thermo')
 
     def loadTransport(self, path, transportLibraries=None):
         """
@@ -118,6 +121,7 @@ class RMGDatabase:
         """
         self.transport = TransportDatabase()
         self.transport.load(path, transportLibraries)
+        broadcast(self.transport, 'transport')
         
     def loadForbiddenStructures(self, path):
         """
@@ -159,6 +163,8 @@ class RMGDatabase:
                            depositories=kineticsDepositories
                            )
 
+        broadcast(self.kinetics, 'kinetics')
+
     def loadSolvation(self, path):
         """
         Load the RMG solvation database from the given `path` on disk, where
@@ -166,6 +172,7 @@ class RMGDatabase:
         """
         self.solvation = SolvationDatabase()
         self.solvation.load(path)
+        broadcast(self.solvation, 'solvation')
         
     def loadStatmech(self, path, statmechLibraries=None, depository=True):
         """
@@ -174,6 +181,7 @@ class RMGDatabase:
         """
         self.statmech = StatmechDatabase()
         self.statmech.load(path, statmechLibraries, depository)
+        broadcast(self.statmech, 'statmech')
 
     def loadOld(self, path):
         """
