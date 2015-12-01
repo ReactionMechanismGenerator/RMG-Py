@@ -8,7 +8,7 @@ RMG-Py can now be installed in binary format using the Anaconda Python Platform.
 This is recommended for a basic user who will not be altering the source code 
 or making many additions to RMG's thermodynamic and kinetics databases.
 
-* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_. When prompted to append Anaconda to your PATH, select or type Yes.
+* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
 
 * Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. For example, type the following into your terminal to create a new environment named 'rmg_env' containing all that you need::
 
