@@ -44,8 +44,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
-from .common import KineticsError, UndeterminableKineticsError, saveEntry, \
-                    UNIMOLECULAR_KINETICS_FAMILIES, BIMOLECULAR_KINETICS_FAMILIES
+from .common import KineticsError, UndeterminableKineticsError, saveEntry
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1695,16 +1694,3 @@ class KineticsFamily(Database):
         kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
                 
         return kinetics, entry
-
-    def getRateCoefficientUnits(self):
-        """
-        Return the units of the forward kinetics generated for the family.
-        Raises a ValueError if this could not be determined (e.g. if the family
-        has not yet been added to the appropriate list).
-        """
-        if self.label in BIMOLECULAR_KINETICS_FAMILIES:
-            return 'm^3/(mol*s)'
-        elif self.label in UNIMOLECULAR_KINETICS_FAMILIES:
-            return 's^-1'
-        else:
-            raise ValueError('Unable to determine units of rate coefficient for reaction family "{0}".'.format(self.label))
