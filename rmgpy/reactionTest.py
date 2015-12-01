@@ -404,6 +404,34 @@ class TestReaction(unittest.TestCase):
             kr = reverseKinetics.getRateCoefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
 
+    def testGenerateReverseRateCoefficientArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the Arrhenius format.
+        """
+        original_kinetics = Arrhenius(
+                    A = (2.65e12, 'cm^3/(mol*s)'),
+                    n = 0.0,
+                    Ea = (0.0, 'kJ/mol'),
+                    T0 = (1, 'K'),
+                    Tmin = (300, 'K'),
+                    Tmax = (2000, 'K'),
+                )
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
     def testTSTCalculation(self):
         """
         A test of the transition state theory k(T) calculation function,
