@@ -130,6 +130,7 @@ class RMGDatabase:
         """
         self.forbiddenStructures = ForbiddenStructures()
         self.forbiddenStructures.load(path)
+        broadcast(self.forbiddenStructures, 'forbidden')
 
     def loadKinetics(self,
                      path,
