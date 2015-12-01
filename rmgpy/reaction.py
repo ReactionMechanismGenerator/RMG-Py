@@ -642,9 +642,7 @@ class Reaction:
             
             Tlist = kf.Tdata.value_si
             klist = numpy.zeros_like(Tlist)
-            print Tlist
             for i in range(len(Tlist)):
-                print kf.getRateCoefficient(Tlist[i]), self.getEquilibriumConstant(Tlist[i])
                 klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
             
             kr = KineticsData(Tdata=(Tlist,"K"), kdata=(klist,kunits), Tmin=(numpy.min(Tlist),"K"), Tmax=(numpy.max(Tlist),"K"))
