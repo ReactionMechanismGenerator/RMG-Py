@@ -634,6 +634,18 @@ class Reaction:
         """
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
 
+        supported_types = (
+                            KineticsData.__name__,
+                            Arrhenius.__name__,
+                            MultiArrhenius.__name__,
+                            PDepArrhenius.__name__,
+                            MultiPDepArrhenius.__name__,
+                            Chebyshev.__name__,
+                            ThirdBody.__name__,
+                            Lindemann.__name__,
+                            Troe.__name__,
+                            )
+
         # Get the units for the reverse rate coefficient
         kunits = getRateCoefficientUnitsFromReactionOrder(len(self.products))
             
@@ -717,9 +729,7 @@ class Reaction:
             kr = Troe(krHigh, krLow, *parameters[2:])
             return kr
         else:
-            raise ReactionError(("Unexpected kinetics type {0}; should be KineticsData, Arrhenius, "
-                                 "MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, "
-                                 "ThirdBody, Lindemann, or Troe!").format(self.kinetics.__class__))
+            raise ReactionError(("Unexpected kinetics type {0}; should be one of {1}").format(self.kinetics.__class__, supported_types))
 
     def calculateTSTRateCoefficients(self, Tlist):
         return numpy.array([self.calculateTSTRateCoefficient(T) for T in Tlist], numpy.float64)
