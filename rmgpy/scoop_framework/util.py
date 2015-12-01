@@ -110,15 +110,15 @@ class WorkerWrapper(object):
             raise
 
 @warnScoopStartedProperly
-def broadcast(obj, name):
+def broadcast(obj, key):
     """
-    Broadcasts the object across the workers using the name parameter as the key.
+    Broadcasts the object across the workers using the key parameter as the key.
     """      
     
-    kwargs = {name : obj}
+    kwargs = {key : obj}
     try:
-        if shared.getConst(name):
-            logging.debug('An object with the name {} was already broadcasted.'.format(name))
+        if shared.getConst(key):
+            logging.debug('An object with the key {} was already broadcasted.'.format(key))
         else:
             shared.setConst(**kwargs)
     except NameError, e:
