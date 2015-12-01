@@ -126,3 +126,22 @@ def broadcast(obj, key):
         Name error will be caught when the SCOOP library is not imported properly.
         """
         logging.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
+
+@warnScoopStartedProperly
+def get(key):    
+    """
+    Searches for the shared variable to retrieve identified by the 
+    parameter key.
+    """
+
+    try:
+        data = shared.getConst(key)
+        return data
+    except KeyError, e:
+        logging.error('An object with the key {} could not be found.'.format(key))
+        raise e
+    except NameError:
+        """
+        Name error will be caught when the SCOOP library is not imported properly.
+        """
+        logging.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
