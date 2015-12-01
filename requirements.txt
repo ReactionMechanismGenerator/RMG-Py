@@ -30,6 +30,10 @@ coverage
 # for generating the documentation
 Sphinx
 
+
+# SCOOP Dependencies:
+pyzmq
+
 # SCOOP for parallel computing
 git+https://github.com/soravux/scoop.git@0.7.0
 
