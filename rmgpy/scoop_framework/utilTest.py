@@ -17,7 +17,7 @@ except ImportError, e:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
 
-from rmgpy.parallel import *
+from .util import *
 
 def boom():
     return 0 / 0

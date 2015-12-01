@@ -42,7 +42,7 @@ from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
 
-from rmgpy.parallel import broadcast
+from rmgpy.scoop_framework.util import broadcast
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
 database = None
