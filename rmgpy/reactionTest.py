@@ -7,6 +7,7 @@ This module contains unit tests of the rmgpy.reaction module.
 
 import numpy
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
@@ -403,6 +404,451 @@ class TestReaction(unittest.TestCase):
             kr0 = self.reaction2.getRateCoefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
             kr = reverseKinetics.getRateCoefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the Arrhenius format.
+        """
+        original_kinetics = Arrhenius(
+                    A = (2.65e12, 'cm^3/(mol*s)'),
+                    n = 0.0,
+                    Ea = (0.0, 'kJ/mol'),
+                    T0 = (1, 'K'),
+                    Tmin = (300, 'K'),
+                    Tmax = (2000, 'K'),
+                )
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    @work_in_progress
+    def testGenerateReverseRateCoefficientArrheniusEP(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the ArrheniusEP format.
+        """
+        from rmgpy.kinetics import ArrheniusEP
+
+        original_kinetics = ArrheniusEP(
+                    A = (2.65e12, 'cm^3/(mol*s)'),
+                    n = 0.0,
+                    alpha = 0.5,
+                    E0 = (41.84, 'kJ/mol'),
+                    Tmin = (300, 'K'),
+                    Tmax = (2000, 'K'),
+                )
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientPDepArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the PDepArrhenius format.
+        """
+        from rmgpy.kinetics import PDepArrhenius
+
+        arrhenius0 = Arrhenius(
+            A = (1.0e6,"s^-1"),
+            n = 1.0, 
+            Ea = (10.0,"kJ/mol"), 
+            T0 = (300.0,"K"), 
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+
+        arrhenius1 = Arrhenius(
+            A = (1.0e12,"s^-1"), 
+            n = 1.0, 
+            Ea = (20.0,"kJ/mol"), 
+            T0 = (300.0,"K"), 
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+
+        pressures = numpy.array([0.1, 10.0])
+        arrhenius = [arrhenius0, arrhenius1]
+        Tmin = 300.0
+        Tmax = 2000.0
+        Pmin = 0.1
+        Pmax = 10.0
+        comment = """This data is completely made up"""
+
+        original_kinetics = PDepArrhenius(
+            pressures = (pressures,"bar"),
+            arrhenius = arrhenius,
+            Tmin = (Tmin,"K"), 
+            Tmax = (Tmax,"K"), 
+            Pmin = (Pmin,"bar"), 
+            Pmax = (Pmax,"bar"),
+            comment = comment,
+        )
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+
+    def testGenerateReverseRateCoefficientMultiArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the MultiArrhenius format.
+        """
+        from rmgpy.kinetics import MultiArrhenius
+
+        pressures = numpy.array([0.1, 10.0])
+        Tmin = 300.0
+        Tmax = 2000.0
+        Pmin = 0.1
+        Pmax = 10.0
+        comment = """This data is completely made up"""
+
+        arrhenius = [
+            Arrhenius(
+                A = (9.3e-14,"cm^3/(molecule*s)"),
+                n = 0.0,
+                Ea = (4740*constants.R*0.001,"kJ/mol"),
+                T0 = (1,"K"),
+                Tmin = (Tmin,"K"),
+                Tmax = (Tmax,"K"),
+                comment = comment,
+            ),
+            Arrhenius(
+                A = (1.4e-9,"cm^3/(molecule*s)"),
+                n = 0.0,
+                Ea = (11200*constants.R*0.001,"kJ/mol"),
+                T0 = (1,"K"),
+                Tmin = (Tmin,"K"),
+                Tmax = (Tmax,"K"),
+                comment = comment,
+            ),
+        ]
+
+        original_kinetics = MultiArrhenius(
+            arrhenius = arrhenius,
+            Tmin = (Tmin,"K"),
+            Tmax = (Tmax,"K"),
+            comment = comment,
+        )
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientMultiPDepArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the MultiPDepArrhenius format.
+        """
+        from rmgpy.kinetics import PDepArrhenius, MultiPDepArrhenius
+
+        Tmin = 350.
+        Tmax = 1500.
+        Pmin = 1e-1
+        Pmax = 1e1
+        pressures = numpy.array([1e-1,1e1])
+        comment = 'CH3 + C2H6 <=> CH4 + C2H5 (Baulch 2005)'
+        arrhenius = [
+            PDepArrhenius(
+                pressures = (pressures,"bar"),
+                arrhenius = [
+                    Arrhenius(
+                        A = (9.3e-16,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (4740*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                    Arrhenius(
+                        A = (9.3e-14,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (4740*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                ],
+                Tmin = (Tmin,"K"), 
+                Tmax = (Tmax,"K"), 
+                Pmin = (Pmin,"bar"), 
+                Pmax = (Pmax,"bar"),
+                comment = comment,
+            ),
+            PDepArrhenius(
+                pressures = (pressures,"bar"),
+                arrhenius = [
+                    Arrhenius(
+                        A = (1.4e-11,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (11200*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                    Arrhenius(
+                        A = (1.4e-9,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (11200*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                ],
+                Tmin = (Tmin,"K"), 
+                Tmax = (Tmax,"K"), 
+                Pmin = (Pmin,"bar"), 
+                Pmax = (Pmax,"bar"),
+                comment = comment,
+            ),
+        ]  
+
+        original_kinetics = MultiPDepArrhenius(
+            arrhenius = arrhenius,
+            Tmin = (Tmin,"K"),
+            Tmax = (Tmax,"K"),
+            Pmin = (Pmin,"bar"),
+            Pmax = (Pmax,"bar"),
+            comment = comment,
+        )
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientThirdBody(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the ThirdBody format.
+        """
+
+        from rmgpy.kinetics import ThirdBody
+
+        arrheniusLow = Arrhenius(
+            A = (2.62e+33,"cm^6/(mol^2*s)"), 
+            n = -4.76, 
+            Ea = (10.21,"kJ/mol"), 
+            T0 = (1,"K"),
+        )
+        efficiencies = {"C": 3, "C(=O)=O": 2, "CC": 3, "O": 6, "[Ar]": 0.7, "[C]=O": 1.5, "[H][H]": 2}
+        Tmin = 300.
+        Tmax = 2000.
+        Pmin = 0.01
+        Pmax = 100.
+        comment = """H + CH3 -> CH4"""
+        thirdBody = ThirdBody(
+            arrheniusLow = arrheniusLow,
+            Tmin = (Tmin,"K"),
+            Tmax = (Tmax,"K"),
+            Pmin = (Pmin,"bar"),
+            Pmax = (Pmax,"bar"),
+            efficiencies = efficiencies,
+            comment = comment,
+        )
+         
+        original_kinetics = thirdBody
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientLindemann(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the Lindemann format.
+        """
+
+        from rmgpy.kinetics import Lindemann
+
+        arrheniusHigh = Arrhenius(
+            A = (1.39e+16,"cm^3/(mol*s)"), 
+            n = -0.534, 
+            Ea = (2.243,"kJ/mol"), 
+            T0 = (1,"K"),
+        )
+        arrheniusLow = Arrhenius(
+            A = (2.62e+33,"cm^6/(mol^2*s)"), 
+            n = -4.76, 
+            Ea = (10.21,"kJ/mol"), 
+            T0 = (1,"K"),
+        )
+        efficiencies = {"C": 3, "C(=O)=O": 2, "CC": 3, "O": 6, "[Ar]": 0.7, "[C]=O": 1.5, "[H][H]": 2}
+        Tmin = 300.
+        Tmax = 2000.
+        Pmin = 0.01
+        Pmax = 100.
+        comment = """H + CH3 -> CH4"""
+        lindemann = Lindemann(
+            arrheniusHigh = arrheniusHigh,
+            arrheniusLow = arrheniusLow,
+            Tmin = (Tmin,"K"),
+            Tmax = (Tmax,"K"),
+            Pmin = (Pmin,"bar"),
+            Pmax = (Pmax,"bar"),
+            efficiencies = efficiencies,
+            comment = comment,
+        )
+         
+        original_kinetics = lindemann
+        
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+
+    def testGenerateReverseRateCoefficientTroe(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the Troe format.
+        """
+
+        from rmgpy.kinetics import Troe
+
+        arrheniusHigh = Arrhenius(
+            A = (1.39e+16,"cm^3/(mol*s)"), 
+            n = -0.534, 
+            Ea = (2.243,"kJ/mol"), 
+            T0 = (1,"K"),
+        )
+        arrheniusLow = Arrhenius(
+            A = (2.62e+33,"cm^6/(mol^2*s)"), 
+            n = -4.76, 
+            Ea = (10.21,"kJ/mol"), 
+            T0 = (1,"K"),
+        )
+        alpha = 0.783
+        T3 = 74
+        T1 = 2941
+        T2 = 6964
+        efficiencies = {"C": 3, "C(=O)=O": 2, "CC": 3, "O": 6, "[Ar]": 0.7, "[C]=O": 1.5, "[H][H]": 2}
+        Tmin = 300.
+        Tmax = 2000.
+        Pmin = 0.01
+        Pmax = 100.
+        comment = """H + CH3 -> CH4"""
+        troe = Troe(
+            arrheniusHigh = arrheniusHigh,
+            arrheniusLow = arrheniusLow,
+            alpha = alpha,
+            T3 = (T3,"K"),
+            T1 = (T1,"K"),
+            T2 = (T2,"K"),
+            Tmin = (Tmin,"K"),
+            Tmax = (Tmax,"K"),
+            Pmin = (Pmin,"bar"),
+            Pmax = (Pmax,"bar"),
+            efficiencies = efficiencies,
+            comment = comment,
+        )
+         
+        original_kinetics = troe
+        
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testTSTCalculation(self):
         """

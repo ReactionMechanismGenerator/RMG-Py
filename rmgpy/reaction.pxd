@@ -84,6 +84,8 @@ cdef class Reaction:
 
     cpdef fixBarrierHeight(self, bint forcePositive=?)
 
+    cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits)
+
     cpdef generateReverseRateCoefficient(self)
 
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
