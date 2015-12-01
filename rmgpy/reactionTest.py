@@ -585,6 +585,103 @@ class TestReaction(unittest.TestCase):
             korig = original_kinetics.getRateCoefficient(T, P)
             krevrev = reversereverseKinetics.getRateCoefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientMultiPDepArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the MultiPDepArrhenius format.
+        """
+        from rmgpy.kinetics import PDepArrhenius, MultiPDepArrhenius
+
+        Tmin = 350.
+        Tmax = 1500.
+        Pmin = 1e-1
+        Pmax = 1e1
+        pressures = numpy.array([1e-1,1e1])
+        comment = 'CH3 + C2H6 <=> CH4 + C2H5 (Baulch 2005)'
+        arrhenius = [
+            PDepArrhenius(
+                pressures = (pressures,"bar"),
+                arrhenius = [
+                    Arrhenius(
+                        A = (9.3e-16,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (4740*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                    Arrhenius(
+                        A = (9.3e-14,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (4740*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                ],
+                Tmin = (Tmin,"K"), 
+                Tmax = (Tmax,"K"), 
+                Pmin = (Pmin,"bar"), 
+                Pmax = (Pmax,"bar"),
+                comment = comment,
+            ),
+            PDepArrhenius(
+                pressures = (pressures,"bar"),
+                arrhenius = [
+                    Arrhenius(
+                        A = (1.4e-11,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (11200*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                    Arrhenius(
+                        A = (1.4e-9,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (11200*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (Tmin,"K"),
+                        Tmax = (Tmax,"K"),
+                        comment = comment,
+                    ),
+                ],
+                Tmin = (Tmin,"K"), 
+                Tmax = (Tmax,"K"), 
+                Pmin = (Pmin,"bar"), 
+                Pmax = (Pmax,"bar"),
+                comment = comment,
+            ),
+        ]  
+
+        original_kinetics = MultiPDepArrhenius(
+            arrhenius = arrhenius,
+            Tmin = (Tmin,"K"),
+            Tmax = (Tmax,"K"),
+            Pmin = (Pmin,"bar"),
+            Pmax = (Pmax,"bar"),
+            comment = comment,
+        )
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
     def testTSTCalculation(self):
         """
         A test of the transition state theory k(T) calculation function,
