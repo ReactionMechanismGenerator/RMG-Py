@@ -34,7 +34,7 @@ class WorkerWrapperTest(unittest.TestCase):
             f()
 
 
-def funcShared():
+def funcBroadcast():
     """
     Broadcast the data with the given key, 
     and retrieve it again by querying the key again.
@@ -52,6 +52,25 @@ def funcShared():
     
     return True
 
+def funcRetrieve():
+    """
+    Broadcast the data with the given key, 
+    retrieve it again by querying the key again.
+    """
+    
+    data = 'foo'
+    key = 'bar'
+
+
+    broadcast(data, key)
+
+    try:
+        assert data == get(key)
+    except AssertionError:
+        return False
+    
+    return True    
+
 class BroadcastTest(TestScoopCommon):
 
     def __init__(self, *args, **kwargs):
@@ -66,8 +85,25 @@ class BroadcastTest(TestScoopCommon):
         Test that we can broadcast a simple string.
         """
 
-        result = futures._startup(funcShared)
+        result = futures._startup(funcBroadcast)
         self.assertEquals(result, True)
+
+class GetTest(TestScoopCommon):
+
+    def __init__(self, *args, **kwargs):
+        # Parent initialization
+        super(self.__class__, self).__init__(*args, **kwargs)
+        
+        # Only setup the scoop framework once, and not in every test method:
+        super(self.__class__, self).setUp()
+
+    def test_generic(self):
+        """
+        Test that we can retrieve a simple shared string.
+        """
+
+        result = futures._startup(funcRetrieve)
+        self.assertEquals(result, True)        
 
 if __name__ == '__main__' and os.environ.get('IS_ORIGIN', "1") == "1":
     unittest.main()
