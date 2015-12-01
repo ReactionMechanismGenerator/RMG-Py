@@ -465,6 +465,67 @@ class TestReaction(unittest.TestCase):
             korig = original_kinetics.getRateCoefficient(T, P)
             krevrev = reversereverseKinetics.getRateCoefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def testGenerateReverseRateCoefficientPDepArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the PDepArrhenius format.
+        """
+        from rmgpy.kinetics import PDepArrhenius
+
+        arrhenius0 = Arrhenius(
+            A = (1.0e6,"s^-1"),
+            n = 1.0, 
+            Ea = (10.0,"kJ/mol"), 
+            T0 = (300.0,"K"), 
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+
+        arrhenius1 = Arrhenius(
+            A = (1.0e12,"s^-1"), 
+            n = 1.0, 
+            Ea = (20.0,"kJ/mol"), 
+            T0 = (300.0,"K"), 
+            Tmin = (300.0,"K"), 
+            Tmax = (2000.0,"K"), 
+            comment = """This data is completely made up""",
+        )
+
+        pressures = numpy.array([0.1, 10.0])
+        arrhenius = [arrhenius0, arrhenius1]
+        Tmin = 300.0
+        Tmax = 2000.0
+        Pmin = 0.1
+        Pmax = 10.0
+        comment = """This data is completely made up"""
+
+        original_kinetics = PDepArrhenius(
+            pressures = (pressures,"bar"),
+            arrhenius = arrhenius,
+            Tmin = (Tmin,"K"), 
+            Tmax = (Tmax,"K"), 
+            Pmin = (Pmin,"bar"), 
+            Pmax = (Pmax,"bar"),
+            comment = comment,
+        )
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
     def testTSTCalculation(self):
         """
         A test of the transition state theory k(T) calculation function,
