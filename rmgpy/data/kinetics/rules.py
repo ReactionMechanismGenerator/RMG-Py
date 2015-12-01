@@ -45,8 +45,7 @@ from rmgpy.data.base import Database, Entry, DatabaseError, getAllCombinations
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import ArrheniusEP
-from .common import KineticsError, saveEntry, \
-    BIMOLECULAR_KINETICS_FAMILIES, UNIMOLECULAR_KINETICS_FAMILIES
+from .common import KineticsError, saveEntry
 
 ################################################################################
 
@@ -103,6 +102,56 @@ class KineticsRules(Database):
         Process a list of parameters `data` as read from an old-style RMG
         thermo database, returning the corresponding kinetics object.
         """
+        
+        # The names of all of the RMG reaction families that are bimolecular
+        BIMOLECULAR_KINETICS_FAMILIES = [
+            'H_Abstraction',
+            'R_Addition_MultipleBond',
+            'R_Recombination',
+            'Disproportionation',
+            '1+2_Cycloaddition',
+            '2+2_cycloaddition_Cd',
+            '2+2_cycloaddition_CO',
+            '2+2_cycloaddition_CCO',
+            'Diels_alder_addition',
+            '1,2_Insertion',
+            '1,3_Insertion_CO2',
+            '1,3_Insertion_ROR',
+            'R_Addition_COm',
+            'Oa_R_Recombination',
+            'Substitution_O',
+            'SubstitutionS',
+            'R_Addition_CSm',
+            '1,3_Insertion_RSR',
+            'lone_electron_pair_bond',
+        ]
+        
+        # The names of all of the RMG reaction families that are unimolecular
+        UNIMOLECULAR_KINETICS_FAMILIES = [
+            'intra_H_migration',
+            'Birad_recombination',
+            'intra_OH_migration',
+            'HO2_Elimination_from_PeroxyRadical',
+            'H_shift_cyclopentadiene',
+            'Cyclic_Ether_Formation',
+            'Intra_R_Add_Exocyclic',
+            'Intra_R_Add_Endocyclic',
+            '1,2-Birad_to_alkene',
+            'Intra_Disproportionation',
+            'Korcek_step1',
+            'Korcek_step2',
+            '1,2_shiftS',
+            'intra_substitutionCS_cyclization',
+            'intra_substitutionCS_isomerization',
+            'intra_substitutionS_cyclization',
+            'intra_substitutionS_isomerization',
+            'intra_NO2_ONO_conversion',
+            '1,4_Cyclic_birad_scission',
+            '1,4_Linear_birad_scission',
+            'Intra_Diels_alder',
+            'ketoenol',
+            'Retroen'
+        ]
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
         if label in BIMOLECULAR_KINETICS_FAMILIES:
@@ -250,9 +299,10 @@ class KineticsRules(Database):
         
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        if label in BIMOLECULAR_KINETICS_FAMILIES:
+        reactionOrder = groups.groups.numReactants
+        if reactionOrder == 2:
             factor = 1.0e6
-        elif label in UNIMOLECULAR_KINETICS_FAMILIES:
+        elif reactionOrder == 1:
             factor = 1.0
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
