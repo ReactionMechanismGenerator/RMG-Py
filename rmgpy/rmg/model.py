@@ -1666,3 +1666,28 @@ class CoreEdgeReactionModel:
         if (struct.getNumberOfRadicalElectrons() > maxRadicals):
             return True
         return False
+
+def getFamily(label):
+    """
+    Returns the ReactionFamily object associated with the
+    parameter string.
+
+    First search through the reaction families, then 
+    through the libraries.
+    """
+
+    kinetics = rmgpy.data.rmg.database.kinetics
+
+    try:
+        fam = kinetics.families[label]
+        return fam
+    except KeyError, e:
+        pass
+
+    try:
+        lib = kinetics.libraries[label]
+        return lib
+    except KeyError, e:
+        pass
+
+    raise Exception('Could not retrieve the family/library: {}'.format(label))
