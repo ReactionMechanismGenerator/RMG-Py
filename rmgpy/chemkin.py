@@ -47,8 +47,8 @@ from rmgpy.thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.data.base import Entry 
-from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
-from rmgpy.data.kinetics.family import TemplateReaction, KineticsFamily
+from rmgpy.data.kinetics.library import LibraryReaction
+from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.molecule import Molecule
 from rmgpy.transport import TransportData
@@ -543,7 +543,7 @@ def readReactionComments(reaction, comments, read = True):
             kinetics = reaction.kinetics,
             reversible = reaction.reversible,
             duplicate = reaction.duplicate,
-            library = KineticsLibrary(label='Unclassified'),
+            library = 'Unclassified',
         )        
         
         return reaction  
@@ -569,7 +569,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                family = KineticsFamily(label=label),
+                family = label,
                 template = [Entry(label=g) for g in template],
             )
             
@@ -582,7 +582,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                library = KineticsLibrary(label=label),
+                library = label,
             )   
             
         elif 'PDep reaction:' in line:
@@ -647,7 +647,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                library = KineticsLibrary(label=label),
+                library = label,
             )
             reaction.kinetics.comment = line
             
@@ -663,7 +663,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                family = KineticsFamily(label=label),
+                family = label,
                 template = [Entry(label=g) for g in template],
             )
             reaction.kinetics.comment = line
@@ -676,7 +676,7 @@ def readReactionComments(reaction, comments, read = True):
             kinetics = reaction.kinetics,
             reversible = reaction.reversible,
             duplicate = reaction.duplicate,
-            library = KineticsLibrary(label='Unclassified'),
+            library = 'Unclassified',
         )  
             
     return reaction
@@ -862,7 +862,7 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                 if reaction1.duplicate and reaction2.duplicate:
                     
                     if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
-                        assert reaction1.library.label == reaction2.library.label
+                        assert reaction1.library == reaction2.library
                         if reaction1 not in duplicateReactionsToRemove:
                             # already created duplicate reaction, move on to appending any additional duplicate kinetics
                             if isinstance(reaction1.kinetics,
@@ -1518,18 +1518,18 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         
         # Next line of comment contains information about the type of reaction
         if isinstance(reaction, TemplateReaction):
-            string += '! Template reaction: {0!s}\n'.format(reaction.family.label)
+            string += '! Template reaction: {0!s}\n'.format(reaction.family)
         elif isinstance(reaction, LibraryReaction):
-            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
+            string += '! Library reaction: {0!s}\n'.format(reaction.library)
         elif isinstance(reaction, PDepReaction):
             string += '! PDep reaction: {0!s}\n'.format(reaction.network)          
             if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
                 # Print additional information about the pdep network's high-P limit reactions if in debug mode.
                 for rxn in reaction.network.pathReactions:
                     if isinstance(rxn, LibraryReaction):
-                        string += '! High-P limit: {0} (Library reaction: {1!s})\n'.format(rxn, rxn.library.label)
+                        string += '! High-P limit: {0} (Library reaction: {1!s})\n'.format(rxn, rxn.library)
                     else:
-                        string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family.label)   
+                        string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family)   
     
         # Remaining lines of comments taken from reaction kinetics
         if reaction.kinetics.comment:

@@ -470,9 +470,9 @@ class CoreEdgeReactionModel:
         r1 = rxn.reactants[0]
         if len(rxn.reactants)==1: r2 = None
         else: r2 = rxn.reactants[1]
-        family = rxn.family
+        family = getFamily(rxn.family)
         try:
-            my_reactionList = self.reactionDict[family][r1][r2][:]
+            my_reactionList = self.reactionDict[family.label][r1][r2][:]
         except KeyError: # no such short-list: must be new, unless in seed.
             my_reactionList = []
                    
@@ -482,9 +482,9 @@ class CoreEdgeReactionModel:
             r1 = rxn.products[0]
             if len(rxn.products)==1: r2 = None
             else: r2 = rxn.products[1]
-            family = rxn.family
+            family = getFamily(rxn.family)
             try:
-                my_reactionList.extend(self.reactionDict[family][r1][r2])
+                my_reactionList.extend(self.reactionDict[family.label][r1][r2])
             except KeyError: # no such short-list: must be new, unless in seed.
                 pass
 
@@ -505,15 +505,16 @@ class CoreEdgeReactionModel:
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
         # duplicated *within* the same seed mechanism
-        for family0 in self.reactionDict:
-            if isinstance(family0, KineticsLibrary) and family0 != family:
+        for label in self.reactionDict:
+            family0 = getFamily(label)
+            if isinstance(family0, KineticsLibrary) and family0.label != family.label:
 
                 # First check seed short-list in forward direction
                 r1 = rxn.reactants[0]
                 if len(rxn.reactants)==1: r2 = None
                 else: r2 = rxn.reactants[1]
                 try:
-                    my_reactionList = self.reactionDict[family0][r1][r2]
+                    my_reactionList = self.reactionDict[family0.label][r1][r2]
                 except KeyError:
                     my_reactionList = []
                 for rxn0 in my_reactionList:
@@ -525,7 +526,7 @@ class CoreEdgeReactionModel:
                 if len(rxn.products)==1: r2 = None
                 else: r2 = rxn.products[1]
                 try:
-                    my_reactionList = self.reactionDict[family0][r1][r2]
+                    my_reactionList = self.reactionDict[family0.label][r1][r2]
                 except KeyError:
                     my_reactionList = []
                 for rxn0 in my_reactionList:
@@ -575,9 +576,9 @@ class CoreEdgeReactionModel:
             
         # Note in the log
         if isinstance(forward, TemplateReaction):
-            logging.debug('Creating new {0} template reaction {1}'.format(forward.family.label, forward))
+            logging.debug('Creating new {0} template reaction {1}'.format(forward.family, forward))
         elif isinstance(forward, DepositoryReaction):
-            logging.debug('Creating new {0} reaction {1}'.format(forward.getSource().label, forward))
+            logging.debug('Creating new {0} reaction {1}'.format(forward.getSource(), forward))
         elif isinstance(forward, LibraryReaction):
             logging.debug('Creating new library reaction {0}'.format(forward))
         else:
@@ -761,6 +762,8 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
+            family = getFamily(reaction.family)
+
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
@@ -771,7 +774,7 @@ class CoreEdgeReactionModel:
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                if family.ownReverse and hasattr(reaction,'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
@@ -904,33 +907,36 @@ class CoreEdgeReactionModel:
         # Only reactions from families should be missing kinetics
         assert isinstance(reaction, TemplateReaction)
         
+        family = getFamily(reaction.family)
+
         # Get the kinetics for the reaction
-        kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+        kinetics, source, entry, isForward = family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
         # Get the enthalpy of reaction at 298 K
         H298 = reaction.getEnthalpyOfReaction(298)
         G298 = reaction.getFreeEnergyOfReaction(298)
         
-        if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+        
+        if family.ownReverse and hasattr(reaction,'reverse'):
             
             # The kinetics family is its own reverse, so we could estimate kinetics in either direction
             
             # First get the kinetics for the other direction
-            rev_kinetics, rev_source, rev_entry, rev_isForward = reaction.family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+            rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
             # Now decide which direction's kinetics to keep
             keepReverse = False
             if (entry is not None and rev_entry is None):
                 # Only the forward has a source - use forward.
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family.label)
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
             elif (entry is None and rev_entry is not None):
                 # Only the reverse has a source - use reverse.
                 keepReverse = True
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family.label)
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
             elif (entry is not None and rev_entry is not None 
                   and entry is rev_entry):
                 # Both forward and reverse have the same source and entry
                 # Use the one for which the kinetics is the forward kinetics          
                 keepReverse = G298 > 0 and isForward and rev_isForward
-                reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family.label)
+                reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
             elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
                   and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
                     # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
@@ -1319,7 +1325,10 @@ class CoreEdgeReactionModel:
         seedMechanism = database.kinetics.libraries[seedMechanism]
 
         for entry in seedMechanism.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data, duplicate=entry.item.duplicate, reversible=entry.item.reversible)
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+             library=seedMechanism.label, kinetics=entry.data, duplicate=entry.item.duplicate,\
+             reversible=entry.item.reversible
+             )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             
         # Perform species constraints and forbidden species checks
@@ -1382,7 +1391,10 @@ class CoreEdgeReactionModel:
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
         for entry in reactionLibrary.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data, duplicate=entry.item.duplicate, reversible=entry.item.reversible)
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+            library=reactionLibrary.label, kinetics=entry.data,\
+            duplicate=entry.item.duplicate, reversible=entry.item.reversible
+            )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             

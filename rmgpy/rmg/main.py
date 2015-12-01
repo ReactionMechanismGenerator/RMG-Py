@@ -751,12 +751,12 @@ class RMG(util.Subject):
                     if isinstance(family0, KineticsLibrary):
                         for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
                             assert isinstance(rxn, LibraryReaction)
-                            rxn.library = family
+                            rxn.library = family.label
                             reactionDict[family][reactant1][reactant2].append(rxn)
                     elif isinstance(family0, KineticsFamily):
                         for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
                             assert isinstance(rxn, TemplateReaction)
-                            rxn.family = family
+                            rxn.family = family.label
                             reactionDict[family][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
