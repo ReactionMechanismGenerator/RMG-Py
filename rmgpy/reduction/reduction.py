@@ -264,21 +264,67 @@ def assess_reaction(rxn, reactionSystems, tolerance, data):
     return False
 
     
-def search_target(target_label, reactionSystem):
+def search_target_index(target_label, reactionModel):
     """
-    Searches for the Species object in the set of initial species
-    that has the same label as the parameter string.
+    Searches for the Species object in the core species
+    of the reaction that has the same label as the parameter string.
     """
 
-    for k in reactionSystem.initialMoleFractions.keys():
-        if k.label == target_label:
-            target = k
-            break
-    assert target is not None, '{} could not be found...'.format(target_label)
-    return target
+    for i, spc in enumerate(reactionModel.core.species):
+        if spc.label == target_label:
+            return i
+
+    raise Exception('{} could not be found...'.format(target_label))
 
 
-def compute_conversion(target_label, reactionModel, reactionSystem, reactionSystem_index, atol, rtol):
+def compute_observables(targets, reactionModel, reactionSystem, atol, rtol):
+    """
+    Computes the observables of the targets, provided in the function signature.
+
+    Currently, the species mole fractions at the end time of the
+    batch reactor simulation are the only observables that can be computed.
+
+    - resetting the reaction system, initialing with empty variables
+    - running the simulation at the conditions stored in the reaction system
+    """
+    reactionSystem.initializeModel(\
+        reactionModel.core.species, reactionModel.core.reactions,\
+        reactionModel.edge.species, reactionModel.edge.reactions, \
+        [], atol, rtol)
+        
+    #reset reaction system variables:
+    logging.info('No. of rxns in core reactions: {}'.format(len(reactionModel.core.reactions)))
+
+    #run the simulation:
+    simulate_one(reactionModel, atol, rtol, reactionSystem)
+
+    observables = compute_mole_fractions(targets, reactionModel, reactionSystem)
+
+    return observables
+
+def compute_mole_fractions(targets, reactionModel, reactionSystem):
+    """
+    Computes the mole fractions of the targets, identified by the list 
+    of species names in the function signature.
+
+    Returns a numpy array with the mole fractions at the end time of the reactor
+    simulation.
+
+    - searching the index of the target species in the core species
+    of the global reduction variable
+    - fetching the computed moles variable y
+
+    """
+    mole_fractions = np.zeros(len(targets), np.float64)
+
+    for i, label in enumerate(targets):
+        target_index = search_target_index(label, reactionModel)
+
+        mole_fractions[i] = reactionSystem.y[target_index]
+
+    return mole_fractions
+
+def compute_conversion(target_label, reactionModel, reactionSystem, atol, rtol):
     """
     Computes the conversion of a target molecule by
 
@@ -291,8 +337,7 @@ def compute_conversion(target_label, reactionModel, reactionSystem, reactionSyst
     - computing conversion
     """
 
-    target = search_target(target_label, reactionSystem)
-    target_index = reactionModel.core.species.index(target)
+    target_index = search_target_index(target_label, reactionModel)
 
     #reset reaction system variables:
     logging.info('No. of rxns in core reactions: {}'.format(len(reactionModel.core.reactions)))
@@ -312,10 +357,10 @@ def compute_conversion(target_label, reactionModel, reactionSystem, reactionSyst
     conv = 1 - (reactionSystem.y[target_index] / y0[target_index])
     return conv
 
-def reduce_model(tolerance, target_label, reactionModel, rmg, reaction_system_index):
+def reduce_model(tolerance, targets, reactionModel, rmg, reaction_system_index):
     """
     Reduces the model for the given tolerance and evaluates the 
-    target conversion.
+    target observables.
     """
 
     # reduce model with the tolerance specified earlier:
@@ -330,16 +375,19 @@ def reduce_model(tolerance, target_label, reactionModel, rmg, reaction_system_in
     original_reactions = reactionModel.core.reactions
     rmg.reactionModel.core.reactions = important_reactions
 
-    #re-compute conversion: 
-    conversion = compute_conversion(target_label, rmg.reactionModel,\
-     rmg.reactionSystems[reaction_system_index], reaction_system_index,\
+    #re-compute observables: 
+    observables = compute_observables(targets, rmg.reactionModel,\
+     rmg.reactionSystems[reaction_system_index],\
      rmg.absoluteTolerance, rmg.relativeTolerance)
 
     #reset the reaction model to its original state:
     rmg.reactionModel.core.reactions = original_reactions
 
-    logging.info('Conversion of reduced model ({} rxns): {:.2f}%'.format(no_important_reactions, conversion * 100))
-    return conversion, important_reactions
+    logging.info('Observables of reduced model ({} rxns):'.format(no_important_reactions))
+    for target, observable in zip(targets, observables):
+        logging.info('{}: {:.2f}%'.format(target, observable * 100))
+
+    return observables, important_reactions
 
 class ConcentrationListener(object):
     """Returns the species concentration profiles at each time step."""

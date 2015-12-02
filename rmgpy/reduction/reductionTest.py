@@ -20,9 +20,9 @@ class ReduceTest(unittest.TestCase):
 
         super(ReduceTest, cls).setUpClass()
 
-        rmg, target_label, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spc_dict)
+        rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spc_dict)
         cls.rmg = rmg
-        cls.target_label = target_label
+        cls.targets = targets
         cls.error = error
 
         reactionModel = rmg.reactionModel
@@ -31,21 +31,21 @@ class ReduceTest(unittest.TestCase):
 
     def test_compute_conversion(self):
         rmg = ReduceTest.rmg
-        target_label = ReduceTest.target_label
+        target = ReduceTest.targets[0]
         reactionModel = rmg.reactionModel
 
         atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
         index = 0
         reactionSystem = rmg.reactionSystems[index]
 
-        conv = compute_conversion(target_label, reactionModel, reactionSystem, index,\
+        conv = compute_conversion(target, reactionModel, reactionSystem,\
          rmg.absoluteTolerance, rmg.relativeTolerance)
         self.assertIsNotNone(conv)
 
 
     def test_reduce_compute(self):
         rmg = ReduceTest.rmg
-        target_label = ReduceTest.target_label
+        targets = ReduceTest.targets
         reactionModel = rmg.reactionModel
 
 
@@ -53,12 +53,12 @@ class ReduceTest(unittest.TestCase):
         index = 0
         reactionSystem = rmg.reactionSystems[index]
 
-        orig_conv = compute_conversion(target_label, reactionModel, reactionSystem, index,\
-         rmg.absoluteTolerance, rmg.relativeTolerance)
+        observables = compute_observables(targets, reactionModel, reactionSystem, \
+            rmg.absoluteTolerance, rmg.relativeTolerance)
 
         tols = [0.7, 1e-3, 1e-6]
         for tol in tols:
-            conv, important_rxns = reduce_model(tol, target_label, reactionModel, rmg, index)
+            conv, important_rxns = reduce_model(tol, targets, reactionModel, rmg, index)
             self.assertIsNotNone(conv)
 
 if __name__ == '__main__':

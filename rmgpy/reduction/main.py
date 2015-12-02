@@ -34,7 +34,7 @@ import os.path
 from input import load
 from output import write_model
 from optimization import optimize
-from reduction import compute_conversion, initialize
+from reduction import compute_observables, initialize
 
 from rmgpy.scoop_framework.util import logger as logging
 
@@ -48,8 +48,8 @@ def main():
     inputDirectory = os.path.abspath(os.path.dirname(inputFile))
     output_directory = inputDirectory
 
-    rmg, target_label, error = load(inputFile, reductionFile, chemkinFile, spc_dict)
-    logging.info('Allowed error in target conversion: {0:.0f}%'.format(error * 100))
+    rmg, targets, error = load(inputFile, reductionFile, chemkinFile, spc_dict)
+    logging.info('Allowed error in target observables: {0:.0f}%'.format(error * 100))
 
     reactionModel = rmg.reactionModel
     initialize(rmg.outputDirectory, reactionModel.core.reactions)
@@ -58,8 +58,8 @@ def main():
     index = 0
     reactionSystem = rmg.reactionSystems[index]    
     
-    #compute original target conversion
-    Xorig = compute_conversion(target_label, reactionModel, reactionSystem, index,\
+    #compute original target observables
+    observables = compute_observables(targets, reactionModel, reactionSystem, \
      rmg.absoluteTolerance, rmg.relativeTolerance)
 
     logger.info('Observables of original model:')
@@ -67,7 +67,7 @@ def main():
         logger.info('{}: {:.2f}%'.format(target, observable * 100))
 
     # optimize reduction tolerance
-    tol, important_reactions = optimize(target_label, reactionModel, rmg, index, error, Xorig)
+    tol, important_reactions = optimize(targets, reactionModel, rmg, index, error, observables)
     logging.info('Optimized tolerance: {:.0E}'.format(tol))
 
     # plug the important reactions into the RMG object and write:

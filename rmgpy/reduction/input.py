@@ -38,7 +38,7 @@ def loadReductionInput(reductionFile):
     Load an reduction job from the input file located at `reductionFile`
     """
 
-    target = None
+    targets = None
     tolerance = -1
 
     full_path = os.path.abspath(os.path.expandvars(reductionFile))
@@ -54,14 +54,14 @@ def loadReductionInput(reductionFile):
     global_context = { '__builtins__': None }
     local_context = {
         '__builtins__': None,
-        'target': target,
+        'targets': targets,
         'tolerance': tolerance
     }
 
     try:
         exec f in global_context, local_context
 
-        target = local_context['target']
+        targets = local_context['targets']
         tolerance = local_context['tolerance']
 
     except (NameError, TypeError, SyntaxError), e:
@@ -71,14 +71,14 @@ def loadReductionInput(reductionFile):
     finally:
         f.close()
 
-    assert target is not None
+    assert targets is not None
     assert tolerance != -1
 
-    return target, tolerance
+    return targets, tolerance
 
 def load(rmg_inputFile, reductionFile, chemkinFile, speciesDict):
     
     rmg = loadRMGPyJob(rmg_inputFile, chemkinFile, speciesDict, generateImages=False)
-    target, tolerance = loadReductionInput(reductionFile)
+    targets, tolerance = loadReductionInput(reductionFile)
 
-    return rmg, target, tolerance
+    return rmg, targets, tolerance

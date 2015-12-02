@@ -33,16 +33,13 @@ import numpy as np
 from reduction import reduce_model
 from rmgpy.scoop_framework.util import logger as logging
 
-def optimize(target_label, reactionModel, rmg, reaction_system_index, error, orig_conv):
+def optimize(target_label, reactionModel, rmg, reaction_system_index, error, orig_observable):
     """
     The optimization algorithm that searches for the most reduced model that satisfies the
     applied constraints.
 
     The error introduced by the reduced model for a response variable
     of a target is used as the objective function.
-
-    Currently, the target is a single species, and the response variable is the
-    species' conversion.
 
     The optimization algorithm increments the trial tolerance from a very low value
     until the introduced error is greater than the user-provided threshold.
@@ -71,11 +68,11 @@ def optimize(target_label, reactionModel, rmg, reaction_system_index, error, ori
     
     while True:
         logging.info('Trial tolerance: {trial:.2E}'.format(**locals()))
-        Xred, new_important_reactions = reduce_model(trial, target_label, reactionModel, rmg, reaction_system_index)
-        dev = np.abs((Xred - orig_conv) / orig_conv)
-        logging.info('Deviation: {dev:.2f}'.format(**locals()))
+        reduced_observable, new_important_reactions = reduce_model(trial, target_label, reactionModel, rmg, reaction_system_index)
+        
+        devs = compute_deviation(orig_observable, reduced_observable)
 
-        if dev > error or trial > tolmax:
+        if np.any(devs > error) or trial > tolmax:
             break
 
         tol = trial
@@ -86,3 +83,18 @@ def optimize(target_label, reactionModel, rmg, reaction_system_index, error, ori
         logging.error('Starting value for tolerance was too high...')
 
     return tol, important_reactions
+
+def compute_deviation(original, reduced):
+    """
+    Computes the relative deviation between the observables of the
+    original and reduced model.
+
+    Assumes the observables are numpy arrays.
+    """
+    devs = np.abs((reduced - original) / original)
+
+    logging.info('Deviations: '.format())
+    for dev in devs:
+        logging.info('{:.2f}%'.format(dev * 100))
+
+    return devs

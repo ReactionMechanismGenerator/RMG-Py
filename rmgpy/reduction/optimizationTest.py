@@ -9,15 +9,14 @@ from rmgpy.scoop_framework.util import logger as logging
 try:
     from scoop import futures, _control, shared
 except ImportError, e:
-    import logging
     logging.debug("Could not properly import SCOOP.")
 
 from .input import load
-from .reduction import initialize, compute_conversion
+from .reduction import initialize, compute_observables
 
 from .optimization import *
 
-def funcOptimize(rmg, target_label):
+def funcOptimize(rmg, targets):
     reactionModel = rmg.reactionModel
 
     initialize(rmg.outputDirectory, reactionModel.core.reactions)
@@ -28,15 +27,15 @@ def funcOptimize(rmg, target_label):
     index = 0
     reactionSystem = rmg.reactionSystems[index]
 
-    #compute original target conversion
-    Xorig = compute_conversion(target_label, reactionModel, reactionSystem, index,\
+    #compute original target observables
+    observables = compute_observables(targets, reactionModel, reactionSystem, \
      rmg.absoluteTolerance, rmg.relativeTolerance)
 
     # optimize reduction tolerance
-    tol, important_rxns = optimize(target_label, reactionModel, rmg, index, error, Xorig)
+    tol, important_rxns = optimize(targets, reactionModel, rmg, index, error, observables)
 
     try:
-        assert np.allclose([1e-06], [tol])
+        assert len(important_rxns) == 34
     except AssertionError:
         return False
 
@@ -62,17 +61,17 @@ class OptimizeTest(TestScoopCommon):
     @classmethod
     def setUpClass(cls):
         super(OptimizeTest, cls).setUpClass()
-        rmg, target_label, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spc_dict)
+        rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spc_dict)
         cls.rmg = rmg
-        cls.target_label = target_label
+        cls.targets = targets
         cls.error = error
 
 
     def test_optimize(self):
         rmg = OptimizeTest.rmg
-        target_label = OptimizeTest.target_label
+        targets = OptimizeTest.targets
         
-        result = futures._startup(funcOptimize, rmg, target_label)
+        result = futures._startup(funcOptimize, rmg, targets)
         self.assertEquals(result, True)  
 
 if __name__ == '__main__' and os.environ.get('IS_ORIGIN', "1") == "1":
