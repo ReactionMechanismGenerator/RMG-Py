@@ -120,8 +120,8 @@ def main():
     rmg = RMG()
 
     # Add output listeners:
-    rmg.attach(ChemkinWriter())
-    rmg.attach(OutputHTMLWriter())
+    rmg.attach(ChemkinWriter(args.output_directory))
+    rmg.attach(OutputHTMLWriter(args.output_directory))
 
     execute(rmg, inputFile, args.output_directory, **kwargs)
 

@@ -1937,7 +1937,7 @@ class ChemkinWriter(object):
     A new instance of the class can be appended to a subject as follows:
     
     rmg = ...
-    listener = ChemkinWriter()
+    listener = ChemkinWriter(outputDirectory)
     rmg.attach(listener)
 
     Whenever the subject calls the .notify() method, the

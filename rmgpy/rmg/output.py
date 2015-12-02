@@ -978,7 +978,7 @@ class OutputHTMLWriter(object):
     A new instance of the class can be appended to a subject as follows:
     
     rmg = ...
-    listener = OutputHTMLWriter()
+    listener = OutputHTMLWriter(outputDirectory)
     rmg.attach(listener)
 
     Whenever the subject calls the .notify() method, the
