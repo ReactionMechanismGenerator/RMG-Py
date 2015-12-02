@@ -446,7 +446,6 @@ class SolvationDatabase(object):
         d = {
             'libraries': self.libraries,
             'groups': self.groups,
-            'libraryOrder': self.libraryOrder,
             }
         return (SolvationDatabase, (), d)
 
@@ -456,7 +455,6 @@ class SolvationDatabase(object):
         """
         self.libraries = d['libraries']
         self.groups = d['groups']
-        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, libraries=None, depository=True):
         """

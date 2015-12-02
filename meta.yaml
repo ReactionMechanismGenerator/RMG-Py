@@ -39,6 +39,8 @@ requirements:
     - scipy
     - setuptools
     - xlwt
+    - pyzmq
+    - scoop
 
   run:
     - argparse # [py26]
@@ -68,6 +70,8 @@ requirements:
     - scipy
     - symmetry
     - xlwt
+    - pyzmq
+    - scoop
 
 test:
   requires:
