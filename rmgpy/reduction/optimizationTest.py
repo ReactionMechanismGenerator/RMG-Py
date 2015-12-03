@@ -35,7 +35,7 @@ def funcOptimize(rmg, targets):
     tol, important_rxns = optimize(targets, reactionModel, rmg, index, error, observables)
 
     try:
-        assert len(important_rxns) == 34
+        assert len(important_rxns) == 30
     except AssertionError:
         return False
 

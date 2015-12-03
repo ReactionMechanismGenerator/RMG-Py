@@ -48,7 +48,7 @@ def compute_reaction_rate(rxn_j, forward, T, P, coreSpeciesConcentrations):
     ...
     """
 
-    species_list = rxn_j.reactants if forward else rxn_j.products
+    species_list = rxn_j.reactants if forward == 'reactants' else rxn_j.products
 
     totconc = 1.0
     for spc_i in species_list:
@@ -60,7 +60,7 @@ def compute_reaction_rate(rxn_j, forward, T, P, coreSpeciesConcentrations):
 
         totconc *= conc
 
-    k = rxn_j.getRateCoefficient(T,P) if forward else rxn_j.getReverseRateCoefficient(T,P)
+    k = rxn_j.getRateCoefficient(T,P) if forward == 'reactants' else rxn_j.getReverseRateCoefficient(T,P)
     r = k * totconc
 
     return r
