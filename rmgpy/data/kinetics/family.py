@@ -1161,7 +1161,7 @@ class KineticsFamily(Database):
             products = products if isForward else reactants,
             degeneracy = 1,
             reversible = True,
-            family = self,
+            family = self.label,
         )
         
         # Store the labeled atoms so we can recover them later

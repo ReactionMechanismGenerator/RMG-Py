@@ -123,7 +123,7 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource().label
+            family = rxn.getSource()
         if family in familyCount:
             familyCount[family] += 1
         else:
@@ -331,22 +331,22 @@ $(document).ready(function() {
 <table class="reactionList hide_comment hide_kinetics hide_chemkin">
 <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
 {% for rxn in reactions %}
-<tr class="reaction {{ rxn.getSource().label|csssafe }}">
+<tr class="reaction {{ rxn.getSource()|csssafe }}">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
     <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
     <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-    <td class="family">{{ rxn.getSource().label }}</td>
+    <td class="family">{{ rxn.getSource() }}</td>
 </tr>
-<tr class="kinetics {{ rxn.getSource().label|csssafe }}">
+<tr class="kinetics {{ rxn.getSource()|csssafe }}">
     <td></td>
     <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
 </tr>
-<tr class="chemkin {{ rxn.getSource().label|csssafe }}">
+<tr class="chemkin {{ rxn.getSource()|csssafe }}">
     <td></td>
     <td colspan="4">{{ rxn.toChemkin(species) }}</td>
 </tr>
-<tr class="comment {{ rxn.getSource().label|csssafe }}">
+<tr class="comment {{ rxn.getSource()|csssafe }}">
     <td></td>
     <td colspan="4">{{ rxn.kinetics.comment }}</td>
 </tr>
@@ -463,7 +463,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         if isinstance(rxn1, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn1.getSource().label
+            family = rxn1.getSource()
         if family in familyCount1:
             familyCount1[family] += 1
             familyCount2[family] += 1
@@ -475,7 +475,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource().label
+            family = rxn.getSource()
         if family in familyCount1:
             familyCount1[family] += 1
         else:
@@ -485,7 +485,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource().label
+            family = rxn.getSource()
         if family in familyCount2:
             familyCount2[family] += 1
         else:
@@ -838,10 +838,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 <tr width=100%>
      <td class="index" width=10%><a href="{{ rxn1.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn1.index }}.</a></td>
-     <td class="family" width=40%>{{ rxn1.getSource().label }}</td>
+     <td class="family" width=40%>{{ rxn1.getSource() }}</td>
 
      <td class="index" width=10%><a href="{{ rxn2.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn2.index }}.</a></td>
-     <td class="family" width=40%>{{ rxn2.getSource().label }}</td>
+     <td class="family" width=40%>{{ rxn2.getSource() }}</td>
  </tr>
 
 <tr width=100%>{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
@@ -891,22 +891,22 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <table class="reactionList hide_comment hide_kinetics hide_chemkin">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions1 %}
-    <tr class="reaction {{ rxn.getSource().label|csssafe }}">
+    <tr class="reaction {{ rxn.getSource()|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species1/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family">{{ rxn.getSource().label }}</td>
+        <td class="family">{{ rxn.getSource() }}</td>
     </tr>
-    <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
+    <tr class="kinetics {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
-    <tr class="chemkin {{ rxn.getSource().label|csssafe }}">
+    <tr class="chemkin {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
     </tr>
-    <tr class="comment {{ rxn.getSource().label|csssafe }}">
+    <tr class="comment {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.comment }}</td>
     </tr>
@@ -921,22 +921,22 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <table class="reactionList hide_comment hide_kinetics hide_chemkin">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions2 %}
-    <tr class="reaction {{ rxn.getSource().label|csssafe }}">
+    <tr class="reaction {{ rxn.getSource()|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
         <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species2/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
         <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species2/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
-        <td class="family">{{ rxn.getSource().label }}</td>
+        <td class="family">{{ rxn.getSource() }}</td>
     </tr>
-    <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
+    <tr class="kinetics {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
-    <tr class="chemkin {{ rxn.getSource().label|csssafe }}">
+    <tr class="chemkin {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
     </tr>
-    <tr class="comment {{ rxn.getSource().label|csssafe }}">
+    <tr class="comment {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.kinetics.comment }}</td>
     </tr>
