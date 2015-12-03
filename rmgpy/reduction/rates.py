@@ -52,7 +52,7 @@ def compute_reaction_rate(rxn_j, forward, T, P, coreSpeciesConcentrations):
 
     totconc = 1.0
     for spc_i in species_list:
-        ci = getConcentration(spc_i, coreSpeciesConcentrations)
+        ci = coreSpeciesConcentrations[spc_i.label]
         if abs(ci) < CLOSE_TO_ZERO:
             return 0.
         nu_i = rxn_j.get_stoichiometric_coefficient(spc_i, forward)
@@ -148,13 +148,6 @@ def calc_Ri(spc_i,rij, reactions, reactant_or_product, T, P, coreSpeciesConcentr
 
         """What happens when Rf ~ Rb <<< 1?"""
         return max(abs(Rf),abs(Rb))
-
-def getConcentration(spc, coreSpeciesConcentrations):
-    """
-    Returns the concentration of the species in the 
-    reaction system.
-    """
-    return coreSpeciesConcentrations[spc.label]
 
 def isImportant(rxn, species_i, reactions, reactant_or_product, tolerance, T, P, coreSpeciesConcentrations):
     """
