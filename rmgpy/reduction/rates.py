@@ -48,24 +48,20 @@ def compute_reaction_rate(rxn_j, forward, T, P, coreSpeciesConcentrations):
     ...
     """
 
-    k = rxn_j.getRateCoefficient(T,P) if forward else rxn_j.getReverseRateCoefficient(T,P)
     species_list = rxn_j.reactants if forward else rxn_j.products
-    isReactant = forward
 
-    assert species_list is not None
-
-    concentrations = np.empty(len(species_list), dtype=float)
-    for i,spc_i in enumerate(species_list):
+    totconc = 1.0
+    for spc_i in species_list:
         ci = getConcentration(spc_i, coreSpeciesConcentrations)
-        if np.absolute(ci) < CLOSE_TO_ZERO:
+        if abs(ci) < CLOSE_TO_ZERO:
             return 0.
-        nu_i = rxn_j.get_stoichiometric_coefficient(spc_i, isReactant)
+        nu_i = rxn_j.get_stoichiometric_coefficient(spc_i, forward)
         conc = ci**nu_i
 
-        concentrations[i] = conc
+        totconc *= conc
 
-    r = k * concentrations.prod()
-
+    k = rxn_j.getRateCoefficient(T,P) if forward else rxn_j.getReverseRateCoefficient(T,P)
+    r = k * totconc
 
     return r
 
