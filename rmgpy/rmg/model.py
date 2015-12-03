@@ -584,20 +584,7 @@ class CoreEdgeReactionModel:
         else:
             raise Exception("Unrecognized reaction type {0!s}".format(forward.__class__))
         
-        # Add to the global dict/list of existing reactions (a list broken down by family, r1, r2)
-        # identify r1 and r2
-        r1 = forward.reactants[0]
-        r2 = None if len(forward.reactants) == 1 else forward.reactants[1]
-        family = forward.family
-        # make dictionary entries if necessary
-        if family not in self.reactionDict:
-            self.reactionDict[family] = {}
-        if not self.reactionDict[family].has_key(r1):
-            self.reactionDict[family][r1] = dict()
-        if not self.reactionDict[family][r1].has_key(r2):
-            self.reactionDict[family][r1][r2] = list()
-        # store this reaction at the top of the relevant short-list
-        self.reactionDict[family][r1][r2].insert(0, forward)
+        self.registerReaction(forward)
 
         forward.index = self.reactionCounter + 1
         self.reactionCounter += 1
@@ -1678,6 +1665,41 @@ class CoreEdgeReactionModel:
         if (struct.getNumberOfRadicalElectrons() > maxRadicals):
             return True
         return False
+    
+    def registerReaction(self, rxn):
+        """
+        Adds the reaction to the reaction database.
+
+        The reaction database is structured as a multi-level
+        dictionary, for efficient search and retrieval of
+        existing reactions.
+
+        The database has two types of dictionary keys:
+        - reaction family
+        - reactant(s) augmented inchi
+
+
+        """
+
+        key_family = rxn.family
+
+        key1 = getKey((rxn.reactants[0]))
+        key2 = None if len(rxn.reactants) == 1 else getKey((rxn.reactants[1]))
+        
+        key1, key2 = sorted([key1, key2], reverse=True)# ensure None is always at end
+
+        # make dictionary entries if necessary
+        if key_family not in self.reactionDict:
+            self.reactionDict[key_family] = {}
+
+        if not self.reactionDict[key_family].has_key(key1):
+            self.reactionDict[key_family][key1] = dict()
+
+        if not self.reactionDict[key_family][key1].has_key(key2):
+            self.reactionDict[key_family][key1][key2] = list()
+
+        # store this reaction at the top of the relevant short-list
+        self.reactionDict[key_family][key1][key2].insert(0, rxn)
 
 def getFamily(label):
     """
@@ -1703,3 +1725,10 @@ def getFamily(label):
         pass
 
     raise Exception('Could not retrieve the family/library: {}'.format(label))
+
+def getKey(spc):
+    """
+    Returns a string of the species that can serve as a key in a dictionary.
+    """
+
+    return spc.label
