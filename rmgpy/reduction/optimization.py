@@ -46,9 +46,8 @@ def optimize(target_label, reactionModel, rmg, reaction_system_index, error, ori
     """
 
 
-    start = 1E-20
-    incr = 10
-    tolmax = 1
+    low = -30 
+    high = 0
 
     """
     Tolerance to decide whether a reaction is unimportant for the formation/destruction of a species
@@ -61,30 +60,13 @@ def optimize(target_label, reactionModel, rmg, reaction_system_index, error, ori
     A low tolerance means that few reactions will be deemed unimportant, and the reduced model will only differ from the full
     model by a few reactions.
     """
-    tol = start
-    trial = start
 
-    important_reactions = reactionModel.core.reactions
-    
-    while True:
-        logging.info('Trial tolerance: {trial:.2E}'.format(**locals()))
-        reduced_observable, new_important_reactions = reduce_model(trial, target_label, reactionModel, rmg, reaction_system_index)
-        
-        devs = compute_deviation(orig_observable, reduced_observable)
-
-        if np.any(devs > error) or trial > tolmax:
-            break
-
-        tol = trial
-        trial = trial * incr
-        important_reactions = new_important_reactions
-
-    if tol == start:
-        logging.error('Starting value for tolerance was too high...')
+    tol, important_reactions = \
+     bisect(low, high, error, target_label, reactionModel, rmg, reaction_system_index, orig_observable)
 
     return tol, important_reactions
 
-def compute_deviation(original, reduced):
+def compute_deviation(original, reduced, targets):
     """
     Computes the relative deviation between the observables of the
     original and reduced model.
@@ -94,7 +76,67 @@ def compute_deviation(original, reduced):
     devs = np.abs((reduced - original) / original)
 
     logging.info('Deviations: '.format())
-    for dev in devs:
-        logging.info('{:.2f}%'.format(dev * 100))
+    for dev, target in zip(devs, targets):
+        logging.info('Deviation for {}: {:.2f}%'.format(target, dev * 100))
 
     return devs
+
+def isInvalid(devs, error):
+    """
+    Check if the reduced observables differ from the original
+    observables more than the parameter error threshold.
+    """
+    invalid = np.any(devs > error)
+    return invalid
+
+def bisect(low, high, error, targets, reactionModel, rmg, reaction_system_index, orig_observable):
+    """
+    Bisect method in log space.
+
+    Interrupt iterations when two consecutive, successful iterations differ less than a
+    threshold value.
+    """
+
+    THRESHOLD = 0.05
+
+    important_reactions = None
+    final_devs = None
+    old_trial = low
+    while True:
+        midpoint = (low + high) / 2.0
+        reduced_observable, new_important_reactions = evaluate(midpoint, targets, reactionModel, rmg, reaction_system_index)
+        
+        devs = compute_deviation(orig_observable, reduced_observable, targets)
+
+        if isInvalid(devs, error):
+            high = midpoint
+        else:
+            low = midpoint
+            important_reactions = new_important_reactions
+            final_devs = devs
+            
+        if np.abs((midpoint - old_trial) / old_trial) < THRESHOLD:
+            break
+
+        old_trial = low
+
+    if not important_reactions:
+        logging.error("Could not find a good guess...")
+        important_reactions = []
+
+    logging.info('Final deviations: '.format())
+    for dev, target in zip(final_devs, targets):
+        logging.info('Final deviation for {}: {:.2f}%'.format(target, dev * 100))
+
+
+    return low, important_reactions
+
+def evaluate(guess, targets, reactionModel, rmg, reaction_system_index):
+    """
+    
+    """
+    logging.info('Trial tolerance: {:.2E}'.format(10**guess))
+
+    observable, new_important_reactions = reduce_model(10**guess, targets, reactionModel, rmg, reaction_system_index)
+
+    return observable, new_important_reactions
