@@ -36,10 +36,11 @@ from output import write_model
 from optimization import optimize
 from reduction import compute_observables, initialize
 
-from rmgpy.scoop_framework.util import logger as logging
+from rmgpy.scoop_framework.util import logger
 
 def main():
-    
+    level = 20#10 : debug, 20: info
+    initializeLog(level)
     inputFile, reductionFile, chemkinFile, spc_dict = sys.argv[-4:]
 
     for f in [inputFile, reductionFile, chemkinFile, spc_dict]:
@@ -49,7 +50,7 @@ def main():
     output_directory = inputDirectory
 
     rmg, targets, error = load(inputFile, reductionFile, chemkinFile, spc_dict)
-    logging.info('Allowed error in target observables: {0:.0f}%'.format(error * 100))
+    logger.info('Allowed error in target observables: {0:.0f}%'.format(error * 100))
 
     reactionModel = rmg.reactionModel
     initialize(rmg.outputDirectory, reactionModel.core.reactions)
@@ -68,12 +69,21 @@ def main():
 
     # optimize reduction tolerance
     tol, important_reactions = optimize(targets, reactionModel, rmg, index, error, observables)
-    logging.info('Optimized tolerance: {:.0E}'.format(10**tol))
-    logging.info('Number of reactions in optimized reduced model : {}'.format(len(important_reactions)))
+    logger.info('Optimized tolerance: {:.0E}'.format(10**tol))
+    logger.info('Number of reactions in optimized reduced model : {}'.format(len(important_reactions)))
 
     # plug the important reactions into the RMG object and write:
     rmg.reactionModel.core.reactions = important_reactions
     write_model(rmg)
+
+def initializeLog(level):
+    """
+    Set up a logger for reduction to use to print output to stdout. The
+    `level` parameter is an integer specifying the amount of log text seen
+    at the console; the levels correspond to those of the :data:`logging` module.
+    """
+    # Create logger
+    logger.setLevel(level)
 
 
 if __name__ == '__main__':
