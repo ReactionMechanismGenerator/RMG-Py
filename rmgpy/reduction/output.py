@@ -27,28 +27,19 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
+import os
+import os.path
 
-from rmgpy.chemkin import writeKineticsEntry
+from rmgpy.chemkin import saveChemkinFile
 
 from rmgpy.scoop_framework.util import logger as logging
 
-def write_model(rmg, chemkin_name='reduced_reactions.inp'):
+def write_model(rmg, chemkin_name='chem_reduced.inp'):
     """
     Writes the reduced reaction model to a chemkin compatible files.
     """
     logging.info('Writing reduced model to {}'.format(chemkin_name))
-    saveChemkinFile(chemkin_name, rmg.reactionModel.core.species, rmg.reactionModel.core.reactions)
-
-
-def saveChemkinFile(path, species, reactions, verbose = True):
-    
-
-    s ='REACTIONS    KCAL/MOLE   MOLES\n\n'
-
-    for rxn in reactions:
-        s +=writeKineticsEntry(rxn, speciesList=species, verbose=verbose)
-        s +='\n'
-    s +='END\n\n'
-
-    with open(path, 'w') as f:
-        f.write(s)
+    speciesList = rmg.reactionModel.core.species
+    rxnList = rmg.reactionModel.core.reactions
+    path = os.path.join(os.getcwd(), chemkin_name)
+    saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)
