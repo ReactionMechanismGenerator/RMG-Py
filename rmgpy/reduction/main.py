@@ -68,7 +68,8 @@ def main():
 
     # optimize reduction tolerance
     tol, important_reactions = optimize(targets, reactionModel, rmg, index, error, observables)
-    logging.info('Optimized tolerance: {:.0E}'.format(tol))
+    logging.info('Optimized tolerance: {:.0E}'.format(10**tol))
+    logging.info('Number of reactions in optimized reduced model : {}'.format(len(important_reactions)))
 
     # plug the important reactions into the RMG object and write:
     rmg.reactionModel.core.reactions = important_reactions

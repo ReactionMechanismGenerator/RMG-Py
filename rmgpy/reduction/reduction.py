@@ -291,9 +291,6 @@ def compute_observables(targets, reactionModel, reactionSystem, atol, rtol):
         reactionModel.core.species, reactionModel.core.reactions,\
         reactionModel.edge.species, reactionModel.edge.reactions, \
         [], atol, rtol)
-        
-    #reset reaction system variables:
-    logging.info('No. of rxns in core reactions: {}'.format(len(reactionModel.core.reactions)))
 
     #run the simulation:
     simulate_one(reactionModel, atol, rtol, reactionSystem)
@@ -369,7 +366,7 @@ def reduce_model(tolerance, targets, reactionModel, rmg, reaction_system_index):
     original_size = len(reactionModel.core.reactions)
 
     no_important_reactions = len(important_reactions)
-    logging.info('Number of important reactions: {}'.format(no_important_reactions))
+    logging.info('No. of reactions in tested reduced model: {}'.format(no_important_reactions))
 
     #set the core reactions to the reduced reaction set:
     original_reactions = reactionModel.core.reactions
@@ -385,7 +382,7 @@ def reduce_model(tolerance, targets, reactionModel, rmg, reaction_system_index):
 
     logging.info('Observables of reduced model ({} rxns):'.format(no_important_reactions))
     for target, observable in zip(targets, observables):
-        logging.info('{}: {:.2f}%'.format(target, observable * 100))
+        logging.info('Observable in reduced model: {}: {:.2f}%'.format(target, observable * 100))
 
     return observables, important_reactions
 
