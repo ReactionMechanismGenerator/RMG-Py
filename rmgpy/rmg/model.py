@@ -647,7 +647,107 @@ class CoreEdgeReactionModel:
                     moleculeB.clearLabeledAtoms()
         return reactionList
 
-    def enlarge(self, newObject):
+    def enlargeEdge(self, unimolecularReact = None, bimolecularReact = None):
+        
+        database = rmgpy.data.rmg.database
+        
+        numOldCoreSpecies = len(self.core.species)
+        numOldCoreReactions = len(self.core.reactions)
+        numOldEdgeSpecies = len(self.edge.species)
+        numOldEdgeReactions = len(self.edge.reactions)
+        
+        numCoreSpecies = len(self.core.species)
+        reactionsMovedFromEdge = []
+        newReactionList = []; newSpeciesList = []
+        discoveredReactions = []
+        for i in xrange(numCoreSpecies):
+            if unimolecularReact[i]:
+                # Find reactions involving the species that are unimolecular
+                discoveredReactions.extend(self.react(database, self.core.species[i]))
+        for i in xrange(numCoreSpecies):
+            for j in xrange(i,numCoreSpecies):
+                # Find reactions involving the species that are bimolecular
+                # This includes a species reacting with itself (if its own concentration is high enough)
+                
+                if bimolecularReact[i,j]:
+                    discoveredReactions.extend(self.react(database, self.core.species[i], self.core.species[j]))
+        self.processNewReactions(discoveredReactions, None, None)
+        
+            
+        newSpeciesList.extend(self.newSpeciesList)
+        newReactionList.extend(self.newReactionList)
+            
+        # Generate thermodynamics of new species
+        logging.info('Generating thermodynamics for new species...')
+        for spec in newSpeciesList:
+            spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
+        
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
+        for reaction in newReactionList:
+            # If the reaction already has kinetics (e.g. from a library),
+            # assume the kinetics are satisfactory
+            if reaction.kinetics is None:
+                # Set the reaction kinetics
+                kinetics, source, entry, isForward = self.generateKinetics(reaction)
+                reaction.kinetics = kinetics
+                # Flip the reaction direction if the kinetics are defined in the reverse direction
+                if not isForward:
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
+                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                    if not isForward:
+                        reaction.template = reaction.reverse.template
+                    # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                    delattr(reaction,'reverse')
+                    
+        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
+        # self.newReactionList only contains *actually* new reactions, all in the forward direction.
+        for reaction in newReactionList:
+            # convert KineticsData to Arrhenius forms
+            if isinstance(reaction.kinetics, KineticsData):
+                reaction.kinetics = reaction.kinetics.toArrhenius()
+            #  correct barrier heights of estimated kinetics
+            if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
+                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if self.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
+            
+        # Update unimolecular (pressure dependent) reaction networks
+        if self.pressureDependence:
+            # Recalculate k(T,P) values for modified networks
+            self.updateUnimolecularReactionNetworks(database)
+            logging.info('')
+            
+        # Check new core and edge reactions for Chemkin duplicates
+        # The same duplicate reaction gets brought into the core
+        # at the same time, so there is no danger in checking all of the edge.
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+        checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
+        for rxn in newEdgeReactions:
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            reactionsMovedFromEdge=reactionsMovedFromEdge,
+            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
+            enlargeCore=False,
+        )
+
+        logging.info('')
+        
+    def enlargeCore(self, newObject):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
         If `newObject` is a
@@ -669,6 +769,7 @@ class CoreEdgeReactionModel:
         reactionsMovedFromEdge = []
         newReactionList = []; newSpeciesList = []
             
+        
         for obj in newObject:
             
             self.newReactionList = []; self.newSpeciesList = []
@@ -689,15 +790,15 @@ class CoreEdgeReactionModel:
                     
                     # Find reactions involving the new species as unimolecular reactant
                     # or product (e.g. A <---> products)
-                    newReactions.extend(self.react(database, newSpecies))
+                    #newReactions.extend(self.react(database, newSpecies))
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with other core species (e.g. A + B <---> products)
-                    for coreSpecies in self.core.species:
-                        if coreSpecies.reactive:
-                            newReactions.extend(self.react(database, newSpecies, coreSpecies))
+                    #for coreSpecies in self.core.species:
+                    #    if coreSpecies.reactive:
+                    #        newReactions.extend(self.react(database, newSpecies, coreSpecies))
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with itself (e.g. A + A <---> products)
-                    newReactions.extend(self.react(database, newSpecies, newSpecies))
+                    #newReactions.extend(self.react(database, newSpecies, newSpecies))
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
@@ -812,7 +913,8 @@ class CoreEdgeReactionModel:
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
             reactionsMovedFromEdge=reactionsMovedFromEdge,
             newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
-            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
+            enlargeCore=True,
         )
 
         logging.info('')
@@ -989,7 +1091,7 @@ class CoreEdgeReactionModel:
                 
         return kinetics, source, entry, isForward
     
-    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None):
+    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None, enlargeCore=False):
         """
         Output a summary of a model enlargement step to the log. The details of
         the enlargement are passed in the `newCoreSpecies`, `newCoreReactions`,
@@ -997,16 +1099,21 @@ class CoreEdgeReactionModel:
         """
 
         logging.info('')
-        logging.info('Summary of Model Enlargement')
-        logging.info('----------------------------')
-        logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
-        for spec in newCoreSpecies:
-            display(spec)
-            logging.info('    {0}'.format(spec))
-        logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
-        for spec in newEdgeSpecies:
-            display(spec)
-            logging.info('    {0}'.format(spec))
+        if enlargeCore:
+            logging.info('Summary of Model Core Enlargement')
+        else:
+            logging.info('Summary of Model Edge Enlargement')
+        logging.info('---------------------------------')
+        if enlargeCore:
+            logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
+            for spec in newCoreSpecies:
+                display(spec)
+                logging.info('    {0}'.format(spec))
+        else:
+            logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
+            for spec in newEdgeSpecies:
+                display(spec)
+                logging.info('    {0}'.format(spec))
         
         if reactionsMovedFromEdge:
             logging.info('Moved {0:d} reactions from edge to core'.format(len(reactionsMovedFromEdge)))
@@ -1017,13 +1124,15 @@ class CoreEdgeReactionModel:
                         logging.info('    {0}'.format(r))
                         newCoreReactions.remove(r)
                         break
-                    
-        logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
-        for rxn in newCoreReactions:
-            logging.info('    {0}'.format(rxn))
-        logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
-        for rxn in newEdgeReactions:
-            logging.info('    {0}'.format(rxn))
+        # Only enlarging edge can give new edge or core reactions (otherwise it is moving them from edge to core only)
+        if not enlargeCore:         
+            logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
+            for rxn in newCoreReactions:
+                logging.info('    {0}'.format(rxn))
+                
+            logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
+            for rxn in newEdgeReactions:
+                logging.info('    {0}'.format(rxn))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
