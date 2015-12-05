@@ -101,5 +101,20 @@ class ListenerTest(unittest.TestCase):
 
         self.assertNotEqual(self.listener.data, [])
 
+class ReactionSystemTest(unittest.TestCase):
+
+    def setUp(self):
+        
+        working_dir = 'rmgpy/solver/files/listener/'
+        self.inputFile = working_dir + 'input.py'
+        self.chemkinFile = working_dir + 'chemkin/chem.inp'
+        self.spc_dict = working_dir + 'chemkin/species_dictionary.txt'
+        self.rmg = loadRMGPyJob(self.inputFile, self.chemkinFile, self.spc_dict)
+        self.rxnSys = self.rmg.reactionSystems[0]
+
+    def test_pickle(self):
+        import pickle
+        rxnSys = pickle.loads(pickle.dumps(self.rxnSys))
+        
 if __name__ == '__main__':
     unittest.main()
