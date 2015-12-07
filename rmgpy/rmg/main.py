@@ -627,14 +627,15 @@ class RMG(util.Subject):
                 
                 # Run a raw simulation to get concentrations
                 for index, reactionSystem in enumerate(self.reactionSystems):
+                    # Run with the same conditions as with pruning off
                     reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
                         edgeSpecies = [],
                         edgeReactions = [],
                         toleranceKeepInEdge = 0,
-                        toleranceMoveToCore = 1,
-                        toleranceInterruptSimulation = 1,
+                        toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                        toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
                         pdepNetworks = self.reactionModel.networkList,
                         absoluteTolerance = self.absoluteTolerance,
                         relativeTolerance = self.relativeTolerance,
