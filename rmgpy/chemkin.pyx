@@ -396,7 +396,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
             if re.match('[0-9.]+', product):
                 logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. "
                                 "Ignoring".format(line))
-                raise ChemkinError('Skip reaction!')
+                raise ChemkinError('Skip reaction! Fractional stoichiometry.')
             raise ChemkinError(
                 'Unexpected product "{0}" in reaction {1} from line {2}.'.format(product, reaction, line))
         else:
@@ -1374,7 +1374,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
             reaction = read_reaction_comments(reaction, comments, read=read_comments)
         except ChemkinError as e:
             if "Skip reaction!" in str(e):
-                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+                logging.warning("Skipping the reaction {0!r} ".format(kinetics) + e.message[14:])
                 continue
             else:
                 raise
