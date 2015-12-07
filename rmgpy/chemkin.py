@@ -336,15 +336,11 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
     if '(+M)' in reactants: reactants = reactants.replace('(+M)','')
     if '(+m)' in reactants: reactants = reactants.replace('(+m)','')
     if '(+' in reactants:
-        # Probably has a specific third body collider
-        first, second = reactants.split('(+')
-        reactants = first + second.split(')',1)[1]
+        raise ChemkinError('Skip reaction! Explicit 3rd-body collider not implemented.')
     if '(+M)' in products:  products = products.replace('(+M)','')
     if '(+m)' in products:  products = products.replace('(+m)','')
     if '(+' in products:
-        # Probably has a specific third body collider
-        first, second = products.split('(+')
-        products = first + second.split(')',1)[1]
+        raise ChemkinError('Skip reaction! Explicit 3rd-body collider not implemented.')
 
     # Create a new Reaction object for this reaction
     reaction = Reaction(reactants=[], products=[], reversible=reversible)
@@ -378,7 +374,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         elif product not in speciesDict:
             if re.match('[0-9.]+',product):
                 logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. Ignoring".format(line))
-                raise ChemkinError('Skip reaction!')
+                raise ChemkinError('Skip reaction! Fractional stoichiometry.')
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
             for i in range(stoichiometry):
@@ -1257,8 +1253,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
             reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
             reaction = readReactionComments(reaction, comments, read = readComments)
         except ChemkinError, e:
-            if e.message == "Skip reaction!":
-                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+            if e.message.starts_with("Skip reaction!"):
+                logging.warning("Skipping the reaction {0!r} ".format(kinetics) + e.message[14:])
                 continue
             else:
                 raise e
