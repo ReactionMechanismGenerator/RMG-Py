@@ -669,8 +669,6 @@ class ModelMatcher():
                     continue
                 path = os.path.join(root, filename)
                 logging.info("I think I found a thermo library at {0}".format(path))
-                logging.info("But not loading it for now!")
-                break
                 if os.path.abspath(path).startswith(os.path.split(os.path.abspath(args.thermo))[0]):
                     logging.info("But it's the model currently being imported, so not loading.")
                     break
