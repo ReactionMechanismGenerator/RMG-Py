@@ -251,6 +251,49 @@ function uncheckAllDetails() {
     $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
     return false;
 }
+function resetReactionFilter() {
+    $.each($(".reactionList tbody").find("tr"), function() {
+        $(this).show();
+    });
+}
+
+function submitReactionFilter(){
+    _r1 = $("#reactant1").val().toLowerCase();
+    _r2 = $("#reactant2").val().toLowerCase();
+    _p1 = $("#product1").val().toLowerCase();
+    _p2 = $("#product2").val().toLowerCase();
+    $.each($(".reactionList tbody").find("tr"), function() {
+        _rxnRow = this;
+        _matched = false;
+        _rxn_spc_list = [""];
+        _reactants = _rxnRow.getElementsByClassName('reactants');
+        $.each($(_reactants).find("a"), function() {
+            _a = this;
+            $.each($(_a).find("img"), function() {
+                _spec = this;
+                _rxn_spc_list.push(_spec.getAttribute("alt").toLowerCase());
+          
+            });
+        });
+        _products = _rxnRow.getElementsByClassName('products');
+        $.each($(_products).find("a"), function() {
+            _a = this;
+            $.each($(_a).find("img"), function() {
+                _spec = this;
+                _rxn_spc_list.push(_spec.getAttribute("alt").toLowerCase());
+            
+            });
+        });
+
+        if(_rxn_spc_list.indexOf(_r1) != -1 && _rxn_spc_list.indexOf(_r2) != -1 &&_rxn_spc_list.indexOf(_p1) != -1 && _rxn_spc_list.indexOf(_p2) != -1){
+            _matched = true
+        }
+        if(_matched == true)
+        $(_rxnRow).show();
+        else
+        $(_rxnRow).hide();
+     });
+}
 $(document).ready(function() {
     checkAllFamilies();
     uncheckAllDetails();
@@ -326,10 +369,27 @@ $(document).ready(function() {
 <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
 
+<h4>Reaction Filter:</h4>
+
+<form id="reactionFilter">
+  Reactant 1: <input type="text" id="reactant1" value=""> &nbsp;
+  Reactant 2: <input type="text" id="reactant2" value=""> &nbsp;
+  Product 1: <input type="text" id="product1" value=""> &nbsp;
+  Product 2: <input type="text" id="product2" value=""><br><br>
+
+  
+</form>
+
+<input type="button" onclick="submitReactionFilter()" value="Search"> &nbsp;
+<input type="button" onclick="resetReactionFilter()" value="Clear Filter"> 
+
 <h4>Reaction List:</h4>
 
 <table class="reactionList hide_comment hide_kinetics hide_chemkin">
+<thead>
 <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
+</thead>
+<tbody>
 {% for rxn in reactions %}
 <tr class="reaction {{ rxn.getSource().label|csssafe }}">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
@@ -351,6 +411,7 @@ $(document).ready(function() {
     <td colspan="4">{{ rxn.kinetics.comment }}</td>
 </tr>
 {% endfor %}
+</tbody>
 
 </table>
 
