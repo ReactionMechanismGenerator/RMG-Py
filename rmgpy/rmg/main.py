@@ -606,8 +606,7 @@ class RMG(util.Subject):
                 
                 # If objects to enlarge are species rather than pdep networks, add them to core first
                 for objectToEnlarge in objectsToEnlarge:
-                    if isinstance(objectToEnlarge, Species):
-                        self.reactionModel.enlargeCore(objectToEnlarge)
+                    self.reactionModel.enlargeCore(objectToEnlarge)
                 
                 # Recalculate number of core species
                 numCoreSpecies = len(self.reactionModel.core.species)
