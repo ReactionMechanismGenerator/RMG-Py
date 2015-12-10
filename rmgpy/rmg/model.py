@@ -759,9 +759,6 @@ class CoreEdgeReactionModel:
         """
         database = rmgpy.data.rmg.database
         
-        if not isinstance(newObject, list):
-            newObject = [newObject]
-        
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
         numOldEdgeSpecies = len(self.edge.species)
@@ -769,83 +766,80 @@ class CoreEdgeReactionModel:
         reactionsMovedFromEdge = []
         newReactionList = []; newSpeciesList = []
             
-        
-        for obj in newObject:
-            
-            self.newReactionList = []; self.newSpeciesList = []
-            newReactions = []
-            pdepNetwork = None
-            objectWasInEdge = False
-        
-            if isinstance(obj, Species):
+        self.newReactionList = []; self.newSpeciesList = []
+        newReactions = []
+        pdepNetwork = None
+        objectWasInEdge = False
+    
+        if isinstance(newObject, Species):
 
-                newSpecies = obj
-                objectWasInEdge = newSpecies in self.edge.species
-                
-                if not newSpecies.reactive:
-                    logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
-                else:
-                    logging.info('Adding species {0} to model core'.format(newSpecies))
-                    display(newSpecies) # if running in IPython --pylab mode, draws the picture!
-                    
-                    # Find reactions involving the new species as unimolecular reactant
-                    # or product (e.g. A <---> products)
-                    #newReactions.extend(self.react(database, newSpecies))
-                    # Find reactions involving the new species as bimolecular reactants
-                    # or products with other core species (e.g. A + B <---> products)
-                    #for coreSpecies in self.core.species:
-                    #    if coreSpecies.reactive:
-                    #        newReactions.extend(self.react(database, newSpecies, coreSpecies))
-                    # Find reactions involving the new species as bimolecular reactants
-                    # or products with itself (e.g. A + A <---> products)
-                    #newReactions.extend(self.react(database, newSpecies, newSpecies))
-    
-                # Add new species
-                reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-                
-                # Process the new reactions
-                # While adding to core/edge/pdep network, this clears atom labels:
-                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-    
-            elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
-    
-                pdepNetwork, newSpecies = obj
-                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
-                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-    
+            newSpecies = newObject
+            objectWasInEdge = newSpecies in self.edge.species
+            
+            if not newSpecies.reactive:
+                logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(obj, obj.__class__))
+                logging.info('Adding species {0} to model core'.format(newSpecies))
+                display(newSpecies) # if running in IPython --pylab mode, draws the picture!
+                
+                # Find reactions involving the new species as unimolecular reactant
+                # or product (e.g. A <---> products)
+                #newReactions.extend(self.react(database, newSpecies))
+                # Find reactions involving the new species as bimolecular reactants
+                # or products with other core species (e.g. A + B <---> products)
+                #for coreSpecies in self.core.species:
+                #    if coreSpecies.reactive:
+                #        newReactions.extend(self.react(database, newSpecies, coreSpecies))
+                # Find reactions involving the new species as bimolecular reactants
+                # or products with itself (e.g. A + A <---> products)
+                #newReactions.extend(self.react(database, newSpecies, newSpecies))
 
-            # If there are any core species among the unimolecular product channels
-            # of any existing network, they need to be made included
-            for network in self.networkList:
-                network.updateConfigurations(self)
-                index = 0
-                while index < len(self.core.species):
-                    species = self.core.species[index]
-                    isomers = [isomer.species[0] for isomer in network.isomers]
-                    if species in isomers and species not in network.explored:
-                        network.explored.append(species)
-                        continue
-                    for products in network.products:
-                        products = products.species
-                        if len(products) == 1 and products[0] == species:
-                            newReactions = network.exploreIsomer(species, self, database)
-                            self.processNewReactions(newReactions, species, network)
-                            network.updateConfigurations(self)
-                            index = 0
-                            break
-                    else:
-                        index += 1
+            # Add new species
+            reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
             
-            if isinstance(obj, Species) and objectWasInEdge:
-                # moved one species from edge to core
-                numOldEdgeSpecies -= 1
-                # moved these reactions from edge to core
-                numOldEdgeReactions -= len(reactionsMovedFromEdge)
-            
-            newSpeciesList.extend(self.newSpeciesList)
-            newReactionList.extend(self.newReactionList)
+            # Process the new reactions
+            # While adding to core/edge/pdep network, this clears atom labels:
+            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+
+        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
+
+            pdepNetwork, newSpecies = newObject
+            newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
+            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+
+        else:
+            raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(newObject, newObject.__class__))
+
+        # If there are any core species among the unimolecular product channels
+        # of any existing network, they need to be made included
+        for network in self.networkList:
+            network.updateConfigurations(self)
+            index = 0
+            while index < len(self.core.species):
+                species = self.core.species[index]
+                isomers = [isomer.species[0] for isomer in network.isomers]
+                if species in isomers and species not in network.explored:
+                    network.explored.append(species)
+                    continue
+                for products in network.products:
+                    products = products.species
+                    if len(products) == 1 and products[0] == species:
+                        newReactions = network.exploreIsomer(species, self, database)
+                        self.processNewReactions(newReactions, species, network)
+                        network.updateConfigurations(self)
+                        index = 0
+                        break
+                else:
+                    index += 1
+        
+        if isinstance(newObject, Species) and objectWasInEdge:
+            # moved one species from edge to core
+            numOldEdgeSpecies -= 1
+            # moved these reactions from edge to core
+            numOldEdgeReactions -= len(reactionsMovedFromEdge)
+        
+        newSpeciesList.extend(self.newSpeciesList)
+        newReactionList.extend(self.newReactionList)
             
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
