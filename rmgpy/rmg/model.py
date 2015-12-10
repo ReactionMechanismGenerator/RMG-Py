@@ -659,19 +659,18 @@ class CoreEdgeReactionModel:
         numCoreSpecies = len(self.core.species)
         reactionsMovedFromEdge = []
         newReactionList = []; newSpeciesList = []
-        discoveredReactions = []
         for i in xrange(numCoreSpecies):
             if unimolecularReact[i]:
                 # Find reactions involving the species that are unimolecular
-                discoveredReactions.extend(self.react(database, self.core.species[i]))
+                self.processNewReactions(self.react(database, self.core.species[i]), self.core.species[i], None)
         for i in xrange(numCoreSpecies):
             for j in xrange(i,numCoreSpecies):
                 # Find reactions involving the species that are bimolecular
                 # This includes a species reacting with itself (if its own concentration is high enough)
                 
                 if bimolecularReact[i,j]:
-                    discoveredReactions.extend(self.react(database, self.core.species[i], self.core.species[j]))
-        self.processNewReactions(discoveredReactions, None, None)
+                    # Consider the latest added core species as the 'new' species
+                    self.processNewReactions(self.react(database, self.core.species[i], self.core.species[j]), self.core.species[j], None)
         
             
         newSpeciesList.extend(self.newSpeciesList)
