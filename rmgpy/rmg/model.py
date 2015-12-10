@@ -1094,20 +1094,20 @@ class CoreEdgeReactionModel:
 
         logging.info('')
         if enlargeCore:
-            logging.info('Summary of Model Core Enlargement')
+            logging.info('Summary of Model Enlargement')
         else:
-            logging.info('Summary of Model Edge Enlargement')
+            logging.info('Summary of Secondary Model Edge Enlargement')
         logging.info('---------------------------------')
-        if enlargeCore:
-            logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
-            for spec in newCoreSpecies:
-                display(spec)
-                logging.info('    {0}'.format(spec))
-        else:
-            logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
-            for spec in newEdgeSpecies:
-                display(spec)
-                logging.info('    {0}'.format(spec))
+
+        logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
+        for spec in newCoreSpecies:
+            display(spec)
+            logging.info('    {0}'.format(spec))
+
+        logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
+        for spec in newEdgeSpecies:
+            display(spec)
+            logging.info('    {0}'.format(spec))
         
         if reactionsMovedFromEdge:
             logging.info('Moved {0:d} reactions from edge to core'.format(len(reactionsMovedFromEdge)))
@@ -1117,16 +1117,14 @@ class CoreEdgeReactionModel:
                         (r.products == rxn.reactants and r.reactants == rxn.products)):
                         logging.info('    {0}'.format(r))
                         newCoreReactions.remove(r)
-                        break
-        # Only enlarging edge can give new edge or core reactions (otherwise it is moving them from edge to core only)
-        if not enlargeCore:         
-            logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
-            for rxn in newCoreReactions:
-                logging.info('    {0}'.format(rxn))
-                
-            logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
-            for rxn in newEdgeReactions:
-                logging.info('    {0}'.format(rxn))
+                        break        
+        logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
+        for rxn in newCoreReactions:
+            logging.info('    {0}'.format(rxn))
+            
+        logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
+        for rxn in newEdgeReactions:
+            logging.info('    {0}'.format(rxn))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
