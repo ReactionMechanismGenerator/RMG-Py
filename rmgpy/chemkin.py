@@ -651,7 +651,7 @@ def readReactionComments(reaction, comments, read = True):
             )
             reaction.kinetics.comment = line
             
-        elif 'exact' in line or 'estimate' in line:
+        elif 'exact:' in line or 'estimate:' in line:
             index1 = line.find('[')
             index2 = line.find(']')
             template = [s.strip() for s in line[index1:index2].split(',')]
