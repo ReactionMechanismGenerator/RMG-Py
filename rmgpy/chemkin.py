@@ -560,7 +560,7 @@ def readReactionComments(reaction, comments, read = True):
             pass
         
         elif 'Template reaction:' in line:
-            label = str(tokens[-2])
+            label = str(tokens[-1])
             template = tokens[-1][1:-1].split(',')
             reaction = TemplateReaction(
                 index = reaction.index,
