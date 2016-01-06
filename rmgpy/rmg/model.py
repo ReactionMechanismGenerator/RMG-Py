@@ -509,8 +509,8 @@ class CoreEdgeReactionModel:
                 shortlist = self.retrieve(library, r1_rev, r2_rev)
                 
                 for rxn0 in shortlist:
-                    if (reactants0 == reactants and products0 == products) or \
-                        (reactants0 == products and products0 == reactants):
+                    if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+                        (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
                         return True, rxn0
 
         return False, None
