@@ -492,7 +492,8 @@ class CoreEdgeReactionModel:
         _, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)
 
         for library in self.reactionDict:
-            if isinstance(library, KineticsLibrary) and library != family:
+            libObj = getFamilyLibraryObject(library)
+            if isinstance(libObj, KineticsLibrary) and library != rxn.family:
 
                 # First check seed short-list in forward direction                
                 shortlist = self.retrieve(library, r1_fwd, r2_fwd)
