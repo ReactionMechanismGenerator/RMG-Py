@@ -462,7 +462,7 @@ class CoreEdgeReactionModel:
         reaction (if found).
         """
         
-        family = getFamily(rxn.family)
+        familyObj = getFamilyLibraryObject(rxn.family)
         shortlist = self.searchRetrieveReactions(rxn)
 
         # Now use short-list to check for matches. All should be in same forward direction.
@@ -474,14 +474,14 @@ class CoreEdgeReactionModel:
             rxn_id0 = generateReactionId(rxn0)
 
             if (rxn_id == rxn_id0):
-                if isinstance(family, KineticsLibrary):
+                if isinstance(familyObj, KineticsLibrary):
                     # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
                     if not rxn.duplicate:
                         return True, rxn0
                 else:
                     return True, rxn0
             
-            if isinstance(family,KineticsFamily) and family.ownReverse:
+            if isinstance(familyObj, KineticsFamily) and familyObj.ownReverse:
                 if (rxn_id == rxn_id0[::-1]):
                     return True, rxn0
 
@@ -727,7 +727,7 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
-            family = getFamily(reaction.family)
+            family = getFamilyLibraryObject(reaction.family)
 
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
@@ -872,7 +872,7 @@ class CoreEdgeReactionModel:
         # Only reactions from families should be missing kinetics
         assert isinstance(reaction, TemplateReaction)
         
-        family = getFamily(reaction.family)
+        family = getFamilyLibraryObject(reaction.family)
 
         # Get the kinetics for the reaction
         kinetics, source, entry, isForward = family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
@@ -1697,7 +1697,7 @@ class CoreEdgeReactionModel:
         my_reactionList.extend(rxns)
             
             
-        family = getFamily(family_label)       
+        family = getFamilyLibraryObject(family_label)       
         # if the family is its own reverse (H-Abstraction) then check the other direction
         if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
 
@@ -1758,9 +1758,9 @@ def generateReactionId(rxn):
 
     return (reactants, products)
 
-def getFamily(label):
+def getFamilyLibraryObject(label):
     """
-    Returns the ReactionFamily object associated with the
+    Returns the KineticsFamily or KineticsLibrary object associated with the
     parameter string.
 
     First search through the reaction families, then 
