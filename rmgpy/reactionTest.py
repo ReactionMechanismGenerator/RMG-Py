@@ -1057,6 +1057,52 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(len(self.reaction3.pairs[0]), 2)
         self.assertEqual(len(self.reaction3.pairs[1]), 2)
 
+    @work_in_progress
+    def testGeneratePairs(self):
+        """
+        This test is to ensure that generatePairs() assigns pairs won't
+        be affected by the order of species created in memory.
+        """
+        # create reactant and product species
+        reactant1 = Species(label="C11H24").fromSMILES('CCCCCCCCCCC')
+        reactant2 = Species(label="C11H21").fromSMILES('C=CCCCCCCC[CH]C')
+
+        product1 = Species(label="C11H22").fromSMILES('C=CCCCCCCCCC')
+        product2 = Species(label="C11H23").fromSMILES('C[CH]CCCCCCCCC')
+        product1_dup = Species(label="C11H22_dup").fromSMILES('C=CCCCCCCCCC')
+
+        # create reaction C11H24+C11H21=C11H22+C11H23
+        reaction = Reaction(reactants=[reactant1, reactant2],
+                            products=[product1, product2])
+
+        reaction_dup = Reaction(reactants=[reactant1, reactant2],
+                                products=[product1_dup, product2])
+        # generate pairs
+        reaction.generatePairs()
+        reaction_dup.generatePairs()
+
+        # expect pairs and actual pairs for reaction
+        expected_pairs = sorted([sorted((reactant1, product2)), sorted((reactant2, product1))])
+
+        actual_pairs = []
+        for pair in reaction.pairs:
+            pair = sorted(pair)
+            actual_pairs.append(pair)
+        actual_pairs = sorted(actual_pairs)
+
+        self.assertEqual(actual_pairs, expected_pairs)
+
+        # expect pairs and actual pairs for reaction_dup
+        expected_pairs_dup = sorted([sorted((reactant1, product2)), sorted((reactant2, product1_dup))])
+
+        actual_pairs_dup = []
+        for pair in reaction_dup.pairs:
+            pair = sorted(pair)
+            actual_pairs_dup.append(pair)
+        actual_pairs_dup = sorted(actual_pairs_dup)
+
+        self.assertEqual(actual_pairs_dup, expected_pairs_dup)
+
 
 class TestReactionToCantera(unittest.TestCase):
     """
