@@ -560,7 +560,7 @@ def readReactionComments(reaction, comments, read = True):
             pass
         
         elif 'Template reaction:' in line:
-            label = str(tokens[-2])
+            label = str(tokens[-1])
             template = tokens[-1][1:-1].split(',')
             reaction = TemplateReaction(
                 index = reaction.index,
@@ -651,7 +651,7 @@ def readReactionComments(reaction, comments, read = True):
             )
             reaction.kinetics.comment = line
             
-        elif 'exact' in line or 'estimate' in line:
+        elif 'exact:' in line or 'estimate:' in line:
             index1 = line.find('[')
             index2 = line.find(']')
             template = [s.strip() for s in line[index1:index2].split(',')]
