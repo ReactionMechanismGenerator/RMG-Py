@@ -21,3 +21,30 @@ class GenerateReactionsTest(unittest.TestCase):
 
 
         shutil.rmtree(os.path.join(folder,'pdep'))
+
+    def testDuplicateReaction(self):
+        """
+        Test that the radical addition reaction
+
+        HCJ=O + CH2O = [CH2]OC=O
+
+        present in the reaction library "Methylformate",
+        only appears once in the model.
+
+        """
+        folder = os.path.join(os.getcwd(),'rmgpy/tools/data/generate/duplicates')
+        
+        inputFile = os.path.join(folder,'input.py')
+        
+        rmg = RMG()
+        rmg = execute(rmg, inputFile, folder)
+
+        self.assertIsNotNone(rmg)
+
+        """
+        13 reactions will be created,12 from the seed mechanism,
+        1 additional one through the reaction family.
+        """
+        self.assertEquals(13, len(rmg.reactionModel.core.reactions))
+
+        shutil.rmtree(os.path.join(folder,'pdep'))
