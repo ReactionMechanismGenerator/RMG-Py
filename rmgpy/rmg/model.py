@@ -460,6 +460,19 @@ class CoreEdgeReactionModel:
         Check to see if an existing reaction has the same reactants, products, and
         family as `rxn`. Returns :data:`True` or :data:`False` and the matched
         reaction (if found).
+
+        First, a shortlist of reaction is retrieved that have the same reaction keys
+        as the parameter reaction.
+
+        Next, the reaction ID containing an identifier (e.g. label) of the reactants
+        and products is compared between the parameter reaction and the each of the
+        reactions in the shortlist. If a match is found, the discovered reaction is 
+        returned.
+
+        If a match is not yet found, the Library (seed mechs, reaction libs)
+        in the reaction database are iterated over to check if a reaction was overlooked
+        (a reaction with a different "family" key as the parameter reaction).
+
         """
         
         familyObj = getFamilyLibraryObject(rxn.family)
@@ -1657,6 +1670,15 @@ class CoreEdgeReactionModel:
         - reaction family
         - reactant(s) keys
 
+        First, the keys are generated for the parameter reaction.
+        
+        Next, it is checked whether the reaction database already 
+        contains similar keys. If not, a new container is created,
+        either a dictionary for the family key and first reactant key,
+        or a list for the second reactant key.
+
+        Finally, the reaction is inserted as the first element in the 
+        list.
         """
 
         key_family, key1, key2 = generateReactionKey(rxn)
@@ -1666,10 +1688,10 @@ class CoreEdgeReactionModel:
             self.reactionDict[key_family] = {}
 
         if not self.reactionDict[key_family].has_key(key1):
-            self.reactionDict[key_family][key1] = dict()
+            self.reactionDict[key_family][key1] = {}
 
         if not self.reactionDict[key_family][key1].has_key(key2):
-            self.reactionDict[key_family][key1][key2] = list()
+            self.reactionDict[key_family][key1][key2] = []
 
         # store this reaction at the top of the relevant short-list
         self.reactionDict[key_family][key1][key2].insert(0, rxn)
@@ -1683,12 +1705,8 @@ class CoreEdgeReactionModel:
 
         Both the reaction key based on the reactants as well as on the products
         is used to search for possible candidate reactions.
-
-        if the flag searchLibraries is set to True, then 
-        reactions will be returned that do not belong to the same reaction family
-        or reaction library necessarily, but do have the same reactant keys
-        as the parameter reaction.
         """
+
         # Get the short-list of reactions with the same family, reactant1 and reactant2
         family_label, r1_fwd, r2_fwd = generateReactionKey(rxn)
         
