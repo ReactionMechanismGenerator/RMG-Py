@@ -1,0 +1,113 @@
+ELEMENTS H C O N Ne Ar He Si S Cl END
+
+SPECIES
+    Ar                  ! Ar
+    He                  ! He
+    Ne                  ! Ne
+    N2                  ! N2
+    C4J(1)              ! C4J(1)
+    C11H22(2)           ! C11H22(2)
+    CCCC(5)             ! CCCC(5)
+    C11H21(6)           ! C=CCCCC[CH]CCCC(6)
+    C11H21(7)           ! C=CCCC[CH]CCCCC(7)
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+Ar                      Ar1                 G200.000   6000.000  1000.00       1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+He                      He1                 G200.000   6000.000  1000.00       1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 9.28724000E-01 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 9.28724000E-01                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne1                 G200.000   6000.000  1000.00       1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+N2                      N 2                 G200.000   6000.000  1000.00       1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) +
+! group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + radical(RCCJ)
+C4J(1)                  C 4  H 9            G100.000   5000.000  1048.11       1
+ 7.21574891E+00 2.70036507E-02-1.06547116E-05 1.95471782E-09-1.35977653E-13    2
+ 5.47162388E+03-1.06997328E+01 2.34847953E+00 2.91324214E-02 9.83641575E-06    3
+-2.60505989E-08 1.01150985E-11 7.39526561E+03 1.73201945E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) +
+! other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-
+! CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-CsCsHH) +
+! gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-(Cds-Cds)CsHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) +
+! other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R)
+C11H22(2)               C 11 H 22           G100.000   5000.000  1687.46       1
+ 2.40183437E+01 6.63233942E-02-2.68542330E-05 4.78759141E-09-3.18671908E-13    2
+-3.06597483E+04-9.23478682E+01-2.31376357E+00 1.28742717E-01-8.23402763E-05    3
+ 2.67088731E-08-3.56639802E-12-2.17730146E+04 4.84665094E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) +
+! group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)
+CCCC(5)                 C 4  H 10           G100.000   5000.000  1025.38       1
+ 7.36804605E+00 2.93849568E-02-1.14713947E-05 2.10841164E-09-1.47486526E-13    2
+-1.94135365E+04-1.48586318E+01 2.31394819E+00 2.83758835E-02 2.03227705E-05    3
+-3.82747116E-08 1.45043264E-11-1.72875368E+04 1.49639199E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) +
+! other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-
+! CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-CsCsHH) +
+! gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-(Cds-Cds)CsHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) +
+! other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(RCCJCC)
+C11H21(6)               C 11 H 21           G100.000   5000.000  1517.06       1
+ 1.41237789E+01 7.88982983E-02-3.39282828E-05 6.26591707E-09-4.27728998E-13    2
+-3.07728703E+03-3.32559805E+01-1.15790060E+00 1.19190852E-01-7.37674054E-05    3
+ 2.37729367E-08-3.31272981E-12 1.55939561E+03 4.68384245E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) +
+! other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-
+! CsCsHH) + gauche(Cs(Cs(CsRR)Cs(CsRR)RR)) + other(R) + group(Cs-CsCsHH) + gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-CsCsHH) +
+! gauche(Cs(Cs(CsRR)CsRR)) + other(R) + group(Cs-(Cds-Cds)CsHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) +
+! other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(RCCJCC)
+C11H21(7)               C 11 H 21           G100.000   5000.000  1517.06       1
+ 1.41237789E+01 7.88982983E-02-3.39282828E-05 6.26591707E-09-4.27728998E-13    2
+-3.07728703E+03-3.32559805E+01-1.15790060E+00 1.19190852E-01-7.37674054E-05    3
+ 2.37729367E-08-3.31272981E-12 1.55939561E+03 4.68384245E+01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #1
+! Template reaction: H_Abstraction
+! Exact match found for rate rule (C/H2/NonDeC;C_rad/H2/Cs)
+! Multiplied by reaction path degeneracy 2
+! Kinetics were estimated in this direction instead of the reverse because:
+! This direction matched an entry in H_Abstraction, the other was just an estimate.
+! dHrxn(298 K) = -11.09 kJ/mol, dGrxn(298 K) = -11.22 kJ/mol
+C4J(1)+C11H22(2)=CCCC(5)+C11H21(6)                  1.840e-03 4.340     7.000    
+
+! Reaction index: Chemkin #2; RMG #2
+! Template reaction: H_Abstraction
+! Exact match found for rate rule (C/H2/NonDeC;C_rad/H2/Cs)
+! Multiplied by reaction path degeneracy 2
+! Kinetics were estimated in this direction instead of the reverse because:
+! This direction matched an entry in H_Abstraction, the other was just an estimate.
+! dHrxn(298 K) = -11.09 kJ/mol, dGrxn(298 K) = -11.22 kJ/mol
+C4J(1)+C11H22(2)=CCCC(5)+C11H21(7)                  1.840e-03 4.340     7.000    
+
+END
+
