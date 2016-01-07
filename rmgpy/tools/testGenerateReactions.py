@@ -48,3 +48,10 @@ class GenerateReactionsTest(unittest.TestCase):
         self.assertEquals(13, len(rmg.reactionModel.core.reactions))
 
         shutil.rmtree(os.path.join(folder,'pdep'))
+
+    def tearDown(self):
+        """
+        Reset the loaded database
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
