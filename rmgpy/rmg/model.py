@@ -641,32 +641,6 @@ class CoreEdgeReactionModel:
                     moleculeB.clearLabeledAtoms()
         return reactionList
 
-    def react_family(self, familyKey, newSpecies, coreSpecies):
-        """
-        Generate bimolecular reactions for one specific family
-        and species A is different than species B where B is one of old core species
-        :param family: in database.kinetics.families
-        :param newSpecies: new core species
-        :return: a list of new reactions
-        """
-        reactionList = []
-        families = getDB('kinetics').families
-        family = families[familyKey]
-        for oldCoreSpecies in coreSpecies:
-            if oldCoreSpecies.reactive:
-                for molA in newSpecies.molecule:
-                    for molB in oldCoreSpecies.molecule:
-                        reactionList.extend(family.generateReactions(
-                            [molA, molB], failsSpeciesConstraints=self.failsSpeciesConstraints))
-                        molA.clearLabeledAtoms()
-                        molB.clearLabeledAtoms()
-
-        logging.info("{} reactions are generated from {}"
-                 .format(len(reactionList), familyKey)
-                )
-
-        return reactionList
-
 
     def enlarge(self, newObject):
         """
@@ -719,7 +693,7 @@ class CoreEdgeReactionModel:
 
                     familieCount = len(familyKeys)
                     results = list(
-                                map_(WorkerWrapper(self.react_family), familyKeys,
+                                map_(WorkerWrapper(react_family), familyKeys,
                                     [newSpecies]*familieCount,
                                     [corespeciesList]*familieCount
                                     )
@@ -1850,4 +1824,30 @@ def getDB(name):
         except Exception, e:
             logging.error("Did not find a way to obtain the broadcasted database for {}.".format(name))
             raise e
+
         
+def react_family(familyKey, newSpecies, coreSpecies):
+    """
+    Generate bimolecular reactions for one specific family
+    and species A is different than species B where B is one of old core species
+    :param family: in database.kinetics.families
+    :param newSpecies: new core species
+    :return: a list of new reactions
+    """
+    reactionList = []
+    families = getDB('kinetics').families
+    family = families[familyKey]
+    for oldCoreSpecies in coreSpecies:
+        if oldCoreSpecies.reactive:
+            for molA in newSpecies.molecule:
+                for molB in oldCoreSpecies.molecule:
+                    reactionList.extend(family.generateReactions(
+                        [molA, molB]))
+                    molA.clearLabeledAtoms()
+                    molB.clearLabeledAtoms()
+
+    logging.debug("{} reactions are generated from {}"
+             .format(len(reactionList), familyKey)
+            )
+
+    return reactionList
