@@ -51,14 +51,16 @@ from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.rmg import getDB
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
+
 
 
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
 
-from rmgpy.scoop_framework.util import get, map_, WorkerWrapper
+from rmgpy.scoop_framework.util import map_, WorkerWrapper
 
 ################################################################################
 
@@ -1790,40 +1792,6 @@ def getKey(spc):
     """
 
     return spc.label
-
-
-def getDB(name):
-    """
-    Returns the RMG database object that corresponds
-    to the parameter name.
-
-    First, the module level is queried. If this variable
-    is empty, the broadcasted variables are queried.
-    """
-
-    database = rmgpy.data.rmg.database
-
-    if database:
-        if name == 'kinetics':
-            return database.kinetics
-        elif name == 'thermo':
-            return database.thermo
-        elif name == 'transport':
-            return database.transport
-        elif name == 'solvation':
-            return database.solvation
-        elif name == 'statmech':
-            return database.statmech
-        elif name == 'forbidden':
-            return database.forbiddenStructures
-        else:
-            raise Exception('Unrecognized database keyword: {}'.format(name))
-    else:
-        try:
-            db = get(name)
-        except Exception, e:
-            logging.error("Did not find a way to obtain the broadcasted database for {}.".format(name))
-            raise e
 
         
 def react_family(familyKey, newSpecies, coreSpecies):
