@@ -460,9 +460,22 @@ class CoreEdgeReactionModel:
         Check to see if an existing reaction has the same reactants, products, and
         family as `rxn`. Returns :data:`True` or :data:`False` and the matched
         reaction (if found).
+
+        First, a shortlist of reaction is retrieved that have the same reaction keys
+        as the parameter reaction.
+
+        Next, the reaction ID containing an identifier (e.g. label) of the reactants
+        and products is compared between the parameter reaction and the each of the
+        reactions in the shortlist. If a match is found, the discovered reaction is 
+        returned.
+
+        If a match is not yet found, the Library (seed mechs, reaction libs)
+        in the reaction database are iterated over to check if a reaction was overlooked
+        (a reaction with a different "family" key as the parameter reaction).
+
         """
         
-        family = getFamily(rxn.family)
+        familyObj = getFamilyLibraryObject(rxn.family)
         shortlist = self.searchRetrieveReactions(rxn)
 
         # Now use short-list to check for matches. All should be in same forward direction.
@@ -474,14 +487,14 @@ class CoreEdgeReactionModel:
             rxn_id0 = generateReactionId(rxn0)
 
             if (rxn_id == rxn_id0):
-                if isinstance(family, KineticsLibrary):
+                if isinstance(familyObj, KineticsLibrary):
                     # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
                     if not rxn.duplicate:
                         return True, rxn0
                 else:
                     return True, rxn0
             
-            if isinstance(family,KineticsFamily) and family.ownReverse:
+            if isinstance(familyObj, KineticsFamily) and familyObj.ownReverse:
                 if (rxn_id == rxn_id0[::-1]):
                     return True, rxn0
 
@@ -492,7 +505,8 @@ class CoreEdgeReactionModel:
         _, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)
 
         for library in self.reactionDict:
-            if isinstance(library, KineticsLibrary) and library != family:
+            libObj = getFamilyLibraryObject(library)
+            if isinstance(libObj, KineticsLibrary) and library != rxn.family:
 
                 # First check seed short-list in forward direction                
                 shortlist = self.retrieve(library, r1_fwd, r2_fwd)
@@ -508,8 +522,8 @@ class CoreEdgeReactionModel:
                 shortlist = self.retrieve(library, r1_rev, r2_rev)
                 
                 for rxn0 in shortlist:
-                    if (reactants0 == reactants and products0 == products) or \
-                        (reactants0 == products and products0 == reactants):
+                    if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
+                        (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
                         return True, rxn0
 
         return False, None
@@ -727,7 +741,7 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
-            family = getFamily(reaction.family)
+            family = getFamilyLibraryObject(reaction.family)
 
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
@@ -872,7 +886,7 @@ class CoreEdgeReactionModel:
         # Only reactions from families should be missing kinetics
         assert isinstance(reaction, TemplateReaction)
         
-        family = getFamily(reaction.family)
+        family = getFamilyLibraryObject(reaction.family)
 
         # Get the kinetics for the reaction
         kinetics, source, entry, isForward = family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
@@ -1656,6 +1670,15 @@ class CoreEdgeReactionModel:
         - reaction family
         - reactant(s) keys
 
+        First, the keys are generated for the parameter reaction.
+        
+        Next, it is checked whether the reaction database already 
+        contains similar keys. If not, a new container is created,
+        either a dictionary for the family key and first reactant key,
+        or a list for the second reactant key.
+
+        Finally, the reaction is inserted as the first element in the 
+        list.
         """
 
         key_family, key1, key2 = generateReactionKey(rxn)
@@ -1665,10 +1688,10 @@ class CoreEdgeReactionModel:
             self.reactionDict[key_family] = {}
 
         if not self.reactionDict[key_family].has_key(key1):
-            self.reactionDict[key_family][key1] = dict()
+            self.reactionDict[key_family][key1] = {}
 
         if not self.reactionDict[key_family][key1].has_key(key2):
-            self.reactionDict[key_family][key1][key2] = list()
+            self.reactionDict[key_family][key1][key2] = []
 
         # store this reaction at the top of the relevant short-list
         self.reactionDict[key_family][key1][key2].insert(0, rxn)
@@ -1682,12 +1705,8 @@ class CoreEdgeReactionModel:
 
         Both the reaction key based on the reactants as well as on the products
         is used to search for possible candidate reactions.
-
-        if the flag searchLibraries is set to True, then 
-        reactions will be returned that do not belong to the same reaction family
-        or reaction library necessarily, but do have the same reactant keys
-        as the parameter reaction.
         """
+
         # Get the short-list of reactions with the same family, reactant1 and reactant2
         family_label, r1_fwd, r2_fwd = generateReactionKey(rxn)
         
@@ -1697,7 +1716,7 @@ class CoreEdgeReactionModel:
         my_reactionList.extend(rxns)
             
             
-        family = getFamily(family_label)       
+        family = getFamilyLibraryObject(family_label)       
         # if the family is its own reverse (H-Abstraction) then check the other direction
         if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
 
@@ -1758,9 +1777,9 @@ def generateReactionId(rxn):
 
     return (reactants, products)
 
-def getFamily(label):
+def getFamilyLibraryObject(label):
     """
-    Returns the ReactionFamily object associated with the
+    Returns the KineticsFamily or KineticsLibrary object associated with the
     parameter string.
 
     First search through the reaction families, then 
