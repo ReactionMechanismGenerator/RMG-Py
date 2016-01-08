@@ -1454,7 +1454,7 @@ class KineticsFamily(Database):
             
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.getReactionPairs(reaction)
-            reaction.template = self.getReactionTemplate(reaction)
+            reaction.template = self.getReactionTemplateLabels(reaction)
             if not forward:
                 reaction.degeneracy = self.calculateDegeneracy(reaction)
 
@@ -1621,6 +1621,8 @@ class KineticsFamily(Database):
         kineticsList = []
         
         depositories = self.depositories[:]
+
+        template = self.retrieveTemplate(template)
         
         # Check the various depositories for kinetics
         for depository in depositories:
