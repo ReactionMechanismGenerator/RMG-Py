@@ -135,6 +135,14 @@ eg7: all
 	@ echo "Running eg7: gri_mech_rxn_lib example"
 	python rmg.py testing/eg7/input.py
 	
+scoop: noQM
+	mkdir -p testing/scoop
+	rm -rf testing/scoop/*
+	cp examples/rmg/minimal/input.py testing/scoop/input.py
+	coverage erase
+	@ echo "Running minimal example with SCOOP"
+	python -m scoop -n 2 rmg.py -v testing/scoop/input.py
+
 ######### 
 # Section for setting up MOPAC calculations on the Travis-CI.org server
 ifeq ($(TRAVIS),true)
