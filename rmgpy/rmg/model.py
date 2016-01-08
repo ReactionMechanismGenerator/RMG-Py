@@ -58,7 +58,7 @@ import rmgpy.data.rmg
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
 
-from rmgpy.scoop_framework.util import get, map_
+from rmgpy.scoop_framework.util import get, map_, WorkerWrapper
 
 ################################################################################
 
@@ -719,7 +719,7 @@ class CoreEdgeReactionModel:
 
                     familieCount = len(familyKeys)
                     results = list(
-                                map_(self.react_family, familyKeys,
+                                map_(WorkerWrapper(self.react_family), familyKeys,
                                     [newSpecies]*familieCount,
                                     [corespeciesList]*familieCount
                                     )
