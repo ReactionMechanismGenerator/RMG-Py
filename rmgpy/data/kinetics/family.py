@@ -1128,10 +1128,13 @@ class KineticsFamily(Database):
         Return ``True`` if the molecule is forbidden in this family, or
         ``False`` otherwise. 
         """
-        from rmgpy.data.rmg import database
+        from rmgpy.data.rmg import getDB
+        
+        forbidden_structures = getDB('forbidden')
+
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
-        if database.forbiddenStructures.isMoleculeForbidden(molecule):
+        if forbidden_structures.isMoleculeForbidden(molecule):
             return True
         return False
 
