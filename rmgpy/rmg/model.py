@@ -58,7 +58,7 @@ import rmgpy.data.rmg
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
 
-
+from rmgpy.scoop_framework.util import get, map_
 
 ################################################################################
 
@@ -659,23 +659,30 @@ class CoreEdgeReactionModel:
                     moleculeB.clearLabeledAtoms()
         return reactionList
 
-    def react_family(self, family, speciesA):
+    def react_family(self, familyKey, newSpecies, coreSpecies):
         """
         Generate bimolecular reactions for one specific family
         and species A is different than species B where B is one of old core species
         :param family: in database.kinetics.families
-        :param speciesA: new core species
+        :param newSpecies: new core species
         :return: a list of new reactions
         """
         reactionList = []
-        for oldCoreSpecies in self.core.species:
+        families = get('kinetics').families
+        family = families[familyKey]
+        for oldCoreSpecies in coreSpecies:
             if oldCoreSpecies.reactive:
-                for molA in speciesA.molecule:
+                for molA in newSpecies.molecule:
                     for molB in oldCoreSpecies.molecule:
                         reactionList.extend(family.generateReactions(
                             [molA, molB], failsSpeciesConstraints=self.failsSpeciesConstraints))
                         molA.clearLabeledAtoms()
                         molB.clearLabeledAtoms()
+
+        logging.info("{} reactions are generated from {}"
+                 .format(len(reactionList), familyKey)
+                )
+
         return reactionList
 
 
@@ -724,9 +731,19 @@ class CoreEdgeReactionModel:
                     newReactions.extend(self.react(database, newSpecies))
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with other core species (e.g. A + B <---> products)
-                    # generate all the reactions family by family which is helpful to parallelism
-                    for label, family in database.kinetics.families.iteritems():
-                        newReactions.extend(self.react_family(family, newSpecies))
+
+                    familyKeys = database.kinetics.families.keys()
+                    corespeciesList = self.core.species
+
+                    familieCount = len(familyKeys)
+                    results = list(
+                                map_(self.react_family, familyKeys,
+                                    [newSpecies]*familieCount,
+                                    [corespeciesList]*familieCount
+                                    )
+                                )
+  
+                    [newReactions.extend(result) for result in results]
 
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with itself (e.g. A + A <---> products)
