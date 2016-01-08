@@ -1694,3 +1694,31 @@ class KineticsFamily(Database):
         kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
                 
         return kinetics, entry
+
+
+    def getReactionTemplateLabels(self, reaction):
+        """
+        Retrieve the template for the reaction and 
+        return the corresponding labels for each of the 
+        groups in the template.
+        """
+        template = self.getReactionTemplate(reaction)
+        
+        templateLabels = []
+        for entry in template:
+            templateLabels.append(entry.label)
+
+        return templateLabels
+
+    def retrieveTemplate(self, templateLabels):
+        """
+        Reconstruct the groups associated with the 
+        labels of the reaction template and 
+        return a list.
+        """
+        template = []
+        for label in templateLabels:
+            template.append(self.groups.entries[label])
+
+        return template
+
