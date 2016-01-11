@@ -1228,11 +1228,16 @@ class KineticsFamily(Database):
                     reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, failsSpeciesConstraints=failsSpeciesConstraints)
                     if len(reactions) != 1:
                         logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                        raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
                     else:
                         logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
-                    
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                rxn.reverse = reactions[0]
+                        # Delete this reaction, since it should probably also be forbidden in the initial direction
+                        # Hack fix for now
+                        del rxn
+                else:
+                    rxn.reverse = reactions[0]
+
+
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
