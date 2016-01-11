@@ -1211,12 +1211,26 @@ class KineticsFamily(Database):
                 reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
                 if len(reactions) != 1:
                     logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
                     for reactant in rxn.reactants:
                         logging.info("Reactant")
                         logging.info(reactant.toAdjacencyList())
                     for product in rxn.products:
                         logging.info("Product")
                         logging.info(product.toAdjacencyList())
+                        logging.error("Debugging why no reaction was found...")
+                    logging.error("Checking whether the family's forbidden species have affected reaction generation...")
+                    # Set family's forbidden structures to empty for now to see if reaction gets generated...
+                    # Note that it is not necessary to check global forbidden structures, because this reaction would not have
+                    # been formed in the first place.
+                    tempObject = self.forbidden
+                    self.forbidden = ForbiddenStructures()  # Initialize with empty one
+                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, failsSpeciesConstraints=failsSpeciesConstraints)
+                    if len(reactions) != 1:
+                        logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    else:
+                        logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                    
                     raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
                 rxn.reverse = reactions[0]
             
