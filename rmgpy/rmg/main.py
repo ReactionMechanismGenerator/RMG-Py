@@ -539,8 +539,14 @@ class RMG(util.Subject):
                         # We've shifted from not reacting to reacting
                         bimolecularReact[i,j] = True
                         
-        self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
+        forcedRecombinationProducts = self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
         logging.info('Completed initial enlarge edge step...')
+        
+        # Force any initial recombination products into the core
+        logging.info('Forcing recombination products into the core...')
+        for objectToEnlarge in forcedRecombinationProducts:
+            self.reactionModel.enlargeCore(objectToEnlarge)
+        logging.info('Done forcing recombination products into the core.')
         
         # Save react arrays into threshold arrays.  They are equivalent because this is the initial step
         unimolecularThreshold = unimolecularReact
@@ -675,8 +681,13 @@ class RMG(util.Subject):
 #                    for j in xrange(i,numCoreSpecies):
 #                        logging.info("{species_i}, {species_j}, {react}".format(species_i=str(self.reactionModel.core.species[i]),species_j=str(self.reactionModel.core.species[j]),react=bimolecularReact[i,j]))
 
-                self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
+                forcedRecombinationProducts = self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
 
+                # Force any generated recombination products into the core
+                logging.info('Forcing recombination products into the core...')
+                for objectToEnlarge in forcedRecombinationProducts:
+                    self.reactionModel.enlargeCore(objectToEnlarge)
+                logging.info('Done forcing recombination products into the core.')
 
             self.saveEverything()
 
