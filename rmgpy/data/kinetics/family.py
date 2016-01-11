@@ -1218,7 +1218,7 @@ class KineticsFamily(Database):
                     for product in rxn.products:
                         logging.info("Product")
                         logging.info(product.toAdjacencyList())
-                        logging.error("Debugging why no reaction was found...")
+                    logging.error("Debugging why no reaction was found...")
                     logging.error("Checking whether the family's forbidden species have affected reaction generation...")
                     # Set family's forbidden structures to empty for now to see if reaction gets generated...
                     # Note that it is not necessary to check global forbidden structures, because this reaction would not have
