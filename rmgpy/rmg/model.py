@@ -661,6 +661,7 @@ class CoreEdgeReactionModel:
         numCoreSpecies = len(self.core.species)
         reactionsMovedFromEdge = []
         newReactionList = []; newSpeciesList = []
+        forcedRecombinationProducts = []
         for i in xrange(numCoreSpecies):
             if unimolecularReact[i]:
                 # Find reactions involving the species that are unimolecular
@@ -678,8 +679,10 @@ class CoreEdgeReactionModel:
                     # these reactions are highly critical as sources and sinks of radicals and typically have low fluxes which are still important
                     # This is a bit of hardcoding based on intuitive understanding of radical chemistry
                     if self.core.species[i].molecule[0].isRadical() and self.core.species[j].molecule[0].isRadical():
+                        # Keep track of the number of new edge species resulting from R_Recombination.  These products are to be forced into the core later
+                        numPrevEdgeSpecies = len(self.edge.species)
                         self.processNewReactions(self.react(database, self.core.species[i], self.core.species[j], only_families=['R_Recombination']), self.core.species[j], None)
-        
+                        forcedRecombinationProducts.extend(self.edge.species[numPrevEdgeSpecies:])
             
         newSpeciesList.extend(self.newSpeciesList)
         newReactionList.extend(self.newReactionList)
@@ -753,6 +756,7 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
+        return forcedRecombinationProducts
         
     def enlargeCore(self, newObject):
         """
