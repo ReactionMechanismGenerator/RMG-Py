@@ -42,6 +42,8 @@ from rmgpy.solver.liquid import LiquidReactor
 
 from model import CoreEdgeReactionModel
 
+from rmgpy.scoop_framework.util import broadcast
+
 ################################################################################
 
 class InputError(Exception): pass
@@ -287,6 +289,7 @@ def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, genera
     rmg.saveEdgeSpecies = saveEdgeSpecies
 
 def generatedSpeciesConstraints(**kwargs):
+
     validConstraints = [
         'allowed',
         'maximumCarbonAtoms',
@@ -299,9 +302,11 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumRadicalElectrons',
         'allowSingletO2',
     ]
+
     for key, value in kwargs.items():
         if key not in validConstraints:
             raise InputError('Invalid generated species constraint {0!r}.'.format(key))
+        
         rmg.speciesConstraints[key] = value
 
 ################################################################################
@@ -362,6 +367,8 @@ def readInputFile(path, rmg0):
     finally:
         f.close()
 
+    broadcast(rmg.speciesConstraints, 'speciesConstraints')
+    
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
         reactionSystem.convertInitialKeysToSpeciesObjects(speciesDict)
