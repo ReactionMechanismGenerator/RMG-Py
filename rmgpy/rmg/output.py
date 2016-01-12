@@ -1323,7 +1323,7 @@ class OutputHTMLWriter(object):
     rmg.detach(listener)
 
     """
-    def __init__(self, outputDirectory):
+    def __init__(self, outputDirectory=''):
         super(OutputHTMLWriter, self).__init__()
         makeOutputSubdirectory(outputDirectory, 'species')
     
