@@ -1067,7 +1067,7 @@ class KineticsFamily(Database):
         # Return the product structures
         return productStructures
 
-    def __generateProductStructures(self, reactantStructures, maps, forward, failsSpeciesConstraints=None):
+    def __generateProductStructures(self, reactantStructures, maps, forward):
         """
         For a given set of `reactantStructures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1076,8 +1076,6 @@ class KineticsFamily(Database):
         parameter is a list of mappings of the top-level tree node of each
         *template* reactant to the corresponding *structure*. This function
         returns a list of the product structures.
-        `failsSpeciesConstraints` is a function that accepts a :class:`Molecule`
-        structure and returns `True` if it is forbidden.
         """
         
         productStructures = None
@@ -1191,7 +1189,7 @@ class KineticsFamily(Database):
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants, failsSpeciesConstraints=None):
+    def generateReactions(self, reactants):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1205,12 +1203,12 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, forward=True, failsSpeciesConstraints=failsSpeciesConstraints))
+        reactionList.extend(self.__generateReactions(reactants, forward=True))
         
         if self.ownReverse:
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
-                reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, failsSpeciesConstraints=failsSpeciesConstraints)
+                reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
                 if len(reactions) != 1:
                     logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     for reactant in rxn.reactants:
@@ -1224,7 +1222,7 @@ class KineticsFamily(Database):
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, forward=False, failsSpeciesConstraints=failsSpeciesConstraints))
+            reactionList.extend(self.__generateReactions(reactants, forward=False))
             
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
@@ -1255,7 +1253,7 @@ class KineticsFamily(Database):
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
         
-    def __generateReactions(self, reactants, products=None, forward=True, failsSpeciesConstraints=None):
+    def __generateReactions(self, reactants, products=None, forward=True):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1263,8 +1261,6 @@ class KineticsFamily(Database):
         will return an empty list. Each item in the list of reactants should
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
-        `failsSpeciesConstraints` is an optional function that accepts a :class:`Molecule`
-        structure and returns `True` if it is forbidden.
         """
 
         rxnList = []; speciesList = []
@@ -1300,7 +1296,7 @@ class KineticsFamily(Database):
                 for map in mappings:
                     reactantStructures = [molecule]
                     try:
-                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward, failsSpeciesConstraints=failsSpeciesConstraints)
+                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
                     except ForbiddenStructureException:
                         pass
                     else:
@@ -1327,7 +1323,7 @@ class KineticsFamily(Database):
                         for mapB in mappingsB:
                             reactantStructures = [moleculeA, moleculeB]
                             try:
-                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, failsSpeciesConstraints=failsSpeciesConstraints)
+                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
                             except ForbiddenStructureException:
                                 pass
                             else:
@@ -1347,7 +1343,7 @@ class KineticsFamily(Database):
                             for mapB in mappingsB:
                                 reactantStructures = [moleculeA, moleculeB]
                                 try:
-                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, failsSpeciesConstraints=failsSpeciesConstraints)
+                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
