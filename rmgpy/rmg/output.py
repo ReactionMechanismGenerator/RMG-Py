@@ -185,9 +185,6 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     td.species img, td.reactants img, td.products img {
         vertical-align: middle;
     }
-    tr.comment {
-        font-size: small;
-    }
     tr.kinetics {
         font-size: small;
     }
@@ -208,9 +205,6 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
        font-family: "Andale Mono", monospace;
     }
     
-    .hide_comment .comment{
-        display: none !important;
-    }
     .hide_kinetics .kinetics{
        display: none !important;
     }
@@ -321,14 +315,13 @@ $(document).ready(function() {
 
 <h4>Reaction Details:</h4>
 <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
-<input type="checkbox" id="comment" name="detail" value="comment" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
 <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
 <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
 
 <h4>Reaction List:</h4>
 
-<table class="reactionList hide_comment hide_kinetics hide_chemkin">
+<table class="reactionList hide_kinetics hide_chemkin">
 <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
 {% for rxn in reactions %}
 <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -345,10 +338,6 @@ $(document).ready(function() {
 <tr class="chemkin {{ rxn.getSource()|csssafe }}">
     <td></td>
     <td colspan="4">{{ rxn.toChemkin(species) }}</td>
-</tr>
-<tr class="comment {{ rxn.getSource()|csssafe }}">
-    <td></td>
-    <td colspan="4">{{ rxn.kinetics.comment }}</td>
 </tr>
 {% endfor %}
 
@@ -551,9 +540,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         td.species img, td.reactants img, td.products img {
             vertical-align: middle;
         }
-        tr.comment {
-            font-size: small;
-        }
         tr.kinetics {
             font-size: small;
         }
@@ -574,9 +560,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
            font-family: "Andale Mono", monospace;
         }
 
-        .hide_comment .comment{
-            display: none !important;
-        }
         .hide_kinetics .kinetics{
            display: none !important;
         }
@@ -764,7 +747,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
     <h4>Reaction Details:</h4>
     <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
-    <input type="checkbox" id="comment" name="detail" value="comment" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
     <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
     <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
@@ -781,7 +763,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
     <h4>Reaction Details:</h4>
     <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
-    <input type="checkbox" id="comment" name="detail" value="comment" onclick="updateDetails(this);"><label for="comment">Comments</label><br>
     <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
     <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
@@ -798,7 +779,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 <tr colspan="1"><td width=100%>
 
-<table class="reactionList hide_comment hide_kinetics hide_chemkin" width=100% cellpadding="10">
+<table class="reactionList hide_kinetics hide_chemkin" width=100% cellpadding="10">
     <tr colspan="4" width=100%><th>Index.</th><th>Family</th><th>Index.</th><th>Family</th></tr>
 
     {% for rxn1, rxn2 in commonReactions %}
@@ -874,10 +855,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(speciesList) }}</font></td>
 </tr>
 
-<tr width=100%>
-    <td colspan="2" valign="top" width=50%><font size="1pt">{{ rxn1.kinetics.comment }}</font></td>
-    <td colspan="2" valign="top" width=50%><font size="1pt">{{ rxn2.kinetics.comment }}</font></td>
-</tr>
 {% endfor %}
 
 </table>
@@ -888,7 +865,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <td width=50% valign="top">
 <h2>Model 1: Unique Reactions ({{ uniqueReactions1|length}})</h2>
 
-<table class="reactionList hide_comment hide_kinetics hide_chemkin">
+<table class="reactionList hide_kinetics hide_chemkin">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions1 %}
     <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -906,10 +883,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
     </tr>
-    <tr class="comment {{ rxn.getSource()|csssafe }}">
-        <td></td>
-        <td colspan="4">{{ rxn.kinetics.comment }}</td>
-    </tr>
     {% endfor %}
     </table>
 
@@ -918,7 +891,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <td width=50% valign="top">
 <h2>Model 2: Unique Reactions ({{ uniqueReactions2|length}})</h2>
 
-<table class="reactionList hide_comment hide_kinetics hide_chemkin">
+<table class="reactionList hide_kinetics hide_chemkin">
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions2 %}
     <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -935,10 +908,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     <tr class="chemkin {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
-    </tr>
-    <tr class="comment {{ rxn.getSource()|csssafe }}">
-        <td></td>
-        <td colspan="4">{{ rxn.kinetics.comment }}</td>
     </tr>
     {% endfor %}
     </table>
