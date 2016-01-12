@@ -36,7 +36,7 @@ files.
 import os.path
 import logging
 import re
-
+import textwrap
 from rmgpy.util import makeOutputSubdirectory
 
 ################################################################################
@@ -60,7 +60,7 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     package is used to generate the HTML; if this package is not found, no
     HTML will be generated (but the program will carry on).
     """
-
+    
     from rmgpy.rmg.model import PDepReaction
     
     from rmgpy.molecule.draw import MoleculeDrawer
@@ -103,7 +103,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
                 raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
-                
+        #spec.thermo.comment=
+        # Text wrap the thermo comments
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
 #    species.sort(key=lambda x: x.index)
@@ -141,6 +142,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     environment = jinja2.Environment()
     environment.filters['csssafe'] = csssafe
     
+    
+    
     # Make HTML file
     template = environment.from_string(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
@@ -162,15 +165,21 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     a:hover {
         text-decoration: underline;
     }
+
+    
     table.speciesList, table.reactionList {
-        width: 100%;
         border-collapse: collapse;
+        align: center;
     }
+
+        
     table.speciesList th, table.reactionList th {
         text-align: left;
+        vertical-align: top;
     }
-    tr.reaction td {
-        border-top: 1px solid #808080;
+    tr.reaction {
+        border-top: 1px solid #808080;        
+        padding: 10px;
     }
     td.reactants {
         text-align: right;
@@ -185,6 +194,28 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     td.species img, td.reactants img, td.products img {
         vertical-align: middle;
     }
+    
+    tr.species{
+        border-top: 1px solid #808080;        
+    }
+
+    
+    td, .speciesList th{
+        padding: 10px;
+        }
+    
+    td.index {
+    width: 50px;
+    }
+    
+    .thermo td, .thermo th{
+    padding: 2px;
+    }
+    
+    .kinetics td,  .kinetics th {
+    padding: 2px;
+    }
+    
     tr.kinetics {
         font-size: small;
     }
@@ -204,13 +235,22 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
        font-size: x-small;
        font-family: "Andale Mono", monospace;
     }
-    
+    .thermoComment {
+       white-space: pre-wrap;
+       font-size: small;
+       font-family: "Andale Mono", monospace;
+    }
     .hide_kinetics .kinetics{
        display: none !important;
     }
     .hide_chemkin .chemkin{
        display: none !important;
     }
+    .hide_thermoComment .thermoComment{
+       display: none !important;
+    }
+
+           
 </style>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
 <script type="text/javascript" src="../../../external/jquery.min.js"></script>
@@ -245,11 +285,27 @@ function uncheckAllDetails() {
     $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
     return false;
 }
+
+
+
+function updateThermoDetails(type) {
+    if (type.checked) {
+        $(".thermoComment").removeClass("hide_"+type.value);
+    } else {
+        $(".thermoComment").addClass("hide_"+type.value);
+    }
+}
+
+function uncheckThermoDetails() {
+    $("#thermoSelector").find("[name='detail']").each(function() { this.checked = false; updateThermoDetails(this); });
+    return false;
+}
+
 $(document).ready(function() {
+    uncheckThermoDetails();
     checkAllFamilies();
     uncheckAllDetails();
 });
-
 </script>
 </head>
 
@@ -259,24 +315,24 @@ $(document).ready(function() {
 
 <h2>Species ({{ species|length }})</h2>
 
-<table class="speciesList">
-<tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
+<form id='thermoSelector' action="">
+<input type="checkbox" id="thermoComment" name="detail" value="thermoComment" onclick="updateThermoDetails(this);" checked="false"><label for="thermoComment"><b>Show Thermo Details</b></label><br>
+</form>
+
+
+<table class="speciesList" hide_thermoComment>
+<tr><th>Index</th><th>Thermo<br> H298 (kcal/mol), S298 (cal/mol*K), Cp (cal/mol*K)</th><th>Structure</th><th>Label</th><th>SMILES</th><th>MW<br> (g/mol)</th></tr>
 {% for spec in species %}
+
 <tr class="species">
-    <td class="index">
+    <td class="index" valign="top">
     {{ spec.index }}.</td>
     
     
-    
-    <td class="structure"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
-    <td class="label">{{ spec.label }}</td>
-    <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
-</tr>
+ <td class="thermo" valign="top">
+ 
 {% if spec.thermo %}
-
-<tr>
- <td>
-        <table align="center">
+        <table class="thermo" align="left">
             <tr>
                 <th>H298</th>
                 <th>S298</th>
@@ -298,10 +354,22 @@ $(document).ready(function() {
                 <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
                 <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
             </tr>
+<tr><td colspan="6" class="thermoComment">
+<div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
+</td></tr>
         </table>
-    </td></tr>
     
-    {% endif %}
+  {% endif %}
+  
+ </td>
+    
+    <td class="structure" valign="top"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
+    <td class="label" valign="top">{{ getSpeciesIdentifier(spec) }}</td>
+    <td class="SMILES" valign="top">{{ spec.molecule[0].toSMILES() }}</td>
+    
+  <td class="MW" valign="top">{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
+    
+</tr>
 {% endfor %}
 </table>
 
@@ -350,7 +418,7 @@ $(document).ready(function() {
 
         
     f = open(path, 'w')
-    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount))
+    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount, getSpeciesIdentifier=getSpeciesIdentifier,textwrap=textwrap))
     f.close()
 
 
@@ -518,11 +586,12 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             text-decoration: underline;
         }
         table.speciesList, table.reactionList {
+            align: center;
             width: 100%;
             border-collapse: collapse;
         }
         table.speciesList th, table.reactionList th {
-            text-align: left;
+            text-align: center;
         }
         tr.reaction td {
             border-top: 1px solid #808080;
