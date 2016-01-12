@@ -40,6 +40,7 @@ import itertools
 from rmgpy.display import display
 #import rmgpy.chemkin
 import rmgpy.constants as constants
+from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
@@ -1327,7 +1328,7 @@ class CoreEdgeReactionModel:
                     logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
-            if self.failsSpeciesConstraints(spec):
+            if failsSpeciesConstraints(spec):
                 if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
                     rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
@@ -1395,7 +1396,7 @@ class CoreEdgeReactionModel:
                     logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from reaction library {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
-            if self.failsSpeciesConstraints(spec):
+            if failsSpeciesConstraints(spec):
                 if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
                     rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
@@ -1626,48 +1627,6 @@ class CoreEdgeReactionModel:
         rxnList = self.core.reactions + self.outputReactionList
         markDuplicateReactions(rxnList)
         
-                
-    def failsSpeciesConstraints(self, species):
-        """
-        Pass in either a `Species` or `Molecule` object and checks whether it passes 
-        the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
-        """
-        explicitlyAllowedMolecules = self.speciesConstraints.get('explicitlyAllowedMolecules', [])
-        maxCarbonAtoms = self.speciesConstraints.get('maximumCarbonAtoms', 1000000)
-        maxHydrogenAtoms = self.speciesConstraints.get('maximumHydrogenAtoms', 1000000)
-        maxOxygenAtoms = self.speciesConstraints.get('maximumOxygenAtoms', 1000000)
-        maxNitrogenAtoms = self.speciesConstraints.get('maximumNitrogenAtoms', 1000000)
-        maxSiliconAtoms = self.speciesConstraints.get('maximumSiliconAtoms', 1000000)
-        maxSulfurAtoms = self.speciesConstraints.get('maximumSulfurAtoms', 1000000)
-        maxHeavyAtoms = self.speciesConstraints.get('maximumHeavyAtoms', 1000000)
-        maxRadicals = self.speciesConstraints.get('maximumRadicalElectrons', 1000000)
-        
-        if isinstance(species, rmgpy.species.Species):
-            struct = species.molecule[0]
-        else:
-            # expects a molecule here
-            struct = species
-        for molecule in explicitlyAllowedMolecules:
-            if struct.isIsomorphic(molecule):
-                return False        
-        H = struct.getNumAtoms('H')
-        if struct.getNumAtoms('C') > maxCarbonAtoms:
-            return True
-        if H > maxHydrogenAtoms:
-            return True
-        if struct.getNumAtoms('O') > maxOxygenAtoms:
-            return True
-        if struct.getNumAtoms('N') > maxNitrogenAtoms:
-            return True
-        if struct.getNumAtoms('Si') > maxSiliconAtoms:
-            return True
-        if struct.getNumAtoms('S') > maxSulfurAtoms:
-            return True
-        if len(struct.atoms) - H > maxHeavyAtoms:
-            return True
-        if (struct.getNumberOfRadicalElectrons() > maxRadicals):
-            return True
-        return False
     
     def registerReaction(self, rxn):
         """

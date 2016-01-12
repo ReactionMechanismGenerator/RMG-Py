@@ -42,6 +42,7 @@ import numpy
 import csv
 import gc
 
+from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
@@ -426,7 +427,7 @@ class RMG(util.Subject):
                         logging.warning('Input species {0} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.'.format(spec.label))
                     else:
                         raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label))
-                if self.reactionModel.failsSpeciesConstraints(spec):
+                if failsSpeciesConstraints(spec):
                     if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                         self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
                         pass

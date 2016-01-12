@@ -37,6 +37,7 @@ import logging
 import codecs
 from copy import deepcopy
 
+from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
@@ -1116,10 +1117,9 @@ class KineticsFamily(Database):
         # Apply the generated species constraints (if given)
         for struct in productStructures:
             if self.isMoleculeForbidden(struct):
-                raise ForbiddenStructureException()
-            if failsSpeciesConstraints:
-                if failsSpeciesConstraints(struct):
-                    raise ForbiddenStructureException() 
+                raise ForbiddenStructureException() 
+            if failsSpeciesConstraints(struct):
+                raise ForbiddenStructureException() 
                 
         return productStructures
 
