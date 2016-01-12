@@ -42,7 +42,7 @@ from rmgpy.solver.liquid import LiquidReactor
 
 from model import CoreEdgeReactionModel
 
-from rmgpy.scoop_framework.util import broadcast
+from rmgpy.scoop_framework.util import broadcast, get
 
 ################################################################################
 
@@ -584,3 +584,31 @@ def saveInputFile(path, rmg):
     f.write(')\n\n')
     
     f.close()
+
+def getInput(name):
+    """
+    Returns the RMG input object that corresponds
+    to the parameter name.
+
+    First, the module level is queried. If this variable
+    is empty, the broadcasted variables are queried.
+    """
+    global rmg
+
+    if rmg:
+        if name == 'speciesConstraints':
+            return rmg.speciesConstraints
+        else:
+            raise Exception('Unrecognized keyword: {}'.format(name))
+    else:
+        try:
+            obj = get(name)
+            if obj:
+                return obj
+            else:
+                raise Exception
+        except Exception, e:
+            logging.error("Did not find a way to obtain the broadcasted variable for {}.".format(name))
+            raise e
+
+    raise Exception('Could not get variable with name: {}'.format(name))
