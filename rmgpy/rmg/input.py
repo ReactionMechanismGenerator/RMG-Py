@@ -366,9 +366,10 @@ def readInputFile(path, rmg0):
         raise
     finally:
         f.close()
-
-    broadcast(rmg.speciesConstraints, 'speciesConstraints')
     
+    rmg.speciesConstraints['explicitlyAllowedMolecules'] = []         
+    broadcast(rmg.speciesConstraints, 'speciesConstraints')
+
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
         reactionSystem.convertInitialKeysToSpeciesObjects(speciesDict)

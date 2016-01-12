@@ -192,7 +192,6 @@ class RMG(util.Subject):
         from input import readInputFile
         if path is None: path = self.inputFile
         readInputFile(path, self)
-        self.speciesConstraints['explicitlyAllowedMolecules'] = [] 
         self.reactionModel.kineticsEstimator = self.kineticsEstimator
         # If the output directory is not yet set, then set it to the same
         # directory as the input file by default
