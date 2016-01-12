@@ -303,11 +303,19 @@ class ReactionModel:
             for i, reactant in enumerate(rxn.reactants):
                 try:
                     rxn.reactants[i] = commonSpecies[reactant]
+                    if rxn.pairs:
+                        for j, pair in enumerate(rxn.pairs):
+                            if reactant in pair:
+                                rxn.pairs[j] = (rxn.reactants[i],pair[1])
                 except KeyError:
                     pass
             for i, product in enumerate(rxn.products):
                 try:
                     rxn.products[i] = commonSpecies[product]
+                    if rxn.pairs:
+                        for j, pair in enumerate(rxn.pairs):
+                            if product in pair:
+                                rxn.pairs[j] = (pair[0], rxn.products[i])
                 except KeyError:
                     pass
         
