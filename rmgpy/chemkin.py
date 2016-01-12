@@ -548,7 +548,6 @@ def readReactionComments(reaction, comments, read = True):
         
         return reaction  
     
-    atKineticsComments = False
     lines = comments.strip().splitlines()
         
     for line in lines:
@@ -617,10 +616,8 @@ def readReactionComments(reaction, comments, read = True):
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
-        elif 'Kinetics comments:' in line:
-            atKineticsComments = True
-
-        elif atKineticsComments:
+        elif line.strip() != '':
+            # Any lines which are commented out but don't have any specific flag are simply kinetics comments
             reaction.kinetics.comment += line.strip() + "\n"
 
 
@@ -678,7 +675,9 @@ def readReactionComments(reaction, comments, read = True):
             duplicate = reaction.duplicate,
             library = 'Unclassified',
         )  
-            
+    
+    # Clean up line endings on comments so that there aren't any blank commented lines
+    reaction.kinetics.comment = reaction.kinetics.comment.strip()
     return reaction
 
 ################################################################################
