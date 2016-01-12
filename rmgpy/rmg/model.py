@@ -375,7 +375,6 @@ class CoreEdgeReactionModel:
         self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
-        self.speciesConstraints = {}
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -1301,6 +1300,8 @@ class CoreEdgeReactionModel:
 
         if react: raise NotImplementedError("react=True doesn't work yet")
         database = rmgpy.data.rmg.database
+
+        from rmgpy.rmg.input import rmg
         
         self.newReactionList = []; self.newSpeciesList = []
 
@@ -1322,13 +1323,13 @@ class CoreEdgeReactionModel:
         
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
-                if 'allowed' in self.speciesConstraints and 'seed mechanisms' in self.speciesConstraints['allowed']:
+                if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
                     logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
             if self.failsSpeciesConstraints(spec):
-                if 'allowed' in self.speciesConstraints and 'seed mechanisms' in self.speciesConstraints['allowed']:
-                    self.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
+                if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
+                    rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, seedMechanism.label))
 
@@ -1368,6 +1369,8 @@ class CoreEdgeReactionModel:
 
         database = rmgpy.data.rmg.database
 
+        from rmgpy.rmg.input import rmg
+
         self.newReactionList = []
         self.newSpeciesList = []
 
@@ -1388,13 +1391,13 @@ class CoreEdgeReactionModel:
         # Perform species constraints and forbidden species checks
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
-                if 'allowed' in self.speciesConstraints and 'reaction libraries' in self.speciesConstraints['allowed']:
+                if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
                     logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from reaction library {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
             if self.failsSpeciesConstraints(spec):
-                if 'allowed' in self.speciesConstraints and 'reaction libraries' in self.speciesConstraints['allowed']:
-                    self.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
+                if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
+                    rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, reactionLibrary.label))
        

@@ -200,7 +200,7 @@ class RMG(util.Subject):
         if self.pressureDependence:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
-        self.reactionModel.speciesConstraints = self.speciesConstraints
+
         self.reactionModel.verboseComments = self.verboseComments
         
         if self.quantumMechanics:
