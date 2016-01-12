@@ -696,6 +696,7 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
+            family = getFamilyLibraryObject(reaction.family)
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
@@ -706,7 +707,7 @@ class CoreEdgeReactionModel:
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                if family.ownReverse and hasattr(reaction,'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
