@@ -351,18 +351,18 @@ class KineticsDatabase(object):
                 onoff = 'on ' if self.recommendedFamilies[label] else 'off'
                 f.write("{num:<2d}    {onoff}     {label}\n".format(num=number, label=label, onoff=onoff))
     
-    def generateReactions(self, reactants, products=None, failsSpeciesConstraints=None):
+    def generateReactions(self, reactants, products=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generateReactionsFromLibraries(reactants, products, failsSpeciesConstraints=failsSpeciesConstraints))
-        reactionList.extend(self.generateReactionsFromFamilies(reactants, products, failsSpeciesConstraints=failsSpeciesConstraints))
+        reactionList.extend(self.generateReactionsFromLibraries(reactants, products))
+        reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
         return reactionList
 
-    def generateReactionsFromLibraries(self, reactants, products, failsSpeciesConstraints=None):
+    def generateReactionsFromLibraries(self, reactants, products):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -372,10 +372,10 @@ class KineticsDatabase(object):
         for label, libraryType in self.libraryOrder:
             # Generate reactions from reaction libraries (no need to generate them from seeds)
             if libraryType == "Reaction Library":
-                reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label], failsSpeciesConstraints=failsSpeciesConstraints))
+                reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label]))
         return reactionList
 
-    def generateReactionsFromLibrary(self, reactants, products, library, failsSpeciesConstraints=None):
+    def generateReactionsFromLibrary(self, reactants, products, library):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -399,7 +399,7 @@ class KineticsDatabase(object):
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None, failsSpeciesConstraints=None):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -416,7 +416,7 @@ class KineticsDatabase(object):
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants, failsSpeciesConstraints=failsSpeciesConstraints))
+                reactionList.extend(family.generateReactions(reactants))
         if products:
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList

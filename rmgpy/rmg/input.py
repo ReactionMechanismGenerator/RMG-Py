@@ -42,6 +42,8 @@ from rmgpy.solver.liquid import LiquidReactor
 
 from model import CoreEdgeReactionModel
 
+from rmgpy.scoop_framework.util import broadcast, get
+
 ################################################################################
 
 class InputError(Exception): pass
@@ -287,6 +289,7 @@ def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, genera
     rmg.saveEdgeSpecies = saveEdgeSpecies
 
 def generatedSpeciesConstraints(**kwargs):
+
     validConstraints = [
         'allowed',
         'maximumCarbonAtoms',
@@ -299,9 +302,11 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumRadicalElectrons',
         'allowSingletO2',
     ]
+
     for key, value in kwargs.items():
         if key not in validConstraints:
             raise InputError('Invalid generated species constraint {0!r}.'.format(key))
+        
         rmg.speciesConstraints[key] = value
 
 ################################################################################
@@ -361,6 +366,9 @@ def readInputFile(path, rmg0):
         raise
     finally:
         f.close()
+    
+    rmg.speciesConstraints['explicitlyAllowedMolecules'] = []         
+    broadcast(rmg.speciesConstraints, 'speciesConstraints')
 
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
@@ -577,3 +585,31 @@ def saveInputFile(path, rmg):
     f.write(')\n\n')
     
     f.close()
+
+def getInput(name):
+    """
+    Returns the RMG input object that corresponds
+    to the parameter name.
+
+    First, the module level is queried. If this variable
+    is empty, the broadcasted variables are queried.
+    """
+    global rmg
+
+    if rmg:
+        if name == 'speciesConstraints':
+            return rmg.speciesConstraints
+        else:
+            raise Exception('Unrecognized keyword: {}'.format(name))
+    else:
+        try:
+            obj = get(name)
+            if obj:
+                return obj
+            else:
+                raise Exception
+        except Exception, e:
+            logging.error("Did not find a way to obtain the broadcasted variable for {}.".format(name))
+            raise e
+
+    raise Exception('Could not get variable with name: {}'.format(name))
