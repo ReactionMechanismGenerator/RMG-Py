@@ -1832,21 +1832,21 @@ def getKey(spc):
     return spc.label
 
         
-def react_family(familyKey, newSpecies, coreSpecies):
+def react_family(familyKey, spcA, speciesList):
     """
-    Generate bimolecular reactions for one specific family
-    and species A is different than species B where B is one of old core species
-    :param family: in database.kinetics.families
-    :param newSpecies: new core species
+    Generate bimolecular reactions for one specific family.
     :return: a list of new reactions
     """
+
     reactionList = []
+
     families = getDB('kinetics').families
     family = families[familyKey]
-    for oldCoreSpecies in coreSpecies:
-        if oldCoreSpecies.reactive:
-            for molA in newSpecies.molecule:
-                for molB in oldCoreSpecies.molecule:
+
+    for spcB in speciesList:
+        if spcB.reactive:
+            for molA in spcA.molecule:
+                for molB in spcB.molecule:
                     reactionList.extend(family.generateReactions(
                         [molA, molB]))
                     molA.clearLabeledAtoms()
