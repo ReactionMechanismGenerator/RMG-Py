@@ -177,7 +177,7 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
         text-align: left;
         vertical-align: top;
     }
-    tr.reaction {
+    table.reaction {
         border-top: 1px solid #808080;        
         padding: 10px;
     }
@@ -199,6 +199,9 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
         border-top: 1px solid #808080;        
     }
 
+    tr.rxnStart{
+        border-top: 1px solid #808080;        
+    }
     
     td, .speciesList th{
         padding: 10px;
@@ -246,6 +249,9 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     .hide_chemkin .chemkin{
        display: none !important;
     }
+    .hide_reaction{
+       display: none !important;
+    }
     .hide_thermoComment .thermoComment{
        display: none !important;
     }
@@ -264,9 +270,9 @@ function updateFamily(family) {
 }
 function updateDetails(type) {
     if (type.checked) {
-        $(".reactionList").removeClass("hide_"+type.value);
+        $("."+type.value).show();
     } else {
-        $(".reactionList").addClass("hide_"+type.value);
+        $("."+type.value).hide();
     }
 }
 function checkAllFamilies() {
@@ -286,6 +292,17 @@ function uncheckAllDetails() {
     return false;
 }
 
+function updateFamilyDetails() {
+    $("#familySelector").find("[name='family']").each(function() { 
+        updateDetails(this); });
+    return false;
+}
+function updateReactionDetails() {
+    $("#familySelector").find("[name='detail']").each(function() { 
+        updateDetails(this); });
+    return false;
+}
+
 function updateThermoDetails(type) {
     if (type.checked) {
         $(".thermoComment").removeClass("hide_"+type.value);
@@ -300,8 +317,8 @@ function uncheckThermoDetails() {
 }
 
 function resetReactionFilter() {
-    $.each($(".reactionList tbody").find("tr"), function() {
-        $(this).show();
+    $.each($(".reaction"), function() {
+        $(this).removeClass("hide_reaction");
     });
 }
 
@@ -311,7 +328,7 @@ function submitReactionFilter(){
     _r2 = $("#reactant2").val().toLowerCase();
     _p1 = $("#product1").val().toLowerCase();
     _p2 = $("#product2").val().toLowerCase();
-    $.each($(".reactionList tbody").find("tr"), function() {
+    $.each($(".reaction"), function() {
         _rxnRow = this;
         _matched = false;
         _rxn_spc_list = [""];
@@ -338,9 +355,10 @@ function submitReactionFilter(){
             _matched = true
         }
         if(_matched == true)
-        $(_rxnRow).show();
+        $(_rxnRow).removeClass("hide_reaction");
         else
-        $(_rxnRow).hide();
+        $(_rxnRow).addClass("hide_reaction");
+
      });
 }
 
@@ -446,29 +464,30 @@ $(document).ready(function() {
 
 <h4>Reaction List:</h4>
 
-<table class="reactionList hide_kinetics hide_chemkin">
+<table class="reactionList">
 <thead>
 <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
 </thead>
-<tbody>
 {% for rxn in reactions %}
-<tr class="reaction {{ rxn.getSource()|csssafe }}">
+<tbody class="reaction">
+<td>
+<tr class="{{ rxn.getSource()|csssafe }} rxnStart">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
     <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
     <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="family">{{ rxn.getSource() }}</td>
 </tr>
-<tr class="kinetics {{ rxn.getSource()|csssafe }}">
+<tr class="kinetics {{ rxn.getSource()|csssafe }} hide_kinetics">
     <td></td>
     <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
 </tr>
-<tr class="chemkin {{ rxn.getSource()|csssafe }}">
+<tr class="chemkin {{ rxn.getSource()|csssafe }} hide_chemkin">
     <td></td>
     <td colspan="4">{{ rxn.toChemkin(species) }}</td>
+</tbody>
 </tr>
 {% endfor %}
-</tbody>
 
 </table>
 
