@@ -712,12 +712,11 @@ class CoreEdgeReactionModel:
                     corespeciesList = self.core.species
 
                     familieCount = len(familyKeys)
-                    results = list(
-                                map_(WorkerWrapper(react_family), familyKeys,
+                    results = map_(WorkerWrapper(react_family), familyKeys,
                                     [newSpecies]*familieCount,
                                     [corespeciesList]*familieCount
-                                    )
                                 )
+                            
   
                     [newReactions.extend(result) for result in results]
 
