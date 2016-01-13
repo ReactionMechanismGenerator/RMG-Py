@@ -492,9 +492,9 @@ $(document).ready(function() {
 </tr>
 <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
     <td></td>
-    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ rxn.getEnthalpyOfReaction(298)/4184 }}
-    <br><b>S298 (cal/mol*K)</b> = {{ rxn.getEntropyOfReaction(298)/4.184 }}
-    <br><b>G298 (kcal/mol)</b> = {{ rxn.getFreeEnergyOfReaction(298)/4184 }}</td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
     <td></td>
 </tr>
 <tr class="chemkin {{ rxn.getSource()|csssafe }} hide_chemkin">
@@ -1182,14 +1182,14 @@ $(document).ready(function() {
 <tr width=100% class="energy">
 
     <td colspan="2" valign="top" width=50%>
-    <b>H298 (kcal/mol)</b> = {{ rxn1.getEnthalpyOfReaction(298)/4184 }}
-    <br><b>S298 (cal/mol*K)</b> = {{ rxn1.getEntropyOfReaction(298)/4.184 }}
-    <br><b>G298 (kcal/mol)</b> = {{ rxn1.getFreeEnergyOfReaction(298)/4184 }}
+    <b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn1.getEnthalpyOfReaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn1.getEntropyOfReaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn1.getFreeEnergyOfReaction(298)/4184) }}
     </td>
     
-    <td colspan="2" valign="top" width=50%>><b>H298 (kcal/mol)</b> = {{ rxn2.getEnthalpyOfReaction(298)/4184 }}
-    <br><b>S298 (cal/mol*K)</b> = {{ rxn2.getEntropyOfReaction(298)/4.184 }}
-    <br><b>G298 (kcal/mol)</b> = {{ rxn2.getFreeEnergyOfReaction(298)/4184 }}
+    <td colspan="2" valign="top" width=50%><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn2.getEnthalpyOfReaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn2.getEntropyOfReaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn2.getFreeEnergyOfReaction(298)/4184) }}
     </td>
 
 </tr>
@@ -1227,9 +1227,9 @@ $(document).ready(function() {
     </tr>
     <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
     <td></td>
-    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ rxn.getEnthalpyOfReaction(298)/4184 }}
-    <br><b>S298 (cal/mol*K)</b> = {{ rxn.getEntropyOfReaction(298)/4.184 }}
-    <br><b>G298 (kcal/mol)</b> = {{ rxn.getFreeEnergyOfReaction(298)/4184 }}</td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
     <td></td>
 </tr>
 
@@ -1261,9 +1261,9 @@ $(document).ready(function() {
     </tr>
     <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
     <td></td>
-    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ rxn.getEnthalpyOfReaction(298)/4184 }}
-    <br><b>S298 (cal/mol*K)</b> = {{ rxn.getEntropyOfReaction(298)/4.184 }}
-    <br><b>G298 (kcal/mol)</b> = {{ rxn.getFreeEnergyOfReaction(298)/4184 }}</td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getEnthalpyOfReaction(298)/4184) }}
+    <br><b>S298 (cal/mol*K)</b> = {{ '%0.2f'| format(rxn.getEntropyOfReaction(298)/4.184) }}
+    <br><b>G298 (kcal/mol)</b> = {{ '%0.2f'| format(rxn.getFreeEnergyOfReaction(298)/4184) }}</td>
     <td></td>
 </tr>
     <tr class="chemkin {{ rxn.getSource()|csssafe }}">
