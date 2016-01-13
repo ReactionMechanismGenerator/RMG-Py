@@ -694,17 +694,25 @@ class CoreEdgeReactionModel:
                     corespeciesList = self.core.species
 
                     familieCount = len(familyKeys)
-                    results = map_(WorkerWrapper(react_family), familyKeys,
-                                    [newSpecies]*familieCount,
-                                    [corespeciesList]*familieCount
+                    results_AB = map_(
+                                    WorkerWrapper(react_family),
+                                    familyKeys,
+                                    [newSpecies] * familieCount,
+                                    [corespeciesList] * familieCount
                                 )
-                            
-  
-                    [newReactions.extend(result) for result in results]
+                    
 
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with itself (e.g. A + A <---> products)
-                    newReactions.extend(self.react(database, newSpecies, newSpecies))
+                    results_AA = map_(
+                                    WorkerWrapper(react_family),
+                                    familyKeys,
+                                    [newSpecies] * familieCount,
+                                    [[newSpecies.copy(deep=True)]] * familieCount
+                                )
+
+                    for result in itertools.chain(results_AA, results_AB):
+                        newReactions.extend(result)
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
