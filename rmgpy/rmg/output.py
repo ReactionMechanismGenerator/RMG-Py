@@ -752,6 +752,9 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         width: 3em;
     }
     
+    .energy {
+        font-size: small;
+        }
     .chemkin, .KineticsData_repr {
        white-space: pre-wrap;
        font-size: x-small;
@@ -766,6 +769,9 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
        display: none !important;
     }
     .hide_chemkin .chemkin{
+       display: none !important;
+    }   
+    .hide_energy .energy{
        display: none !important;
     }
     .hide_thermoComment .thermoComment{
@@ -1067,6 +1073,7 @@ $(document).ready(function() {
 
     <h4>Reaction Details:</h4>
     <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
+    <input type="checkbox" id="energy" name="detail" value="energy" onclick="updateDetails(this);"><label for="energy">Heats of Reaction</label><br>
     <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
     <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
@@ -1172,6 +1179,21 @@ $(document).ready(function() {
      {{ rxn2.kinetics.toHTML() }}</td>
 </tr>
 
+<tr width=100% class="energy">
+
+    <td colspan="2" valign="top" width=50%>
+    <b>H298 (kcal/mol)</b> = {{ rxn1.getEnthalpyOfReaction(298)/4184 }}
+    <br><b>S298 (cal/mol*K)</b> = {{ rxn1.getEntropyOfReaction(298)/4.184 }}
+    <br><b>G298 (kcal/mol)</b> = {{ rxn1.getFreeEnergyOfReaction(298)/4184 }}
+    </td>
+    
+    <td colspan="2" valign="top" width=50%>><b>H298 (kcal/mol)</b> = {{ rxn2.getEnthalpyOfReaction(298)/4184 }}
+    <br><b>S298 (cal/mol*K)</b> = {{ rxn2.getEntropyOfReaction(298)/4.184 }}
+    <br><b>G298 (kcal/mol)</b> = {{ rxn2.getFreeEnergyOfReaction(298)/4184 }}
+    </td>
+
+</tr>
+
 <tr width=100% class="chemkin">
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(speciesList) }}</font></td>
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(speciesList) }}</font></td>
@@ -1203,6 +1225,14 @@ $(document).ready(function() {
         <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
+    <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
+    <td></td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ rxn.getEnthalpyOfReaction(298)/4184 }}
+    <br><b>S298 (cal/mol*K)</b> = {{ rxn.getEntropyOfReaction(298)/4.184 }}
+    <br><b>G298 (kcal/mol)</b> = {{ rxn.getFreeEnergyOfReaction(298)/4184 }}</td>
+    <td></td>
+</tr>
+
     <tr class="chemkin {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
@@ -1229,6 +1259,13 @@ $(document).ready(function() {
         <td></td>
         <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
     </tr>
+    <tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
+    <td></td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ rxn.getEnthalpyOfReaction(298)/4184 }}
+    <br><b>S298 (cal/mol*K)</b> = {{ rxn.getEntropyOfReaction(298)/4.184 }}
+    <br><b>G298 (kcal/mol)</b> = {{ rxn.getFreeEnergyOfReaction(298)/4184 }}</td>
+    <td></td>
+</tr>
     <tr class="chemkin {{ rxn.getSource()|csssafe }}">
         <td></td>
         <td colspan="4">{{ rxn.toChemkin(species) }}</td>
