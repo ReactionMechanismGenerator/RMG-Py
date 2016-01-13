@@ -52,6 +52,8 @@ def warnScoopStartedProperly(func):
         
         futures_not_loaded = 'scoop.futures' not in sys.modules
 
+        warnings.simplefilter('ignore', RuntimeWarning)
+
         try:
             controller_not_started = not (
                 sys.modules['scoop.futures'].__dict__.get("_controller", None)
