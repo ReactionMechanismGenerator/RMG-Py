@@ -306,6 +306,7 @@ function resetReactionFilter() {
 }
 
 function submitReactionFilter(){
+    resetReactionFilter();
     _r1 = $("#reactant1").val().toLowerCase();
     _r2 = $("#reactant2").val().toLowerCase();
     _p1 = $("#product1").val().toLowerCase();
