@@ -238,6 +238,11 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
        font-size: x-small;
        font-family: "Andale Mono", monospace;
     }
+    
+    .energy {
+        font-size: small;
+    }
+    
     .thermoComment {
        white-space: pre-wrap;
        font-size: small;
@@ -250,6 +255,9 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
        display: none !important;
     }
     .hide_reaction{
+       display: none !important;
+    }
+    .hide_energy .energy{
        display: none !important;
     }
     .hide_thermoComment .thermoComment{
@@ -444,6 +452,7 @@ $(document).ready(function() {
 
 <h4>Reaction Details:</h4>
 <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
+<input type="checkbox" id="energy" name="detail" value="energy" onclick="updateDetails(this);"><label for="energy">Heats of Reaction</label><br>
 <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
 <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
@@ -470,7 +479,6 @@ $(document).ready(function() {
 </thead>
 {% for rxn in reactions %}
 <tbody class="reaction">
-<td>
 <tr class="{{ rxn.getSource()|csssafe }} rxnStart">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
     <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
@@ -482,11 +490,18 @@ $(document).ready(function() {
     <td></td>
     <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
 </tr>
+<tr class="energy {{ rxn.getSource()|csssafe }} hide_energy">
+    <td></td>
+    <td colspan="3"><b>H298 (kcal/mol)</b> = {{ rxn.getEnthalpyOfReaction(298)/4184 }}
+    <br><b>S298 (cal/mol*K)</b> = {{ rxn.getEntropyOfReaction(298)/4.184 }}
+    <br><b>G298 (kcal/mol)</b> = {{ rxn.getFreeEnergyOfReaction(298)/4184 }}</td>
+    <td></td>
+</tr>
 <tr class="chemkin {{ rxn.getSource()|csssafe }} hide_chemkin">
     <td></td>
     <td colspan="4">{{ rxn.toChemkin(species) }}</td>
-</tbody>
 </tr>
+</tbody>
 {% endfor %}
 
 </table>
