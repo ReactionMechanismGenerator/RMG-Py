@@ -961,13 +961,12 @@ $(document).ready(function() {
 </table>
 </td></tr>
 
-<tr colspan="2">
-<td width=50% valign="top">
-<h2>Model 1 Reactions ({{ commonReactions|length + uniqueReactions1|length}})</h2>
 
+
+<tr><td colspan="2" align="center">
 <form id='familySelector' action="">
     <h4>Reaction families:</h4>
-{% for family in families1 %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount1[family] }} rxn{{ 's' if familyCount1[family] != 1 }})</label><br>
+{% for family in families_union %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }}</label><br>
 {% endfor %}
     <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
 
@@ -976,42 +975,43 @@ $(document).ready(function() {
     <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
     <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
+
+
+
+</td></tr>
+
+
+<tr colspan="2">
+<td width=50% valign="top">
+<h2>Model 1 Reactions ({{ commonReactions|length + uniqueReactions1|length}})</h2>
 </td>
 
 <td width=50% valign="top">
 <h2>Model 2 Reactions ({{ commonReactions|length +uniqueReactions2|length}})</h2>
-
-<form id='familySelector' action="">
-    <h4>Reaction families:</h4>
-{% for family in families2 %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount2[family] }} rxn{{ 's' if familyCount2[family] != 1 }})</label><br>
-{% endfor %}
-    <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
-
-    <h4>Reaction Details:</h4>
-    <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
-    <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
-    <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
-</form>
 </td>
 </tr>
 
-</table>
 
-
-<table width=100%>
-<tr><td width=100% align="center">
+<tr colspan="2"><td width=100% align="center" colspan="2">
 <h2>Common Reactions ({{ commonReactions|length}})</h2></td></tr>
 
 
-<tr colspan="1"><td width=100%>
+<tr colspan="2"><td width=100% colspan="2">
 
-<table class="reactionList hide_kinetics hide_chemkin" width=100% cellpadding="10">
+<table class="reactionList" hide_kinetics hide_chemkin cellpadding="10" align="center">
     <tr colspan="4" width=100%><th>Index.</th><th>Family</th><th>Index.</th><th>Family</th></tr>
 
     {% for rxn1, rxn2 in commonReactions %}
 
+
+<tr class="reaction  {{ rxn1.getSource()|csssafe }}">
+
+<td width=100% colspan="4" align="center">
+
+
+<table width=100%>
 <tr>
-<td width=100% colspan="4"><hr>
+<td width=100% colspan="4">
 <table align="center">
 <tr>
     <td class="reactants" align="right">{% for reactant in rxn1.reactants %}<a href="{{reactant.molecule[0].getURL() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
@@ -1051,12 +1051,12 @@ $(document).ready(function() {
      <td class="family" width=40%>{{ rxn2.getSource() }}</td>
  </tr>
 
-<tr width=100%>{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
+<tr "width=100%" class="kinetics">{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
 <td colspan="2" width=50%></td>
 <td colspan="2" width=50%>* Reaction was found in reverse 
 
-
 {% if not rxn2.duplicate %}
+
 <P><b>Fitted Reverse Kinetics:</b>
 {% if not rxn2.kinetics.isPressureDependent() %}
 {{rxn2.generateReverseRateCoefficient().toHTML() }}
@@ -1065,10 +1065,11 @@ $(document).ready(function() {
 {% endif %}
 
 <P><b>Original Kinetics:</b>
+
 {% endif %}</td>
 </tr>
 
-<tr width=100%>
+<tr width=100% class="kinetics">
      <td colspan="2" valign="top" width=50%>
      
      {{ rxn1.kinetics.toHTML() }}</td>
@@ -1076,22 +1077,24 @@ $(document).ready(function() {
      {{ rxn2.kinetics.toHTML() }}</td>
 </tr>
 
-<tr width=100%>
+<tr width=100% class="chemkin">
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(speciesList) }}</font></td>
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(speciesList) }}</font></td>
 </tr>
 
+
+</td></tr></table>
+</td></tr>
 {% endfor %}
 
 </table>
-</td></tr></table>
 
-<table>
+
 <tr>
 <td width=50% valign="top">
 <h2>Model 1: Unique Reactions ({{ uniqueReactions1|length}})</h2>
-
-<table class="reactionList hide_kinetics hide_chemkin">
+<br>
+<table class="reactionList" hide_kinetics hide_chemkin >
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions1 %}
     <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -1116,8 +1119,8 @@ $(document).ready(function() {
 
 <td width=50% valign="top">
 <h2>Model 2: Unique Reactions ({{ uniqueReactions2|length}})</h2>
-
-<table class="reactionList hide_kinetics hide_chemkin">
+<br>
+<table class="reactionList" hide_kinetics hide_chemkin>
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions2 %}
     <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -1151,7 +1154,7 @@ $(document).ready(function() {
     f = open(path, 'w')
     f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, 
                             commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, 
-                            families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, speciesList=speciesList,
+                            families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, families_union=set(families1+families2),speciesList=speciesList,
                             getSpeciesIdentifier=getSpeciesIdentifier,textwrap=textwrap))
     f.close()
 
