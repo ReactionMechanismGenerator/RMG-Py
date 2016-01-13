@@ -1530,6 +1530,17 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
                     else:
                         string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family)   
     
+        # Next line of comment contains information about the pairs of reaction
+        pairs =[]
+        if reaction.pairs:
+            for pair in reaction.pairs:
+                pairs.append([getSpeciesIdentifier(spec) for spec in pair])
+            string += "! Flux pairs: "
+
+            for pair in pairs:
+                string += pair[0] + ", " + pair[1] + "; "
+            string += "\n"
+
         # Remaining lines of comments taken from reaction kinetics
         if reaction.kinetics.comment:
             for line in reaction.kinetics.comment.split("\n"):

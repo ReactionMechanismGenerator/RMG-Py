@@ -36,8 +36,9 @@ files.
 import os.path
 import logging
 import re
-
+import textwrap
 from rmgpy.util import makeOutputSubdirectory
+from rmgpy.chemkin import getSpeciesIdentifier
 
 ################################################################################
 
@@ -60,11 +61,10 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     package is used to generate the HTML; if this package is not found, no
     HTML will be generated (but the program will carry on).
     """
-
+    
     from rmgpy.rmg.model import PDepReaction
     
     from rmgpy.molecule.draw import MoleculeDrawer
-    from rmgpy.chemkin import getSpeciesIdentifier
 
     try:
         import jinja2
@@ -103,7 +103,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
                 raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
-                
+        #spec.thermo.comment=
+        # Text wrap the thermo comments
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
 #    species.sort(key=lambda x: x.index)
@@ -141,6 +142,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     environment = jinja2.Environment()
     environment.filters['csssafe'] = csssafe
     
+    
+    
     # Make HTML file
     template = environment.from_string(
 """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
@@ -162,15 +165,21 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     a:hover {
         text-decoration: underline;
     }
+
+    
     table.speciesList, table.reactionList {
-        width: 100%;
         border-collapse: collapse;
+        align: center;
     }
+
+        
     table.speciesList th, table.reactionList th {
         text-align: left;
+        vertical-align: top;
     }
-    tr.reaction td {
-        border-top: 1px solid #808080;
+    table.reaction {
+        border-top: 1px solid #808080;        
+        padding: 10px;
     }
     td.reactants {
         text-align: right;
@@ -185,6 +194,31 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     td.species img, td.reactants img, td.products img {
         vertical-align: middle;
     }
+    
+    tr.species{
+        border-top: 1px solid #808080;        
+    }
+
+    tr.rxnStart{
+        border-top: 1px solid #808080;        
+    }
+    
+    td, .speciesList th{
+        padding: 10px;
+        }
+    
+    td.index {
+    width: 50px;
+    }
+    
+    .thermo td, .thermo th{
+    padding: 2px;
+    }
+    
+    .kinetics td,  .kinetics th {
+    padding: 2px;
+    }
+    
     tr.kinetics {
         font-size: small;
     }
@@ -204,13 +238,25 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
        font-size: x-small;
        font-family: "Andale Mono", monospace;
     }
-    
+    .thermoComment {
+       white-space: pre-wrap;
+       font-size: small;
+       font-family: "Andale Mono", monospace;
+    }
     .hide_kinetics .kinetics{
        display: none !important;
     }
     .hide_chemkin .chemkin{
        display: none !important;
     }
+    .hide_reaction{
+       display: none !important;
+    }
+    .hide_thermoComment .thermoComment{
+       display: none !important;
+    }
+
+           
 </style>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
 <script type="text/javascript" src="../../../external/jquery.min.js"></script>
@@ -224,9 +270,9 @@ function updateFamily(family) {
 }
 function updateDetails(type) {
     if (type.checked) {
-        $(".reactionList").removeClass("hide_"+type.value);
+        $("."+type.value).show();
     } else {
-        $(".reactionList").addClass("hide_"+type.value);
+        $("."+type.value).hide();
     }
 }
 function checkAllFamilies() {
@@ -245,11 +291,82 @@ function uncheckAllDetails() {
     $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
     return false;
 }
+
+function updateFamilyDetails() {
+    $("#familySelector").find("[name='family']").each(function() { 
+        updateDetails(this); });
+    return false;
+}
+function updateReactionDetails() {
+    $("#familySelector").find("[name='detail']").each(function() { 
+        updateDetails(this); });
+    return false;
+}
+
+function updateThermoDetails(type) {
+    if (type.checked) {
+        $(".thermoComment").removeClass("hide_"+type.value);
+    } else {
+        $(".thermoComment").addClass("hide_"+type.value);
+    }
+}
+
+function uncheckThermoDetails() {
+    $("#thermoSelector").find("[name='detail']").each(function() { this.checked = false; updateThermoDetails(this); });
+    return false;
+}
+
+function resetReactionFilter() {
+    $.each($(".reaction"), function() {
+        $(this).removeClass("hide_reaction");
+    });
+}
+
+function submitReactionFilter(){
+    resetReactionFilter();
+    _r1 = $("#reactant1").val().toLowerCase();
+    _r2 = $("#reactant2").val().toLowerCase();
+    _p1 = $("#product1").val().toLowerCase();
+    _p2 = $("#product2").val().toLowerCase();
+    $.each($(".reaction"), function() {
+        _rxnRow = this;
+        _matched = false;
+        _rxn_spc_list = [""];
+        _reactants = _rxnRow.getElementsByClassName('reactants');
+        $.each($(_reactants).find("a"), function() {
+            _a = this;
+            $.each($(_a).find("img"), function() {
+                _spec = this;
+                _rxn_spc_list.push(_spec.getAttribute("alt").toLowerCase());
+          
+            });
+        });
+        _products = _rxnRow.getElementsByClassName('products');
+        $.each($(_products).find("a"), function() {
+            _a = this;
+            $.each($(_a).find("img"), function() {
+                _spec = this;
+                _rxn_spc_list.push(_spec.getAttribute("alt").toLowerCase());
+            
+            });
+        });
+
+        if(_rxn_spc_list.indexOf(_r1) != -1 && _rxn_spc_list.indexOf(_r2) != -1 &&_rxn_spc_list.indexOf(_p1) != -1 && _rxn_spc_list.indexOf(_p2) != -1){
+            _matched = true
+        }
+        if(_matched == true)
+        $(_rxnRow).removeClass("hide_reaction");
+        else
+        $(_rxnRow).addClass("hide_reaction");
+
+     });
+}
+
 $(document).ready(function() {
+    uncheckThermoDetails();
     checkAllFamilies();
     uncheckAllDetails();
 });
-
 </script>
 </head>
 
@@ -259,24 +376,24 @@ $(document).ready(function() {
 
 <h2>Species ({{ species|length }})</h2>
 
-<table class="speciesList">
-<tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
+<form id='thermoSelector' action="">
+<input type="checkbox" id="thermoComment" name="detail" value="thermoComment" onclick="updateThermoDetails(this);" checked="false"><label for="thermoComment"><b>Show Thermo Details</b></label><br>
+</form>
+
+
+<table class="speciesList" hide_thermoComment>
+<tr><th>Index</th><th>Thermo<br> H298 (kcal/mol), S298 (cal/mol*K), Cp (cal/mol*K)</th><th>Structure</th><th>Label</th><th>SMILES</th><th>MW<br> (g/mol)</th></tr>
 {% for spec in species %}
+
 <tr class="species">
-    <td class="index">
+    <td class="index" valign="top">
     {{ spec.index }}.</td>
     
     
-    
-    <td class="structure"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
-    <td class="label">{{ spec.label }}</td>
-    <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
-</tr>
+ <td class="thermo" valign="top">
+ 
 {% if spec.thermo %}
-
-<tr>
- <td>
-        <table align="center">
+        <table class="thermo" align="left">
             <tr>
                 <th>H298</th>
                 <th>S298</th>
@@ -298,10 +415,22 @@ $(document).ready(function() {
                 <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
                 <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
             </tr>
+<tr><td colspan="6" class="thermoComment">
+<div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
+</td></tr>
         </table>
-    </td></tr>
     
-    {% endif %}
+  {% endif %}
+
+ </td>
+    
+    <td class="structure" valign="top"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
+    <td class="label" valign="top">{{ getSpeciesIdentifier(spec) }}</td>
+    <td class="SMILES" valign="top">{{ spec.molecule[0].toSMILES() }}</td>
+    
+  <td class="MW" valign="top">{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
+    
+</tr>
 {% endfor %}
 </table>
 
@@ -319,25 +448,44 @@ $(document).ready(function() {
 <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
 
+<h4>Reaction Filter:</h4>
+
+<form id="reactionFilter">
+  Reactant 1: <input type="text" id="reactant1" value=""> &nbsp;
+  Reactant 2: <input type="text" id="reactant2" value=""> &nbsp;
+  Product 1: <input type="text" id="product1" value=""> &nbsp;
+  Product 2: <input type="text" id="product2" value=""><br><br>
+
+  
+</form>
+
+<input type="button" onclick="submitReactionFilter()" value="Search"> &nbsp;
+<input type="button" onclick="resetReactionFilter()" value="Clear Filter"> 
+
 <h4>Reaction List:</h4>
 
-<table class="reactionList hide_kinetics hide_chemkin">
+<table class="reactionList">
+<thead>
 <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
+</thead>
 {% for rxn in reactions %}
-<tr class="reaction {{ rxn.getSource()|csssafe }}">
+<tbody class="reaction">
+<td>
+<tr class="{{ rxn.getSource()|csssafe }} rxnStart">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="family">{{ rxn.getSource() }}</td>
 </tr>
-<tr class="kinetics {{ rxn.getSource()|csssafe }}">
+<tr class="kinetics {{ rxn.getSource()|csssafe }} hide_kinetics">
     <td></td>
     <td colspan="4">{{ rxn.kinetics.toHTML() }}</td>
 </tr>
-<tr class="chemkin {{ rxn.getSource()|csssafe }}">
+<tr class="chemkin {{ rxn.getSource()|csssafe }} hide_chemkin">
     <td></td>
     <td colspan="4">{{ rxn.toChemkin(species) }}</td>
+</tbody>
 </tr>
 {% endfor %}
 
@@ -350,7 +498,7 @@ $(document).ready(function() {
 
         
     f = open(path, 'w')
-    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount))
+    f.write(template.render(title=title, species=species, reactions=reactions, families=families, familyCount=familyCount, getSpeciesIdentifier=getSpeciesIdentifier,textwrap=textwrap))
     f.close()
 
 
@@ -504,107 +652,167 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
     <title>{{ title }}</title>
     <style type="text/css">
-        body {
-            font-family: sans-serif;
-        }
-        a {
-            color: #993333;
-            text-decoration: none;
-        }
-        a:visited {
-            color: #993333;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        table.speciesList, table.reactionList {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table.speciesList th, table.reactionList th {
-            text-align: left;
-        }
-        tr.reaction td {
-            border-top: 1px solid #808080;
-        }
-        td.reactants {
-            text-align: right;
-        }
-        td.products {
-            text-align: left;
-        }
-        td.reactionArrow {
-            text-align: center;
-            font-size: 16px;
-        }
-        td.species img, td.reactants img, td.products img {
-            vertical-align: middle;
-        }
-        tr.kinetics {
-            font-size: small;
-        }
-        .KineticsData {
-            # border: 1px solid gray;
-        }
-        .KineticsData th {
-            width: 15em;
-            word-wrap: none;
-        }
-        .KineticsData td {
-            width: 3em;
-        }
+     body {
+        font-family: sans-serif;
+    }
+    a {
+        color: #993333;
+        text-decoration: none;
+    }
+    a:visited {
+        color: #993333;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
 
-        .chemkin, .KineticsData_repr {
-           white-space: pre-wrap;
-           font-size: x-small;
-           font-family: "Andale Mono", monospace;
-        }
+    
+    table.speciesList, table.reactionList {
+        border-collapse: collapse;
+        align: center;
+    }
 
-        .hide_kinetics .kinetics{
-           display: none !important;
+        
+    table.speciesList th, table.reactionList th {
+        text-align: left;
+        vertical-align: top;
+    }
+    
+    table.speciesList th, {
+        font-size: small;
+    }
+    
+    tr.reaction {
+        border-top: 1px solid #808080;        
+        padding: 10px;
+    }
+    td.reactants {
+        text-align: right;
+    }
+    td.products {
+        text-align: left;
+    }
+    td.reactionArrow {
+        text-align: center;
+        font-size: 16px;
+    }
+    td.species img, td.reactants img, td.products img {
+        vertical-align: middle;
+    }
+    
+    tr.species{
+        border-top: 1px solid #808080;        
+    }
+    tr.commonSpecies{
+        border-top: 1px solid #808080;        
+    }
+    
+    td, .speciesList th{
+        padding: 10px;
         }
-        .hide_chemkin .chemkin{
-           display: none !important;
-        }
-    </style>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
-    <script type="text/javascript" src="../../../external/jquery.min.js"></script>
-    <script type="text/javascript">
-    function updateFamily(family) {
-        if (family.checked) {
-            $("."+family.value).show();
-        } else {
-            $("."+family.value).hide();
-        }
+    
+    td.index {
+    width: 50px;
     }
-    function updateDetails(type) {
-        if (type.checked) {
-            $(".reactionList").removeClass("hide_"+type.value);
-        } else {
-            $(".reactionList").addClass("hide_"+type.value);
-        }
+    
+    .thermo td, .thermo th{
+    padding: 2px;
     }
-    function checkAllFamilies() {
-        $("#familySelector").find("[name='family']").each(function() { this.checked = true; updateFamily(this); });
-        return false;
+    
+    .kinetics td,  .kinetics th {
+    padding: 2px;
     }
-    function uncheckAllFamilies() {
-        $("#familySelector").find("[name='family']").each(function() { this.checked = false; updateFamily(this); });
-        return false;
+    
+    tr.kinetics {
+        font-size: small;
     }
-    function checkAllDetails() {
-        $("#familySelector").find("[name='detail']").each(function() { this.checked = true; updateDetails(this); });
-        return false;
+    .KineticsData {
+        # border: 1px solid gray;
     }
-    function uncheckAllDetails() {
-        $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
-        return false;
+    .KineticsData th {
+        width: 15em;
+        word-wrap: none;
     }
-    $(document).ready(function() {
-        checkAllFamilies();
-        uncheckAllDetails();
-    });
+    .KineticsData td {
+        width: 3em;
+    }
+    
+    .chemkin, .KineticsData_repr {
+       white-space: pre-wrap;
+       font-size: x-small;
+       font-family: "Andale Mono", monospace;
+    }
+    .thermoComment {
+       white-space: pre-wrap;
+       font-size: small;
+       font-family: "Andale Mono", monospace;
+    }
+    .hide_kinetics .kinetics{
+       display: none !important;
+    }
+    .hide_chemkin .chemkin{
+       display: none !important;
+    }
+    .hide_thermoComment .thermoComment{
+       display: none !important;
+    }
 
+           
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
+<script type="text/javascript" src="../../../external/jquery.min.js"></script>
+<script type="text/javascript">
+function updateFamily(family) {
+    if (family.checked) {
+        $("."+family.value).show();
+    } else {
+        $("."+family.value).hide();
+    }
+}
+function updateDetails(type) {
+    if (type.checked) {
+        $(".reactionList").removeClass("hide_"+type.value);
+    } else {
+        $(".reactionList").addClass("hide_"+type.value);
+    }
+}
+function checkAllFamilies() {
+    $("#familySelector").find("[name='family']").each(function() { this.checked = true; updateFamily(this); });
+    return false;
+}
+function uncheckAllFamilies() {
+    $("#familySelector").find("[name='family']").each(function() { this.checked = false; updateFamily(this); });
+    return false;
+}
+function checkAllDetails() {
+    $("#familySelector").find("[name='detail']").each(function() { this.checked = true; updateDetails(this); });
+    return false;
+}
+function uncheckAllDetails() {
+    $("#familySelector").find("[name='detail']").each(function() { this.checked = false; updateDetails(this); });
+    return false;
+}
+
+
+
+function updateThermoDetails(type) {
+    if (type.checked) {
+        $(".thermoComment").removeClass("hide_"+type.value);
+    } else {
+        $(".thermoComment").addClass("hide_"+type.value);
+    }
+}
+
+function uncheckThermoDetails() {
+    $("#thermoSelector").find("[name='detail']").each(function() { this.checked = false; updateThermoDetails(this); });
+    return false;
+}
+
+$(document).ready(function() {
+    uncheckThermoDetails();
+    checkAllFamilies();
+    uncheckAllDetails();
+});
     </script>
 </head>
 
@@ -612,92 +820,121 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 <h1>{{ title }}</h1>
 
+<div align = "center">
+<form id='thermoSelector' action="">
+<input type="checkbox" id="thermoComment" name="detail" value="thermoComment" onclick="updateThermoDetails(this);" checked="false"><label for="thermoComment"><b>Show Thermo Details</b></label><br>
+</form></div>
+
 <h2 align="center">Common Species ({{ commonSpecies|length }})</h2>
 
-<table width="100%">
+<table class="speciesList" align="center" hide_thermoComment>
+    <tr><td align="center"><h3>Model 1</h3></td><td align="center"><h3>Model 2</h3></td></tr>
+    
     {% for spec1, spec2 in commonSpecies %}
-    <tr>
-        <td width="100%" colspan="4">
+    <tr class="commonSpecies">
+        <td width="100%" colspan="2">
             <table align="center">
-                <tr class="species">
-                    <td>{{ spec1.label }}</td>
-                    <td class="structure" align="center"><a href="{{spec1.molecule[0].getURL()}}"><img src="species1/{{ spec1|replace('#','%23') }}.png" alt="{{ spec1 }}" title="{{ spec1 }}"></a></td>
+                <tr><th>Structure</th><th>SMILES</th><th>MW (g/mol)</th></tr>
+                <tr>
+                    <td>{{ spec1.molecule[0].toSMILES() }}</td>
+                    <td class="structure" align="center"><a href="{{spec1.molecule[0].getURL()}}"><img src="species1/{{ spec1|replace('#','%23') }}.png"></a></td>
                     <td>{{ "%.2f"|format(spec1.molecule[0].getMolecularWeight() * 1000) }}</td>
                 </tr>
             </table>
         </td>
     </tr>
-    {% if spec1.thermo and spec2.thermo %}
-    {% if spec1.thermo.isIdenticalTo(spec2.thermo) %}
-    <tr width=100%>
-         <td colspan="4" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL THERMO WAS FOUND FOR THIS SPECIES.</font></div>
-    </tr>
-    {% elif spec1.thermo.isSimilarTo(spec2.thermo) %}
-    <tr width=100%>
-         <td colspan="4" valign="top" width=50%><div align="center"><font color="green">SIMILAR THERMO WAS FOUND FOR THIS SPECIES.</font></div>
-    </tr>
-    {% else %}
-     <tr width=100%>
-         <td colspan="4" valign="top" width=50%><div align="center"><font color="red">DIFFERENT THERMO WAS FOUND FOR THIS SPECIES.</font></div>
-    </tr>
-    {% endif%}
     <tr>
-        <td width="10%">{{ spec1.index }}. </td>
-        <td width="40%">
-            <table width="100%">
+    <td width="50%">
+    <table width="80%">
+    <tr><td width="20%" valign="top">{{ spec1.index }}. </td>
+        <td width="20%"  valign="top">{{getSpeciesIdentifier(spec1)}}</td>
+        <td width="80%"  valign="top">
+        {% if spec1.thermo %}
+            <table width="80%"  class="thermo" valign="top"> 
                 <tr>
-                    <th>H300</th>
-                    <th>S300</th>
+                    <th>H298</th>
+                    <th>S298</th>
                     <th>Cp300</th>
                     <th>Cp500</th>
                     <th>Cp1000</th>
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{% if spec1.thermo.Tmin.value_si <= 300 %}
-                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(300) / 4184) }}
+                    <td>{% if spec1.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}
                     {% endif %}</td>
                     <td>
-                    {% if spec1.thermo.Tmin.value_si <= 300 %}
-                    {{ "%.2f"|format(spec1.thermo.getEntropy(300) / 4.184) }}
+                    {% if spec1.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}
                     {% endif %}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(500) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1000) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1500) / 4.184) }}</td>
                 </tr>
+                <tr><td colspan="6" class="thermoComment">
+<div id="thermoComment" class="thermoComment">{{textwrap.fill(spec1.thermo.comment,80).replace('\n','<br>')}}</div>
+</td></tr>
             </table>
+            
+            {% endif %}
+        </td></tr>
+        </table>
         </td>
-        <td width="10%">{{ spec2.index }}.</td>
-        <td width="40%">
+        
+        <td width="50%">
+        <table width="80%" class="thermo" valign="top">
+    <tr><td width="20%"  valign="top">{{ spec2.index }}. </td>
+        <td width="20%"  valign="top">{{getSpeciesIdentifier(spec2)}}</td>
+        <td width="80%"  valign="top">
+        
+        {% if spec2.thermo %}
             <table width="100%">
                 <tr>
-                    <th>H300</th>
-                    <th>S300</th>
+                    <th>H298</th>
+                    <th>S298</th>
                     <th>Cp300</th>
                     <th>Cp500</th>
                     <th>Cp1000</th>
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{% if spec2.thermo.Tmin.value_si <= 300 %}
-                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(300) / 4184) }}
+                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}
                     {% endif %}</td>
-                    <td>{% if spec2.thermo.Tmin.value_si <= 300 %}
-                    {{ "%.2f"|format(spec2.thermo.getEntropy(300) / 4.184) }}
+                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}
                     {% endif %}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(500) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1000) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1500) / 4.184) }}</td>
                 </tr>
+                                <tr><td colspan="6" class="thermoComment">
+<div id="thermoComment" class="thermoComment">{{textwrap.fill(spec2.thermo.comment,80).replace('\n','<br>')}}</div>
+</td></tr>
             </table>
+            {% endif %}
         </td>
+    </tr></table>
+    </td></tr>
+    
+    {% if spec1.thermo and spec2.thermo %}
+    {% if spec1.thermo.isIdenticalTo(spec2.thermo) %}
+    <tr width=100%>
+         <td colspan="2" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL THERMO WAS FOUND FOR THIS SPECIES.</font></div>
     </tr>
-    {% endif %}
-    <tr>
-        <td width="100%" colspan="4"><hr/></td>
+    {% elif spec1.thermo.isSimilarTo(spec2.thermo) %}
+    <tr width=100%>
+         <td colspan="2" valign="top" width=50%><div align="center"><font color="green">SIMILAR THERMO WAS FOUND FOR THIS SPECIES.</font></div>
     </tr>
+    {% else %}
+     <tr width=100%>
+         <td colspan="2" valign="top" width=50%><div align="center"><font color="red">DIFFERENT THERMO WAS FOUND FOR THIS SPECIES.</font></div>
+    </tr>
+    {% endif%}{% endif %}
+    
+    
     {% endfor %}
 </table>
 
@@ -706,42 +943,110 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <td width=50% valign="top">
 
 <h2>Model 1: Unique Species ({{ speciesList1|length }})</h2>
-<table class="speciesList">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
+<table class="speciesList" width="80%" hide_thermoComment>
+    <tr><th>Index</th><th>Structure</th><th>Label</th><th>SMILES</th><th>MW (g/mol)</th></tr>
     {% for spec in speciesList1 %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
-        <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species1/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
-        <td class="label">{{ spec.label }}</td>
+        <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species1/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
+        <td class="label">{{ getSpeciesIdentifier(spec) }}</td>
+        <td>{{spec.molecule[0].toSMILES()}}</td>
         <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
+    <tr><td colspan="5">
+    
+    {% if spec.thermo %}
+            <table width="80%"  class="thermo" valign="top">
+                <tr>
+                    <th>H298</th>
+                    <th>S298</th>
+                    <th>Cp300</th>
+                    <th>Cp500</th>
+                    <th>Cp1000</th>
+                    <th>Cp1500</th>
+                </tr>
+                <tr>
+                    <td>{% if spec.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}
+                    {% endif %}</td>
+                    <td>
+                    {% if spec.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}
+                    {% endif %}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                </tr>
+                                <tr><td colspan="6" class="thermoComment">
+<div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
+</td></tr>
+            </table>
+            {% endif %}
+    
+    </td></tr>
+    
     {% endfor %}
 </table>
 </td>
 <td width=50% valign="top">
 <h2>Model 2: Unique Species ({{ speciesList2|length }})</h2>
-<table class="speciesList">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
+<table class="speciesList" width="80%" hide_thermoComment>
+    <tr><th>Index</th><th>Structure</th><th>Label</th><th>SMILES</th><th>MW (g/mol)</th></tr>
     {% for spec in speciesList2 %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
-        <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species2/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
-        <td class="label">{{ spec.label }}</td>
+        <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species2/{{ spec|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(spec) }}" title="{{ getSpeciesIdentifier(spec) }}"></a></td>
+        <td class="label">{{ getSpeciesIdentifier(spec) }}</td>
+        <td>{{spec.molecule[0].toSMILES()}}</td>
         <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
+    
+        <tr><td colspan="5">
+    
+    {% if spec.thermo %}
+            <table width="80%"  class="thermo" valign="top">
+                <tr>
+                    <th>H298</th>
+                    <th>S298</th>
+                    <th>Cp300</th>
+                    <th>Cp500</th>
+                    <th>Cp1000</th>
+                    <th>Cp1500</th>
+                </tr>
+                <tr>
+                    <td>{% if spec.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}
+                    {% endif %}</td>
+                    <td>
+                    {% if spec.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}
+                    {% endif %}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                </tr>
+                                <tr><td colspan="6" class="thermoComment">
+<div id="thermoComment" class="thermoComment">{{textwrap.fill(spec.thermo.comment,80).replace('\n','<br>')}}</div>
+</td></tr>
+            </table>
+            {% endif %}
+    
+    </td></tr>
+    
     {% endfor %}
 </table>
 </td></tr>
 
-<tr colspan="2">
-<td width=50% valign="top">
-<h2>Model 1 Reactions ({{ commonReactions|length + uniqueReactions1|length}})</h2>
 
+
+<tr><td colspan="2" align="center">
 <form id='familySelector' action="">
     <h4>Reaction families:</h4>
-{% for family in families1 %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount1[family] }} rxn{{ 's' if familyCount1[family] != 1 }})</label><br>
+{% for family in families_union %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }}</label><br>
 {% endfor %}
     <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
 
@@ -750,42 +1055,43 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
     <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
 </form>
+
+
+
+</td></tr>
+
+
+<tr colspan="2">
+<td width=50% valign="top">
+<h2>Model 1 Reactions ({{ commonReactions|length + uniqueReactions1|length}})</h2>
 </td>
 
 <td width=50% valign="top">
 <h2>Model 2 Reactions ({{ commonReactions|length +uniqueReactions2|length}})</h2>
-
-<form id='familySelector' action="">
-    <h4>Reaction families:</h4>
-{% for family in families2 %}    <input type="checkbox" id="{{ family|csssafe }}" name="family" value="{{ family|csssafe }}" checked="checked" onclick="updateFamily(this);"><label for="{{ family|csssafe }}">{{ family }} ({{ familyCount2[family] }} rxn{{ 's' if familyCount2[family] != 1 }})</label><br>
-{% endfor %}
-    <a href="javascript:checkAllFamilies();" onclick="checkAllFamilies()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllFamilies();" onclick="uncheckAllFamilies();">uncheck all</a><br>
-
-    <h4>Reaction Details:</h4>
-    <input type="checkbox" id="kinetics" name="detail" value="kinetics" onclick="updateDetails(this);"><label for="kinetics">Kinetics</label><br>
-    <input type="checkbox" id="chemkin" name="detail" value="chemkin" onclick="updateDetails(this);"><label for="chemkin">Chemkin strings</label><br>
-    <a href="javascript:checkAllDetails();" onclick="checkAllDetails()">check all</a> &nbsp; &nbsp; <a href="javascript:uncheckAllDetails();" onclick="uncheckAllDetails();">uncheck all</a>
-</form>
 </td>
 </tr>
 
-</table>
 
-
-<table width=100%>
-<tr><td width=100% align="center">
+<tr colspan="2"><td width=100% align="center" colspan="2">
 <h2>Common Reactions ({{ commonReactions|length}})</h2></td></tr>
 
 
-<tr colspan="1"><td width=100%>
+<tr colspan="2"><td width=100% colspan="2">
 
-<table class="reactionList hide_kinetics hide_chemkin" width=100% cellpadding="10">
+<table class="reactionList" hide_kinetics hide_chemkin cellpadding="10" align="center">
     <tr colspan="4" width=100%><th>Index.</th><th>Family</th><th>Index.</th><th>Family</th></tr>
 
     {% for rxn1, rxn2 in commonReactions %}
 
+
+<tr class="reaction  {{ rxn1.getSource()|csssafe }}">
+
+<td width=100% colspan="4" align="center">
+
+
+<table width=100%>
 <tr>
-<td width=100% colspan="4"><hr>
+<td width=100% colspan="4">
 <table align="center">
 <tr>
     <td class="reactants" align="right">{% for reactant in rxn1.reactants %}<a href="{{reactant.molecule[0].getURL() }}"><img src="species1/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
@@ -825,12 +1131,12 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
      <td class="family" width=40%>{{ rxn2.getSource() }}</td>
  </tr>
 
-<tr width=100%>{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
+<tr "width=100%" class="kinetics">{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
 <td colspan="2" width=50%></td>
 <td colspan="2" width=50%>* Reaction was found in reverse 
 
-
 {% if not rxn2.duplicate %}
+
 <P><b>Fitted Reverse Kinetics:</b>
 {% if not rxn2.kinetics.isPressureDependent() %}
 {{rxn2.generateReverseRateCoefficient().toHTML() }}
@@ -839,10 +1145,11 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 {% endif %}
 
 <P><b>Original Kinetics:</b>
+
 {% endif %}</td>
 </tr>
 
-<tr width=100%>
+<tr width=100% class="kinetics">
      <td colspan="2" valign="top" width=50%>
      
      {{ rxn1.kinetics.toHTML() }}</td>
@@ -850,22 +1157,24 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
      {{ rxn2.kinetics.toHTML() }}</td>
 </tr>
 
-<tr width=100%>
+<tr width=100% class="chemkin">
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(speciesList) }}</font></td>
     <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(speciesList) }}</font></td>
 </tr>
 
+
+</td></tr></table>
+</td></tr>
 {% endfor %}
 
 </table>
-</td></tr></table>
 
-<table>
+
 <tr>
 <td width=50% valign="top">
 <h2>Model 1: Unique Reactions ({{ uniqueReactions1|length}})</h2>
-
-<table class="reactionList hide_kinetics hide_chemkin">
+<br>
+<table class="reactionList" hide_kinetics hide_chemkin >
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions1 %}
     <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -890,8 +1199,8 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 <td width=50% valign="top">
 <h2>Model 2: Unique Reactions ({{ uniqueReactions2|length}})</h2>
-
-<table class="reactionList hide_kinetics hide_chemkin">
+<br>
+<table class="reactionList" hide_kinetics hide_chemkin>
     <tr><th>Index</th><th colspan="3" style="text-align: center;">Reaction</th><th>Family</th></tr>
     {% for rxn in uniqueReactions2 %}
     <tr class="reaction {{ rxn.getSource()|csssafe }}">
@@ -923,7 +1232,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, speciesList=speciesList))
+    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, 
+                            commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, 
+                            families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, families_union=set(families1+families2),speciesList=speciesList,
+                            getSpeciesIdentifier=getSpeciesIdentifier,textwrap=textwrap))
     f.close()
 
 
