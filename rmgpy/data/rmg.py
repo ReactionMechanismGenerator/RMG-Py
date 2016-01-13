@@ -34,6 +34,7 @@ for working with the RMG database.
 """
 
 import os.path
+import logging
 
 from base import ForbiddenStructures
 from thermo import ThermoDatabase
@@ -68,7 +69,6 @@ class RMGDatabase:
         if database is None:
             database = self
         else:
-            import logging
             logging.warning("Should only make one instance of RMGDatabase because it's stored as a module-level variable!")
             logging.warning("Unexpected behaviour may result!")
 
