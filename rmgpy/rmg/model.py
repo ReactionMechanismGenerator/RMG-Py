@@ -701,17 +701,25 @@ class CoreEdgeReactionModel:
                 else:
                     logging.info('Adding species {0} to model core'.format(newSpecies))
                     display(newSpecies) # if running in IPython --pylab mode, draws the picture!
-   
+       
+                    familyKeys = database.kinetics.families.keys()
+                    familieCount = len(familyKeys)
+
                     # Find reactions involving the new species as unimolecular reactant
                     # or product (e.g. A <---> products)
-                    newReactions.extend(self.react(database, newSpecies))
+
+                    results_A = map_(
+                                    WorkerWrapper(react_family),
+                                    familyKeys,
+                                    [newSpecies] * familieCount,
+                                    [[]] * familieCount
+                                )
+
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with other core species (e.g. A + B <---> products)
 
-                    familyKeys = database.kinetics.families.keys()
                     corespeciesList = self.core.species
 
-                    familieCount = len(familyKeys)
                     results_AB = map_(
                                     WorkerWrapper(react_family),
                                     familyKeys,
@@ -729,7 +737,7 @@ class CoreEdgeReactionModel:
                                     [[newSpecies.copy(deep=True)]] * familieCount
                                 )
 
-                    for result in itertools.chain(results_AA, results_AB):
+                    for result in itertools.chain(results_A, results_AA, results_AB):
                         newReactions.extend(result)
     
                 # Add new species
@@ -1842,7 +1850,7 @@ def getKey(spc):
         
 def react_family(familyKey, spcA, speciesList):
     """
-    Generate bimolecular reactions for one specific family.
+    Generate uni and bimolecular reactions for one specific family.
     :return: a list of new reactions
     """
 
@@ -1851,14 +1859,31 @@ def react_family(familyKey, spcA, speciesList):
     families = getDB('kinetics').families
     family = families[familyKey]
 
-    for spcB in speciesList:
-        if spcB.reactive:
-            for molA in spcA.molecule:
-                for molB in spcB.molecule:
-                    reactionList.extend(family.generateReactions(
-                        [molA, molB]))
-                    molA.clearLabeledAtoms()
-                    molB.clearLabeledAtoms()
+    unimolecular = not speciesList
+
+    for molA in spcA.molecule:
+        if unimolecular:
+            reactants = [molA]
+                        
+            reactionList.extend(
+                family.generateReactions(reactants)
+                )
+
+            for reactant in reactants:
+                reactant.clearLabeledAtoms()
+
+        else:#bimolecular
+            for spcB in speciesList:
+                if spcB.reactive:
+                    for molB in spcB.molecule:
+                        reactants = [molA, molB]
+                        
+                        reactionList.extend(
+                            family.generateReactions(reactants)
+                            )
+
+                        for reactant in reactants:
+                            reactant.clearLabeledAtoms()
 
     logging.debug("{} reactions are generated from {}"
              .format(len(reactionList), familyKey)
