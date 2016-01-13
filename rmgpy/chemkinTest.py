@@ -10,7 +10,7 @@ class ChemkinTest(unittest.TestCase):
 		This example is mainly to test if family info can be correctly 
 		parsed from comments like '!Template reaction: R_Recombination'.
 		"""
-		folder = os.path.join(os.getcwd(),'rmgpy/tools/data/chemkin/chemkin_py')
+		folder = os.path.join(os.getcwd(),'rmgpy/test_data/chemkin/chemkin_py')
 		
 		chemkinPath = os.path.join(folder, 'minimal', 'chem.inp')
 		dictionaryPath = os.path.join(folder,'minimal', 'species_dictionary.txt')
@@ -32,7 +32,7 @@ class ChemkinTest(unittest.TestCase):
 		an entry in H_Abstraction, the other was just an estimate.'
 		won't interfere reaction family info retrival.
 		"""
-		folder = os.path.join(os.getcwd(),'rmgpy/tools/data/chemkin/chemkin_py')
+		folder = os.path.join(os.getcwd(),'rmgpy/test_data/chemkin/chemkin_py')
 		
 		chemkinPath = os.path.join(folder, 'pdd', 'chem.inp')
 		dictionaryPath = os.path.join(folder,'pdd', 'species_dictionary.txt')
