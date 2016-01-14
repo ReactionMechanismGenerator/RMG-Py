@@ -1821,9 +1821,8 @@ def react_family(familyKey, spcA, speciesList):
     family = families[familyKey]
 
     unimolecular = not speciesList
-
-    for molA in spcA.molecule:
-        if unimolecular:
+    if unimolecular:
+        for molA in spcA.molecule:
             reactants = [molA]
                         
             reactionList.extend(
@@ -1833,21 +1832,49 @@ def react_family(familyKey, spcA, speciesList):
             for reactant in reactants:
                 reactant.clearLabeledAtoms()
 
-        else:#bimolecular
-            for spcB in speciesList:
-                if spcB.reactive:
-                    for molB in spcB.molecule:
-                        reactants = [molA, molB]
-                        
-                        reactionList.extend(
-                            family.generateReactions(reactants)
-                            )
+    else:
 
-                        for reactant in reactants:
-                            reactant.clearLabeledAtoms()
+        reactive_species = [spc for spc in speciesList if spc.reactive]
+        speciesCount = len(reactive_species)
+        
+        if reactive_species:
+            results = map_(
+                        WorkerWrapper(reactSpecies),
+                        reactive_species,
+                        [spcA] * speciesCount,
+                        [familyKey] * speciesCount,
+                        )
+
+            for result in results:
+                reactionList.extend(result)
 
     logging.debug("{} reactions are generated from {}"
              .format(len(reactionList), familyKey)
             )
 
     return reactionList
+
+def reactSpecies(spcA, spcB, familyKey):
+    """
+    Performs a bimolecular reaction between
+    species A and B for the given family key.
+    """
+    reactionList = []
+
+    families = getDB('kinetics').families
+    family = families[familyKey]
+
+    for molA in spcA.molecule:
+        for molB in spcB.molecule:
+
+            reactants = [molA, molB]
+            
+            reactionList.extend(
+                family.generateReactions(reactants)
+                )
+
+            for reactant in reactants:
+                reactant.clearLabeledAtoms()
+
+    return reactionList
+
