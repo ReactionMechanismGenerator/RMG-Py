@@ -39,7 +39,13 @@ def failsSpeciesConstraints(species):
     """
     
     from rmgpy.rmg.input import getInput
-    speciesConstraints = getInput('speciesConstraints')
+
+    try:
+        speciesConstraints = getInput('speciesConstraints')
+    except Exception, e:
+        logging.debug('Species constraints could not be found.')
+        speciesConstraints = {}
+    
 
     explicitlyAllowedMolecules = speciesConstraints.get('explicitlyAllowedMolecules', [])
     maxCarbonAtoms = speciesConstraints.get('maximumCarbonAtoms', 1000000)
