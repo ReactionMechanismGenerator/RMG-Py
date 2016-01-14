@@ -709,7 +709,7 @@ class CoreEdgeReactionModel:
                     # or product (e.g. A <---> products)
 
                     results_A = map_(
-                                    WorkerWrapper(react_family),
+                                    WorkerWrapper(reactFamily),
                                     familyKeys,
                                     [newSpecies] * familieCount,
                                     [[]] * familieCount
@@ -721,7 +721,7 @@ class CoreEdgeReactionModel:
                     corespeciesList = self.core.species
 
                     results_AB = map_(
-                                    WorkerWrapper(react_family),
+                                    WorkerWrapper(reactFamily),
                                     familyKeys,
                                     [newSpecies] * familieCount,
                                     [corespeciesList] * familieCount
@@ -731,7 +731,7 @@ class CoreEdgeReactionModel:
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with itself (e.g. A + A <---> products)
                     results_AA = map_(
-                                    WorkerWrapper(react_family),
+                                    WorkerWrapper(reactFamily),
                                     familyKeys,
                                     [newSpecies] * familieCount,
                                     [[newSpecies.copy(deep=True)]] * familieCount
@@ -1848,72 +1848,65 @@ def getKey(spc):
     return spc.label
 
         
-def react_family(familyKey, spcA, speciesList):
+def reactFamily(familyKey, spcA, speciesList):
     """
     Generate uni and bimolecular reactions for one specific family.
     :return: a list of new reactions
     """
 
-    reactionList = []
-
-    families = getDB('kinetics').families
-    family = families[familyKey]
-
-    unimolecular = not speciesList
-    if unimolecular:
-        for molA in spcA.molecule:
-            reactants = [molA]
-                        
-            reactionList.extend(
-                family.generateReactions(reactants)
-                )
-
-            for reactant in reactants:
-                reactant.clearLabeledAtoms()
-
+    if not speciesList:
+        combos = [[spcA]]
     else:
-
         reactive_species = [spc for spc in speciesList if spc.reactive]
-        speciesCount = len(reactive_species)
-        
         if reactive_species:
-            results = map_(
-                        WorkerWrapper(reactSpecies),
-                        reactive_species,
-                        [spcA] * speciesCount,
-                        [familyKey] * speciesCount,
-                        )
+            combos = list(itertools.product(reactive_species, [spcA]))
+        else:
+            return []
 
-            for result in results:
-                reactionList.extend(result)
+    results = map_(
+                WorkerWrapper(reactSpecies),
+                combos,
+                [familyKey] * len(combos),
+                )
 
-    logging.debug("{} reactions are generated from {}"
-             .format(len(reactionList), familyKey)
-            )
+    # flatten list of lists:
+    reactionList = list(itertools.chain.from_iterable(results))
+    
+    return reactionList
+
+def reactSpecies(speciesList, familyKey):
+    """
+    Performs a reaction between the
+    species in the list for the given family key.
+    """
+
+    molList = [spc.molecule for spc in speciesList]
+
+    combos = list(itertools.product(*molList))
+
+    results = map_(
+                WorkerWrapper(reactMolecules),
+                combos,
+                [familyKey] * len(combos),
+                )
+
+    # flatten list of lists:
+    reactionList = list(itertools.chain.from_iterable(results))
 
     return reactionList
 
-def reactSpecies(spcA, spcB, familyKey):
+def reactMolecules(molecules, familyKey):
     """
-    Performs a bimolecular reaction between
-    species A and B for the given family key.
+    Performs a reaction between
+    the resonance isomers for the given family key.
     """
-    reactionList = []
 
     families = getDB('kinetics').families
     family = families[familyKey]
 
-    for molA in spcA.molecule:
-        for molB in spcB.molecule:
+    reactionList = family.generateReactions(list(molecules))
 
-            reactants = [molA, molB]
-            
-            reactionList.extend(
-                family.generateReactions(reactants)
-                )
-
-            for reactant in reactants:
-                reactant.clearLabeledAtoms()
+    for reactant in molecules:
+        reactant.clearLabeledAtoms()
 
     return reactionList
-
