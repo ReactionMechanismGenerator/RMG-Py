@@ -482,6 +482,10 @@ class CoreEdgeReactionModel:
         (a reaction with a different "family" key as the parameter reaction).
 
         """
+
+        # Make sure the reactant and product lists are sorted before performing the check
+        rxn.reactants.sort()
+        rxn.products.sort()
         
         familyObj = getFamilyLibraryObject(rxn.family)
         shortlist = self.searchRetrieveReactions(rxn)
