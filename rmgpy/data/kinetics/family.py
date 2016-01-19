@@ -635,6 +635,43 @@ class KineticsFamily(Database):
         Write the given `entry` in the thermo database to the file object `f`.
         """
         return saveEntry(f, entry)
+    
+    def saveTrainingReaction(self, f, reaction, reference=None, referenceType='', shortDesc='',longDesc='', rank=3):
+        """
+        This function takes a reaction object and saves appends it to the training reactions file.
+        Rank is set to a default value of 3 unless otherwise indicated
+        """ 
+        for depository in self.depositories:
+            if depository.label.endswith('training'):
+                break
+        else:
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Starting a new one')
+            depository = KineticsDepository()
+            self.depositories.append(depository)
+        
+        
+        trainingDatabase = depository
+        indices = [entry.index for entry in trainingDatabase.entries.values()]
+        if indices:
+            maxIndex = max(indices)
+        else:
+            maxIndex = 0
+            
+        entry = Entry(
+            index = maxIndex+1,
+            label = '',
+            item = reaction,
+            data = reaction.kinetics,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = unicode(shortDesc),
+            longDesc = unicode(longDesc),
+            rank = rank,
+            )
+        
+        
+        self.saveEntry(f, entry)
 
     def save(self, path):
         """
@@ -827,9 +864,7 @@ class KineticsFamily(Database):
             if depository.label.endswith('training'):
                 break
         else:
-            logging.info('Could not find training depository in family {0}.'.format(self.label))
-            logging.info('Must be because you turned off the training depository.')
-            return
+            raise Exception("NO training found")
         
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
