@@ -1,0 +1,32 @@
+name: rmg
+channels:
+  - defaults
+  - rmg
+  - rdkit
+dependencies:
+  - python
+  - numpy
+  - cython ==0.21
+  - matplotlib
+  - rdkit >=2015.03.1
+  - pydas >=1.0.1
+  - pydqed >=1.0.0
+  - quantities
+  - scipy
+  - xlwt
+  - markupsafe
+  - jinja2
+  - pyparsing
+  - pydot
+  - nose
+  - coverage
+  - guppy
+  - gprof2dot
+  #- cairo
+  #- cairocffi
+  - openbabel
+  - psutil
+  - symmetry
+  - mopac
+  - graphviz
+  - scoop

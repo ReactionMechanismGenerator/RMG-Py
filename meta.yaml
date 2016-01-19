@@ -13,8 +13,8 @@ requirements:
   build:
     - argparse # [py26]
     - boost ==1.56.0
-    - cairo
-    - cairocffi
+    - cairo [unix]
+    - cairocffi [unix]
     - coverage
     - cython ==0.21
     - gcc # [unix]
@@ -44,8 +44,8 @@ requirements:
 
   run:
     - argparse # [py26]
-    - cairo
-    - cairocffi
+    - cairo [unix]
+    - cairocffi [unix]
     - coverage
     - cython ==0.21
     - gprof2dot
@@ -79,7 +79,8 @@ test:
   imports:
     - rmgpy
   commands:
-    - make -C $SRC_DIR test
+    - make -C $SRC_DIR test [unix]
+    - mingw32-make -C %SRC_DIR% test [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py
