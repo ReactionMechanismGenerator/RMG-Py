@@ -26,10 +26,10 @@ solver:
 
 ifneq ($(DASPK),)
 	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ echo "DEF DASPK = 1" > rmgpy/solver/settings.pxi 
+	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi 
 else ifneq ($(DASSL),)
 	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
-	@ echo "DEF DASPK = 0" > rmgpy/solver/settings.pxi
+	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
 else
 	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
 	@ python -c 'import pydas.dassl' 
@@ -43,7 +43,9 @@ bin/symmetry:
 	mkdir -p bin
 	$(MAKE) -C external/symmetry install
 
-QM: bin/symmetry
+QM:
+	@ echo "Checking if you have symmetry..."
+	@ echo "symmetry -h"
 	@ echo "Checking you have rdkit..."
 	@ python -c 'import rdkit; print rdkit.__file__'
 	@ echo "Checking rdkit version..."
