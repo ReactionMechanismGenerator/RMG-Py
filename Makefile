@@ -81,10 +81,13 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test:
+ifeq ($(OS),Windows_NT)
+	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+else
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-
+endif
 test-database:
 	nosetests -v -d testing/databaseTest.py	
 
