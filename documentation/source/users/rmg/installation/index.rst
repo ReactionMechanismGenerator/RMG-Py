@@ -7,7 +7,7 @@ Installation
 
 
 .. NOTE::
-    RMG has been tested on the Python 2.5, 2.6, and 2.7 releases; dependency issues render it incompatible with Python 3.x releases
+    It is recommended that RMG be installed with Python 2.7, although it has been previously tested that Python 2.5 and 2.6 may also work. Dependency issues render it incompatible with Python 3.x releases.
 
 
 Recommended: Installation Using Anaconda
