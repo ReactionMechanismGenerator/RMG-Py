@@ -1,8 +1,8 @@
 .. _anacondaDeveloper:
 
-*****************************************************
-Installation by Source Using Anaconda: For Developers
-*****************************************************
+*******************************************************************************************
+Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
+*******************************************************************************************
 
 RMG-Py can now be built by source using the Anaconda Python Platform to assist in installing
 all necessary dependencies. This is recommended for a developer who may be altering the RMG source code
