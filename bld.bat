@@ -14,4 +14,5 @@ mingw32-make QM
 
 :: lazy "install" of everything in our 'external' folder.
 :: most of which should probably be elsewhere
-xcopy %SRC_DIR%\external %SP_DIR% /E /Y
+mkdir %SP_DIR%\external
+xcopy %SRC_DIR%\external %SP_DIR%\external /E /Y
