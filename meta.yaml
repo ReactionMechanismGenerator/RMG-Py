@@ -33,14 +33,14 @@ requirements:
     - pydqed
     - pyparsing
     - python
+    - pyzmq
     - quantities
     - rdkit >=2015.09.2 # [win]
     - rdkit >=2015.03.1 # [unix]
     - scipy
+    - scoop
     - setuptools
     - xlwt
-    - pyzmq
-    - scoop
 
   run:
     - argparse # [py26]
@@ -65,15 +65,15 @@ requirements:
     - pydqed
     - pyparsing
     - python
+    - pyzmq
     - quantities
     - rdkit >=2015.03.1 # [unix]
     - rdkit >=2015.09.2 # [win]
+    - rmgdatabase
     - scipy
+    - scoop
     - symmetry
     - xlwt
-    - pyzmq
-    - scoop
-    - rmgdatabase
 
 test:
   requires:
