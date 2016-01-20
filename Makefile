@@ -39,10 +39,6 @@ endif
 cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
-bin/symmetry:
-	mkdir -p bin
-	$(MAKE) -C external/symmetry install
-
 QM:
 	@ echo "Checking if you have symmetry..."
 	@ echo "symmetry -h"
@@ -66,9 +62,7 @@ clean:
 	rm -rf build/
 	find . -name '*.so' -exec rm -f '{}' \;
 	find . -name '*.pyc' -exec rm -f '{}' \;
-	$(MAKE) -C external/symmetry clean
-	rm -f bin/symmetry
-
+	
 clean-solver:
 	rm -r build/pyrex/rmgpy/solver/
 	rm -r build/build/pyrex/rmgpy/solver/
