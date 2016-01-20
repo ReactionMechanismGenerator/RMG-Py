@@ -13,8 +13,8 @@ requirements:
   build:
     - argparse # [py26]
     - boost ==1.56.0
-    - cairo [unix]
-    - cairocffi [unix]
+    - cairo # [unix]
+    - cairocffi # [unix]
     - coverage
     - cython ==0.21
     - gcc # [unix]
@@ -34,8 +34,8 @@ requirements:
     - pyparsing
     - python
     - quantities
-    - rdkit
-    - rdkit ==2015.03.1
+    - rdkit >=2015.09.2 # [win]
+    - rdkit >=2015.03.1 # [unix]
     - scipy
     - setuptools
     - xlwt
@@ -44,8 +44,8 @@ requirements:
 
   run:
     - argparse # [py26]
-    - cairo [unix]
-    - cairocffi [unix]
+    - cairo # [unix]
+    - cairocffi # [unix]
     - coverage
     - cython ==0.21
     - gprof2dot
@@ -66,12 +66,14 @@ requirements:
     - pyparsing
     - python
     - quantities
-    - rdkit ==2015.03.1
+    - rdkit >=2015.03.1 # [unix]
+    - rdkit >=2015.09.2 # [win]
     - scipy
     - symmetry
     - xlwt
     - pyzmq
     - scoop
+    - rmgdatabase
 
 test:
   requires:
@@ -80,6 +82,7 @@ test:
     - rmgpy
   commands:
     - make -C $SRC_DIR test [unix]
+    - cp %PREFIX%\Lib\site-packages\rmgpy\rmgrc %SRC_DIR% [win]
     - mingw32-make -C %SRC_DIR% test [win]
 
 about:
