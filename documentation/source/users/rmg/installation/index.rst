@@ -26,6 +26,7 @@ RMG's thermodynamic and kinetics databases.
     anacondaUserWindows
     windowsEnvironment
 
+
 For Developers: Installation by Source Using Anaconda Environment
 =================================================================
 
@@ -40,6 +41,7 @@ source code updates and patches through Github.
     anacondaDeveloper
     anacondaDeveloperWindows
     windowsEnvironment
+    updatingSourceCode
 
 Dependencies
 ============
