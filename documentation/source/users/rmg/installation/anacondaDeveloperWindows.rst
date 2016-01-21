@@ -10,12 +10,12 @@ Installation by Source Using Anaconda Environment for Windows
 .. image:: images/AnacondaInstallWindows.png
     :align: center
 
-* Install `Git <http://git-scm.com/download/win>`_, the open source version control package. You may configure everything with their defaults, but it is recommended to commit Unix-style line endings:
+* Install `Git <http://git-scm.com/download/win>`_, the open source version control package. When asked, append Git tools to your Command Prompt. It is also recommended to commit Unix-style line endings:
 
 .. image:: images/InstallGit.png
     :align: center
     
-* Open a command prompt (either by finding it in your Program Files or by searching for ``cmd.exe``).  Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an appropriate local directory where you want both RMG-Py and RMG-database folders to exist. We recommend creating a folder such as ``C:\Code\`` ::
+* Open Git CMD or a command prompt (either by finding it in your Program Files or by searching for ``cmd.exe``).  Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an appropriate local directory where you want both RMG-Py and RMG-database folders to exist. We recommend creating a folder such as ``C:\Code\`` ::
 
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
