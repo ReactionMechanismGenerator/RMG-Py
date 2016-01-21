@@ -4,6 +4,7 @@ channels:
   - rmg
   - rdkit
 dependencies:
+  - mingwpy
   - python
   - numpy
   - cython ==0.21
