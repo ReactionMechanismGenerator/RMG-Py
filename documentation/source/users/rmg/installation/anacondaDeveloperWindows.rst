@@ -37,10 +37,6 @@ Installation by Source Using Anaconda Environment for Windows
     gendef python27.dll
     dlltool -D python27.dll -d python27.def -l libs\libpython27.a
 
-  Also point distutils to MinGW::
-
-    echo -e "[build]\ncompiler=mingw32" > Lib\distutils\distutils.cfg
-
 * Now you can compile RMG-Py ::
     
     cd RMG-Py
