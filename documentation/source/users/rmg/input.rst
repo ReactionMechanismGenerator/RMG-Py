@@ -225,8 +225,8 @@ The following is an example of a simple reactor system::
 
 	)
 
-For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
-(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
+some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
 The sensitivity and sensitivityThrehold are optional arguments for when the
 user would like to conduct sensitivity analysis with respect to the reaction rate
 coefficients for the list of species given for ``sensitivity``.  

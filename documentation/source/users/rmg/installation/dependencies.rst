@@ -44,6 +44,7 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **symmetry:** calculating symmetry numbers of chemical point groups
 * **xlwt:** generating Excel output files
 
+.. _dependenciesRestrictions:
 
 License Restrictions on Dependencies
 ====================================
