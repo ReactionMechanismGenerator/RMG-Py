@@ -50,7 +50,7 @@ Optional: Setting a Permanent Anaconda Environment for RMG
 ==========================================================
 If you use Anaconda solely for RMG, it may be more convenient to set your ``PATH`` variable
 to be permanently directed to the RMG environment.  This will allow you to run RMG easily
-without having to type ``source activate rmg_env`` in the command prompt every time.
+without having to type ``activate rmg_env`` in the command prompt every time.
 
 
 Similarly to setting the environment variable

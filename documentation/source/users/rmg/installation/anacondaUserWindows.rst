@@ -15,7 +15,7 @@ Binary Installation Using Anaconda for Windows
     
 * Whenever you wish to use it you must first activate the environment in the command prompt by typing::
     
-    source activate rmg_env
+    activate rmg_env
     
 * Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.Once you have it, type the following into your command prompt (while the environment is activated) ::
     
@@ -25,7 +25,7 @@ Binary Installation Using Anaconda for Windows
 
 * You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_ to a local directory.  Use the command prompt to run your RMG job inside that folder by using the following command ::
 
-    source activate rmg_env
+    activate rmg_env
     python %RMGPy%\rmg.py input.py
 
 You may now use RMG-Py, CanTherm, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.

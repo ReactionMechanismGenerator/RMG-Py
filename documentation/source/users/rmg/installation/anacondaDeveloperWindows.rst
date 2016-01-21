@@ -28,7 +28,7 @@ Installation by Source Using Anaconda Environment for Windows
 * Now you must install mingwpy and configure it, which is slightly tricky. ::
 
 
-    source activate rmg_env
+    activate rmg_env
     pip install -i https://pypi.anaconda.org/carlkl/simple mingwpy
 
   Now generate the python27 unix-style library::
