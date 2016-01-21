@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo 'Travis Build Dir: '$TRAVIS_BUILD_DIR
+
 # This script saves the CHEMKIN file and dictionary associated with an RMG run
 # It commits it to a folder in RMG-tests automatically
 
