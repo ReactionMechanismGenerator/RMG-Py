@@ -37,15 +37,15 @@ def compareModelKinetics(model1, model2):
     uniqueReactions1 = [rxn for rxn in model1.reactions if rxn not in commonReactions.keys()]
     uniqueReactions2 = model2.reactions
     
-    print '{0:d} reactions were found in both models:'.format(len(commonReactions))
+    logging.info('{0:d} reactions were found in both models:'.format(len(commonReactions)))
     for rxn in commonReactions:
-        print '    {0!s}'.format(rxn)
-    print '{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1))
+        logging.info('    {0!s}'.format(rxn))
+    logging.info('{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1)))
     for rxn in uniqueReactions1:
-        print '    {0!s}'.format(rxn)
-    print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
+        logging.info('    {0!s}'.format(rxn))
+    logging.info('{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2)))
     for rxn in uniqueReactions2:
-        print '    {0!s}'.format(rxn)
+        logging.info('    {0!s}'.format(rxn))
     
     from rmgpy.kinetics import Chebyshev
     
@@ -74,10 +74,10 @@ def compareModelKinetics(model1, model2):
         xdata = event.artist.get_xdata()
         ydata = event.artist.get_ydata()
         for ind in event.ind:
-            print commonReactions.keys()[ind]
-            print 'k(T,P) = {0:9.2e} from model 1'.format(xdata[ind])
-            print 'k(T,P) = {0:9.2e} from model 2'.format(ydata[ind])
-            print 'ratio = 10**{0:.2f}'.format(math.log10(xdata[ind] / ydata[ind]))
+            logging.info(commonReactions.keys()[ind])
+            logging.info('k(T,P) = {0:9.2e} from model 1'.format(xdata[ind]))
+            logging.info('k(T,P) = {0:9.2e} from model 2'.format(ydata[ind]))
+            logging.info('ratio = 10**{0:.2f}'.format(math.log10(xdata[ind] / ydata[ind])))
         
     connection_id = fig.canvas.mpl_connect('pick_event', onpick)
         
@@ -265,12 +265,12 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
         web = False
 
     if not web:
-        print '{0:d} species were found in both models:'.format(len(commonSpecies))
+        logging.info('{0:d} species were found in both models:'.format(len(commonSpecies)))
         for spec1, spec2 in commonSpecies:
-            print '    {0!s}'.format(spec1)
+            logging.info('    {0!s}'.format(spec1))
             if spec1.thermo and spec2.thermo:
                 spec1.molecule[0].getSymmetryNumber()
-                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
+                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format(
                     spec1.thermo.getEnthalpy(300) / 4184.,
                     spec1.thermo.getEntropy(300) / 4.184,
                     spec1.thermo.getHeatCapacity(300) / 4.184,
@@ -280,8 +280,8 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
                     spec1.thermo.getHeatCapacity(800) / 4.184,
                     spec1.thermo.getHeatCapacity(1000) / 4.184,
                     spec1.thermo.getHeatCapacity(1500) / 4.184,
-                )
-                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
+                ))
+                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format(
                     spec2.thermo.getEnthalpy(300) / 4184.,
                     spec2.thermo.getEntropy(300) / 4.184,
                     spec2.thermo.getHeatCapacity(300) / 4.184,
@@ -291,19 +291,19 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
                     spec2.thermo.getHeatCapacity(800) / 4.184,
                     spec2.thermo.getHeatCapacity(1000) / 4.184,
                     spec2.thermo.getHeatCapacity(1500) / 4.184,
-                )
-        print '{0:d} species were only found in the first model:'.format(len(uniqueSpecies1))
+                ))
+        logging.info('{0:d} species were only found in the first model:'.format(len(uniqueSpecies1)))
         for spec in uniqueSpecies1:
-            print '    {0!s}'.format(spec)
-        print '{0:d} species were only found in the second model:'.format(len(uniqueSpecies2))
+            logging.info('    {0!s}'.format(spec))
+        logging.info('{0:d} species were only found in the second model:'.format(len(uniqueSpecies2)))
         for spec in uniqueSpecies2:
-            print '    {0!s}'.format(spec)
+            logging.info('    {0!s}'.format(spec))
     
-        print '{0:d} reactions were found in both models:'.format(len(commonReactions))
+        logging.info('{0:d} reactions were found in both models:'.format(len(commonReactions)))
         for rxn1, rxn2 in commonReactions:
-            print '    {0!s}'.format(rxn1)
+            logging.info('    {0!s}'.format(rxn1))
             if rxn1.kinetics and rxn2.kinetics:
-                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
                     math.log10(rxn1.kinetics.getRateCoefficient(300, 1e5)),
                     math.log10(rxn1.kinetics.getRateCoefficient(400, 1e5)),
                     math.log10(rxn1.kinetics.getRateCoefficient(500, 1e5)),
@@ -312,8 +312,8 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
                     math.log10(rxn1.kinetics.getRateCoefficient(1000, 1e5)),
                     math.log10(rxn1.kinetics.getRateCoefficient(1500, 1e5)),
                     math.log10(rxn1.kinetics.getRateCoefficient(2000, 1e5)),
-                )
-                print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                ))
+                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
                     math.log10(rxn2.kinetics.getRateCoefficient(300, 1e5)),
                     math.log10(rxn2.kinetics.getRateCoefficient(400, 1e5)),
                     math.log10(rxn2.kinetics.getRateCoefficient(500, 1e5)),
@@ -322,15 +322,15 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
                     math.log10(rxn2.kinetics.getRateCoefficient(1000, 1e5)),
                     math.log10(rxn2.kinetics.getRateCoefficient(1500, 1e5)),
                     math.log10(rxn2.kinetics.getRateCoefficient(2000, 1e5)),
-                )
-        print '{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1))
+                ))
+        logging.info('{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1)))
         for rxn in uniqueReactions1:
-            print '    {0!s}'.format(rxn)
-        print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
+            logging.info('    {0!s}'.format(rxn))
+        logging.info('{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2)))
         for rxn in uniqueReactions2:
-            print '    {0!s}'.format(rxn)
+            logging.info('    {0!s}'.format(rxn))
 
-    print "Saving output in diff.html"
+    logging.info("Saving output in diff.html")
 
     try:
         wd = kwargs['wd']
@@ -339,4 +339,4 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
 
     outputPath = os.path.join(wd, 'diff.html')
     saveDiffHTML(outputPath, commonSpecies, uniqueSpecies1, uniqueSpecies2, commonReactions, uniqueReactions1, uniqueReactions2)
-    print "Finished!"
+    logging.info("Finished!")
