@@ -25,18 +25,6 @@ Installation by Source Using Anaconda Environment for Windows
     cd RMG-Py
     conda env create -f environment_windows.yml
 
-* Now you must install mingwpy and configure it, which is slightly tricky. ::
-
-
-    activate rmg_env
-    pip install -i https://pypi.anaconda.org/carlkl/simple mingwpy
-
-  Now generate the python27 unix-style library::
-
-    cd C:\Anaconda\envs\rmg_env\
-    gendef python27.dll
-    dlltool -D python27.dll -d python27.def -l libs\libpython27.a
-
 * Now you can compile RMG-Py ::
     
     cd RMG-Py
