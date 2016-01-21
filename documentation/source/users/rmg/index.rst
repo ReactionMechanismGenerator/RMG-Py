@@ -18,6 +18,7 @@ rmg_dev@mit.edu.
     :includehidden:
 
     introduction
+    features
     installation/index
     input
     examples
