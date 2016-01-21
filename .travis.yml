@@ -27,7 +27,7 @@ before_install:
 
 install:
   - conda env create 
-  - source activate rmg
+  - source activate rmg_env
   - make
 
 script: 
