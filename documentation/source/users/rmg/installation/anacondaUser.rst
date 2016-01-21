@@ -6,7 +6,7 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
 * Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
 
-* Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. For example, type the following into your terminal to create a new environment named 'rmg_env' containing all that you need::
+* Install both RMG and the RMG-database binaries through the Terminal.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. For example, type the following into your terminal to create a new environment named 'rmg_env' containing all that you need::
 
     conda create -c rmg --name rmg_env rmg rmgdatabase
     
