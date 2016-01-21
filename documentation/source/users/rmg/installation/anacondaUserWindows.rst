@@ -9,7 +9,7 @@ Binary Installation Using Anaconda for Windows
 .. image:: images/AnacondaInstallWindows.png
     :align: center
 
-* Now we want to install both RMG and the RMG-database binaries via the command prompt.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for ``cmd.exe``) and type the following to create the new environment named 'rmg_env' containing the RMG program and database::
+* Now we want to install both RMG and the RMG-database binaries via the command prompt.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for ``cmd.exe``) and type the following to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
 
     conda create -c rmg --name rmg_env rmg rmgdatabase
     
@@ -29,3 +29,13 @@ Binary Installation Using Anaconda for Windows
     python %RMGPy%\rmg.py input.py
 
 You may now use RMG-Py, CanTherm, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
+
+
+Updating your binary installation of RMG for Windows
+====================================================
+
+If you had previously installed a binary version of the RMG package, you may
+check and update your installation to the latest stable version available on Anaconda by typing the following command in a Command Prompt ::
+
+    source activate rmg_env
+    conda update rmg rmgdatabase -c rmg 
