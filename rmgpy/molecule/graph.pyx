@@ -45,12 +45,12 @@ cdef class Vertex(object):
     useful for accelerating isomorphism searches, as proposed by
     `Morgan (1965) <http://dx.doi.org/10.1021/c160017a018>`_.
 
-    =================== =============== ========================================
+    =================== =============== ==========================================
     Attribute           Type            Description
-    =================== =============== ========================================
-    `connectivity`     ``int``         The number of nearest neighbors
+    =================== =============== ==========================================
+    `connectivity`      ``int``         The number of nearest neighbors
     `sortingLabel`      ``int``         An integer label used to sort the vertices
-    =================== =============== ========================================
+    =================== =============== ==========================================
     
     """
 
