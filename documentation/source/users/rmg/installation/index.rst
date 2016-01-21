@@ -9,7 +9,12 @@ Installation
 .. NOTE::
     It is recommended that RMG be installed with Python 2.7, although it has been previously tested that Python 2.5 and 2.6 may also work. Dependency issues render it incompatible with Python 3.x releases.
 
-    
+
+For any questions related to RMG and its usage and installation, please
+post an issue at https://github.com/ReactionMechanismGenerator/RMG-Py/issues and the RMG
+developers will get back to you as soon as we can.  You can also search for your problem on the issues
+page to see if there are already solutions in development.  Alternatively, you can email us at
+rmg_dev@mit.edu
 
 For Basic Users: Binary Installation Using Anaconda
 ===================================================
