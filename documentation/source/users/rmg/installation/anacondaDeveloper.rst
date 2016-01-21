@@ -4,11 +4,6 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-RMG-Py can now be built by source using the Anaconda Python Platform to assist in installing
-all necessary dependencies. This is recommended for a developer who may be altering the RMG source code
-or someone who expects to manipulate the databases extensively.  You will also be able to access the latest
-source code updates and patches through Github.
-
 * Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
 
 * Install `Git <https://git-scm.com/>`_, the open source version control package through the Terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
