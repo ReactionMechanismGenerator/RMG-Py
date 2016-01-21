@@ -24,7 +24,7 @@ source code updates and patches through Github.
     
     cd RMG-Py
     conda env create
-    source activate rmg
+    source activate rmg_env
     make
     
 * Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any python prompt.  Modify your ``~/.bashrc`` file by adding the following line ::

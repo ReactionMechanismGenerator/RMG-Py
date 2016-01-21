@@ -1,4 +1,4 @@
-name: rmg
+name: rmg_env
 channels:
   - defaults
   - rmg
