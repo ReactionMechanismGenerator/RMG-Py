@@ -23,6 +23,7 @@ RMG's thermodynamic and kinetics databases.
     :maxdepth: 1
     
     anacondaUser
+    anacondaUserWindows
 
 For Developers: Installation by Source Using Anaconda Environment
 =================================================================
@@ -36,6 +37,7 @@ source code updates and patches through Github.
     :maxdepth: 1
     
     anacondaDeveloper
+    anacondaDeveloperWindows
 
 Dependencies
 ============
