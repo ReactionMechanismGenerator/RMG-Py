@@ -334,7 +334,8 @@ cdef class ReactionSystem(DASx):
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         list pdepNetworks=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
-        sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None):
+        sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
+        filterReactions=False):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -486,22 +487,23 @@ cdef class ReactionSystem(DASx):
                 maxNetworkRate = networkLeakRates[maxNetworkIndex]
                 
             
-            # Calculate unimolecular and bimolecular thresholds for reaction
-            # Set the maximum unimolecular rate to be kB*T/h
-            unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)   
-            # Set the maximum bimolecular rate to be 1e7 m^3/mol*s, or 1e13 cm^3/mol*s
-            bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7 
-            coreSpeciesConcentrations = self.coreSpeciesConcentrations
-            for i in xrange(numCoreSpecies):
-                if not unimolecularThreshold[i]:
-                    # Check if core species concentration has gone above threshold for unimolecular reaction
-                    if coreSpeciesConcentrations[i] > unimolecularThresholdVal:
-                        unimolecularThreshold[i] = True
-            for i in xrange(numCoreSpecies):
-                for j in xrange(i, numCoreSpecies):
-                    if not bimolecularThreshold[i,j]:
-                        if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
-                            bimolecularThreshold[i,j] = True
+            if filterReactions:
+                # Calculate unimolecular and bimolecular thresholds for reaction
+                # Set the maximum unimolecular rate to be kB*T/h
+                unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)   
+                # Set the maximum bimolecular rate to be 1e7 m^3/mol*s, or 1e13 cm^3/mol*s
+                bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7 
+                coreSpeciesConcentrations = self.coreSpeciesConcentrations
+                for i in xrange(numCoreSpecies):
+                    if not unimolecularThreshold[i]:
+                        # Check if core species concentration has gone above threshold for unimolecular reaction
+                        if coreSpeciesConcentrations[i] > unimolecularThresholdVal:
+                            unimolecularThreshold[i] = True
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(i, numCoreSpecies):
+                        if not bimolecularThreshold[i,j]:
+                            if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
+                                bimolecularThreshold[i,j] = True
 
             # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
             if maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject:
