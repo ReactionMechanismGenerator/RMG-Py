@@ -106,7 +106,8 @@ class ExecutionStatsWriter(object):
             rss, vms = process.memory_info()
             self.memoryUse.append(rss / 1.0e6)
             logging.info('    Memory used: %.2f MB' % (self.memoryUse[-1]))
-        except ImportError:
+        except:
+            logging.info('    Memory used: memory usage was unable to be logged')
             self.memoryUse.append(0.0)
         if os.path.exists(os.path.join(rmg.outputDirectory,'restart.pkl.gz')):
             self.restartSize.append(os.path.getsize(os.path.join(rmg.outputDirectory,'restart.pkl.gz')) / 1.0e6)
