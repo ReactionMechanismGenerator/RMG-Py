@@ -2,13 +2,14 @@ import unittest
 import os.path
 import shutil
 
+import rmgpy
 from rmgpy.rmg.main import RMG
 from rmgpy.tools.generate_reactions import *
 
 class GenerateReactionsTest(unittest.TestCase):
 
     def test(self):
-        folder = os.path.join(os.getcwd(),'rmgpy/tools/data/generate')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools/data/generate')
         
         inputFile = os.path.join(folder,'input.py')
         
@@ -32,7 +33,7 @@ class GenerateReactionsTest(unittest.TestCase):
         only appears once in the model.
 
         """
-        folder = os.path.join(os.getcwd(),'rmgpy/tools/data/generate/duplicates')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools/data/generate/duplicates')
         
         inputFile = os.path.join(folder,'input.py')
         
