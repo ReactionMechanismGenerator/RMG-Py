@@ -1,13 +1,8 @@
 .. _anacondaDeveloper:
 
-*****************************************************
-Installation by Source Using Anaconda: For Developers
-*****************************************************
-
-RMG-Py can now be built by source using the Anaconda Python Platform to assist in installing
-all necessary dependencies. This is recommended for a developer who may be altering the RMG source code
-or someone who expects to manipulate the databases extensively.  You will also be able to access the latest
-source code updates and patches through Github.
+*******************************************************************************************
+Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
+*******************************************************************************************
 
 * Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
 
@@ -24,7 +19,7 @@ source code updates and patches through Github.
     
     cd RMG-Py
     conda env create
-    source activate rmg
+    source activate rmg_env
     make
     
 * Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any python prompt.  Modify your ``~/.bashrc`` file by adding the following line ::

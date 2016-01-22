@@ -26,10 +26,10 @@ solver:
 
 ifneq ($(DASPK),)
 	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ echo "DEF DASPK = 1" > rmgpy/solver/settings.pxi 
+	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi 
 else ifneq ($(DASSL),)
 	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
-	@ echo "DEF DASPK = 0" > rmgpy/solver/settings.pxi
+	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
 else
 	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
 	@ python -c 'import pydas.dassl' 
@@ -39,11 +39,9 @@ endif
 cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
-bin/symmetry:
-	mkdir -p bin
-	$(MAKE) -C external/symmetry install
-
-QM: bin/symmetry
+QM:
+	@ echo "Checking if you have symmetry..."
+	@ echo "symmetry -h"
 	@ echo "Checking you have rdkit..."
 	@ python -c 'import rdkit; print rdkit.__file__'
 	@ echo "Checking rdkit version..."
@@ -64,9 +62,7 @@ clean:
 	rm -rf build/
 	find . -name '*.so' -exec rm -f '{}' \;
 	find . -name '*.pyc' -exec rm -f '{}' \;
-	$(MAKE) -C external/symmetry clean
-	rm -f bin/symmetry
-
+	
 clean-solver:
 	rm -r build/pyrex/rmgpy/solver/
 	rm -r build/build/pyrex/rmgpy/solver/
@@ -79,10 +75,13 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test:
+ifeq ($(OS),Windows_NT)
+	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+else
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-
+endif
 test-database:
 	nosetests -v -d testing/databaseTest.py	
 

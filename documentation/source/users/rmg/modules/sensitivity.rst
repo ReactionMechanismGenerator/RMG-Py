@@ -5,8 +5,8 @@ Sensitivity Analysis
 ********************
 
 
-For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
-(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
+some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
 Sensitivity analysis can be conducted in a standalone system for an existing kinetics model in Chemkin format.
 
 To use the sensitivity analysis standalone module::

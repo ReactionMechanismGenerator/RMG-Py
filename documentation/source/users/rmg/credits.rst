@@ -37,8 +37,5 @@ Previous Developers:
 How to Cite
 ***********
 
-William H. Green, Joshua W. Allen, Jacob Barlow, Pierre L. Bhoorasingh, Beat A. Buesser, Caleb A. Class,
-Connie W. Gao, Kehang Han, Fariba Seyedzadeh Khanshan, Victor Lambert, Shamel S. Merchant, 
-Belinda L. Slakman, Sean Troiano, Aaron Vandeputte, Nick M. Vandewiele, 
-Richard H. West, and Nathan Yee. *Reaction Mechanism Generator v1.0.0*, 
-2015, MIT and Northeastern University, http://reactionmechanismgenerator.github.io/
+Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: automatic 
+construction of chemical kinetic mechanisms." *Computer Physics Communications* (2015).

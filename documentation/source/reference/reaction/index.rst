@@ -22,19 +22,6 @@ Class                   Description
 
 
 
-Reaction model
-==============
-
-.. currentmodule:: rmgpy.reaction
-
-=========================== ====================================================
-Class                       Description
-=========================== ====================================================
-:class:`ReactionModel`      A reaction model, comprising a list of species and a list of reactions
-=========================== ====================================================
-
-
-
 Exceptions
 ==========
 

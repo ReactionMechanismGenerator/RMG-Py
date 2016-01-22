@@ -4,12 +4,12 @@ channels:
   - rmg
   - rdkit
 dependencies:
-  - libgcc # [unix]
+  - mingwpy
   - python
   - numpy
   - cython ==0.21
   - matplotlib
-  - rdkit >=2015.03.1
+  - rdkit >=2015.09.2
   - pydas >=1.0.1
   - pydqed >=1.0.0
   - quantities
@@ -17,15 +17,14 @@ dependencies:
   - xlwt
   - markupsafe
   - jinja2
-  #- argparse # [py26]
   - pyparsing
   - pydot
   - nose
   - coverage
   - guppy
   - gprof2dot
-  - cairo
-  - cairocffi
+  #- cairo
+  #- cairocffi
   - openbabel
   - psutil
   - symmetry
