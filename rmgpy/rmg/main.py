@@ -529,9 +529,9 @@ class RMG(util.Subject):
             if self.filterReactions:
                 rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold
                 rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold
-                logging.info('rxnSys threshold')
-                logging.info(rxnSysUnimolecularThreshold)
-                logging.info(rxnSysBimolecularThreshold)
+                #logging.info('rxnSys threshold')
+                #logging.info(rxnSysUnimolecularThreshold)
+                #logging.info(rxnSysBimolecularThreshold)
                 for i in xrange(numCoreSpecies):
                     if rxnSysUnimolecularThreshold[i] and not unimolecularReact[i]:
                         # We've shifted from not reacting to reacting
@@ -690,10 +690,6 @@ class RMG(util.Subject):
 #                            logging.info("{species_i}, {species_j}, {react}".format(species_i=str(self.reactionModel.core.species[i]),species_j=str(self.reactionModel.core.species[j]),react=bimolecularReact[i,j]))
                 else:
                     # We are not filtering reactions
-                    # Set all the new core species react array values to True
-                    numNewCoreSpecies = numCoreSpecies - prevNumCoreSpecies
-                    logging.info(numNewCoreSpecies)
-                    unimolecularReact[-numNewCoreSpecies:] = 1
                     
                     # React all the new core species unimolecularly
                     for i in xrange(prevNumCoreSpecies, numCoreSpecies):
@@ -704,8 +700,6 @@ class RMG(util.Subject):
                         for j in xrange(prevNumCoreSpecies,numCoreSpecies):
                             bimolecularReact[i,j] = True
                             
-                logging.info(unimolecularReact)
-                logging.info(bimolecularReact)
                 self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
 
 
