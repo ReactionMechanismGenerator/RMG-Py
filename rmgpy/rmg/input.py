@@ -195,7 +195,7 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2):
+def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
     """
@@ -210,6 +210,7 @@ def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptS
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
     rmg.minCoreSizeForPrune = minCoreSizeForPrune
     rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
+    rmg.filterReactions = filterReactions
 
 def quantumMechanics(
                     software,
@@ -521,6 +522,7 @@ def saveInputFile(path, rmg):
     f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.maximumEdgeSpecies))
     f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.minCoreSizeForPrune))
     f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.minSpeciesExistIterationsForPrune))
+    f.write('    filterReactions = {0:d},\n'.format(rmg.filterReactions))
     f.write(')\n\n')
 
     # Pressure Dependence
