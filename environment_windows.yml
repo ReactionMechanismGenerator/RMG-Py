@@ -6,7 +6,7 @@ channels:
 dependencies:
   - mingwpy
   - python
-  - numpy
+  - numpy >=1.10.0
   - cython ==0.21
   - matplotlib
   - rdkit >=2015.09.2

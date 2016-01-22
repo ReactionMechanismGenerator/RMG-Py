@@ -6,10 +6,10 @@ channels:
 dependencies:
   - libgcc # [unix]
   - python
-  - numpy
+  - numpy >=1.10.0
   - cython ==0.21
   - matplotlib
-  - rdkit >=2015.03.1
+  - rdkit >=2015.09.2
   - pydas >=1.0.1
   - pydqed >=1.0.0
   - quantities
