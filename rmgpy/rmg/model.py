@@ -634,6 +634,8 @@ class CoreEdgeReactionModel:
         The optional only_families flag allows the user to input a list of familylabels which then
         allow the reactions to only be generated from those families.
         """
+        if not speciesA.reactive:
+            return []
         reactionList = []
         if speciesB is None:
             # React in a unimolecular reaction
@@ -641,6 +643,8 @@ class CoreEdgeReactionModel:
                 reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA], products=None, only_families=only_families))
                 moleculeA.clearLabeledAtoms()
         else:
+            if not speciesB.reactive:
+                return []
             # React in a bimolecular reaction
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
