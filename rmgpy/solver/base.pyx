@@ -487,8 +487,10 @@ cdef class ReactionSystem(DASx):
                 
             
             # Calculate unimolecular and bimolecular thresholds for reaction
-            unimolecularThresholdVal = toleranceMoveToCore * charRate / 1e14   # Diffusion limited rate is 1e14 s^-1
-            bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7 # Diffusion limited rate is 1e7 m^3/mol*s
+            # Set the maximum unimolecular rate to be kB*T/h
+            unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)   
+            # Set the maximum bimolecular rate to be 1e7 m^3/mol*s, or 1e13 cm^3/mol*s
+            bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7 
             coreSpeciesConcentrations = self.coreSpeciesConcentrations
             for i in xrange(numCoreSpecies):
                 if not unimolecularThreshold[i]:
