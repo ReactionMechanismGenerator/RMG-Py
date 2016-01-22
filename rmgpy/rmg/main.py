@@ -525,22 +525,29 @@ class RMG(util.Subject):
                 atol = self.absoluteTolerance,
                 rtol = self.relativeTolerance,
             )
-            rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold
-            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold
-#            logging.info('rxnSys threshold')
-#            logging.info(rxnSysUnimolecularThreshold)
-#            logging.info(rxnSysBimolecularThreshold)
-            for i in xrange(numCoreSpecies):
-                if rxnSysUnimolecularThreshold[i] and not unimolecularReact[i]:
-                    # We've shifted from not reacting to reacting
-                    unimolecularReact[i] = True
-                             
-            for i in xrange(numCoreSpecies):
-                for j in xrange(i, numCoreSpecies):
-                    if rxnSysBimolecularThreshold[i,j] and not bimolecularReact[i,j]:
+            
+            if self.filterReactions:
+                rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold
+                rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold
+                logging.info('rxnSys threshold')
+                logging.info(rxnSysUnimolecularThreshold)
+                logging.info(rxnSysBimolecularThreshold)
+                for i in xrange(numCoreSpecies):
+                    if rxnSysUnimolecularThreshold[i] and not unimolecularReact[i]:
                         # We've shifted from not reacting to reacting
-                        bimolecularReact[i,j] = True
-                        
+                        unimolecularReact[i] = True
+                                 
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(i, numCoreSpecies):
+                        if rxnSysBimolecularThreshold[i,j] and not bimolecularReact[i,j]:
+                            # We've shifted from not reacting to reacting
+                            bimolecularReact[i,j] = True
+        
+        # If not filtering reactions, the unimolecular and bimolecularReact thresholds are set to True for all species
+        if not self.filterReactions:
+            unimolecularReact.fill(1)
+            bimolecularReact.fill(1)
+            
         self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
         logging.info('Completed initial enlarge edge step...')
         
@@ -575,6 +582,7 @@ class RMG(util.Subject):
                     pdepNetworks = self.reactionModel.networkList,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
+                    filterReactions=False,
                 )
                 allTerminated = allTerminated and terminated
                 logging.info('')
@@ -606,7 +614,9 @@ class RMG(util.Subject):
                 logging.info('')
                 objectsToEnlarge = list(set(objectsToEnlarge))
                 
-                # If objects to enlarge are species rather than pdep networks, add them to core first
+                # Track how many core species there were before the enlargeCore step
+                prevNumCoreSpecies = numCoreSpecies 
+                # Add objects to enlarge to the core first
                 for objectToEnlarge in objectsToEnlarge:
                     self.reactionModel.enlargeCore(objectToEnlarge)
                 
@@ -617,66 +627,85 @@ class RMG(util.Subject):
                 unimolecularReact = numpy.zeros((numCoreSpecies),bool)
                 bimolecularReact = numpy.zeros((numCoreSpecies,numCoreSpecies),bool)
                 
-                # Update the thresholds for reaction to incorporate the added core species
-                unimolecularThresholdUpdate = numpy.zeros((numCoreSpecies), bool)
-                bimolecularThresholdUpdate = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
-                # Broadcast original thresholds
-                unimolecularThresholdUpdate[:unimolecularThreshold.shape[0]] = unimolecularThreshold
-                bimolecularThresholdUpdate[:bimolecularThreshold.shape[0],:bimolecularThreshold.shape[1]] = bimolecularThreshold
-                unimolecularThreshold = unimolecularThresholdUpdate
-                bimolecularThreshold = bimolecularThresholdUpdate
-                
-                # Run a raw simulation to get concentrations
-                for index, reactionSystem in enumerate(self.reactionSystems):
-                    # Run with the same conditions as with pruning off
-                    reactionSystem.simulate(
-                        coreSpecies = self.reactionModel.core.species,
-                        coreReactions = self.reactionModel.core.reactions,
-                        edgeSpecies = [],
-                        edgeReactions = [],
-                        toleranceKeepInEdge = 0,
-                        toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                        toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
-                        pdepNetworks = self.reactionModel.networkList,
-                        absoluteTolerance = self.absoluteTolerance,
-                        relativeTolerance = self.relativeTolerance,
-                    )
-                    # Update the threshold
-#                    logging.info('old threshold')
+                if self.filterReactions:
+                    # Update the thresholds for reaction to incorporate the added core species
+                    unimolecularThresholdUpdate = numpy.zeros((numCoreSpecies), bool)
+                    bimolecularThresholdUpdate = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
+                    # Broadcast original thresholds
+                    unimolecularThresholdUpdate[:unimolecularThreshold.shape[0]] = unimolecularThreshold
+                    bimolecularThresholdUpdate[:bimolecularThreshold.shape[0],:bimolecularThreshold.shape[1]] = bimolecularThreshold
+                    unimolecularThreshold = unimolecularThresholdUpdate
+                    bimolecularThreshold = bimolecularThresholdUpdate
+                    
+                    # Run a raw simulation to get concentrations
+                    for index, reactionSystem in enumerate(self.reactionSystems):
+                        # Run with the same conditions as with pruning off
+                        reactionSystem.simulate(
+                            coreSpecies = self.reactionModel.core.species,
+                            coreReactions = self.reactionModel.core.reactions,
+                            edgeSpecies = [],
+                            edgeReactions = [],
+                            toleranceKeepInEdge = 0,
+                            toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                            toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                            pdepNetworks = self.reactionModel.networkList,
+                            absoluteTolerance = self.absoluteTolerance,
+                            relativeTolerance = self.relativeTolerance,
+                            filterReactions=self.filterReactions,
+                        )
+                        # Update the threshold
+#                        logging.info('old threshold')
+#                        logging.info(unimolecularThreshold)
+#                        logging.info(bimolecularThreshold)
+                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold
+                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold
+                        
+#                        logging.info('rxnSys threshold')
+#                        logging.info(rxnSysUnimolecularThreshold)
+#                        logging.info(rxnSysBimolecularThreshold)
+                        for i in xrange(numCoreSpecies):
+                            if not unimolecularThreshold[i] and rxnSysUnimolecularThreshold[i]:
+                                # We've shifted from not reacting to reacting
+                                unimolecularReact[i] = True
+                                unimolecularThreshold[i] = True
+                                    
+                        for i in xrange(numCoreSpecies):
+                            for j in xrange(i, numCoreSpecies):
+                                if not bimolecularThreshold[i,j] and rxnSysBimolecularThreshold[i,j]:
+                                    # We've shifted from not reacting to reacting
+                                    bimolecularReact[i,j] = True
+                                    bimolecularThreshold[i,j] = True
+                                    
+#                    logging.info('new threshold')
 #                    logging.info(unimolecularThreshold)
 #                    logging.info(bimolecularThreshold)
-                    rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold
-                    rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold
+#                    
+#                    logging.info('react')
+#                    logging.info(unimolecularReact)
+#                    logging.info(bimolecularReact)
                     
-#                    logging.info('rxnSys threshold')
-#                    logging.info(rxnSysUnimolecularThreshold)
-#                    logging.info(rxnSysBimolecularThreshold)
+                    # Print the species which are reacting bimolecularly
+#                    for i in xrange(numCoreSpecies):
+#                        for j in xrange(i,numCoreSpecies):
+#                            logging.info("{species_i}, {species_j}, {react}".format(species_i=str(self.reactionModel.core.species[i]),species_j=str(self.reactionModel.core.species[j]),react=bimolecularReact[i,j]))
+                else:
+                    # We are not filtering reactions
+                    # Set all the new core species react array values to True
+                    numNewCoreSpecies = numCoreSpecies - prevNumCoreSpecies
+                    logging.info(numNewCoreSpecies)
+                    unimolecularReact[-numNewCoreSpecies:] = 1
+                    
+                    # React all the new core species unimolecularly
+                    for i in xrange(prevNumCoreSpecies, numCoreSpecies):
+                        unimolecularReact[i] = True
+                    
+                    # React all the new core species with all the core species bimolecularly
                     for i in xrange(numCoreSpecies):
-                        if not unimolecularThreshold[i] and rxnSysUnimolecularThreshold[i]:
-                            # We've shifted from not reacting to reacting
-                            unimolecularReact[i] = True
-                            unimolecularThreshold[i] = True
-                                
-                    for i in xrange(numCoreSpecies):
-                        for j in xrange(i, numCoreSpecies):
-                            if not bimolecularThreshold[i,j] and rxnSysBimolecularThreshold[i,j]:
-                                # We've shifted from not reacting to reacting
-                                bimolecularReact[i,j] = True
-                                bimolecularThreshold[i,j] = True
-                                
-#                logging.info('new threshold')
-#                logging.info(unimolecularThreshold)
-#                logging.info(bimolecularThreshold)
-#                
-#                logging.info('react')
-#                logging.info(unimolecularReact)
-#                logging.info(bimolecularReact)
-                
-                # Print the species which are reacting bimolecularly
-#                for i in xrange(numCoreSpecies):
-#                    for j in xrange(i,numCoreSpecies):
-#                        logging.info("{species_i}, {species_j}, {react}".format(species_i=str(self.reactionModel.core.species[i]),species_j=str(self.reactionModel.core.species[j]),react=bimolecularReact[i,j]))
-
+                        for j in xrange(prevNumCoreSpecies,numCoreSpecies):
+                            bimolecularReact[i,j] = True
+                            
+                logging.info(unimolecularReact)
+                logging.info(bimolecularReact)
                 self.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
 
 
