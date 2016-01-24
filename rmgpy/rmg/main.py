@@ -471,10 +471,10 @@ class RMG(util.Subject):
             # This is necessary so that the PDep algorithm can identify the bath gas            
             for spec in self.initialSpecies:
                 if not spec.reactive:
-                    self.reactionModel.enlargeCore(spec)
+                    self.reactionModel.enlarge(spec)
             for spec in self.initialSpecies:
                 if spec.reactive:
-                    self.reactionModel.enlargeCore(spec)
+                    self.reactionModel.enlarge(spec)
 
             self.initializeReactionThresholdAndReactFlags()
 
@@ -517,7 +517,6 @@ class RMG(util.Subject):
         self.register_listeners()
 
         self.done = False
-        self.saveEverything()
         
         # Initiate first reaction discovery step after adding all core species
         if self.filterReactions:
@@ -536,10 +535,13 @@ class RMG(util.Subject):
                 self.updateReactionThresholdAndReactFlags(
                     rxnSysUnimolecularThreshold=reactionSystem.unimolecularThreshold, 
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
-        
-        self.reactionModel.enlargeEdge(self.unimolecularReact, self.bimolecularReact)
+
+        self.reactionModel.enlarge(reactEdge=True, 
+            unimolecularReact=self.unimolecularReact, 
+            bimolecularReact=self.bimolecularReact)
+
         logging.info('Completed initial enlarge edge step...')
-        
+        self.saveEverything()
         
         # Main RMG loop
         while not self.done:
@@ -605,7 +607,7 @@ class RMG(util.Subject):
                 
                 # Add objects to enlarge to the core first
                 for objectToEnlarge in objectsToEnlarge:
-                    self.reactionModel.enlargeCore(objectToEnlarge)
+                    self.reactionModel.enlarge(objectToEnlarge)
                 
                 if self.filterReactions:
                     # Run a raw simulation to get updated reaction system threshold values
@@ -627,12 +629,14 @@ class RMG(util.Subject):
                         self.updateReactionThresholdAndReactFlags(
                             rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                             rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
-                        
+
+                    logging.info('')    
                 else:
                     self.updateReactionThresholdAndReactFlags()
                             
-                self.reactionModel.enlargeEdge(self.unimolecularReact, self.bimolecularReact)
-
+                self.reactionModel.enlarge(reactEdge=True, 
+                    unimolecularReact=self.unimolecularReact, 
+                    bimolecularReact=self.bimolecularReact)
 
             self.saveEverything()
 
