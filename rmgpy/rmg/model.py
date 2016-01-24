@@ -695,10 +695,6 @@ class CoreEdgeReactionModel:
 
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-                
-                # Process the new reactions
-                # While adding to core/edge/pdep network, this clears atom labels:
-                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
 
