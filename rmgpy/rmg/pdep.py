@@ -103,7 +103,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
         """
         Get the source of this PDepReaction
         """
-        return self.network
+        return str(self.network)
 
 ################################################################################
 
