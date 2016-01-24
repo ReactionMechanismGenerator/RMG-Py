@@ -139,21 +139,7 @@ def execute(rmg, inputFile, output_directory, **kwargs):
     import numpy
     rmg.initialize(inputFile, output_directory, **kwargs)
     
-    numCoreSpecies = len(rmg.reactionModel.core.species)
-    # In the enlarge reaction filter modified algorithm, you must explicitly set all the react matrices to true
-    unimolecularReact = numpy.zeros((numCoreSpecies),bool)
-    bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies),bool)
-    
-    for i in xrange(numCoreSpecies):
-        if rmg.reactionModel.core.species[i].reactive: 
-            unimolecularReact[i] = True
-                
-    for i in xrange(numCoreSpecies):
-        for j in xrange(i, numCoreSpecies):
-            if rmg.reactionModel.core.species[i].reactive and rmg.reactionModel.core.species[j].reactive: 
-                bimolecularReact[i,j] = True
-    
-    rmg.reactionModel.enlargeEdge(unimolecularReact, bimolecularReact)
+    rmg.reactionModel.enlargeEdge(rmg.unimolecularReact, rmg.bimolecularReact)
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
