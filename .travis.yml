@@ -31,11 +31,8 @@ install:
   - make
 
 script: 
-  - make test
-  - make test-database
-  - make eg1
-  - bash testing/saveModel.sh
-  - make eg4
-  - make eg5
-  - make eg6
-  - make eg7
+  - bash ./deploy.sh
+
+after_script:
+  - git config credential.helper "store --file=.git/credentials"
+  - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
