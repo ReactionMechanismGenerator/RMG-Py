@@ -74,7 +74,7 @@ cdef class LiquidReactor(ReactionSystem):
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -86,6 +86,10 @@ cdef class LiquidReactor(ReactionSystem):
 
         # Set initial conditions
         self.set_initial_conditions()
+
+        # Compute reaction thresholds if reaction filtering is turned on
+        if filterReactions:
+            ReactionSystem.set_initial_reaction_thresholds(self)
 
         # Generate forward and reverse rate coefficients k(T,P)
         self.generate_rate_coefficients(coreReactions, edgeReactions)
@@ -138,8 +142,6 @@ cdef class LiquidReactor(ReactionSystem):
         for j in xrange(self.numCoreSpecies):
             self.y0[j] = self.coreSpeciesConcentrations[j] * V
             
-        
-        ReactionSystem.set_initial_reaction_thresholds(self)
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

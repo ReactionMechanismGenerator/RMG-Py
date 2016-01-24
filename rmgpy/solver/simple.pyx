@@ -117,7 +117,7 @@ cdef class SimpleReactor(ReactionSystem):
             initialMoleFractions[speciesDict[label]] = moleFrac
         self.initialMoleFractions = initialMoleFractions
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -129,6 +129,10 @@ cdef class SimpleReactor(ReactionSystem):
         
         # Set initial conditions
         self.set_initial_conditions()
+
+        # Compute reaction thresholds if reaction filtering is turned on
+        if filterReactions:
+            ReactionSystem.set_initial_reaction_thresholds(self)
         
         self.set_colliders(coreReactions, edgeReactions, coreSpecies)
         
@@ -225,9 +229,6 @@ cdef class SimpleReactor(ReactionSystem):
         self.V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.P.value_si# volume in m^3
         for j in xrange(self.numCoreSpecies):
             self.coreSpeciesConcentrations[j] = self.y0[j] / self.V
-        
-        
-        ReactionSystem.set_initial_reaction_thresholds(self)
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
