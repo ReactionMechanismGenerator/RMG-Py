@@ -17,6 +17,6 @@ git checkout -b $GIT_BRANCH || true
 git checkout $GIT_BRANCH
 
 echo 'Committing to RMG-tests branch with RMG-Py commit:  '$TRAVIS_COMMIT
-git commit -m $TRAVIS_COMMIT
+git commit --allow-empty -m $TRAVIS_COMMIT
 
 
