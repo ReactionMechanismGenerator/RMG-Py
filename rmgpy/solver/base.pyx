@@ -299,6 +299,18 @@ cdef class ReactionSystem(DASx):
         self.t0 = 0.0            
 
         self.y0 = numpy.zeros(self.neq, numpy.float64)
+    
+    def set_initial_reaction_thresholds(self):
+        
+        # Set unimolecular and bimolecular thresholds as true for any concentrations greater than 0
+        numCoreSpecies = len(self.coreSpeciesConcentrations)
+        for i in xrange(numCoreSpecies):
+            if self.coreSpeciesConcentrations[i] > 0:
+                self.unimolecularThreshold[i] = True
+        for i in xrange(numCoreSpecies):
+            for j in xrange(i, numCoreSpecies):
+                if self.coreSpeciesConcentrations[i] > 0 and self.coreSpeciesConcentrations[j] > 0:
+                    self.bimolecularThreshold[i,j] = True
 
     def set_initial_derivative(self):
         """

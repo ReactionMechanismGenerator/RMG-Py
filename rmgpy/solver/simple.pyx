@@ -226,15 +226,8 @@ cdef class SimpleReactor(ReactionSystem):
         for j in xrange(self.numCoreSpecies):
             self.coreSpeciesConcentrations[j] = self.y0[j] / self.V
         
-        # Set unimolecular and bimolecular thresholds as true for any concentrations greater than 0
-        numCoreSpecies = len(self.coreSpeciesConcentrations)
-        for i in xrange(numCoreSpecies):
-            if self.coreSpeciesConcentrations[i] > 0:
-                self.unimolecularThreshold[i] = True
-        for i in xrange(numCoreSpecies):
-            for j in xrange(i, numCoreSpecies):
-                if self.coreSpeciesConcentrations[i] > 0 and self.coreSpeciesConcentrations[j] > 0:
-                    self.bimolecularThreshold[i,j] = True
+        
+        ReactionSystem.set_initial_reaction_thresholds(self)
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
