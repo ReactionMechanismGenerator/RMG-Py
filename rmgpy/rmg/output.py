@@ -137,6 +137,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     to_remove_from_css_names = re.compile('[/.\-+,]')
     def csssafe(input):
         "Replace unsafe CSS class name characters with an underscore."
+        if not isinstance(input, basestring):
+           input = str(input)
         return to_remove_from_css_names.sub('_',input)
         
     environment = jinja2.Environment()
@@ -654,6 +656,8 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     to_remove_from_css_names = re.compile('[/.\-+,]')
     def csssafe(input):
         "Replace unsafe CSS class name characters with an underscore."
+        if not isinstance(input, basestring):
+           input = str(input)
         return to_remove_from_css_names.sub('_',input)
 
     environment = jinja2.Environment()
