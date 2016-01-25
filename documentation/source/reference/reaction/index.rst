@@ -37,5 +37,4 @@ Class                   Description
     :hidden:
     
     reaction
-    reactionmodel
 
