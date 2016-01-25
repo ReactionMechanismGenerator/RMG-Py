@@ -38,4 +38,4 @@ How to Cite
 ***********
 
 Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: automatic 
-construction of chemical kinetic mechanisms." *Computer Physics Communications* (2015).
+construction of chemical kinetic mechanisms." *Computer Physics Communications* (2016).
