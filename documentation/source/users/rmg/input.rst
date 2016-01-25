@@ -224,6 +224,10 @@ The following is an example of a simple reactor system::
 		sensitivityThreshold=0.001,
 
 	)
+    
+
+Troubleshooting tip: if you are using a goal conversion rather than time, the reaction systems may reach equilibrium below the goal conversion, leading
+to a job that cannot converge physically.  Therefore it is may be necessary to reduce the goal conversion or set a goal reaction time.
 
 For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
 some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
@@ -257,55 +261,97 @@ The next two lines specify the absolute and relative tolerance for the ODE solve
 The ``sens_atol`` and ``sens_rtol`` are optional arguments for the sensitivity absolute tolerance and sensitivity relative tolerances, respectively.  They
 are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.
 
+
+
+.. _modeltolerances:
+
+Model Tolerances
+================
+Model tolerances dictate how species get included in the model. For more information, see the theory behind how RMG builds models using the :ref:`Flux-based Algorithm <ratebasedmodelenlarger>`. 
+For running an initial job, it is recommended to only change the ``toleranceMoveToCore`` and ``toleranceInterruptSimulation`` values to an equivalent desired value.  We find
+that typically a value between ``0.01`` and ``0.05`` is best.  If your model cannot converge within a few hours, more advanced settings such as :ref:`reaction filtering <filterReactions>`
+or :ref:`pruning <pruning>` can be turned on to speed up your simulation at a slight risk of omitting chemistry.  ::
+    
+    model(
+        toleranceMoveToCore=0.1,
+        toleranceInterruptSimulation=0.1,
+    )
+
+- ``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. This tolerance is designed for controlling the accuracy of final model. 
+- ``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or ``terminationTime``).  This value should be set to be equal to ``toleranceMoveToCore`` unless the advanced :ref:`pruning <pruning>` feature is desired.
+
+.. _filterReactions:
+
+Advanced Setting: Speed Up by Filtering Reactions
+-------------------------------------------------
+For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of 
+:math:`(n_{reaction\: sites})^{{n_{species}}}`.  Thus it can be further sped up by pre-filtering reactions that are 
+added to the model.  This modification to the algorithm does not react core species together
+until their concentrations are deemed high enough.  It is recommended to turn on this flag when
+the model does not converge with normal parameter settings.  See :ref:`Filtering Reactions within the Flux-based Algorithm <filterReactionsTheory>`. for more details. ::
+
+    model(
+        toleranceMoveToCore=0.1,
+        toleranceInterruptSimulation=0.1,
+        filterReactions=True,
+    )
+    
+**Additional parameters:**
+
+- ``filterReactions``: set to ``True`` if reaction filtering is turned on.  By default it is set to False.
+
 .. _pruning:
 
-Pruning
-=======
-When using automated time stepping, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage. 
-The example below shows how to set up pruning parameters::
-	
-	model(
-	    toleranceKeepInEdge=,
-	    toleranceMoveToCore=,
-	    toleranceInterruptSimulation=,
-	    maximumEdgeSpecies=
-	)
-
-``toleranceKeepInEdge`` indicates how low the edge flux ratio for a species must get before the species is pruned (removed) from the edge.
-``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. (This tolerance is not designed for pruning but for controlling the accuracy of final meodels. The lower tolMoveToCore the higher accuracy final models have.)
-``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or
-``terminationTime``). Pruning won’t occur if the simulation is interrupted before reaching the goal criteria, so set this high to increase pruning opportunities.
-``maximumEdgeSpecies`` indicates the upper limit for the size of the edge.
-
-When using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without first exceeding the termination tolerance. Therefore, you may find that RMG is not pruning even though the model edge size exceeds ``maximumEdgeSpecies``. In order to increase the likelihood of pruning in such cases, you can try increasing ``toleranceInterruptSimulation`` to an arbitrarily high value. Alternatively, if you are using a conversion goal, because reaction systems may reach equilibrium below the goal conversion, it may be helpful to reduce the goal conversion or switch to a goal reaction time.
+Advanced Setting: Speed Up by Pruning
+-------------------------------------
+For further speed-up, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage. 
 
 A typical set of parameters for pruning is::
 
-	model(
-	    toleranceKeepInEdge=0.05,
-	    toleranceMoveToCore=0.5,
-	    toleranceInterruptSimulation=1e8,
-	    maximumEdgeSpecies=200000
+    model(
+        toleranceMoveToCore=0.5,
+        toleranceInterruptSimulation=1e8,
+        toleranceKeepInEdge=0.05,
+        maximumEdgeSpecies=200000
+        minCoreSizeForPrune=50,
+        minSpeciesExistIterationsForPrune=2,
 	)
 
-Based on pruning case study, ``toleranceKeepInEdge`` should not be larger than 10% of ``toleranceMoveToCore``. In order to always enable pruning, ``toleranceInterruptSimulation`` should be set as a high value, e.g. 1e8. ``maximumEdgeSpecies`` can be adjusted based on user's RAM size. Usually 200000 edge species would cause memory shortage of 8GB computer, setting ``maximumEdgeSpecies = 200000 (or lower values)`` could effectively prevent memory crash.
+**Additional parameters:**
+
+- ``toleranceKeepInEdge`` indicates how low the edge flux ratio for a species must be to keep on the edge.  This should be set to zero, which is its default.
+- ``maximumEdgeSpecies`` indicates the upper limit for the size of the edge. The default value is set to ``1000000`` species.  
+- ``minCoreSizeForPrune`` ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. 
+- ``minSpeciesExistIterationsForPrune`` is set so that the edge species stays in the job for at least that many iterations before it can be pruned.  The default value is 2 iterations.  
+
+**Recommendations:**
+
+We recommend setting ``toleranceKeepInEdge`` to not be larger than 10% of ``toleranceMoveToCore``, based on a pruning case study.
+In order to always enable pruning, ``toleranceInterruptSimulation`` should be set as a high value, e.g. 1e8. 
+``maximumEdgeSpecies`` can be adjusted based on user's RAM size. Usually 200000 edge species would cause memory shortage of 8GB computer,
+setting ``maximumEdgeSpecies = 200000`` (or lower values) could effectively prevent memory crash.
+
+
+**Additional Notes:**
+
+Note that when using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without exceeding the ``toleranceInterruptSimulation``. 
+Therefore, you may find that RMG is not pruning even though the model edge size exceeds ``maximumEdgeSpecies``, or an edge species has flux below the ``toleranceKeepInEdge``. This is
+a safety check within RMG to ensure that species are not pruned too early, resulting in inaccurate chemistry. In order to increase the likelihood of pruning you can 
+try increasing ``toleranceInterruptSimulation`` to an arbitrarily high value. 
 
 As a contrast, a typical set of parameters for non-pruning is::
 
-	model(
-	    toleranceKeepInEdge=0,
-	    toleranceMoveToCore=0.5,
-	    toleranceInterruptSimulation=0.5,
-	    maximumEdgeSpecies=200000,
-	    minCoreSizeForPrune=50,
-	    minSpeciesExistIterationsForPrune=2,
-	)
+    model(
+        toleranceKeepInEdge=0,
+        toleranceMoveToCore=0.5,
+        toleranceInterruptSimulation=0.5,
+    )
 
-where ``toleranceKeepInEdge`` is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. ``toleranceInterruptSimulation`` equals to ``toleranceMoveToCore`` so that ODE simulation get interrupted once discovering a new core species. Because of always interrupted ODE simulation, no pruning is performed, ``maximumEdgeSpecies`` is ignored and can be set to any value.
+where ``toleranceKeepInEdge`` is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. 
+``toleranceInterruptSimulation`` equals to ``toleranceMoveToCore`` so that ODE simulation get interrupted once discovering a new core species. 
+Because the ODE simulation is always interrupted, no pruning is performed.
 
-The parameters ``minCoreSizeForPrune`` and ``minSpeciesExistIterationsForPrune`` are used for advanced pruning parameters.  ``minCoreSizeForPrune`` ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. ``minSpeciesExistIterationsForPrune`` is set so that the edge species stays in the job for at least that many iterations before it can be pruned.  The default value is 2 iterations.  
-
-Please find more details about pruning at :ref:`Pruning Theory <prune>`.
+Please find more details about the theory behind pruning at :ref:`Pruning Theory <prune>`.
 
 .. _ontheflyquantumcalculations:
 
