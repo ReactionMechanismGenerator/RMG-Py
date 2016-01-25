@@ -748,12 +748,6 @@ class CoreEdgeReactionModel:
                     if bimolecularReact[i,j]:
                         # Consider the latest added core species as the 'new' species
                         self.processNewReactions(self.react(database, self.core.species[i], self.core.species[j]), self.core.species[j], None)
-                    else:
-                        # Even if the thresholds are low for two radicals, still react them bimolecularly using R_Recombination, because
-                        # these reactions are highly critical as sources and sinks of radicals and typically have low fluxes which are still important
-                        # This is a bit of hardcoding based on intuitive understanding of radical chemistry
-                        if self.core.species[i].molecule[0].isRadical() and self.core.species[j].molecule[0].isRadical():
-                            self.processNewReactions(self.react(database, self.core.species[i], self.core.species[j], only_families=['R_Recombination']), self.core.species[j], None)
 
         ################################################################
         # Begin processing the new species and reactions
