@@ -244,7 +244,7 @@ cdef class Eckart(TunnelingModel):
             # If all of 2*pi*a, 2*pi*b, and 2*pi*d are sufficiently small,
             # compute as normal
             if twopia < 200. and twopib < 200. and twopid < 200.:
-                kappa[r] = 1 - (cosh(twopia-twopib)+cosh(twopid)) / (cosh(twopia+twopib)+cosh(twopid))
+                kappa[r] = 1 - (numpy.cosh(twopia-twopib)+numpy.cosh(twopid)) / (numpy.cosh(twopia+twopib)+numpy.cosh(twopid))
             # If one of the following is true, then we can eliminate most of the
             # exponential terms after writing out the definition of cosh and
             # dividing all terms by exp(2*pi*d)
