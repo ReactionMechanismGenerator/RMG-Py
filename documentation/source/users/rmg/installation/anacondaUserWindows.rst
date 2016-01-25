@@ -23,6 +23,8 @@ Binary Installation Using Anaconda for Windows
 
 * Now you must :ref:`set the RMG environment variable in Windows <windowsEnvironment>` to allow your system to find the RMG python files more easily.  
 
+* If you set any new environment variables, you must now close and reopen the command prompt so that those environment variables can be refreshed and used.
+
 * You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_ to a local directory.  Use the command prompt to run your RMG job inside that folder by using the following command ::
 
     activate rmg_env

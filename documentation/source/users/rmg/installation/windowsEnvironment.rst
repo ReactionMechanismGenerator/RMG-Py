@@ -46,6 +46,11 @@ Setting the ``RMGPy`` variable
 
 * Click "Ok" on all screens to confirm the changes.
 
+
+.. NOTE:: 
+    If you set any new environment variables, you must close and reopen any command prompts previously open before the changes can take effect.
+
+
 Optional: Setting a Permanent Anaconda Environment for RMG
 ==========================================================
 If you use Anaconda solely for RMG, it may be more convenient to set your ``PATH`` variable
@@ -65,3 +70,5 @@ For example a path such as ::
 should be changed to::
 
     C:\Anaconda\envs\rmg_env\Scripts\
+
+Note that ``C:\Anaconda`` should be wherever your Anaconda was installed.

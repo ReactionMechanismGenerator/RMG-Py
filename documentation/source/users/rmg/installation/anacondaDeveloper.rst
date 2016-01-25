@@ -33,6 +33,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
   by changing it to the following line :: 
 
    export PATH=~/anaconda/envs/rmg/bin:$PATH
+
+  be sure to either close and reopen your terminal to refresh your environment variables, or type the following command ::
+ 
+   source ~/.bashrc
    
 * Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your Terminal ::
     
