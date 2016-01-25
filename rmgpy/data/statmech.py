@@ -295,9 +295,9 @@ class StatmechGroups(Database):
         while node.data is None and node.parent is not None:
             node = node.parent
         if node.data is None:
-            logging.warning('Statmech node {0!r} and all its parents have data=None'.format(node0))
+            logging.warning('Statmech node {0!r} and all its parents have data = None'.format(node0.label))
             return None
-            raise KeyError('Statmech node {0!r} and all its parents have data=None'.format(node0))
+            raise KeyError('Statmech node {0!r} and all its parents have data = None'.format(node0.label))
         return node
 
     def getFrequencyGroups(self, molecule):
@@ -383,7 +383,7 @@ class StatmechGroups(Database):
             if numRotors > difference:
                 numRotors -= difference
                 numVibrations = len(frequencies)
-                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} internal rotors to compensate.'.format(molecule, difference))
+                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} internal rotors to compensate.'.format(molecule.toSMILES(), difference))
             # If that won't work, turn off functional groups until the problem is underspecified again
             else:
                 groupsRemoved = 0
@@ -399,7 +399,7 @@ class StatmechGroups(Database):
                     freqsRemoved += minDegeneracy
                     freqCount -= minDegeneracy
                 # Log warning
-                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to compensate.'.format(molecule, groupsRemoved, freqsRemoved))
+                logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to compensate.'.format(molecule.toSMILES(), groupsRemoved, freqsRemoved))
                 # Regenerate characteristic frequencies
                 frequencies = []
                 for entry, count in groupCount.iteritems():
