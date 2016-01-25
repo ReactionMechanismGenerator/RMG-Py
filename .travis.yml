@@ -7,6 +7,9 @@ virtualenv:
 env:
   global:
     - secure: "L2ja+ZnV83w4qG3E8FwTjm0D6IWNOnj5wuFOjYTwbzQP4OAgLAWBzCMtxzWy5sMxFLtRgkswBH1d5f5kg8Ab7GIyAMFgQwe8UFqMJ+N05QNszE1mJkAvJtv2XN7669XXQhTt5EXfHrCcGZaODVnI2CEA8GB5DxiHO2Lcqf/xvgE="
+    - ENCRYPTION_LABEL: 6df19ac2b23f
+    - GIT_NAME: "RMG-dev"
+    - GIT_EMAIL: "nickvandewiele@gmail.com"
 addons:
   apt:
     packages:
@@ -32,7 +35,3 @@ install:
 
 script: 
   - bash ./deploy.sh
-
-after_script:
-  - git config credential.helper "store --file=.git/credentials"
-  - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
