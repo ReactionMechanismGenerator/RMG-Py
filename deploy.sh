@@ -15,7 +15,7 @@ fi
 echo Deploy branch: $DEPLOY_BRANCH
 
 
-REPO='https://github.com/ReactionMechanismGenerator/RMG-tests.git'
+REPO=git@github.com:ReactionMechanismGenerator/RMG-tests.git
 
 REPO_NAME=$(basename $REPO)
 TARGET_DIR=$(mktemp -d /tmp/$REPO_NAME.XXXX)
