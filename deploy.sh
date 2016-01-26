@@ -26,6 +26,8 @@ if [ -n "$TRAVIS_BUILD_ID" ]; then
   #   GIT_NAME         - The Git user name
   #   GIT_EMAIL        - The Git user email
   #
+  GIT_NAME="Travis Deploy"
+  GIT_EMAIL="travisci@rmg.edu"
   echo DEPLOY_BRANCH: $DEPLOY_BRANCH
   echo ENCRYPTION_LABEL: $ENCRYPTION_LABEL
   echo GIT_NAME: $GIT_NAME

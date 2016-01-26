@@ -7,8 +7,6 @@ virtualenv:
 env:
   global:
     - secure: "L2ja+ZnV83w4qG3E8FwTjm0D6IWNOnj5wuFOjYTwbzQP4OAgLAWBzCMtxzWy5sMxFLtRgkswBH1d5f5kg8Ab7GIyAMFgQwe8UFqMJ+N05QNszE1mJkAvJtv2XN7669XXQhTt5EXfHrCcGZaODVnI2CEA8GB5DxiHO2Lcqf/xvgE="
-    - GIT_NAME: "RMG-dev"
-    - GIT_EMAIL: "nickvandewiele@gmail.com"
 addons:
   apt:
     packages:
