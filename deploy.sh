@@ -29,7 +29,6 @@ if [ -n "$TRAVIS_BUILD_ID" ]; then
   GIT_NAME="Travis Deploy"
   GIT_EMAIL="travisci@rmg.edu"
   echo DEPLOY_BRANCH: $DEPLOY_BRANCH
-  echo ENCRYPTION_LABEL: $ENCRYPTION_LABEL
   echo GIT_NAME: $GIT_NAME
   echo GIT_EMAIL: $GIT_EMAIL
   if [ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
@@ -73,4 +72,4 @@ git checkout $DEPLOY_BRANCH
 git commit --allow-empty -m $REV
 
 # push to the branch to the RMG/RMG-tests repo:
-git push $REPO $DEPLOY_BRANCH
+git push -f $REPO $DEPLOY_BRANCH
