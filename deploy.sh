@@ -12,7 +12,7 @@ else
 fi
 
 # Deploy built site to this branch
-TARGET_BRANCH=GIT_BRANCH
+echo Deploy branch: $DEPLOY_BRANCH
 
 
 REPO='https://github.com/ReactionMechanismGenerator/RMG-tests.git'
@@ -24,8 +24,8 @@ git clone ${REPO} ${TARGET_DIR}
 
 cd $TARGET_DIR
 
-git checkout -b $GIT_BRANCH || true 
-git checkout $GIT_BRANCH
+git checkout -b $DEPLOY_BRANCH || true 
+git checkout $DEPLOY_BRANCH
 
 if [ -n "$TRAVIS_BUILD_ID" ]; then
   # When running on Travis we need to use SSH to deploy to GitHub
