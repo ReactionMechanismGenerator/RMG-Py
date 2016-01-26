@@ -96,13 +96,19 @@ cdef class ReactionSystem(DASx):
     cdef public list snapshots
 
     cdef public list termination
+    
+    # reaction threshold settings
+    cdef public numpy.ndarray unimolecularThreshold
+    cdef public numpy.ndarray bimolecularThreshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, 
+        list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?)
+        list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensitivityAbsoluteTolerance=?, 
+        sensitivityRelativeTolerance=?, sensWorksheet=?, filterReactions=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 

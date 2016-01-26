@@ -117,7 +117,7 @@ cdef class SimpleReactor(ReactionSystem):
             initialMoleFractions[speciesDict[label]] = moleFrac
         self.initialMoleFractions = initialMoleFractions
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -129,6 +129,10 @@ cdef class SimpleReactor(ReactionSystem):
         
         # Set initial conditions
         self.set_initial_conditions()
+
+        # Compute reaction thresholds if reaction filtering is turned on
+        if filterReactions:
+            ReactionSystem.set_initial_reaction_thresholds(self)
         
         self.set_colliders(coreReactions, edgeReactions, coreSpecies)
         

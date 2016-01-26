@@ -136,9 +136,12 @@ def execute(rmg, inputFile, output_directory, **kwargs):
 
     Returns an RMG object.
     """   
-
+    import numpy
     rmg.initialize(inputFile, output_directory, **kwargs)
     
+    rmg.reactionModel.enlarge(reactEdge=True,
+        unimolecularReact=rmg.unimolecularReact,
+        bimolecularReact=rmg.bimolecularReact)
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)

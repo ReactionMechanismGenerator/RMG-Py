@@ -141,7 +141,9 @@ model(
         #make sure that the pruned edge species have existed for a set number of RMG iterations.  
         #the user can specify to increase it from the default value of 2
     minSpeciesExistIterationsForPrune=2,
-    
+        #filter the reactions during the enlarge step to omit species from reacting if their
+        #concentration are deemed to be too low
+    filterReactions=False,
 )
 
 options(
