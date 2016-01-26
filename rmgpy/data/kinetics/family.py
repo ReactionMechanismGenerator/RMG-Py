@@ -636,11 +636,15 @@ class KineticsFamily(Database):
         """
         return saveEntry(f, entry)
     
-    def saveTrainingReaction(self, f, reaction, reference=None, referenceType='', shortDesc='',longDesc='', rank=3):
+    def saveTrainingReaction(self, reactions, reference=None, referenceType='', shortDesc='',longDesc='', rank=3):
         """
         This function takes a reaction object and saves appends it to the training reactions file.
         Rank is set to a default value of 3 unless otherwise indicated
         """ 
+        from rmgpy import settings
+
+        training_file = open(os.path.join(settings['database.directory'], 'kinetics', 'families', \
+            self.label, 'training', 'reactions_test.py'), 'w')
         for depository in self.depositories:
             if depository.label.endswith('training'):
                 break
@@ -650,28 +654,27 @@ class KineticsFamily(Database):
             depository = KineticsDepository()
             self.depositories.append(depository)
         
-        
         trainingDatabase = depository
         indices = [entry.index for entry in trainingDatabase.entries.values()]
         if indices:
             maxIndex = max(indices)
         else:
             maxIndex = 0
+        for i, reaction in enumerate(reactions):    
+            entry = Entry(
+                index = maxIndex+i+1,
+                label = str(reaction),
+                item = reaction,
+                data = reaction.kinetics,
+                reference = reference,
+                referenceType = referenceType,
+                shortDesc = unicode(shortDesc),
+                longDesc = unicode(longDesc),
+                rank = rank,
+                )
             
-        entry = Entry(
-            index = maxIndex+1,
-            label = '',
-            item = reaction,
-            data = reaction.kinetics,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = unicode(shortDesc),
-            longDesc = unicode(longDesc),
-            rank = rank,
-            )
-        
-        
-        self.saveEntry(f, entry)
+            
+            self.saveEntry(training_file, entry)
 
     def save(self, path):
         """
