@@ -70,7 +70,7 @@ git checkout $DEPLOY_BRANCH
 
 # create an empty commit with the SHA-ID of the 
 # tested commit of the RMG-Py branch:
-git commit --allow-empty -m "Built from commit $REV"
+git commit --allow-empty -m $REV
 
 # push to the branch to the RMG/RMG-tests repo:
 git push $REPO $DEPLOY_BRANCH
