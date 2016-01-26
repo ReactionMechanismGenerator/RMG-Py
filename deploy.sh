@@ -14,18 +14,8 @@ fi
 # Deploy built site to this branch
 echo Deploy branch: $DEPLOY_BRANCH
 
-
+# SSH URL of the RMG/RMG-tests repo that is pushed to:
 REPO=git@github.com:ReactionMechanismGenerator/RMG-tests.git
-
-REPO_NAME=$(basename $REPO)
-TARGET_DIR=$(mktemp -d /tmp/$REPO_NAME.XXXX)
-REV=$TRAVIS_COMMIT
-git clone ${REPO} ${TARGET_DIR}
-
-cd $TARGET_DIR
-
-git checkout -b $DEPLOY_BRANCH || true 
-git checkout $DEPLOY_BRANCH
 
 if [ -n "$TRAVIS_BUILD_ID" ]; then
   # When running on Travis we need to use SSH to deploy to GitHub
@@ -54,16 +44,9 @@ if [ -n "$TRAVIS_BUILD_ID" ]; then
       echo "Travis should not deploy from pull requests"
       exit 0
     else
-      ENCRYPTED_KEY_VAR=encrypted_${ENCRYPTION_LABEL}_key
-      ENCRYPTED_IV_VAR=encrypted_${ENCRYPTION_LABEL}_iv
-      ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
-      ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
-      REPO=${REPO/git:\/\/github.com\//git@github.com:}
-      
-      # The `deploy_key.enc` file should have been added to the repo and should
-      # have been created from the deploy private key using `travis encrypt-file`
-      openssl aes-256-cbc -K $ENCRYPTED_KEY -iv $ENCRYPTED_IV -in deploy_key.enc -out deploy_key -d
-      
+
+      # use the decrypted deploy SSH key as
+      # the credentials to push to the RMG-tests repo:
       chmod 600 deploy_key
       eval `ssh-agent -s`
       ssh-add deploy_key
@@ -73,5 +56,25 @@ if [ -n "$TRAVIS_BUILD_ID" ]; then
   fi
 fi
 
+# create a temporary folder:
+REPO_NAME=$(basename $REPO)
+TARGET_DIR=$(mktemp -d /tmp/$REPO_NAME.XXXX)
+REV=$(git rev-parse HEAD)
+
+# clone RMG-tests repo in the newly created folder:
+git clone ${REPO} ${TARGET_DIR}
+
+# go inside the newly created folder:
+cd $TARGET_DIR
+
+# create a new branch in RMG-tests with the name equal to
+# the branch name of the tested RMG-Py branch:
+git checkout -b $DEPLOY_BRANCH || true 
+git checkout $DEPLOY_BRANCH
+
+# create an empty commit with the SHA-ID of the 
+# tested commit of the RMG-Py branch:
 git commit --allow-empty -m "Built from commit $REV"
-git push $REPO $TARGET_BRANCH
+
+# push to the branch to the RMG/RMG-tests repo:
+git push $REPO $DEPLOY_BRANCH
