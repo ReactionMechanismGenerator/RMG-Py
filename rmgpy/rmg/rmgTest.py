@@ -31,7 +31,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family Disproportionation loading
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
-                                       kineticsFamilies=['R_Addition_MultipleBond'])
+                                       kineticsFamilies=['R_Addition_MultipleBond'],reactionLibraries=[])
 
     @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
