@@ -122,8 +122,8 @@ class KineticsDatabase(object):
             exec f in global_context, local_context
             f.close()
             self.recommendedFamilies = local_context['recommendedFamilies']
-        except:
-            raise DatabaseError('Error while reading list of recommended families from {0}/recommended.py.'.format(filepath))
+        except Exception, e:
+            raise DatabaseError('Error while reading list of recommended families from {0}/recommended.py.\n{1}'.format(filepath,e))
         for recommended in self.recommendedFamilies.values():
             if not isinstance(recommended, bool):
                 raise DatabaseError("recommendedFamilies dictionary should contain only True or False values")
