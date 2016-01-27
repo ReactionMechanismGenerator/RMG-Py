@@ -5,15 +5,15 @@ database(
     seedMechanisms = [],
     kineticsDepositories = 'default', 
     #this section lists possible reaction families to find reactioons with
-    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
+    kineticsFamilies = ['R_Recombination'],
     kineticsEstimator = 'rate rules',
 )
 
 # List all species you want reactions between
 species(
-    label='ethane',
+    label='Propyl',
     reactive=True,
-    structure=SMILES("CC"),
+    structure=SMILES("CC[CH3]"),
 )
 
 species(
@@ -22,22 +22,16 @@ species(
     structure=SMILES("[H]"),
 )
 
-species(
-    label='butane',
-    reactive=True,
-    structure=SMILES("CCCC"),
-)
-
 
 # you must list reactor conditions (though this may not effect the output)
 simpleReactor(
     temperature=(650,'K'),
     pressure=(10.0,'bar'),
     initialMoleFractions={
-        "ethane": 1,
+        "Propyl": 1,
     },
     terminationConversion={
-        'butane': .99,
+        'Propyl': .99,
     },
     terminationTime=(40,'s'),
 )
