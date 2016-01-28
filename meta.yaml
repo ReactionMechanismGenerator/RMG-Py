@@ -28,15 +28,14 @@ requirements:
     - numpy
     - openbabel
     - psutil
-    - pydas >=1.0.1
-    - pydot
-    - pydqed
+    - pydas >=1.0.2
+    - pydot 
+    - pydqed >=1.0.1
     - pyparsing
     - python
     - pyzmq
     - quantities
-    - rdkit >=2015.09.2 # [win]
-    - rdkit >=2015.03.1 # [unix]
+    - rdkit >=2015.09.2
     - scipy
     - scoop
     - setuptools
@@ -60,16 +59,15 @@ requirements:
     - numpy
     - openbabel
     - psutil
-    - pydas >=1.0.1
-    - pydot
-    - pydqed
+    - pydas >=1.0.2
+    - pydot 
+    - pydqed >=1.0.1
     - pyparsing
     - python
     - pyzmq
     - quantities
-    - rdkit >=2015.03.1 # [unix]
-    - rdkit >=2015.09.2 # [win]
-    - rmgdatabase
+    - rdkit >=2015.09.2
+    - rmgdatabase >=1.0.2
     - scipy
     - scoop
     - symmetry
