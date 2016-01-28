@@ -1,7 +1,7 @@
 .. _ratebasedmodelenlarger:
 
-Flux-based Algorithm
-====================
+Rate-based Model Enlarging Algorithm
+====================================
 
 
 .. figure:: fluxAlgorithm.png
@@ -42,7 +42,7 @@ For more information on rate-based model enlargement, please refer to the papers
 
 .. _filterReactionsTheory:
 
-Filtering Reactions within the Flux-based Algorithm
+Filtering Reactions within the Rate-based Algorithm
 ---------------------------------------------------
 
 Filtering reactions in the react step in the flux-based algorithm attempts to speed up model generation by attacking the pain point.  RMG has trouble 
