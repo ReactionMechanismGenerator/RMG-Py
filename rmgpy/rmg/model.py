@@ -486,6 +486,12 @@ class CoreEdgeReactionModel:
         # Make sure the reactant and product lists are sorted before performing the check
         rxn.reactants.sort()
         rxn.products.sort()
+
+        # If reactants and products are identical, then something weird happened along
+        # the way and we got a symmetrical reaction.
+        if rxn.reactants == rxn.products:
+            logging.debug("Symmetrical reaction found. Returning no reaction")
+            return True, None
         
         familyObj = getFamilyLibraryObject(rxn.family)
         shortlist = self.searchRetrieveReactions(rxn)
@@ -833,6 +839,9 @@ class CoreEdgeReactionModel:
         """
         for rxn in newReactions:
             rxn, isNew = self.makeNewReaction(rxn)
+            if rxn is None:
+                # Skip this reaction because there was something wrong with it
+                continue
             if isNew:
                 # We've made a new reaction, so make sure the species involved
                 # are in the core or edge
