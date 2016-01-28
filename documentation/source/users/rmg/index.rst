@@ -18,6 +18,7 @@ rmg_dev@mit.edu.
     :includehidden:
 
     introduction
+    releaseNotes
     features
     installation/index
     input
