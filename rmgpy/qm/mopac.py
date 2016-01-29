@@ -20,18 +20,21 @@ class Mopac:
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     
-    mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
-    if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
-        executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
-    elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
-        executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
-    elif os.path.exists(os.path.join(mopacEnv , 'mopac')):
-        executablePath = os.path.join(mopacEnv , 'mopac')
-    else:      
+    try:
         executablePath = distutils.spawn.find_executable('mopac') or \
-                         distutils.spawn.find_executable('MOPAC2009.exe') or \
-                         distutils.spawn.find_executable('MOPAC2012.exe') or \
-                         os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+                             distutils.spawn.find_executable('MOPAC2009.exe') or \
+                             distutils.spawn.find_executable('MOPAC2012.exe')
+    except:
+        logging.debug("Did not find MOPAC on path, checking if it exists in a declared MOPAC_DIR...")
+        mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
+        if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
+            executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
+        elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
+            executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
+        elif os.path.exists(os.path.join(mopacEnv , 'mopac')):
+            executablePath = os.path.join(mopacEnv , 'mopac')
+        else:      
+            executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
 
     usePolar = False #use polar keyword in MOPAC
     
