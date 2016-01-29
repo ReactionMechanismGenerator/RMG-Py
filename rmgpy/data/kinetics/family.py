@@ -643,6 +643,14 @@ class KineticsFamily(Database):
         """ 
         from rmgpy import settings
 
+        training_path = os.path.join(settings['database.directory'], 'kinetics', 'families', \
+            self.label, 'training')
+
+        directory_file = os.path.join(training_path, 'directory.txt')
+
+        # Load the old set of the species of the training reactions
+        speciesDict = Database().getSpecies(directory_file)
+
         training_file = open(os.path.join(settings['database.directory'], 'kinetics', 'families', \
             self.label, 'training', 'reactions_test.py'), 'w')
         for depository in self.depositories:
