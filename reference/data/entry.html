@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.base.Entry &mdash; RMG Py 1.0.1 documentation</title>
+    <title>rmgpy.data.base.Entry &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="rmgpy.data.statmech.GroupFrequencies" href="groupfrequencies.html" />
     <link rel="prev" title="rmgpy.data.kinetics.DepositoryReaction" href="depositoryreaction.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="depositoryreaction.html" title="rmgpy.data.kinetics.DepositoryReaction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
@@ -71,22 +71,62 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-base-entry">
 <h1>rmgpy.data.base.Entry<a class="headerlink" href="#rmgpy-data-base-entry" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/entry.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;Entry&#8217; from module u&#8217;rmgpy.data.base&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
-    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
+<dl class="class">
+<dt id="rmgpy.data.base.Entry">
+<em class="property">class </em><code class="descclassname">rmgpy.data.base.</code><code class="descname">Entry</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>item=None</em>, <em>parent=None</em>, <em>children=None</em>, <em>data=None</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>rank=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for representing individual records in an RMG database. Each entry
+in the database associates a chemical item (generally a species, functional
+group, or reaction) with a piece of data corresponding to that item. A
+significant amount of metadata can also be stored with each entry.</p>
+<p>The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>index</cite></td>
+<td>A unique nonnegative integer index for the entry</td>
+</tr>
+<tr class="row-odd"><td><cite>label</cite></td>
+<td>A unique string identifier for the entry (or &#8216;&#8217; if not used)</td>
+</tr>
+<tr class="row-even"><td><cite>item</cite></td>
+<td>The item that this entry represents</td>
+</tr>
+<tr class="row-odd"><td><cite>parent</cite></td>
+<td>The parent of the entry in the hierarchy (or <code class="docutils literal"><span class="pre">None</span></code> if not used)</td>
+</tr>
+<tr class="row-even"><td><cite>children</cite></td>
+<td>A list of the children of the entry in the hierarchy (or <code class="docutils literal"><span class="pre">None</span></code> if not used)</td>
+</tr>
+<tr class="row-odd"><td><cite>data</cite></td>
+<td>The data to associate with the item</td>
+</tr>
+<tr class="row-even"><td><cite>reference</cite></td>
+<td>A <code class="xref py py-class docutils literal"><span class="pre">Reference</span></code> object containing bibliographic reference information to the source of the data</td>
+</tr>
+<tr class="row-odd"><td><cite>referenceType</cite></td>
+<td>The way the data was determined: <code class="docutils literal"><span class="pre">'theoretical'</span></code>, <code class="docutils literal"><span class="pre">'experimental'</span></code>, or <code class="docutils literal"><span class="pre">'review'</span></code></td>
+</tr>
+<tr class="row-even"><td><cite>shortDesc</cite></td>
+<td>A brief (one-line) description of the data</td>
+</tr>
+<tr class="row-odd"><td><cite>longDesc</cite></td>
+<td>A long, verbose description of the data</td>
+</tr>
+<tr class="row-even"><td><cite>rank</cite></td>
+<td>An integer indicating the degree of confidence in the entry data, or <code class="docutils literal"><span class="pre">None</span></code> if not used</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 

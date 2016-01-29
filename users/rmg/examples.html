@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. Example Input Files &mdash; RMG Py 1.0.1 documentation</title>
+    <title>6. Example Input Files &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="5. Running a Job" href="running.html" />
-    <link rel="prev" title="3. Creating Input Files" href="input.html" />
+    <link rel="next" title="7. Running a Job" href="running.html" />
+    <link rel="prev" title="5. Creating Input Files" href="input.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,12 +57,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="running.html" title="5. Running a Job"
+          <a href="running.html" title="7. Running a Job"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="input.html" title="3. Creating Input Files"
+          <a href="input.html" title="5. Creating Input Files"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
@@ -70,12 +70,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
     </div>
             
   <div class="section" id="example-input-files">
-<span id="examples"></span><h1>4. Example Input Files<a class="headerlink" href="#example-input-files" title="Permalink to this headline">¶</a></h1>
+<span id="examples"></span><h1>6. Example Input Files<a class="headerlink" href="#example-input-files" title="Permalink to this headline">¶</a></h1>
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the <code class="docutils literal"><span class="pre">examples</span></code> directory. Two of the RMG jobs are shown below.</p>
 <div class="section" id="ethane-pyrolysis-minimal">
-<h2>4.1. Ethane pyrolysis (Minimal)<a class="headerlink" href="#ethane-pyrolysis-minimal" title="Permalink to this headline">¶</a></h2>
+<h2>6.1. Ethane pyrolysis (Minimal)<a class="headerlink" href="#ethane-pyrolysis-minimal" title="Permalink to this headline">¶</a></h2>
 <p>This is the minimal example file characterizing a very basic system for ethane pyrolysis and should run quickly if RMG is set up properly. It does not include any
 calculation of pressure-dependent reaction rates.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Data sources</span>
@@ -117,7 +117,7 @@ calculation of pressure-dependent reaction rates.</p>
     <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span>
+    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
@@ -132,7 +132,7 @@ calculation of pressure-dependent reaction rates.</p>
 </div>
 </div>
 <div class="section" id="hexadiene-pyrolysis">
-<h2>4.2. 1,3-hexadiene pyrolysis<a class="headerlink" href="#hexadiene-pyrolysis" title="Permalink to this headline">¶</a></h2>
+<h2>6.2. 1,3-hexadiene pyrolysis<a class="headerlink" href="#hexadiene-pyrolysis" title="Permalink to this headline">¶</a></h2>
 <p>This example models the pyrolysis of 1,3-hexadiene and demonstrates the effect of turning on the pressure-dependence module within RMG.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -231,7 +231,7 @@ calculation of pressure-dependent reaction rates.</p>
 </div>
 </div>
 <div class="section" id="commented-input-file">
-<h2>4.3. Commented input file<a class="headerlink" href="#commented-input-file" title="Permalink to this headline">¶</a></h2>
+<h2>6.3. Commented input file<a class="headerlink" href="#commented-input-file" title="Permalink to this headline">¶</a></h2>
 <p>This is a fully commented input file with all optional blocks
 for new users to better understand the options of rmg input files</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Data sources</span>
@@ -377,7 +377,9 @@ for new users to better understand the options of rmg input files</p>
         <span class="c">#make sure that the pruned edge species have existed for a set number of RMG iterations.  </span>
         <span class="c">#the user can specify to increase it from the default value of 2</span>
     <span class="n">minSpeciesExistIterationsForPrune</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    
+        <span class="c">#filter the reactions during the enlarge step to omit species from reacting if their</span>
+        <span class="c">#concentration are deemed to be too low</span>
+    <span class="n">filterReactions</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
@@ -476,10 +478,10 @@ for new users to better understand the options of rmg input files</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4. Example Input Files</a><ul>
-<li><a class="reference internal" href="#ethane-pyrolysis-minimal">4.1. Ethane pyrolysis (Minimal)</a></li>
-<li><a class="reference internal" href="#hexadiene-pyrolysis">4.2. 1,3-hexadiene pyrolysis</a></li>
-<li><a class="reference internal" href="#commented-input-file">4.3. Commented input file</a></li>
+<li><a class="reference internal" href="#">6. Example Input Files</a><ul>
+<li><a class="reference internal" href="#ethane-pyrolysis-minimal">6.1. Ethane pyrolysis (Minimal)</a></li>
+<li><a class="reference internal" href="#hexadiene-pyrolysis">6.2. 1,3-hexadiene pyrolysis</a></li>
+<li><a class="reference internal" href="#commented-input-file">6.3. Commented input file</a></li>
 </ul>
 </li>
 </ul>

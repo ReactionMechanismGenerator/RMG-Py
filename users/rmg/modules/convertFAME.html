@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>14.7. Convert FAME to CanTherm Input File &mdash; RMG Py 1.0.1 documentation</title>
+    <title>16.7. Convert FAME to CanTherm Input File &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../../contents.html" />
-    <link rel="up" title="14. Standalone Modules" href="index.html" />
-    <link rel="next" title="14.8. Database Scripts" href="databaseScripts.html" />
-    <link rel="prev" title="14.6. Thermo Estimation Module" href="thermoEstimation.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="up" title="16. Standalone Modules" href="index.html" />
+    <link rel="next" title="16.8. Database Scripts" href="databaseScripts.html" />
+    <link rel="prev" title="16.6. Thermo Estimation Module" href="thermoEstimation.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,21 +57,21 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="databaseScripts.html" title="14.8. Database Scripts"
+          <a href="databaseScripts.html" title="16.8. Database Scripts"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="thermoEstimation.html" title="14.6. Thermo Estimation Module"
+          <a href="thermoEstimation.html" title="16.6. Thermo Estimation Module"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">14. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">16. Standalone Modules</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="convert-fame-to-cantherm-input-file">
-<span id="convertfame"></span><h1>14.7. Convert FAME to CanTherm Input File<a class="headerlink" href="#convert-fame-to-cantherm-input-file" title="Permalink to this headline">¶</a></h1>
+<span id="convertfame"></span><h1>16.7. Convert FAME to CanTherm Input File<a class="headerlink" href="#convert-fame-to-cantherm-input-file" title="Permalink to this headline">¶</a></h1>
 <p>This module is utilized to convert FAME file types (used in RMG-Java) to CanTherm objects (used in RMG-Py) for pressure
 dependent calculations.</p>
 <p>FAME is an early version of the pdep code in CanTherm written in Fortran and used by RMG-Java. This script enables importing FAME input files into CanTherm. Note that it is mostly designed to load the FAME input files generated automatically by RMG-Java, and may not load hand-crafted FAME input files. If you specify a <cite>moleculeDict</cite>, then this script will use it to associate the species with their structures.</p>

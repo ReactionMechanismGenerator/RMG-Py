@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Writing Chemkin files &mdash; RMG Py 1.0.1 documentation</title>
+    <title>Writing Chemkin files &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Chemkin files (rmgpy.chemkin)" href="index.html" />
     <link rel="next" title="Physical constants (rmgpy.constants)" href="../constants.html" />
     <link rel="prev" title="Reading Chemkin files" href="reader.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="reader.html" title="Reading Chemkin files"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a> &raquo;</li> 
@@ -73,117 +73,97 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Writing Chemkin files<a class="headerlink" href="#writing-chemkin-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="main-functions">
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 10)</p>
-autodoc: failed to import function u&#8217;saveChemkinFile&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 12)</p>
-autodoc: failed to import function u&#8217;saveSpeciesDictionary&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 14)</p>
-autodoc: failed to import function u&#8217;saveTransportFile&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 16)</p>
-autodoc: failed to import function u&#8217;saveHTMLFile&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 18)</p>
-autodoc: failed to import function u&#8217;saveJavaKineticsLibrary&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
+<dl class="function">
+<dt id="rmgpy.chemkin.saveChemkinFile">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em>, <em>checkForDuplicates=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
+of <cite>species</cite> and <cite>reactions</cite>.
+If checkForDuplicates is False then we don&#8217;t check for unlabeled duplicate reactions,
+thus saving time (eg. if you are sure you&#8217;ve already labeled them as duplicate).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveSpeciesDictionary">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveSpeciesDictionary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>oldStyle=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveSpeciesDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the given list of <cite>species</cite> as adjacency lists in a text file <cite>path</cite> 
+on disk.</p>
+<p>If <cite>oldStyle==True</cite> then it saves it in the old RMG-Java syntax.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveTransportFile">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveTransportFile</code><span class="sig-paren">(</span><em>path</em>, <em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveTransportFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Chemkin transport properties file to <cite>path</cite> on disk containing the
+transport properties of the given list of <cite>species</cite>.</p>
+<p>The syntax is from the Chemkin TRANSPORT manual.
+The first 16 columns in each line of the database are reserved for the species name
+(Presently CHEMKIN is programmed to allow no more than 16-character names.) 
+Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:</p>
+<ol class="arabic simple">
+<li>An index indicating whether the molecule has a monatomic, linear or nonlinear geometrical configuration.
+If the index is 0, the molecule is a single atom. 
+If the index is 1 the molecule is linear, and 
+if it is 2, the molecule is nonlinear.</li>
+<li>The Lennard-Jones potential well depth  <span class="math">\(\epsilon / k_B\)</span> in Kelvins.</li>
+<li>The Lennard-Jones collision diameter <span class="math">\(\sigma\)</span> in Angstroms.</li>
+<li>The dipole moment <span class="math">\(\mu\)</span> in Debye. Note: a Debye is <span class="math">\(10^{-18} cm^{3/2}erg^{1/2}\)</span>.</li>
+<li>The polarizability <span class="math">\(\alpha\)</span> in cubic Angstroms.</li>
+<li>The rotational relaxation collision number <span class="math">\(Z_rot\)</span> at 298K.</li>
+<li>After the last number, a comment field can be enclosed in parenthesis.</li>
+</ol>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveHTMLFile">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveHTMLFile</code><span class="sig-paren">(</span><em>path</em>, <em>readComments=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveHTMLFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an output HTML file from the contents of a RMG-Java output folder</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveJavaKineticsLibrary">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveJavaKineticsLibrary</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveJavaKineticsLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
+and reactions.txt given a list of reactions, with species.txt containing the
+RMG-Java formatted dictionary.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 23)</p>
-autodoc: failed to import function u&#8217;getSpeciesIdentifier&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 25)</p>
-autodoc: failed to import function u&#8217;writeKineticsEntry&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 27)</p>
-autodoc: failed to import function u&#8217;writeThermoEntry&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/chemkin/writer.rst</tt>, line 29)</p>
-autodoc: failed to import function u&#8217;markDuplicateReactions&#8217; from module u&#8217;rmgpy.chemkin&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/chemkin.py&#8221;, line 40, in &lt;module&gt;
-    import rmgpy.kinetics as _kinetics
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/kinetics/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
-ImportError: No module named model
-</div>
+<dl class="function">
+<dt id="rmgpy.chemkin.getSpeciesIdentifier">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">getSpeciesIdentifier</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.getSpeciesIdentifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string identifier for the provided <cite>species</cite> that can be used in a
+Chemkin file. Although the Chemkin format allows up to 16 characters for a
+species identifier, this function uses a maximum of 10 to ensure that all
+reaction equations fit in the maximum limit of 52 characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.writeKineticsEntry">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">writeKineticsEntry</code><span class="sig-paren">(</span><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the reaction as used in a Chemkin
+file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
+generate a kinetics entry suitable for an RMG-Java kinetics library.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.writeThermoEntry">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">writeThermoEntry</code><span class="sig-paren">(</span><em>species</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.writeThermoEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the NASA model readable by Chemkin.
+To use this method you must have exactly two NASA polynomials in your
+model, and you must use the seven-coefficient forms for each.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.markDuplicateReactions">
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">markDuplicateReactions</code><span class="sig-paren">(</span><em>reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.markDuplicateReactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given list of <cite>reactions</cite>, mark all of the duplicate reactions as
+understood by Chemkin.</p>
+<p>This is pretty slow (quadratic in size of reactions list) so only call it if you&#8217;re really worried
+you may have undetected duplicate reactions.</p>
+</dd></dl>
+
 </div>
 </div>
 

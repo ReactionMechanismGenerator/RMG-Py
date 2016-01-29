@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.statmech.StatmechLibrary &mdash; RMG Py 1.0.1 documentation</title>
+    <title>rmgpy.data.statmech.StatmechLibrary &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="rmgpy.data.kinetics.TemplateReaction" href="templatereaction.html" />
     <link rel="prev" title="rmgpy.data.statmech.StatmechGroups" href="statmechgroups.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="statmechgroups.html" title="rmgpy.data.statmech.StatmechGroups"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
@@ -71,18 +71,225 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-statmech-statmechlibrary">
 <h1>rmgpy.data.statmech.StatmechLibrary<a class="headerlink" href="#rmgpy-data-statmech-statmechlibrary" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/statmechlibrary.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;StatmechLibrary&#8217; from module u&#8217;rmgpy.data.statmech&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmech.py&#8221;, line 36, in &lt;module&gt;
-    from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, IdealGasTranslation
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/statmech/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .translation import Translation, IdealGasTranslation
-ImportError: No module named translation
-</div>
+<dl class="class">
+<dt id="rmgpy.data.statmech.StatmechLibrary">
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmech.</code><code class="descname">StatmechLibrary</code><span class="sig-paren">(</span><em>label=''</em>, <em>name=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with a RMG statistical mechanics (frequencies) library.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.ancestors">
+<code class="descname">ancestors</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the ancestors of a node, climbing up the tree to the top.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.descendTree">
+<code class="descname">descendTree</code><span class="sig-paren">(</span><em>structure</em>, <em>atoms</em>, <em>root=None</em>, <em>strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.descendTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Descend the tree in search of the functional group node that best
+matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
+<p>If root=None then uses the first matching top node.</p>
+<p>Returns None if there is no matching root.</p>
+<p>Set strict to <code class="docutils literal"><span class="pre">True</span></code> if all labels in final matched node must match that of the
+structure.  This is used in kinetics groups to find the correct reaction template, but
+not generally used in other GAVs due to species generally not being prelabeled.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.descendants">
+<code class="descname">descendants</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.descendants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the descendants of a node, climbing down the tree to the bottom.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.generateOldLibraryEntry">
+<code class="descname">generateOldLibraryEntry</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.generateOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of values used to save entries to the old-style RMG
+thermo database based on the thermodynamics object <cite>data</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.generateOldTree">
+<code class="descname">generateOldTree</code><span class="sig-paren">(</span><em>entries</em>, <em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.generateOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a multi-line string representation of the current tree using
+the old-style syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.getEntriesToSave">
+<code class="descname">getEntriesToSave</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sorted list of the entries in this database that should be
+saved to the output file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.getSpecies">
+<code class="descname">getSpecies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.getSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>path</em>, <em>local_context=None</em>, <em>global_context=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an RMG-style database from the file at location <cite>path</cite> on disk.
+The parameters <cite>local_context</cite> and <cite>global_context</cite> are used to
+provide specialized mapping of identifiers in the input file to
+corresponding functions to evaluate. This method will automatically add
+a few identifiers required by all data entries, so you don&#8217;t need to
+provide these.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.loadOld">
+<code class="descname">loadOld</code><span class="sig-paren">(</span><em>dictstr</em>, <em>treestr</em>, <em>libstr</em>, <em>numParameters</em>, <em>numLabels=1</em>, <em>pattern=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.loadOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to &#8216;&#8217; if not desired.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.loadOldDictionary">
+<code class="descname">loadOldDictionary</code><span class="sig-paren">(</span><em>path</em>, <em>pattern</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.loadOldDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an old-style RMG database dictionary located at <cite>path</cite>. An RMG
+dictionary is a list of key-value pairs of a one-line string key and a
+multi-line string value. Each record is separated by at least one empty
+line. Returns a <code class="docutils literal"><span class="pre">dict</span></code> object with the values converted to
+<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> or <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> objects depending on the
+value of <cite>pattern</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.loadOldLibrary">
+<code class="descname">loadOldLibrary</code><span class="sig-paren">(</span><em>path</em>, <em>numParameters</em>, <em>numLabels=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.loadOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.loadOldTree">
+<code class="descname">loadOldTree</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.loadOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an old-style RMG database tree located at <cite>path</cite>. An RMG
+tree is an n-ary tree representing the hierarchy of items in the
+dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.matchNodeToChild">
+<code class="descname">matchNodeToChild</code><span class="sig-paren">(</span><em>parentNode</em>, <em>childNode</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.matchNodeToChild" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if <cite>parentNode</cite> is a parent of <cite>childNode</cite>.  Otherwise, return <cite>False</cite>.
+Both <cite>parentNode</cite> and <cite>childNode</cite> must be Entry types with items containing Group or LogicNode types.
+If <cite>parentNode</cite> and <cite>childNode</cite> are identical, the function will also return <cite>False</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.matchNodeToNode">
+<code class="descname">matchNodeToNode</code><span class="sig-paren">(</span><em>node</em>, <em>nodeOther</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.matchNodeToNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>nodeOther</cite> are identical.  Otherwise, return <cite>False</cite>.
+Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items containing Group or LogicNode types.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.matchNodeToStructure">
+<code class="descname">matchNodeToStructure</code><span class="sig-paren">(</span><em>node</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
+structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
+have atoms with the appropriate labels because they are set on loading
+and never change. However, the atoms in <cite>structure</cite> may not have the
+correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> parameter may
+include extra labels, and so we only require that every labeled atom in
+the functional group represented by <cite>node</cite> has an equivalent labeled
+atom in <cite>structure</cite>.</p>
+<p>Matching to structure is more strict than to node.  All labels in structure must 
+be found in node.  However the reverse is not true, unless <cite>strict</cite> is set to True.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>node</cite></td>
+<td>Either an Entry or a key in the self.entries dictionary which has a Group or LogicNode as its Entry.item</td>
+</tr>
+<tr class="row-odd"><td><cite>structure</cite></td>
+<td>A Group or a Molecule</td>
+</tr>
+<tr class="row-even"><td><cite>atoms</cite></td>
+<td>Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()</td>
+</tr>
+<tr class="row-odd"><td><cite>strict</cite></td>
+<td>If set to <code class="docutils literal"><span class="pre">True</span></code>, ensures that all the node&#8217;s atomLabels are matched by in the structure</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.parseOldLibrary">
+<code class="descname">parseOldLibrary</code><span class="sig-paren">(</span><em>path</em>, <em>numParameters</em>, <em>numLabels=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.parseOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>, returning the loaded
+entries (rather than storing them in the database). This method does
+not discard duplicate entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.processOldLibraryEntry">
+<code class="descname">processOldLibraryEntry</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.processOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a list of parameters <cite>data</cite> as read from an old-style RMG
+thermo database, returning the corresponding thermodynamics object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to the file at location <cite>path</cite> on disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.saveDictionary">
+<code class="descname">saveDictionary</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.saveDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract species from all entries associated with a kinetics library or depository and save them 
+to the path given.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.saveEntry">
+<code class="descname">saveEntry</code><span class="sig-paren">(</span><em>f</em>, <em>entry</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.saveOld">
+<code class="descname">saveOld</code><span class="sig-paren">(</span><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.saveOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to a set of text files using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.saveOldDictionary">
+<code class="descname">saveOldDictionary</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.saveOldDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database dictionary to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.saveOldLibrary">
+<code class="descname">saveOldLibrary</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.saveOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database library to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechLibrary.saveOldTree">
+<code class="descname">saveOldTree</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechLibrary.saveOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database tree to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

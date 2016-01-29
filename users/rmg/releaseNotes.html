@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2. Release Notes &mdash; RMG Py 1.0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="up" title="RMG User’s Guide" href="index.html" />
+    <link rel="next" title="3. Overview of Features" href="features.html" />
+    <link rel="prev" title="1. Introduction" href="introduction.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body role="document">
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="features.html" title="3. Overview of Features"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="1. Introduction"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="release-notes">
+<span id="releasenotes"></span><h1>2. Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rmg-py-version-1-0-2">
+<h2>2.1. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<p>Date: January 29, 2016</p>
+<p>This new release adds several new features and bug fixes.</p>
+<ul class="simple">
+<li>Windows users can rejoice: RMG is now available in binary format on the Anaconda platform.  Building by source is also
+much easier now through the Anaconda managed python environment for dependencies. See the updated <a class="reference internal" href="installation/index.html#installation"><span>Installation Page</span></a>
+for more details</li>
+<li>Reaction filtering for speeding up model generation has now been added.  It has been shown to speed up model convergence by
+7-10x.  See more details about how to use it in your RMG job <a class="reference internal" href="input.html#filterreactions"><span>here</span></a>.  Learn more about the theory
+and algorithm on the <a class="reference internal" href="../../theory/rmg/enlarger.html#ratebasedmodelenlarger"><span>Rate-based Model Enlarging Algorithm</span></a> page.</li>
+<li>The RMG <a class="reference internal" href="modules/index.html#modules"><span>native scripts</span></a> are now organized under the <code class="docutils literal"><span class="pre">rmgpy.tools</span></code> submodule for
+developer ease and better extensibility in external scripts.</li>
+<li>InChI conversion is now more robust for singlets and triplets,
+and augmented InChIs and InChI keys are now possible with new radical electron, lone pair, and multiplicity flags.</li>
+<li>Output HTML for visualizing models are now cleaned up and also more functional, including features to display thermo comments,
+display enthalpy, entropy, and free energy of reaction, as well as filter reactions by species.  You can use this new visualization format
+either by running a job in RMG v1.0.2 or revisualizing your CHEMKIN file and species dictionary using
+the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">visualization web tool</a>.</li>
+</ul>
+</div>
+<div class="section" id="rmg-database-version-1-0-2">
+<h2>2.2. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<p>Date: January 29, 2016</p>
+<p>In conjunction with the release of RMG-Py v1.0.2, an updated package for the RMG-database has also been released.
+This release brings some new additions and fixes:</p>
+<ul>
+<li><p class="first">New group additivity values for oxitene, oxerene, oexpane, and furan ring groups</p>
+</li>
+<li><dl class="first docutils">
+<dt>Improvements to sulfur chemistry:</dt>
+<dd><ul class="first last simple">
+<li>Restructuring of radical trees in the kinetics families <code class="docutils literal"><span class="pre">SubstitutionS</span></code> and <code class="docutils literal"><span class="pre">intra_substitutionCS_cyclization</span></code></li>
+<li>A reaction library for di-tert-butyl sulfide</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Improvements for the <code class="docutils literal"><span class="pre">R_Addition_Multiple_Bond</span></code> kinetics family through new rate rules
+for the addition of allyl radical to double bonds in ethene, propene, and butene-like
+compounds, based on CBS-QB3 estimates from K. Wang, S.M. Villano, A.M. Dean,
+&#8220;Reactions of allylic radicals that impact molecular weight growth kinetics&#8221;, <em>PCCP</em>,
+6255-6273 (2015).</p>
+</li>
+<li><p class="first">Several new thermodynamic and kinetics libraries for molecules associated with the
+pyrolysis of cyclopentadiene in the presence of ethene, based off of calculations from
+the paper A.G. Vandeputte, S.S. Merchant, M.R. Djokic, K.M. Van Geem,
+G.B. Marin, W. H. Green, &#8220;Detailed study of cyclopentadiene pyrolysis in the
+presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2. Release Notes</a><ul>
+<li><a class="reference internal" href="#rmg-py-version-1-0-2">2.1. RMG-Py Version 1.0.2</a></li>
+<li><a class="reference internal" href="#rmg-database-version-1-0-2">2.2. RMG-database Version 1.0.2</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/releaseNotes.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
+        <div class="linkdesc">Draw a group structure from its adjlist</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

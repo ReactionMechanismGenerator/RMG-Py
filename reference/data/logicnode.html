@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.base.LogicNode &mdash; RMG Py 1.0.1 documentation</title>
+    <title>rmgpy.data.base.LogicNode &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="rmgpy.data.kinetics.ReactionRecipe" href="reactionrecipe.html" />
     <link rel="prev" title="rmgpy.data.kinetics.LibraryReaction" href="libraryreaction.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="libraryreaction.html" title="rmgpy.data.kinetics.LibraryReaction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
@@ -71,70 +71,67 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-base-logicnode">
 <h1>rmgpy.data.base.LogicNode<a class="headerlink" href="#rmgpy-data-base-logicnode" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/logicnode.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;LogicNode&#8217; from module u&#8217;rmgpy.data.base&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
-    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/logicnode.rst</tt>, line 7)</p>
-autodoc: failed to import class u&#8217;LogicAnd&#8217; from module u&#8217;rmgpy.data.base&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
-    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/logicnode.rst</tt>, line 9)</p>
-autodoc: failed to import class u&#8217;LogicOr&#8217; from module u&#8217;rmgpy.data.base&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
-    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/logicnode.rst</tt>, line 11)</p>
-autodoc: failed to import function u&#8217;makeLogicNode&#8217; from module u&#8217;rmgpy.data.base&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/base.py&#8221;, line 46, in &lt;module&gt;
-    from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
+<dl class="class">
+<dt id="rmgpy.data.base.LogicNode">
+<em class="property">class </em><code class="descclassname">rmgpy.data.base.</code><code class="descname">LogicNode</code><span class="sig-paren">(</span><em>items</em>, <em>invert</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for AND and OR logic nodes.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.base.LogicAnd">
+<em class="property">class </em><code class="descclassname">rmgpy.data.base.</code><code class="descname">LogicAnd</code><span class="sig-paren">(</span><em>items</em>, <em>invert</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicAnd" title="Permalink to this definition">¶</a></dt>
+<dd><p>A logical AND node. Structure must match all components.</p>
+<dl class="method">
+<dt id="rmgpy.data.base.LogicAnd.matchToStructure">
+<code class="descname">matchToStructure</code><span class="sig-paren">(</span><em>database</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicAnd.matchToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
+<p>Setting <cite>strict</cite> to True makes enforces matching of atomLabels in the structure to every
+atomLabel in the node.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.base.LogicOr">
+<em class="property">class </em><code class="descclassname">rmgpy.data.base.</code><code class="descname">LogicOr</code><span class="sig-paren">(</span><em>items</em>, <em>invert</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr" title="Permalink to this definition">¶</a></dt>
+<dd><p>A logical OR node. Structure can match any component.</p>
+<p>Initialize with a list of component items and a boolean instruction to invert the answer.</p>
+<dl class="method">
+<dt id="rmgpy.data.base.LogicOr.getPossibleStructures">
+<code class="descname">getPossibleStructures</code><span class="sig-paren">(</span><em>entries</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.getPossibleStructures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the possible structures below this node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.base.LogicOr.matchLogicOr">
+<code class="descname">matchLogicOr</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.matchLogicOr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is other the same LogicOr group as self?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.base.LogicOr.matchToStructure">
+<code class="descname">matchToStructure</code><span class="sig-paren">(</span><em>database</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.LogicOr.matchToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
+<p>Setting <cite>strict</cite> to True makes enforces matching of atomLabels in the structure to every
+atomLabel in the node.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.base.makeLogicNode">
+<code class="descclassname">rmgpy.data.base.</code><code class="descname">makeLogicNode</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.makeLogicNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a node in the tree which is a logic node.</p>
+<p>String should be of the form:</p>
+<ul class="simple">
+<li>OR{}</li>
+<li>AND{}</li>
+<li>NOT OR{}</li>
+<li>NOT AND{}</li>
+</ul>
+<p>And the returned object will be of class LogicOr or LogicAnd</p>
+</dd></dl>
+
 </div>
 
 

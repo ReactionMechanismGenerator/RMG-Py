@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.species.TransitionState &mdash; RMG Py 1.0.1 documentation</title>
+    <title>rmgpy.species.TransitionState &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Species (rmgpy.species)" href="index.html" />
     <link rel="next" title="Statistical mechanics (rmgpy.statmech)" href="../statmech/index.html" />
     <link rel="prev" title="rmgpy.species.Species" href="species.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="species.html" title="rmgpy.species.Species"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Species (<code class="docutils literal"><span class="pre">rmgpy.species</span></code>)</a> &raquo;</li> 
@@ -71,22 +71,104 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-species-transitionstate">
 <h1>rmgpy.species.TransitionState<a class="headerlink" href="#rmgpy-species-transitionstate" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/species/transitionstate.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;TransitionState&#8217; from module u&#8217;rmgpy.species&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/species.py&#8221;, line 49, in &lt;module&gt;
-    from rmgpy.molecule import Molecule
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
+<dl class="class">
+<dt id="rmgpy.species.TransitionState">
+<em class="property">class </em><code class="descclassname">rmgpy.species.</code><code class="descname">TransitionState</code><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
+<dd><p>A chemical transition state, representing a first-order saddle point on a
+potential energy surface. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">TDescription</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>label</cite></td>
+<td>A descriptive string label</td>
+</tr>
+<tr class="row-odd"><td><cite>conformer</cite></td>
+<td>The molecular degrees of freedom model for the species</td>
+</tr>
+<tr class="row-even"><td><cite>frequency</cite></td>
+<td>The negative frequency of the first-order saddle point</td>
+</tr>
+<tr class="row-odd"><td><cite>tunneling</cite></td>
+<td>The type of tunneling model to use for tunneling through the reaction barrier</td>
+</tr>
+<tr class="row-even"><td><cite>degeneracy</cite></td>
+<td>The reaction path degeneracy</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.calculateTunnelingFactor">
+<code class="descname">calculateTunnelingFactor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.calculateTunnelingFactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the canonical tunneling correction 
+factor for the reaction at the given temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.calculateTunnelingFunction">
+<code class="descname">calculateTunnelingFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.calculateTunnelingFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the microcanonical tunneling 
+correction for the reaction at the given energies <cite>Elist</cite> in J/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getDensityOfStates">
+<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
+energies <cite>Elist</cite> in J/mol above the ground state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getEnthalpy">
+<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getEntropy">
+<code class="descname">getEntropy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getFreeEnergy">
+<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getHeatCapacity">
+<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getPartitionFunction">
+<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the partition function for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getSumOfStates">
+<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.TransitionState.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+in J/mol.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

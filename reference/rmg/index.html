@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Reaction mechanism generation (rmgpy.rmg) &mdash; RMG Py 1.0.1 documentation</title>
+    <title>Reaction mechanism generation (rmgpy.rmg) &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +24,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="RMG API Reference" href="../index.html" />
     <link rel="next" title="rmgpy.rmg.model.CoreEdgeReactionModel" href="coreedgereactionmodel.html" />
-    <link rel="prev" title="rmgpy.reaction.ReactionModel" href="../reaction/reactionmodel.html" />
+    <link rel="prev" title="rmgpy.reaction.Reaction" href="../reaction/reaction.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -60,9 +60,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="coreedgereactionmodel.html" title="rmgpy.rmg.model.CoreEdgeReactionModel"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../reaction/reactionmodel.html" title="rmgpy.reaction.ReactionModel"
+          <a href="../reaction/reaction.html" title="rmgpy.reaction.Reaction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
       </ul>
@@ -85,10 +85,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-class docutils literal"><span class="pre">Species</span></code></td>
+<tr class="row-even"><td><a class="reference internal" href="species.html#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal"><span class="pre">Species</span></code></a></td>
 <td>A chemical species, with RMG-specific functionality</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-class docutils literal"><span class="pre">CoreEdgeReactionModel</span></code></td>
+<tr class="row-odd"><td><a class="reference internal" href="coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel" title="rmgpy.rmg.model.CoreEdgeReactionModel"><code class="xref py py-class docutils literal"><span class="pre">CoreEdgeReactionModel</span></code></a></td>
 <td>A reaction model comprised of core and edge species and reactions</td>
 </tr>
 </tbody>
@@ -107,10 +107,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">readInputFile()</span></code></td>
+<tr class="row-even"><td><a class="reference internal" href="input.html#rmgpy.rmg.input.readInputFile" title="rmgpy.rmg.input.readInputFile"><code class="xref py py-func docutils literal"><span class="pre">readInputFile()</span></code></a></td>
 <td>Load an RMG job input file</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">saveInputFile()</span></code></td>
+<tr class="row-odd"><td><a class="reference internal" href="input.html#rmgpy.rmg.input.saveInputFile" title="rmgpy.rmg.input.saveInputFile"><code class="xref py py-func docutils literal"><span class="pre">saveInputFile()</span></code></a></td>
 <td>Save an RMG job input file</td>
 </tr>
 </tbody>
@@ -151,7 +151,7 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-class docutils literal"><span class="pre">RMG</span></code></td>
+<tr class="row-even"><td><a class="reference internal" href="main.html#rmgpy.rmg.main.RMG" title="rmgpy.rmg.main.RMG"><code class="xref py py-class docutils literal"><span class="pre">RMG</span></code></a></td>
 <td>Main class for RMG jobs</td>
 </tr>
 </tbody>
@@ -170,10 +170,10 @@ RMG-Py to automatically generate detailed reaction mechanisms.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-class docutils literal"><span class="pre">PDepReaction</span></code></td>
+<tr class="row-even"><td><a class="reference internal" href="pdepreaction.html#rmgpy.rmg.pdep.PDepReaction" title="rmgpy.rmg.pdep.PDepReaction"><code class="xref py py-class docutils literal"><span class="pre">PDepReaction</span></code></a></td>
 <td>A pressure-dependent &#8220;net&#8221; reaction</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-class docutils literal"><span class="pre">PDepNetwork</span></code></td>
+<tr class="row-odd"><td><a class="reference internal" href="pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork" title="rmgpy.rmg.pdep.PDepNetwork"><code class="xref py py-class docutils literal"><span class="pre">PDepNetwork</span></code></a></td>
 <td>A pressure-dependent unimolecular reaction network, with RMG-specific functionality</td>
 </tr>
 </tbody>

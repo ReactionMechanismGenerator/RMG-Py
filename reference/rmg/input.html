@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>RMG input files &mdash; RMG Py 1.0.1 documentation</title>
+    <title>RMG input files &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
     <link rel="next" title="rmgpy.rmg.main.RMG" href="main.html" />
     <link rel="prev" title="rmgpy.rmg.model.CoreEdgeReactionModel" href="coreedgereactionmodel.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="coreedgereactionmodel.html" title="rmgpy.rmg.model.CoreEdgeReactionModel"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &raquo;</li> 
@@ -71,38 +71,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmg-input-files">
 <h1>RMG input files<a class="headerlink" href="#rmg-input-files" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/rmg/input.rst</tt>, line 5)</p>
-autodoc: failed to import function u&#8217;readInputFile&#8217; from module u&#8217;rmgpy.rmg.input&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/input.py&#8221;, line 37, in &lt;module&gt;
-    from rmgpy.molecule import Molecule
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/rmg/input.rst</tt>, line 7)</p>
-autodoc: failed to import function u&#8217;saveInputFile&#8217; from module u&#8217;rmgpy.rmg.input&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/rmg/input.py&#8221;, line 37, in &lt;module&gt;
-    from rmgpy.molecule import Molecule
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
-</div>
+<dl class="function">
+<dt id="rmgpy.rmg.input.readInputFile">
+<code class="descclassname">rmgpy.rmg.input.</code><code class="descname">readInputFile</code><span class="sig-paren">(</span><em>path</em>, <em>rmg0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.input.readInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an RMG input file at <cite>path</cite> on disk into the <code class="xref py py-class docutils literal"><span class="pre">RMG</span></code> object 
+<cite>rmg</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.rmg.input.saveInputFile">
+<code class="descclassname">rmgpy.rmg.input.</code><code class="descname">saveInputFile</code><span class="sig-paren">(</span><em>path</em>, <em>rmg</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.input.saveInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an RMG input file at <cite>path</cite> on disk from the <code class="xref py py-class docutils literal"><span class="pre">RMG</span></code> object 
+<cite>rmg</cite>.</p>
+</dd></dl>
+
 </div>
 
 

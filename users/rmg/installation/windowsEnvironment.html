@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4.1.3. Setting up Windows Environment Variables for RMG &mdash; RMG Py 1.0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="up" title="4. Installation" href="index.html" />
+    <link rel="next" title="4.2.3. Updating the RMG-Py Source Code" href="updatingSourceCode.html" />
+    <link rel="prev" title="4.2.2. Installation by Source Using Anaconda Environment for Windows" href="anacondaDeveloperWindows.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body role="document">
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="updatingSourceCode.html" title="4.2.3. Updating the RMG-Py Source Code"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="anacondaDeveloperWindows.html" title="4.2.2. Installation by Source Using Anaconda Environment for Windows"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">4. Installation</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="setting-up-windows-environment-variables-for-rmg">
+<span id="windowsenvironment"></span><h1>4.1.3. Setting up Windows Environment Variables for RMG<a class="headerlink" href="#setting-up-windows-environment-variables-for-rmg" title="Permalink to this headline">¶</a></h1>
+<p>Setting environment variables in Windows allows for easier shortcutting and usage of RMG scripts and packages.</p>
+<div class="section" id="setting-the-rmgpy-variable">
+<h2>4.1.3.1. Setting the <code class="docutils literal"><span class="pre">RMGPy</span></code> variable<a class="headerlink" href="#setting-the-rmgpy-variable" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>If you have a search bar available in your start menu, search for &#8220;environment variables&#8221; and select &#8220;Edit environment variables for your account&#8221;.  Alternatively, navigate to this settings window by first going to &#8220;Control Panel &gt; System&#8221;, then clicking &#8220;Advanced system settings&#8221;.</li>
+</ul>
+<img alt="../../../_images/ControlPanel.png" class="align-center" src="../../../_images/ControlPanel.png" />
+<ul class="simple">
+<li>Once the &#8220;System Properties&#8221; window opens, click on &#8220;Environment Variables...&#8221; in the &#8220;Advanced&#8221; tab.</li>
+</ul>
+<img alt="../../../_images/SystemProperties.png" class="align-center" src="../../../_images/SystemProperties.png" />
+<ul class="simple">
+<li>Once the &#8220;Environment Variables&#8221; window opens, click on &#8220;New&#8221; under the &#8220;User variables&#8221;.</li>
+</ul>
+<img alt="../../../_images/EnvironmentVariables.png" class="align-center" src="../../../_images/EnvironmentVariables.png" />
+<ul>
+<li><p class="first">Set a new variable with the name <code class="docutils literal"><span class="pre">RMGPy</span></code> with the appropriate value directed at your RMG path.</p>
+<p>If you installed the binary version of RMG, the environment value should be set to:</p>
+<div class="highlight-python"><div class="highlight"><pre>C:\Anaconda\envs\rmg_env\Scripts\
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">C:\Anaconda</span></code> can be replaced by wherever your Anaconda was installed.</p>
+<p>Your screen might look like this:</p>
+<blockquote>
+<div><img alt="../../../_images/NewVariable.png" class="align-center" src="../../../_images/NewVariable.png" />
+</div></blockquote>
+<p>If you are installing RMG by source, you can similarly set your <code class="docutils literal"><span class="pre">RMGPy</span></code> variable to the source directory, such as</p>
+<div class="highlight-python"><div class="highlight"><pre>C:\Code\RMG-Py
+</pre></div>
+</div>
+</li>
+<li><p class="first">Click &#8220;Ok&#8221; on all screens to confirm the changes.</p>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you set any new environment variables, you must close and reopen any command prompts previously open before the changes can take effect.</p>
+</div>
+</div>
+<div class="section" id="optional-setting-a-permanent-anaconda-environment-for-rmg">
+<h2>4.1.3.2. Optional: Setting a Permanent Anaconda Environment for RMG<a class="headerlink" href="#optional-setting-a-permanent-anaconda-environment-for-rmg" title="Permalink to this headline">¶</a></h2>
+<p>If you use Anaconda solely for RMG, it may be more convenient to set your <code class="docutils literal"><span class="pre">PATH</span></code> variable
+to be permanently directed to the RMG environment.  This will allow you to run RMG easily
+without having to type <code class="docutils literal"><span class="pre">activate</span> <span class="pre">rmg_env</span></code> in the command prompt every time.</p>
+<p>Similarly to setting the environment variable
+for <code class="docutils literal"><span class="pre">RMGPy</span></code>, go to &#8220;Edit environment variables for your account&#8221; and click edit on the <code class="docutils literal"><span class="pre">PATH</span></code>
+variable.  Replace the paths containing the Anaconda main directory with the RMG environment
+in Anaconda.</p>
+<p>For example a path such as</p>
+<div class="highlight-python"><div class="highlight"><pre>C:\Anaconda\Scripts\
+</pre></div>
+</div>
+<p>should be changed to:</p>
+<div class="highlight-python"><div class="highlight"><pre>C:\Anaconda\envs\rmg_env\Scripts\
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal"><span class="pre">C:\Anaconda</span></code> should be wherever your Anaconda was installed.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4.1.3. Setting up Windows Environment Variables for RMG</a><ul>
+<li><a class="reference internal" href="#setting-the-rmgpy-variable">4.1.3.1. Setting the <code class="docutils literal"><span class="pre">RMGPy</span></code> variable</a></li>
+<li><a class="reference internal" href="#optional-setting-a-permanent-anaconda-environment-for-rmg">4.1.3.2. Optional: Setting a Permanent Anaconda Environment for RMG</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/windowsEnvironment.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/group_draw"><img src="../../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
+        <div class="linkdesc">Draw a group structure from its adjlist</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/simulate/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

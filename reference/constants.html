@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Physical constants (rmgpy.constants) &mdash; RMG Py 1.0.1 documentation</title>
+    <title>Physical constants (rmgpy.constants) &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../contents.html" />
     <link rel="up" title="RMG API Reference" href="index.html" />
     <link rel="next" title="Database (rmgpy.data)" href="data/index.html" />
     <link rel="prev" title="Writing Chemkin files" href="chemkin/writer.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="chemkin/writer.html" title="Writing Chemkin files"
              accesskey="P">previous</a> |</li>
-<li><a href="../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
       </ul>
@@ -95,7 +95,7 @@ method of importing this module is</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><span class="math">\(E_\mathrm{h}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.E_h" title="rmgpy.constants.E_h"><code class="xref py py-data docutils literal"><span class="pre">E_h</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">E_h</span></code></td>
 <td><span class="math">\(4.35974434 \times 10^{-18} \ \mathrm{J}\)</span></td>
 <td>Hartree energy</td>
 </tr>
@@ -110,27 +110,27 @@ method of importing this module is</p>
 <td>Newtonian gravitational constant</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(N_\mathrm{A}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.Na" title="rmgpy.constants.Na"><code class="xref py py-data docutils literal"><span class="pre">Na</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">Na</span></code></td>
 <td><span class="math">\(6.02214179 \times 10^{23} \ \mathrm{mol^{-1}}\)</span></td>
 <td>Avogadro constant</td>
 </tr>
 <tr class="row-even"><td><span class="math">\(R\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.R" title="rmgpy.constants.R"><code class="xref py py-data docutils literal"><span class="pre">R</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">R</span></code></td>
 <td><span class="math">\(8.314472 \ \mathrm{J/mol \cdot K}\)</span></td>
 <td>gas law constant</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(a_0\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.a0" title="rmgpy.constants.a0"><code class="xref py py-data docutils literal"><span class="pre">a0</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">a0</span></code></td>
 <td><span class="math">\(5.2917721092 \times 10^{-11} \ \mathrm{m}\)</span></td>
 <td>Bohr radius</td>
 </tr>
 <tr class="row-even"><td><span class="math">\(c\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.c" title="rmgpy.constants.c"><code class="xref py py-data docutils literal"><span class="pre">c</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">c</span></code></td>
 <td><span class="math">\(299792458 \ \mathrm{m/s}\)</span></td>
 <td>speed of light in a vacuum</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(e\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.e" title="rmgpy.constants.e"><code class="xref py py-data docutils literal"><span class="pre">e</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">e</span></code></td>
 <td><span class="math">\(1.602176565 \times 10^{-19} \ \mathrm{C}\)</span></td>
 <td>elementary charge</td>
 </tr>
@@ -140,131 +140,47 @@ method of importing this module is</p>
 <td>standard acceleration due to gravity</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(h\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.h" title="rmgpy.constants.h"><code class="xref py py-data docutils literal"><span class="pre">h</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">h</span></code></td>
 <td><span class="math">\(6.62606896 \times 10^{-34} \ \mathrm{J \cdot s}\)</span></td>
 <td>Planck constant</td>
 </tr>
 <tr class="row-even"><td><span class="math">\(\hbar\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.hbar" title="rmgpy.constants.hbar"><code class="xref py py-data docutils literal"><span class="pre">hbar</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">hbar</span></code></td>
 <td><span class="math">\(1.054571726 \times 10^{-34} \ \mathrm{J \cdot s}\)</span></td>
 <td>reduced Planck constant</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(k_\mathrm{B}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.kB" title="rmgpy.constants.kB"><code class="xref py py-data docutils literal"><span class="pre">kB</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">kB</span></code></td>
 <td><span class="math">\(1.3806504 \times 10^{-23} \ \mathrm{J/K}\)</span></td>
 <td>Boltzmann constant</td>
 </tr>
 <tr class="row-even"><td><span class="math">\(m_\mathrm{e}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.m_e" title="rmgpy.constants.m_e"><code class="xref py py-data docutils literal"><span class="pre">m_e</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">m_e</span></code></td>
 <td><span class="math">\(9.10938291 \times 10^{-31} \ \mathrm{kg}\)</span></td>
 <td>electron rest mass</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(m_\mathrm{n}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.m_n" title="rmgpy.constants.m_n"><code class="xref py py-data docutils literal"><span class="pre">m_n</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">m_n</span></code></td>
 <td><span class="math">\(1.674927351 \times 10^{-27} \ \mathrm{kg}\)</span></td>
 <td>neutron rest mass</td>
 </tr>
 <tr class="row-even"><td><span class="math">\(m_\mathrm{p}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.m_p" title="rmgpy.constants.m_p"><code class="xref py py-data docutils literal"><span class="pre">m_p</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">m_p</span></code></td>
 <td><span class="math">\(1.672621777 \times 10^{-27} \ \mathrm{kg}\)</span></td>
 <td>proton rest mass</td>
 </tr>
 <tr class="row-odd"><td><span class="math">\(m_\mathrm{u}\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.amu" title="rmgpy.constants.amu"><code class="xref py py-data docutils literal"><span class="pre">amu</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">amu</span></code></td>
 <td><span class="math">\(1.660538921 \times 10^{-27} \ \mathrm{kg}\)</span></td>
 <td>atomic mass unit</td>
 </tr>
 <tr class="row-even"><td><span class="math">\(\pi\)</span></td>
-<td><a class="reference internal" href="#rmgpy.constants.pi" title="rmgpy.constants.pi"><code class="xref py py-data docutils literal"><span class="pre">pi</span></code></a></td>
+<td><code class="xref py py-data docutils literal"><span class="pre">pi</span></code></td>
 <td><span class="math">\(3.14159 \ldots\)</span></td>
 <td>&nbsp;</td>
 </tr>
 </tbody>
 </table>
-<dl class="data">
-<dt id="rmgpy.constants.E_h">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">E_h</code><em class="property"> = 4.35974434e-18</em><a class="headerlink" href="#rmgpy.constants.E_h" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Hartree energy <span class="math">\(E_\mathrm{h}\)</span> in <span class="math">\(\mathrm{J}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.Na">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">Na</code><em class="property"> = 6.02214179e+23</em><a class="headerlink" href="#rmgpy.constants.Na" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Avogadro constant <span class="math">\(N_\mathrm{A}\)</span> in <span class="math">\(\mathrm{mol^{-1}}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.R">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">R</code><em class="property"> = 8.314472</em><a class="headerlink" href="#rmgpy.constants.R" title="Permalink to this definition">¶</a></dt>
-<dd><p>The gas law constant <span class="math">\(R\)</span> in <span class="math">\(\mathrm{J/mol \cdot K}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.a0">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">a0</code><em class="property"> = 5.2917721092e-11</em><a class="headerlink" href="#rmgpy.constants.a0" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Bohr radius <span class="math">\(a_0\)</span> in <span class="math">\(\mathrm{m}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.amu">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">amu</code><em class="property"> = 1.660538921e-27</em><a class="headerlink" href="#rmgpy.constants.amu" title="Permalink to this definition">¶</a></dt>
-<dd><p>The atomic mass unit in <span class="math">\(\mathrm{kg}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.c">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">c</code><em class="property"> = 299792458</em><a class="headerlink" href="#rmgpy.constants.c" title="Permalink to this definition">¶</a></dt>
-<dd><p>The speed of light in a vacuum <span class="math">\(c\)</span> in <span class="math">\(\mathrm{m/s}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.e">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">e</code><em class="property"> = 1.602176565e-19</em><a class="headerlink" href="#rmgpy.constants.e" title="Permalink to this definition">¶</a></dt>
-<dd><p>The elementary charge <span class="math">\(e\)</span> in <span class="math">\(\mathrm{C}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.h">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">h</code><em class="property"> = 6.62606896e-34</em><a class="headerlink" href="#rmgpy.constants.h" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Planck constant <span class="math">\(h\)</span> in <span class="math">\(\mathrm{J \cdot s}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.hbar">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">hbar</code><em class="property"> = 1.054571726e-34</em><a class="headerlink" href="#rmgpy.constants.hbar" title="Permalink to this definition">¶</a></dt>
-<dd><p>The reduced Planck constant <span class="math">\(\hbar\)</span> in <span class="math">\(\mathrm{J \cdot s}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.kB">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">kB</code><em class="property"> = 1.3806504e-23</em><a class="headerlink" href="#rmgpy.constants.kB" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Boltzmann constant <span class="math">\(k_\mathrm{B}\)</span> in <span class="math">\(\mathrm{J/K}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.m_e">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">m_e</code><em class="property"> = 9.10938291e-31</em><a class="headerlink" href="#rmgpy.constants.m_e" title="Permalink to this definition">¶</a></dt>
-<dd><p>The mass of an electron <span class="math">\(m_\mathrm{e}\)</span> in <span class="math">\(\mathrm{kg}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.m_n">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">m_n</code><em class="property"> = 1.674927351e-27</em><a class="headerlink" href="#rmgpy.constants.m_n" title="Permalink to this definition">¶</a></dt>
-<dd><p>The mass of a neutron <span class="math">\(m_\mathrm{n}\)</span> in <span class="math">\(\mathrm{kg}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.m_p">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">m_p</code><em class="property"> = 1.672621777e-27</em><a class="headerlink" href="#rmgpy.constants.m_p" title="Permalink to this definition">¶</a></dt>
-<dd><p>The mass of a proton <span class="math">\(m_\mathrm{p}\)</span> in <span class="math">\(\mathrm{kg}\)</span></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="rmgpy.constants.pi">
-<code class="descclassname">rmgpy.constants.</code><code class="descname">pi</code><em class="property"> = 3.141592653589793</em><a class="headerlink" href="#rmgpy.constants.pi" title="Permalink to this definition">¶</a></dt>
-<dd><p><span class="math">\(\pi = 3.14159 \ldots\)</span></p>
-</dd></dl>
-
 </div>
 
 

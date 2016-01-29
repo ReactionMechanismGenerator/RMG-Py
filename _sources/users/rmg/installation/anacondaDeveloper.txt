@@ -1,15 +1,10 @@
 .. _anacondaDeveloper:
 
-*****************************************************
-Installation by Source Using Anaconda: For Developers
-*****************************************************
+*******************************************************************************************
+Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
+*******************************************************************************************
 
-RMG-Py can now be built by source using the Anaconda Python Platform to assist in installing
-all necessary dependencies. This is recommended for a developer who may be altering the RMG source code
-or someone who expects to manipulate the databases extensively.  You will also be able to access the latest
-source code updates and patches through Github.
-
-* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_. When prompted to append Anaconda to your PATH, select or type Yes.
+* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
 
 * Install `Git <https://git-scm.com/>`_, the open source version control package through the Terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
 
@@ -24,7 +19,7 @@ source code updates and patches through Github.
     
     cd RMG-Py
     conda env create
-    source activate rmg
+    source activate rmg_env
     make
     
 * Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any python prompt.  Modify your ``~/.bashrc`` file by adding the following line ::
@@ -38,6 +33,10 @@ source code updates and patches through Github.
   by changing it to the following line :: 
 
    export PATH=~/anaconda/envs/rmg/bin:$PATH
+
+  be sure to either close and reopen your terminal to refresh your environment variables, or type the following command ::
+ 
+   source ~/.bashrc
    
 * Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your Terminal ::
     

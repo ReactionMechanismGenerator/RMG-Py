@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.draw.ReactionDrawer &mdash; RMG Py 1.0.1 documentation</title>
+    <title>rmgpy.molecule.draw.ReactionDrawer &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="Pressure dependence (rmgpy.pdep)" href="../pdep/index.html" />
     <link rel="prev" title="rmgpy.molecule.draw.MoleculeDrawer" href="moleculedrawer.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="moleculedrawer.html" title="rmgpy.molecule.draw.MoleculeDrawer"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
@@ -71,20 +71,31 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-molecule-draw-reactiondrawer">
 <h1>rmgpy.molecule.draw.ReactionDrawer<a class="headerlink" href="#rmgpy-molecule-draw-reactiondrawer" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/molecule/reactiondrawer.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;ReactionDrawer&#8217; from module u&#8217;rmgpy.molecule.draw&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .adjlist import *
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/adjlist.py&#8221;, line 36, in &lt;module&gt;
-    from .molecule import Atom, Bond
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/molecule/molecule.py&#8221;, line 50, in &lt;module&gt;
-    from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-ImportError: No module named graph
+<dl class="class">
+<dt id="rmgpy.molecule.draw.ReactionDrawer">
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.draw.</code><code class="descname">ReactionDrawer</code><span class="sig-paren">(</span><em>options=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides functionality for drawing chemical reactions using the
+skeletal formula of each reactant and product molecule via the Cairo 2D
+graphics engine. The most common use case is simply:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ReactionDrawer</span><span class="p">()</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">reaction</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;png&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;reaction.png&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
+<p>where <code class="docutils literal"><span class="pre">reaction</span></code> is the <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object to draw. You can also
+pass a dict of options to the constructor to affect how the molecules are
+drawn.</p>
+<dl class="method">
+<dt id="rmgpy.molecule.draw.ReactionDrawer.draw">
+<code class="descname">draw</code><span class="sig-paren">(</span><em>reaction</em>, <em>format</em>, <em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the given <cite>reaction</cite> using the given image <cite>format</cite> - pdf, svg, 
+ps, or png. If <cite>path</cite> is given, the drawing is saved to that location
+on disk.</p>
+<p>This function returns the Cairo surface and context used to create the
+drawing, as well as a bounding box for the molecule being drawn as the
+tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</cite>).</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

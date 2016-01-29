@@ -26,8 +26,8 @@ Your reaction system will also be different (liquidReactor rather than simpleRea
     )
 
 
-For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
-(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
+some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
 Like for the simpleReactor, the sensitivity and sensitivityThrehold are optional arguments for when the
 user would like to conduct sensitivity analysis with respect to the reaction rate
 coefficients for the list of species given for ``sensitivity``.  

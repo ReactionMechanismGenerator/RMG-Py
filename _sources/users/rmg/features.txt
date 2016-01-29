@@ -1,8 +1,8 @@
 .. _features:
 
-
-Features
-========
+********************
+Overview of Features
+********************
 
 Thermodynamics estimation using group additivity.
 	Group additivity based on Benson's groups provide fast and reliable thermochemistry estimates. A standalone utility for estimating heat of formation, entropy, and heat capacity is also included.
@@ -27,7 +27,7 @@ Simultaneous mechanism generation for several conditions.
 Dynamic simulation to a target conversion or time.
 	Often the desired simulation time is not known *a priori*, so a target conversion is preferred.
 
-Transport properties estimation using group additivity (in development)
+Transport properties estimation using group additivity 
 	The Lennard-Jones sigma and epsilon parameters are estimated using empirical correlations (based on a species' critical properties and acentric factor).
 	The critical properties are estimated using a group-additivity approach; the acentric factor is also estimated using empirical correlations.
 	A standalone application for estimating these parameters is provided, and the output is stored in CHEMKIN-readable format.

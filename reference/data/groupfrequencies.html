@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.statmech.GroupFrequencies &mdash; RMG Py 1.0.1 documentation</title>
+    <title>rmgpy.data.statmech.GroupFrequencies &mdash; RMG Py 1.0.2 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.1',
+        VERSION:     '1.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.1 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
     <link rel="up" title="Database (rmgpy.data)" href="index.html" />
     <link rel="next" title="rmgpy.data.kinetics.KineticsDatabase" href="kineticsdatabase.html" />
     <link rel="prev" title="rmgpy.data.base.Entry" href="entry.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="entry.html" title="rmgpy.data.base.Entry"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.1</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &raquo;</li> 
@@ -71,18 +71,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="rmgpy-data-statmech-groupfrequencies">
 <h1>rmgpy.data.statmech.GroupFrequencies<a class="headerlink" href="#rmgpy-data-statmech-groupfrequencies" title="Permalink to this headline">¶</a></h1>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/reference/data/groupfrequencies.rst</tt>, line 5)</p>
-autodoc: failed to import class u&#8217;GroupFrequencies&#8217; from module u&#8217;rmgpy.data.statmech&#8217;; the following exception was raised:
-Traceback (most recent call last):
-  File &#8220;/Users/rwest/anaconda/envs/rmg4/lib/python2.7/site-packages/Sphinx-1.3.1-py2.7.egg/sphinx/ext/autodoc.py&#8221;, line 385, in import_object
-    __import__(self.modname)
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/data/statmech.py&#8221;, line 36, in &lt;module&gt;
-    from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, IdealGasTranslation
-  File &#8220;/Users/rwest/Code/RMG-Py/rmgpy/statmech/__init__.py&#8221;, line 31, in &lt;module&gt;
-    from .translation import Translation, IdealGasTranslation
-ImportError: No module named translation
-</div>
+<dl class="class">
+<dt id="rmgpy.data.statmech.GroupFrequencies">
+<em class="property">class </em><code class="descclassname">rmgpy.data.statmech.</code><code class="descname">GroupFrequencies</code><span class="sig-paren">(</span><em>frequencies=None</em>, <em>symmetry=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.GroupFrequencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a set of characteristic frequencies for a group in the frequency
+database. These frequencies are stored in the <cite>frequencies</cite> attribute, which
+is a <code class="docutils literal"><span class="pre">list</span></code> of <code class="docutils literal"><span class="pre">tuples</span></code>, where each <code class="docutils literal"><span class="pre">tuple</span></code> defines a lower bound,
+upper bound, and degeneracy. Each group also has a <cite>symmetry</cite> correction.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmech.GroupFrequencies.generateFrequencies">
+<code class="descname">generateFrequencies</code><span class="sig-paren">(</span><em>count=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.GroupFrequencies.generateFrequencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a set of frequencies. For each characteristic frequency group,
+the number of frequencies returned is degeneracy * count, and these are
+distributed linearly between the lower and upper bounds.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

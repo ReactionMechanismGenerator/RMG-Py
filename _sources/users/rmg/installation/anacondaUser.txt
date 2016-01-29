@@ -1,16 +1,13 @@
 .. _anacondaUser:
 
-***************************************************
-Binary Installation Using Anaconda: For Basic Users
-***************************************************
+****************************************************************************
+Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
+****************************************************************************
 
-RMG-Py can now be installed in binary format using the Anaconda Python Platform.
-This is recommended for a basic user who will not be altering the source code 
-or making many additions to RMG's thermodynamic and kinetics databases.
 
-* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_. When prompted to append Anaconda to your PATH, select or type Yes.
+* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
 
-* Install both RMG and the RMG-database binaries.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG. For example, type the following into your terminal to create a new environment named 'rmg_env' containing all that you need::
+* Install both RMG and the RMG-database binaries through the Terminal.   Dependencies will be installed automatically. It is safest to make a new Anaconda environment for RMG and its dependencies. Type the following command into the Terminal to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
 
     conda create -c rmg --name rmg_env rmg rmgdatabase
     
@@ -29,3 +26,13 @@ or making many additions to RMG's thermodynamic and kinetics databases.
 
 You may now use RMG-Py, CanTherm, as well as any of the 
 :ref:`Standalone Modules <modules>` included in the RMG-Py package.
+
+
+Updating your binary installation of RMG in Linux or Mac OSX
+============================================================
+
+If you had previously installed a binary version of the RMG package, you may
+check and update your installation to the latest stable version available on Anaconda by typing the following command on the Terminal ::
+
+    source activate rmg_env
+    conda update rmg rmgdatabase -c rmg 
