@@ -7,7 +7,7 @@ Release Notes
 
 RMG-Py Version 1.0.2
 ====================
-Date: February 1, 2016
+Date: January 29, 2016
 
 This new release adds several new features and bug fixes. 
 
@@ -30,7 +30,7 @@ This new release adds several new features and bug fixes.
   
 RMG-database Version 1.0.2
 ==========================
-Date: February 1, 2016
+Date: January 29, 2016
 
 In conjunction with the release of RMG-Py v1.0.2, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:
