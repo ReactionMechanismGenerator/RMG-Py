@@ -72,4 +72,4 @@ git checkout $DEPLOY_BRANCH
 git commit --allow-empty -m $REV
 
 # push to the branch to the RMG/RMG-tests repo:
-git push -f $REPO $DEPLOY_BRANCH
+git push -f $REPO $DEPLOY_BRANCH > /dev/null
