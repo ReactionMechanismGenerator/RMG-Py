@@ -2,7 +2,6 @@ name: rmg_env
 channels:
   - defaults
   - rmg
-  - rdkit
 dependencies:
   - mingwpy
   - python
@@ -10,15 +9,15 @@ dependencies:
   - cython ==0.21
   - matplotlib
   - rdkit >=2015.09.2
-  - pydas >=1.0.1
-  - pydqed >=1.0.0
   - quantities
   - scipy
   - xlwt
   - markupsafe
   - jinja2
   - pyparsing
+  - pydas 
   - pydot
+  - pydqed
   - nose
   - coverage
   - guppy
