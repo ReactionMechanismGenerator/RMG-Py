@@ -18,6 +18,7 @@ requirements:
     - coverage
     - cython ==0.21
     - gcc # [unix]
+    - gcc ==4.8.2 # [linux32]
     - gprof2dot
     - guppy
     - jinja2
