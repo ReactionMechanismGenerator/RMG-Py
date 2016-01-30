@@ -173,75 +173,32 @@ and rotors that their values can be fit directly.</p>
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.DirectFit.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>Initialize the DQED solver. The required parameters are:</p>
+<dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><cite>Neq</cite> - The number of algebraic equations.</li>
 <li><cite>Nvars</cite> - The number of unknown variables.</li>
 <li><cite>Ncons</cite> - The number of constraint equations.</li>
 </ul>
 <p>The optional parameters are:</p>
-<ul>
-<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+<ul class="simple">
+<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
 each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
 either direction. If provided, you must give bounds for every unknown
-variable.</p>
-</li>
-<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+variable.</li>
+<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
 residual has absolute length less than <cite>tolf</cite>, i.e.
-:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>|</p>
-<div class="system-message" id="id1">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 16); <em><a href="#id2">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 19)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{f} | le epsilon_f.</p>
-<blockquote>
-<div><ul>
-<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+<span class="math">\(\| \vec{f} \| \le \epsilon_f.\)</span></li>
+<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
 variables has absolute length less than <cite>told</cite>, i.e.
-:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>| Delta</p>
-<div class="system-message" id="id3">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 21); <em><a href="#id4">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 24)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{x} | le epsilon_d.</p>
-<blockquote>
-<div><ul>
-<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+<span class="math">\(\| \Delta \vec{x} \| \le \epsilon_d.\)</span></li>
+<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
 variables has relative length less than <cite>tolx</cite>, i.e.
-:math:<a href="#id5"><span class="problematic" id="id6">`</span></a>| Delta</p>
-<div class="system-message" id="id5">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 26); <em><a href="#id6">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.DirectFit.initialize</tt>, line 29)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{x} | le epsilon_x cdot | 
-ector{x} |`.</p>
-<blockquote>
-<div><ul class="simple">
+<span class="math">\(\| \Delta \vec{x} \| \le \epsilon_x \cdot \| \vec{x} \|.\)</span></li>
 <li><cite>maxIter</cite> - The maximum number of iterations to use</li>
 <li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
 solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
 error.</li>
 </ul>
-</div></blockquote>
 </dd></dl>
 
 <dl class="method">
@@ -304,75 +261,32 @@ frequencies directly.</p>
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>Initialize the DQED solver. The required parameters are:</p>
+<dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><cite>Neq</cite> - The number of algebraic equations.</li>
 <li><cite>Nvars</cite> - The number of unknown variables.</li>
 <li><cite>Ncons</cite> - The number of constraint equations.</li>
 </ul>
 <p>The optional parameters are:</p>
-<ul>
-<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+<ul class="simple">
+<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
 each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
 either direction. If provided, you must give bounds for every unknown
-variable.</p>
-</li>
-<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+variable.</li>
+<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
 residual has absolute length less than <cite>tolf</cite>, i.e.
-:math:<a href="#id7"><span class="problematic" id="id8">`</span></a>|</p>
-<div class="system-message" id="id7">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 16); <em><a href="#id8">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 19)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{f} | le epsilon_f.</p>
-<blockquote>
-<div><ul>
-<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+<span class="math">\(\| \vec{f} \| \le \epsilon_f.\)</span></li>
+<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
 variables has absolute length less than <cite>told</cite>, i.e.
-:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>| Delta</p>
-<div class="system-message" id="id9">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 21); <em><a href="#id10">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 24)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{x} | le epsilon_d.</p>
-<blockquote>
-<div><ul>
-<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+<span class="math">\(\| \Delta \vec{x} \| \le \epsilon_d.\)</span></li>
+<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
 variables has relative length less than <cite>tolx</cite>, i.e.
-:math:<a href="#id11"><span class="problematic" id="id12">`</span></a>| Delta</p>
-<div class="system-message" id="id11">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 26); <em><a href="#id12">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoRotorFit.initialize</tt>, line 29)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{x} | le epsilon_x cdot | 
-ector{x} |`.</p>
-<blockquote>
-<div><ul class="simple">
+<span class="math">\(\| \Delta \vec{x} \| \le \epsilon_x \cdot \| \vec{x} \|.\)</span></li>
 <li><cite>maxIter</cite> - The maximum number of iterations to use</li>
 <li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
 solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
 error.</li>
 </ul>
-</div></blockquote>
 </dd></dl>
 
 <dl class="method">
@@ -435,75 +349,32 @@ both the vibrations and hindered rotations into &#8220;pseudo-oscillators&#8221;
 <dl class="method">
 <dt id="rmgpy.data.statmechfit.PseudoFit.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>Initialize the DQED solver. The required parameters are:</p>
+<dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><cite>Neq</cite> - The number of algebraic equations.</li>
 <li><cite>Nvars</cite> - The number of unknown variables.</li>
 <li><cite>Ncons</cite> - The number of constraint equations.</li>
 </ul>
 <p>The optional parameters are:</p>
-<ul>
-<li><p class="first"><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+<ul class="simple">
+<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
 each unknown variable. Use <code class="docutils literal"><span class="pre">None</span></code> if there is no bound in one or
 either direction. If provided, you must give bounds for every unknown
-variable.</p>
-</li>
-<li><p class="first"><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+variable.</li>
+<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
 residual has absolute length less than <cite>tolf</cite>, i.e.
-:math:<a href="#id13"><span class="problematic" id="id14">`</span></a>|</p>
-<div class="system-message" id="id13">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 16); <em><a href="#id14">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 19)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{f} | le epsilon_f.</p>
-<blockquote>
-<div><ul>
-<li><p class="first"><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+<span class="math">\(\| \vec{f} \| \le \epsilon_f.\)</span></li>
+<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
 variables has absolute length less than <cite>told</cite>, i.e.
-:math:<a href="#id15"><span class="problematic" id="id16">`</span></a>| Delta</p>
-<div class="system-message" id="id15">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 21); <em><a href="#id16">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 24)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{x} | le epsilon_d.</p>
-<blockquote>
-<div><ul>
-<li><p class="first"><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+<span class="math">\(\| \Delta \vec{x} \| \le \epsilon_d.\)</span></li>
+<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
 variables has relative length less than <cite>tolx</cite>, i.e.
-:math:<a href="#id17"><span class="problematic" id="id18">`</span></a>| Delta</p>
-<div class="system-message" id="id17">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 26); <em><a href="#id18">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/rmgpy/data/statmechfit.py:docstring of rmgpy.data.statmechfit.PseudoFit.initialize</tt>, line 29)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>ector{x} | le epsilon_x cdot | 
-ector{x} |`.</p>
-<blockquote>
-<div><ul class="simple">
+<span class="math">\(\| \Delta \vec{x} \| \le \epsilon_x \cdot \| \vec{x} \|.\)</span></li>
 <li><cite>maxIter</cite> - The maximum number of iterations to use</li>
 <li><cite>verbose</cite> - <code class="docutils literal"><span class="pre">True</span></code> to have DQED print extra information about the
 solve, <code class="docutils literal"><span class="pre">False</span></code> to only see printed output when the solver has an
 error.</li>
 </ul>
-</div></blockquote>
 </dd></dl>
 
 <dl class="method">
