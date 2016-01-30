@@ -19,7 +19,7 @@ Binary Installation Using Anaconda for Windows
     
 * Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.Once you have it, type the following into your command prompt (while the environment is activated) ::
     
-    MOPAC2012.exe password_string_here
+    mopac password_string_here
 
 * Now you must :ref:`set the RMG environment variable in Windows <windowsEnvironment>` to allow your system to find the RMG python files more easily.  
 
