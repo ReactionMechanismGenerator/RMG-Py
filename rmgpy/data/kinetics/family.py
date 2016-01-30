@@ -1785,3 +1785,75 @@ class KineticsFamily(Database):
 
         return template
 
+    def getLabeledReactantsAndProducts(self, reactants, products):
+        """
+        Given `reactants`, a list of :class:`Molecule` objects, and products, a list of 
+        :class:`Molecule` objects, return two new lists of :class:`Molecule` objects with 
+        atoms labeled: one for reactants, one for products. Returned molecules are totally 
+        new entities in memory so input molecules `reactants` and `products` won't be affected.
+        If RMG cannot find appropriate labels, (None, None) will be returned.
+        """
+        template = self.forwardTemplate
+        reactants0 = [reactant.copy(deep=True) for reactant in reactants]
+        if len(reactants0) == 1:
+            molecule = reactants0[0]
+            mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+            for map in mappings:
+                reactantStructures = [molecule]
+                try:
+                    productStructures = self.__generateProductStructures(reactantStructures, [map], forward=True)
+                except ForbiddenStructureException:
+                    pass
+                else:
+                    if productStructures is not None:
+                        if len(products) == 1 and len(productStructures) == 1:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                return reactantStructures, productStructures
+                        elif len(products) == 2 and len(productStructures) == 2:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                if products[1].isIsomorphic(productStructures[1]):
+                                    return reactantStructures, productStructures
+                            if products[0].isIsomorphic(productStructures[1]):
+                                if products[1].isIsomorphic(productStructures[0]):
+                                    return reactantStructures, productStructures
+                        else: continue
+            # if there're some mapping available but cannot match the provided products
+            # raise exception
+            if len(mappings) > 0:
+                raise Exception('Something wrong with products that RMG cannot find a match!')
+            return (None, None)
+        elif len(reactants0) == 2:
+            moleculeA = reactants0[0]
+            moleculeB = reactants0[1]
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+
+            # Iterate over each pair of matches (A, B)
+            for mapA in mappingsA:
+                for mapB in mappingsB:
+                    reactantStructures = [moleculeA, moleculeB]
+                    try:
+                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
+                    except ForbiddenStructureException:
+                        pass
+                    else:
+                        if productStructures is not None:
+                            if len(products) == 1 and len(productStructures) == 1:
+                                if products[0].isIsomorphic(productStructures[0]):
+                                    return reactantStructures, productStructures
+                            elif len(products) == 2 and len(productStructures) == 2:
+                                if products[0].isIsomorphic(productStructures[0]):
+                                    if products[1].isIsomorphic(productStructures[1]):
+                                        return reactantStructures, productStructures
+                                if products[0].isIsomorphic(productStructures[1]):
+                                    if products[1].isIsomorphic(productStructures[0]):
+                                        return reactantStructures, productStructures
+                            else: continue
+            # if there're some mapping available but cannot match the provided products
+            # raise exception
+            if len(mappingsA)*len(mappingsB) > 0:
+                raise Exception('Something wrong with products that RMG cannot find a match!')
+            return (None, None)
+        else:
+            raise Exception('You have {0} reactants, which is unexpected!'.format(len(reactants)))
+
