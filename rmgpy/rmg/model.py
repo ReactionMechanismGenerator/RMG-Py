@@ -658,7 +658,27 @@ class CoreEdgeReactionModel:
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList
-        
+
+    def react_family(self, family, speciesA):
+        """
+        Generate bimolecular reactions for one specific family
+        and species A is different than species B where B is one of old core species
+        :param family: in database.kinetics.families
+        :param speciesA: new core species
+        :return: a list of new reactions
+        """
+        reactionList = []
+        for oldCoreSpecies in self.core.species:
+            if oldCoreSpecies.reactive:
+                for molA in speciesA.molecule:
+                    for molB in oldCoreSpecies.molecule:
+                        reactionList.extend(family.generateReactions(
+                            [molA, molB], failsSpeciesConstraints=self.failsSpeciesConstraints))
+                        molA.clearLabeledAtoms()
+                        molB.clearLabeledAtoms()
+        return reactionList
+
+
     def enlarge(self, newObject=None, reactEdge=False, unimolecularReact=None, bimolecularReact=None):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
@@ -698,7 +718,20 @@ class CoreEdgeReactionModel:
                 else:
                     logging.info('Adding species {0} to model core'.format(newSpecies))
                     display(newSpecies) # if running in IPython --pylab mode, draws the picture!
+   
+                    # Find reactions involving the new species as unimolecular reactant
+                    # or product (e.g. A <---> products)
+                    newReactions.extend(self.react(database, newSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with other core species (e.g. A + B <---> products)
+                    # generate all the reactions family by family which is helpful to parallelism
+                    for label, family in database.kinetics.families.iteritems():
+                        newReactions.extend(self.react_family(family, newSpecies))
 
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with itself (e.g. A + A <---> products)
+                    newReactions.extend(self.react(database, newSpecies, newSpecies))
+    
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
