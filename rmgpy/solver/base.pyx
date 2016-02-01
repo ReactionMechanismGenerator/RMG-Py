@@ -372,8 +372,6 @@ cdef class ReactionSystem(DASx):
         cdef int i, j, k
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        #cdef numpy.ndarray[bool, ndim=1] unimolecularThreshold
-        #cdef numpy.ndarray[bool, ndim=2] bimolecularThreshold
         
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
@@ -468,7 +466,7 @@ cdef class ReactionSystem(DASx):
             networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
 
             # Update the maximum species rate and maximum network leak rate arrays
-            for i in xrange(numCoreSpecies):
+            for index in xrange(numCoreSpecies):
                 if maxCoreSpeciesRates[index] < coreSpeciesRates[index]:
                     maxCoreSpeciesRates[index] = coreSpeciesRates[index]
             for index in xrange(numEdgeSpecies):
