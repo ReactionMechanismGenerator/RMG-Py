@@ -372,8 +372,6 @@ cdef class ReactionSystem(DASx):
         cdef int i, j, k
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        #cdef numpy.ndarray[bool, ndim=1] unimolecularThreshold
-        #cdef numpy.ndarray[bool, ndim=2] bimolecularThreshold
         
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
