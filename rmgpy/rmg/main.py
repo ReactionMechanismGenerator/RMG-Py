@@ -626,17 +626,18 @@ class RMG(util.Subject):
                             relativeTolerance = self.relativeTolerance,
                             filterReactions=True,
                         )
-                        self.updateReactionThresholdAndReactFlags(
+                        reactEdge = self.updateReactionThresholdAndReactFlags(
                             rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                             rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
 
                     logging.info('')    
                 else:
-                    self.updateReactionThresholdAndReactFlags()
-                            
-                self.reactionModel.enlarge(reactEdge=True, 
-                    unimolecularReact=self.unimolecularReact, 
-                    bimolecularReact=self.bimolecularReact)
+                    reactEdge = self.updateReactionThresholdAndReactFlags()
+                
+                if reactEdge:
+                    self.reactionModel.enlarge(reactEdge=True, 
+                        unimolecularReact=self.unimolecularReact, 
+                        bimolecularReact=self.bimolecularReact)
 
             self.saveEverything()
 
@@ -713,12 +714,15 @@ class RMG(util.Subject):
         numCoreSpecies = len(self.reactionModel.core.species)
         prevNumCoreSpecies = len(self.unimolecularReact)
         stale = True if numCoreSpecies > prevNumCoreSpecies else False
-        if stale:
-            # Reset and expand the react arrays if there were new core species added
-            self.unimolecularReact = numpy.zeros((numCoreSpecies), bool)
-            self.bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
-
-            if self.filterReactions:
+        
+        reactEdge = True
+        
+        if self.filterReactions:
+            if stale:
+                # Reset and expand the react arrays if there were new core species added
+                self.unimolecularReact = numpy.zeros((numCoreSpecies), bool)
+                self.bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
+                
                 # Expand the threshold arrays if there were new core species added
                 unimolecularThreshold = numpy.zeros((numCoreSpecies), bool)
                 bimolecularThreshold = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
@@ -727,19 +731,7 @@ class RMG(util.Subject):
                 bimolecularThreshold[:prevNumCoreSpecies,:prevNumCoreSpecies] = self.bimolecularThreshold
                 self.unimolecularThreshold = unimolecularThreshold
                 self.bimolecularThreshold = bimolecularThreshold
-            else:
-                # React all the new core species unimolecularly
-                for i in xrange(prevNumCoreSpecies, numCoreSpecies):
-                    self.unimolecularReact[i] = True
-                
-                # React all the new core species with all the core species bimolecularly
-                for i in xrange(numCoreSpecies):
-                    for j in xrange(prevNumCoreSpecies,numCoreSpecies):
-                        self.bimolecularReact[i,j] = True
-
-        # Update arrays if filtering reactions
-        if self.filterReactions:
-            # Update the react and threshold arrays
+            # Always update the react and threshold arrays
             for i in xrange(numCoreSpecies):
                 if not self.unimolecularThreshold[i] and rxnSysUnimolecularThreshold[i]:
                     # We've shifted from not reacting to reacting
@@ -752,7 +744,26 @@ class RMG(util.Subject):
                         # We've shifted from not reacting to reacting
                         self.bimolecularReact[i,j] = True
                         self.bimolecularThreshold[i,j] = True
-
+        else:
+            # We are not filtering reactions
+            if stale:
+                # Reset and expand the react arrays if there were new core species added
+                self.unimolecularReact = numpy.zeros((numCoreSpecies), bool)
+                self.bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
+                
+                # React all the new core species unimolecularly
+                for i in xrange(prevNumCoreSpecies, numCoreSpecies):
+                    self.unimolecularReact[i] = True
+                
+                # React all the new core species with all the core species bimolecularly
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(prevNumCoreSpecies,numCoreSpecies):
+                        self.bimolecularReact[i,j] = True
+            else:
+                # No reacting of edge because unimolecularReact and bimolecularReact will be False
+                reactEdge = False  
+                
+        return reactEdge
         
     def saveEverything(self):
         """
