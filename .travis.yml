@@ -21,6 +21,7 @@ before_install:
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/RMG-Py:$PYTHONPATH
   # Update conda itself
   - conda update --yes conda
+  - openssl aes-256-cbc -K $encrypted_244ac3091cff_key -iv $encrypted_244ac3091cff_iv -in deploy_key.enc -out deploy_key -d
   - cd ..
   - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
   - cd RMG-Py
@@ -33,8 +34,4 @@ install:
 script: 
   - make test
   - make test-database
-  - make eg1
-  - make eg4
-  - make eg5
-  - make eg6
-  - make eg7
+  - bash ./deploy.sh
