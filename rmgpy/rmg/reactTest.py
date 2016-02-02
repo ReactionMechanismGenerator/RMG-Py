@@ -38,7 +38,7 @@ from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule
 
-from .model import *
+from .react import *
 
 ###################################################
 

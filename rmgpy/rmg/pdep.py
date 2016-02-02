@@ -40,7 +40,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
-
+from rmgpy.rmg.react import reactFamily
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
 
 ################################################################################
@@ -270,7 +270,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         network using the provided core-edge reaction model `reactionModel`,
         returning the new reactions and new species.
         """
-        from rmgpy.rmg.model import reactFamily
 
         if isomer in self.explored:
             logging.warning('Already explored isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))

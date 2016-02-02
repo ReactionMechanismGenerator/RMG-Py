@@ -51,9 +51,10 @@ from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
-from rmgpy.data.rmg import getDB
+
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
+from .react import reactFamily
 
 
 
@@ -1847,67 +1848,3 @@ def getKey(spc):
     """
 
     return spc.label
-
-        
-def reactFamily(familyKey, spcA, speciesList):
-    """
-    Generate uni and bimolecular reactions for one specific family.
-    :return: a list of new reactions
-    """
-
-    if not speciesList:
-        combos = [[spcA]]
-    else:
-        reactive_species = [spc for spc in speciesList if spc.reactive]
-        if reactive_species:
-            combos = list(itertools.product(reactive_species, [spcA]))
-        else:
-            return []
-
-    results = map_(
-                WorkerWrapper(reactSpecies),
-                combos,
-                [familyKey] * len(combos),
-                )
-
-    # flatten list of lists:
-    reactionList = list(itertools.chain.from_iterable(results))
-    
-    return reactionList
-
-def reactSpecies(speciesList, familyKey):
-    """
-    Performs a reaction between the
-    species in the list for the given family key.
-    """
-
-    molList = [spc.molecule for spc in speciesList]
-
-    combos = list(itertools.product(*molList))
-
-    results = map_(
-                WorkerWrapper(reactMolecules),
-                combos,
-                [familyKey] * len(combos),
-                )
-
-    # flatten list of lists:
-    reactionList = list(itertools.chain.from_iterable(results))
-
-    return reactionList
-
-def reactMolecules(molecules, familyKey):
-    """
-    Performs a reaction between
-    the resonance isomers for the given family key.
-    """
-
-    families = getDB('kinetics').families
-    family = families[familyKey]
-
-    reactionList = family.generateReactions(list(molecules))
-
-    for reactant in molecules:
-        reactant.clearLabeledAtoms()
-
-    return reactionList
