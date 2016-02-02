@@ -685,6 +685,8 @@ class CoreEdgeReactionModel:
         reactionsMovedFromEdge = []
         self.newReactionList = []; self.newSpeciesList = []
 
+        familyKeys = database.kinetics.families.keys()
+
         if reactEdge is False:
             # We are adding core species 
             newReactions = []
@@ -702,7 +704,6 @@ class CoreEdgeReactionModel:
                     logging.info('Adding species {0} to model core'.format(newSpecies))
                     display(newSpecies) # if running in IPython --pylab mode, draws the picture!
        
-                    familyKeys = database.kinetics.families.keys()
                     familieCount = len(familyKeys)
 
                     # Find reactions involving the new species as unimolecular reactant
@@ -746,7 +747,7 @@ class CoreEdgeReactionModel:
             elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
 
                 pdepNetwork, newSpecies = newObject
-                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
+                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, familyKeys))
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             else:
@@ -766,7 +767,7 @@ class CoreEdgeReactionModel:
                     for products in network.products:
                         products = products.species
                         if len(products) == 1 and products[0] == species:
-                            newReactions = network.exploreIsomer(species, self, database)
+                            newReactions = network.exploreIsomer(species, familyKeys)
                             self.processNewReactions(newReactions, species, network)
                             network.updateConfigurations(self)
                             index = 0

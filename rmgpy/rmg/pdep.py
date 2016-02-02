@@ -41,6 +41,8 @@ import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
 
+from rmgpy.scoop_framework.util import map_, WorkerWrapper
+
 ################################################################################
 
 class PressureDependenceError(Exception):
@@ -262,12 +264,14 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         return ratios
 
-    def exploreIsomer(self, isomer, reactionModel, database):
+    def exploreIsomer(self, isomer, familyKeys):
         """
         Explore a previously-unexplored unimolecular `isomer` in this partial
         network using the provided core-edge reaction model `reactionModel`,
         returning the new reactions and new species.
         """
+        from rmgpy.rmg.model import reactFamily
+
         if isomer in self.explored:
             logging.warning('Already explored isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
             return []
@@ -286,13 +290,24 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.products.remove(product)
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
-        newReactionList = reactionModel.react(database, isomer)
+        familieCount = len(familyKeys)
+
+        results = map_(
+                        WorkerWrapper(reactFamily),
+                        familyKeys,
+                        [isomer] * familieCount,
+                        [[]] * familieCount
+                    )
+
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with itself (e.g. A + A <---> products)
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        return newReactionList
+        newReactions = []
+        for result in results:
+            newReactions.extend(result)
+        return newReactions
 
     def addPathReaction(self, newReaction, newSpecies):
         """
