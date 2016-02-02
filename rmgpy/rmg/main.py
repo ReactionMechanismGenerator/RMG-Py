@@ -781,14 +781,13 @@ class RMG(util.Subject):
         logging.info('')
         logging.info('RMG execution terminated at ' + time.asctime())
     
-    def getGitCommit(self):
+    def getGitCommit(self, modulePath):
         import subprocess
-        from rmgpy import getPath
-        if os.path.exists(os.path.join(getPath(),'..','.git')):
+        if os.path.exists(os.path.join(modulePath,'..','.git')):
             try:
                 return subprocess.check_output(['git', 'log',
                                                 '--format=%H%n%cd', '-1'],
-                                                cwd=getPath()).splitlines()
+                                                cwd=modulePath).splitlines()
             except:
                 return '', ''
         else:
@@ -798,7 +797,7 @@ class RMG(util.Subject):
         """
         Output a header containing identifying information about RMG to the log.
         """
-        from rmgpy import __version__
+        from rmgpy import __version__, getPath, settings
         logging.log(level, '#########################################################')
         logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python       #')
         logging.log(level, '# Version: {0:44s} #'.format(__version__))
@@ -808,13 +807,20 @@ class RMG(util.Subject):
         logging.log(level, '# Website: http://reactionmechanismgenerator.github.io/ #')
         logging.log(level, '#########################################################\n')
     
-        head, date = self.getGitCommit()
+        # Extract git commit from RMG-Py
+        head, date = self.getGitCommit(getPath())
         if head != '' and date != '':
-            logging.log(level, 'The current git HEAD is:')
+            logging.log(level, 'The current git HEAD for RMG-Py is:')
             logging.log(level, '\t%s' % head)
             logging.log(level, '\t%s' % date)
-    
-        logging.log(level, '')
+            logging.log(level, '')
+            
+        databaseHead, databaseDate = self.getGitCommit(settings['database.directory'])
+        if databaseHead !='' and databaseDate !='':
+            logging.log(level, 'The current git HEAD for RMG-database is:')
+            logging.log(level, '\t%s' % databaseHead)
+            logging.log(level, '\t%s' % databaseDate)
+            logging.log(level, '')
     
     
     def loadRestartFile(self, path):
