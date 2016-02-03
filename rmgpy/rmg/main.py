@@ -814,14 +814,27 @@ class RMG(util.Subject):
             logging.log(level, '\t%s' % head)
             logging.log(level, '\t%s' % date)
             logging.log(level, '')
-            
+        else:
+            # If we cannot get git info, try checking if it is a conda package instead:
+            condaPackage = getCondaPackage('rmg')
+            if condaPackage != '':
+                logging.log(level, 'The current anaconda package for RMG-Py is:')
+                logging.log(level, condaPackage)
+                logging.log(level,'')
+                
         databaseHead, databaseDate = self.getGitCommit(settings['database.directory'])
         if databaseHead !='' and databaseDate !='':
             logging.log(level, 'The current git HEAD for RMG-database is:')
             logging.log(level, '\t%s' % databaseHead)
             logging.log(level, '\t%s' % databaseDate)
             logging.log(level, '')
-    
+        else:
+            databaseCondaPackage=getCondaPackage('rmgdatabase')
+            if databaseCondaPackage != '':
+                logging.log(level, 'The current anaconda package for RMG-database is:')
+                logging.log(level, databaseCondaPackage)
+                logging.log(level,'')
+
     
     def loadRestartFile(self, path):
         """
@@ -1138,6 +1151,26 @@ class Tee:
     def write(self, string):
         for fileobject in self.fileobjects:
             fileobject.write(string)
+            
+def getCondaPackage(module):
+    """
+    Check the version of any conda package
+    """
+    import subprocess
+    try:
+        lines = subprocess.check_output(['conda', 'list', '-f', module]).splitlines()
+        
+        packages=[]
+        # Strip comments
+        for line in lines:
+            if line[:1]=='#':
+                pass
+            else:
+                packages.append(line)
+                
+        return '\n'.join(packages)
+    except:
+        return ''
 
 def processProfileStats(stats_file, log_file):
     import pstats
