@@ -119,14 +119,14 @@ eg5: all
 	rm -rf testing/eg5/*
 	cp examples/rmg/heptane-eg5/input.py testing/eg5/input.py
 	@ echo "Running eg5: heptane example"
-	python rmg.py -q testing/eg5/input.py
+	python rmg.py testing/eg5/input.py
 
 eg6: all
 	mkdir -p testing/eg6
 	rm -rf testing/eg6/*
 	cp examples/rmg/ethane-oxidation/input.py testing/eg6/input.py
 	@ echo "Running eg6: ethane-oxidation example"
-	python rmg.py -q testing/eg6/input.py
+	python rmg.py testing/eg6/input.py
 
 eg7: all
 	mkdir -p testing/eg7
