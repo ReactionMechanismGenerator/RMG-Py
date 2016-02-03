@@ -8,9 +8,8 @@ pass the
 import os
 import math
 import numpy
-from matplotlib import pylab
 import os.path
-#import matplotlib.pyplot
+
 import logging
 import argparse
 
@@ -25,7 +24,7 @@ def compareModelKinetics(model1, model2):
     Compare the kinetics of :class:`ReactionModel` objects `model1` and 
     `model2`, printing the results to stdout.
     """
-    
+    from matplotlib import pylab
     # Determine reactions that both models have in common
     commonReactions = {}
     for rxn1 in model1.reactions:

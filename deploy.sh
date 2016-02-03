@@ -64,12 +64,14 @@ cd $TARGET_DIR
 
 # create a new branch in RMG-tests with the name equal to
 # the branch name of the tested RMG-Py branch:
-git checkout -b $DEPLOY_BRANCH || true 
-git checkout $DEPLOY_BRANCH
+RMGTESTSBRANCH=rmgpy-$DEPLOY_BRANCH
+
+git checkout -b $RMGTESTSBRANCH || true 
+git checkout $RMGTESTSBRANCH
 
 # create an empty commit with the SHA-ID of the 
 # tested commit of the RMG-Py branch:
 git commit --allow-empty -m $REV
 
 # push to the branch to the RMG/RMG-tests repo:
-git push -f $REPO $DEPLOY_BRANCH > /dev/null
+git push -f $REPO $RMGTESTSBRANCH > /dev/null
