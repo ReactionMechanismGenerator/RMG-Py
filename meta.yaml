@@ -80,6 +80,7 @@ test:
   imports:
     - rmgpy
   commands:
+    - cp $PREFIX/lib/python2.7/site-packages/rmgpy/rmgrc $SRC_DIR [unix]
     - make -C $SRC_DIR test [unix]
     - cp %PREFIX%\Lib\site-packages\rmgpy\rmgrc %SRC_DIR% [win]
     - mingw32-make -C %SRC_DIR% test [win]
