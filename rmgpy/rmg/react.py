@@ -38,7 +38,7 @@ from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
         
 
-def reactFamilies(spcA, speciesList):
+def reactFamilies(spcA, speciesList=[]):
     """
     Generate reactions between spcA and the list of 
     species for all the reaction families available.
