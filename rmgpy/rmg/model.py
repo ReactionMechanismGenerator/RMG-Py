@@ -777,7 +777,7 @@ class CoreEdgeReactionModel:
                     if bimolecularReact[i,j]:
                         reactions = reactFamilies(self.core.species[i].copy(deep=True), [self.core.species[j]]) 
                         # Consider the latest added core species as the 'new' species
-                        self.processNewReactions(self.react(database, self.core.species[i], self.core.species[j]), self.core.species[j], None)
+                        self.processNewReactions(reactions, self.core.species[j], None)
 
         ################################################################
         # Begin processing the new species and reactions

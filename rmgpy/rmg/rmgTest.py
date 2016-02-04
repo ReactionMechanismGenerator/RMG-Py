@@ -8,6 +8,8 @@ from .model import Species
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule
+
+from rmgpy.rmg.react import reactFamilies
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
@@ -47,7 +49,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generateResonanceIsomers()
         newReactions = []		
-        newReactions.extend(self.rmg.reactionModel.react(self.rmg.database, spc))
+        newReactions.extend(reactFamilies(spc))
 
         # process newly generated reactions to make sure no duplicated reactions
         self.rmg.reactionModel.processNewReactions(newReactions, spc, None)
@@ -65,7 +67,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # react again
         newReactions_reverse = []
-        newReactions_reverse.extend(self.rmg_dummy.reactionModel.react(self.rmg.database, spc))
+        newReactions_reverse.extend(reactFamilies(spc))
 
         # process newly generated reactions again to make sure no duplicated reactions
         self.rmg_dummy.reactionModel.processNewReactions(newReactions_reverse, spc, None)
