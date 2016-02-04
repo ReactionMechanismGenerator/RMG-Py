@@ -646,13 +646,47 @@ class KineticsFamily(Database):
         training_path = os.path.join(settings['database.directory'], 'kinetics', 'families', \
             self.label, 'training')
 
-        directory_file = os.path.join(training_path, 'directory.txt')
+        directory_file = os.path.join(training_path, 'dictionary_test.txt')
 
         # Load the old set of the species of the training reactions
         speciesDict = Database().getSpecies(directory_file)
 
+        # add new unique species with labeledAtoms into speciesDict
+        for rxn in reactions:
+            for spec in (rxn.reactants + rxn.products):
+                for ex_spec_label in speciesDict:
+                    ex_spec = speciesDict[ex_spec_label]
+                    if ex_spec.molecule[0].getFormula() != spec.molecule[0].getFormula():
+                        continue
+                    else:
+                        spec_labeledAtoms = spec.molecule[0].getLabeledAtoms()
+                        ex_spec_labeledAtoms = ex_spec.molecule[0].getLabeledAtoms()
+                        initialMap = {}
+                        try:
+                            for atomLabel in spec_labeledAtoms:
+                                initialMap[spec_labeledAtoms[atomLabel]] = ex_spec_labeledAtoms[atomLabel]
+                        except KeyError:
+                            # atom labels did not match, therefore not a match
+                            continue
+                        if spec.molecule[0].isIsomorphic(ex_spec.molecule[0],initialMap):
+                            spec.label = ex_spec.label
+                            break
+                else:# no isomorphic existing species found
+                    spec_formula = spec.molecule[0].getFormula()
+                    if spec_formula not in speciesDict:
+                        spec.label = spec_formula
+                    else:
+                        index = 2
+                        while (spec_formula + '-{}'.format(index)) in speciesDict:
+                            index += 1
+                        spec.label = spec_formula + '-{}'.format(index)
+                    speciesDict[spec.label] = spec
+
         training_file = open(os.path.join(settings['database.directory'], 'kinetics', 'families', \
-            self.label, 'training', 'reactions_test.py'), 'w')
+            self.label, 'training', 'reactions_test.py'), 'a')
+        training_file.write("\n\n")
+
+        # get max reaction entry index from the existing training data
         for depository in self.depositories:
             if depository.label.endswith('training'):
                 break
@@ -668,6 +702,7 @@ class KineticsFamily(Database):
             maxIndex = max(indices)
         else:
             maxIndex = 0
+        # save new reactions to reactions.py
         for i, reaction in enumerate(reactions):    
             entry = Entry(
                 index = maxIndex+i+1,
@@ -683,6 +718,14 @@ class KineticsFamily(Database):
             
             
             self.saveEntry(training_file, entry)
+        training_file.close()
+
+        # save species to dictionary
+        with open(directory_file, 'w') as f:
+            for label in speciesDict.keys():
+                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+                f.write('\n')
+        f.close()
 
     def save(self, path):
         """
