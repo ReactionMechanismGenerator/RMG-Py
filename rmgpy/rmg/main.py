@@ -609,35 +609,37 @@ class RMG(util.Subject):
                 for objectToEnlarge in objectsToEnlarge:
                     self.reactionModel.enlarge(objectToEnlarge)
                 
-                if self.filterReactions:
-                    # Run a raw simulation to get updated reaction system threshold values
-                    for index, reactionSystem in enumerate(self.reactionSystems):
-                        # Run with the same conditions as with pruning off
-                        reactionSystem.simulate(
-                            coreSpecies = self.reactionModel.core.species,
-                            coreReactions = self.reactionModel.core.reactions,
-                            edgeSpecies = [],
-                            edgeReactions = [],
-                            toleranceKeepInEdge = 0,
-                            toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                            toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
-                            pdepNetworks = self.reactionModel.networkList,
-                            absoluteTolerance = self.absoluteTolerance,
-                            relativeTolerance = self.relativeTolerance,
-                            filterReactions=True,
-                        )
-                        reactEdge = self.updateReactionThresholdAndReactFlags(
-                            rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
-
-                    logging.info('')    
-                else:
-                    reactEdge = self.updateReactionThresholdAndReactFlags()
-                
-                if reactEdge:
+                if len(self.reactionModel.core.species) > numCoreSpecies:
+                    # If there were core species added, then react the edge
+                    # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
+                    if self.filterReactions:
+                        # Run a raw simulation to get updated reaction system threshold values
+                        for index, reactionSystem in enumerate(self.reactionSystems):
+                            # Run with the same conditions as with pruning off
+                            reactionSystem.simulate(
+                                coreSpecies = self.reactionModel.core.species,
+                                coreReactions = self.reactionModel.core.reactions,
+                                edgeSpecies = [],
+                                edgeReactions = [],
+                                toleranceKeepInEdge = 0,
+                                toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                                toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                                pdepNetworks = self.reactionModel.networkList,
+                                absoluteTolerance = self.absoluteTolerance,
+                                relativeTolerance = self.relativeTolerance,
+                                filterReactions=True,
+                            )
+                            self.updateReactionThresholdAndReactFlags(
+                                rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+    
+                        logging.info('')    
+                    else:
+                        self.updateReactionThresholdAndReactFlags()
+                    
                     self.reactionModel.enlarge(reactEdge=True, 
-                        unimolecularReact=self.unimolecularReact, 
-                        bimolecularReact=self.bimolecularReact)
+                            unimolecularReact=self.unimolecularReact, 
+                            bimolecularReact=self.bimolecularReact)
 
             self.saveEverything()
 
@@ -715,7 +717,6 @@ class RMG(util.Subject):
         prevNumCoreSpecies = len(self.unimolecularReact)
         stale = True if numCoreSpecies > prevNumCoreSpecies else False
         
-        reactEdge = True
         
         if self.filterReactions:
             if stale:
@@ -759,11 +760,7 @@ class RMG(util.Subject):
                 for i in xrange(numCoreSpecies):
                     for j in xrange(prevNumCoreSpecies,numCoreSpecies):
                         self.bimolecularReact[i,j] = True
-            else:
-                # No reacting of edge because unimolecularReact and bimolecularReact will be False
-                reactEdge = False  
-                
-        return reactEdge
+
         
     def saveEverything(self):
         """
