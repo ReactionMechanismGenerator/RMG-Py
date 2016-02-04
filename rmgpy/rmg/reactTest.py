@@ -98,6 +98,17 @@ class TestReact(unittest.TestCase):
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
+    def testReactFamilies(self):
+        """
+        Test that reaction generation from the available families works.
+        """
+        spcA = Species().fromSMILES('[OH]')
+        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+
+        reactionList = reactFamilies(spcA, spcs)
+        self.assertIsNotNone(reactionList)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
+
     def tearDown(self):
         """
         Reset the loaded database
