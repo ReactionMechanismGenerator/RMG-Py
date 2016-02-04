@@ -37,6 +37,26 @@ import itertools
 from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
         
+
+def reactFamilies(spcA, speciesList):
+    """
+    Generate reactions between spcA and the list of 
+    species for all the reaction families available.
+    """
+    if not spcA.reactive: return []
+    
+    families = getDB('kinetics').families
+    familyKeys = families.keys()
+    familieCount = len(familyKeys)
+    results = map_(
+                WorkerWrapper(reactFamily),
+                familyKeys,
+                [spcA.copy(deep=True)] * familieCount,
+                [speciesList] * familieCount
+            )
+    reactionList = list(itertools.chain.from_iterable(results))
+    return reactionList
+
 def reactFamily(familyKey, spcA, speciesList):
     """
     Generate uni and bimolecular reactions for one specific family.

@@ -40,7 +40,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
-from rmgpy.rmg.react import reactFamily
+from rmgpy.rmg.react import reactFamilies
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
 
 ################################################################################
@@ -264,7 +264,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         return ratios
 
-    def exploreIsomer(self, isomer, familyKeys):
+    def exploreIsomer(self, isomer):
         """
         Explore a previously-unexplored unimolecular `isomer` in this partial
         network using the provided core-edge reaction model `reactionModel`,
@@ -289,23 +289,14 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.products.remove(product)
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
-        familieCount = len(familyKeys)
-
-        results = map_(
-                        WorkerWrapper(reactFamily),
-                        familyKeys,
-                        [isomer] * familieCount,
-                        [[]] * familieCount
-                    )
 
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with itself (e.g. A + A <---> products)
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        newReactions = []
-        for result in results:
-            newReactions.extend(result)
+        newReactions = reactFamilies(isomer, [])
+        
         return newReactions
 
     def addPathReaction(self, newReaction, newSpecies):
