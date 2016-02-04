@@ -5,6 +5,16 @@ Release Notes
 *************
 
 
+RMG-Py Version 1.0.3
+====================
+Date: February 4, 2016
+
+This mini release contains the following updates:
+
+- Pdep convergence issues in RMG-Py v1.0.2 are now fixed.
+- RMG-database version information and anaconda binary version information is now recorded in RMG log file.
+
+
 RMG-Py Version 1.0.2
 ====================
 Date: January 29, 2016
