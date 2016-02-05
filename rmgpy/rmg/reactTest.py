@@ -31,14 +31,14 @@
 import os
 import unittest 
 
-from .main import RMG
-from .model import Species
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule
 
-from .react import *
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import Species
+from rmgpy.rmg.react import *
 
 ###################################################
 
