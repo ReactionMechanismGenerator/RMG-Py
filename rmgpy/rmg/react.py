@@ -54,7 +54,7 @@ def reactFamilies(spcA, speciesList=[]):
                 [spcA.copy(deep=True)] * familieCount,
                 [speciesList] * familieCount
             )
-    reactionList = list(itertools.chain.from_iterable(results))
+    reactionList = itertools.chain.from_iterable(results)
     return reactionList
 
 def reactFamily(familyKey, spcA, speciesList):

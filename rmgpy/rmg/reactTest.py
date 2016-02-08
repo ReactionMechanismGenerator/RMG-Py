@@ -105,7 +105,7 @@ class TestReact(unittest.TestCase):
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
 
-        reactionList = reactFamilies(spcA, spcs)
+        reactionList = list(reactFamilies(spcA, spcs))
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 

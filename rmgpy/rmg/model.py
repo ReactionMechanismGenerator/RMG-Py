@@ -691,8 +691,9 @@ class CoreEdgeReactionModel:
                     # or products with itself (e.g. A + A <---> products)
                     results_AA = reactFamilies(newSpecies.copy(deep=True), [newSpecies.copy(deep=True)])
                             
-                    for result in itertools.chain(results_A, results_AA, results_AB):
-                        newReactions.extend(result)
+                    newReactions.extend(results_A)
+                    newReactions.extend(results_AB)
+                    newReactions.extend(results_AA)
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
