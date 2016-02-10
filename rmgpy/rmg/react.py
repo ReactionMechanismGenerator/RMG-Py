@@ -34,86 +34,52 @@ Contains functions for generating reactions.
 import logging
 import itertools
 
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
         
-
-def reactFamilies(spcA, speciesList=[]):
+def react(spcA, speciesList=[]):
     """
     Generate reactions between spcA and the list of 
     species for all the reaction families available.
     """
     if not spcA.reactive: return []
+
+    smiA = [mol.toSMILES() for mol in spcA.molecule]
+
+    smiB = [[mol.toSMILES() for mol in spcB.molecule] for spcB in speciesList if spcB.reactive]
+    smiB = list(itertools.chain.from_iterable(smiB))
     
+    if not list(smiB):
+        combos = [(smi,) for smi in smiA]
+    else:
+        combos = list(itertools.product(smiA, smiB))
+
     families = getDB('kinetics').families
     familyKeys = families.keys()
-    familieCount = len(familyKeys)
-    results = map_(
-                WorkerWrapper(reactFamily),
-                familyKeys,
-                [spcA.copy(deep=True)] * familieCount,
-                [speciesList] * familieCount
-            )
-    reactionList = itertools.chain.from_iterable(results)
-    return reactionList
 
-def reactFamily(familyKey, spcA, speciesList):
-    """
-    Generate uni and bimolecular reactions for one specific family.
-    :return: a list of new reactions
-    """
-
-    if not speciesList:
-        combos = [[spcA]]
-    else:
-        reactive_species = [spc for spc in speciesList if spc.reactive]
-        if reactive_species:
-            combos = list(itertools.product(reactive_species, [spcA]))
-        else:
-            return []
-
-    results = map_(
-                WorkerWrapper(reactSpecies),
-                combos,
-                [familyKey] * len(combos),
-                )
-
-    # flatten list of lists:
-    reactionList = list(itertools.chain.from_iterable(results))
-    
-    return reactionList
-
-def reactSpecies(speciesList, familyKey):
-    """
-    Performs a reaction between the
-    species in the list for the given family key.
-    """
-
-    molList = [spc.molecule for spc in speciesList]
-
-    combos = list(itertools.product(*molList))
+    combos = list(itertools.product(combos, familyKeys))
 
     results = map_(
                 WorkerWrapper(reactMolecules),
-                combos,
-                [familyKey] * len(combos),
-                )
+                combos
+            )
 
-    # flatten list of lists:
-    reactionList = list(itertools.chain.from_iterable(results))
-
+    reactionList = itertools.chain.from_iterable(results)
     return reactionList
 
-def reactMolecules(molecules, familyKey):
+def reactMolecules(args):
     """
     Performs a reaction between
     the resonance isomers for the given family key.
     """
-
+    smis, familyKey = args
+    
     families = getDB('kinetics').families
     family = families[familyKey]
 
-    reactionList = family.generateReactions(list(molecules))
+    molecules = [Molecule(SMILES=smi) for smi in smis]
+    reactionList = family.generateReactions(molecules)
 
     for reactant in molecules:
         reactant.clearLabeledAtoms()

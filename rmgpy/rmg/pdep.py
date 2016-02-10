@@ -40,7 +40,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
-from rmgpy.rmg.react import reactFamilies
+from rmgpy.rmg.react import react
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
 
 ################################################################################
@@ -295,7 +295,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        newReactions = reactFamilies(isomer)
+        newReactions = react(isomer)
         
         return newReactions
 

@@ -54,7 +54,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
-from .react import reactFamilies
+from .react import react
 
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
@@ -678,18 +678,18 @@ class CoreEdgeReactionModel:
                     # Find reactions involving the new species as unimolecular reactant
                     # or product (e.g. A <---> products)
 
-                    results_A = reactFamilies(newSpecies.copy(deep=True))
+                    results_A = react(newSpecies.copy(deep=True))
 
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with other core species (e.g. A + B <---> products)
 
                     corespeciesList = self.core.species
 
-                    results_AB = reactFamilies(newSpecies.copy(deep=True), corespeciesList)                    
+                    results_AB = react(newSpecies.copy(deep=True), corespeciesList)                    
 
                     # Find reactions involving the new species as bimolecular reactants
                     # or products with itself (e.g. A + A <---> products)
-                    results_AA = reactFamilies(newSpecies.copy(deep=True), [newSpecies.copy(deep=True)])
+                    results_AA = react(newSpecies.copy(deep=True), [newSpecies.copy(deep=True)])
                             
                     newReactions.extend(results_A)
                     newReactions.extend(results_AB)
@@ -741,7 +741,7 @@ class CoreEdgeReactionModel:
             for i in xrange(numOldCoreSpecies):
                 if unimolecularReact[i]:
                     # Find reactions involving the species that are unimolecular
-                    reactions = reactFamilies(self.core.species[i].copy(deep=True)) 
+                    reactions = react(self.core.species[i].copy(deep=True)) 
                     self.processNewReactions(reactions, self.core.species[i], None)
 
             for i in xrange(numOldCoreSpecies):
@@ -750,7 +750,7 @@ class CoreEdgeReactionModel:
                     # This includes a species reacting with itself (if its own concentration is high enough)
                     
                     if bimolecularReact[i,j]:
-                        reactions = reactFamilies(self.core.species[i].copy(deep=True), [self.core.species[j]]) 
+                        reactions = react(self.core.species[i].copy(deep=True), [self.core.species[j]]) 
                         # Consider the latest added core species as the 'new' species
                         self.processNewReactions(reactions, self.core.species[j], None)
 
