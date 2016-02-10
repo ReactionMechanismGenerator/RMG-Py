@@ -55,11 +55,6 @@ def react(spcA, speciesList=[]):
     else:
         combos = list(itertools.product(smiA, smiB))
 
-    families = getDB('kinetics').families
-    familyKeys = families.keys()
-
-    combos = list(itertools.product(combos, familyKeys))
-
     results = map_(
                 WorkerWrapper(reactMolecules),
                 combos
@@ -68,20 +63,23 @@ def react(spcA, speciesList=[]):
     reactionList = itertools.chain.from_iterable(results)
     return reactionList
 
-def reactMolecules(args):
+def reactMolecules(smis):
     """
     Performs a reaction between
     the resonance isomers for the given family key.
     """
-    smis, familyKey = args
-    
-    families = getDB('kinetics').families
-    family = families[familyKey]
-
     molecules = [Molecule(SMILES=smi) for smi in smis]
-    reactionList = family.generateReactions(molecules)
 
-    for reactant in molecules:
-        reactant.clearLabeledAtoms()
+    rxns = []
+    families = getDB('kinetics').families
+    for key, family in families.iteritems():
 
-    return reactionList
+        
+        reactionList = family.generateReactions(molecules)
+
+        for reactant in molecules:
+            reactant.clearLabeledAtoms()
+
+        rxns.extend(reactionList)
+
+    return rxns
