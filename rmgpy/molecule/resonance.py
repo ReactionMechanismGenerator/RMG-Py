@@ -66,7 +66,9 @@ def generateAdjacentResonanceIsomers(mol):
                 for index in range(len(mol.vertices)):
                     v1 = mol.vertices[index]
                     v2 = isomer.vertices[index]
-                    v2.connectivity = v1.connectivity
+                    v2.connectivity1 = v1.connectivity1
+                    v2.connectivity2 = v1.connectivity2
+                    v2.connectivity3 = v1.connectivity3
                     v2.sortingLabel = v1.sortingLabel
                 # Restore current isomer
                 atom1.incrementRadical()
@@ -109,7 +111,9 @@ def generateLonePairRadicalResonanceIsomers(mol):
                 for index in range(len(mol.vertices)):
                     v1 = mol.vertices[index]
                     v2 = isomer.vertices[index]
-                    v2.connectivity = v1.connectivity
+                    v2.connectivity1 = v1.connectivity1
+                    v2.connectivity2 = v1.connectivity2
+                    v2.connectivity3 = v1.connectivity3
                     v2.sortingLabel = v1.sortingLabel
                 # Restore current isomer
                 atom1.incrementRadical()
@@ -156,7 +160,9 @@ def generateN5dd_N5tsResonanceIsomers(mol):
                 for index in range(len(mol.vertices)):
                     v1 = mol.vertices[index]
                     v2 = isomer.vertices[index]
-                    v2.connectivity = v1.connectivity
+                    v2.connectivity1 = v1.connectivity1
+                    v2.connectivity2 = v1.connectivity2
+                    v2.connectivity3 = v1.connectivity3
                     v2.sortingLabel = v1.sortingLabel
                 # Restore current isomer
                 bond12.incrementOrder()
@@ -187,7 +193,9 @@ def generateN5dd_N5tsResonanceIsomers(mol):
                 for index in range(len(mol.vertices)):
                     v1 = mol.vertices[index]
                     v2 = isomer.vertices[index]
-                    v2.connectivity = v1.connectivity
+                    v2.connectivity1 = v1.connectivity1
+                    v2.connectivity2 = v1.connectivity2
+                    v2.connectivity3 = v1.connectivity3
                     v2.sortingLabel = v1.sortingLabel
                 # Restore current isomer
                 bond12.incrementOrder()
