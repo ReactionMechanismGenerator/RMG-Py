@@ -511,6 +511,72 @@ class TestGraph(unittest.TestCase):
         cycleList = self.graph.getSmallestSetOfSmallestRings()
         self.assertEqual(len(cycleList), 1)
         self.assertEqual(len(cycleList[0]), 4)
+        
+    def test_getContinuousRings(self):
+        """
+        Test that the Graph.getContinuousRings() method returns 3 distinct continuous rings.
+        """
+        vertices = [Vertex() for i in range(27)]
+        bonds = [
+                 (0,1),
+                 (1,2),
+                 (2,3),
+                 (3,4),
+                 (4,5),
+                 (5,6),
+                 (6,7),
+                 (7,8),
+                 (8,9),
+                 (9,10),
+                 (10,11),
+                 (11,12),
+                 (12,13),
+                 (13,14),
+                 (14,15),
+                 (14,12),
+                 (12,16),
+                 (16,10),
+                 (10,17),
+                 (17,18),
+                 (18,19),
+                 (9,20),
+                 (20,21),
+                 (21,7),
+                 (6,22),
+                 (22,23),
+                 (22,4),
+                 (23,3),
+                 (23,24),
+                 (24,25),
+                 (25,1)
+                 ]
+        edges = []
+        for bond in bonds:
+            edges.append(Edge(vertices[bond[0]], vertices[bond[1]]))
+
+        graph = Graph()
+        for vertex in vertices: graph.addVertex(vertex)
+        for edge in edges: graph.addEdge(edge)
+        graph.updateConnectivityValues()
+        
+        SSSR = graph.getSmallestSetOfSmallestRings()
+        self.assertEqual(len(SSSR),6)
+        polycyclicVertices = set(graph.getAllPolycyclicVertices())
+        expectedPolycyclicVertices = set([vertices[index] for index in [3,23,4,22,12]])
+        
+        self.assertEqual(polycyclicVertices, expectedPolycyclicVertices)
+        
+        continuousRings = graph.getContinuousRings()
+        expectedContinuousRings = [[vertices[index] for index in [1,2,3,4,5,6,22,23,24,25]],
+                                   #[vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
+                                   [vertices[index] for index in [10,11,12,13,14,16]],
+                                   ]
+        
+        # Convert to sets for comparison purposes
+        continuousRings = [set(ring) for ring in continuousRings]
+        expectedContinuousRings = [set(ring) for ring in expectedContinuousRings]
+        for ring in expectedContinuousRings:
+            self.assertTrue(ring in continuousRings)
 
 ################################################################################
 
