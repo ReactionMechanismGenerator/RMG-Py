@@ -51,14 +51,15 @@ from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
-
+from .react import react
 
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
 
-
+from rmgpy.scoop_framework.util import map_, WorkerWrapper
 
 ################################################################################
 
@@ -634,31 +635,6 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def react(self, database, speciesA, speciesB=None, only_families=None):
-        """
-        Generates reactions involving :class:`rmgpy.species.Species` speciesA and speciesB.
-        The optional only_families flag allows the user to input a list of familylabels which then
-        allow the reactions to only be generated from those families.
-        """
-        if not speciesA.reactive:
-            return []
-        reactionList = []
-        if speciesB is None:
-            # React in a unimolecular reaction
-            for moleculeA in speciesA.molecule:
-                reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA], products=None, only_families=only_families))
-                moleculeA.clearLabeledAtoms()
-        else:
-            if not speciesB.reactive:
-                return []
-            # React in a bimolecular reaction
-            for moleculeA in speciesA.molecule:
-                for moleculeB in speciesB.molecule:
-                    reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA, moleculeB], products=None, only_families=only_families))
-                    moleculeA.clearLabeledAtoms()
-                    moleculeB.clearLabeledAtoms()
-        return reactionList
-        
     def enlarge(self, newObject=None, reactEdge=False, unimolecularReact=None, bimolecularReact=None):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
@@ -699,13 +675,33 @@ class CoreEdgeReactionModel:
                     logging.info('Adding species {0} to model core'.format(newSpecies))
                     display(newSpecies) # if running in IPython --pylab mode, draws the picture!
 
+                    # Find reactions involving the new species as unimolecular reactant
+                    # or product (e.g. A <---> products)
+
+                    results_A = react(newSpecies.copy(deep=True))
+
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with other core species (e.g. A + B <---> products)
+
+                    corespeciesList = self.core.species
+
+                    results_AB = react(newSpecies.copy(deep=True), corespeciesList)                    
+
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with itself (e.g. A + A <---> products)
+                    results_AA = react(newSpecies.copy(deep=True), [newSpecies.copy(deep=True)])
+                            
+                    newReactions.extend(results_A)
+                    newReactions.extend(results_AB)
+                    newReactions.extend(results_AA)
+    
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
             elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
 
                 pdepNetwork, newSpecies = newObject
-                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
+                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             else:
@@ -725,7 +721,7 @@ class CoreEdgeReactionModel:
                     for products in network.products:
                         products = products.species
                         if len(products) == 1 and products[0] == species:
-                            newReactions = network.exploreIsomer(species, self, database)
+                            newReactions = network.exploreIsomer(species)
                             self.processNewReactions(newReactions, species, network)
                             network.updateConfigurations(self)
                             index = 0
@@ -745,15 +741,18 @@ class CoreEdgeReactionModel:
             for i in xrange(numOldCoreSpecies):
                 if unimolecularReact[i]:
                     # Find reactions involving the species that are unimolecular
-                    self.processNewReactions(self.react(database, self.core.species[i]), self.core.species[i], None)
+                    reactions = react(self.core.species[i].copy(deep=True)) 
+                    self.processNewReactions(reactions, self.core.species[i], None)
+
             for i in xrange(numOldCoreSpecies):
                 for j in xrange(i,numOldCoreSpecies):
                     # Find reactions involving the species that are bimolecular
                     # This includes a species reacting with itself (if its own concentration is high enough)
                     
                     if bimolecularReact[i,j]:
+                        reactions = react(self.core.species[i].copy(deep=True), [self.core.species[j]]) 
                         # Consider the latest added core species as the 'new' species
-                        self.processNewReactions(self.react(database, self.core.species[i], self.core.species[j]), self.core.species[j], None)
+                        self.processNewReactions(reactions, self.core.species[j], None)
 
         ################################################################
         # Begin processing the new species and reactions
