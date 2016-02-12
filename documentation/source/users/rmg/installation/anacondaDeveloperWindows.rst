@@ -20,10 +20,13 @@ Installation by Source Using Anaconda Environment for Windows
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
     
-* Create the RMG Anaconda environment ::
+* Create and activate the RMG Anaconda environment ::
     
     cd RMG-Py
     conda env create -f environment_windows.yml
+    activate rmg_env
+    
+  Every time you open a new command prompt and want to use RMG, you must reactivate this environment by typing ``activate rmg_env``.
 
 * Now you can compile RMG-Py ::
     
