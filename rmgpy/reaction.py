@@ -903,6 +903,17 @@ class Reaction:
         from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, format, path)
+        
+    def _repr_png_(self):
+        """
+        Return a png picture of the reaction, useful for ipython-qtconsole.
+        """
+        from rmgpy.molecule.draw import ReactionDrawer
+        tempFileName = 'temp_reaction.png'
+        ReactionDrawer().draw(self, 'png', tempFileName)
+        png = open(tempFileName,'rb').read()
+        os.unlink(tempFileName)
+        return png
             
     # Build the transition state geometry
     def generate3dTS(self, reactants, products):
