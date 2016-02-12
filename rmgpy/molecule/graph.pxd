@@ -116,6 +116,8 @@ cdef class Graph:
     cpdef list getAllCyclicVertices(self)
     
     cpdef list getAllPolycyclicVertices(self)
+    
+    cpdef list getPolycyclicRings(self)
 
     cpdef list getAllCycles(self, Vertex startingVertex)
 
