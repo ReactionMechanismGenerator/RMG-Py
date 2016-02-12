@@ -137,7 +137,7 @@ def get(key):
     """
 
     try:
-        data = shared.getConst(key)
+        data = shared.getConst(key, timeout=1e-9)
         return data
     except KeyError, e:
         logging.error('An object with the key {} could not be found.'.format(key))
