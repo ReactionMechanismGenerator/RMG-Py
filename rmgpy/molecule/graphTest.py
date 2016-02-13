@@ -512,9 +512,9 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(len(cycleList), 1)
         self.assertEqual(len(cycleList[0]), 4)
         
-    def test_getContinuousRings(self):
+    def test_getPolycyclicRings(self):
         """
-        Test that the Graph.getContinuousRings() method returns 3 distinct continuous rings.
+        Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
         """
         vertices = [Vertex() for i in range(27)]
         bonds = [
@@ -566,7 +566,7 @@ class TestGraph(unittest.TestCase):
         
         self.assertEqual(polycyclicVertices, expectedPolycyclicVertices)
         
-        continuousRings = graph.getContinuousRings()
+        continuousRings = graph.getPolycyclicRings()
         expectedContinuousRings = [[vertices[index] for index in [1,2,3,4,5,6,22,23,24,25]],
                                    #[vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
                                    [vertices[index] for index in [10,11,12,13,14,16]],
