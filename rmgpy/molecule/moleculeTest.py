@@ -1397,9 +1397,10 @@ multiplicity 2
 
     def testLargeMolCreation(self):
         """
-        Test that molecules greater than C80 can be created.
+        Test molecules between C1 to C201 in 10 carbon intervals to make
+        sure that overflow errors are not generated.
         """
-        for i in xrange(1,80):
+        for i in xrange(1,202,10):
             smi = 'C'*i
             try:
                 m = Molecule(SMILES=smi)
