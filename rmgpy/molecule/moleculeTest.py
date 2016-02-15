@@ -1407,8 +1407,36 @@ multiplicity 2
             except OverflowError:
                 self.fail('Creation of C{} failed!'.format(i))
 
-
-
+    def testGetPolycyclicRings(self):
+        """
+        Test that polycyclic rings within a molecule are returned properly in the function
+        `Graph().getPolycyclicRings()`
+        """
+        # norbornane
+        m1 = Molecule(SMILES='C1CC2CCC1C2')
+        polyrings1 = m1.getPolycyclicRings()
+        self.assertEqual(len(polyrings1), 1)
+        ring = polyrings1[0]
+        self.assertEqual(len(ring),7)  # 7 carbons in cycle
+        
+        # dibenzyl
+        m2 = Molecule(SMILES='C1=CC=C(C=C1)CCC1C=CC=CC=1')
+        polyrings2 = m2.getPolycyclicRings()
+        self.assertEqual(len(polyrings2), 0)
+        
+        # spiro[2.5]octane
+        m3 = Molecule(SMILES='C1CCC2(CC1)CC2')
+        polyrings3 = m3.getPolycyclicRings()
+        self.assertEqual(len(polyrings3), 1)
+        ring = polyrings3[0]
+        self.assertEqual(len(ring),8)
+        
+        # 1-phenyl norbornane
+        m4 = Molecule(SMILES='C1=CC=C(C=C1)C12CCC(CC1)C2')
+        polyrings4 = m4.getPolycyclicRings()
+        self.assertEqual(len(polyrings4), 1)
+        ring = polyrings4[0]
+        self.assertEqual(len(ring),7)
 ################################################################################
 
 if __name__ == '__main__':
