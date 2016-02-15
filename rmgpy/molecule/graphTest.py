@@ -232,7 +232,9 @@ class TestGraph(unittest.TestCase):
         """
         self.graph.resetConnectivityValues()
         for vertex in self.graph.vertices:
-            self.assertEqual(vertex.connectivity, -1)
+            self.assertEqual(vertex.connectivity1, -1)
+            self.assertEqual(vertex.connectivity2, -1)
+            self.assertEqual(vertex.connectivity3, -1)
             self.assertEqual(vertex.sortingLabel, -1)
     
     def test_updateConnectivityValues(self):
@@ -240,17 +242,29 @@ class TestGraph(unittest.TestCase):
         Test the Graph.updateConnectivityValues() method.
         """
         self.graph.updateConnectivityValues()
-        self.assertEqual(self.graph.vertices[0].connectivity, 10)
+        self.assertEqual(self.graph.vertices[0].connectivity1, 1)
+        self.assertEqual(self.graph.vertices[0].connectivity2, 2)
+        self.assertEqual(self.graph.vertices[0].connectivity3, 3)
         self.assertEqual(self.graph.vertices[0].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[1].connectivity, 19)
+        self.assertEqual(self.graph.vertices[1].connectivity1, 2)
+        self.assertEqual(self.graph.vertices[1].connectivity2, 3)
+        self.assertEqual(self.graph.vertices[1].connectivity3, 6)
         self.assertEqual(self.graph.vertices[1].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[2].connectivity, 23)
+        self.assertEqual(self.graph.vertices[2].connectivity1, 2)
+        self.assertEqual(self.graph.vertices[2].connectivity2, 4)
+        self.assertEqual(self.graph.vertices[2].connectivity3, 7)
         self.assertEqual(self.graph.vertices[2].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[3].connectivity, 23)
+        self.assertEqual(self.graph.vertices[3].connectivity1, 2)
+        self.assertEqual(self.graph.vertices[3].connectivity2, 4)
+        self.assertEqual(self.graph.vertices[3].connectivity3, 7)
         self.assertEqual(self.graph.vertices[3].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[4].connectivity, 19)
+        self.assertEqual(self.graph.vertices[4].connectivity1, 2)
+        self.assertEqual(self.graph.vertices[4].connectivity2, 3)
+        self.assertEqual(self.graph.vertices[4].connectivity3, 6)
         self.assertEqual(self.graph.vertices[4].sortingLabel, -1)
-        self.assertEqual(self.graph.vertices[5].connectivity, 10)
+        self.assertEqual(self.graph.vertices[5].connectivity1, 1)
+        self.assertEqual(self.graph.vertices[5].connectivity2, 2)
+        self.assertEqual(self.graph.vertices[5].connectivity3, 3)
         self.assertEqual(self.graph.vertices[5].sortingLabel, -1)
     
     def test_sortVertices(self):
@@ -261,11 +275,17 @@ class TestGraph(unittest.TestCase):
         self.graph.sortVertices()
         for vertex1, vertex2 in zip(self.graph.vertices[:-1], self.graph.vertices[1:]):
             self.assertTrue(vertex1.sortingLabel < vertex2.sortingLabel)
-            self.assertTrue(vertex1.connectivity >= vertex2.connectivity)
+            self.assertTrue(vertex1.connectivity3 >= vertex2.connectivity3)
+            self.assertTrue(vertex1.connectivity2 >= vertex2.connectivity2)
+            self.assertTrue(vertex1.connectivity1 >= vertex2.connectivity1)
     
     def test_vertex_connectivity_values(self):
         """
         Tests the vertex connectivity values as introduced by Morgan (1965).
+        
+        First CV1 is the number of neighbours
+        CV2 is the sum of neighbouring CV1 values
+        CV3 is the sum of neighbouring CV2 values
         
         Graph:     Expected (and tested) values:
         
@@ -273,8 +293,6 @@ class TestGraph(unittest.TestCase):
         |                    |           |             |
         5                    1           3             4
         
-                                # = 3     # = 4         # = 4
-                                         *selected*
         """
         vertices = [Vertex() for i in range(6)]
         edges = [
@@ -291,8 +309,14 @@ class TestGraph(unittest.TestCase):
     
         graph.updateConnectivityValues()
 
-        for i,cv_ in enumerate([11, 15, 18, 10, 7, 11]):
-            cv = vertices[i].connectivity
+        for i,cv_ in enumerate([1,3,2,2,1,1]):
+            cv = vertices[i].connectivity1
+            self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i,cv,cv_))
+        for i,cv_ in enumerate([3,4,5,3,2,3]):
+            cv = vertices[i].connectivity2
+            self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i,cv,cv_))
+        for i,cv_ in enumerate([4,11,7,7,3,4]):
+            cv = vertices[i].connectivity3
             self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i,cv,cv_))
 
     def test_isomorphism(self):
@@ -393,7 +417,9 @@ class TestGraph(unittest.TestCase):
 
         self.assertEqual(len(graph0.vertices), len(graph.vertices))
         for v1, v2 in zip(graph0.vertices, graph.vertices):
-            self.assertEqual(v1.connectivity, v2.connectivity)
+            self.assertEqual(v1.connectivity1, v2.connectivity1)
+            self.assertEqual(v1.connectivity2, v2.connectivity2)
+            self.assertEqual(v1.connectivity3, v2.connectivity3)
             self.assertEqual(v1.sortingLabel, v2.sortingLabel)
             self.assertEqual(len(v1.edges), len(v2.edges))
         self.assertTrue(graph0.isIsomorphic(graph))

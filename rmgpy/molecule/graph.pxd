@@ -29,12 +29,14 @@ cdef class Vertex(object):
     cdef public dict edges
 
     # These attributes are used in the VF2 graph isomorphism algorithm
-    cdef public long connectivity
+    cdef public short connectivity1
+    cdef public short connectivity2
+    cdef public short connectivity3
     cdef public short sortingLabel
     cdef public bint terminal
     cdef public Vertex mapping
     cdef public bint ignore
-
+    
     cpdef Vertex copy(self)
 
     cpdef bint equivalent(self, Vertex other) except -2
@@ -43,7 +45,7 @@ cdef class Vertex(object):
 
     cpdef resetConnectivityValues(self)
 
-cpdef long getVertexConnectivityValue(Vertex vertex) except 1 # all values should be negative
+cpdef short getVertexConnectivityValue(Vertex vertex) except 1 # all values should be negative
 
 cpdef short getVertexSortingLabel(Vertex vertex) except -1 # all values should be nonnegative
 
@@ -92,8 +94,6 @@ cdef class Graph:
     cpdef list split(self)
 
     cpdef resetConnectivityValues(self)
-
-    cpdef list __update(self, old_values, trial_number)
 
     cpdef sortVertices(self)
 

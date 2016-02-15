@@ -1395,8 +1395,17 @@ multiplicity 2
         except OverflowError:
             self.fail("updateConnectivityValues() raised OverflowError unexpectedly!")
 
-        
-
+    def testLargeMolCreation(self):
+        """
+        Test molecules between C1 to C201 in 10 carbon intervals to make
+        sure that overflow errors are not generated.
+        """
+        for i in xrange(1,202,10):
+            smi = 'C'*i
+            try:
+                m = Molecule(SMILES=smi)
+            except OverflowError:
+                self.fail('Creation of C{} failed!'.format(i))
 
 
 
