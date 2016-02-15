@@ -285,6 +285,13 @@ class Atom(Vertex):
         """
         return self.element.number == 8
 
+    def isSilicon(self):
+        """
+        Return ``True`` if the atom represents an silicon atom or ``False`` if
+        not.
+        """
+        return self.element.number == 14
+
     def incrementRadical(self):
         """
         Update the atom pattern as a result of applying a GAIN_RADICAL action,
@@ -1506,9 +1513,11 @@ class Molecule(Graph):
                         order = order + 3
                     if bond12.isBenzene():
                         order = order + 1.5
-                        
-                atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
-        
+
+                if atom1.isSilicon():
+                    atom1.lonePairs = (4 - atom1.radicalElectrons - int(order)) / 2
+                else:     
+                    atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
             else:
                 atom1.lonePairs = 0
                 
