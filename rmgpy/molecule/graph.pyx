@@ -545,8 +545,49 @@ cdef class Graph:
                     else:
                         if vertex not in polycyclicVertices:
                             polycyclicVertices.append(vertex)     
-        return polycyclicVertices                                    
-
+        return polycyclicVertices        
+    
+    cpdef list getPolycyclicRings(self):
+        """
+        Return a list of cycles that are polycyclic.
+        In other words, merge the cycles which are fused or spirocyclic into 
+        a single polycyclic cycle, and return only those cycles. 
+        Cycles which are not polycyclic are not returned.
+        """
+        cdef list polycyclicVertices, continuousCycles, SSSR
+        cdef set polycyclicCycle
+        cdef Vertex vertex
+        
+        polycyclicVertices = self.getAllPolycyclicVertices()
+        
+        if not polycyclicVertices:
+            # no polycyclic vertices detected
+            return []
+        else: 
+            # polycyclic vertices found, merge cycles together
+            # that have common polycyclic vertices
+            SSSR = self.getSmallestSetOfSmallestRings()
+            
+            continuousCycles = []
+            for vertex in polycyclicVertices:
+                # First check if it is in any existing continuous cycles
+                for cycle in continuousCycles:
+                    if vertex in cycle:
+                        polycyclicCycle = cycle
+                        break
+                else:
+                    # Otherwise create a new cycle
+                    polycyclicCycle = set()
+                    continuousCycles.append(polycyclicCycle)
+                    
+                for cycle in SSSR:
+                    if vertex in cycle:
+                        polycyclicCycle.update(cycle)
+                        
+            # convert each set to a list
+            continuousCycles = [list(cycle) for cycle in continuousCycles]
+            return continuousCycles
+        
     cpdef list getAllCycles(self, Vertex startingVertex):
         """
         Given a starting vertex, returns a list of all the cycles containing
