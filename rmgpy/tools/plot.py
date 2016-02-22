@@ -215,7 +215,9 @@ class SimulationPlot(GenericPlot):
         self.species = species
         
     def load(self):
-        time, dataList = parseCSVData(self.csvFile)
+        if self.xVar == None and self.yVar == None:
+            time, dataList = parseCSVData(self.csvFile)
+            
         speciesData = []
         if self.species:
             # A specific set of species was specified to be plotted
@@ -273,7 +275,8 @@ class ReactionSensitivityPlot(GenericPlot):
         self.reactions = reactions
         
     def load(self):
-        time, dataList = parseCSVData(self.csvFile)
+        if self.xVar == None and self.yVar == None:
+            time, dataList = parseCSVData(self.csvFile)
         reactionData = []
         if self.reactions:
             # A specific set of reaction sensitivities was specified to be plotted
@@ -341,7 +344,8 @@ class ThermoSensitivityPlot(GenericPlot):
         self.species = species
     
     def load(self):
-        time, dataList = parseCSVData(self.csvFile)
+        if self.xVar == None and self.yVar == None:
+            time, dataList = parseCSVData(self.csvFile)
         thermoData = []
         if self.species:
             # A specific set of species sensitivities was specified to be plotted
