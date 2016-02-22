@@ -59,10 +59,10 @@ import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
+from rmgpy.rmg.listener import SimulationProfileWriter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
-from rmgpy.tools.sensitivity import SimulationProfileWriter
 
 ################################################################################
 
