@@ -30,7 +30,6 @@
 import os.path
 import logging
 from time import time
-import numpy as np
 
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
@@ -48,46 +47,48 @@ def simulate(rmg):
     for index, reactionSystem in enumerate(rmg.reactionSystems):
             
         if reactionSystem.sensitiveSpecies:
-            logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
+            logging.info('Conducting simulation and sensitivity analysis of reaction system %s...' % (index+1))
+        
+        else:
+            logging.info('Conducting simulation of reaction system %s...' % (index+1))
             
-            if rmg.saveSimulationProfiles:
-                reactionSystem.attach(SimulationProfileWriter(
-                    rmg.outputDirectory, index, rmg.reactionModel.core.species))   
-                reactionSystem.attach(SimulationProfilePlotter(
-                        rmg.outputDirectory, index, rmg.reactionModel.core.species))  
-            else:
-                worksheet = None
-                
-            sensWorksheet = []
-            for spec in reactionSystem.sensitiveSpecies:
-                csvfile = file(os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
-                sensWorksheet.append(csv.writer(csvfile))
-    
-            pdepNetworks = []
-            for source, networks in rmg.reactionModel.networkDict.items():
-                pdepNetworks.extend(networks)
-            terminated, obj = reactionSystem.simulate(
-                coreSpecies = rmg.reactionModel.core.species,
-                coreReactions = rmg.reactionModel.core.reactions,
-                edgeSpecies = rmg.reactionModel.edge.species,
-                edgeReactions = rmg.reactionModel.edge.reactions,
-                toleranceKeepInEdge = 0,
-                toleranceMoveToCore = 1,
-                toleranceInterruptSimulation = 1,
-                pdepNetworks = pdepNetworks,
-                absoluteTolerance = rmg.absoluteTolerance,
-                relativeTolerance = rmg.relativeTolerance,
-                sensitivity = True,
-                sensitivityAbsoluteTolerance = rmg.sensitivityAbsoluteTolerance,
-                sensitivityRelativeTolerance = rmg.sensitivityRelativeTolerance,
-                sensWorksheet = sensWorksheet,
-            )                      
+        if rmg.saveSimulationProfiles:
+            reactionSystem.attach(SimulationProfileWriter(
+                rmg.outputDirectory, index, rmg.reactionModel.core.species))   
+            reactionSystem.attach(SimulationProfilePlotter(
+                    rmg.outputDirectory, index, rmg.reactionModel.core.species))  
+        else:
+            worksheet = None
+            
+        sensWorksheet = []
+        for spec in reactionSystem.sensitiveSpecies:
+            csvfile = file(os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
+            sensWorksheet.append(csv.writer(csvfile))
 
-
-################################################################################
+        pdepNetworks = []
+        for source, networks in rmg.reactionModel.networkDict.items():
+            pdepNetworks.extend(networks)
+        terminated, obj = reactionSystem.simulate(
+            coreSpecies = rmg.reactionModel.core.species,
+            coreReactions = rmg.reactionModel.core.reactions,
+            edgeSpecies = rmg.reactionModel.edge.species,
+            edgeReactions = rmg.reactionModel.edge.reactions,
+            toleranceKeepInEdge = 0,
+            toleranceMoveToCore = 1,
+            toleranceInterruptSimulation = 1,
+            pdepNetworks = pdepNetworks,
+            absoluteTolerance = rmg.absoluteTolerance,
+            relativeTolerance = rmg.relativeTolerance,
+            sensitivity = True if reactionSystem.sensitiveSpecies else False,
+            sensitivityAbsoluteTolerance = rmg.sensitivityAbsoluteTolerance,
+            sensitivityRelativeTolerance = rmg.sensitivityRelativeTolerance,
+            sensWorksheet = sensWorksheet,
+        )                      
 
 def runSensitivity(inputFile, chemkinFile, dictFile):
-    # Load the RMG job
+    """
+    Runs a standalone simulation of RMG.  Runs sensitivity analysis if sensitive species are given.
+    """
     
     rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False)    
     
@@ -96,4 +97,4 @@ def runSensitivity(inputFile, chemkinFile, dictFile):
     simulate(rmg)
     end_time = time()
     time_taken = end_time - start_time
-    print "Sensitivity analysis took {0} seconds".format(time_taken)
+    print "Simulation took {0} seconds".format(time_taken)
