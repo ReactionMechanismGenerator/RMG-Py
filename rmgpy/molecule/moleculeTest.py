@@ -1296,7 +1296,21 @@ multiplicity 2
                         rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1],rdAtomIndices[at2])
                     except RuntimeError:
                         self.fail("RDKit failed in finding the bond in the original atom!")
-                        
+    
+    def testUpdateLonePairs(self):
+        adjlist = """
+1 Si u0 p1 c0 {2,S} {3,S}
+2 H  u0 p0 c0 {1,S}
+3 H  u0 p0 c0 {1,S}
+"""
+
+        mol = Molecule().fromAdjacencyList(adjlist)
+        mol.updateLonePairs()
+        lp = 0
+        for atom in mol.atoms:
+            lp += atom.lonePairs
+        self.assertEqual(lp, 1)
+                    
     def testLargeMolUpdate(self):
         adjlist = """
 1  C u0 p0 c0 {7,S} {33,S} {34,S} {35,S}
