@@ -59,7 +59,7 @@ import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmgpy.rmg.listener import SimulationProfileWriter
+from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
@@ -504,6 +504,8 @@ class RMG(util.Subject):
             for index, reactionSystem in enumerate(self.reactionSystems):
                     reactionSystem.attach(SimulationProfileWriter(
                         self.outputDirectory, index, self.reactionModel.core.species))   
+                    reactionSystem.attach(SimulationProfilePlotter(
+                        self.outputDirectory, index, self.reactionModel.core.species))  
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
