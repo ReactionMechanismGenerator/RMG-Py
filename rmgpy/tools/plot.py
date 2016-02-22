@@ -214,9 +214,8 @@ class SimulationPlot(GenericPlot):
         self.numSpecies = numSpecies
         self.species = species
         
-    def plot(self, filename=''):
+    def load(self):
         time, dataList = parseCSVData(self.csvFile)
-        filename = filename if filename else 'simulation.png'
         speciesData = []
         if self.species:
             # A specific set of species was specified to be plotted
@@ -241,6 +240,14 @@ class SimulationPlot(GenericPlot):
             
             self.xVar = time
             self.yVar = speciesData[:self.numSpecies]
+            
+    def plot(self, filename=''):
+        filename = filename if filename else 'simulation.png'
+        self.load()
+        self.yVar.sort(key=lambda x: max(x.data), reverse=True)
+            
+        if self.numSpecies:
+            self.yVar = self.yVar[:self.numSpecies]
         
         GenericPlot.plot(self, filename=filename)
         
