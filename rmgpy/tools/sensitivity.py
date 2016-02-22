@@ -33,28 +33,34 @@ from time import time
 import numpy as np
 
 from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+import csv
 from .loader import loadRMGJob
+import rmgpy.util as util 
 
 def simulate(rmg):
     """
     Simulate the RMG job and run the sensitivity analysis if it is on, generating
     output csv files
     """
-        
+    util.makeOutputSubdirectory(rmg.outputDirectory, 'solver')
+
     for index, reactionSystem in enumerate(rmg.reactionSystems):
             
         if reactionSystem.sensitiveSpecies:
             logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
             
             if rmg.saveSimulationProfiles:
-                csvfile = file(os.path.join(rmg.outputDirectory, 'simulation_{0}.csv'.format(index+1)),'w')
-                worksheet = csv.writer(csvfile)
+                reactionSystem.attach(SimulationProfileWriter(
+                    rmg.outputDirectory, index, rmg.reactionModel.core.species))   
+                reactionSystem.attach(SimulationProfilePlotter(
+                        rmg.outputDirectory, index, rmg.reactionModel.core.species))  
             else:
                 worksheet = None
                 
             sensWorksheet = []
             for spec in reactionSystem.sensitiveSpecies:
-                csvfile = file(os.path.join(rmg.outputDirectory, 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
+                csvfile = file(os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
                 sensWorksheet.append(csv.writer(csvfile))
     
             pdepNetworks = []
