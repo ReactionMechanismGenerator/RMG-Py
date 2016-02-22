@@ -46,7 +46,7 @@ def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=Tru
         
     else:
         # The argument is an RMG-Py input file
-        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict)
+        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages)
 
     return rmg
 
