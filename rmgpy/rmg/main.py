@@ -502,10 +502,11 @@ class RMG(util.Subject):
             util.makeOutputSubdirectory(self.outputDirectory, 'solver')
 
             for index, reactionSystem in enumerate(self.reactionSystems):
-                    reactionSystem.attach(SimulationProfileWriter(
-                        self.outputDirectory, index, self.reactionModel.core.species))   
-                    reactionSystem.attach(SimulationProfilePlotter(
-                        self.outputDirectory, index, self.reactionModel.core.species))  
+                reactionSystem.attach(SimulationProfileWriter(
+                    self.outputDirectory, index, self.reactionModel.core.species))   
+                reactionSystem.attach(SimulationProfilePlotter(
+                    self.outputDirectory, index, self.reactionModel.core.species))  
+        
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
