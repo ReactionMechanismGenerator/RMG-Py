@@ -36,6 +36,43 @@ from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 import csv
 from .loader import loadRMGJob
 import rmgpy.util as util 
+from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
+
+def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList):
+    """
+    A function for plotting the top 10 reaction and top 10 thermo sensitivities in bar plot format.
+    To be called after running a simulation on a particular reactionSystem.
+    """
+    
+    for species in sensitiveSpeciesList:
+        csvFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}.csv'.format(
+                reactionSystemIndex + 1, species.index
+                )
+            )
+        
+        reactionPlotFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}_reactions.png'.format(
+                reactionSystemIndex + 1, species.index
+                )
+            )
+        
+        thermoPlotFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}_thermo.png'.format(
+                reactionSystemIndex + 1, species.index
+                )
+            )
+
+        ReactionSensitivityPlot(csvFile=csvFile, numReactions=10).barplot(reactionPlotFile)
+        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=10).barplot(thermoPlotFile)
+
+
 
 def simulate(rmg):
     """
@@ -83,7 +120,10 @@ def simulate(rmg):
             sensitivityAbsoluteTolerance = rmg.sensitivityAbsoluteTolerance,
             sensitivityRelativeTolerance = rmg.sensitivityRelativeTolerance,
             sensWorksheet = sensWorksheet,
-        )                      
+        )
+        
+        if reactionSystem.sensitiveSpecies:
+            plotSensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
 def runSensitivity(inputFile, chemkinFile, dictFile):
     """

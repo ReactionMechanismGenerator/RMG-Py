@@ -63,6 +63,7 @@ from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
+from rmgpy.tools.sensitivity import plotSensitivity
 
 ################################################################################
 
@@ -688,8 +689,10 @@ class RMG(util.Subject):
                     sensitivityAbsoluteTolerance = self.sensitivityAbsoluteTolerance,
                     sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
-                )        
-    
+                )
+                
+                plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+                
         # Write output file
         logging.info('')
         logging.info('MODEL GENERATION COMPLETED')
