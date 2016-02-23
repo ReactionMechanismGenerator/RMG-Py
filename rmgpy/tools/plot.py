@@ -209,7 +209,7 @@ class SimulationPlot(GenericPlot):
     {'desired_name_for_species': 'corresponding_chemkin_name_of_species'}
     """
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species={}):
-        GenericPlot.__init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='')
+        GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
         self.species = species
@@ -217,6 +217,9 @@ class SimulationPlot(GenericPlot):
     def load(self):
         if self.xVar == None and self.yVar == None:
             time, dataList = parseCSVData(self.csvFile)
+        else:
+            time = self.xVar
+            dataList = self.yVar
             
         speciesData = []
         if self.species:
@@ -228,9 +231,6 @@ class SimulationPlot(GenericPlot):
                         data.label = speciesLabel
                         speciesData.append(data)
                         break 
-            speciesData.sort(key=lambda x: max(x.data), reverse=True)
-            self.xVar = time
-            self.yVar = speciesData
         
         else:
             for data in dataList:
@@ -238,10 +238,9 @@ class SimulationPlot(GenericPlot):
                 # This will not include bath gases
                 if data.species:
                     speciesData.append(data)
-            speciesData.sort(key=lambda x: max(x.data), reverse=True)
             
-            self.xVar = time
-            self.yVar = speciesData[:self.numSpecies]
+        self.xVar = time
+        self.yVar = speciesData
             
     def plot(self, filename=''):
         filename = filename if filename else 'simulation.png'
@@ -269,7 +268,7 @@ class ReactionSensitivityPlot(GenericPlot):
     time step.  If time step is not given, the end step will automatically be chosen
     """
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None, reactions={}):
-        GenericPlot.__init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='')
+        GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numReactions = numReactions
         self.reactions = reactions
@@ -277,6 +276,9 @@ class ReactionSensitivityPlot(GenericPlot):
     def load(self):
         if self.xVar == None and self.yVar == None:
             time, dataList = parseCSVData(self.csvFile)
+        else:
+            time = self.xVar
+            dataList = self.yVar
         reactionData = []
         if self.reactions:
             # A specific set of reaction sensitivities was specified to be plotted
@@ -338,7 +340,7 @@ class ThermoSensitivityPlot(GenericPlot):
     time step.  If time step is not given, the end step will automatically be chosen
     """
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species={}):
-        GenericPlot.__init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='')
+        GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
         self.species = species
@@ -346,6 +348,9 @@ class ThermoSensitivityPlot(GenericPlot):
     def load(self):
         if self.xVar == None and self.yVar == None:
             time, dataList = parseCSVData(self.csvFile)
+        else:
+            time = self.xVar
+            dataList = self.yVar
         thermoData = []
         if self.species:
             # A specific set of species sensitivities was specified to be plotted
