@@ -41,6 +41,7 @@ import pydot
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
+import rmgpy.util as util
 
 from .loader import loadRMGJob
 
@@ -475,7 +476,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             # Fail silently on any OS errors
                 pass
 
-            #rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+            #util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
 
             # If there is no termination time, then add one to prevent jobs from
             # running forever
@@ -494,10 +495,10 @@ def run(inputFile, speciesPath=None, useJava=False):
     rmg = loadRMGJob(inputFile, useJava)
         
     # Generate a flux diagram video for each reaction system
-    rmg.makeOutputSubdirectory('flux')
+    util.makeOutputSubdirectory('flux')
     for index, reactionSystem in enumerate(rmg.reactionSystems):
         
-        rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+        util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
         
         # If there is no termination time, then add one to prevent jobs from
         # running forever
