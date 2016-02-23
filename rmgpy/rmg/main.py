@@ -369,8 +369,7 @@ class RMG(util.Subject):
         
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
-        if self.saveEdgeSpecies:
-            util.makeOutputSubdirectory(self.outputDirectory, 'species_edge')
+        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         
         # Do any necessary quantum mechanics startup
         if self.quantumMechanics:
@@ -499,7 +498,6 @@ class RMG(util.Subject):
         self.attach(ExecutionStatsWriter(self.outputDirectory))
 
         if self.saveSimulationProfiles:
-            util.makeOutputSubdirectory(self.outputDirectory, 'solver')
 
             for index, reactionSystem in enumerate(self.reactionSystems):
                 reactionSystem.attach(SimulationProfileWriter(
