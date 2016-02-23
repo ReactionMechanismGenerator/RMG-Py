@@ -115,7 +115,7 @@ class GenericPlot(object):
         """
         Execute the actual plotting
         """
-        mpl.rc('font',family='monospace')
+        mpl.rc('font',family='sans-serif')
         fig=plt.figure()
         
         ax = fig.add_subplot(111)
@@ -157,11 +157,11 @@ class GenericPlot(object):
         if labels:
             # Create a legend outside the plot and adjust width based off of longest legend label
             maxStringLength = max([len(label) for label in labels])
-            width = 1.1 + .011*maxStringLength
+            width = 1.05 + .011*maxStringLength
             legend = ax.legend(handles,labels,loc='upper center', numpoints=1, bbox_to_anchor=(width,1)) #bbox_to_anchor=(1.01,.9)
             fig.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
         else:
-            fig.savefig(filename)
+            fig.savefig(filename, bbox_inches='tight')
             
     def barplot(self, filename='', idx=None):
         """
@@ -169,14 +169,13 @@ class GenericPlot(object):
         idx is the index of the each y-variable to be plotted. if not given, the last value will be used
         """
         import numpy
+        mpl.rc('font',family='sans-serif')
         
-        mpl.rc('font',family='monospace')
         fig = plt.figure()
         ax = fig.add_subplot(111)
         
-        position = numpy.arange(len(self.yVar),0,-1)+0.5
+        position = numpy.arange(len(self.yVar),0,-1)
         # Reverse in order to go front top to bottom
-        
         if not idx:
             idx = -1
         ax.barh(position, numpy.array([y.data[idx] for y in self.yVar]), align='center', alpha=0.5)
@@ -192,14 +191,16 @@ class GenericPlot(object):
         if self.title:
             plt.title(self.title)
             
-        fig.savefig(filename)
+        plt.axis('tight')
+        fig.savefig(filename, bbox_inches='tight')
     
     def comparePlot(self, otherGenericPlot, filename=''):
         """
         Plot a comparison data plot of this data vs a second GenericPlot class
         """
         
-        mpl.rc('font',family='monospace')
+        mpl.rc('font',family='sans-serif')
+        #mpl.rc('text', usetex=True)
         fig=plt.figure()
         
         ax = fig.add_subplot(111)
@@ -255,7 +256,7 @@ class GenericPlot(object):
             legend = ax.legend(handles,labels,loc='upper center', numpoints=1, bbox_to_anchor=(width,1), ncol=2) #bbox_to_anchor=(1.01,.9)
             fig.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
         else:
-            fig.savefig(filename)
+            fig.savefig(filename, bbox_inches='tight')
     
 class SimulationPlot(GenericPlot):
     """
@@ -380,7 +381,7 @@ class ReactionSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[-1]), reverse=True)
         if self.numReactions:
             self.yVar = self.yVar[:self.numReactions]
-        self.ylabel = 'dlnc/dlnk'
+        self.ylabel = 'dln(c)/dln(k_i)'
         GenericPlot.plot(self, filename=filename)
         
     def barplot(self, filename='', t=None):
@@ -402,7 +403,7 @@ class ReactionSensitivityPlot(GenericPlot):
         if self.numReactions:
             self.yVar = self.yVar[:self.numReactions]
         
-        self.xlabel = 'dlnc/dlnk_i'
+        self.xlabel = 'dln(c)/dln(k_i)'
         GenericPlot.barplot(self, filename=filename, idx=idx)
         
 class ThermoSensitivityPlot(GenericPlot):
@@ -452,7 +453,7 @@ class ThermoSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[-1]), reverse = True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        self.ylabel = 'dlnc/dlnG'
+        self.ylabel = 'dln(c)/dln(G_i)'
         GenericPlot.plot(self, filename=filename)
     
     def barplot(self, filename='', t=None):
@@ -465,5 +466,5 @@ class ThermoSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[idx]), reverse = True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        self.xlabel = 'dlnc/dlnG'
+        self.xlabel = 'dln(c)/dln(G_i)'
         GenericPlot.barplot(self, filename=filename, idx=idx)
