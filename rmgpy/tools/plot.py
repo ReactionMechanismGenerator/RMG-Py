@@ -323,6 +323,11 @@ class SimulationPlot(GenericPlot):
         filename = filename if filename else 'simulation_compare.png'
         self.load()
         otherSimulationPlot.load()
+        
+        # Restrict the number of species
+        if self.numSpecies:
+            self.yVar = self.yVar[:self.numSpecies]
+            otherSimulationPlot.yVar = otherSimulationPlot.yVar[:self.numSpecies]
         GenericPlot.comparePlot(self, otherSimulationPlot, filename)
         
 class ReactionSensitivityPlot(GenericPlot):
