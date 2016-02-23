@@ -62,8 +62,8 @@ def simulate(rmg):
             
         sensWorksheet = []
         for spec in reactionSystem.sensitiveSpecies:
-            csvfile = file(os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
-            sensWorksheet.append(csv.writer(csvfile))
+            csvfilePath = os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
+            sensWorksheet.append(csvfilePath)
 
         pdepNetworks = []
         for source, networks in rmg.reactionModel.networkDict.items():

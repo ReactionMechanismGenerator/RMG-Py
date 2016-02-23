@@ -566,22 +566,24 @@ cdef class ReactionSystem(DASx):
 
         if sensitivity:   
             for i in xrange(len(self.sensitiveSpecies)):
-                reactionsAboveThreshold = []
-                for j in xrange(numCoreReactions + numCoreSpecies):
+                with open(sensWorksheet[i], 'w') as outfile:
+                    worksheet = csv.writer(outfile)
+                    reactionsAboveThreshold = []
+                    for j in xrange(numCoreReactions + numCoreSpecies):
+                        for k in xrange(len(time_array)):
+                            if abs(normSens_array[i][k][j]) > self.sensitivityThreshold:
+                                reactionsAboveThreshold.append(j)
+                                break
+                    species_name = getSpeciesIdentifier(self.sensitiveSpecies[i])
+                    headers = ['Time (s)']
+                    headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j+1, coreReactions[j].toChemkin(kinetics=False)) if j < numCoreReactions 
+                                    else 'dln[{0}]/dG[{1}]'.format(species_name, getSpeciesIdentifier(coreSpecies[j-numCoreReactions])) for j in reactionsAboveThreshold])
+                    worksheet.writerow(headers)               
+                
                     for k in xrange(len(time_array)):
-                        if abs(normSens_array[i][k][j]) > self.sensitivityThreshold:
-                            reactionsAboveThreshold.append(j)
-                            break
-                species_name = getSpeciesIdentifier(self.sensitiveSpecies[i])
-                headers = ['Time (s)']
-                headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j+1, coreReactions[j].toChemkin(kinetics=False)) if j < numCoreReactions 
-                                else 'dln[{0}]/dG[{1}]'.format(species_name, getSpeciesIdentifier(coreSpecies[j-numCoreReactions])) for j in reactionsAboveThreshold])
-                sensWorksheet[i].writerow(headers)               
-            
-                for k in xrange(len(time_array)):
-                    row = [time_array[k]]
-                    row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
-                    sensWorksheet[i].writerow(row)  
+                        row = [time_array[k]]
+                        row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
+                        worksheet.writerow(row)  
         
         self.maxCoreSpeciesRates = maxCoreSpeciesRates
         self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
