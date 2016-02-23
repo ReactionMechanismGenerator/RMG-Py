@@ -1,3 +1,9 @@
+import matplotlib as mpl
+# Force matplotlib to not use any Xwindows backend.
+# This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+        
 def parseCSVData(csvFile):
     """
     This function parses a typical csv file outputted from a simulation or
@@ -109,9 +115,6 @@ class GenericPlot(object):
         """
         Execute the actual plotting
         """
-        import matplotlib as mpl
-        import matplotlib.pyplot as plt
-        
         mpl.rc('font',family='monospace')
         fig=plt.figure()
         
@@ -165,8 +168,6 @@ class GenericPlot(object):
         Plot a generic barplot using just the yVars.
         idx is the index of the each y-variable to be plotted. if not given, the last value will be used
         """
-        import matplotlib as mpl
-        import matplotlib.pyplot as plt
         import numpy
         
         mpl.rc('font',family='monospace')
@@ -197,8 +198,6 @@ class GenericPlot(object):
         """
         Plot a comparison data plot of this data vs a second GenericPlot class
         """
-        import matplotlib as mpl
-        import matplotlib.pyplot as plt
         
         mpl.rc('font',family='monospace')
         fig=plt.figure()
