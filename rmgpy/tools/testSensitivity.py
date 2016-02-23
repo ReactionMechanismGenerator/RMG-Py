@@ -17,13 +17,11 @@ class SensitivityTest(unittest.TestCase):
         
         runSensitivity(inputFile, chemkinFile, dictFile)
 
-        outputdir = os.path.join(folder, 'species/')
         simfile = os.path.join(folder,'solver', 'simulation_1_17.csv')
         sensfile = os.path.join(folder,'solver', 'sensitivity_1_SPC_1.csv')
 
         self.assertTrue(os.path.isfile(simfile))
         self.assertTrue(os.path.isfile(sensfile))
         
-        shutil.rmtree(outputdir)
         os.remove(simfile)
         os.remove(sensfile)
