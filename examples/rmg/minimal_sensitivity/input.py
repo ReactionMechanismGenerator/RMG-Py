@@ -52,7 +52,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
-    saveSimulationProfiles=True,
+    saveSimulationProfiles=False,
     generateOutputHTML=False,
     generatePlots=False,
 )
