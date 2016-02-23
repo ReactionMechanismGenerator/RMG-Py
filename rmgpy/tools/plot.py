@@ -192,7 +192,72 @@ class GenericPlot(object):
             plt.title(self.title)
             
         fig.savefig(filename)
+    
+    def comparePlot(self, otherGenericPlot, filename=''):
+        """
+        Plot a comparison data plot of this data vs a second GenericPlot class
+        """
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
         
+        mpl.rc('font',family='monospace')
+        fig=plt.figure()
+        
+        ax = fig.add_subplot(111)
+        
+        styles = ['-',':']
+        # Plot the sets of data
+        for i, plot in enumerate([self, otherGenericPlot]):
+            # Reset the color cycle per plot to get matching colors in each set
+            plt.gca().set_prop_cycle(None)
+            
+            xVar = plot.xVar
+            yVar = plot.yVar
+            # Convert yVar to a list if it wasn't one already
+            if isinstance(yVar, GenericData):
+                yVar = [yVar]
+            
+                
+            if len(yVar) == 1:
+                y = yVar[0]
+                ax.plot(xVar.data, y.data)
+                # Create a ylabel for the label of the y variable
+                if not self.ylabel and y.label:
+                    ylabel = y.label
+                    if y.units: ylabel += ' ({0})'.format(y.units)
+                    plt.ylabel(ylabel)
+            else:
+                for y in yVar:
+                    ax.plot(xVar.data, y.data, styles[i], label=y.label)
+            
+            # Plot the second set of data
+            
+        # Use the labels from this data object
+        
+        if self.xlabel:
+            plt.xlabel(self.xlabel)
+        elif self.xVar.label:
+            xlabel = self.xVar.label
+            if self.xVar.units: xlabel += ' ({0})'.format(self.xVar.units)
+            plt.xlabel(xlabel)
+            
+        if self.ylabel:
+            plt.ylabel(self.ylabel)
+            
+        if self.title:
+            plt.title(self.title)
+            
+        ax.grid('on')
+        handles, labels = ax.get_legend_handles_labels()
+        if labels:
+            # Create a legend outside the plot and adjust width based off of longest legend label
+            maxStringLength = max([len(label) for label in labels])
+            width = 1.2+ .011*maxStringLength*2
+            legend = ax.legend(handles,labels,loc='upper center', numpoints=1, bbox_to_anchor=(width,1), ncol=2) #bbox_to_anchor=(1.01,.9)
+            fig.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
+        else:
+            fig.savefig(filename)
+    
 class SimulationPlot(GenericPlot):
     """
     A class for plotting simulations containing mole fraction vs time data. 
@@ -251,6 +316,14 @@ class SimulationPlot(GenericPlot):
             self.yVar = self.yVar[:self.numSpecies]
         
         GenericPlot.plot(self, filename=filename)
+    
+    
+    def comparePlot(self, otherSimulationPlot, filename=''):
+        
+        filename = filename if filename else 'simulation_compare.png'
+        self.load()
+        otherSimulationPlot.load()
+        GenericPlot.comparePlot(self, otherSimulationPlot, filename)
         
 class ReactionSensitivityPlot(GenericPlot):
     """
