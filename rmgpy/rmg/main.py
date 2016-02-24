@@ -78,7 +78,6 @@ class RMG(util.Subject):
     Attribute                           Description
     =================================== ================================================
     `inputFile`                         The path to the input file
-    `logFile`                           The path to the log file
     ----------------------------------- ------------------------------------------------
     `databaseDirectory`                 The directory containing the RMG database
     `thermoLibraries`                   The thermodynamics libraries to load
@@ -131,10 +130,9 @@ class RMG(util.Subject):
     
     """
     
-    def __init__(self, inputFile=None, logFile=None, outputDirectory=None):
+    def __init__(self, inputFile=None, outputDirectory=None):
         super(RMG, self).__init__()
         self.inputFile = inputFile
-        self.logFile = logFile
         self.outputDirectory = outputDirectory
         self.clear()
     
