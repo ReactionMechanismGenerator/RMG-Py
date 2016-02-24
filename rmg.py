@@ -38,7 +38,8 @@ import argparse
 import logging
 import rmgpy
 
-from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
+from rmgpy.rmg.main import RMG, initializeLog
+from rmgpy.tools.profile import processProfileStats, makeProfileGraph
 
 ################################################################################
 
