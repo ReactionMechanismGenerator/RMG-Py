@@ -8,11 +8,6 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
-# Constraints on generated species
-generatedSpeciesConstraints(
-    maximumRadicalElectrons = 2,
-)
-
 # List of species
 species(
     label='ethane',
@@ -31,8 +26,6 @@ simpleReactor(
         'ethane': 0.9,
     },
     terminationTime=(1e6,'s'),
-    sensitivity=['ethane'],
-    sensitivityThreshold=0.01,
 )
 
 simulator(
@@ -52,7 +45,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
-    saveSimulationProfiles=False,
+    saveSimulationProfiles=True,
     generateOutputHTML=False,
     generatePlots=False,
 )

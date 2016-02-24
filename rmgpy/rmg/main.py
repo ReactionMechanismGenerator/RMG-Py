@@ -59,10 +59,11 @@ import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
+from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
-from rmgpy.tools.sensitivity import SimulationProfileWriter
+from rmgpy.tools.sensitivity import plotSensitivity
 
 ################################################################################
 
@@ -369,8 +370,7 @@ class RMG(util.Subject):
         
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
-        if self.saveEdgeSpecies:
-            util.makeOutputSubdirectory(self.outputDirectory, 'species_edge')
+        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         
         # Do any necessary quantum mechanics startup
         if self.quantumMechanics:
@@ -499,11 +499,13 @@ class RMG(util.Subject):
         self.attach(ExecutionStatsWriter(self.outputDirectory))
 
         if self.saveSimulationProfiles:
-            util.makeOutputSubdirectory(self.outputDirectory, 'solver')
 
             for index, reactionSystem in enumerate(self.reactionSystems):
-                    reactionSystem.attach(SimulationProfileWriter(
-                        self.outputDirectory, index, self.reactionModel.core.species))   
+                reactionSystem.attach(SimulationProfileWriter(
+                    self.outputDirectory, index, self.reactionModel.core.species))   
+                reactionSystem.attach(SimulationProfilePlotter(
+                    self.outputDirectory, index, self.reactionModel.core.species))  
+        
 
     def execute(self, inputFile, output_directory, **kwargs):
         """
@@ -669,8 +671,8 @@ class RMG(util.Subject):
                     
                 sensWorksheet = []
                 for spec in reactionSystem.sensitiveSpecies:
-                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
-                    sensWorksheet.append(csv.writer(csvfile))
+                    csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
+                    sensWorksheet.append(csvfilePath)
                     
                 terminated, obj = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
@@ -687,8 +689,10 @@ class RMG(util.Subject):
                     sensitivityAbsoluteTolerance = self.sensitivityAbsoluteTolerance,
                     sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
-                )        
-    
+                )
+                
+                plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+                
         # Write output file
         logging.info('')
         logging.info('MODEL GENERATION COMPLETED')
