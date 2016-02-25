@@ -1343,17 +1343,6 @@ class KineticsFamily(Database):
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(self.__generateReactions(reactants, forward=False))
             
-        # Return the reactions as containing Species objects, not Molecule objects
-        for reaction in reactionList:
-            moleculeDict = {}
-            for molecule in reaction.reactants:
-                moleculeDict[molecule] = Species(molecule=[molecule])
-            for molecule in reaction.products:
-                moleculeDict[molecule] = Species(molecule=[molecule])
-            reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
-            reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
-            reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
-
         return reactionList
     
     def calculateDegeneracy(self, reaction):

@@ -37,6 +37,7 @@ import itertools
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
+from rmgpy.species import Species
         
 def react(spcA, speciesList=[]):
     """
@@ -45,13 +46,16 @@ def react(spcA, speciesList=[]):
     """
     if not spcA.reactive: return []
     
-    molsB = [spcB.molecule for spcB in speciesList if spcB.reactive]
+    molsA = [(mol, spcA.index) for mol in spcA.molecule]
+
+    molsB = molsB = [spcB.molecule for spcB in speciesList if spcB.reactive]
     molsB = list(itertools.chain.from_iterable(molsB))
-    
+    molsB = [(mol, spcB.index) for mol in molsB]
+
     if not molsB:
-        combos = [(mol,) for mol in spcA.molecule]
+        combos = [(t,) for t in molsA]
     else:
-        combos = list(itertools.product(spcA.molecule, molsB))
+        combos = list(itertools.product(molsA, molsB))
 
     results = map_(
                 WorkerWrapper(reactMolecules),
@@ -61,13 +65,18 @@ def react(spcA, speciesList=[]):
     reactionList = itertools.chain.from_iterable(results)
     return reactionList
 
-def reactMolecules(molecules):
+def reactMolecules(moleculeTuples):
     """
     Performs a reaction between
     the resonance isomers.
+
+    The parameter contains a list of tuples with each tuple:
+    (Molecule, index of the core species it belongs to)
     """
-    
+
     families = getDB('kinetics').families
+    
+    molecules, reactantIndices = zip(*moleculeTuples)
     
     reactionList = []
     for _, family in families.iteritems():
@@ -76,5 +85,35 @@ def reactMolecules(molecules):
 
     for reactant in molecules:
         reactant.clearLabeledAtoms()
+
+    deflate(reactionList, molecules, reactantIndices)
+
+    return reactionList
+
+def deflate(reactionList, reactants, reactantIndices):
+    """
+    Return the reactions' reactants, products and pairs
+    as containing Species objects, not Molecule objects.
+    
+    Replace the species objects by unique integers for molecule 
+    objects that are found the parameter 'reactants' list.
+    """
+
+    for rxn in reactionList:
+        molDict = {}
+
+        for mol in rxn.reactants:
+            molDict[mol] = Species(molecule=[mol])
+
+        for mol in rxn.products:
+            molDict[mol] = Species(molecule=[mol])
+
+        for i, coreIndex in enumerate(reactantIndices):
+            if coreIndex != -1:
+                molDict[reactants[i]] = coreIndex 
+
+        rxn.reactants = [molDict[mol] for mol in rxn.reactants]
+        rxn.products = [molDict[mol] for mol in rxn.products]
+        rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]
 
     return reactionList

@@ -341,6 +341,7 @@ class CoreEdgeReactionModel:
     `networkDict`              A dictionary of pressure-dependent reaction networks (:class:`Network` objects) indexed by source.
     `networkList`              A list of pressure-dependent reaction networks (:class:`Network` objects)
     `networkCount`             A counter for the number of pressure-dependent networks created
+    `indexSpeciesDict`         A dictionary with a unique index pointing to the species objects
     =========================  ==============================================================
 
 
@@ -374,6 +375,7 @@ class CoreEdgeReactionModel:
         self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
+        self.indexSpeciesDict = {}
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -458,6 +460,9 @@ class CoreEdgeReactionModel:
 
         # Since the species is new, add it to the list of new species
         self.newSpeciesList.append(spec)
+
+        if spec.reactive:
+            self.indexSpeciesDict[spec.index] = spec
 
         return spec, True
 
@@ -662,8 +667,9 @@ class CoreEdgeReactionModel:
             objectWasInEdge = False
         
             if isinstance(newObject, Species):
-
+                
                 newSpecies = newObject
+                    
                 objectWasInEdge = newSpecies in self.edge.species
                 
                 if not newSpecies.reactive:
@@ -691,7 +697,8 @@ class CoreEdgeReactionModel:
                     newReactions.extend(results_A)
                     newReactions.extend(results_AB)
                     newReactions.extend(results_AA)
-    
+                    newReactions = [self.inflate(rxn) for rxn in newReactions]
+
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
@@ -699,6 +706,7 @@ class CoreEdgeReactionModel:
 
                 pdepNetwork, newSpecies = newObject
                 newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
+                newReactions = [self.inflate(rxn) for rxn in newReactions]
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             else:
@@ -719,6 +727,7 @@ class CoreEdgeReactionModel:
                         products = products.species
                         if len(products) == 1 and products[0] == species:
                             newReactions = network.exploreIsomer(species)
+                            newReactions = [self.inflate(rxn) for rxn in newReactions]
                             self.processNewReactions(newReactions, species, network)
                             network.updateConfigurations(self)
                             index = 0
@@ -738,7 +747,8 @@ class CoreEdgeReactionModel:
             for i in xrange(numOldCoreSpecies):
                 if unimolecularReact[i]:
                     # Find reactions involving the species that are unimolecular
-                    reactions = react(self.core.species[i].copy(deep=True)) 
+                    reactions = list(react(self.core.species[i].copy(deep=True)))
+                    reactions = [self.inflate(reaction) for reaction in reactions]
                     self.processNewReactions(reactions, self.core.species[i], None)
 
             for i in xrange(numOldCoreSpecies):
@@ -747,8 +757,9 @@ class CoreEdgeReactionModel:
                     # This includes a species reacting with itself (if its own concentration is high enough)
                     
                     if bimolecularReact[i,j]:
-                        reactions = react(self.core.species[i].copy(deep=True), [self.core.species[j]]) 
+                        reactions = list(react(self.core.species[i].copy(deep=True), [self.core.species[j]]))
                         # Consider the latest added core species as the 'new' species
+                        reactions = [self.inflate(reaction) for reaction in reactions]
                         self.processNewReactions(reactions, self.core.species[j], None)
 
         ################################################################
@@ -1708,6 +1719,19 @@ class CoreEdgeReactionModel:
 
         return my_reactionList
 
+    def initializeIndexSpeciesDict(self):
+        """
+        Populates the core species dictionary
+        
+        integer -> core Species
+
+        with the species that are currently in the core.
+        """
+
+        for spc in itertools.chain(self.core.species, self.edge.species):
+            if spc.reactive:
+                self.indexSpeciesDict[spc.index] = spc
+
     def retrieve(self, family_label, key1, key2):
         """
         Returns a list of reactions from the reaction database with the 
@@ -1719,6 +1743,49 @@ class CoreEdgeReactionModel:
             return self.reactionDict[family_label][key1][key2][:]
         except KeyError: # no such short-list: must be new, unless in seed.
             return []
+
+
+
+    def inflate(self, rxn):
+        """
+        Convert reactions from
+        reactants/products that are referring
+        to the core species index, to the respective Species objects.
+        """
+        reactants, products, pairs = [], [], []
+
+        for reactant, product in rxn.pairs:
+            reactant = self.getSpecies(reactant)
+            product = self.getSpecies(product)
+            pairs.append((reactant, product))
+
+        for reactant in rxn.reactants:
+            reactant = self.getSpecies(reactant)  
+            reactants.append(reactant)
+
+        for product in rxn.products:
+            product = self.getSpecies(product)
+            products.append(product)
+
+        rxn.pairs = pairs
+        rxn.products = products
+        rxn.reactants = reactants  
+
+        return rxn
+
+    def getSpecies(self, obj):
+        """
+        Retrieve species object, by
+        polling the index species dictionary.
+        """
+        if isinstance(obj, int):
+            try:
+                spc = self.indexSpeciesDict[obj]
+                return spc
+            except KeyError, e:
+                raise e
+
+        return obj
 
 def generateReactionKey(rxn, useProducts=False):
     """

@@ -481,7 +481,10 @@ class RMG(util.Subject):
                                   
             self.initializeReactionThresholdAndReactFlags()
 
-    
+
+        self.reactionModel.initializeIndexSpeciesDict()
+            
+
     def register_listeners(self):
         """
         Attaches listener classes depending on the options 

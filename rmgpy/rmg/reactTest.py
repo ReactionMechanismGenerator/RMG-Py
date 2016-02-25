@@ -70,9 +70,9 @@ class TestReact(unittest.TestCase):
         Test that reaction generation for Molecule objects works.
         """
         
-        molecules = [Molecule(SMILES='CC'), Molecule(SMILES='[CH3]')]
+        moleculeTuples = [(Molecule(SMILES='CC'), -1), (Molecule(SMILES='[CH3]'), -1)]
 
-        reactionList = reactMolecules(molecules)
+        reactionList = reactMolecules(moleculeTuples)
         
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
