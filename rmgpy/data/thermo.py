@@ -1088,7 +1088,7 @@ class ThermoDatabase(object):
                     # Make a temporary structure containing only the atoms in the ring
                     # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                     try:
-                        self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
+                        self.__addRingCorrectionThermoData(thermoData, self.groups['ring'], molecule, ring)
                     except KeyError:
                         logging.error("Couldn't find in ring database:")
                         logging.error(ring)
@@ -1116,6 +1116,46 @@ class ThermoDatabase(object):
             thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
         
         return thermoData1
+
+    def __addRingCorrectionThermoData(self, thermoData, ring_database, molecule, ring):
+        """
+        Determine the ring correction group additivity thermodynamic data for the given
+         `ring` in the `molecule`, and add it to the existing thermo data
+        `thermoData`.
+        """
+        matchedRingEntries = []
+        # label each atom in the ring individually to try to match the group
+        # for each ring, save only the ring that is matches the most specific leaf in the tree.
+        for atom in ring:
+            atoms = {'*':atom}
+            entry = ring_database.descendTree(molecule, atoms)
+            matchedRingEntries.append(entry)
+        
+        if matchedRingEntries is []:
+            raise KeyError('Node not found in database.')
+        # Decide which group to keep
+        depthList = [len(ring_database.ancestors(entry)) for entry in matchedRingEntries]
+        mostSpecificMatchedEntry = matchedRingEntries[depthList.index(max(depthList))]
+        
+        node = mostSpecificMatchedEntry
+        while node.data is None and node is not None:
+            node = node.parent
+        if node is None:
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, mostSpecificGroup) )
+
+        data = node.data; comment = node.label
+        while isinstance(data, basestring) and data is not None:
+            for entry in ring_database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        data.comment = '{0}({1})'.format(ring_database.label, comment)
+        
+        if thermoData is None:
+            return data
+        else:
+            return self.__addThermoData(thermoData, data)
 
     def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
