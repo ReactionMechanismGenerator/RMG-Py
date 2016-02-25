@@ -51,14 +51,14 @@ from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.rmg import getDB
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
 
 
+
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
-
-
 
 ################################################################################
 
@@ -657,7 +657,7 @@ class CoreEdgeReactionModel:
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList
-        
+
     def enlarge(self, newObject=None, reactEdge=False, unimolecularReact=None, bimolecularReact=None):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
