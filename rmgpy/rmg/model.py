@@ -572,8 +572,9 @@ class CoreEdgeReactionModel:
                 reactantIndex = forward.reactants.index(forward.pairs[pairIndex][0])
                 productIndex = forward.products.index(forward.pairs[pairIndex][1])
                 forward.pairs[pairIndex] = (reactants[reactantIndex], products[productIndex])
-                if hasattr(forward, 'reverse'):
-                    forward.reverse.pairs[pairIndex] = (products[productIndex], reactants[reactantIndex])
+                if hasattr(forward, 'reverse'):                   
+                    if forward.reverse:
+                        forward.reverse.pairs[pairIndex] = (products[productIndex], reactants[reactantIndex])
         forward.reactants = reactants
         forward.products  = products
 
@@ -585,7 +586,8 @@ class CoreEdgeReactionModel:
         if forward.pairs is None:
             forward.generatePairs()
             if hasattr(forward, 'reverse'):
-                forward.reverse.generatePairs()
+                if forward.reverse:
+                    forward.reverse.generatePairs()
             
         # Note in the log
         if isinstance(forward, TemplateReaction):
@@ -669,7 +671,7 @@ class CoreEdgeReactionModel:
             if isinstance(newObject, Species):
                 
                 newSpecies = newObject
-                    
+
                 objectWasInEdge = newSpecies in self.edge.species
                 
                 if not newSpecies.reactive:
@@ -787,10 +789,11 @@ class CoreEdgeReactionModel:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p,r) for r,p in reaction.pairs]
                 if family.ownReverse and hasattr(reaction,'reverse'):
-                    if not isForward:
-                        reaction.template = reaction.reverse.template
-                    # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                    delattr(reaction,'reverse')
+                    if reaction.reverse:
+                        if not isForward:
+                            reaction.template = reaction.reverse.template
+                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                        delattr(reaction,'reverse')
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
@@ -933,66 +936,66 @@ class CoreEdgeReactionModel:
         
         
         if family.ownReverse and hasattr(reaction,'reverse'):
-            
-            # The kinetics family is its own reverse, so we could estimate kinetics in either direction
-            
-            # First get the kinetics for the other direction
-            rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
-            # Now decide which direction's kinetics to keep
-            keepReverse = False
-            if (entry is not None and rev_entry is None):
-                # Only the forward has a source - use forward.
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
-            elif (entry is None and rev_entry is not None):
-                # Only the reverse has a source - use reverse.
-                keepReverse = True
-                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
-            elif (entry is not None and rev_entry is not None 
-                  and entry is rev_entry):
-                # Both forward and reverse have the same source and entry
-                # Use the one for which the kinetics is the forward kinetics          
-                keepReverse = G298 > 0 and isForward and rev_isForward
-                reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
-            elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
-                  and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
-                    # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
+            if reaction.reverse:
+                # The kinetics family is its own reverse, so we could estimate kinetics in either direction
+                
+                # First get the kinetics for the other direction
+                rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+                # Now decide which direction's kinetics to keep
+                keepReverse = False
+                if (entry is not None and rev_entry is None):
+                    # Only the forward has a source - use forward.
+                    reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
+                elif (entry is None and rev_entry is not None):
+                    # Only the reverse has a source - use reverse.
                     keepReverse = True
-                    reason = "Other direction matched a group only fitted to 1 rate."
-            elif self.kineticsEstimator == 'group additivity' and (not kinetics.comment.find("Fitted to 1 rate")>0
-                  and rev_kinetics.comment.find("Fitted to 1 rate")>0) :
-                    # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
-                    keepReverse = False
-                    reason = "Other direction matched a group only fitted to 1 rate."
-            elif entry is not None and rev_entry is not None:
-                # Both directions matched explicit rate rules
-                # Keep the direction with the lower (but nonzero) rank
-                if entry.rank < rev_entry.rank and entry.rank != 0:
-                    keepReverse = False
-                    reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
-                elif rev_entry.rank < entry.rank and rev_entry.rank != 0:
-                    keepReverse = True
-                    reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
-                # Otherwise keep the direction that is exergonic at 298 K
-                else:
+                    reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
+                elif (entry is not None and rev_entry is not None 
+                      and entry is rev_entry):
+                    # Both forward and reverse have the same source and entry
+                    # Use the one for which the kinetics is the forward kinetics          
                     keepReverse = G298 > 0 and isForward and rev_isForward
-                    reason = "Both directions matched explicit rate rules, but this direction is exergonic."
-            else:
-                # Keep the direction that is exergonic at 298 K
-                # This must be done after the thermo generation step
-                keepReverse = G298 > 0 and isForward and rev_isForward
-                reason = "Both directions are estimates, but this direction is exergonic."
-            
-            if keepReverse:
-                kinetics = rev_kinetics
-                source = rev_source
-                entry = rev_entry
-                isForward = not rev_isForward
-                H298 = -H298
-                G298 = -G298
-            
-            if self.verboseComments:
-                kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
-                kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
+                    reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
+                elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
+                      and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
+                        # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
+                        keepReverse = True
+                        reason = "Other direction matched a group only fitted to 1 rate."
+                elif self.kineticsEstimator == 'group additivity' and (not kinetics.comment.find("Fitted to 1 rate")>0
+                      and rev_kinetics.comment.find("Fitted to 1 rate")>0) :
+                        # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
+                        keepReverse = False
+                        reason = "Other direction matched a group only fitted to 1 rate."
+                elif entry is not None and rev_entry is not None:
+                    # Both directions matched explicit rate rules
+                    # Keep the direction with the lower (but nonzero) rank
+                    if entry.rank < rev_entry.rank and entry.rank != 0:
+                        keepReverse = False
+                        reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
+                    elif rev_entry.rank < entry.rank and rev_entry.rank != 0:
+                        keepReverse = True
+                        reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
+                    # Otherwise keep the direction that is exergonic at 298 K
+                    else:
+                        keepReverse = G298 > 0 and isForward and rev_isForward
+                        reason = "Both directions matched explicit rate rules, but this direction is exergonic."
+                else:
+                    # Keep the direction that is exergonic at 298 K
+                    # This must be done after the thermo generation step
+                    keepReverse = G298 > 0 and isForward and rev_isForward
+                    reason = "Both directions are estimates, but this direction is exergonic."
+                
+                if keepReverse:
+                    kinetics = rev_kinetics
+                    source = rev_source
+                    entry = rev_entry
+                    isForward = not rev_isForward
+                    H298 = -H298
+                    G298 = -G298
+                
+                if self.verboseComments:
+                    kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
+                    kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
             
         # The comments generated by the database for estimated kinetics can
         # be quite long, and therefore not very useful

@@ -89,6 +89,7 @@ class TemplateReaction(Reaction):
                 family=None,
                 template=None,
                 estimator=None,
+                reverse=None
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -104,6 +105,7 @@ class TemplateReaction(Reaction):
         self.family = family
         self.template = template
         self.estimator = estimator
+        self.reverse = reverse
 
     def __reduce__(self):
         """
@@ -120,7 +122,8 @@ class TemplateReaction(Reaction):
                                    self.pairs,
                                    self.family,
                                    self.template,
-                                   self.estimator
+                                   self.estimator,
+                                   self.reverse,
                                    ))
 
     def getSource(self):
