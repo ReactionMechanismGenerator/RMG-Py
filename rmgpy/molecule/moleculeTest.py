@@ -1437,6 +1437,63 @@ multiplicity 2
         self.assertEqual(len(polyrings4), 1)
         ring = polyrings4[0]
         self.assertEqual(len(ring),7)
+        
+    def testGetMonocyclicRings(self):
+        """
+        Test that monocyclic rings within a molecule are returned properly in the function
+        `Graph().getMonocyclicRings()`
+        """
+        m1 = Molecule(SMILES='C(CCCC1CCCCC1)CCCC1CCCC1')
+        monorings = m1.getMonocyclicRings()
+        self.assertEqual(len(monorings),2)
+        
+        m2 = Molecule(SMILES='C(CCC1C2CCC1CC2)CC1CCC1')
+        monorings = m2.getMonocyclicRings()
+        self.assertEqual(len(monorings),1)
+        self.assertEqual(len(monorings[0]),4)
+        
+        m3 = Molecule(SMILES='CCCCC')
+        monorings = m3.getMonocyclicRings()
+        self.assertEqual(len(monorings),0)
+        
+    def testGetDisparateRings(self):
+        """
+        Test that monocyclic rings within a molecule are returned properly in the function
+        `Graph().getDisparateRings()`
+        """
+        
+        # norbornane
+        m1 = Molecule(SMILES='C1CC2CCC1C2')
+        monorings, polyrings = m1.getDisparateRings()
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(polyrings[0]),7)  # 7 carbons in cycle
+        
+        m2 = Molecule(SMILES='C(CCC1C2CCC1CC2)CC1CCC1')
+        monorings, polyrings = m2.getDisparateRings()
+        self.assertEqual(len(monorings),1)
+        self.assertEqual(len(polyrings),1)
+        self.assertEqual(len(monorings[0]),4)
+        self.assertEqual(len(polyrings[0]),7)
+        
+        
+        m3 = Molecule(SMILES='C1CCC2(CC1)CC2CCCCC1CCC1')
+        monorings, polyrings = m3.getDisparateRings()
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(monorings),1)
+        self.assertEqual(len(monorings[0]),4)
+        self.assertEqual(len(polyrings[0]),8)
+        
+        m4 = Molecule(SMILES='CCCC')
+        monorings, polyrings = m4.getDisparateRings()
+        self.assertEqual(len(monorings),0)
+        self.assertEqual(len(polyrings),0)
+        
+        m5 = Molecule(SMILES='C1=CC=C(CCCC2CC2)C(=C1)CCCCCC1CC1')
+        monorings, polyrings = m5.getDisparateRings()
+        self.assertEqual(len(monorings),3)
+        self.assertEqual(len(polyrings),0)
+        
 ################################################################################
 
 if __name__ == '__main__':
