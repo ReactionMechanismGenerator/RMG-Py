@@ -944,8 +944,11 @@ class Molecule(Graph):
         for atom in self.vertices:
             if atom.label != '':
                 if atom.label in labeled:
-                    labeled[atom.label] = [labeled[atom.label]]
-                    labeled[atom.label].append(atom)
+                    if isinstance(labeled[atom.label],list):
+                        labeled[atom.label].append(atom)
+                    else:
+                        labeled[atom.label] = [labeled[atom.label]]
+                        labeled[atom.label].append(atom)
                 else:
                     labeled[atom.label] = atom
         return labeled

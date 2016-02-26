@@ -519,7 +519,29 @@ class TestMolecule(unittest.TestCase):
             else:
                 self.assertFalse(atom.label in labeled)
                 self.assertFalse(atom in labeled.values())
-
+        
+        multipleLabelMolecule = Molecule().fromAdjacencyList("""
+1 * C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
+2 * C u0 p0 c0 {1,S} {4,S} {7,S} {8,S}
+3 * C u0 p0 c0 {1,S} {9,S} {10,S} {11,S}
+4 * C u0 p0 c0 {2,S} {12,S} {13,S} {14,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {1,S}
+7 *1 H u0 p0 c0 {2,S}
+8 *1 H u0 p0 c0 {2,S}
+9 H u0 p0 c0 {3,S}
+10 *1 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+""")
+        labeled = multipleLabelMolecule.getLabeledAtoms()
+        self.assertTrue('*' in labeled)
+        self.assertTrue('*1' in labeled)
+        self.assertEqual(len(labeled['*']),4)
+        self.assertEqual(len(labeled['*1']),3)
+        
     def testGetFormula(self):
         """
         Test the Molecule.getLabeledAtoms() method.
