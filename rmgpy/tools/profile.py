@@ -10,18 +10,22 @@ import subprocess
 def profilefn(fn):
     @wraps(fn)
     def profile(*args, **kwargs):
-        command = """fn(*args, **kwargs)"""
         module = sys.modules[fn.__module__]
         dirname = os.path.join(os.path.dirname(module.__file__))
 
+        prof = cProfile.Profile()
+        retval = prof.runcall(fn, *args, **kwargs)
+
         stats_file = os.path.join(os.path.join(dirname, fn.__name__+'.profile'))
-        cProfile.runctx(command, globals(), locals(), stats_file)
+        prof.dump_stats(stats_file)
 
         # postprocess the stats
         
         processProfileStats(stats_file, os.path.join(dirname, fn.__name__+'.log'))
         makeProfileGraph(stats_file)
-        return 
+
+        return retval
+
     return profile
 
 class Tee:
