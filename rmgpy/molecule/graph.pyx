@@ -589,7 +589,103 @@ cdef class Graph:
             # convert each set to a list
             continuousCycles = [list(cycle) for cycle in continuousCycles]
             return continuousCycles
+    
+    cpdef list getMonocyclicRings(self):
+        """
+        Return a list of cycles that are monocyclic.
+        """
+        cdef list polycyclicVertices, SSSR, monocyclicCycles, polycyclicSSSR
+        cdef Vertex vertex
         
+        SSSR = self.getSmallestSetOfSmallestRings()
+        if not SSSR:
+            return []
+        
+        polycyclicVertices = self.getAllPolycyclicVertices()
+        
+        if not polycyclicVertices:
+            # No polycyclicVertices detected, all the rings from getSmallestSetOfSmallestRings
+            # are monocyclic
+            return SSSR
+        
+        polycyclicSSSR = []
+        for vertex in polycyclicVertices:
+            for cycle in SSSR:
+                if vertex in cycle:
+                    if cycle not in polycyclicSSSR:
+                        polycyclicSSSR.append(cycle)
+        
+        # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
+        monocyclicCycles = SSSR
+        for cycle in polycyclicSSSR:
+            monocyclicCycles.remove(cycle)
+        return monocyclicCycles
+    
+    cpdef tuple getDisparateRings(self):
+        """
+        Return a list of distinct polycyclic and monocyclic rings within the graph.
+        There is some code duplication in this function in order to maximize speed up
+        so as to call `self.getSmallestSetOfSmallestRings()` only once.
+        
+        Returns: monocyclicRingsList, polycyclicRingsList
+        """
+        
+        cdef set polycyclicCycle
+        cdef Vertex vertex
+        cdef list SSSR, vertices, polycyclicVertices, continuousCycles
+        
+        SSSR = self.getSmallestSetOfSmallestRings()
+        if not SSSR:
+            return [], []
+        
+        polycyclicVertices = []
+        if SSSR:            
+            vertices = []
+            for cycle in SSSR:
+                for vertex in cycle:
+                    if vertex not in vertices:
+                        vertices.append(vertex)
+                    else:
+                        if vertex not in polycyclicVertices:
+                            polycyclicVertices.append(vertex)     
+        
+        if not polycyclicVertices:
+            # no polycyclic vertices detected
+            return SSSR, []
+        else: 
+            # polycyclic vertices found, merge cycles together and store them in continuousCycles list.
+            # that have common polycyclic vertices
+            
+            continuousCycles = []
+            polycyclicSSSR = []
+            for vertex in polycyclicVertices:
+                # First check if it is in any existing continuous cycles
+                for cycle in continuousCycles:
+                    if vertex in cycle:
+                        polycyclicCycle = cycle
+                        break
+                else:
+                    # Otherwise create a new cycle
+                    polycyclicCycle = set()
+                    continuousCycles.append(polycyclicCycle)
+                    
+                for cycle in SSSR:
+                    if vertex in cycle:
+                        polycyclicCycle.update(cycle)
+                        if cycle not in polycyclicSSSR:
+                            polycyclicSSSR.append(cycle)
+                            
+            # convert each polycyclic set to a list
+            continuousCycles = [list(cycle) for cycle in continuousCycles]
+            
+            monocyclicCycles = SSSR
+            # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
+            for cycle in polycyclicSSSR:
+                monocyclicCycles.remove(cycle)
+                    
+            return monocyclicCycles, continuousCycles
+       
+       
     cpdef list getAllCycles(self, Vertex startingVertex):
         """
         Given a starting vertex, returns a list of all the cycles containing
