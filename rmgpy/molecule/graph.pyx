@@ -558,6 +558,10 @@ cdef class Graph:
         cdef set polycyclicCycle
         cdef Vertex vertex
         
+        SSSR = self.getSmallestSetOfSmallestRings()
+        if not SSSR:
+            return []
+        
         polycyclicVertices = self.getAllPolycyclicVertices()
         
         if not polycyclicVertices:
@@ -565,9 +569,7 @@ cdef class Graph:
             return []
         else: 
             # polycyclic vertices found, merge cycles together
-            # that have common polycyclic vertices
-            SSSR = self.getSmallestSetOfSmallestRings()
-            
+            # that have common polycyclic vertices            
             continuousCycles = []
             for vertex in polycyclicVertices:
                 # First check if it is in any existing continuous cycles
