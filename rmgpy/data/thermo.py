@@ -1069,31 +1069,27 @@ class ThermoDatabase(object):
         # each ring one time
         
         if cyclic:                
-            if molecule.getAllPolycyclicVertices():
-                # If the molecule has fused ring atoms, this implies that we are dealing
-                # with a polycyclic ring system, for which separate ring strain corrections may not
-                # be adequate.  Therefore, we search the polycyclic thermo group corrections
-                # instead of adding single ring strain corrections within the molecule.
-                # For now, assume only one  polycyclic RSC can be found per molecule
+            monorings, polyrings = molecule.getDisparateRings()
+            for ring in monorings:
+                # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 try:
-                    self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
-                except:
-                    logging.error("Couldn't find in polycyclic ring database:")
+                    self.__addRingCorrectionThermoData(thermoData, self.groups['ring'], molecule, ring)
+                except KeyError:
+                    logging.error("Couldn't find a match in the monocyclic ring database even though monocyclic rings were found.")
                     logging.error(molecule)
                     logging.error(molecule.toAdjacencyList())
                     raise
-            else:
-                rings = molecule.getSmallestSetOfSmallestRings()
-                for ring in rings:
-                    # Make a temporary structure containing only the atoms in the ring
-                    # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                    try:
-                        self.__addRingCorrectionThermoData(thermoData, self.groups['ring'], molecule, ring)
-                    except KeyError:
-                        logging.error("Couldn't find in ring database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
+            for ring in polyrings:
+                # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                try:
+                    self.__addRingCorrectionThermoData(thermoData, self.groups['polycyclic'], molecule, ring)
+                except KeyError:
+                    logging.error("Couldn't find a match in the polycyclic ring database even though polycyclic rings were found.")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
 
         return thermoData
 
