@@ -33,6 +33,7 @@
 """
 
 import os.path
+import re
 import math
 import logging
 import numpy
@@ -909,15 +910,45 @@ class ThermoDatabase(object):
             tdata = self.estimateThermoViaGroupAdditivity(molecule)
             thermo.append(tdata)
 
-        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-        indices = H298.argsort()
+        indices = self.prioritizeThermo(species, thermo)
         
         species.molecule = [species.molecule[ind] for ind in indices]
         
         thermoData = thermo[indices[0]]
         self.findCp0andCpInf(species, thermoData)
         return thermoData
-        
+
+    def prioritizeThermo(self, species, thermoDataList):
+        """
+        Use some metrics to reorder a list of thermo data from best to worst.
+        Return a list of indices with the desired order associated with the index of thermo from the data list.
+        """
+        if len(species.molecule) > 1:
+            # Go further only if there is more than one isomer
+            if species.molecule[0].isCyclic():
+                # Special treatment for cyclic compounds
+                entries = []
+                for thermo in thermoDataList:
+                    ringGroups, polycyclicGroups = self.getRingGroupsFromComments(thermo)
+                    
+                    # Use rank as a metric for prioritizing thermo. 
+                    # The smaller the rank, the better.
+                    sumRank = numpy.sum([entry.rank for entry in ringGroups + polycyclicGroups])
+                    entries.append((thermo, sumRank))
+                
+                # Sort first by rank, then by enthalpy at 298 K
+                entries = sorted(entries, key=lambda entry: (entry[1], entry[0].getEnthalpy(298.)))
+                indices = [thermoDataList.index(entry[0]) for entry in entries]
+                
+            else:
+                # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
+                H298 = numpy.array([t.getEnthalpy(298.) for t in thermoDataList])
+                indices = H298.argsort()
+        else:
+            indices = [0]
+
+        return indices
+
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
         Estimate the thermodynamics of a radical by saturating it,
