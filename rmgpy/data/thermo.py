@@ -1091,8 +1091,8 @@ class ThermoDatabase(object):
                         self.__addRingCorrectionThermoData(thermoData, self.groups['ring'], molecule, ring)
                     except KeyError:
                         logging.error("Couldn't find in ring database:")
-                        logging.error(ring)
-                        logging.error(ring.toAdjacencyList())
+                        logging.error(molecule)
+                        logging.error(molecule.toAdjacencyList())
                         raise
 
         return thermoData
