@@ -1135,7 +1135,14 @@ class ThermoDatabase(object):
             raise KeyError('Node not found in database.')
         # Decide which group to keep
         depthList = [len(ring_database.ancestors(entry)) for entry in matchedRingEntries]
-        mostSpecificMatchedEntry = matchedRingEntries[depthList.index(max(depthList))]
+        mostSpecificMatchIndices = [i for i, x in enumerate(depthList) if x == max(depthList)]
+        
+        mostSpecificMatchedEntries = [matchedRingEntries[idx] for idx in mostSpecificMatchIndices]
+        if len(set(mostSpecificMatchedEntries)) != 1:
+            raise DatabaseError('More than one type of node was found to be most specific for this ring. ')
+
+        # Condense the number of most specific groups down to one
+        mostSpecificMatchedEntry = matchedRingEntries[mostSpecificMatchIndices[0]]
         
         node = mostSpecificMatchedEntry
         while node.data is None and node is not None:
