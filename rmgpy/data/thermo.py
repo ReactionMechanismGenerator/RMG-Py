@@ -1199,3 +1199,24 @@ class ThermoDatabase(object):
             return data
         else:
             return self.__addThermoData(thermoData, data)
+
+    def getRingGroupsFromComments(self, thermoData):
+        """
+        Takes a string of comments from group additivity estimation, and extracts the ring and polycyclic ring groups
+        from them, returning them as lists.
+        """
+        tokens = thermoData.comment.split()
+        ringGroups = []
+        polycyclicGroups = []
+        for token in tokens:
+            if 'ring' in token:
+                splitTokens = re.split("\(|\)",token)
+                assert len(splitTokens) == 3
+                groupLabel = splitTokens[1]
+                ringGroups.append(self.groups['ring'].entries[groupLabel])
+            if 'polycyclic' in token:
+                splitTokens = re.split("\(|\)",token)
+                assert len(splitTokens) == 3
+                groupLabel = splitTokens[1]
+                polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])
+        return ringGroups, polycyclicGroups
