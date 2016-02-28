@@ -190,17 +190,16 @@ class TestCyclicThermo(unittest.TestCase):
         import re
         spec = Species().fromSMILES('CCCCCCCCCCCC(CC=C1C=CC=CC1)c1ccccc1')
         spec.generateResonanceIsomers()
-        thermo = self.database.computeGroupAdditivityThermo(spec.molecule[1])
-        tokens = thermo.comment.split()
-        matchedRings = []
-        for token in tokens:
-            if 'ring' in token:
-                splitTokens = re.split("\(|\)",token)
-                matchedRing = splitTokens[1]
-                matchedRings.append(matchedRing)
-        matchedRings.sort()
-        expected_matchedRings = ['13cyclohexadiene5methylene', 'Ring']
-        self.assertEqual(matchedRings, expected_matchedRings)
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermo)
+        self.assertEqual(len(ringGroups),2)
+        self.assertEqual(len(polycyclicGroups),0)
+
+        expected_matchedRingsLabels = ['13cyclohexadiene5methylene', 'Benzene']
+        expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
+
+        self.assertEqual(set(ringGroups), set(expected_matchedRings))
 
 ################################################################################
 
