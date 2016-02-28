@@ -33,6 +33,7 @@
 """
 
 import os.path
+import re
 import math
 import logging
 import numpy
@@ -909,15 +910,45 @@ class ThermoDatabase(object):
             tdata = self.estimateThermoViaGroupAdditivity(molecule)
             thermo.append(tdata)
 
-        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-        indices = H298.argsort()
+        indices = self.prioritizeThermo(species, thermo)
         
         species.molecule = [species.molecule[ind] for ind in indices]
         
         thermoData = thermo[indices[0]]
         self.findCp0andCpInf(species, thermoData)
         return thermoData
-        
+
+    def prioritizeThermo(self, species, thermoDataList):
+        """
+        Use some metrics to reorder a list of thermo data from best to worst.
+        Return a list of indices with the desired order associated with the index of thermo from the data list.
+        """
+        if len(species.molecule) > 1:
+            # Go further only if there is more than one isomer
+            if species.molecule[0].isCyclic():
+                # Special treatment for cyclic compounds
+                entries = []
+                for thermo in thermoDataList:
+                    ringGroups, polycyclicGroups = self.getRingGroupsFromComments(thermo)
+                    
+                    # Use rank as a metric for prioritizing thermo. 
+                    # The smaller the rank, the better.
+                    sumRank = numpy.sum([entry.rank for entry in ringGroups + polycyclicGroups])
+                    entries.append((thermo, sumRank))
+                
+                # Sort first by rank, then by enthalpy at 298 K
+                entries = sorted(entries, key=lambda entry: (entry[1], entry[0].getEnthalpy(298.)))
+                indices = [thermoDataList.index(entry[0]) for entry in entries]
+                
+            else:
+                # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
+                H298 = numpy.array([t.getEnthalpy(298.) for t in thermoDataList])
+                indices = H298.argsort()
+        else:
+            indices = [0]
+
+        return indices
+
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
         Estimate the thermodynamics of a radical by saturating it,
@@ -1069,31 +1100,27 @@ class ThermoDatabase(object):
         # each ring one time
         
         if cyclic:                
-            if molecule.getAllPolycyclicVertices():
-                # If the molecule has fused ring atoms, this implies that we are dealing
-                # with a polycyclic ring system, for which separate ring strain corrections may not
-                # be adequate.  Therefore, we search the polycyclic thermo group corrections
-                # instead of adding single ring strain corrections within the molecule.
-                # For now, assume only one  polycyclic RSC can be found per molecule
+            monorings, polyrings = molecule.getDisparateRings()
+            for ring in monorings:
+                # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 try:
-                    self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
-                except:
-                    logging.error("Couldn't find in polycyclic ring database:")
+                    self.__addRingCorrectionThermoData(thermoData, self.groups['ring'], molecule, ring)
+                except KeyError:
+                    logging.error("Couldn't find a match in the monocyclic ring database even though monocyclic rings were found.")
                     logging.error(molecule)
                     logging.error(molecule.toAdjacencyList())
                     raise
-            else:
-                rings = molecule.getSmallestSetOfSmallestRings()
-                for ring in rings:
-                    # Make a temporary structure containing only the atoms in the ring
-                    # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
-                    except KeyError:
-                        logging.error("Couldn't find in ring database:")
-                        logging.error(ring)
-                        logging.error(ring.toAdjacencyList())
-                        raise
+            for ring in polyrings:
+                # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                try:
+                    self.__addRingCorrectionThermoData(thermoData, self.groups['polycyclic'], molecule, ring)
+                except KeyError:
+                    logging.error("Couldn't find a match in the polycyclic ring database even though polycyclic rings were found.")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
 
         return thermoData
 
@@ -1117,6 +1144,53 @@ class ThermoDatabase(object):
         
         return thermoData1
 
+    def __addRingCorrectionThermoData(self, thermoData, ring_database, molecule, ring):
+        """
+        Determine the ring correction group additivity thermodynamic data for the given
+         `ring` in the `molecule`, and add it to the existing thermo data
+        `thermoData`.
+        """
+        matchedRingEntries = []
+        # label each atom in the ring individually to try to match the group
+        # for each ring, save only the ring that is matches the most specific leaf in the tree.
+        for atom in ring:
+            atoms = {'*':atom}
+            entry = ring_database.descendTree(molecule, atoms)
+            matchedRingEntries.append(entry)
+        
+        if matchedRingEntries is []:
+            raise KeyError('Node not found in database.')
+        # Decide which group to keep
+        depthList = [len(ring_database.ancestors(entry)) for entry in matchedRingEntries]
+        mostSpecificMatchIndices = [i for i, x in enumerate(depthList) if x == max(depthList)]
+        
+        mostSpecificMatchedEntries = [matchedRingEntries[idx] for idx in mostSpecificMatchIndices]
+        if len(set(mostSpecificMatchedEntries)) != 1:
+            raise DatabaseError('More than one type of node was found to be most specific for this ring. ')
+
+        # Condense the number of most specific groups down to one
+        mostSpecificMatchedEntry = matchedRingEntries[mostSpecificMatchIndices[0]]
+        
+        node = mostSpecificMatchedEntry
+        while node.data is None and node is not None:
+            node = node.parent
+        if node is None:
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for {1} or any of its ancestors.'.format(molecule, mostSpecificGroup) )
+
+        data = node.data; comment = node.label
+        while isinstance(data, basestring) and data is not None:
+            for entry in ring_database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        data.comment = '{0}({1})'.format(ring_database.label, comment)
+        
+        if thermoData is None:
+            return data
+        else:
+            return self.__addThermoData(thermoData, data)
+
     def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
         Determine the group additivity thermodynamic data for the atom `atom`
@@ -1134,7 +1208,7 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
 
         data = node.data; comment = node.label
         while isinstance(data, basestring) and data is not None:
@@ -1156,3 +1230,24 @@ class ThermoDatabase(object):
             return data
         else:
             return self.__addThermoData(thermoData, data)
+
+    def getRingGroupsFromComments(self, thermoData):
+        """
+        Takes a string of comments from group additivity estimation, and extracts the ring and polycyclic ring groups
+        from them, returning them as lists.
+        """
+        tokens = thermoData.comment.split()
+        ringGroups = []
+        polycyclicGroups = []
+        for token in tokens:
+            if 'ring' in token:
+                splitTokens = re.split("\(|\)",token)
+                assert len(splitTokens) == 3
+                groupLabel = splitTokens[1]
+                ringGroups.append(self.groups['ring'].entries[groupLabel])
+            if 'polycyclic' in token:
+                splitTokens = re.split("\(|\)",token)
+                assert len(splitTokens) == 3
+                groupLabel = splitTokens[1]
+                polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])
+        return ringGroups, polycyclicGroups

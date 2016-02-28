@@ -118,6 +118,10 @@ cdef class Graph:
     cpdef list getAllPolycyclicVertices(self)
     
     cpdef list getPolycyclicRings(self)
+    
+    cpdef list getMonocyclicRings(self)
+    
+    cpdef tuple getDisparateRings(self)
 
     cpdef list getAllCycles(self, Vertex startingVertex)
 
