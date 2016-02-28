@@ -704,6 +704,8 @@ class KineticsFamily(Database):
             maxIndex = 0
         # save new reactions to reactions.py
         for i, reaction in enumerate(reactions):    
+            longDesc = longDesc + 'Taken from entry: {0}'.format(reaction.kinetics.comment)
+            reaction.kinetics.comment = ''
             entry = Entry(
                 index = maxIndex+i+1,
                 label = str(reaction),
