@@ -187,7 +187,6 @@ class TestCyclicThermo(unittest.TestCase):
         the other is benzene ring. This method is to test thermo estimation will
         give two different corrections accordingly. 
         """
-        import re
         spec = Species().fromSMILES('CCCCCCCCCCCC(CC=C1C=CC=CC1)c1ccccc1')
         spec.generateResonanceIsomers()
         thermo = self.database.getThermoDataFromGroups(spec)
@@ -200,7 +199,56 @@ class TestCyclicThermo(unittest.TestCase):
         expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
 
         self.assertEqual(set(ringGroups), set(expected_matchedRings))
+    
+    def testThermoForMonocyclicAndPolycyclicSameMolecule(self):
+        """
+        Test a molecule that has both a polycyclic and a monocyclic ring in the same molecule
+        """
+        spec = Species().fromSMILES('C(CCC1C2CCC1CC2)CC1CCC1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermo)
+        self.assertEqual(len(ringGroups),1)
+        self.assertEqual(len(polycyclicGroups),1)
+        
+        expected_matchedRingsLabels = ['Cyclobutane']
+        expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
+        self.assertEqual(set(ringGroups), set(expected_matchedRings))
+        
+        expected_matchedPolyringsLabels = ['norbornane']
+        expected_matchedPolyrings = [self.database.groups['polycyclic'].entries[label] for label in expected_matchedPolyringsLabels]
 
+        self.assertEqual(set(polycyclicGroups), set(expected_matchedPolyrings))
+    
+    def testPolycyclicPicksBestThermo(self):
+        """
+        Test that RMG prioritizes thermo correctly and chooses the thermo from the isomer which
+        has a non generic polycyclic ring correction
+        """
+        
+        spec = Species().fromSMILES('C1=C[C]2CCC=C2C1')
+        spec.generateResonanceIsomers()
+        
+        thermoDataList = []
+        for molecule in spec.molecule:
+            thermo = self.database.estimateRadicalThermoViaHBI(molecule, self.database.computeGroupAdditivityThermo)
+            thermoDataList.append(thermo)
+            
+        thermoDataList.sort(key=lambda x: x.getEnthalpy(298))
+        most_stable_thermo = thermoDataList[0]
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(most_stable_thermo)
+        
+        selected_thermo = self.database.getThermoDataFromGroups(spec)
+        
+        self.assertNotEqual(selected_thermo, thermoDataList)
+        
+        selected_ringGroups, selected_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo)
+        
+        # The group used to estimate the most stable thermo is the generic polycyclic group and
+        # therefore is not selected.  Note that this unit test will have to change if the correction is fixed later.
+        self.assertEqual(polycyclicGroups[0].label, 'PolycyclicRing')
+        self.assertEqual(selected_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
+        
 ################################################################################
 
 if __name__ == '__main__':
