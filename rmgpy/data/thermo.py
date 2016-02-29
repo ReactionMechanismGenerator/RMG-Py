@@ -202,6 +202,21 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
                 thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
             
         return thermoData1
+    
+def removeThermoData(thermoData1, thermoData2):
+    """
+    Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
+    and return `thermoData1`.
+    """
+    if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
+        raise Exception('Cannot take the difference between these ThermoData objects due to their having different temperature points.')
+
+    for i in range(thermoData1.Tdata.value_si.shape[0]):
+        thermoData1.Cpdata.value_si[i] -= thermoData2.Cpdata.value_si[i]
+    thermoData1.H298.value_si -= thermoData2.H298.value_si
+    thermoData1.S298.value_si -= thermoData2.S298.value_si
+
+    return thermoData1
 
 def averageThermoData(thermoDataList=[]):
     """
