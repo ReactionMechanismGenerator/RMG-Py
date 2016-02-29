@@ -924,7 +924,9 @@ class KineticsFamily(Database):
             if depository.label.endswith('training'):
                 break
         else:
-            raise Exception("NO training found")
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Must be because you turned off the training depository.')
+            return
         
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
