@@ -636,17 +636,22 @@ class KineticsFamily(Database):
         """
         return saveEntry(f, entry)
     
-    def saveTrainingReaction(self, reactions, reference=None, referenceType='', shortDesc='',longDesc='', rank=3):
+    def saveTrainingReactions(self, reactions, reference=None, referenceType='', shortDesc='', rank=3):
         """
-        This function takes a reaction object and saves appends it to the training reactions file.
-        Rank is set to a default value of 3 unless otherwise indicated
+        This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
+        duplicate reactions.  
+        
+        The rank for each new reaction's kinetics is set to a default value of 3 unless the user specifies differently 
+        for those reactions.
+        
+        For each entry, the long description is imported from the kinetics comment. 
         """ 
         from rmgpy import settings
 
         training_path = os.path.join(settings['database.directory'], 'kinetics', 'families', \
             self.label, 'training')
 
-        directory_file = os.path.join(training_path, 'dictionary_test.txt')
+        directory_file = os.path.join(training_path, 'dictionary.txt')
 
         # Load the old set of the species of the training reactions
         speciesDict = Database().getSpecies(directory_file)
@@ -683,7 +688,7 @@ class KineticsFamily(Database):
                     speciesDict[spec.label] = spec
 
         training_file = open(os.path.join(settings['database.directory'], 'kinetics', 'families', \
-            self.label, 'training', 'reactions_test.py'), 'a')
+            self.label, 'training', 'reactions.py'), 'a')
         training_file.write("\n\n")
 
         # get max reaction entry index from the existing training data
@@ -717,7 +722,6 @@ class KineticsFamily(Database):
                 longDesc = unicode(longDesc),
                 rank = rank,
                 )
-            
             
             self.saveEntry(training_file, entry)
         training_file.close()
