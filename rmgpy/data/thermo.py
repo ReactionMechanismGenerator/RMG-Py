@@ -203,6 +203,49 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
             
         return thermoData1
 
+def averageThermoData(thermoDataList=[]):
+    """
+    Average a list of thermoData values together.
+    Sets uncertainty values to be the approximately the 95% confidence interval, equivalent to
+    2 standard deviations calculated using the sample standard variance:
+    
+    Uncertainty = 2s
+    s = sqrt( sum(abs(x - x.mean())^2) / N - 1) where N is the number of values averaged
+    
+    Note that uncertainties are only computed when number of values is greater than 1.
+    """
+    import copy
+    numValues = len(thermoDataList)
+        
+    if numValues == 0:
+        raise Exception('No thermo data values were inputted to be averaged.')
+    else:
+        print 'Averaging thermo data over {0} value(s).'.format(numValues)
+        
+        if numValues == 1:
+            return copy.deepcopy(thermoDataList[0])
+        
+        else:
+            averagedThermoData = copy.deepcopy(thermoDataList[0])
+            for thermoData in thermoDataList[1:]:
+                averagedThermoData = addThermoData(averagedThermoData, thermoData)
+
+
+            for i in range(averagedThermoData.Tdata.value_si.shape[0]):
+                averagedThermoData.Cpdata.value_si[i] /= numValues
+
+                cpData = [thermoData.Cpdata.value_si[i] for thermoData in thermoDataList]
+                averagedThermoData.Cpdata.uncertainty[i] = 2*numpy.std(cpData, ddof=1)
+
+            HData = [thermoData.H298.value_si for thermoData in thermoDataList]
+            averagedThermoData.H298.value_si /= numValues
+            averagedThermoData.H298.uncertainty_si = 2*numpy.std(HData, ddof=1)
+
+            SData = [thermoData.S298.value_si for thermoData in thermoDataList]
+            averagedThermoData.S298.value_si /= numValues
+            averagedThermoData.S298.uncertainty_si = 2*numpy.std(SData, ddof=1)
+            return averagedThermoData
+
 ################################################################################
 
 class ThermoDepository(Database):
