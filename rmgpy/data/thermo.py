@@ -1227,8 +1227,10 @@ class ThermoDatabase(object):
         
         mostSpecificMatchedEntries = [matchedRingEntries[idx] for idx in mostSpecificMatchIndices]
         if len(set(mostSpecificMatchedEntries)) != 1:
-            raise DatabaseError('More than one type of node was found to be most specific for this ring. ')
-
+            logging.warning('More than one type of node was found to be most specific for this ring.')
+            logging.warning('This is either due to a database error in the ring or polycyclic groups, or a partial match between the group and the full ring.')
+            logging.warning(mostSpecificMatchedEntries)
+            
         # Condense the number of most specific groups down to one
         mostSpecificMatchedEntry = matchedRingEntries[mostSpecificMatchIndices[0]]
         
