@@ -635,6 +635,103 @@ class KineticsFamily(Database):
         Write the given `entry` in the thermo database to the file object `f`.
         """
         return saveEntry(f, entry)
+    
+    def saveTrainingReactions(self, reactions, reference=None, referenceType='', shortDesc='', rank=3):
+        """
+        This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
+        duplicate reactions.  
+        
+        The rank for each new reaction's kinetics is set to a default value of 3 unless the user specifies differently 
+        for those reactions.
+        
+        For each entry, the long description is imported from the kinetics comment. 
+        """ 
+        from rmgpy import settings
+
+        training_path = os.path.join(settings['database.directory'], 'kinetics', 'families', \
+            self.label, 'training')
+
+        directory_file = os.path.join(training_path, 'dictionary.txt')
+
+        # Load the old set of the species of the training reactions
+        speciesDict = Database().getSpecies(directory_file)
+
+        # add new unique species with labeledAtoms into speciesDict
+        for rxn in reactions:
+            for spec in (rxn.reactants + rxn.products):
+                for ex_spec_label in speciesDict:
+                    ex_spec = speciesDict[ex_spec_label]
+                    if ex_spec.molecule[0].getFormula() != spec.molecule[0].getFormula():
+                        continue
+                    else:
+                        spec_labeledAtoms = spec.molecule[0].getLabeledAtoms()
+                        ex_spec_labeledAtoms = ex_spec.molecule[0].getLabeledAtoms()
+                        initialMap = {}
+                        try:
+                            for atomLabel in spec_labeledAtoms:
+                                initialMap[spec_labeledAtoms[atomLabel]] = ex_spec_labeledAtoms[atomLabel]
+                        except KeyError:
+                            # atom labels did not match, therefore not a match
+                            continue
+                        if spec.molecule[0].isIsomorphic(ex_spec.molecule[0],initialMap):
+                            spec.label = ex_spec.label
+                            break
+                else:# no isomorphic existing species found
+                    spec_formula = spec.molecule[0].getFormula()
+                    if spec_formula not in speciesDict:
+                        spec.label = spec_formula
+                    else:
+                        index = 2
+                        while (spec_formula + '-{}'.format(index)) in speciesDict:
+                            index += 1
+                        spec.label = spec_formula + '-{}'.format(index)
+                    speciesDict[spec.label] = spec
+
+        training_file = open(os.path.join(settings['database.directory'], 'kinetics', 'families', \
+            self.label, 'training', 'reactions.py'), 'a')
+        training_file.write("\n\n")
+
+        # get max reaction entry index from the existing training data
+        for depository in self.depositories:
+            if depository.label.endswith('training'):
+                break
+        else:
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Starting a new one')
+            depository = KineticsDepository()
+            self.depositories.append(depository)
+        
+        trainingDatabase = depository
+        indices = [entry.index for entry in trainingDatabase.entries.values()]
+        if indices:
+            maxIndex = max(indices)
+        else:
+            maxIndex = 0
+        # save new reactions to reactions.py
+        for i, reaction in enumerate(reactions):    
+            longDesc = 'Taken from entry: {0}'.format(reaction.kinetics.comment)
+            reaction.kinetics.comment = ''
+            entry = Entry(
+                index = maxIndex+i+1,
+                label = str(reaction),
+                item = reaction,
+                data = reaction.kinetics,
+                reference = reference,
+                referenceType = referenceType,
+                shortDesc = unicode(shortDesc),
+                longDesc = unicode(longDesc),
+                rank = rank,
+                )
+            
+            self.saveEntry(training_file, entry)
+        training_file.close()
+
+        # save species to dictionary
+        with open(directory_file, 'w') as f:
+            for label in speciesDict.keys():
+                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+                f.write('\n')
+        f.close()
 
     def save(self, path):
         """
@@ -1738,4 +1835,76 @@ class KineticsFamily(Database):
             template.append(self.groups.entries[label])
 
         return template
+
+    def getLabeledReactantsAndProducts(self, reactants, products):
+        """
+        Given `reactants`, a list of :class:`Molecule` objects, and products, a list of 
+        :class:`Molecule` objects, return two new lists of :class:`Molecule` objects with 
+        atoms labeled: one for reactants, one for products. Returned molecules are totally 
+        new entities in memory so input molecules `reactants` and `products` won't be affected.
+        If RMG cannot find appropriate labels, (None, None) will be returned.
+        """
+        template = self.forwardTemplate
+        reactants0 = [reactant.copy(deep=True) for reactant in reactants]
+        if len(reactants0) == 1:
+            molecule = reactants0[0]
+            mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+            for map in mappings:
+                reactantStructures = [molecule]
+                try:
+                    productStructures = self.__generateProductStructures(reactantStructures, [map], forward=True)
+                except ForbiddenStructureException:
+                    pass
+                else:
+                    if productStructures is not None:
+                        if len(products) == 1 and len(productStructures) == 1:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                return reactantStructures, productStructures
+                        elif len(products) == 2 and len(productStructures) == 2:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                if products[1].isIsomorphic(productStructures[1]):
+                                    return reactantStructures, productStructures
+                            if products[0].isIsomorphic(productStructures[1]):
+                                if products[1].isIsomorphic(productStructures[0]):
+                                    return reactantStructures, productStructures
+                        else: continue
+            # if there're some mapping available but cannot match the provided products
+            # raise exception
+            if len(mappings) > 0:
+                raise Exception('Something wrong with products that RMG cannot find a match!')
+            return (None, None)
+        elif len(reactants0) == 2:
+            moleculeA = reactants0[0]
+            moleculeB = reactants0[1]
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+
+            # Iterate over each pair of matches (A, B)
+            for mapA in mappingsA:
+                for mapB in mappingsB:
+                    reactantStructures = [moleculeA, moleculeB]
+                    try:
+                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
+                    except ForbiddenStructureException:
+                        pass
+                    else:
+                        if productStructures is not None:
+                            if len(products) == 1 and len(productStructures) == 1:
+                                if products[0].isIsomorphic(productStructures[0]):
+                                    return reactantStructures, productStructures
+                            elif len(products) == 2 and len(productStructures) == 2:
+                                if products[0].isIsomorphic(productStructures[0]):
+                                    if products[1].isIsomorphic(productStructures[1]):
+                                        return reactantStructures, productStructures
+                                if products[0].isIsomorphic(productStructures[1]):
+                                    if products[1].isIsomorphic(productStructures[0]):
+                                        return reactantStructures, productStructures
+                            else: continue
+            # if there're some mapping available but cannot match the provided products
+            # raise exception
+            if len(mappingsA)*len(mappingsB) > 0:
+                raise Exception('Something wrong with products that RMG cannot find a match!')
+            return (None, None)
+        else:
+            raise Exception('You have {0} reactants, which is unexpected!'.format(len(reactants)))
 

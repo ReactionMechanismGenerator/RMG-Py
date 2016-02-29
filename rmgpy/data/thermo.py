@@ -180,6 +180,87 @@ def processOldLibraryEntry(data):
     )
 
 
+def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
+        """
+        Add the thermodynamic data `thermoData2` to the data `thermoData1`,
+        and return `thermoData1`.
+        
+        If `groupAdditivity` is True, append comments related to group additivity estimation
+        """
+        if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
+            raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
+        
+        for i in range(thermoData1.Tdata.value_si.shape[0]):
+            thermoData1.Cpdata.value_si[i] += thermoData2.Cpdata.value_si[i]
+        thermoData1.H298.value_si += thermoData2.H298.value_si
+        thermoData1.S298.value_si += thermoData2.S298.value_si
+
+        if groupAdditivity:
+            if thermoData1.comment:
+                thermoData1.comment += ' + {0}'.format(thermoData2.comment)
+            else:
+                thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
+            
+        return thermoData1
+    
+def removeThermoData(thermoData1, thermoData2):
+    """
+    Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
+    and return `thermoData1`.
+    """
+    if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
+        raise Exception('Cannot take the difference between these ThermoData objects due to their having different temperature points.')
+
+    for i in range(thermoData1.Tdata.value_si.shape[0]):
+        thermoData1.Cpdata.value_si[i] -= thermoData2.Cpdata.value_si[i]
+    thermoData1.H298.value_si -= thermoData2.H298.value_si
+    thermoData1.S298.value_si -= thermoData2.S298.value_si
+
+    return thermoData1
+
+def averageThermoData(thermoDataList=[]):
+    """
+    Average a list of thermoData values together.
+    Sets uncertainty values to be the approximately the 95% confidence interval, equivalent to
+    2 standard deviations calculated using the sample standard variance:
+    
+    Uncertainty = 2s
+    s = sqrt( sum(abs(x - x.mean())^2) / N - 1) where N is the number of values averaged
+    
+    Note that uncertainties are only computed when number of values is greater than 1.
+    """
+    import copy
+    numValues = len(thermoDataList)
+        
+    if numValues == 0:
+        raise Exception('No thermo data values were inputted to be averaged.')
+    else:
+        print 'Averaging thermo data over {0} value(s).'.format(numValues)
+        
+        if numValues == 1:
+            return copy.deepcopy(thermoDataList[0])
+        
+        else:
+            averagedThermoData = copy.deepcopy(thermoDataList[0])
+            for thermoData in thermoDataList[1:]:
+                averagedThermoData = addThermoData(averagedThermoData, thermoData)
+
+
+            for i in range(averagedThermoData.Tdata.value_si.shape[0]):
+                averagedThermoData.Cpdata.value_si[i] /= numValues
+
+                cpData = [thermoData.Cpdata.value_si[i] for thermoData in thermoDataList]
+                averagedThermoData.Cpdata.uncertainty[i] = 2*numpy.std(cpData, ddof=1)
+
+            HData = [thermoData.H298.value_si for thermoData in thermoDataList]
+            averagedThermoData.H298.value_si /= numValues
+            averagedThermoData.H298.uncertainty_si = 2*numpy.std(HData, ddof=1)
+
+            SData = [thermoData.S298.value_si for thermoData in thermoDataList]
+            averagedThermoData.S298.value_si /= numValues
+            averagedThermoData.S298.uncertainty_si = 2*numpy.std(SData, ddof=1)
+            return averagedThermoData
+
 ################################################################################
 
 class ThermoDepository(Database):
@@ -1124,26 +1205,6 @@ class ThermoDatabase(object):
 
         return thermoData
 
-    def __addThermoData(self, thermoData1, thermoData2):
-        """
-        Add the thermodynamic data `thermoData2` to the data `thermoData1`,
-        and return `thermoData1`.
-        """
-        if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
-            raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
-        
-        for i in range(thermoData1.Tdata.value_si.shape[0]):
-            thermoData1.Cpdata.value_si[i] += thermoData2.Cpdata.value_si[i]
-        thermoData1.H298.value_si += thermoData2.H298.value_si
-        thermoData1.S298.value_si += thermoData2.S298.value_si
-
-        if thermoData1.comment:
-            thermoData1.comment += ' + {0}'.format(thermoData2.comment)
-        else:
-            thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
-        
-        return thermoData1
-
     def __addRingCorrectionThermoData(self, thermoData, ring_database, molecule, ring):
         """
         Determine the ring correction group additivity thermodynamic data for the given
@@ -1166,8 +1227,10 @@ class ThermoDatabase(object):
         
         mostSpecificMatchedEntries = [matchedRingEntries[idx] for idx in mostSpecificMatchIndices]
         if len(set(mostSpecificMatchedEntries)) != 1:
-            raise DatabaseError('More than one type of node was found to be most specific for this ring. ')
-
+            logging.warning('More than one type of node was found to be most specific for this ring.')
+            logging.warning('This is either due to a database error in the ring or polycyclic groups, or a partial match between the group and the full ring.')
+            logging.warning(mostSpecificMatchedEntries)
+            
         # Condense the number of most specific groups down to one
         mostSpecificMatchedEntry = matchedRingEntries[mostSpecificMatchIndices[0]]
         
@@ -1189,7 +1252,7 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data
         else:
-            return self.__addThermoData(thermoData, data)
+            return addThermoData(thermoData, data, groupAdditivity=True)
 
     def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
@@ -1229,7 +1292,7 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data
         else:
-            return self.__addThermoData(thermoData, data)
+            return addThermoData(thermoData, data, groupAdditivity=True)
 
     def getRingGroupsFromComments(self, thermoData):
         """
