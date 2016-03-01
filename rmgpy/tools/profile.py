@@ -131,7 +131,32 @@ class profiler(object):
 
    def __call__(self, *args, **kwargs):
       self.__numcalls += 1
-      return self.profile(*args, **kwargs)
+      with self:
+        return self.profile(*args, **kwargs)
+
+   def __enter__(self):
+        return self
+
+   def __exit__(self, exc_type, exc_value, traceback):
+        module = sys.modules[self.__f.__module__]
+        dirname = os.path.join(os.path.dirname(module.__file__))
+
+        stats_file = os.path.join(dirname, self.__f.__name__+'.profile')
+
+        stats_i = os.path.join(
+            dirname, ''.join([self.__f.__name__, str(self.count()), '.profile'])
+                )
+
+        if self.count() == 1:
+            stats = pstats.Stats(stats_i)
+        else:
+            stats = pstats.Stats(stats_file)
+            stats.add(stats_i)
+        
+        stats.dump_stats(stats_file)
+        os.unlink(stats_i)
+
+        makeProfileGraph(stats_file)
 
    def count(self):
       "Return the number of times the function f was called."
@@ -154,10 +179,4 @@ class profiler(object):
                 )
 
         prof.dump_stats(stats_file)
-
-        # postprocess the stats
-        
-        processProfileStats(stats_file, os.path.join(dirname, self.__f.__name__+'.log'))
-        makeProfileGraph(stats_file)
-
         return retval
