@@ -11,7 +11,9 @@ class ProfileTest(unittest.TestCase):
         Test if we decorate a function with @profilefn.
         """
         
-        @profilefn
+        name = 'func'
+
+        @profiler
         def func():
             pass
 
@@ -20,17 +22,16 @@ class ProfileTest(unittest.TestCase):
         module = sys.modules[func.__module__]
         dirname = os.path.join(os.path.dirname(module.__file__))
 
-        log = os.path.join(dirname, func.__name__ + '.log')
-        prf = os.path.join(dirname, func.__name__ + '.profile')
-        dot = os.path.join(dirname, func.__name__ + '.profile.dot')
-        pdf = os.path.join(dirname, func.__name__ + '.profile.dot.pdf')
-        ps2 = os.path.join(dirname, func.__name__ + '.profile.dot.ps2')
+        prf = os.path.join(dirname, name + '.profile')
+        dot = os.path.join(dirname, name + '.profile.dot')
+        pdf = os.path.join(dirname, name + '.profile.dot.pdf')
+        ps2 = os.path.join(dirname, name + '.profile.dot.ps2')
 
-        for f in [log, prf, dot, pdf, ps2]:
-            self.assertTrue(os.path.isfile(f))
+        for f in [prf, dot, pdf, ps2]:
+            self.assertTrue(os.path.isfile(f), f)
 
         for f in os.listdir(dirname):
-            if re.search(func.__name__, f):
+            if re.search(name, f):
                 os.remove(os.path.join(dirname, f))
 
     def testCalledFunc(self):
@@ -39,12 +40,14 @@ class ProfileTest(unittest.TestCase):
         that is called by another function.
         """
         
-        @profilefn
+        name = 'called'
+
+        @profiler
         def called():
             pass
 
         def func():
-            for i in range(10):
+            for i in range(3):
                 called()
 
         func()
@@ -52,15 +55,14 @@ class ProfileTest(unittest.TestCase):
         module = sys.modules[func.__module__]
         dirname = os.path.join(os.path.dirname(module.__file__))
 
-        log = os.path.join(dirname, called.__name__ + '.log')
-        prf = os.path.join(dirname, called.__name__ + '.profile')
-        dot = os.path.join(dirname, called.__name__ + '.profile.dot')
-        pdf = os.path.join(dirname, called.__name__ + '.profile.dot.pdf')
-        ps2 = os.path.join(dirname, called.__name__ + '.profile.dot.ps2')
+        prf = os.path.join(dirname, name+ '.profile')
+        dot = os.path.join(dirname, name+ '.profile.dot')
+        pdf = os.path.join(dirname, name+ '.profile.dot.pdf')
+        ps2 = os.path.join(dirname, name+ '.profile.dot.ps2')
 
-        for f in [log, prf, dot, pdf, ps2]:
+        for f in [prf, dot, pdf, ps2]:
             self.assertTrue(os.path.isfile(f), f)
 
         for f in os.listdir(dirname):
-            if re.search(func.__name__, f):
+            if re.search(name, f):
                 os.remove(os.path.join(dirname, f))
