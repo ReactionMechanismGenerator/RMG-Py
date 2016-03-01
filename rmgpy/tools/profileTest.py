@@ -32,3 +32,35 @@ class ProfileTest(unittest.TestCase):
         for f in os.listdir(dirname):
             if re.search(func.__name__, f):
                 os.remove(os.path.join(dirname, f))
+
+    def testCalledFunc(self):
+        """
+        Test if we decorate a function with @profilefn
+        that is called by another function.
+        """
+        
+        @profilefn
+        def called():
+            pass
+
+        def func():
+            for i in range(10):
+                called()
+
+        func()
+
+        module = sys.modules[func.__module__]
+        dirname = os.path.join(os.path.dirname(module.__file__))
+
+        log = os.path.join(dirname, called.__name__ + '.log')
+        prf = os.path.join(dirname, called.__name__ + '.profile')
+        dot = os.path.join(dirname, called.__name__ + '.profile.dot')
+        pdf = os.path.join(dirname, called.__name__ + '.profile.dot.pdf')
+        ps2 = os.path.join(dirname, called.__name__ + '.profile.dot.ps2')
+
+        for f in [log, prf, dot, pdf, ps2]:
+            self.assertTrue(os.path.isfile(f), f)
+
+        for f in os.listdir(dirname):
+            if re.search(func.__name__, f):
+                os.remove(os.path.join(dirname, f))
