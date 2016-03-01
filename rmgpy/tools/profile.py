@@ -7,27 +7,6 @@ import cProfile
 import pstats
 import subprocess
 
-def profilefn(fn):
-    @wraps(fn)
-    def profile(*args, **kwargs):
-        module = sys.modules[fn.__module__]
-        dirname = os.path.join(os.path.dirname(module.__file__))
-
-        prof = cProfile.Profile()
-        retval = prof.runcall(fn, *args, **kwargs)
-
-        stats_file = os.path.join(os.path.join(dirname, fn.__name__+'.profile'))
-        prof.dump_stats(stats_file)
-
-        # postprocess the stats
-        
-        processProfileStats(stats_file, os.path.join(dirname, fn.__name__+'.log'))
-        makeProfileGraph(stats_file)
-
-        return retval
-
-    return profile
-
 class Tee:
     """A simple tee to create a stream which prints to many streams.
     
@@ -140,3 +119,45 @@ def makeProfileGraph(stats_file):
     else:
         logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
 
+class profiler(object):
+   "Decorator that keeps track of the number of times a function is called."
+
+   __instances = {}
+
+   def __init__(self, f):
+      self.__f = f
+      self.__numcalls = 0
+      profiler.__instances[f] = self
+
+   def __call__(self, *args, **kwargs):
+      self.__numcalls += 1
+      return self.profile(*args, **kwargs)
+
+   def count(self):
+      "Return the number of times the function f was called."
+      return profiler.__instances[self.__f].__numcalls
+
+   @staticmethod
+   def counts():
+      "Return a dict of {function: # of calls} for all registered functions."
+      return dict([(f.__name__, profiler.__instances[f].__numcalls) for f in profiler.__instances])
+
+   def profile(self, *args, **kwargs):
+        module = sys.modules[self.__f.__module__]
+        dirname = os.path.join(os.path.dirname(module.__file__))
+
+        prof = cProfile.Profile()
+        retval = prof.runcall(self.__f, *args, **kwargs)
+
+        stats_file = os.path.join(
+            dirname, ''.join([self.__f.__name__, str(self.count()), '.profile'])
+                )
+
+        prof.dump_stats(stats_file)
+
+        # postprocess the stats
+        
+        processProfileStats(stats_file, os.path.join(dirname, self.__f.__name__+'.log'))
+        makeProfileGraph(stats_file)
+
+        return retval
