@@ -119,6 +119,7 @@ def getSolverExtensionModules():
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.simple', ['rmgpy/solver/simple.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.liquid', ['rmgpy/solver/liquid.pyx'], include_dirs=['.']),
+        Extension('rmgpy.solver.surface', ['rmgpy/solver/surface.pyx'], include_dirs=['.']),
     ]
 
 
