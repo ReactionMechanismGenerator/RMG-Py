@@ -87,6 +87,13 @@ class Cantera:
         self.model = ct.Solution(canteraFile) if canteraFile else None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
         self.conditions = conditions
+
+        # Make output directory if it does not yet exist:
+        if not os.path.exists(self.outputDirectory):
+            try:
+                os.makedirs(self.outputDirectory)
+            except:
+                raise Exception('Cantera output directory could not be created.')
         
     def loadChemkinModel(self, chemkinFile, **kwargs):
         """
@@ -187,7 +194,7 @@ class Cantera:
             # plot
             GenericPlot(xVar=time, yVar=TData).plot('{0}_temperature.png'.format(i+1))
             GenericPlot(xVar=time, yVar=PData).plot('{0}_pressure.png'.format(i+1))
-            SimulationPlot(xVar=time, yVar=speciesData, ylabel='Mole Fraction').plot('{0}_mole_fractions.png'.format(i+1))
+            SimulationPlot(xVar=time, yVar=speciesData, ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
             
     def simulate(self):
         """
