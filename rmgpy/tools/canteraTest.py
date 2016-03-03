@@ -18,7 +18,7 @@ class CanteraTest(unittest.TestCase):
         t_ign = findIgnitionDelay(t,P)
         self.assertEqual(t_ign,2.75)
 
-        t_ign = findIgnitionDelay(t,OH,'maxHalfOH')
+        t_ign = findIgnitionDelay(t,OH,'maxHalfConcentration')
         self.assertEqual(t_ign,3)
 
         t_ign = findIgnitionDelay(t,[OH,CO], 'maxSpeciesConcentrations')

@@ -332,7 +332,7 @@ def findIgnitionDelay(time, yVar=None, metric='maxDerivative'):
              but can contain multiple arrays such as species
     `metric`: can be set to 
         'maxDerivative': This is selected by default for y(t_ign) = max(dY/dt), and is typically used for a yVar containing T or P data
-        'maxHalfOH': This is selected for the case where [OH](t_ign) = [OH]_max/2 is desired
+        'maxHalfConcentration': This is selected for the case where a metric like [OH](t_ign) = [OH]_max/2 is desired
         'maxSpeciesConcentrations': This is selected for the case where the metric for ignition
             is y1*y2*...*yn(t_ign) = max(y1*y2*...*yn) such as when the time desired if for max([CH][O]).  This is
             the only metric that requires a list of arrays
@@ -356,7 +356,7 @@ def findIgnitionDelay(time, yVar=None, metric='maxDerivative'):
         index = next(i for i,d in enumerate(dydt) if d==max(dydt))
         
         return 0.5 * (time[index] + time[index+1])
-    elif metric == 'maxHalfOH':
+    elif metric == 'maxHalfConcentration':
         if len(yVar) != 1:
             raise Exception('Max([OH]/2) metric for ignition delay must be used with a single y variable.')
 
