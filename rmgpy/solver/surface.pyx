@@ -43,38 +43,75 @@ cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
-cdef class LiquidReactor(ReactionSystem):
+cdef class SurfaceReactor(ReactionSystem):
     """
-    A reaction system consisting of a homogeneous, isothermal, constant volume batch
-    reactor. These assumptions allow for a number of optimizations that enable
-    this solver to complete very rapidly, even for large kinetic models.
+    A reaction system consisting of a heterogeneous, isothermal, constant volume batch
+    reactor. 
     """
 
     cdef public ScalarQuantity T
-    cdef public ScalarQuantity P    
+    cdef public ScalarQuantity initialP
     cdef public double V
     cdef public bint constantVolume
-    cdef public dict initialConcentrations
 
-    def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
-        ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
+    cdef public dict initialGasMoleFractions
+    cdef public dict initialSurfaceCoverages
+    cdef public ScalarQuantity surfaceVolumeRatio
+    cdef public ScalarQuantity surfaceSiteDensity
+    cdef public numpy.ndarray reactionsOnSurface # (catalyst surface, not core/edge surface)
+    cdef public numpy.ndarray speciesOnSurface # (catalyst surface, not core/edge surface)
+
+    def __init__(self, 
+                 T, 
+                 initialP,
+                 initialGasMoleFractions,
+                 initialSurfaceCoverages,
+                 surfaceVolumeRatio,
+                 surfaceSiteDensity,
+                 termination,
+                 sensitiveSpecies=None,
+                 sensitivityThreshold=1e-3):
+        ReactionSystem.__init__(self,
+                                termination, 
+                                sensitiveSpecies, 
+                                sensitivityThreshold)
+
         self.T = Quantity(T)
-        self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
-        self.initialConcentrations = initialConcentrations # should be passed in SI
-        self.V = 0 # will be set from initialConcentrations in initializeModel
+        self.initialP = Quantity(initialP)
+        self.initialGasMoleFractions = initialGasMoleFractions
+        self.initialSurfaceCoverages = initialSurfaceCoverages
+        self.surfaceVolumeRatio = Quantity(surfaceVolumeRatio)
+        self.surfaceSiteDensity = Quantity(surfaceSiteDensity)
+        self.V = 0 # will be set from ideal gas law in initializeModel
         self.constantVolume = True
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
-        Convert the initialConcentrations dictionary from species names into species objects,
+        Convert the initialGasMoleFractions and initialSurfaceCoverages dictionaries
+        from species names into species objects,
         using the given dictionary of species.
         """
-        initialConcentrations = {}
-        for label, moleFrac in self.initialConcentrations.iteritems():
-            initialConcentrations[speciesDict[label]] = moleFrac
-        self.initialConcentrations = initialConcentrations
+        initialGasMoleFractions = {}
+        for label, moleFrac in self.initialGasMoleFractions.iteritems():
+            initialGasMoleFractions[speciesDict[label]] = moleFrac
+        self.initialGasMoleFractions = initialGasMoleFractions
+        initialSurfaceCoverages = {}
+        for label, surfaceCoverage in self.initialSurfaceCoverages.iteritems():
+            initialSurfaceCoverages[speciesDict[label]] = surfaceCoverage
+        self.initialSurfaceCoverages = initialSurfaceCoverages
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
+    cpdef initializeModel(self,
+                          list coreSpecies,
+                          list coreReactions,
+                          list edgeSpecies,
+                          list edgeReactions,
+                          list pdepNetworks=None,
+                          atol=1e-16,
+                          rtol=1e-8,
+                          sensitivity=False,
+                          sens_atol=1e-6,
+                          sens_rtol=1e-4,
+                          filterReactions=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -84,6 +121,22 @@ cdef class LiquidReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
+        cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
+        cdef int index
+        #: 1 if it's on a surface, 0 if it's in the gas phase
+        reactionsOnSurface = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.int)
+        speciesOnSurface = numpy.zeros((self.numCoreSpecies), numpy.int)
+        for spec, index in self.speciesIndex.iteritems():
+            if index >= self.numCoreSpecies:
+                continue
+            if spec.containsSurfaceSite():
+                speciesOnSurface[index] = 1
+        for rxn, index in self.reactionIndex.iteritems():
+            if rxn.isSurfaceReaction():
+                reactionsOnSurface[index] = 1
+        self.speciesOnSurface = speciesOnSurface
+        self.reactionsOnSurface = reactionsOnSurface
+        
         # Set initial conditions
         self.set_initial_conditions()
 
@@ -103,15 +156,33 @@ cdef class LiquidReactor(ReactionSystem):
 
     def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
-        Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
+        Populates the kf, kb and equilibriumConstants
         arrays with the values computed at the temperature and (effective) pressure of the 
         reacion system.
         """
         
+        cdef double P, surfaceVolumeRatioSI
+        
+        surfaceVolumeRatioSI = self.surfaceVolumeRatio.value_si
+        # ToDo: Pressure should come from ideal gas law?
+        P = self.initialP.value_si
+
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
-            self.kf[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
+            self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)
+            # ToDo: getRateCoefficient should also depend on surface coverages vector
+            assert not rxn.kinetics.isPressureDependent(), "Pressure may be varying."
+            if rxn.isSurfaceReaction():
+                """
+                Be careful! From here on kf and kb will now be in Volume units,
+                even for surface reactions (which you may expect to be in Area units).
+                This is to avoid repeatedly multiplying a bunch of things inside every 
+                loop of the ODE solver.
+                """
+                self.kf[j] = self.kf[j] * surfaceVolumeRatioSI
+ 
             if rxn.reversible:
+                # ToDo: getEquilibriumConstant should be coverage dependent
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
@@ -121,40 +192,69 @@ cdef class LiquidReactor(ReactionSystem):
         current reactor model.
 
         The volume is set to the value in m3 required to contain 
-        one mole total of core species at start.
+        one mole total of gas phase core species at start.
 
-        The coreSpeciesConcentrations array is set to the values stored in the
-        initial concentrations dictionary.
+        The total surface sites are calculated from surfaceVolumeRatio and surfaceSiteDensity
+        allowing initialSurfaceCoverages to determine the number of moles of surface species.
+        The number of moles of gas phase species is taken from initialGasMoleFractions.
+        
+        The coreSpeciesConcentrations array is then determined, in mol/m3 for gas phase
+        and mol/m2 for surface species.
 
-        The initial number of moles of a species j is computed and stored in the
+        The initial number of moles of a species j in the reactor is computed and stored in the
         y0 instance attribute.
 
         """
+        cdef double V, P, surfaceVolumeRatio_si
+        
         ReactionSystem.set_initial_conditions(self)
+        # self.y0 tracks number of moles of each core species
 
-        for spec, conc in self.initialConcentrations.iteritems():
+        # add only the gas phase species first
+        for spec, moleFrac in self.initialGasMoleFractions.iteritems():
             i = self.get_species_index(spec)
-            self.coreSpeciesConcentrations[i] = conc
+            self.y0[i] = moleFrac # moles in reactor
+
+        # Use ideal gas law to compute reactor volume
+        V = constants.R * self.T.value_si * numpy.sum(self.y0[:self.numCoreSpecies]) / self.initialP.value_si
+        self.V = V # volume in m^3  (assume reactor volume is gas phase volume, i.e catalyst takes no space)
+
+        surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si # 1/m
+        totalSurfaceSites = V * surfaceVolumeRatio_si * self.surfaceSiteDensity.value_si # total surface sites in reactor
+
+        for spec, coverage in self.initialSurfaceCoverages.iteritems():
+            i = self.get_species_index(spec)
+            self.y0[i] = totalSurfaceSites * coverage # moles in reactor
         
-        V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
-        self.V = V 
+        for j, isSurfaceSpecies in enumerate(self.speciesOnSurface): # should only go up to core species
+            if isSurfaceSpecies:
+                self.coreSpeciesConcentrations[j] = self.y0[j] / V / surfaceVolumeRatio_si # moles per m2 of surface
+            else:
+                self.coreSpeciesConcentrations[j] = self.y0[j] / V # moles per m3 of gas
         
-        for j in xrange(self.numCoreSpecies):
-            self.y0[j] = self.coreSpeciesConcentrations[j] * V
-            
+    def compute_network_variables(self, pdepNetworks=None):
+        # ToDo: this should allow pressure to vary?
+        # for now, just call the base class version.
+        ReactionSystem.compute_network_variables(self, pdepNetworks)
 
     @cython.boundscheck(False)
-    def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
+    def residual(self,
+                 double t,
+                 numpy.ndarray[numpy.float64_t, ndim=1] N,
+                 numpy.ndarray[numpy.float64_t, ndim=1] dNdt,
+                 numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)
+                 ):
 
         """
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
+        cdef numpy.ndarray[numpy.int_t, ndim=1] reactionsOnSurface, speciesOnSurface
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
-        cdef double k, V, reactionRate
+        cdef double k, V, reactionRate, surfaceVolumeRatio_si
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk
@@ -163,8 +263,8 @@ cdef class LiquidReactor(ReactionSystem):
         ip = self.productIndices
         equilibriumConstants = self.Keq
 
-        kf = self.kf
-        kr = self.kb
+        kf = self.kf # are already 'per m3 of reactor' even for surface reactions
+        kr = self.kb # are already 'per m3 of reactor' even for surface reactions
         
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
@@ -184,12 +284,20 @@ cdef class LiquidReactor(ReactionSystem):
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
+        
+        reactionsOnSurface = self.reactionsOnSurface
+        speciesOnSurface = self.speciesOnSurface
+        surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         V =  self.V # constant volume reactor
 
         for j in xrange(numCoreSpecies):
-            C[j] = y[j] / V
+            if speciesOnSurface[j]:
+                C[j] = (N[j] / V) / surfaceVolumeRatio_si
+            else:
+                C[j] = N[j] / V
+            #: surface species are in mol/m2, gas phase are in mol/m3
             coreSpeciesConcentrations[j] = C[j]
         
         for j in xrange(ir.shape[0]):
@@ -212,12 +320,13 @@ cdef class LiquidReactor(ReactionSystem):
             else: # three reactants!! (really?)
                 reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
 
+            "reactionRate is now in mol/m3/s"
             # Set the reaction and species rates
             if j < numCoreReactions:
                 # The reaction is a core reaction
                 coreReactionRates[j] = reactionRate
 
-                # Add/substract the total reaction rate from each species rate
+                # Add/subtract the total reaction rate from each species rate
                 # Since it's a core reaction we know that all of its reactants
                 # and products are core species
                 first = ir[j,0]
@@ -280,25 +389,24 @@ cdef class LiquidReactor(ReactionSystem):
         self.networkLeakRates = networkLeakRates
 
         res = coreSpeciesRates * V 
+        # mol/s
         
-        
-        if self.sensitivity:
-            delta = numpy.zeros(len(y), numpy.float64)
+        if self.sensitivity and False:
+            delta = numpy.zeros(len(N), numpy.float64)
             delta[:numCoreSpecies] = res
             if self.jacobianMatrix is None:
-                jacobian = self.jacobian(t,y,dydt,0,senpar)
+                jacobian = self.jacobian(t,N,dNdt,0,senpar)
             else:
                 jacobian = self.jacobianMatrix
             dgdk = ReactionSystem.computeRateDerivative(self)
             for j in xrange(numCoreReactions+numCoreSpecies):
                 for i in xrange(numCoreSpecies):
                     for z in xrange(numCoreSpecies):
-                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*y[(j+1)*numCoreSpecies + z] 
+                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*N[(j+1)*numCoreSpecies + z] 
                     delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
-
         else:
             delta = res
-        delta = delta - dydt
+        delta = delta - dNdt
         
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
