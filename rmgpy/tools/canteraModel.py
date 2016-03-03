@@ -269,6 +269,33 @@ class Cantera:
         return allData
 
 
+def getRMGSpeciesFromSMILES(smilesList, speciesList, names=False):
+    """
+    Args:
+        smilesList: list of SMIlES for species of interest
+        speciesList: a list of RMG species objects
+        names: set to `True` if species names are desired to be returned instead of objects
+
+    Returns: A list of RMG species objects or names corresponding to the list of smiles.
+    """
+    # Not strictly necesssary, but its likely that people will forget to put the brackets around the bath gasses
+    bathGases={"Ar": "[Ar]", "He": "[He]", "Ne": "[Ne]"}
+    finalList=[]
+    for smiles in smilesList:
+        if smiles in bathGases:
+            spec = Species().fromSMILES(bathGases[smiles])
+        else:
+            spec=Species().fromSMILES(smiles)
+        spec.generateResonanceIsomers()
+
+        for rmgSpecies in speciesList:
+            if spec.isIsomorphic(rmgSpecies):
+                finalList.append(rmgSpecies)
+                break
+        else: raise KeyError("The species {0} does not appear in the species list".format(smiles))
+
+    return finalList
+
 def findIgnitionDelay(time, yVar=None, metric='maxDerivative'):
     """
     Identify the ignition delay point based on the following parameters:
