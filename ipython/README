@@ -1,0 +1,12 @@
+This folder contains ipython notebooks containing scripts and other notes related to using RMG.
+
+If you do not have ipython installed, we suggest installing it through the jupyter package while your rmg environment is activated by typing the following commands:
+
+source activate rmg_env
+conda install jupyter
+
+
+For Windows users:
+
+activate rmg_env
+conda install jupyter
