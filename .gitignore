@@ -51,3 +51,9 @@ rmgpy/solver/settings.pxi
 
 # bin/symmetry
 bin/symmetry
+
+# ipython checkpoints
+**/.ipynb_checkpoints/**
+
+# cantera files
+*.cti
