@@ -6,6 +6,7 @@ from rmgpy.chemkin import loadSpeciesDictionary, getSpeciesIdentifier
 from rmgpy.species import Species
 from rmgpy.tools.plot import *
 
+
 class CanteraCondition:
     """
     This class organizes the inputs needed for a cantera simulation
@@ -32,7 +33,7 @@ class CanteraCondition:
         self.reactorType=reactorType
         self.reactionTime=float(reactionTime)
         
-        #Normalize initialMolFrac if not already done:
+        # Normalize initialMolFrac if not already done:
         if sum(molFrac.values())!=1.00:
             total=sum(molFrac.values())
             for species, value in molFrac.iteritems():
@@ -69,55 +70,16 @@ class CanteraCondition:
         if self.V0: string += 'V0: {:0.10f}, '.format(self.V0)
         string += 'Initial Mole Fractions: {0}, '.format(self.molFrac.__repr__())
         return string
-    
-class Cantera:
-    """
-    This class contains functions associated with an entire Cantera job
-    """
-    
-    def __init__(self, speciesList=None, reactionList=None, canteraFile='', outputDirectory='', conditions=[]):
-        """
-        `speciesList`: list of RMG species objects
-        `reactionList`: list of RMG reaction objects
-        `canteraFile` path of the chem.cti file associated with this job
-        `conditions`: a list of `CanteraCondition` objects
-        """
-        self.speciesList = speciesList 
-        self.reactionList = reactionList 
-        self.model = ct.Solution(canteraFile) if canteraFile else None
-        self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
-        self.conditions = conditions
 
-        # Make output directory if it does not yet exist:
-        if not os.path.exists(self.outputDirectory):
-            try:
-                os.makedirs(self.outputDirectory)
-            except:
-                raise Exception('Cantera output directory could not be created.')
-        
-    def loadChemkinModel(self, chemkinFile, **kwargs):
+
+def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
         """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
-        and save it in the outputDirectory
-        Then load it into self.model
-        """
-        from cantera import ck2cti
-        print 'Converting chem.inp to chem.cti...'
-        outName=os.path.join(self.outputDirectory, "chem.cti")
-        if os.path.exists(outName):
-            os.remove(outName)
-        parser = ck2cti.Parser()
-        parser.convertMech(chemkinFile, outName=outName, **kwargs)
-        print 'Saving into Cantera Model...'
-        self.model = ct.Solution(outName)
-    
-    def generateConditions(self, reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
-        """
-        Creates a list of conditions from from the lists provided. 
+        Creates a list of cantera conditions from from the lists provided. 
         
         `reactorType`: a string indicating the Cantera reactor type
         `reactionTime`: ScalarQuantity object for time
-        `molFracList`: a list of molfrac dictionaries wisth species keys and mole fraction values
+        `molFracList`: a list of molfrac dictionaries with either string or species object keys 
+                       and mole fraction values
         `Tlist`: ArrayQuantity object of temperatures
         `Plist`: ArrayQuantity object of pressures
         `Vlist`: ArrayQuantity object of volumes
@@ -129,7 +91,10 @@ class Cantera:
         for molFrac in molFracList:
             newMolFrac = {}
             for key, value in molFrac.iteritems():
-                newkey = getSpeciesIdentifier(key)
+                if isinstance(key, Species):
+                    newkey = getSpeciesIdentifier(key)
+                else:
+                    newkey = key
                 newMolFrac[newkey] = value
             newMolFracList.append(newMolFrac)
             
@@ -170,7 +135,63 @@ class Cantera:
                         for V in Vlist:
                             conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, P0=P, V0=V))
                             
+        return conditions
+
+class Cantera:
+    """
+    This class contains functions associated with an entire Cantera job
+    """
+    
+    def __init__(self, speciesList=None, reactionList=None, canteraFile='', outputDirectory='', conditions=[]):
+        """
+        `speciesList`: list of RMG species objects
+        `reactionList`: list of RMG reaction objects
+        `canteraFile` path of the chem.cti file associated with this job
+        `conditions`: a list of `CanteraCondition` objects
+        """
+        self.speciesList = speciesList 
+        self.reactionList = reactionList 
+        self.model = ct.Solution(canteraFile) if canteraFile else None
+        self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
         self.conditions = conditions
+
+        # Make output directory if it does not yet exist:
+        if not os.path.exists(self.outputDirectory):
+            try:
+                os.makedirs(self.outputDirectory)
+            except:
+                raise Exception('Cantera output directory could not be created.')
+
+    def generateConditions(self, reactorType, reactionTime, molFracList, Tlist, Plist):
+        """
+        This saves all the reaction conditions into the Cantera class.
+        
+        `reactorType`: a string indicating the Cantera reactor type
+        `reactionTime`: ScalarQuantity object for time
+        `molFracList`: a list of molfrac dictionaries with either string or species object keys 
+                       and mole fraction values
+        `Tlist`: ArrayQuantity object of temperatures
+        `Plist`: ArrayQuantity object of pressures
+        `Vlist`: ArrayQuantity object of volumes
+        
+        """
+        self.conditions = generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist, Plist)
+
+    def loadChemkinModel(self, chemkinFile, **kwargs):
+        """
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
+        and save it in the outputDirectory
+        Then load it into self.model
+        """
+        from cantera import ck2cti
+        print 'Converting chem.inp to chem.cti...'
+        outName=os.path.join(self.outputDirectory, "chem.cti")
+        if os.path.exists(outName):
+            os.remove(outName)
+        parser = ck2cti.Parser()
+        parser.convertMech(chemkinFile, outName=outName, **kwargs)
+        print 'Saving into Cantera Model...'
+        self.model = ct.Solution(outName)
 
     def plot(self, data):
         """
@@ -214,6 +235,8 @@ class Cantera:
             # Choose reactor
             if condition.reactorType == 'IdealGasReactor':
                 canteraReactor=ct.IdealGasReactor(self.model)
+            elif condition.reactorType == 'IdealGasConstPressureReactor':
+                canteraReactor=ct.IdealConstPressureGasReactor(self.model)
             else:
                 raise Exception('Other types of reactor conditions are currently not supported')
             
@@ -276,11 +299,12 @@ def getRMGSpeciesFromSMILES(smilesList, speciesList, names=False):
         speciesList: a list of RMG species objects
         names: set to `True` if species names are desired to be returned instead of objects
 
-    Returns: A list of RMG species objects or names corresponding to the list of smiles.
+    Returns: A dict containing the smiles as keys and RMG species objects as their values
+    If the species is not found, the value will be returned as None
     """
     # Not strictly necesssary, but its likely that people will forget to put the brackets around the bath gasses
     bathGases={"Ar": "[Ar]", "He": "[He]", "Ne": "[Ne]"}
-    finalList=[]
+    mapping = {}
     for smiles in smilesList:
         if smiles in bathGases:
             spec = Species().fromSMILES(bathGases[smiles])
@@ -290,11 +314,14 @@ def getRMGSpeciesFromSMILES(smilesList, speciesList, names=False):
 
         for rmgSpecies in speciesList:
             if spec.isIsomorphic(rmgSpecies):
-                finalList.append(rmgSpecies)
+                if smiles in mapping:
+                    raise KeyError("The SMILES {0} has appeared twice in the species list!".format(smiles))
+                mapping[smiles] = rmgSpecies
                 break
-        else: raise KeyError("The species {0} does not appear in the species list".format(smiles))
+        else: 
+            mapping[smiles] = None
 
-    return finalList
+    return mapping
 
 def findIgnitionDelay(time, yVar=None, metric='maxDerivative'):
     """
