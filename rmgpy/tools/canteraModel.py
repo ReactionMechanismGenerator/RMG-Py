@@ -267,3 +267,56 @@ class Cantera:
             allData.append((time,conditionData))
             
         return allData
+
+
+def findIgnitionDelay(time, yVar=None, metric='maxDerivative'):
+    """
+    Identify the ignition delay point based on the following parameters:
+
+    `time`: an array containing different times
+    `yVars`: either a single y array or a list of arrays, typically containing only a single array such as pressure,
+             but can contain multiple arrays such as species
+    `metric`: can be set to 
+        'maxDerivative': This is selected by default for y(t_ign) = max(dY/dt), and is typically used for a yVar containing T or P data
+        'maxHalfOH': This is selected for the case where [OH](t_ign) = [OH]_max/2 is desired
+        'maxSpeciesConcentrations': This is selected for the case where the metric for ignition
+            is y1*y2*...*yn(t_ign) = max(y1*y2*...*yn) such as when the time desired if for max([CH][O]).  This is
+            the only metric that requires a list of arrays
+
+    Note that numpy array must be used.
+    """
+
+    if not isinstance(yVar, list):
+        yVar = [yVar]
+
+    for y in yVar:
+        if len(y) != len(time):
+            raise Exception('Mismatch of array length for time and y variable.')
+
+    if metric == 'maxDerivative':
+        if len(yVar) != 1:
+            raise Exception('Maximum derivative metric for ignition delay must be used with a single y variable.')
+
+        y = yVar[0]
+        dydt = (y[1:] - y[:-1]) / (time[1:] - time[:-1])
+        index = next(i for i,d in enumerate(dydt) if d==max(dydt))
+        
+        return 0.5 * (time[index] + time[index+1])
+    elif metric == 'maxHalfOH':
+        if len(yVar) != 1:
+            raise Exception('Max([OH]/2) metric for ignition delay must be used with a single y variable.')
+
+        y = yVar[0]
+        maxIndex = y.argmax()
+        OHmetric = max(y)/2 
+        mindata = OHmetric - y[0:maxIndex]
+        index = mindata.argmin()
+        return time[index]
+
+    elif metric == 'maxSpeciesConcentrations':
+        multdata = np.ones(len(yVar[0]))
+        for spec in yVar:  
+            multdata *= spec
+        index = multdata.argmax()
+        return time[index]
+
