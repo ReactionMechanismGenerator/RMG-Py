@@ -50,10 +50,10 @@ class CanteraCondition:
         """
         string="Condition("
         string += 'reactorType="{0}", '.format(self.reactorType)
-        string += 'reactionTime={:0.10f}, '.format(self.reactionTime)
+        string += 'reactionTime={:5g}, '.format(self.reactionTime)
         string += 'molFrac={0}, '.format(self.molFrac.__repr__())
-        if self.T0: string += 'T0={:0.10f}, '.format(self.T0)
-        if self.P0: string += 'P0={:0.10f}, '.format(self.P0)
+        if self.T0: string += 'T0={:5g}, '.format(self.T0)
+        if self.P0: string += 'P0={:0.5g}, '.format(self.P0)
         if self.V0: string += 'V0={:0.10f}, '.format(self.V0)
         string = string[:-2] + ')'
         return string
@@ -63,12 +63,12 @@ class CanteraCondition:
         Return a string representation of the condition.
         """
         string=""
-        string += 'Reactor Type: {0}, '.format(self.reactorType)
-        string += 'Reaction Time: {:0.10f}, '.format(self.reactionTime)
-        if self.T0: string += 'T0: {:0.10f}, '.format(self.T0)
-        if self.P0: string += 'P0: {:0.10f}, '.format(self.P0)
-        if self.V0: string += 'V0: {:0.10f}, '.format(self.V0)
-        string += 'Initial Mole Fractions: {0}, '.format(self.molFrac.__repr__())
+        string += 'Reactor Type: {0}\n'.format(self.reactorType)
+        string += 'Reaction Time: {:5g} s\n'.format(self.reactionTime)
+        if self.T0: string += 'T0: {:5g} K\n'.format(self.T0)
+        if self.P0: string += 'P0: {:5g} Pa\n'.format(self.P0)
+        if self.V0: string += 'V0: {:5g} m^3\n'.format(self.V0)
+        string += 'Initial Mole Fractions: {0}'.format(self.molFrac.__repr__())
         return string
 
 
@@ -162,7 +162,7 @@ class Cantera:
             except:
                 raise Exception('Cantera output directory could not be created.')
 
-    def generateConditions(self, reactorType, reactionTime, molFracList, Tlist, Plist):
+    def generateConditions(self, reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
         """
         This saves all the reaction conditions into the Cantera class.
         
