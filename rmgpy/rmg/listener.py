@@ -56,7 +56,7 @@ class SimulationProfileWriter(object):
         for spc in self.coreSpecies:
             header.append(getSpeciesIdentifier(spc))
 
-        with open(filename, 'w') as csvfile:
+        with open(filename, 'wb') as csvfile:
             worksheet = csv.writer(csvfile)
 
             # add header row:
