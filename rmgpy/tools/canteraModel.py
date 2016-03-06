@@ -2,9 +2,9 @@ import sys
 import os.path
 import numpy as np
 import cantera as ct
-from rmgpy.chemkin import loadSpeciesDictionary, getSpeciesIdentifier
+from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.species import Species
-from rmgpy.tools.plot import *
+from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot
 
 
 class CanteraCondition:

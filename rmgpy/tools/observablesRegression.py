@@ -2,8 +2,8 @@ import sys
 import os.path
 import numpy 
 from rmgpy.chemkin import loadChemkinFile
-from rmgpy.tools.plot import *
-from rmgpy.tools.canteraModel import *
+from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot, findNearest
+from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromSMILES
 
 def getNearestTime(timepoint, timeArray):
     """
