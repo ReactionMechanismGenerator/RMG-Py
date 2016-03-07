@@ -5,6 +5,7 @@ import cantera as ct
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.species import Species
 from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot
+from rmgpy.quantity import Quantity
 
 
 class CanteraCondition:
@@ -18,43 +19,44 @@ class CanteraCondition:
         IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
         IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
 
-    `reactionTime`          A float giving the reaction time in seconds
+    `reactionTime`          A tuple object giving the (reaction time, units)
     `molFrac`               A dictionary giving the initial mol Fractions. Keys are species cantera names and the values are floats
 
-    To specifiy the system for an ideal gas, you must define 2 of the following 3 parameters:
-    `T0`                    A float giving the initial temperature in K
-    'P0'                    A float giving the initial pressure in Pa
-    'V0'                    A float giving the initial reactor volume in m^3
+    To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
+    `T0`                    A tuple giving the (initial temperature, units) which reconstructs a Quantity object
+    'P0'                    A tuple giving the (initial pressure, units) which reconstructs a Quantity object
+    'V0'                    A tuple giving the (initial volume, units) which reconstructs a Quantity object
     ======================= ====================================================
 
 
     """
     def __init__(self, reactorType, reactionTime, molFrac, T0=None, P0=None, V0=None):
         self.reactorType=reactorType
-        self.reactionTime=float(reactionTime)
+        self.reactionTime=Quantity(reactionTime)
         
         # Normalize initialMolFrac if not already done:
         if sum(molFrac.values())!=1.00:
             total=sum(molFrac.values())
             for species, value in molFrac.iteritems():
                 molFrac[species]= value / total
+
         self.molFrac=molFrac
-        self.T0=float(T0) if T0 else None
-        self.P0=float(P0) if P0 else None
-        self.V0=float(V0) if V0 else None
+        self.T0=Quantity(T0)
+        self.P0=Quantity(P0)
+        self.V0=Quantity(V0)
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string="Condition("
+        string="CanteraCondition("
         string += 'reactorType="{0}", '.format(self.reactorType)
-        string += 'reactionTime={:5g}, '.format(self.reactionTime)
+        string += 'reactionTime={}, '.format(self.reactionTime.__repr__())
         string += 'molFrac={0}, '.format(self.molFrac.__repr__())
-        if self.T0: string += 'T0={:5g}, '.format(self.T0)
-        if self.P0: string += 'P0={:0.5g}, '.format(self.P0)
-        if self.V0: string += 'V0={:0.10f}, '.format(self.V0)
+        if self.T0: string += 'T0={}, '.format(self.T0.__repr__())
+        if self.P0: string += 'P0={}, '.format(self.P0.__repr__())
+        if self.V0: string += 'V0={}, '.format(self.V0__repr__())
         string = string[:-2] + ')'
         return string
 
@@ -64,29 +66,37 @@ class CanteraCondition:
         """
         string=""
         string += 'Reactor Type: {0}\n'.format(self.reactorType)
-        string += 'Reaction Time: {:5g} s\n'.format(self.reactionTime)
-        if self.T0: string += 'T0: {:5g} K\n'.format(self.T0)
-        if self.P0: string += 'P0: {:5g} Pa\n'.format(self.P0)
-        if self.V0: string += 'V0: {:5g} m^3\n'.format(self.V0)
+        string += 'Reaction Time: {}\n'.format(self.reactionTime)
+        if self.T0: string += 'T0: {}\n'.format(self.T0)
+        if self.P0: string += 'P0: {}\n'.format(self.P0)
+        if self.V0: string += 'V0: {}\n'.format(self.V0)
         string += 'Initial Mole Fractions: {0}'.format(self.molFrac.__repr__())
         return string
 
 
 def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
         """
-        Creates a list of cantera conditions from from the lists provided. 
+        Creates a list of cantera conditions from from the arguments provided. 
         
-        `reactorType`: a string indicating the Cantera reactor type
-        `reactionTime`: ScalarQuantity object for time
-        `molFracList`: a list of molfrac dictionaries with either string or species object keys 
-                       and mole fraction values
-        `Tlist`: ArrayQuantity object of temperatures
-        `Plist`: ArrayQuantity object of pressures
-        `Vlist`: ArrayQuantity object of volumes
+        ======================= ====================================================
+        Argument                Description
+        ======================= ====================================================
+        `reactorType`           A string of the cantera reactor type. List of supported types below:
+            IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+
+        `reactionTime`          A tuple object giving the (reaction time, units)
+        `molFracList`           A list of molfrac dictionaries with either string or species object keys 
+                               and mole fraction values
+        To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
+        `T0`                    A tuple giving the ([list of initial temperatures], units) 
+        'P0'                    A tuple giving the ([list of initial pressures], units) 
+        'V0'                    A tuple giving the ([list of initial volumes], units) 
+    
         
         This saves all the reaction conditions into the Cantera class.
         """
-        # First translate the molFracList from species objects to species names:
+        # First translate the molFracList from species objects to species names if needed
         newMolFracList = []
         for molFrac in molFracList:
             newMolFrac = {}
@@ -100,11 +110,16 @@ def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None
             
         molFracList = newMolFracList
         
-        # Extract the si values from the arrays
-        reactionTime = reactionTime.value_si
-        Tlist = Tlist.value_si if Tlist is not None else None
-        Plist = Plist.value_si if Plist is not None else None
-        Vlist = Vlist.value_si if Vlist is not None else None
+        # Create individual ScalarQuantity objects for Tlist, Plist, Vlist
+        if Tlist:
+            Tlist = Quantity(Tlist) # Be able to create a Quantity object from it first
+            Tlist = [(Tlist.value[i],Tlist.units) for i in range(len(Tlist.value))]
+        if Plist:
+            Plist = Quantity(Plist)
+            Plist = [(Plist.value[i],Plist.units) for i in range(len(Plist.value))]
+        if Vlist:
+            Vlist = Quantity(Vlist)
+            Vlist = [(Vlist.value[i],Vlist.units) for i in range(len(Vlist.value))]
         
         
         conditions=[]
@@ -230,7 +245,7 @@ class Cantera:
         for condition in self.conditions:
             
             # Set Cantera simulation conditions
-            self.model.TPX = condition.T0, condition.P0, condition.molFrac
+            self.model.TPX = condition.T0.value_si, condition.P0.value_si, condition.molFrac
             
             # Choose reactor
             if condition.reactorType == 'IdealGasReactor':
@@ -255,7 +270,7 @@ class Cantera:
             time = 0.0
             # Run the simulation over 100 time points
             for n in range(100):
-                time += condition.reactionTime/100
+                time += condition.reactionTime.value_si/100
                 
                 # Advance the state of the reactor network in time from the current time to time t [s], taking as many integrator timesteps as necessary.
                 canteraSimulation.advance(time)
