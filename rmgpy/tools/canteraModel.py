@@ -249,7 +249,10 @@ class Cantera:
         for condition in self.conditions:
             
             # Set Cantera simulation conditions
-            self.model.TPX = condition.T0.value_si, condition.P0.value_si, condition.molFrac
+            if condition.T0 and condition.P0:
+                self.model.TPX = condition.T0.value_si, condition.P0.value_si, condition.molFrac
+            else:
+                raise Exception("Cantera conditions in which T0 and P0 are not the specified state variables are not yet implemented.")
             
             # Choose reactor
             if condition.reactorType == 'IdealGasReactor':
