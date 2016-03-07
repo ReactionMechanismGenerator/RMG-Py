@@ -5,18 +5,6 @@ from rmgpy.chemkin import loadChemkinFile
 from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot, findNearest
 from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromSMILES
 
-def getNearestTime(timepoint, timeArray):
-    """
-    `timePoint`: the desired time point
-    `timeArray`: the array of times in which to search for the nearest time to the one selected
-
-    Returns a tuple containing (index, value of the time point closest to the timepoint desired)
-    within the time array.
-    """
-    index = findNearest(timeArray, timepoint)
-    return (index, timeArray[index])
-
-
 def curvesSimilar(t1, y1, t2, y2, tol):
     """
     This function returns True if the two given curves are similar enough within tol. Otherwise returns False.
@@ -36,9 +24,9 @@ def curvesSimilar(t1, y1, t2, y2, tol):
     t2sync=numpy.zeros_like(t1)
     y2sync=numpy.zeros_like(t1)
     for i, timepoint1 in enumerate(t1):
-        (index, timepoint2)=getNearestTime(timepoint1, t2)
-        t2sync[i]=timepoint2
-        y2sync[i]=y2[index]
+        time_index = findNearest(t2, timepoint1)
+        t2sync[i]=t2[time_index]
+        y2sync[i]=y2[time_index]
 
     # Get R^2 value equivalent:
     normalizedError=(y1-y2sync)**2/y1**2
