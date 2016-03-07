@@ -199,8 +199,11 @@ class Cantera:
         Then load it into self.model
         """
         from cantera import ck2cti
-        print 'Converting chem.inp to chem.cti...'
-        outName=os.path.join(self.outputDirectory, "chem.cti")
+        
+        base = os.path.basename(chemkinFile)
+        baseName = os.path.splitext(base)[0]
+        outName = os.path.join(self.outputDirectory, baseName + ".cti")
+        print 'Converting {0} to {1}...'.format(chemkinFile, outName)
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
