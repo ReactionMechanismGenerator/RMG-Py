@@ -3,7 +3,7 @@ import numpy
 import math
 
 import logging as logging
-
+from rmgpy.scoop_framework.util import submit_
 from rmgpy.data.rmg import getDB
 import rmgpy.constants as constants
 from rmgpy.molecule import Molecule
@@ -102,10 +102,16 @@ def generateThermoData(spc, thermoClass=NASA):
     Result stored in `spc.thermo` and returned.
     """
     
-    thermodb = getDB('thermo')
-    thermo0 = thermodb.getThermoData(spc, trainingSet=None) 
+    try:
+        thermodb = getDB('thermo')
+        if not thermodb: raise Exception
+    except Exception, e:
+        logging.debug('Could not obtain the thermo database. Not generating thermo...')
+        return None
+    
+    thermo0 = thermodb.getThermoData(spc) 
         
-    return processThermoData(spc, thermo0, thermoClass)
+    return processThermoData(spc, thermo0, thermoClass)    
 
 
 def evaluator(spc):
@@ -125,3 +131,15 @@ def evaluator(spc):
     thermo = generateThermoData(spc)
 
     return thermo
+
+def submit(spc):
+    """
+    Submits a request to calculate chemical data for the Species object.
+
+    In a parallel run, the thermo attribute will
+    store the future object, until the get method
+    is called, which replaces the future object with 
+    the result.
+
+    """
+    spc.thermo = submit_(evaluator, spc)

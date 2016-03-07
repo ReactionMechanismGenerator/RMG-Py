@@ -64,7 +64,9 @@ from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
+from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
+
 ################################################################################
 
 solvent = None
@@ -455,10 +457,9 @@ class RMG(util.Subject):
                         RMG expects the triplet form of oxygen for correct usage in reaction families. Please change your input to SMILES='[O][O]'
                         If you actually want to use the singlet state, set the allowSingletO2=True inside of the Species Constraints block in your input file.
                         """.format(spec.label))
-                        
+
             for spec in self.initialSpecies:
-                spec.getThermoData(self.database)
-                spec.generateTransportData(self.database)
+                submit(spec)
                 
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas            

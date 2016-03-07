@@ -15,7 +15,8 @@ from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import writeThermoEntry
 from rmgpy.rmg.model import Species
-
+from rmgpy.thermo.thermoengine import submit
+                     
 ################################################################################
 
 def runThermoEstimator(inputFile):
@@ -41,15 +42,16 @@ def runThermoEstimator(inputFile):
     # ThermoLibrary format with values for H, S, and Cp's.
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
     library = ThermoLibrary(name='Thermo Estimation Library')
+
     for species in rmg.initialSpecies:
-        species.getThermoData(rmg.database)
+        submit(species)
 
         library.loadEntry(
             index = len(library.entries) + 1,
             label = species.label,
             molecule = species.molecule[0].toAdjacencyList(),
-            thermo = species.thermo.toThermoData(),
-            shortDesc = species.thermo.comment,
+            thermo = species.getThermoData().toThermoData(),
+            shortDesc = species.getThermoData().comment,
         )
         output.write(writeThermoEntry(species))
         output.write('\n')

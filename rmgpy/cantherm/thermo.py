@@ -140,8 +140,8 @@ class ThermoJob:
         f = open(outputFile, 'a')
     
         f.write('# Thermodynamics for {0}:\n'.format(species.label))
-        H298 = species.thermo.getEnthalpy(298) / 4184.
-        S298 = species.thermo.getEntropy(298) / 4.184
+        H298 = species.getThermoData().getEnthalpy(298) / 4184.
+        S298 = species.getThermoData().getEntropy(298) / 4.184
         f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
         f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
         f.write('#    =========== =========== =========== =========== ===========\n')
@@ -149,21 +149,21 @@ class ThermoJob:
         f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
         f.write('#    =========== =========== =========== =========== ===========\n')
         for T in [300,400,500,600,800,1000,1500,2000,2400]:
-            Cp = species.thermo.getHeatCapacity(T) / 4.184
-            H = species.thermo.getEnthalpy(T) / 4184.
-            S = species.thermo.getEntropy(T) / 4.184
-            G = species.thermo.getFreeEnergy(T) / 4184.
+            Cp = species.getThermoData().getHeatCapacity(T) / 4.184
+            H = species.getThermoData().getEnthalpy(T) / 4184.
+            S = species.getThermoData().getEntropy(T) / 4.184
+            G = species.getThermoData().getFreeEnergy(T) / 4184.
             f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
         f.write('#    =========== =========== =========== =========== ===========\n')
         
-        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.thermo)
+        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
         f.write('{0}\n\n'.format(prettify(string)))
         
         f.close()
         
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         
-        thermo = species.thermo
+        thermo = species.getThermoData()
         if isinstance(thermo, NASA):
         
             poly_low = thermo.polynomials[0]
@@ -238,7 +238,7 @@ class ThermoJob:
         Glist1 = numpy.zeros_like(Tlist)
         
         conformer = self.species.conformer
-        thermo = self.species.thermo
+        thermo = self.species.getThermoData()
         for i in range(Tlist.shape[0]):
             Cplist[i] = conformer.getHeatCapacity(Tlist[i])
             Slist[i] = conformer.getEntropy(Tlist[i])

@@ -44,6 +44,7 @@ from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.thermo.thermoengine import submit
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
@@ -83,34 +84,17 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
-    def getThermoData(self, database, thermoClass=NASA):
-        """
-        Returns a `thermoData` object of the current Species object.
-
-        Returns the stored `thermoData` object if it is found,
-        generates a new `thermoData` object if it not found.
-        
-        """
-        if self.thermo:
-            self.processThermoData(database, self.thermo, thermoClass)
-        else:
-            self.generateThermoData(database, thermoClass)
-
-        return self.thermo
-
     def generateStatMech(self, database):
         """
         Generate molecular degree of freedom data for the species. You must
         have already provided a thermodynamics model using e.g.
         :meth:`generateThermoData()`.
         """
-        if not self.hasThermo():
-            raise Exception("Unable to determine statmech model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
-        conformer = database.statmech.getStatmechData(molecule, self.thermo)
+        conformer = database.statmech.getStatmechData(molecule, self.getThermoData())
         if self.conformer is None:
             self.conformer = Conformer()
-        self.conformer.E0 = self.thermo.E0
+        self.conformer.E0 = self.getThermoData().E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
@@ -153,8 +137,7 @@ class Species(rmgpy.species.Species):
             alpha0 = (300*0.011962,"kJ/mol"),
             T0 = (300,"K"),
             n = 0.85,
-        )
-
+        ) 
 ################################################################################
 
 class ReactionModel:
@@ -359,6 +342,7 @@ class CoreEdgeReactionModel:
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
         object.
         """
+
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label
@@ -399,7 +383,9 @@ class CoreEdgeReactionModel:
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
-        # spec.generateTransportData(database)
+        
+        submit(spec)
+
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -703,12 +689,6 @@ class CoreEdgeReactionModel:
 
         ################################################################
         # Begin processing the new species and reactions
-            
-        # Generate thermodynamics of new species
-        logging.info('Generating thermodynamics for new species...')
-        for spec in self.newSpeciesList:
-            spec.getThermoData(database)
-            spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
@@ -1313,8 +1293,9 @@ class CoreEdgeReactionModel:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, seedMechanism.label))
 
         for spec in self.newSpeciesList:            
-            if spec.reactive: spec.getThermoData(database)
-            spec.generateTransportData(database)
+            if spec.reactive:
+                submit(spec)
+
             self.addSpeciesToCore(spec)
 
         for rxn in self.newReactionList:
@@ -1323,7 +1304,8 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
-                    spec.getThermoData(database)
+                    submit(spec)
+
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
         
@@ -1378,10 +1360,11 @@ class CoreEdgeReactionModel:
                     rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, reactionLibrary.label))
-       
+
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.getThermoData(database)
-            spec.generateTransportData(database)
+            if spec.reactive: 
+                submit(spec)
+
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:

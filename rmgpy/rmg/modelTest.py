@@ -68,15 +68,15 @@ class TestSpecies(unittest.TestCase):
         spc = Species().fromSMILES('CCC')
 
         self.assertFalse(spc.thermo)
-        spc.getThermoData(self.rmg.database)
+        spc.getThermoData()
         self.assertTrue(spc.thermo)
         thermo = spc.thermo
-        spc.getThermoData(self.rmg.database)
+        spc.getThermoData()
 
         self.assertEquals(id(thermo), id(spc.thermo))
         
         spc.thermo = None
-        spc.getThermoData(self.rmg.database)
+        spc.getThermoData()
         self.assertNotEquals(id(thermo), id(spc.thermo))
 
     def tearDown(self):
