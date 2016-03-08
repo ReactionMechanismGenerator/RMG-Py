@@ -46,6 +46,14 @@ class CanteraCondition:
         self.P0=Quantity(P0)
         self.V0=Quantity(V0)
 
+        #Check to see that one of the three attributes T0, P0, and V0 is less unspecified
+        props=[T0,P0,V0]
+        total=0
+        for prop in props:
+            if prop is None: total+=1
+
+        assert total==1, "Cantera conditions must leave one of T0, P0, and V0 state variables unspecified"
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -144,13 +152,7 @@ def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None
                     for P in Plist:
                         conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, P0=P))
     
-        else:
-            for molFrac in molFracList:
-                for T in Tlist:
-                    for P in Plist:
-                        for V in Vlist:
-                            conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, P0=P, V0=V))
-                            
+        else: raise Exception("Cantera conditions must leave one of T0, P0, and V0 state variables unspecified")
         return conditions
 
 class Cantera:
@@ -249,11 +251,14 @@ class Cantera:
         for condition in self.conditions:
             
             # Set Cantera simulation conditions
-            if condition.T0 and condition.P0:
+            if condition.V0 is None:
                 self.model.TPX = condition.T0.value_si, condition.P0.value_si, condition.molFrac
+            elif condition.P0 is None:
+                self.model.TDX = condition.T0.value_si, 1.0/condition.V0.value_si, condition.molFrac
             else:
-                raise Exception("Cantera conditions in which T0 and P0 are not the specified state variables are not yet implemented.")
-            
+                raise Exception("Cantera conditions in which T0 and P0 or T0 and V0 are not the specified state variables are not yet implemented.")
+
+
             # Choose reactor
             if condition.reactorType == 'IdealGasReactor':
                 canteraReactor=ct.IdealGasReactor(self.model)
@@ -265,31 +270,39 @@ class Cantera:
             # Run this individual condition as a simulation
             canteraSimulation=ct.ReactorNet([canteraReactor])
 
-            
-            # Initialize the variables to be saved
-            times = np.zeros(100)
-            temperature = np.zeros(100, dtype=np.float64)
-            pressure = np.zeros(100, dtype=np.float64)
-            speciesData = np.zeros((100,len(speciesNamesList)),dtype=np.float64)
-
-            
-            # Begin integration
+            #
+            # # Initialize the variables to be saved
+            times=[]
+            temperature=[]
+            pressure=[]
+            speciesData=[]
+            # times = np.zeros(100)
+            # temperature = np.zeros(100, dtype=np.float64)
+            # pressure = np.zeros(100, dtype=np.float64)
+            # speciesData = np.zeros((100,len(speciesNamesList)),dtype=np.float64)
+            #
+            #
+            # # Begin integration
             time = 0.0
             # Run the simulation over 100 time points
-            for n in range(100):
-                time += condition.reactionTime.value_si/100
-                
+            while canteraSimulation.time<condition.reactionTime.value_si:
+
                 # Advance the state of the reactor network in time from the current time to time t [s], taking as many integrator timesteps as necessary.
-                canteraSimulation.advance(time)
-                times[n] = time * 1e3  # time in ms
-                temperature[n] = canteraReactor.T
-                pressure[n] = canteraReactor.thermo.P
-                speciesData[n,:] = canteraReactor.thermo[speciesNamesList].X
-                
+                canteraSimulation.step(condition.reactionTime.value_si)
+                times.append(canteraSimulation.time)
+                print canteraSimulation.time
+                temperature.append(canteraReactor.T)
+                pressure.append(canteraReactor.thermo.P)
+                speciesData.append(canteraReactor.thermo[speciesNamesList].X)
+
+            temperature=np.array(temperature)
+            pressure=np.array(pressure)
+            speciesData=np.array(speciesData)
+
             # Resave data into generic data objects
             time = GenericData(label = 'Time', 
                                data = times,
-                               units = 'ms')
+                               units = 's')
             temperature = GenericData(label='Temperature',
                                       data = temperature,
                                       units = 'K')
