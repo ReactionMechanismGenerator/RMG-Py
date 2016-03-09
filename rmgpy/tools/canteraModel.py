@@ -292,8 +292,7 @@ class Cantera:
                 pressure.append(canteraReactor.thermo.P)
                 speciesData.append(canteraReactor.thermo[speciesNamesList].X)
 
-            temperature=np.array(temperature)
-            pressure=np.array(pressure)
+            # Convert speciesData to a numpy array
             speciesData=np.array(speciesData)
 
             # Resave data into generic data objects
