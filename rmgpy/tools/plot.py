@@ -3,6 +3,7 @@ import matplotlib as mpl
 # This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+from rmgpy.tools.data import GenericData
         
 def parseCSVData(csvFile):
     """
@@ -85,20 +86,7 @@ def findNearest(array, value):
     idx = (numpy.abs(array-value)).argmin()
     return idx
 
-class GenericData(object):
-    """
-    A generic data class for the purpose of plotting.
-    label is the original label for the data
-    data is the numpy array containing the data
-    The other parameters are additional common flags for data found in RMG
-    """
-    def __init__(self, label='', data=None, species=None, reaction=None, units=None, index=None):
-        self.label = label
-        self.data = data
-        self.species = species
-        self.reaction = reaction
-        self.units = units
-        self.index = index
+
 
 class GenericPlot(object):
     """
@@ -106,7 +94,11 @@ class GenericPlot(object):
     """
     def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel=''):
         self.xVar = xVar
-        self.yVar = yVar
+        # Convert yVar to a list if it wasn't one already
+        if isinstance(yVar, GenericData):
+            self.yVar = [yVar]
+        else:
+            self.yVar = yVar
         self.title = title
         self.xlabel = xlabel
         self.ylabel = ylabel
@@ -119,12 +111,9 @@ class GenericPlot(object):
         fig=plt.figure()
         
         ax = fig.add_subplot(111)
+
         xVar = self.xVar
         yVar = self.yVar
-        # Convert yVar to a list if it wasn't one already
-        if isinstance(yVar, GenericData):
-            yVar = [yVar]
-        
             
         if len(yVar) == 1:
             y = yVar[0]
@@ -194,7 +183,7 @@ class GenericPlot(object):
         plt.axis('tight')
         fig.savefig(filename, bbox_inches='tight')
     
-    def comparePlot(self, otherGenericPlot, filename=''):
+    def comparePlot(self, otherGenericPlot, filename='', title='', xlabel='', ylabel=''):
         """
         Plot a comparison data plot of this data vs a second GenericPlot class
         """
@@ -220,32 +209,35 @@ class GenericPlot(object):
                 
             if len(yVar) == 1:
                 y = yVar[0]
-                ax.plot(xVar.data, y.data)
-                # Create a ylabel for the label of the y variable
+                ax.plot(xVar.data, y.data, styles[i])
+                # Save a ylabel based on the y variable's label if length of yVar contains only 1 variable
                 if not self.ylabel and y.label:
-                    ylabel = y.label
-                    if y.units: ylabel += ' ({0})'.format(y.units)
-                    plt.ylabel(ylabel)
+                    self.ylabel = y.label
+                    if y.units: self.ylabel += ' ({0})'.format(y.units)
             else:
                 for y in yVar:
                     ax.plot(xVar.data, y.data, styles[i], label=y.label)
             
             # Plot the second set of data
             
-        # Use the labels from this data object
-        
-        if self.xlabel:
+        # Prioritize using the function's x and y labels, otherwise the labels from this data object
+        if xlabel:
+            plt.xlabel(xlabel)
+        elif self.xlabel:
             plt.xlabel(self.xlabel)
         elif self.xVar.label:
             xlabel = self.xVar.label
             if self.xVar.units: xlabel += ' ({0})'.format(self.xVar.units)
             plt.xlabel(xlabel)
-            
-        if self.ylabel:
+        
+        if ylabel:
+            plt.ylabel(ylabel)
+        elif self.ylabel:
             plt.ylabel(self.ylabel)
-            
-        if self.title:
-            plt.title(self.title)
+        
+        # Use user inputted title
+        if title:
+            plt.title(title)
             
         ax.grid('on')
         handles, labels = ax.get_legend_handles_labels()
@@ -318,7 +310,7 @@ class SimulationPlot(GenericPlot):
         GenericPlot.plot(self, filename=filename)
     
     
-    def comparePlot(self, otherSimulationPlot, filename=''):
+    def comparePlot(self, otherSimulationPlot, filename='', title='', xlabel='', ylabel=''):
         
         filename = filename if filename else 'simulation_compare.png'
         self.load()
@@ -328,7 +320,7 @@ class SimulationPlot(GenericPlot):
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
             otherSimulationPlot.yVar = otherSimulationPlot.yVar[:self.numSpecies]
-        GenericPlot.comparePlot(self, otherSimulationPlot, filename)
+        GenericPlot.comparePlot(self, otherSimulationPlot, filename, title, xlabel, ylabel)
         
 class ReactionSensitivityPlot(GenericPlot):
     """
