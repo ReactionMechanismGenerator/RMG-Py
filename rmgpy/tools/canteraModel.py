@@ -42,17 +42,21 @@ class CanteraCondition:
                 molFrac[species]= value / total
 
         self.molFrac=molFrac
-        self.T0=Quantity(T0)
-        self.P0=Quantity(P0)
-        self.V0=Quantity(V0)
-
-        #Check to see that one of the three attributes T0, P0, and V0 is less unspecified
+        
+        # Check to see that one of the three attributes T0, P0, and V0 is less unspecified
         props=[T0,P0,V0]
         total=0
         for prop in props:
             if prop is None: total+=1
 
-        assert total==1, "Cantera conditions must leave one of T0, P0, and V0 state variables unspecified"
+        if not total==1:
+            raise Exception("Cantera conditions must leave one of T0, P0, and V0 state variables unspecified")
+
+
+        self.T0=Quantity(T0) if T0 else None
+        self.P0=Quantity(P0) if P0 else None
+        self.V0=Quantity(V0) if V0 else None
+
 
     def __repr__(self):
         """
@@ -270,19 +274,13 @@ class Cantera:
             # Run this individual condition as a simulation
             canteraSimulation=ct.ReactorNet([canteraReactor])
 
-            #
-            # # Initialize the variables to be saved
+            # Initialize the variables to be saved
             times=[]
             temperature=[]
             pressure=[]
             speciesData=[]
-            # times = np.zeros(100)
-            # temperature = np.zeros(100, dtype=np.float64)
-            # pressure = np.zeros(100, dtype=np.float64)
-            # speciesData = np.zeros((100,len(speciesNamesList)),dtype=np.float64)
-            #
-            #
-            # # Begin integration
+            
+            # Begin integration
             time = 0.0
             # Run the simulation over 100 time points
             while canteraSimulation.time<condition.reactionTime.value_si:
@@ -290,7 +288,6 @@ class Cantera:
                 # Advance the state of the reactor network in time from the current time to time t [s], taking as many integrator timesteps as necessary.
                 canteraSimulation.step(condition.reactionTime.value_si)
                 times.append(canteraSimulation.time)
-                print canteraSimulation.time
                 temperature.append(canteraReactor.T)
                 pressure.append(canteraReactor.thermo.P)
                 speciesData.append(canteraReactor.thermo[speciesNamesList].X)
