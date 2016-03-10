@@ -20,11 +20,22 @@ Your reaction system will also be different (liquidReactor rather than simpleRea
             "oxygen": (4.953e-6,'mol/cm^3')
         },
         terminationTime=(5,'s'),
+        constantSpecies=['oxygen'],        
         sensitivity=['octane','oxygen'],
         sensitivityThreshold=0.001,
 
     )
 
+For liquid phase generation, you can provide a list of species for which one concentration is held constant over time
+(Use the keyword ``constantSpecies=[]`` with species labels separated by ``","``). To generate meaningful liquid phase oxidation mechanism, it is 
+highly recommended to consider O2 as a constant species. To consider pyrolysis cases, it is still possible to obtain a mechanism without this option.
+Expected results with ``Constant concentration`` option can be summarized with those 3 cases respectively presenting a generation with 0, 1 (oxygen only) 
+and 2 constant species (oxygen and decane): 
+
+.. image:: images/constantSPCeffect.png
+	:align: center
+
+As it creates a mass lost, it is recommended to avoid to put any products as a constant species.
 
 For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
 some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
@@ -41,6 +52,8 @@ sensitivities for dln(C_i)/dln(k_j) > sensitivityThreshold  or dlnC_i/d(G_j) > s
 
 Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).
+
+Notes: sensitivity, sensitivityThreshold and constantSpecies are optionnal keywords.
 
 Equation of state
 =================
@@ -188,7 +201,7 @@ To build accurate models of liquid phase chemical reactions you will also want t
 
 .. _exampleLiquidPhase:
 
-Example liquid-phase input file
+Example liquid-phase input file, no constant species
 ===============================
 This is an example of an input file for a liquid-phase system::
 
@@ -236,7 +249,69 @@ This is an example of an input file for a liquid-phase system::
 
     model(
         toleranceKeepInEdge=1E-9,
-        toleranceMoveToCore=0.001,
+        toleranceMoveToCore=0.01,
+        toleranceInterruptSimulation=0.1,
+        maximumEdgeSpecies=100000
+    )
+
+    options(
+        units='si',
+        saveRestartPeriod=None,
+        generateOutputHTML=False,
+        generatePlots=False,
+        saveSimulationProfiles=True,
+    )
+
+Example liquid-phase input file, with constant species
+===============================
+This is an example of an input file for a liquid-phase system with constant species::
+
+    # Data sources
+    database(
+        thermoLibraries = ['primaryThermoLibrary'],
+        reactionLibraries = [],
+        seedMechanisms = [],
+        kineticsDepositories = ['training'],
+        kineticsFamilies = 'default',
+        kineticsEstimator = 'rate rules',
+    )
+
+    # List of species
+    species(
+        label='octane',
+        reactive=True,
+        structure=SMILES("C(CCCCC)CC"),
+    )
+
+    species(
+        label='oxygen',
+        reactive=True,
+        structure=SMILES("[O][O]"),
+    )
+
+    # Reaction systems
+    liquidReactor(
+        temperature=(500,'K'),
+        initialConcentrations={
+            "octane": (6.154e-3,'mol/cm^3'),
+            "oxygen": (4.953e-6,'mol/cm^3')
+        },
+        terminationTime=(5,'s'),
+        constantSpecies=['oxygen'],
+    )
+
+    solvation(
+        solvent='octane'
+    )
+
+    simulator(
+        atol=1e-16,
+        rtol=1e-8,
+    )
+
+    model(
+        toleranceKeepInEdge=1E-9,
+        toleranceMoveToCore=0.01,
         toleranceInterruptSimulation=0.1,
         maximumEdgeSpecies=100000
     )

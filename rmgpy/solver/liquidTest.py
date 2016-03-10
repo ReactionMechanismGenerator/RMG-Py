@@ -17,6 +17,8 @@ from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 import rmgpy.constants as constants
 from rmgpy.chemkin import loadChemkinFile
+#for liquid phase
+from rmgpy.rmg import main, input
 
 ################################################################################
 
@@ -224,3 +226,97 @@ class LiquidReactorCheck(unittest.TestCase):
         for i in xrange(numCoreSpecies):
             for j in xrange(len(rxnList)):
                 self.assertAlmostEqual(dfdk[i,j], solver_dfdk[i,j], delta=abs(1e-3*dfdk[i,j]))
+                
+    def test_storeConstantSpeciesNames(self):
+        "Test if (i) constant species names are stored in reactor attributes and (ii) if attributes are not mix/equal for multiple conditions generation"
+        
+        c0={self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
+        Temp= 1000
+#         
+        #set up the liquid phase reactor 1
+        terminationConversion = []
+        terminationTime = None
+        sensitivity=[]
+        sensitivityThreshold=0.001
+        constantSpecies = ["CH4","C2H6"]
+        rxnSystem1 = LiquidReactor(Temp, c0, terminationConversion, sensitivity, sensitivityThreshold, constantSpecies)
+        
+        #set up the liquid phase reactor 2
+        constantSpecies = ["O2","H2O"]
+        rxnSystem2 = LiquidReactor(Temp, c0, terminationConversion, sensitivity, sensitivityThreshold, constantSpecies)
+        for reactor in [rxnSystem1,rxnSystem2]:
+            self.assertIsNotNone(reactor.constSPCNames)
+        
+        #check if Constant species are different in each liquid system
+        for spc in rxnSystem1.constSPCNames:
+            for spc2 in rxnSystem2.constSPCNames:
+                self.assertIsNot(spc, spc2, "Constant species declared in two different reactors seem mixed. Species \"{0}\" appears in both systems and should be.".format(spc))
+                
+    def test_liquidInputReading(self):
+        """
+        Check if constant concentration condition is well handled. 
+        From input file reading to information storage in liquid reactor object.
+        """
+         
+        testbis=main.RMG()
+        ##use the liquid phase example to load every input parameters
+        input=os.path.join("examples","rmg","liquid_phase_constSPC","input.py") #In order to work on every system, use of os.path
+        testbis.loadInput(input)
+        
+        #Might be better to use RMG.initialize function (as it is done with real generation) but cannot be used without altering other unitests.
+        #So here are pasted the main steps from it to use the liquid reactor function "get_constSPCindices
+        for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
+            molecule = Molecule().fromSMILES(smiles)
+            spec, isNew = testbis.reactionModel.makeNewSpecies(molecule, label=label, reactive=False)
+            if isNew:
+                testbis.initialSpecies.append(spec)
+                                    
+        for spec in testbis.initialSpecies:
+            if not spec.reactive:
+                testbis.reactionModel.enlarge(spec)
+        for spec in testbis.initialSpecies:
+            if spec.reactive:
+                testbis.reactionModel.enlarge(spec)
+            
+        if testbis.solvent is not None:
+            ##call the function to identify indices in the solver
+            for index, reactionSystem in enumerate(testbis.reactionSystems):
+                    if reactionSystem.constSPCNames is not None: #if no constant species provided do nothing
+                        reactionSystem.get_constSPCIndices(testbis.reactionModel.core.species)        
+                   
+        for index, reactionSystem in enumerate(testbis.reactionSystems):
+            self.assertIsNotNone(reactionSystem.constSPCNames,"""this input \"{0} \" contain constant SPC, reactor should contain its name and its indices after few steps""")
+            self.assertIsNotNone(reactionSystem.constSPCIndices,"""this input \"{0} \" contain constant SPC, reactor should contain its corresponding indices in the core species array""")
+            self.assertIs(reactionSystem.constSPCNames[0],testbis.reactionModel.core.species[reactionSystem.constSPCIndices[0]].label,"The constant species name from reaction model and constantSPCnames has to be equals")            
+            
+    def test_corespeciesRate(self):
+        "Test if a specific core species rate is equal to 0 over time"    
+                
+        c0={self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
+        rxn1 = Reaction(reactants=[self.C2H6,self.CH3], products=[self.C2H5,self.CH4], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))
+ 
+        coreSpecies = [self.CH4,self.CH3,self.C2H6,self.C2H5]
+        edgeSpecies = []
+        coreReactions = [rxn1]
+        edgeReactions = []
+        sensitivity=[]
+        terminationConversion = []
+        sensitivityThreshold=0.001
+        ConstSpecies = ["CH4"]
+        
+        rxnSystem = LiquidReactor(self.T, c0, terminationConversion, sensitivity,sensitivityThreshold,ConstSpecies)
+        ##The test regarding the writting of constantSPCindices from input file is check with the previous test.
+        rxnSystem.constSPCIndices=[0]
+        
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+ 
+        tlist = numpy.array([10**(i/10.0) for i in range(-130, -49)], numpy.float64)
+ 
+        # Integrate to get the solution at each time point
+        t = []; y = []; reactionRates = []; speciesRates = []
+        for t1 in tlist:
+            rxnSystem.advance(t1)
+            t.append(rxnSystem.t)
+            self.assertEqual(rxnSystem.coreSpeciesRates[0], 0,"Core species rate has to be equal to 0 for species hold constant. Here it is equal to {0}".format(rxnSystem.coreSpeciesRates[0]))
+                    
+        
