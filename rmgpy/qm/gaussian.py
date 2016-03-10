@@ -10,7 +10,10 @@ import numpy
 import itertools
 from subprocess import Popen
 import re
+import collections
+from copy import deepcopy
 
+import rmgpy
 from rmgpy.molecule import Molecule, Atom, getElement
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
@@ -1196,8 +1199,194 @@ class GaussianTS(QMReaction, Gaussian):
         atomDist = [at12, at23, at13]
 
         return atomDist
+        
+    def duplicate(self, entry):
+        
+        newItem = deepcopy(entry)
+        newDist = deepcopy(newItem.data.distances)
+        # for H_abstraction
+        if self.reaction.family.label in ['H_Abstraction']:
+            newDist['d12'] = entry.data.distances['d23']
+            newDist['d23'] = entry.data.distances['d12']
+        elif self.reaction.family.label in ['intra_H_migration']:
+            newDist['d23'] = entry.data.distances['d13']
+            newDist['d13'] = entry.data.distances['d23']
+        else:
+            raise ValueError("We don't know how to duplicate this reaction family.")
+	              
+        newItem.data.distances = newDist
+        
+        newProd = deepcopy(entry.item.reactants)
+        newReact = deepcopy(entry.item.products)
+        reaction = Reaction(reactants=newReact, products=newProd)
+        
+        newLabel = entry.label.split('<=>')
+        newLabel = [string.strip() for string in newLabel]
+        newLabel.reverse()
+        newLabel = " <=> ".join(newLabel)
+        
+        reaction.label = newLabel
+        
+        entry = Entry(
+            index = entry.index + 1,
+            label = newLabel,
+            item = reaction,
+            data = newItem.data,
+            reference = entry.reference,
+            referenceType = entry.referenceType,
+            shortDesc = 'Reverse reaction for reaction index {0}'.format(entry.index),
+            longDesc = entry.longDesc.strip(),
+            rank = entry.rank,
+        )
+        
+        return entry
+    
+    def appendSpeciesDict(self, folder, mol, label):
+        # Update the species dictionary
+        with open('{0}/TS_training/dictionary.txt'.format(folder), 'a') as f:
+            f.write(mol.toAdjacencyList(label=label, removeH=False))
+            f.write('\n')
+    
+    def updateTSData(self, entry):
+        """
+        Take a TS data entry and checks if it already exists in the TS database. If it does not,
+        add the label to the entry, and add it to the database.
+        """
+        tsData_folder = os.path.abspath(os.path.join(rmgpy.getPath(), '../../RMG-database/input/kinetics/families/{0}'.format(self.reaction.family.label)))
+        speciesDict = self.tsDatabase.getSpecies(os.path.join(tsData_folder, 'TS_training/dictionary.txt'))
+        
+        # Check if self reaction is already in the TS database
+        exists = False
+        for value in self.tsDatabase.depository.entries.values():
+            if isinstance(value.item.reactants[0], Species):
+                testR = Reaction(reactants=[spec.molecule[0] for spec in value.item.reactants], products=[spec.molecule[0] for spec in value.item.products])
+            else:
+                testR = value.item
+            if entry.item.isIsomorphic(testR):
+                exists = True
+                break
+                
+        if exists:
+            # Return and don't add anything to the database
+            return False
+        else:
+            entry.index = len(self.tsDatabase.depository.entries.values()) + 1
+        
+        # Now figure out the label
+        labeledAtoms = {}
+        rxnLabel = ""
+        for k, reactant in enumerate(entry.item.reactants):
+            if k>0:
+                rxnLabel += ' + '
+                
+            label = reactant.molecule[0].getFingerprint()
+            labeledAtoms[label] = reactant.molecule[0].getLabeledAtoms()
+            if label not in speciesDict.keys():
+                speciesDict[label] = reactant.molecule[0]
+                self.appendSpeciesDict(tsData_folder, reactant.molecule[0], label)
+                reactant.label = label
+                rxnLabel += label
+            else:
+                # Check if the species is isomorphic and that the labeled atoms are the same.
+                # If not, create a new label
+                num = 0
+                while label in speciesDict.keys():
+                    valErr = False
+                    num += 1
+                    initialMap = {}
+                    if isinstance(speciesDict[label], Species):
+                        mol = speciesDict[label].molecule[0]
+                    else:
+                        mol = speciesDict[label]
+                    try:
+                        for atomLabel in labeledAtoms[label]:
+                            initialMap[reactant.molecule[0].getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
+                    except ValueError:
+                        # atom labels did not match, therefore not a match
+                        label = reactant.molecule[0].getFingerprint() + '-' + str(num)
+                        valErr = True
+                                
+                    if not valErr:
+                        if reactant.molecule[0].isIsomorphic(mol, initialMap):
+                            # It's already in the species dict
+                            rxnLabel += label
+                            reactant.label = label
+                            label = None
+                        else:
+                            label = reactant.molecule[0].getFingerprint() + '-' + str(num)
+                if label and label not in speciesDict:
+                    speciesDict[label] = reactant.molecule[0]
+                    labeledAtoms[label] = reactant.molecule[0].getLabeledAtoms()
+                    self.appendSpeciesDict(tsData_folder, reactant.molecule[0], label)
+                    reactant.label = label
+                    rxnLabel += label
+        
+        rxnLabel += ' <=> '            
+        for k, product in enumerate(entry.item.products):
+            if k>0:
+                rxnLabel += ' + '
+            
+            label = product.molecule[0].getFingerprint()
+            labeledAtoms[label] = product.molecule[0].getLabeledAtoms()
+            if label not in speciesDict:
+                speciesDict[label] = product.molecule[0]
+                self.appendSpeciesDict(tsData_folder, product.molecule[0], label)
+                product.label = label
+                rxnLabel += label
+            else:
+                # Check if the species is isomorphic and that the labeled atoms are the same.
+                # If not, create a new label
+                num = 0
+                while label in speciesDict:
+                    valErr = False
+                    num += 1
+                    initialMap = {}
+                    if isinstance(speciesDict[label], Species):
+                        mol = speciesDict[label].molecule[0]
+                    else:
+                        mol = speciesDict[label]
+                    try:
+                        for atomLabel in labeledAtoms[label]:
+                            initialMap[product.molecule[0].getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
+                    except ValueError:
+                        # atom labels did not match, therefore not a match
+                        label = product.molecule[0].getFingerprint() + '-' + str(num)
+                        valErr = True
+                    if not valErr:
+                        if product.molecule[0].isIsomorphic(mol, initialMap):
+                            # It's already in the species dict
+                            product.label = label
+                            rxnLabel += label
+                            label = None
+                        else:
+                            label = product.molecule[0].getFingerprint() + '-' + str(num)
+                if label and label not in speciesDict:
+                    speciesDict[label] = product.molecule[0]
+                    labeledAtoms[label] = product.molecule[0].getLabeledAtoms()
+                    self.appendSpeciesDict(tsData_folder, product.molecule[0], label)
+                    product.label = label
+                    rxnLabel += label
+        
+        # Fix the labels
+        entry.label = rxnLabel
+        entry.item.label = entry.label
+        
+        # Check if we can use the reverse reaction (reactions that are their own reverse)
+        entry2 = None
+        dupFam = self.duplicateFam
+        if dupFam[self.reaction.family.label]:
+            entry2 = self.duplicate(entry)
+        
+        # Update the training data
+        with open('{0}/TS_training/reactions.py'.format(tsData_folder), 'a') as f:
+            saveEntry(f, entry)
+            if entry2:
+                saveEntry(f, entry2)
+        
+        return True
 
     def writeRxnOutputFile(self, labels, doubleEnd=False):
+        
         atomDist = self.parseTS(labels)
 
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
@@ -1206,16 +1395,18 @@ class GaussianTS(QMReaction, Gaussian):
             description = "Found via double-ended search by the automatic transition state generator"
         else:
             description = "Found via group additive estimation by the automatic transition state generator"
+        
+        label = ''
         entry = Entry(
             index = 1,
+            label = label,
             item = self.reaction,
             data = DistanceData(distances=distances, method='{method}/{basis}'.format(method=self.method, basis=self.basisSet)),
             shortDesc = "M06-2X/6-311+G(2df,2p) calculation via group additive TS generator.",
         )
-
-        outputDataFile = os.path.join(self.settings.fileStore, self.uniqueID + '.data')
-        with open(outputDataFile, 'w') as parseFile:
-            saveEntry(parseFile, entry)
+        
+        # Check if this entry is in the TS database. If not, create the label, add it, and saveEntry
+        newData = self.updateTSData(entry)
 
 class GaussianTSM062X(GaussianTS):
     """

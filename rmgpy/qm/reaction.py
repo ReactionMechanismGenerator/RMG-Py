@@ -13,6 +13,7 @@ import shutil
 import math
 import sqlite3 as lite
 
+import rmgpy
 from rmgpy.data.kinetics.transitionstates import TransitionStates
 from rmgpy.molecule import Molecule, Atom, getElement
 from rmgpy.species import Species, TransitionState
@@ -214,6 +215,17 @@ class QMReaction:
     def ircInputFilePath(self):
         """Get the irc input file name."""
         return self.getFilePath('IRC' + self.inputFileExtension)
+        
+    @property
+    def duplicateFam(self):
+        """Get reacton families that should are it's own reverse."""
+        duplicateFam = {
+            'H_Abstraction': True,
+            'R_Addition_MultipleBond': False,
+            'intra_H_migration': True,
+            'Disproportionation': False,
+        }
+        return duplicateFam
     
     @property
     def getTSFilePath(self):
@@ -648,6 +660,7 @@ class QMReaction:
 
         validTS = self.validateTS()
         if validTS:
+			self.writeRxnOutputFile(labels)
             self.saveTSData()
 
         return validTS
