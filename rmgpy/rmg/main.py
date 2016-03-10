@@ -377,10 +377,10 @@ class RMG(util.Subject):
         
         # Do all liquid-phase startup things:
         if self.solvent:
-        	Species.solventData = self.database.solvation.getSolventData(self.solvent)
-        	Species.solventName = self.solvent
-        	diffusionLimiter.enable(Species.solventData, self.database.solvation)
-        	logging.info("Setting solvent data for {0}".format(self.solvent))
+            Species.solventData = self.database.solvation.getSolventData(self.solvent)
+            Species.solventName = self.solvent
+            diffusionLimiter.enable(Species.solventData, self.database.solvation)
+            logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time
         try:
@@ -471,7 +471,14 @@ class RMG(util.Subject):
             for spec in self.initialSpecies:
                 if spec.reactive:
                     self.reactionModel.enlarge(spec)
-
+            
+            #chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
+            #advantages to write it here: this is run only once (as species indexes does not change over the generation)
+            if self.solvent is not None:
+                for index, reactionSystem in enumerate(self.reactionSystems):
+                    if reactionSystem.constSPCNames is not None: #if no constant species provided do nothing
+                        reactionSystem.get_constSPCIndices(self.reactionModel.core.species)  ##call the function to identify indices in the solver         
+                                  
             self.initializeReactionThresholdAndReactFlags()
 
     
