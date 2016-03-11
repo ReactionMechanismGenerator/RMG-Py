@@ -1259,10 +1259,17 @@ class ThermoDatabase(object):
         mostSpecificMatchedEntry = matchedRingEntries[mostSpecificMatchIndices[0]]
         
         node = mostSpecificMatchedEntry
-        while node.data is None and node is not None:
-            node = node.parent
+        
         if node is None:
             raise DatabaseError('Unable to determine thermo parameters for {0}: no data for {1} or any of its ancestors.'.format(molecule, mostSpecificGroup) )
+
+        while node is not None and node.data is None:
+            # do average of its children
+            success, averagedThermoData = self.__averageChildrenThermo(node)
+            if success:
+                node.data = averagedThermoData
+            else:
+                node = node.parent
 
         data = node.data; comment = node.label
         while isinstance(data, basestring) and data is not None:
@@ -1277,6 +1284,34 @@ class ThermoDatabase(object):
             return data
         else:
             return addThermoData(thermoData, data, groupAdditivity=True)
+
+    def __averageChildrenThermo(self, node):
+        """
+        Use children's thermo data to guess thermo data of parent `node` 
+        that doesn't have thermo data built-in in tree yet. 
+        For `node` has children that have thermo data, return success flag 
+        `True` and the average thermo data.
+        For `node` whose children that all have no thermo data, return flag
+        `False` and None for the thermo data.
+        """
+        if not node.children:
+            if node.data is None:
+                return (False, None)
+            else:
+                return (True, node.data)
+        else:
+            childrenThermoDataList = []
+            for child in node.children:
+                if child.data is None:
+                    success, childThermoData_average = self.__averageChildrenThermo(child)
+                    if success:
+                        childrenThermoDataList.append(childThermoData_average)
+                else:
+                    childrenThermoDataList.append(child.data)
+            if childrenThermoDataList:
+                return (True, averageThermoData(childrenThermoDataList))
+            else:
+                return (False, None)
 
     def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
