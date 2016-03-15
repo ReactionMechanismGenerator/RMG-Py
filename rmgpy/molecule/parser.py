@@ -320,7 +320,12 @@ def fromRDKitMol(mol, rdkitmol):
     
     # Add hydrogen atoms to complete molecule if needed
     rdkitmol = Chem.AddHs(rdkitmol)
-    Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
+    try:
+        Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
+    except ValueError as e:
+        logging.error("Trouble Keukulizing species")
+        rdkitmol.Debug()
+        raise
     
     # iterate through atoms in rdkitmol
     for i in xrange(rdkitmol.GetNumAtoms()):
