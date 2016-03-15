@@ -767,7 +767,11 @@ class RMG(util.Subject):
         # If the user specifies it, add unused reaction library reactions to
         # an additional output species and reaction list which is written to the ouput HTML
         # file as well as the chemkin file
+        
         if self.reactionLibraries:
+            # First initialize the outputReactionList and outputSpeciesList to empty
+            self.reactionModel.outputSpeciesList = []
+            self.reactionModel.outputReactionList = []
             for library, option in self.reactionLibraries:
                 if option:
                     self.reactionModel.addReactionLibraryToOutput(library)

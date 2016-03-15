@@ -1456,30 +1456,17 @@ class CoreEdgeReactionModel:
 
         logging.info('Adding reaction library {0} to output file...'.format(reactionLib))
         database = rmgpy.data.rmg.database
-        reactionLibrary = database.kinetics.libraries[reactionLib]
-
-        for entry in reactionLibrary.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
-            rxn.reactants = [self.makeNewSpecies(reactant)[0] for reactant in rxn.reactants]
-            rxn.products = [self.makeNewSpecies(product)[0] for product in rxn.products]
-
-            for species in rxn.reactants:
-                if species not in self.core.species and species not in self.outputSpeciesList:
-                    self.outputSpeciesList.append(species)
-
-            for species in rxn.products:
-                if species not in self.core.species and species not in self.outputSpeciesList:
-                    self.outputSpeciesList.append(species)
-
-            # Reaction library was already on the edge, so we just need to get right label
-            rxn = self.checkForExistingReaction(rxn)[1]
-            if rxn in self.core.reactions:
-                rxn.kinetics.comment = ''
-                pass
-            else:
-                rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
-                self.outputReactionList.append(rxn)
-        self.markChemkinDuplicates()
+        
+        # Append the edge reactions that are from the selected reaction library to an output species and output reactions list
+        for rxn in self.edge.reactions:
+            if isinstance(rxn, LibraryReaction):
+                if rxn.library == reactionLib:
+                    self.outputReactionList.append(rxn)
+                    
+                    for species in rxn.reactants + rxn.products:
+                        if species not in self.core.species and species not in self.outputSpeciesList:
+                            self.outputSpeciesList.append(species)
+                            
 
 
     def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
