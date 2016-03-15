@@ -26,6 +26,7 @@ from .adjlist import PeriodicSystem, bond_orders, ConsistencyChecker
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
 import rmgpy.molecule.pathfinder as pathfinder
+import rmgpy.molecule.generator as generator
 
 # constants
 
@@ -324,7 +325,7 @@ def fromRDKitMol(mol, rdkitmol):
         Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
     except ValueError as e:
         logging.error("Trouble Keukulizing species")
-        rdkitmol.Debug()
+        generator.debugRDKitMol(rdkitmol, logging.ERROR)
         raise
     
     # iterate through atoms in rdkitmol
