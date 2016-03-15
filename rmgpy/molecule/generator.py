@@ -3,6 +3,8 @@
 import cython
 import logging
 import itertools
+import sys
+from cStringIO import StringIO  # for python3: from io import StringIO
 
 # local imports
 try:
@@ -284,6 +286,20 @@ def toOBMol(mol):
     obmol.AssignSpinMultiplicity(True)
 
     return obmol
+
+def debugRDKitMol(rdmol, level=logging.INFO):
+    """
+    Takes an rdkit molecule object and logs some debugging information
+    equivalent to calling rdmol.Debug() but uses our logging framework.
+    Default logging level is INFO but can be controlled with the `level` parameter.
+    """
+    _stdout = sys.stdout
+    sys.stdout = _stringio = StringIO()
+    rdmol.Debug()
+    sys.stdout = _stdout
+    message = "RDKit Molecule debugging information:\n" + _stringio.getvalue()
+    logging.log(level, message)
+
 
 def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     """
