@@ -239,6 +239,16 @@ cdef class Arrhenius(KineticsModel):
         E = self._Ea.value_si*1000   # convert from J/mol to J/kmol
         return ct.Arrhenius(A,b,E)
 
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Passes in a cantera ElementaryReaction() object and sets its
+        rate to a Cantera Arrhenius() object.
+        """
+        import cantera as ct
+        assert isinstance(ctReaction, ct.ElementaryReaction), "Must be a Cantera ElementaryReaction object"
+
+        # Set the rate parameter to a cantera Arrhenius object
+        ctReaction.rate = self.toCanteraKinetics()
     
 ################################################################################
 
@@ -381,6 +391,13 @@ cdef class ArrheniusEP(KineticsModel):
         Changes A factor by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
+
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        converted to an Arrhenius form.
+        """
+        raise NotImplementedError('setCanteraKinetics() is not implemented for ArrheniusEP class kinetics.')
 
 ################################################################################
 
@@ -525,6 +542,19 @@ cdef class PDepArrhenius(PDepKineticsModel):
             kin.changeRate(factor)
         if self.highPlimit is not None:
             self.highPlimit.changeRate(factor)
+
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets a Cantera PlogReaction()'s `rates` attribute with
+        A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]
+        """
+        import cantera as ct
+        assert isinstance(ctReaction, ct.PlogReaction), "Must be a Cantera PlogReaction object"
+
+        pressures = self._pressures.value_si
+        ctArrhenius = [arr.toCanteraKinetics() for arr in self.arrhenius]
+
+        ctReaction.rates = zip(pressures, ctArrhenius)
             
 ################################################################################
 
@@ -631,6 +661,17 @@ cdef class MultiArrhenius(KineticsModel):
         """
         for kin in self.arrhenius:
             kin.changeRate(factor)
+
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets the kinetic rates for a list of cantera `Reaction` objects
+        Here, ctReaction must be a list rather than a single cantera reaction.
+        """
+        if len(ctReaction) != len(self.arrhenius):
+            raise Exception('The number of Cantera Reaction objects does not match the number of Arrhenius objects')
+
+        for i, arr in enumerate(self.arrhenius):
+            arr.setCanteraKinetics(ctReaction[i])
     
     
 ################################################################################
@@ -739,3 +780,14 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         """
         for kin in self.arrhenius:
             kin.changeRate(factor)
+
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets the PLOG kinetics for multiple cantera `Reaction` objects, provided in a list.
+        ctReaction is a list of cantera reaction objects.
+        """
+        if len(ctReaction) != len(self.arrhenius):
+            raise Exception('The number of Cantera Reaction objects does not match the number of PdepArrhenius objects')
+
+        for i, arr in enumerate(self.arrhenius):
+            arr.setCanteraKinetics(ctReaction[i])

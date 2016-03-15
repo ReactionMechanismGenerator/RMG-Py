@@ -241,3 +241,20 @@ cdef class Chebyshev(PDepKineticsModel):
         Changes kinetics rates by a multiple ``factor``.
         """
         self.coeffs.value_si[0,0] += log10(factor)
+
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets the kinetics parameters for a Cantera ChebyshevReaction() object
+        Uses set_parameters(self,Tmin,Tmax,Pmin,Pmax,coeffs)
+        where T's are in units of K, P's in units of Pa, and coeffs is 2D array of (nTemperature, nPressure).
+        """
+        import cantera as ct
+        assert isinstance(ctReaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+
+        Tmin = self.Tmin.value_si
+        Tmax = self.Tmax.value_si
+        Pmin = self.Pmin.value_si
+        Pmax = self.Pmax.value_si
+        coeffs = self.coeffs.value_si
+
+        ctReaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)
