@@ -4,7 +4,6 @@ import cython
 import logging
 import itertools
 import sys
-from cStringIO import StringIO  # for python3: from io import StringIO
 
 # local imports
 try:
@@ -292,13 +291,26 @@ def debugRDKitMol(rdmol, level=logging.INFO):
     Takes an rdkit molecule object and logs some debugging information
     equivalent to calling rdmol.Debug() but uses our logging framework.
     Default logging level is INFO but can be controlled with the `level` parameter.
+    Also returns the message as a string, should you want it for something.
     """
-    _stdout = sys.stdout
-    sys.stdout = _stringio = StringIO()
+    import tempfile
+    import os
+    my_temp_file = tempfile.NamedTemporaryFile()
+    try:
+        old_stdout_file_descriptor = os.dup(sys.stdout.fileno())
+    except:
+        message = "Can't access the sys.stdout file descriptor, so can't capture RDKit debug info"
+        print message
+        rdmol.Debug()
+        return message
+    os.dup2(my_temp_file.fileno(), sys.stdout.fileno())
     rdmol.Debug()
-    sys.stdout = _stdout
-    message = "RDKit Molecule debugging information:\n" + _stringio.getvalue()
+    os.dup2(old_stdout_file_descriptor, sys.stdout.fileno())
+    my_temp_file.file.seek(0)
+    message = my_temp_file.file.read()
+    message = "RDKit Molecule debugging information:\n" + message
     logging.log(level, message)
+    return message
 
 
 def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
