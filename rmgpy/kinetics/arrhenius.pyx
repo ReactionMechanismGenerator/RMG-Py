@@ -202,7 +202,43 @@ cdef class Arrhenius(KineticsModel):
         Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
+    
+
+    def toCanteraKinetics(self):
+        """
+        Converts the Arrhenius object to a cantera Arrhenius object 
+
+        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        """
+
+        import cantera as ct
+
+        rateUnitsDimensionality = {'1/s':0,
+                                   's^-1':0, 
+                               'm^3/(mol*s)':1,
+                               'm^6/(mol^2*s)':2,
+                               'cm^3/(mol*s)':1,
+                               'cm^6/(mol^2*s)':2,
+                               'm^3/(molecule*s)': 1, 
+                               'm^6/(molecule^2*s)': 2,
+                               'cm^3/(molecule*s)': 1,
+                               'cm^6/(molecule^2*s)': 2,
+                               }
+
+        if self._T0.value_si != 1:
+            A = self._A.value_si/(self._T0.value_si)**self._n.value_si
+        else:
+            A = self._A.value_si
+
+        try:
+            A *= 1000**rateUnitsDimensionality[self._A.units]
+        except KeyError:
+            raise Exception('Arrhenius A-factor units {0} not found among accepted units for converting to Cantera Arrhenius object.'.format(self._A.units))
         
+        b = self._n.value_si
+        E = self._Ea.value_si*1000   # convert from J/mol to J/kmol
+        return ct.Arrhenius(A,b,E)
+
     
 ################################################################################
 
