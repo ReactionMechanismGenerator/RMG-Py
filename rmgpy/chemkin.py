@@ -798,21 +798,6 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                 f.seek(-len(line0), 1)
                 readSpeciesBlock(f, speciesDict, speciesAliases, speciesList)
                 
-                # Also always add in a few bath gases (since RMG-Java does)
-                for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
-                    molecule = Molecule().fromSMILES(smiles)
-                    for species in speciesList:
-                        if species.label == label:
-                            if len(species.molecule) == 0:
-                                species.molecule = [molecule]
-                            break
-                        if species.isIsomorphic(molecule):
-                            break
-                    else:
-                        species = Species(label=label, molecule=[molecule])
-                        speciesList.append(species)
-                        speciesDict[label.upper()] = species                            
-                
             elif 'THERM' in line.upper() and thermoPath is None:
                 # Skip this if a thermo file is specified
                 # Unread the line (we'll re-read it in readThermoBlock())
