@@ -1900,8 +1900,8 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
             saveTransportFile(transportPath, speciesList)
         
     else:
-        speciesList = reactionModel.core.species + reactionModel.edge.species + reactionModel.outputSpeciesList
-        rxnList = reactionModel.core.reactions + reactionModel.edge.reactions + reactionModel.outputReactionList
+        speciesList = reactionModel.core.species + reactionModel.edge.species
+        rxnList = reactionModel.core.reactions + reactionModel.edge.reactions
         saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
         logging.info('Saving current core and edge to verbose Chemkin file...')
         saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
