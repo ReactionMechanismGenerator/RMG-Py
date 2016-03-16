@@ -7,6 +7,20 @@ from .molecule import Atom, Molecule
 from .inchi import P_LAYER_PREFIX, U_LAYER_PREFIX
 from .generator import *
 
+class RDKitTest(unittest.TestCase):
+    def testDebugger(self):
+        """
+        Test the debugRDKitMol(rdmol) function doesn't crash
+        
+        We can't really test it in the unit testing framework, because 
+        that already captures and redirects standard output, and that
+        conflicts with the function, but this checks it doesn't crash.
+        """
+        import rdkit.Chem
+        import logging
+        rdmol = rdkit.Chem.MolFromSmiles('CCC')
+        message = debugRDKitMol(rdmol, level=logging.INFO)
+
 class CreateULayerTest(unittest.TestCase):
     def testC4H6(self):
         """
