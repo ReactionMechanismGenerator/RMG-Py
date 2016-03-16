@@ -214,50 +214,61 @@ def generateN5dd_N5tsResonanceIsomers(mol):
 def generateAromaticResonanceIsomers(mol):
     """
     Generate the aromatic form of the molecule.
-    """
-    cython.declare(isomers=list, molecule=Molecule, rdAtomIndices=dict, aromatic=cython.bint, aromaticBonds=list)
-    cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
     
-    isomers = []
+    Returns it as a single element of a list.
+    If there's an error (eg. in RDKit) it just returns an empty list.
+    """
+    cython.declare(molecule=Molecule, rdAtomIndices=dict, aromatic=cython.bint, aromaticBonds=list)
+    cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
+    from rdkit.Chem.rdchem import BondType
+    AROMATIC = BondType.AROMATIC
 
     # Radicals
-    if mol.isCyclic():
-        molecule = mol.copy(deep=True)
-        try:
-            rdkitmol, rdAtomIndices = generator.toRDKitMol(molecule, removeHs=False, returnMapping=True)
-        except:
-            return []
-        aromatic = False
-        rings = molecule.getSmallestSetOfSmallestRings()            
-        for ring0 in rings:
-            # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings                
-            aromaticBonds = []
-            if len(ring0) == 6:
-                # Figure out which atoms and bonds are aromatic and reassign appropriately:
-                for i, atom1 in enumerate(ring0):
-                    if not atom1.isCarbon():
-                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                        break
-                    for atom2 in ring0[i+1:]:
-                        if molecule.hasBond(atom1, atom2):
-                            if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
-                                aromaticBonds.append(molecule.getBond(atom1, atom2))
+    if not mol.isCyclic():
+        return []
+
+    molecule = mol.copy(deep=True)
+
+    # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings
+    rings = [ring0 for ring0 in molecule.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+    if not rings:
+        return []
+
+    try:
+        rdkitmol, rdAtomIndices = generator.toRDKitMol(molecule, removeHs=False, returnMapping=True)
+    except ValueError:
+        return []
+    aromatic = False
+    for ring0 in rings:
+        aromaticBonds = []
+        # Figure out which atoms and bonds are aromatic and reassign appropriately:
+        for i, atom1 in enumerate(ring0):
+            if not atom1.isCarbon():
+                # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                break
+            for atom2 in ring0[i + 1:]:
+                if molecule.hasBond(atom1, atom2):
+                    if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1], rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                        aromaticBonds.append(molecule.getBond(atom1, atom2))
+        else:  # didn't break so all atoms are carbon
             if len(aromaticBonds) == 6:
                 aromatic = True
                 # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
                 for bond in aromaticBonds:
                     bond.order = 'B'
-                    
-        if aromatic:
-            try:
-                molecule.updateAtomTypes()              
-                isomers.append(molecule)
-            except:
-                # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
-                # Do not add the new isomer since it is malformed
-                pass
 
-    return isomers
+    if aromatic:
+        try:
+            molecule.updateAtomTypes()
+        except:
+            # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
+            # Do not add the new isomer since it is malformed
+            return []
+        else:
+            # nothing bad happened
+            return [molecule]
+    else:
+        return []
 
 def generateKekulizedResonanceIsomers(mol):
     """
