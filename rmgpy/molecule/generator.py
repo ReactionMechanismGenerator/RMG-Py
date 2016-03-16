@@ -353,19 +353,9 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
     if sanitize:
-        try:
-            Chem.SanitizeMol(rdkitmol)
-        except ValueError as e:
-            logging.error("Problem sanitizing molecule\n" + mol.toAdjacencyList())
-            debugRDKitMol(rdkitmol, logging.ERROR)
-            raise
+        Chem.SanitizeMol(rdkitmol)
     if removeHs:
-        try:
-            rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
-        except ValueError as e:
-            logging.error("Problem removing H's from molecule\n" + mol.toAdjacencyList())
-            debugRDKitMol(rdkitmol, logging.ERROR)
-            raise
+        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
     if returnMapping:
         return rdkitmol, rdAtomIndices
     return rdkitmol
