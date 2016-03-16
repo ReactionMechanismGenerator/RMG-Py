@@ -156,20 +156,20 @@ if 'install' in sys.argv:
     # This is so users can still do simply `python setup.py install`
     ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getSolverExtensionModules())
-elif 'main' in sys.argv:
+if 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
     sys.argv.remove('main')
     ext_modules.extend(getMainExtensionModules())
-elif 'solver' in sys.argv:
+if 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
     ext_modules.extend(getSolverExtensionModules())
-elif 'cantherm' in sys.argv:
+if 'cantherm' in sys.argv:
     # This is for `python setup.py build_ext cantherm`
     sys.argv.remove('cantherm')
     ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getCanthermExtensionModules())
-elif 'minimal' in sys.argv:
+if 'minimal' in sys.argv:
     # This starts with the full install list, but removes anything that has a pure python mode
     # i.e. in only includes things whose source is .pyx
     sys.argv.remove('minimal')
