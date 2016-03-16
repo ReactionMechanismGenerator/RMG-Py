@@ -272,22 +272,25 @@ def generateAromaticResonanceIsomers(mol):
 
 def generateKekulizedResonanceIsomers(mol):
     """
-    Generate the kekulized (single-double bond) form of the molecule.
+    Generate a kekulized (single-double bond) form of the molecule.
+    
+    Returns a single Kekule form, as an element of a list of length 1.
+    If there's an error (eg. in RDKit) then it just returns an empty list.
     """
-    cython.declare(isomers=list, atom=Atom)
-    isomers = []
+    cython.declare(atom=Atom)
     for atom in mol.atoms:
         if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
             break
     else:
-        return isomers
+        return []
    
-
-    rdkitmol = generator.toRDKitMol(mol)  # This perceives aromaticit
-    isomer = parser.fromRDKitMol(Molecule(), rdkitmol)# This step Kekulizes the molecule
+    try:
+        rdkitmol = generator.toRDKitMol(mol)  # This perceives aromaticity
+        isomer = parser.fromRDKitMol(Molecule(), rdkitmol)  # This step Kekulizes the molecule
+    except ValueError:
+        return []
     isomer.updateAtomTypes()
-    isomers.append(isomer)  
-    return isomers
+    return [isomer]
 
 def generate_isomorphic_isomers(mol):
     """
