@@ -173,7 +173,82 @@ class Reaction:
             return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
         else:
             return rmgpy.chemkin.writeReactionString(self)
+    
+    def toCantera(self, speciesList=[]):
+        """
+        Converts the RMG Reaction object to a Cantera Reaction object
+        with the appropriate reaction class.
+        """
+        from rmgpy.chemkin import getSpeciesIdentifier
+        from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
+                    
+        import cantera as ct
         
+        # Create the dictionaries containing species strings and their stoichiometries
+        # for initializing the cantera reaction object
+        ctReactants = {}
+        for reactant in self.reactants:
+            reactantName = getSpeciesIdentifier(reactant)  # Use the chemkin name for the species
+            if reactantName in ctReactants:
+                ctReactants[reactantName] += 1
+            else:
+                ctReactants[reactantName] = 1
+        ctProducts = {}
+        for product in self.products:
+            productName = getSpeciesIdentifier(product)  # Use the chemkin name for the species
+            if productName in ctProducts:
+                ctProducts[productName] += 1
+            else:
+                ctProducts[productName] = 1
+                
+        if self.kinetics:
+            if isinstance(self.kinetics, Arrhenius):
+                # Create an Elementary Reaction
+                ctReaction = ct.ElementaryReaction(reactants=ctReactants, products=ctProducts)
+            elif isinstance(self.kinetics, MultiArrhenius):
+                # Return a list of elementary reactions which are duplicates
+                ctReaction = [ct.ElementaryReaction(reactants=ctReactants, products=ctProducts) for arr in self.kinetics.arrhenius]
+                
+            elif isinstance(self.kinetics, PDepArrhenius):
+                ctReaction = ct.PlogReaction(reactants=ctReactants, products=ctProducts)
+                
+            elif isinstance(self.kinetics, MultiPDepArrhenius):
+                ctReaction = [ct.PlogReaction(reactants=ctReactants, products=ctProducts) for arr in self.kinetics.arrhenius]
+                
+            
+            elif isinstance(self.kinetics, Chebyshev):
+                ctReaction = ct.ChebyshevReaction(reactants=ctReactants, products=ctProducts)
+            
+            elif isinstance(self.kinetics, ThirdBody):
+                ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
+                
+            elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
+                ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
+            else:
+                raise NotImplementedError('Not able to set cantera kinetics for {0}'.format(self.kinetics))
+            
+            
+            # Set reversibility, duplicate, and ID attributes
+            if isinstance(ctReaction,list):
+                for rxn in ctReaction:
+                    rxn.reversible = self.reversible
+                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius 
+                    rxn.duplicate = True
+                    # Set the ID flag to the original rmg index 
+                    rxn.ID = str(self.index) 
+            else:
+                ctReaction.reversible = self.reversible
+                ctReaction.duplicate = self.duplicate
+                ctReaction.ID = str(self.index)
+                
+            
+            self.kinetics.setCanteraKinetics(ctReaction, speciesList)
+            
+            return ctReaction
+                
+        else:
+            raise Exception('Cantera reaction cannot be created because there was no kinetics.')
+    
     def getURL(self):
         """
         Get a URL to search for this reaction in the rmg website.
