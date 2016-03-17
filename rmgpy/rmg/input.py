@@ -128,11 +128,19 @@ def simpleReactor(temperature,
     for value in initialMoleFractions.values():
         if value < 0:
             raise InputError('Initial mole fractions cannot be negative.')
+        
+    for spec in initialMoleFractions:
+            initialMoleFractions[spec] = float(initialMoleFractions[spec])
+
     totalInitialMoles = sum(initialMoleFractions.values())
     if totalInitialMoles != 1:
         logging.warning('Initial mole fractions do not sum to one; renormalizing.')
+        logging.info('Original composition:')
+        logging.info(initialMoleFractions)
         for spec in initialMoleFractions:
             initialMoleFractions[spec] /= totalInitialMoles
+        logging.info('was converted to:')
+        logging.info(initialMoleFractions)
 
     T = Quantity(temperature)
     P = Quantity(pressure)
