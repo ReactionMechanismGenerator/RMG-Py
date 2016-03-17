@@ -161,7 +161,41 @@ class TestSpecies(unittest.TestCase):
 
         self.assertTrue(self.species.molecularWeight.equals(spc_cp.molecularWeight))
         self.assertEquals(self.species.reactive, spc_cp.reactive)
-
+        
+    def testCantera(self):
+        """
+        Test that a Cantera Species object is created correctly.
+        """
+        from rmgpy.thermo import NASA, NASAPolynomial
+        import cantera as ct
+        rmgSpecies = Species(label="Ar", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,4.37967], Tmin=(200,'K'), Tmax=(1000,'K')), NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,4.37967], Tmin=(1000,'K'), Tmax=(6000,'K'))], Tmin=(200,'K'), Tmax=(6000,'K'), comment="""
+Thermo library: primaryThermoLibrary
+"""), molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+        
+        rmg_ctSpecies = rmgSpecies.toCantera()
+        
+        ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
+        atoms='Ar:1',
+        thermo=(NASA([200.00, 1000.00],
+                     [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
+                       0.00000000E+00,  0.00000000E+00, -7.45375000E+02,
+                       4.37967000E+00]),
+                NASA([1000.00, 6000.00],
+                     [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
+                       0.00000000E+00,  0.00000000E+00, -7.45375000E+02,
+                       4.37967000E+00])),
+        transport=gas_transport(geom='atom',
+                                diam=3.33,
+                                well_depth=136.501,
+                                dipole=2.0,
+                                polar=1.0,
+                                rot_relax=15.0))""")
+        self.assertEqual(type(rmg_ctSpecies),type(ctSpecies))
+        self.assertEqual(rmg_ctSpecies.name, ctSpecies.name)
+        self.assertEqual(rmg_ctSpecies.composition, ctSpecies.composition)
+        self.assertEqual(rmg_ctSpecies.size, ctSpecies.size)
+        self.assertEqual(type(rmg_ctSpecies.thermo), type(ctSpecies.thermo))
+        self.assertEqual(type(rmg_ctSpecies.transport), type(ctSpecies.transport))
 
 ################################################################################
 
