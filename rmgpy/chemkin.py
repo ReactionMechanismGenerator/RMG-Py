@@ -760,12 +760,13 @@ def loadTransportFile(path, speciesDict):
                 data = line[16:].split()
                 species = speciesDict[label]
                 species.transportData = TransportData(
+                    shapeIndex = int(data[0]),
                     sigma = (float(data[2]),'angstrom'),
                     epsilon = (float(data[1]),'K'),
+                    dipoleMoment = (float(data[3]),'De'),
+                    polarizability = (float(data[4]),'angstrom^3'),
+                    rotrelaxcollnum = float(data[5]),
                 )
-                species.dipoleMoment = (float(data[3]),'De')
-                species.polarizability = (float(data[4]),'angstrom^3')
-                species.Zrot = (float(data[5]),'')
 
 def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
     """
