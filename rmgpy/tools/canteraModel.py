@@ -199,7 +199,7 @@ class Cantera:
         """
         self.conditions = generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist, Plist)
 
-    def loadChemkinModel(self, chemkinFile, **kwargs):
+    def loadChemkinModel(self, chemkinFile, transportFile=None, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
         and save it in the outputDirectory
@@ -214,7 +214,7 @@ class Cantera:
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
-        parser.convertMech(chemkinFile, outName=outName, **kwargs)
+        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, **kwargs)
         print 'Saving into Cantera Model...'
         self.model = ct.Solution(outName)
 
