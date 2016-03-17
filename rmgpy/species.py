@@ -219,6 +219,13 @@ class Species(object):
         """
         output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
         return output
+    
+    def toChemkin(self):
+        """
+        Return the chemkin-formatted string for this species.
+        """
+        from rmgpy.chemkin import getSpeciesIdentifier
+        return getSpeciesIdentifier(self)
 
     def hasStatMech(self):
         """
