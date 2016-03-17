@@ -752,7 +752,7 @@ def loadTransportFile(path, speciesDict):
     """
     with open(path, 'r') as f:
         for line0 in f:
-            line = removeCommentFromLine(line0)[0]
+            line, comment = removeCommentFromLine(line0)
             line = line.strip()
             if line != '':
                 # This line contains an entry, so parse it
@@ -766,6 +766,7 @@ def loadTransportFile(path, speciesDict):
                     dipoleMoment = (float(data[3]),'De'),
                     polarizability = (float(data[4]),'angstrom^3'),
                     rotrelaxcollnum = float(data[5]),
+                    comment = comment.strip(),
                 )
 
 def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
