@@ -1447,13 +1447,6 @@ def writeReactionString(reaction, javaLibrary = False):
     if len(reaction_string) > 52:
         logging.warning("Chemkin reaction string {0!r} is too long for Chemkin 2!".format(reaction_string))
     return reaction_string
-
-################################################################################
-
-def writeTransportEntry(species, verbose = True):
-    """
-    Return a string representation of the reaction as used in a Chemkin file. Lists the 
-    """
     
 ################################################################################
 
