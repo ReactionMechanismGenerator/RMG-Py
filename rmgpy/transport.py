@@ -21,7 +21,7 @@ class TransportData:
     `sigma`             Lennard-Jones collision diameter
     `dipoleMoment`      Dipole Moment
     `polarizability`    Polarizability Volume
-    `rotrelaxcollnum`   Rotational relaxation number
+    `rotrelaxcollnum`   Rotational relaxation number at 298 K, saved as a double.
     =================  ============================================================
     
     """
