@@ -1747,20 +1747,12 @@ def saveTransportFile(path, species):
             
             label = getSpeciesIdentifier(spec)
             
-            molecule = spec.molecule[0]
-            if len(molecule.atoms) == 1:
-                shapeIndex = 0
-            elif molecule.isLinear():
-                shapeIndex = 1
-            else:
-                shapeIndex = 2
-            
             if missingData:
                 f.write('! {0:19s} {1!r}\n'.format(label, spec.transportData))
             else:
                 f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
                     label,
-                    shapeIndex,
+                    spec.transportData.shapeIndex,
                     spec.transportData.epsilon.value_si / constants.R,
                     spec.transportData.sigma.value_si * 1e10,
                     (spec.transportData.dipoleMoment.value_si * constants.c * 1e21 if spec.transportData.dipoleMoment else 0),
