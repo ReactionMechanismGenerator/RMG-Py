@@ -1750,7 +1750,7 @@ def saveTransportFile(path, species):
                     spec.transportData.sigma.value_si * 1e10,
                     (spec.transportData.dipoleMoment.value_si * constants.c * 1e21 if spec.transportData.dipoleMoment else 0),
                     (spec.transportData.polarizability.value_si * 1e30 if spec.transportData.polarizability else 0),
-                    (spec.Zrot.value_si if spec.Zrot else 0),
+                    (spec.transportData.rotrelaxcollnum if spec.transportData.rotrelaxcollnum else 0),
                     spec.transportData.comment,
                 ))
 
