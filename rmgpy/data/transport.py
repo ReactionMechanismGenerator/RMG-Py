@@ -409,13 +409,19 @@ class TransportDatabase(object):
         Tb = criticalPoint.Tb
         if criticalPoint.linear != molecule.isLinear():
             logging.warning("Group-based structure index and isLinear() function disagree about linearity of {mol!r}".format(mol=molecule))
-        shapeIndex = 1 if molecule.isLinear() else 2
+            
+        if len(molecule.atoms) == 1:
+            shapeIndex = 0
+        elif molecule.isLinear():
+            shapeIndex = 1
+        else:
+            shapeIndex = 2
           
         # Acetone values from Joback thesis: Tc = 511.455  (based on experimental Tb)  Pc = 47.808    Vc = 209.000    Tb = 322.082
         #print "Tc={Tc:.2f} K, Pc={Pc:.4g} bar, Vc={Vc:.4g} cm3/mol, Tb={Tb:.4g} K, average of {isomers} isomers".format(Tc=Tc,Pc=Pc,Vc=Vc,Tb=Tb,isomers=counter)
         #print 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc)
         transport = TransportData(
-                     shapeIndex = shapeIndex,  # 1 if linear, else 2
+                     shapeIndex = shapeIndex, 
                      epsilon = (.77 * Tc * constants.R, 'J/mol'),
                      sigma = (2.44 * (Tc/Pc)**(1./3), 'angstroms'),
                      dipoleMoment = (0, 'C*m'),
@@ -567,10 +573,15 @@ class TransportDatabase(object):
             sigma = (5.949e-10,"m")
             epsilon = (399.3,"K")
         
-        shapeIndex = 1 if species.molecule[0].isLinear() else 2
+        if len(species.molecule[0].atoms) == 1:
+            shapeIndex = 0
+        elif species.molecule[0].isLinear():
+            shapeIndex = 1
+        else:
+            shapeIndex = 2
             
         transport = TransportData(
-            shapeIndex = shapeIndex,  # 1 if linear, else 2
+            shapeIndex = shapeIndex,  
             epsilon = epsilon,
             sigma = sigma,
             dipoleMoment = (0, 'C*m'),
