@@ -168,11 +168,13 @@ class Cantera:
         """
         `speciesList`: list of RMG species objects
         `reactionList`: list of RMG reaction objects
+        `reactionMap`: dict mapping the RMG reaction index within the `reactionList` to cantera model reaction(s) indices
         `canteraFile` path of the chem.cti file associated with this job
         `conditions`: a list of `CanteraCondition` objects
         """
         self.speciesList = speciesList 
         self.reactionList = reactionList 
+        self.reactionMap = {}
         self.model = ct.Solution(canteraFile) if canteraFile else None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
         self.conditions = conditions
@@ -241,6 +243,32 @@ class Cantera:
         parser = ck2cti.Parser()
         parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, **kwargs)
         self.model = ct.Solution(outName)
+
+    def modifyReactionKinetics(self, rmgReactionIndex, rmgReaction):
+        """
+        Modify the corresponding cantera reaction's kinetics to match 
+        the reaction kinetics of an `rmgReaction`, using the `rmgReactionIndex` to
+        map to the corresponding reaction in the cantera model. Note that
+        this method only works if there is a reactionMap available (therefore only when the cantera model
+        is generated directly from rmg objects and not from a chemkin file)
+        """
+        indices = self.reactionMap[rmgReactionIndex]
+        modified_ctReactions = rmgReaction.toCantera(self.speciesList)
+        if not isinstance(modified_ctReactions, list):
+            modified_ctReactions = [modified_ctReactions]
+
+        for i in range(len(indices)):
+            self.model.modify_reaction(indices[i], modified_ctReactions[i])
+
+    def modifySpeciesThermo(self, rmgSpeciesIndex, rmgSpecies):
+        """
+        Modify the corresponding cantera species thermo to match that of a
+        `rmgSpecies` object, given the `rmgSpeciesIndex` which indicates the
+        index at which this species appears in the `speciesList`
+        """
+        modified_ctSpecies = rmgSpecies.toCantera()
+        ctSpecies = self.model.species(rmgSpeciesIndex)
+        ctSpecies.thermo = modified_ctSpecies.thermo
 
     def plot(self, data):
         """
