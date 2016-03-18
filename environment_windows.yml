@@ -31,4 +31,3 @@ dependencies:
   - mopac
   - graphviz
   - scoop
-  - libgfortran ==1.0
