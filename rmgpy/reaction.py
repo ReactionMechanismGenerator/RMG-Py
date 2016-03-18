@@ -179,7 +179,6 @@ class Reaction:
         Converts the RMG Reaction object to a Cantera Reaction object
         with the appropriate reaction class.
         """
-        from rmgpy.chemkin import getSpeciesIdentifier
         from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
                     
         import cantera as ct
@@ -188,14 +187,14 @@ class Reaction:
         # for initializing the cantera reaction object
         ctReactants = {}
         for reactant in self.reactants:
-            reactantName = getSpeciesIdentifier(reactant)  # Use the chemkin name for the species
+            reactantName = reactant.toChemkin()  # Use the chemkin name for the species
             if reactantName in ctReactants:
                 ctReactants[reactantName] += 1
             else:
                 ctReactants[reactantName] = 1
         ctProducts = {}
         for product in self.products:
-            productName = getSpeciesIdentifier(product)  # Use the chemkin name for the species
+            productName = product.toChemkin()  # Use the chemkin name for the species
             if productName in ctProducts:
                 ctProducts[productName] += 1
             else:
