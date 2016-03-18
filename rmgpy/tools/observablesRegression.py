@@ -58,11 +58,13 @@ class ObservablesTestCase:
                                                                       ('maxSpeciesConcentrations',['[CH2]','[O]'])
                                                         see findIgnitionDelay function for more details
     'exptData'              An array of GenericData objects
+    'ck2tci'                Indicates whether to convert chemkin to cti mechanism.  If set to False, RMG will convert the species
+                            and reaction objects to Cantera objects internally
     ======================= ==============================================================================================
 
 
     """
-    def __init__(self, title='', oldDir='', newDir='', observables = {}, exptData = []):
+    def __init__(self, title='', oldDir='', newDir='', observables = {}, exptData = [], ck2cti=True):
         self.title=title
         self.newDir=newDir
         self.oldDir=oldDir
@@ -70,12 +72,23 @@ class ObservablesTestCase:
         self.exptData=exptData
         self.observables=observables
 
+        # Detect if the transport file exists
+        oldTransportPath = None
+        if os.path.exists(os.path.join(oldDir,'tran.dat')):
+            oldTransportPath = os.path.join(oldDir,'tran.dat')
+        newTransportPath = None
+        if os.path.exists(os.path.join(newDir,'tran.dat')):
+            oldTransportPath = os.path.join(newDir,'tran.dat')
+
         # load the species and reactions from each model
         oldSpeciesList, oldReactionList = loadChemkinFile(os.path.join(oldDir,'chem_annotated.inp'),
-                                                          os.path.join(oldDir,'species_dictionary.txt'))
+                                                          os.path.join(oldDir,'species_dictionary.txt'),
+                                                          oldTransportPath)
 
         newSpeciesList, newReactionList = loadChemkinFile(os.path.join(newDir,'chem_annotated.inp'),
-                                                          os.path.join(newDir,'species_dictionary.txt'))
+                                                          os.path.join(newDir,'species_dictionary.txt'),
+                                                          newTransportPath)
+
         self.oldSim = Cantera(speciesList = oldSpeciesList,
                               reactionList = oldReactionList,
                               outputDirectory = oldDir)
@@ -84,8 +97,12 @@ class ObservablesTestCase:
                               outputDirectory = newDir)
         
         # load each chemkin file into the cantera model
-        self.oldSim.loadChemkinModel(os.path.join(oldDir,'chem_annotated.inp'))
-        self.newSim.loadChemkinModel(os.path.join(newDir,'chem_annotated.inp'))
+        if not ck2cti:
+            self.oldSim.loadModel()
+            self.newSim.loadModel()
+        else:
+            self.oldSim.loadChemkinModel(os.path.join(oldDir,'chem_annotated.inp'), transportFile=oldTransportPath, quiet=True)
+            self.newSim.loadChemkinModel(os.path.join(newDir,'chem_annotated.inp'), transportFile=newTransportPath, quiet=True)
 
     def __str__(self):
         """
