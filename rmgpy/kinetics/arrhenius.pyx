@@ -549,9 +549,10 @@ cdef class PDepArrhenius(PDepKineticsModel):
         A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]
         """
         import cantera as ct
+        import copy
         assert isinstance(ctReaction, ct.PlogReaction), "Must be a Cantera PlogReaction object"
 
-        pressures = self._pressures.value_si
+        pressures = copy.deepcopy(self._pressures.value_si)
         ctArrhenius = [arr.toCanteraKinetics() for arr in self.arrhenius]
 
         ctReaction.rates = zip(pressures, ctArrhenius)
