@@ -210,12 +210,10 @@ class Cantera:
         base = os.path.basename(chemkinFile)
         baseName = os.path.splitext(base)[0]
         outName = os.path.join(self.outputDirectory, baseName + ".cti")
-        print 'Converting {0} to {1}...'.format(chemkinFile, outName)
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
         parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, **kwargs)
-        print 'Saving into Cantera Model...'
         self.model = ct.Solution(outName)
 
     def plot(self, data):
