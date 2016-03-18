@@ -78,9 +78,6 @@ class Species(object):
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
     `transportData`          A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
-    `dipoleMoment`          The molecular dipole moment
-    `polarizability`        The polarizability alpha
-    `Zrot`                  The rotational relaxation collision number
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
     `props`                 A generic 'properties' dictionary to store user-defined flags
@@ -92,7 +89,6 @@ class Species(object):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True, props=None, aug_inchi=None):
         self.index = index
         self.label = label
@@ -102,9 +98,6 @@ class Species(object):
         self.transportData = transportData
         self.reactive = reactive
         self.molecularWeight = molecularWeight
-        self.dipoleMoment = dipoleMoment
-        self.polarizability = polarizability
-        self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
         self.aug_inchi = aug_inchi
@@ -133,9 +126,6 @@ class Species(object):
         if self.transportData is not None: string += 'transportData={0!r}, '.format(self.transportData)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
-        if self.dipoleMoment is not None: string += 'dipoleMoment={0!r}, '.format(self.dipoleMoment)
-        if self.polarizability is not None: string += 'polarizability={0!r}, '.format(self.polarizability)
-        if self.Zrot is not None: string += 'Zrot={0!r}, '.format(self.Zrot)
         if self.energyTransferModel is not None: string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
         string = string[:-2] + ')'
         return string
@@ -157,31 +147,13 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.props))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
     def getMolecularWeight(self):
         return self._molecularWeight
     def setMolecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
-
-    def getDipoleMoment(self):
-        return self._dipoleMoment
-    def setDipoleMoment(self, value):
-        self._dipoleMoment = quantity.DipoleMoment(value)
-    dipoleMoment = property(getDipoleMoment, setDipoleMoment, """The molecular dipole moment.""")
-
-    def getPolarizability(self):
-        return self._polarizability
-    def setPolarizability(self, value):
-        self._polarizability = quantity.Volume(value)
-    polarizability = property(getPolarizability, setPolarizability, """The polarizability alpha.""")
-
-    def getZrot(self):
-        return self._Zrot
-    def setZrot(self, value):
-        self._Zrot = quantity.Dimensionless(value)
-    Zrot = property(getZrot, setZrot, """The rotational relaxation collision number.""")
 
     def generateResonanceIsomers(self):
         """
@@ -405,9 +377,6 @@ class Species(object):
         other.transportData = deepcopy(self.transportData)
 
         other.molecularWeight = deepcopy(self.molecularWeight)
-        other.dipoleMoment = deepcopy(self.dipoleMoment)
-        other.polarizability = deepcopy(self.polarizability)
-        other.Zrot = deepcopy(self.Zrot)
         other.energyTransferModel = deepcopy(self.energyTransferModel)
         other.reactive = self.reactive        
         other.props = deepcopy(self.props)

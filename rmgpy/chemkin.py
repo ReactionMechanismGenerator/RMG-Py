@@ -752,7 +752,7 @@ def loadTransportFile(path, speciesDict):
     """
     with open(path, 'r') as f:
         for line0 in f:
-            line = removeCommentFromLine(line0)[0]
+            line, comment = removeCommentFromLine(line0)
             line = line.strip()
             if line != '':
                 # This line contains an entry, so parse it
@@ -760,12 +760,14 @@ def loadTransportFile(path, speciesDict):
                 data = line[16:].split()
                 species = speciesDict[label]
                 species.transportData = TransportData(
+                    shapeIndex = int(data[0]),
                     sigma = (float(data[2]),'angstrom'),
                     epsilon = (float(data[1]),'K'),
+                    dipoleMoment = (float(data[3]),'De'),
+                    polarizability = (float(data[4]),'angstrom^3'),
+                    rotrelaxcollnum = float(data[5]),
+                    comment = comment.strip(),
                 )
-                species.dipoleMoment = (float(data[3]),'De')
-                species.polarizability = (float(data[4]),'angstrom^3')
-                species.Zrot = (float(data[5]),'')
 
 def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
     """
@@ -1447,13 +1449,6 @@ def writeReactionString(reaction, javaLibrary = False):
     if len(reaction_string) > 52:
         logging.warning("Chemkin reaction string {0!r} is too long for Chemkin 2!".format(reaction_string))
     return reaction_string
-
-################################################################################
-
-def writeTransportEntry(species, verbose = True):
-    """
-    Return a string representation of the reaction as used in a Chemkin file. Lists the 
-    """
     
 ################################################################################
 
@@ -1739,33 +1734,24 @@ def saveTransportFile(path, species):
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
         for spec in species:            
-            if (not spec.transportData or
-                len(spec.molecule) == 0):
+            if not spec.transportData:
                 missingData = True
             else:
                 missingData = False
             
             label = getSpeciesIdentifier(spec)
             
-            molecule = spec.molecule[0]
-            if len(molecule.atoms) == 1:
-                shapeIndex = 0
-            elif molecule.isLinear():
-                shapeIndex = 1
-            else:
-                shapeIndex = 2
-            
             if missingData:
                 f.write('! {0:19s} {1!r}\n'.format(label, spec.transportData))
             else:
                 f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
                     label,
-                    shapeIndex,
+                    spec.transportData.shapeIndex,
                     spec.transportData.epsilon.value_si / constants.R,
                     spec.transportData.sigma.value_si * 1e10,
                     (spec.transportData.dipoleMoment.value_si * constants.c * 1e21 if spec.transportData.dipoleMoment else 0),
                     (spec.transportData.polarizability.value_si * 1e30 if spec.transportData.polarizability else 0),
-                    (spec.Zrot.value_si if spec.Zrot else 0),
+                    (spec.transportData.rotrelaxcollnum if spec.transportData.rotrelaxcollnum else 0),
                     spec.transportData.comment,
                 ))
 

@@ -390,12 +390,7 @@ class TransportDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        
-        Tc = 0
-        Pc = 0
-        Tb = 0
-        Vc = 0
-        counter = 0
+
         
         # assume that the stablest resonance isomer has already been put as the first
         # and that we want the transport properties of this isomer
@@ -409,13 +404,19 @@ class TransportDatabase(object):
         Tb = criticalPoint.Tb
         if criticalPoint.linear != molecule.isLinear():
             logging.warning("Group-based structure index and isLinear() function disagree about linearity of {mol!r}".format(mol=molecule))
-        shapeIndex = 1 if molecule.isLinear() else 2
+            
+        if len(molecule.atoms) == 1:
+            shapeIndex = 0
+        elif molecule.isLinear():
+            shapeIndex = 1
+        else:
+            shapeIndex = 2
           
         # Acetone values from Joback thesis: Tc = 511.455  (based on experimental Tb)  Pc = 47.808    Vc = 209.000    Tb = 322.082
         #print "Tc={Tc:.2f} K, Pc={Pc:.4g} bar, Vc={Vc:.4g} cm3/mol, Tb={Tb:.4g} K, average of {isomers} isomers".format(Tc=Tc,Pc=Pc,Vc=Vc,Tb=Tb,isomers=counter)
         #print 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc)
         transport = TransportData(
-                     shapeIndex = shapeIndex,  # 1 if linear, else 2
+                     shapeIndex = shapeIndex, 
                      epsilon = (.77 * Tc * constants.R, 'J/mol'),
                      sigma = (2.44 * (Tc/Pc)**(1./3), 'angstroms'),
                      dipoleMoment = (0, 'C*m'),
@@ -432,13 +433,15 @@ class TransportDatabase(object):
         :class:`Molecule` object `molecule` by estimation using Joback's group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        Radicals are saturated with H atoms and the parent molecule properties
+        are returned.
         """
         # For transport estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the transport wrong
 
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
-
+        if molecule.isRadical():  # radical species
             # Make a copy of the structure so we don't change the original
             saturatedStruct = molecule.copy(deep=True)
 
@@ -463,28 +466,28 @@ class TransportDatabase(object):
 #                saturatedStruct.updateConnectivityValues()
             return criticalPoint
 
-        else: # non-radical species
-            numAtoms = 0
-            groupData = CriticalPointGroupContribution(
-                Tc = 0,
-                Pc = 0,
-                Vc = 0,
-                Tb = 0,
-                structureIndex = 0,
-            )
-            
-            # Generate estimate of critical point contribution data
-            for atom in molecule.atoms:
-                numAtoms+=1
-                # Iterate over heavy (non-hydrogen) atoms
-                if atom.isNonHydrogen():
-                    try:
-                        if molecule.isVertexInCycle(atom):
-                            self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
-                        else:
-                            self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})
-                    except KeyError:
-                        raise           
+        # non-radical species
+        numAtoms = 0
+        groupData = CriticalPointGroupContribution(
+            Tc=0,
+            Pc=0,
+            Vc=0,
+            Tb=0,
+            structureIndex=0,
+        )
+
+        # Generate estimate of critical point contribution data
+        for atom in molecule.atoms:
+            numAtoms += 1
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                try:
+                    if molecule.isVertexInCycle(atom):
+                        self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
+                    else:
+                        self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})
+                except KeyError:
+                    raise
                     
         Tb = 198.18 + groupData.Tb
         Vc = 17.5 + groupData.Vc
@@ -567,10 +570,15 @@ class TransportDatabase(object):
             sigma = (5.949e-10,"m")
             epsilon = (399.3,"K")
         
-        shapeIndex = 1 if species.molecule[0].isLinear() else 2
+        if len(species.molecule[0].atoms) == 1:
+            shapeIndex = 0
+        elif species.molecule[0].isLinear():
+            shapeIndex = 1
+        else:
+            shapeIndex = 2
             
         transport = TransportData(
-            shapeIndex = shapeIndex,  # 1 if linear, else 2
+            shapeIndex = shapeIndex,  
             epsilon = epsilon,
             sigma = sigma,
             dipoleMoment = (0, 'C*m'),
