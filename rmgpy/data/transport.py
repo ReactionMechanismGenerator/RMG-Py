@@ -390,12 +390,7 @@ class TransportDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        
-        Tc = 0
-        Pc = 0
-        Tb = 0
-        Vc = 0
-        counter = 0
+
         
         # assume that the stablest resonance isomer has already been put as the first
         # and that we want the transport properties of this isomer
@@ -438,13 +433,15 @@ class TransportDatabase(object):
         :class:`Molecule` object `molecule` by estimation using Joback's group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        Radicals are saturated with H atoms and the parent molecule properties
+        are returned.
         """
         # For transport estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the transport wrong
 
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
-
+        if molecule.isRadical():  # radical species
             # Make a copy of the structure so we don't change the original
             saturatedStruct = molecule.copy(deep=True)
 
@@ -469,28 +466,28 @@ class TransportDatabase(object):
 #                saturatedStruct.updateConnectivityValues()
             return criticalPoint
 
-        else: # non-radical species
-            numAtoms = 0
-            groupData = CriticalPointGroupContribution(
-                Tc = 0,
-                Pc = 0,
-                Vc = 0,
-                Tb = 0,
-                structureIndex = 0,
-            )
-            
-            # Generate estimate of critical point contribution data
-            for atom in molecule.atoms:
-                numAtoms+=1
-                # Iterate over heavy (non-hydrogen) atoms
-                if atom.isNonHydrogen():
-                    try:
-                        if molecule.isVertexInCycle(atom):
-                            self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
-                        else:
-                            self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})
-                    except KeyError:
-                        raise           
+        # non-radical species
+        numAtoms = 0
+        groupData = CriticalPointGroupContribution(
+            Tc=0,
+            Pc=0,
+            Vc=0,
+            Tb=0,
+            structureIndex=0,
+        )
+
+        # Generate estimate of critical point contribution data
+        for atom in molecule.atoms:
+            numAtoms += 1
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                try:
+                    if molecule.isVertexInCycle(atom):
+                        self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
+                    else:
+                        self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})
+                except KeyError:
+                    raise
                     
         Tb = 198.18 + groupData.Tb
         Vc = 17.5 + groupData.Vc
