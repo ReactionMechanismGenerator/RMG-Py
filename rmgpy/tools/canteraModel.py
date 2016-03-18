@@ -199,6 +199,32 @@ class Cantera:
         """
         self.conditions = generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist, Plist)
 
+    def loadModel(self):
+        """
+        Load a cantera Solution model from the job's own speciesList and reactionList attributes
+        """
+
+        ctSpecies =[spec.toCantera() for spec in self.speciesList]
+
+        self.reactionMap = {}
+        ctReactions = []
+        for rxn in self.reactionList:
+            index = len(ctReactions)
+
+            convertedReactions = rxn.toCantera(self.speciesList)
+
+            if isinstance(convertedReactions, list):
+                indices = range(index, index+len(convertedReactions))
+                ctReactions.extend(convertedReactions)
+            else:
+                indices = [index]
+                ctReactions.append(convertedReactions)
+
+            self.reactionMap[self.reactionList.index(rxn)] = indices
+
+        self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
+                          species=ctSpecies, reactions=ctReactions)
+
     def loadChemkinModel(self, chemkinFile, transportFile=None, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
