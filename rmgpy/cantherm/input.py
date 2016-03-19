@@ -76,13 +76,15 @@ jobList = []
 
 ################################################################################
 
-def species(label, *args, **kwargs):
+def species(label, smiles=None, *args, **kwargs):
     global speciesDict, jobList
     if label in speciesDict:
         raise ValueError('Multiple occurrences of species with label {0!r}.'.format(label))
     logging.info('Loading species {0}...'.format(label))
     
     spec = Species(label=label)
+    if smiles:
+        spec.molecule = [Molecule().fromSMILES(smiles)]
     speciesDict[label] = spec
     
     if len(args) == 1:
