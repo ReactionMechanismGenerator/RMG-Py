@@ -86,6 +86,30 @@ def findNearest(array, value):
     idx = (numpy.abs(array-value)).argmin()
     return idx
 
+def linearlyInterpolatePoint(xArray, yArray, xValue):
+    """
+    Returns the interpolated yValue for given xValue using data from the two sorted arrays:
+    """
+    #Find the next largest point in xArray that is still smaller than xValue:
+    lowerIndex=None
+    for index, x in xArray:
+        if x>xArray:
+            break
+        lowerIndex=index
+
+    #If xValue is outside the domain of xArray, we use either the min or max points for dydx
+    if lowerIndex is None:
+        lowerIndex=0
+    elif lowerIndex==len(xArray)-1:
+        lowerIndex=lowerIndex-1
+    higherIndex=lowerIndex+1
+
+    dydx=(yArray[higherIndex]-yArray[lowerIndex])/(xArray[higherIndex]-xArray[lowerIndex])
+
+    if xValue < xArray[lowerIndex]:
+        yValue=yArray[lowerIndex]-dydx*(xValue-xArray[lowerIndex])
+    else:
+        yValue=yArray[lowerIndex]+dydx*(xValue-xArray[lowerIndex])
 
 
 class GenericPlot(object):
