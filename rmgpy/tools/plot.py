@@ -92,8 +92,8 @@ def linearlyInterpolatePoint(xArray, yArray, xValue):
     """
     #Find the next largest point in xArray that is still smaller than xValue:
     lowerIndex=None
-    for index, x in xArray:
-        if x>xArray:
+    for index, x in enumerate(xArray):
+        if x>xValue:
             break
         lowerIndex=index
 
@@ -110,7 +110,7 @@ def linearlyInterpolatePoint(xArray, yArray, xValue):
         yValue=yArray[lowerIndex]-dydx*(xValue-xArray[lowerIndex])
     else:
         yValue=yArray[lowerIndex]+dydx*(xValue-xArray[lowerIndex])
-
+    return yValue
 
 class GenericPlot(object):
     """
