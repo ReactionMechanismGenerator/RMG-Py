@@ -1154,14 +1154,13 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
             # Check that the same number of reactions are produced
             self.assertEqual(len(converted_obj), len(ct_obj))  
             
-            # Check that the first reaction has the same type
-            self.assertEqual(type(converted_obj[0]), type(ct_obj[0]))  
-            
-            # Check that the reaction string is the same
-            self.assertEqual(repr(converted_obj[0]), repr(ct_obj[0]))
-            
-            # Check that the Arrhenius rates are identical
-            self.assertEqual(str(converted_obj[0].rate), str(ct_obj[0].rate))
+            for converted_rxn, ct_rxn in zip(converted_obj, ct_obj):
+                # Check that the reaction has the same type
+                self.assertEqual(type(converted_rxn), type(ct_rxn))
+                # Check that the reaction string is the same
+                self.assertEqual(repr(converted_rxn), repr(ct_rxn))
+                # Check that the Arrhenius rates are identical
+                self.assertEqual(str(converted_rxn.rate), str(ct_rxn.rate))
         
     def testPDepArrhenius(self):
         """
@@ -1176,7 +1175,6 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
             self.assertEqual(type(converted_obj), type(ct_obj))  
             # Check that the reaction string is the same
             self.assertEqual(repr(converted_obj), repr(ct_obj))
-            
             # Check that the Arrhenius rates are identical
             self.assertEqual(str(converted_obj.rates), str(ct_obj.rates))
     
@@ -1193,14 +1191,13 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
             # Check that the same number of reactions are produced
             self.assertEqual(len(converted_obj), len(ct_obj))  
             
-            # Check that the first reaction has the same type
-            self.assertEqual(type(converted_obj[0]), type(ct_obj[0]))  
-            
-            # Check that the reaction string is the same
-            self.assertEqual(repr(converted_obj[0]), repr(ct_obj[0]))
-            
-            # Check that the Arrhenius rates are identical
-            self.assertEqual(str(converted_obj[0].rates), str(ct_obj[0].rates))
+            for converted_rxn, ct_rxn in zip(converted_obj, ct_obj):
+                # Check that the reaction has the same type
+                self.assertEqual(type(converted_rxn), type(ct_rxn))
+                # Check that the reaction string is the same
+                self.assertEqual(repr(converted_rxn), repr(ct_rxn))
+                # Check that the Arrhenius rates are identical
+                self.assertEqual(str(converted_rxn.rates), str(ct_rxn.rates))
         
      
     def testChebyshev(self):
