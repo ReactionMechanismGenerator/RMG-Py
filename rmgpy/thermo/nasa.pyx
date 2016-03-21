@@ -350,7 +350,6 @@ cdef class NASA(HeatCapacityModel):
         """
         
         from cantera import NasaPoly2
-        import copy
 
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coeffs
         
@@ -362,8 +361,8 @@ cdef class NASA(HeatCapacityModel):
         # high temperature
         coeffs = numpy.zeros(15)
         coeffs[0] = polys[0].Tmax.value_si # mid point temperature between two polynomials
-        coeffs[1:8] = copy.deepcopy(polys[1].coeffs) # 7 coefficients of the high temperature polynomial
-        coeffs[8:15] = copy.deepcopy(polys[0].coeffs) # 7 coefficients of the low temperature polynomial
+        coeffs[1:8] = polys[1].coeffs # 7 coefficients of the high temperature polynomial
+        coeffs[8:15] = polys[0].coeffs # 7 coefficients of the low temperature polynomial
 
         # initialize cantera.NasaPoly2(T_low, T_high, P_ref, coeffs)
         return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 10000.0, coeffs)
