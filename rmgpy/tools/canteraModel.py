@@ -476,7 +476,7 @@ def checkNearlyEqual(value1, value2, dE = 1e-5):
     Check that two values are nearly equivalent by abs(val1-val2) < abs(dE*val1)
     """
     
-    if abs(value1-value2) <= abs(dE*value1):
+    if abs(value1-value2) <= abs(dE*value1) or abs(value1-value2) <= abs(dE*value2) or abs(value1-value2) <= dE:
         return True
     else:
         return False
