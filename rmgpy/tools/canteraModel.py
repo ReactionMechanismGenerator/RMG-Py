@@ -227,6 +227,19 @@ class Cantera:
         self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
                           species=ctSpecies, reactions=ctReactions)
 
+    def refreshModel(self):
+        """
+        Modification to thermo requires that the cantera model be refreshed to 
+        recalculate reverse rate coefficients and equilibrium constants... 
+        As soon as cantera has its own Kinetics().modify_thermo function in place,
+        this function may be deprecated.
+        """
+        ctReactions = self.model.reactions()
+        ctSpecies = self.model.species()
+
+        self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
+                          species=ctSpecies, reactions=ctReactions)
+
     def loadChemkinModel(self, chemkinFile, transportFile=None, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
