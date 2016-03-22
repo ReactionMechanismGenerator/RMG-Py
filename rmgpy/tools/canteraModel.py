@@ -168,11 +168,13 @@ class Cantera:
         """
         `speciesList`: list of RMG species objects
         `reactionList`: list of RMG reaction objects
+        `reactionMap`: dict mapping the RMG reaction index within the `reactionList` to cantera model reaction(s) indices
         `canteraFile` path of the chem.cti file associated with this job
         `conditions`: a list of `CanteraCondition` objects
         """
         self.speciesList = speciesList 
         self.reactionList = reactionList 
+        self.reactionMap = {}
         self.model = ct.Solution(canteraFile) if canteraFile else None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
         self.conditions = conditions
@@ -199,7 +201,46 @@ class Cantera:
         """
         self.conditions = generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist, Plist)
 
-    def loadChemkinModel(self, chemkinFile, **kwargs):
+    def loadModel(self):
+        """
+        Load a cantera Solution model from the job's own speciesList and reactionList attributes
+        """
+
+        ctSpecies =[spec.toCantera() for spec in self.speciesList]
+
+        self.reactionMap = {}
+        ctReactions = []
+        for rxn in self.reactionList:
+            index = len(ctReactions)
+
+            convertedReactions = rxn.toCantera(self.speciesList)
+
+            if isinstance(convertedReactions, list):
+                indices = range(index, index+len(convertedReactions))
+                ctReactions.extend(convertedReactions)
+            else:
+                indices = [index]
+                ctReactions.append(convertedReactions)
+
+            self.reactionMap[self.reactionList.index(rxn)] = indices
+
+        self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
+                          species=ctSpecies, reactions=ctReactions)
+
+    def refreshModel(self):
+        """
+        Modification to thermo requires that the cantera model be refreshed to 
+        recalculate reverse rate coefficients and equilibrium constants... 
+        As soon as cantera has its own Kinetics().modify_thermo function in place,
+        this function may be deprecated.
+        """
+        ctReactions = self.model.reactions()
+        ctSpecies = self.model.species()
+
+        self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
+                          species=ctSpecies, reactions=ctReactions)
+
+    def loadChemkinModel(self, chemkinFile, transportFile=None, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
         and save it in the outputDirectory
@@ -210,13 +251,37 @@ class Cantera:
         base = os.path.basename(chemkinFile)
         baseName = os.path.splitext(base)[0]
         outName = os.path.join(self.outputDirectory, baseName + ".cti")
-        print 'Converting {0} to {1}...'.format(chemkinFile, outName)
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
-        parser.convertMech(chemkinFile, outName=outName, **kwargs)
-        print 'Saving into Cantera Model...'
+        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, **kwargs)
         self.model = ct.Solution(outName)
+
+    def modifyReactionKinetics(self, rmgReactionIndex, rmgReaction):
+        """
+        Modify the corresponding cantera reaction's kinetics to match 
+        the reaction kinetics of an `rmgReaction`, using the `rmgReactionIndex` to
+        map to the corresponding reaction in the cantera model. Note that
+        this method only works if there is a reactionMap available (therefore only when the cantera model
+        is generated directly from rmg objects and not from a chemkin file)
+        """
+        indices = self.reactionMap[rmgReactionIndex]
+        modified_ctReactions = rmgReaction.toCantera(self.speciesList)
+        if not isinstance(modified_ctReactions, list):
+            modified_ctReactions = [modified_ctReactions]
+
+        for i in range(len(indices)):
+            self.model.modify_reaction(indices[i], modified_ctReactions[i])
+
+    def modifySpeciesThermo(self, rmgSpeciesIndex, rmgSpecies):
+        """
+        Modify the corresponding cantera species thermo to match that of a
+        `rmgSpecies` object, given the `rmgSpeciesIndex` which indicates the
+        index at which this species appears in the `speciesList`
+        """
+        modified_ctSpecies = rmgSpecies.toCantera()
+        ctSpecies = self.model.species(rmgSpeciesIndex)
+        ctSpecies.thermo = modified_ctSpecies.thermo
 
     def plot(self, data):
         """
@@ -405,3 +470,137 @@ def findIgnitionDelay(time, yVar=None, metric='maxDerivative'):
         index = multdata.argmax()
         return time[index]
 
+
+def checkNearlyEqual(value1, value2, dE = 1e-5):
+    """
+    Check that two values are nearly equivalent by abs(val1-val2) < abs(dE*val1)
+    """
+    
+    if abs(value1-value2) <= abs(dE*value1) or abs(value1-value2) <= abs(dE*value2) or abs(value1-value2) <= dE:
+        return True
+    else:
+        return False
+    
+    
+def checkEquivalentCanteraSpecies(ctSpec1, ctSpec2, dE=1e-5):
+    """
+    Checks that the two cantera species are nearly equivalent
+    """
+    try:
+        assert ctSpec1.name == ctSpec2.name, "Identical name"
+        assert ctSpec1.composition == ctSpec2.composition, "Identical composition"
+        assert ctSpec1.size == ctSpec2.size, "Identical species size"
+        assert ctSpec1.charge == ctSpec2.charge, "Identical charge"
+
+        if ctSpec1.transport or ctSpec2.transport:
+            trans1 = ctSpec1.transport
+            trans2 = ctSpec2.transport
+
+            assert checkNearlyEqual(trans1.acentric_factor, trans2.acentric_factor, dE), "Identical acentric factor"
+            assert checkNearlyEqual(trans1.diameter, trans2.diameter, dE), "Identical diameter"
+            assert checkNearlyEqual(trans1.dipole, trans2.dipole, dE), "Identical dipole moment"
+            assert trans1.geometry == trans2.geometry, "Identical geometry"
+            assert checkNearlyEqual(trans1.polarizability, trans2.polarizability, dE), "Identical polarizibility"
+            assert checkNearlyEqual(trans1.rotational_relaxation, trans2.rotational_relaxation, dE), "Identical rotational relaxation number"
+            assert checkNearlyEqual(trans1.well_depth, trans2.well_depth, dE), "Identical well depth"
+
+        if ctSpec1.thermo or ctSpec2.thermo:
+            thermo1 = ctSpec1.thermo
+            thermo2 = ctSpec2.thermo
+
+            Tlist = [300,500,1000,1500,2000]
+            for T in Tlist:
+                assert checkNearlyEqual(thermo1.cp(T), thermo2.cp(T), dE),  "Similar heat capacity"
+                assert checkNearlyEqual(thermo1.h(T), thermo2.h(T), dE), "Similar enthalpy"
+                assert checkNearlyEqual(thermo1.s(T), thermo2.s(T), dE),  "Similar entropy"
+    except Exception as e:
+        print "Cantera species {0} failed equivalency check on: {1}".format(ctSpec1,e)
+        return False
+
+    return True
+    
+def checkEquivalentCanteraReaction(ctRxn1, ctRxn2, checkID=False, dE=1e-5):
+    """
+    Checks that the two cantera species are nearly equivalent
+    if checkID is True, then ID's for the reactions will also be checked
+    """
+    def checkEquivalentArrhenius(arr1, arr2):
+        assert checkNearlyEqual(arr1.activation_energy, arr2.activation_energy, dE), "Similar Arrhenius Ea"
+        assert checkNearlyEqual(arr1.pre_exponential_factor, arr2.pre_exponential_factor, dE), "Similar Arrhenius A-factor"
+        assert checkNearlyEqual(arr1.temperature_exponent, arr2.temperature_exponent, dE), "Similar Arrhenius temperature exponent"
+    
+    def checkEquivalentFalloff(fall1, fall2):
+        assert len(fall1.parameters) == len(fall2.parameters), "Same number of falloff parameters"
+        for i in range(len(fall1.parameters)):
+            assert checkNearlyEqual(fall1.parameters[i], fall2.parameters[i], dE), "Similar falloff parameters"
+        assert fall1.type == fall2.type, "Same falloff parameterization type"
+    
+    try:
+        assert type(ctRxn1) == type(ctRxn2), "Same Cantera reaction type"
+
+        if isinstance(ctRxn1, list):
+            assert len(ctRxn1) == len(ctRxn2), "Same number of reactions"
+            for i in range(len(ctRxn1)):
+                checkEquivalentCanteraReaction(ctRxn1[i], ctRxn2[i], checkID=checkID)
+
+
+
+        if checkID:
+            assert ctRxn1.ID == ctRxn2.ID, "Same reaction ID"
+
+        assert ctRxn1.duplicate == ctRxn2.duplicate, "Same duplicate attribute"
+        assert ctRxn1.reversible == ctRxn2.reversible, "Same reversible attribute"
+        assert ctRxn1.orders == ctRxn2.orders, "Same orders attribute"
+        assert ctRxn1.allow_negative_orders == ctRxn2.allow_negative_orders, "Same allow_negative_orders attribute"
+        assert ctRxn1.allow_nonreactant_orders == ctRxn2.allow_nonreactant_orders, "Same allow_nonreactant_orders attribute"
+        assert ctRxn1.reactants == ctRxn2.reactants, "Same reactants"
+        assert ctRxn1.products == ctRxn2.products, "Same products"
+
+
+        if isinstance(ctRxn1, ct.ElementaryReaction):
+            assert ctRxn1.allow_negative_pre_exponential_factor == ctRxn2.allow_negative_pre_exponential_factor, \
+                "Same allow_negative_pre_exponential_factor attribute"
+            if ctRxn1.rate or ctRxn2.rate:
+                checkEquivalentArrhenius(ctRxn1.rate,ctRxn2.rate)
+
+        elif isinstance(ctRxn1, ct.PlogReaction):
+            if ctRxn1.rates or ctRxn2.rates:
+                assert len(ctRxn1.rates) == len(ctRxn2.rates), "Same number of rates in PLOG reaction"
+
+                for i in range(len(ctRxn1.rates)):
+                    P1, arr1 = ctRxn1.rates[i]
+                    P2, arr2 = ctRxn2.rates[i]
+                    assert checkNearlyEqual(P1, P2, dE), "Similar pressures for PLOG rates"
+                    checkEquivalentArrhenius(arr1, arr2)
+
+        elif isinstance(ctRxn1, ct.ChebyshevReaction):
+            assert ctRxn1.Pmax == ctRxn2.Pmax, "Same Pmax for Chebyshev reaction" 
+            assert ctRxn1.Pmin == ctRxn2.Pmin, "Same Pmin for Chebyshev reaction" 
+            assert ctRxn1.Tmax == ctRxn2.Tmax, "Same Tmax for Chebyshev reaction" 
+            assert ctRxn1.Tmin == ctRxn2.Tmin, "Same Tmin for Chebyshev reaction" 
+            assert ctRxn1.nPressure == ctRxn2.nPressure, "Same number of pressure interpolations"
+            assert ctRxn1.nTemperature == ctRxn2.nTemperature, "Same number of temperature interpolations"
+            for i in range(ctRxn1.coeffs.shape[0]):
+                for j in range(ctRxn1.coeffs.shape[1]):
+                    assert checkNearlyEqual(ctRxn1.coeffs[i,j], ctRxn2.coeffs[i,j], dE), \
+                    "Similar Chebyshev coefficients" 
+
+        elif isinstance(ctRxn1, ct.ThreeBodyReaction):
+            assert ctRxn1.default_efficiency == ctRxn2.default_efficiency, "Same default efficiency" 
+            assert ctRxn1.efficiencies == ctRxn2.efficiencies, "Same efficienciess" 
+
+        elif isinstance(ctRxn1, ct.FalloffReaction):
+            assert ctRxn1.default_efficiency == ctRxn2.default_efficiency, "Same default efficiency" 
+            assert ctRxn1.efficiencies == ctRxn2.efficiencies, "Same efficienciess" 
+            if ctRxn1.falloff or ctRxn2.falloff:
+                checkEquivalentFalloff(ctRxn1.falloff,ctRxn2.falloff)
+            if ctRxn1.high_rate or ctRxn2.high_rate:
+                checkEquivalentArrhenius(ctRxn1.high_rate, ctRxn2.high_rate)
+            if ctRxn1.low_rate or ctRxn2.low_rate:
+                checkEquivalentArrhenius(ctRxn1.low_rate, ctRxn2.low_rate)
+                
+    except Exception as e:
+        print "Cantera reaction {0} failed equivalency check on: {1}".format(ctRxn1, e)
+        return False
+        
+    return True

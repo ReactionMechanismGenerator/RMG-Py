@@ -219,6 +219,43 @@ class Species(object):
         """
         output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
         return output
+    
+    def toChemkin(self):
+        """
+        Return the chemkin-formatted string for this species.
+        """
+        from rmgpy.chemkin import getSpeciesIdentifier
+        return getSpeciesIdentifier(self)
+        
+    def toCantera(self, speciesList=[]):
+        """
+        Converts the RMG Species object to a Cantera Species object
+        with the appropriate thermo data.
+        """
+        import cantera as ct
+        
+        # Determine the number of each type of element in the molecule
+        elementDict = {} # elementCounts = [0,0,0,0]
+        for atom in self.molecule[0].atoms:
+            # The atom itself
+            symbol = atom.element.symbol
+            if symbol not in elementDict:
+                elementDict[symbol] = 1
+            else:
+                elementDict[symbol] += 1
+        
+        ctSpecies = ct.Species(self.toChemkin(), elementDict)
+        if self.thermo:
+            try:
+                ctSpecies.thermo = self.thermo.toCantera()
+            except Exception, e:
+                print e
+                raise Exception('Could not convert thermo to create Cantera Species object. Check that thermo is a NASA polynomial.')
+        
+        if self.transportData:
+            ctSpecies.transport = self.transportData.toCantera()
+            
+        return ctSpecies
 
     def hasStatMech(self):
         """

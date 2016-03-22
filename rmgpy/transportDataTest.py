@@ -149,7 +149,33 @@ class TestTransportData(unittest.TestCase):
         self.assertAlmostEqual(self.transport.polarizability.value_si, transport.polarizability.value_si, 4)
         self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
         self.assertEqual(self.transport.comment, transport.comment)
-
+        
+    def test_toCantera(self):
+        """
+        Test that the Cantera GasTransportData creation is successful.
+        """
+        transport = TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech""")
+        rmg_ctTransport = transport.toCantera()
+        import cantera as ct
+        ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
+        atoms='Ar:1',
+        transport=gas_transport(geom='atom',
+                                diam=3.33,
+                                well_depth=136.501,
+                                dipole=2.0,
+                                polar=1.0,
+                                rot_relax=15.0))""")
+        
+        ctTransport = ctSpecies.transport
+        
+        self.assertAlmostEqual(rmg_ctTransport.geometry, ctTransport.geometry)
+        self.assertAlmostEqual(rmg_ctTransport.acentric_factor, ctTransport.acentric_factor)
+        self.assertAlmostEqual(rmg_ctTransport.diameter, ctTransport.diameter)
+        self.assertAlmostEqual(rmg_ctTransport.dipole, ctTransport.dipole)
+        self.assertAlmostEqual(rmg_ctTransport.polarizability, ctTransport.polarizability)
+        self.assertAlmostEqual(rmg_ctTransport.rotational_relaxation, ctTransport.rotational_relaxation)
+        self.assertAlmostEqual(rmg_ctTransport.well_depth, ctTransport.well_depth)
+        
 class TestCriticalPointGroupContribution(unittest.TestCase):
     """
     Contains unit test of the :class: 'criticalPointGroupContribution' class

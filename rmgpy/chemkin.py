@@ -157,7 +157,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         Tmax = (Tmax,"K"),
     )
     if comment:
-        thermo.comment = comment
+        thermo.comment = comment.strip()
 
     return species, thermo, formula
 
@@ -1059,6 +1059,8 @@ def readThermoBlock(f, speciesDict):
                 speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
                 if comments:
                     speciesDict[label].thermo.comment += '\n{0}'.format(comments)
+                # Make sure to strip whitespace
+                speciesDict[label].thermo.comment = speciesDict[label].thermo.comment.strip()
                 comments = ''
             except KeyError:
                 if label.upper() in ['AR', 'N2', 'HE', 'NE']:
@@ -1357,7 +1359,7 @@ def writeThermoEntry(species, verbose = True):
     # Write thermo comments
     if verbose:
         if thermo.comment:
-            for line in thermo.comment.split("\n"):
+            for line in thermo.comment.strip().split("\n"):
                 if len(line) > 150:
                     short_lines = textwrap.fill(line,150).split("\n")
                     for short_line in short_lines:

@@ -1,0 +1,16 @@
+! This is a fake transport data file.
+! Species         Shape    LJ-depth  LJ-diam   DiplMom   Polzblty  RotRelaxNum Data     
+! Name            Index    epsilon/k_B sigma     mu        alpha     Zrot      Source   
+Ar                  0     136.501     3.330     0.000     0.000     0.000    ! GRI-Mech
+ethane              2     252.301     4.302     0.000     0.000     1.500    ! GRI-Mech
+H2(2)               1     144.001     3.800     0.000     0.000     0.000    ! GRI-Mech
+OH(4)               1     252.301     4.302     0.000     0.000     1.500    ! GRI-Mech
+HO2(5)              2     141.400     3.746     0.000     2.600    13.000    ! GRI-Mech
+O2(6)               1     145.000     2.050     0.000     0.000     0.000    ! GRI-Mech
+H2O2(7)             2     280.801     3.971     0.000     0.000     1.500    ! Epsilon & sigma estimated with fixed Lennard Jones Parameters. This is the fallback method! Try improving transport databases!
+CO(9)               1      38.000     2.920     0.000     0.790   280.000    ! GRI-Mech
+H(3)                0     266.801     4.982     3.000     0.000     1.000    ! GRI-Mech
+CH3(13)             2     266.801     4.982     0.000     0.000     1.000    ! GRI-Mech
+CH4(15)             2     209.001     4.100     0.000     0.000     1.000    ! GRI-Mech
+CO2(16)             1     209.001     4.100     0.000     0.000     2.500    ! GRI-Mech
+H2O(27)             2     348.453     5.213     0.000     0.000     0.000    ! Epsilon & sigma estimated with Tc=452.54 K, Pc=46.4 bar (from Joback method)
