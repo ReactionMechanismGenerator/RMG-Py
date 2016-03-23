@@ -32,10 +32,14 @@ import logging
 
 from rmgpy.species import Species
 
-def failsSpeciesConstraints(species):
+def failsSpeciesConstraints(species, verbose=False):
     """
     Pass in either a `Species` or `Molecule` object and checks whether it passes 
     the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
+
+
+    If `verbose` is set to ``True``, debugging information about why
+    the molecule is forbidden will be logged.
     """
     
     from rmgpy.rmg.input import getInput
@@ -67,19 +71,35 @@ def failsSpeciesConstraints(species):
             return False        
     H = struct.getNumAtoms('H')
     if struct.getNumAtoms('C') > maxCarbonAtoms:
+        if verbose: 
+            logging.error("Species {0} exceeded 'maximumCarbonAtoms = {1}' species constraint.".format(struct.toSMILES(), maxCarbonAtoms))
         return True
     if H > maxHydrogenAtoms:
+        if verbose: 
+            logging.error("Species {0} exceeded 'maximumHydrogenAtoms = {1}' species constraint.".format(struct.toSMILES(), maxHydrogenAtoms))
         return True
     if struct.getNumAtoms('O') > maxOxygenAtoms:
+        if verbose: 
+            logging.error("Species {0} exceeded 'maximumOxygenAtoms = {1}' species constraint.".format(struct.toSMILES(), maxOxygenAtoms))
         return True
     if struct.getNumAtoms('N') > maxNitrogenAtoms:
+        if verbose:
+            logging.error("Species {0} exceeded 'maximumNitrogenAtoms = {1}' species constraint.".format(struct.toSMILES(), maxNitrogenAtoms))
         return True
     if struct.getNumAtoms('Si') > maxSiliconAtoms:
+        if verbose:
+            logging.error("Species {0} exceeded 'maximumSiliconAtoms = {1}' species constraint.".format(struct.toSMILES(), maxSiliconAtoms))
         return True
     if struct.getNumAtoms('S') > maxSulfurAtoms:
+        if verbose:
+            logging.error("Species {0} exceeded 'maximumSulfurAtoms = {1}' species constraint.".format(struct.toSMILES(), maxSulfurAtoms))
         return True
     if len(struct.atoms) - H > maxHeavyAtoms:
+        if verbose: 
+            logging.error("Species {0} exceeded 'maximumHeavyAtoms = {1}' species constraint.".format(struct.toSMILES(), maxHeavyAtoms))
         return True
     if (struct.getNumberOfRadicalElectrons() > maxRadicals):
+        if verbose: 
+            logging.error("Species {0} exceeded 'maximumRadicalElectrons = {1}' species constraint.".format(struct, maxRadicals))
         return True
     return False
