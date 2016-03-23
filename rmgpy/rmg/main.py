@@ -41,6 +41,7 @@ import shutil
 import numpy
 import csv
 import gc
+import copy
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
@@ -64,7 +65,6 @@ from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.tools.sensitivity import plotSensitivity
-
 ################################################################################
 
 solvent = None
@@ -311,8 +311,12 @@ class RMG(util.Subject):
         if self.kineticsEstimator == 'rate rules':
             if '!training' not in self.kineticsDepositories:
                 logging.info('Adding rate rules from training set in kinetics families...')
+                # Temporarily remove species constraints for the training reactions
+                copySpeciesConstraints=copy.copy(self.speciesConstraints)
+                self.speciesConstraints={}
                 for family in self.database.kinetics.families.values():
                     family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+                self.speciesConstraints=copySpeciesConstraints
             else:
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
             logging.info('Filling in rate rules in kinetics families by averaging...')
