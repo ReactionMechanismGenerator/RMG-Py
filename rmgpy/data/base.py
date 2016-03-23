@@ -1213,11 +1213,14 @@ class ForbiddenStructures(Database):
     from occurring.
     """
     
-    def isMoleculeForbidden(self, molecule):
+    def isMoleculeForbidden(self, molecule, verbose=False):
         """
         Return ``True`` if the given :class:`Molecule` object `molecule`
         contains forbidden functionality, or ``False`` if not. Labeled atoms
         on the forbidden structures and the molecule are honored.
+
+        If `verbose` is set to ``True``, debugging information about why
+        the molecule is forbidden will be logged.
         """
         for entry in self.entries.values():
             entryLabeledAtoms = entry.item.getLabeledAtoms()
@@ -1229,6 +1232,9 @@ class ForbiddenStructures(Database):
                 initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
             else:
                 if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                    if verbose:
+                        logging.error("Molecule {0} was forbidden because it matched forbidden structure entry {1} with the following structure:".format(molecule.toSMILES(), entry.label))
+                        logging.error('\n{}'.format(entry.item.toAdjacencyList()))
                     return True
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
@@ -1236,6 +1242,8 @@ class ForbiddenStructures(Database):
         for atom in molecule.atoms:
             molecule_charge += atom.charge
         if molecule_charge != 0:
+            if verbose:
+                logging.error("Molecule {0} was forbidden because it has a net non-neutral charge".format(molecule.toSMILES()))
             return True
         
         return False
