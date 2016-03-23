@@ -1331,6 +1331,8 @@ class KineticsFamily(Database):
                         # Delete this reaction, since it should probably also be forbidden in the initial direction
                         # Hack fix for now
                         del rxn
+                        # reset the forbidden structures back to the original set
+                        self.forbidden=tempObject
                 else:
                     rxn.reverse = reactions[0]
 
