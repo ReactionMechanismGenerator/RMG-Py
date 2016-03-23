@@ -431,12 +431,14 @@ class RMG(util.Subject):
                     if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                         logging.warning('Input species {0} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.'.format(spec.label))
                     else:
+                        self.database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0], verbose = True)
                         raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label))
                 if failsSpeciesConstraints(spec):
                     if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                         self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
                         pass
                     else:
+                        failsSpeciesConstraints(spec, verbose=True)
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
             
             #Check to see if user has input Singlet O2 into their input file or libraries
