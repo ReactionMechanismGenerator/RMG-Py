@@ -1327,7 +1327,12 @@ class KineticsFamily(Database):
                         logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                         raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
                     else:
-                        logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                        # Print some additional logging information about why the product or reactant was forbidden
+                        logging.error("Error was fixed for reaction, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                        logging.error("It may be worthwhile to further investigate why the species was forbidden as it may be a chemistry problem in the database.")
+                        for struct in rxn.reactants + rxn.products:
+                            self.isMoleculeForbidden(reactant.molecule[0], verbose = True)
+                            failsSpeciesConstraints(struct, verbose = True)
                         # Delete this reaction, since it should probably also be forbidden in the initial direction
                         # Hack fix for now
                         del rxn
