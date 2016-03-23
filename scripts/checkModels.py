@@ -197,11 +197,14 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
                     logger.error("{0:7}|{1:7}|{2:7}|{3:7}|{4:7}|{5:7}|{6:7}|{7:7}|{8:7}"
                         .format('k(1bar)','300K','400K','500K','600K','800K','1000K','1500K','2000K')
                         )
-                    printRates(rxn1)
-                    printRates(rxn2)
 
-                    printReactionComments(rxn1)
-                    printReactionComments(rxn2)
+                    [printRates(rxn) for rxn in [rxn1, rxn2]]
+
+                    if rxn1.kinetics.comment != rxn2.kinetics.comment:
+                        [printReactionComments(rxn) for rxn in [rxn1, rxn2]]
+                    else:
+                        logger.error('Identical kinetics comments')
+                            
 
     return error
 
