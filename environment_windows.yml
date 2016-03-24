@@ -8,7 +8,7 @@ dependencies:
   - numpy >=1.10.0
   - cantera
   - cython ==0.21
-  - matplotlib
+  - matplotlib >=1.5
   - rdkit >=2015.09.2
   - quantities
   - scipy

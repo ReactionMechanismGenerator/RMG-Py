@@ -24,7 +24,7 @@ requirements:
     - jinja2
     - libgcc # [unix]
     - markupsafe
-    - matplotlib
+    - matplotlib >=1.5
     - nose
     - numpy
     - openbabel
@@ -55,7 +55,7 @@ requirements:
     - jinja2
     - libgcc # [unix]
     - markupsafe
-    - matplotlib
+    - matplotlib >=1.5
     - mopac
     - nose
     - numpy
