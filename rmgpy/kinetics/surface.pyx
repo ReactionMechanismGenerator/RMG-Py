@@ -66,7 +66,7 @@ cdef class StickingCoefficient(KineticsModel):
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
-        Arrhenius object.
+        StickingCoefficient object.
         """
         string = 'StickingCoefficient(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
@@ -79,7 +79,7 @@ cdef class StickingCoefficient(KineticsModel):
 
     def __reduce__(self):
         """
-        A helper function used when pickling an Arrhenius object.
+        A helper function used when pickling a StickingCoefficient object.
         """
         return (StickingCoefficient, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
@@ -169,6 +169,27 @@ cdef class SurfaceArrhenius(Arrhenius):
             return self._A
         def __set__(self, value):
             self._A = quantity.SurfaceRateCoefficient(value)
+    
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        SurfaceArrhenius object.
+        """
+        string = 'SurfaceArrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling a SurfaceArrhenius object.
+        """
+        return (SurfaceArrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+
 
 ################################################################################
 
