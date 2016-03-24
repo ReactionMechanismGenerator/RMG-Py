@@ -78,7 +78,7 @@ class ObservablesTestCase:
             oldTransportPath = os.path.join(oldDir,'tran.dat')
         newTransportPath = None
         if os.path.exists(os.path.join(newDir,'tran.dat')):
-            oldTransportPath = os.path.join(newDir,'tran.dat')
+            newTransportPath = os.path.join(newDir,'tran.dat')
 
         # load the species and reactions from each model
         oldSpeciesList, oldReactionList = loadChemkinFile(os.path.join(oldDir,'chem_annotated.inp'),
