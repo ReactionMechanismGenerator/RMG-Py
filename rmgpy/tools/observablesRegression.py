@@ -16,7 +16,7 @@ def curvesSimilar(t1, y1, t2, y2, tol):
     y2: values of test curve, usually either temperature in (K) or log of a mol fraction
 
     The test curve is first synchronized to the standard curve using geatNearestTime function. We then calculate the value of
-    (y1-y2')^2/y1^2, giving us a normalized difference for every point. If the average value of these differences is less
+    abs((y1-y2')/y1), giving us a normalized difference for every point. If the average value of these differences is less
     than tol, we say the curves are similar.
 
     We choose this criteria because it is compatible with step functions we expect to see in ignition systems.
@@ -30,7 +30,7 @@ def curvesSimilar(t1, y1, t2, y2, tol):
         y2sync[i]=y2[time_index]
 
     # Get R^2 value equivalent:
-    normalizedError=(y1-y2sync)**2/y1**2
+    normalizedError=abs((y1-y2sync)/y1)
     normalizedError=sum(normalizedError)/len(y1)
 
     if normalizedError > tol:
@@ -110,7 +110,7 @@ class ObservablesTestCase:
         """
         return 'Observables Test Case: {0}'.format(self.title)
 
-    def generateConditions(self, reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
+    def generateConditions(self, reactorTypeList, reactionTimeList, molFracList, Tlist=None, Plist=None, Vlist=None):
         """
         Creates a list of conditions from from the lists provided. 
         
@@ -124,7 +124,7 @@ class ObservablesTestCase:
         This saves all the reaction conditions into both the old and new cantera jobs.
         """
         # Store the conditions in the observables test case, for bookkeeping
-        self.conditions = generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
+        self.conditions = generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
 
         # Map the mole fractions dictionaries to species objects from the old and new models
         oldMolFracList = []
@@ -147,12 +147,13 @@ class ObservablesTestCase:
             newMolFracList.append(newCondition)
         
         # Generate the conditions in each simulation
-        self.oldSim.generateConditions(reactorType, reactionTime, oldMolFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
-        self.newSim.generateConditions(reactorType, reactionTime, newMolFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
+        self.oldSim.generateConditions(reactorTypeList, reactionTimeList, oldMolFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
+        self.newSim.generateConditions(reactorTypeList, reactionTimeList, newMolFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
 
-    def compare(self, plot=False):
+    def compare(self, tol, plot=False):
         """
         Compare the old and new model
+        'tol':  average error acceptable between old and new model for variables
         `plot`: if set to True, it will comparison plots of the two models comparing their species.
 
         Returns a list of variables failed in a list of tuples in the format:
@@ -213,7 +214,7 @@ class ObservablesTestCase:
                         fail = True
                     
                     if fail is False:
-                        if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, 0.05):
+                        if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, tol):
                             fail = True
                             
                         # Try plotting only when species are found in both models
@@ -228,8 +229,9 @@ class ObservablesTestCase:
                     # Append to failed variables or conditions if this test failed
                     if fail:
                         if i not in conditionsBroken: conditionsBroken.append(i)
-                        print "Observable species {0} does not match between old model {1} and \
-new model {2} in condition {3:d}.".format(smiles,
+                        print "Observable species {0} varied by more than {1:-f} on average between old model {2} and \
+new model {3} in condition {4:d}.".format(smiles,
+                                          tol,
                                            variableOld.label, 
                                            variableNew.label,
                                            i+1)
@@ -243,9 +245,9 @@ new model {2} in condition {3:d}.".format(smiles,
                     variableNew = next((data for data in dataListNew if data.label == varName), None)
                     if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, 0.05):
                         if i not in conditionsBroken: conditionsBroken.append(i)
-                        print "Observable variable {0} does not match between old model and \
-new model in condition {1:d}.".format(variableOld.label, i+1)
-                        variablesFailed.append((self.conditions[i], varName, variableOld, variableNew))
+                        print "Observable variable {0} varied by more than {1:-f} on average between old model and \
+new model in condition {2:d}.".format(variableOld.label, i+1)
+                        variablesFailed.append((self.conditions[i], tol, varName, variableOld, variableNew))
                     
                     if plot:
                         oldVarPlot = GenericPlot(xVar=timeOld, yVar=variableOld)
@@ -261,7 +263,7 @@ new model in condition {1:d}.".format(variableOld.label, i+1)
                 
         
         print ''
-        print 'The following reaction conditions were broken:'
+        print 'The following reaction conditions were had some discrepencies:'
         print ''
         for index in conditionsBroken:
             print "Condition {0:d}:".format(index+1)

@@ -91,43 +91,30 @@ class CanteraCondition:
         return string
 
 
-def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
+def generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tlist=None, Plist=None, Vlist=None):
         """
         Creates a list of cantera conditions from from the arguments provided. 
         
         ======================= ====================================================
         Argument                Description
         ======================= ====================================================
-        `reactorType`           A string of the cantera reactor type. List of supported types below:
+        `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
             IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
             IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
 
-        `reactionTime`          A tuple object giving the (reaction time, units)
+        `reactionTimeList`      A tuple object giving the (reaction time, units)
         `molFracList`           A list of molfrac dictionaries with either string or species object keys 
                                and mole fraction values
         To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
-        `T0`                    A tuple giving the ([list of initial temperatures], units) 
-        'P0'                    A tuple giving the ([list of initial pressures], units) 
-        'V0'                    A tuple giving the ([list of initial specific volumes], units)
+        `T0List`                A tuple giving the ([list of initial temperatures], units)
+        'P0List'                A tuple giving the ([list of initial pressures], units)
+        'V0List'                A tuple giving the ([list of initial specific volumes], units)
     
         
         This saves all the reaction conditions into the Cantera class.
         """
-        # First translate the molFracList from species objects to species names if needed
-        # newMolFracList = []
-        # for molFrac in molFracList:
-        #     newMolFrac = {}
-        #     for key, value in molFrac.iteritems():
-        #         if isinstance(key, Species):
-        #             newkey = getSpeciesIdentifier(key)
-        #         else:
-        #             newkey = key
-        #         newMolFrac[newkey] = value
-        #     newMolFracList.append(newMolFrac)
-        #
-        # molFracList = newMolFracList
         
-        # Create individual ScalarQuantity objects for Tlist, Plist, Vlist
+        # Create individual ScalarQuantity objects for Tlist, Plist, Vlist, and reactionTimeList
         if Tlist:
             Tlist = Quantity(Tlist) # Be able to create a Quantity object from it first
             Tlist = [(Tlist.value[i],Tlist.units) for i in range(len(Tlist.value))]
@@ -137,28 +124,36 @@ def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None
         if Vlist:
             Vlist = Quantity(Vlist)
             Vlist = [(Vlist.value[i],Vlist.units) for i in range(len(Vlist.value))]
-        
+        if reactionTimeList:
+            reactionTimeList = Quantity(reactionTimeList)
+            reactionTimeList = [(reactionTimeList.value[i],reactionTimeList.units) for i in range(len(reactionTimeList.value))]
         
         conditions=[]
         
     
         if Tlist is None:
-            for molFrac in molFracList:
-                for P in Plist:
-                    for V in Vlist:
-                        conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, P0=P, V0=V))
+            for reactorType in reactorTypeList:
+                for reactionTime in reactionTimeList:
+                    for molFrac in molFracList:
+                        for P in Plist:
+                            for V in Vlist:
+                                conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, P0=P, V0=V))
     
         elif Plist is None:
-            for molFrac in molFracList:
-                for T in Tlist:
-                    for V in Vlist:
-                        conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, V0=V))
+            for reactorType in reactorTypeList:
+                for reactionTime in reactionTimeList:
+                    for molFrac in molFracList:
+                        for T in Tlist:
+                            for V in Vlist:
+                                conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, V0=V))
     
         elif Vlist is None:
-            for molFrac in molFracList:
-                for T in Tlist:
-                    for P in Plist:
-                        conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, P0=P))
+            for reactorType in reactorTypeList:
+                for reactionTime in reactionTimeList:
+                    for molFrac in molFracList:
+                        for T in Tlist:
+                            for P in Plist:
+                                conditions.append(CanteraCondition(reactorType, reactionTime, molFrac, T0=T, P0=P))
     
         else: raise Exception("Cantera conditions must leave one of T0, P0, and V0 state variables unspecified")
         return conditions
