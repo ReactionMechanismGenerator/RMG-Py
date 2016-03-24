@@ -83,12 +83,16 @@ cdef class Bond(Edge):
     cpdef bint isSpecificCaseOf(self, Edge other) except -2
 
     cpdef Edge copy(self)
+    
+    cpdef bint isVanDerWaals(self) except -2
 
     cpdef bint isSingle(self) except -2
 
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
+    
+    cpdef bint isQuadruple(self) except -2
 
     cpdef incrementOrder(self)
 

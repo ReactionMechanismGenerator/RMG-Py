@@ -38,7 +38,7 @@ from .group import GroupAtom, GroupBond
 from .element import getElement
 #import chempy.molecule.atomtype as atomtypes
 
-bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5, 'vdW': 0, 'Q': 4}
 
 class PeriodicSystem(object):
     valence_electrons_first_period_elements  = {'H':1, 'He':2}

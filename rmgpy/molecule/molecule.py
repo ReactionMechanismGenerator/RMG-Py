@@ -470,6 +470,14 @@ class Bond(Edge):
         b.order = self.order
         return b
 
+
+    def isVanDerWaals(self):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or 
+        ``False`` if not.
+        """
+        return self.order == 'vdW'
+
     def isSingle(self):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
@@ -491,6 +499,13 @@ class Bond(Edge):
         """
         return self.order == 'T'
 
+    def isQuadruple(self):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not.
+        """
+        return self.order == 'Q'
+
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -505,6 +520,8 @@ class Bond(Edge):
         """
         if self.order == 'S': self.order = 'D'
         elif self.order == 'D': self.order = 'T'
+        elif self.order == 'T': self.order = 'Q'
+        elif self.order == 'vdW': self.order = 'S'
         else:
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         
@@ -515,6 +532,8 @@ class Bond(Edge):
         """
         if self.order == 'D': self.order = 'S'
         elif self.order == 'T': self.order = 'D'
+        elif self.order == 'Q': self.order = 'T'
+        elif self.order == 'S': self.order = 'vdW'
         else:
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         
@@ -523,15 +542,21 @@ class Bond(Edge):
         Update the bond as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
         in bond order, and should be 1 or -1.
+        
+        IS THIS USED??
         """
         if order == 1:
             if self.order == 'S': self.order = 'D'
             elif self.order == 'D': self.order = 'T'
+            elif self.order == 'T': self.order = 'Q'
+            elif self.order == 'vdW': self.order = 'S'
             else:
                 raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         elif order == -1:
             if self.order == 'D': self.order = 'S'
             elif self.order == 'T': self.order = 'D'
+            elif self.order == 'Q': self.order = 'T'
+            elif self.order == 'S': self.order = 'vdW'
             else:
                 raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         else:
@@ -554,7 +579,7 @@ class Bond(Edge):
             else:
                 raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
         else:
-            raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
+            raise ActionError('Unable to update Bond: Invalid action {0}.'.format(action))
 
 #################################################################################
     
