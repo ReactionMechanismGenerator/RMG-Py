@@ -5,6 +5,7 @@ from rmgpy.chemkin import loadChemkinFile
 from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot, findNearest
 from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromUserSpecies
 
+
 def curvesSimilar(t1, y1, t2, y2, tol):
     """
     This function returns True if the two given curves are similar enough within tol. Otherwise returns False.
@@ -34,9 +35,8 @@ def curvesSimilar(t1, y1, t2, y2, tol):
 
     if normalizedError > tol:
         return False
-    else: 
+    else:
         return True
-
 
 class ObservablesTestCase:
     """
