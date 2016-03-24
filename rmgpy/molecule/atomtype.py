@@ -415,7 +415,7 @@ def getAtomType(atom, bonds):
         atomType = 'Ar'
     elif atom.symbol == 'X':
         if   total == 0 : atomType = 'Xv'
-        elif total == 1 : atomType = 'Xo'
+        elif total > 0  : atomType = 'Xo'
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
