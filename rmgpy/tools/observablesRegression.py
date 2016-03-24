@@ -119,7 +119,7 @@ class ObservablesTestCase:
         `molFracList`: a list of dictionaries containing species smiles and their mole fraction values
         `Tlist`: ArrayQuantity object of temperatures
         `Plist`: ArrayQuantity object of pressures
-        `Vlist`: ArrayQuantity object of volumes
+        `Vlist`: ArrayQuantity object of specific volumes
         
         This saves all the reaction conditions into both the old and new cantera jobs.
         """
@@ -174,7 +174,6 @@ class ObservablesTestCase:
         print '================'
         # Check the species profile observables
         if 'species' in self.observables:
-            print self.observables['species']
             oldSpeciesDict = getRMGSpeciesFromUserSpecies(self.observables['species'], self.oldSim.speciesList)
             newSpeciesDict = getRMGSpeciesFromUserSpecies(self.observables['species'], self.newSim.speciesList)
         
@@ -185,9 +184,8 @@ class ObservablesTestCase:
                 if item.lower() not in implementedVariables:
                     print 'Observable variable {0} not yet implemented'.format(item)
                     
-        print ''
-        print 'The following observables did not match:'
-        print ''
+        failHeader='\nThe following observables did not match:\n'
+        failHeaderPrinted=False
         for i in range(len(oldConditionData)):
             timeOld, dataListOld = oldConditionData[i]
             timeNew, dataListNew = newConditionData[i]
@@ -228,8 +226,11 @@ class ObservablesTestCase:
                     
                     # Append to failed variables or conditions if this test failed
                     if fail:
+                        if not failHeaderPrinted:
+                            print failHeader
+                            failHeaderPrinted=True
                         if i not in conditionsBroken: conditionsBroken.append(i)
-                        print "Observable species {0} varied by more than {1:-f} on average between old model {2} and \
+                        print "Observable species {0} varied by more than {1:.3f} on average between old model {2} and \
 new model {3} in condition {4:d}.".format(smiles,
                                           tol,
                                            variableOld.label, 
@@ -245,7 +246,11 @@ new model {3} in condition {4:d}.".format(smiles,
                     variableNew = next((data for data in dataListNew if data.label == varName), None)
                     if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, 0.05):
                         if i not in conditionsBroken: conditionsBroken.append(i)
-                        print "Observable variable {0} varied by more than {1:-f} on average between old model and \
+                        if not failHeaderPrinted:
+                            failHeaderPrinted=True
+                            print failHeader
+
+                        print "Observable variable {0} varied by more than {1:.3f} on average between old model and \
 new model in condition {2:d}.".format(variableOld.label, i+1)
                         variablesFailed.append((self.conditions[i], tol, varName, variableOld, variableNew))
                     
@@ -261,16 +266,21 @@ new model in condition {2:d}.".format(variableOld.label, i+1)
                 print 'Ignition delay observable comparison not implemented yet.'
                 
                 
-        
-        print ''
-        print 'The following reaction conditions were had some discrepencies:'
-        print ''
-        for index in conditionsBroken:
-            print "Condition {0:d}:".format(index+1)
-            print str(self.conditions[index])
+        if failHeaderPrinted:
             print ''
+            print 'The following reaction conditions were had some discrepancies:'
+            print ''
+            for index in conditionsBroken:
+                print "Condition {0:d}:".format(index+1)
+                print str(self.conditions[index])
+                print ''
 
-        return variablesFailed
+            return variablesFailed
+        else:
+            print ''
+            print 'All Observables varied by less than {0:.3f} on average between old model and \
+new model in all conditions!'.format(tol)
+            print ''
 
     def runSimulations(self):
         """
