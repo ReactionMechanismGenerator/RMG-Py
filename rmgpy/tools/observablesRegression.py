@@ -3,7 +3,7 @@ import os.path
 import numpy 
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot, findNearest
-from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromSMILES
+from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromUserSpecies
 
 def curvesSimilar(t1, y1, t2, y2, tol):
     """
@@ -48,9 +48,9 @@ class ObservablesTestCase:
     `title`                 A string describing the test. For regressive tests, should be same as example's name.
     `oldDir`                A directory path containing the chem_annotated.inp and species_dictionary.txt of the old model
     `newDir`                A directory path containing the chem_annotated.inp and species_dictionary.txt of the new model
-    `conditions`            A list of the :class: 'Condition' objects describing reaction conditions
+    `conditions`            A list of the :class: 'CanteraCondition' objects describing reaction conditions
     `observables`           A dictionary of observables
-                            key: 'species', value: a list of smiles that correspond with species mole fraction observables
+                            key: 'species', value: a list of the "class" 'Species' that correspond with species mole fraction observables
                             key: 'variable', value: a list of state variable observables, i.e. ['Temperature'] or ['Temperature','Pressure']
                             key: 'ignitionDelay', value: a tuple containing (ignition metric, yVar)
                                                          for example: ('maxDerivative','P')
@@ -133,8 +133,8 @@ class ObservablesTestCase:
         for molFracCondition in molFracList:
             oldCondition = {}
             newCondition = {} 
-            oldSpeciesDict = getRMGSpeciesFromSMILES(molFracCondition.keys(), self.oldSim.speciesList)
-            newSpeciesDict = getRMGSpeciesFromSMILES(molFracCondition.keys(), self.newSim.speciesList)
+            oldSpeciesDict = getRMGSpeciesFromUserSpecies(molFracCondition.keys(), self.oldSim.speciesList)
+            newSpeciesDict = getRMGSpeciesFromUserSpecies(molFracCondition.keys(), self.newSim.speciesList)
             for smiles, molfrac in molFracCondition.iteritems():
                 if oldSpeciesDict[smiles] is None:
                     raise Exception('SMILES {0} was not found in the old model!'.format(smiles))
@@ -173,8 +173,9 @@ class ObservablesTestCase:
         print '================'
         # Check the species profile observables
         if 'species' in self.observables:
-            oldSpeciesDict = getRMGSpeciesFromSMILES(self.observables['species'], self.oldSim.speciesList)
-            newSpeciesDict = getRMGSpeciesFromSMILES(self.observables['species'], self.newSim.speciesList)
+            print self.observables['species']
+            oldSpeciesDict = getRMGSpeciesFromUserSpecies(self.observables['species'], self.oldSim.speciesList)
+            newSpeciesDict = getRMGSpeciesFromUserSpecies(self.observables['species'], self.newSim.speciesList)
         
         # Check state variable observables 
         implementedVariables = ['temperature','pressure']
@@ -192,11 +193,13 @@ class ObservablesTestCase:
 
             # Compare species observables
             if 'species' in self.observables:
-                for smiles in self.observables['species']:
+                for species in self.observables['species']:
+
+                    smiles=species.molecule[0].toSMILES()
                     
                     fail = False
-                    oldRmgSpecies = oldSpeciesDict[smiles]
-                    newRmgSpecies = newSpeciesDict[smiles]
+                    oldRmgSpecies = oldSpeciesDict[species]
+                    newRmgSpecies = newSpeciesDict[species]
                     
                     if oldRmgSpecies:
                         variableOld = next((data for data in dataListOld if data.species == oldRmgSpecies), None)

@@ -21,12 +21,12 @@ class CanteraCondition:
         IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
 
     `reactionTime`          A tuple object giving the (reaction time, units)
-    `molFrac`               A dictionary giving the initial mol Fractions. Keys are species cantera names and the values are floats
+    `molFrac`               A dictionary giving the initial mol Fractions. Keys are species objects and the values are floats
 
     To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
     `T0`                    A tuple giving the (initial temperature, units) which reconstructs a Quantity object
     'P0'                    A tuple giving the (initial pressure, units) which reconstructs a Quantity object
-    'V0'                    A tuple giving the (initial volume, units) which reconstructs a Quantity object
+    'V0'                    A tuple giving the (initial specific volume, units) which reconstructs a Quantity object
     ======================= ====================================================
 
 
@@ -83,7 +83,11 @@ class CanteraCondition:
         if self.T0: string += 'T0: {}\n'.format(self.T0)
         if self.P0: string += 'P0: {}\n'.format(self.P0)
         if self.V0: string += 'V0: {}\n'.format(self.V0)
-        string += 'Initial Mole Fractions: {0}'.format(self.molFrac.__repr__())
+        #ConvertMolFrac to SMILES for keys for display
+        prettyMolFrac={}
+        for key, value in self.molFrac.iteritems():
+            prettyMolFrac[key.molecule[0].toSMILES()]=value
+        string += 'Initial Mole Fractions: {0}'.format(prettyMolFrac.__repr__())
         return string
 
 
@@ -104,24 +108,24 @@ def generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist=None
         To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
         `T0`                    A tuple giving the ([list of initial temperatures], units) 
         'P0'                    A tuple giving the ([list of initial pressures], units) 
-        'V0'                    A tuple giving the ([list of initial volumes], units) 
+        'V0'                    A tuple giving the ([list of initial specific volumes], units)
     
         
         This saves all the reaction conditions into the Cantera class.
         """
         # First translate the molFracList from species objects to species names if needed
-        newMolFracList = []
-        for molFrac in molFracList:
-            newMolFrac = {}
-            for key, value in molFrac.iteritems():
-                if isinstance(key, Species):
-                    newkey = getSpeciesIdentifier(key)
-                else:
-                    newkey = key
-                newMolFrac[newkey] = value
-            newMolFracList.append(newMolFrac)
-            
-        molFracList = newMolFracList
+        # newMolFracList = []
+        # for molFrac in molFracList:
+        #     newMolFrac = {}
+        #     for key, value in molFrac.iteritems():
+        #         if isinstance(key, Species):
+        #             newkey = getSpeciesIdentifier(key)
+        #         else:
+        #             newkey = key
+        #         newMolFrac[newkey] = value
+        #     newMolFracList.append(newMolFrac)
+        #
+        # molFracList = newMolFracList
         
         # Create individual ScalarQuantity objects for Tlist, Plist, Vlist
         if Tlist:
@@ -315,15 +319,22 @@ class Cantera:
         """
         # Get all the cantera names for the species
         speciesNamesList = [getSpeciesIdentifier(species) for species in self.speciesList]
+
         
         allData = []
         for condition in self.conditions:
-            
+
+            # First translate the molFrac from species objects to species names
+            newMolFrac = {}
+            for key, value in condition.molFrac.iteritems():
+                newkey = getSpeciesIdentifier(key)
+                newMolFrac[newkey] = value
+
             # Set Cantera simulation conditions
             if condition.V0 is None:
-                self.model.TPX = condition.T0.value_si, condition.P0.value_si, condition.molFrac
+                self.model.TPX = condition.T0.value_si, condition.P0.value_si, newMolFrac
             elif condition.P0 is None:
-                self.model.TDX = condition.T0.value_si, 1.0/condition.V0.value_si, condition.molFrac
+                self.model.TDX = condition.T0.value_si, 1.0/condition.V0.value_si, newMolFrac
             else:
                 raise Exception("Cantera conditions in which T0 and P0 or T0 and V0 are not the specified state variables are not yet implemented.")
 
@@ -388,34 +399,27 @@ class Cantera:
         return allData
 
 
-def getRMGSpeciesFromSMILES(smilesList, speciesList, names=False):
+def getRMGSpeciesFromUserSpecies(userList, RMGList):
     """
     Args:
         smilesList: list of SMIlES for species of interest
         speciesList: a list of RMG species objects
-        names: set to `True` if species names are desired to be returned instead of objects
 
-    Returns: A dict containing the smiles as keys and RMG species objects as their values
+    Returns: A dict containing the Species Object from userList and RMG species objects as their values
     If the species is not found, the value will be returned as None
     """
-    # Not strictly necesssary, but its likely that people will forget to put the brackets around the bath gasses
-    bathGases={"Ar": "[Ar]", "He": "[He]", "Ne": "[Ne]"}
     mapping = {}
-    for smiles in smilesList:
-        if smiles in bathGases:
-            spec = Species().fromSMILES(bathGases[smiles])
-        else:
-            spec=Species().fromSMILES(smiles)
-        spec.generateResonanceIsomers()
+    for userSpecies in userList:
+        userSpecies.generateResonanceIsomers()
 
-        for rmgSpecies in speciesList:
-            if spec.isIsomorphic(rmgSpecies):
-                if smiles in mapping:
-                    raise KeyError("The SMILES {0} has appeared twice in the species list!".format(smiles))
-                mapping[smiles] = rmgSpecies
+        for rmgSpecies in RMGList:
+            if userSpecies.isIsomorphic(rmgSpecies):
+                if userSpecies in mapping:
+                    raise KeyError("The SMILES {0} has appeared twice in the species list!".format(userSpecies.molecule[0].toSMILES()))
+                mapping[userSpecies] = rmgSpecies
                 break
         else: 
-            mapping[smiles] = None
+            mapping[userSpecies] = None
 
     return mapping
 
