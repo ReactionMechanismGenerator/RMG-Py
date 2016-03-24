@@ -46,7 +46,7 @@ requirements:
     - argparse # [py26]
     - cairo # [unix]
     - cairocffi # [unix]
-    - cantera
+    - cantera >=2.2
     - coverage
     - cython ==0.21
     - gprof2dot

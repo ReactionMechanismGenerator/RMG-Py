@@ -6,7 +6,7 @@ dependencies:
   - libgcc # [unix]
   - python
   - numpy >=1.10.0
-  - cantera
+  - cantera >=2.2
   - cython ==0.21
   - matplotlib >=1.5
   - rdkit >=2015.09.2
