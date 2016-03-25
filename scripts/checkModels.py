@@ -47,10 +47,16 @@ def parseCommandLineArguments():
     
     parser.add_argument('name', metavar='NAME', type=str, nargs=1,
         help='Name of test target model')
-    parser.add_argument('chemkin', metavar='CHEMKIN', type=str, nargs=1,
-        help='the Chemkin file of the tested model')
-    parser.add_argument('speciesDict', metavar='SPECIESDICT', type=str, nargs=1,
-        help='the species dictionary file of the tested model')
+
+    parser.add_argument('benchChemkin', metavar='BENCHCHEMKIN', type=str, nargs=1,
+        help='The path to the the Chemkin file of the benchmark model')
+    parser.add_argument('benchSpeciesDict', metavar='BENCHSPECIESDICT', type=str, nargs=1,
+        help='The path to the the species dictionary file of the benchmark model')
+    
+    parser.add_argument('testChemkin', metavar='TESTEDCHEMKIN', type=str, nargs=1,
+        help='The path to the the Chemkin file of the tested model')
+    parser.add_argument('testSpeciesDict', metavar='TESTEDSPECIESDICT', type=str, nargs=1,
+        help='The path to the the species dictionary file of the tested model')
     
     args = parser.parse_args()
 
@@ -64,32 +70,26 @@ def main():
 
     name = args.name[0]
     initializeLog(logging.WARNING, name + '.log')
-    chemkin = os.path.join(os.getcwd(), args.chemkin[0])
-    speciesDict = os.path.join(os.getcwd(), args.speciesDict[0])
 
-    check(name, chemkin, speciesDict)
+    benchChemkin = args.benchChemkin[0]
+    benchSpeciesDict = args.benchSpeciesDict[0]
 
-def check(name, chemkin, speciesDict):
+    testChemkin = args.testChemkin[0]
+    testSpeciesDict = args.testSpeciesDict[0]
+
+    check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict)
+
+def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
     """
-    Compare the provided chemkin model to the
-    default chemkin model.
+    Compare the tested model to the benchmark model.
     """
-
-    filename_chemkin = os.path.split(chemkin)[-1]
-    filename_spcDict = os.path.split(speciesDict)[-1]
-
-    folder = os.path.join(os.getcwd(),'testing/check/', name)
-    chemkinOrig = os.path.join(folder,filename_chemkin)
-    speciesDictOrig = os.path.join(folder,filename_spcDict)
-
     kwargs = {
-        'wd': os.getcwd(),
         'web': True,
         }
 
-    thermo, thermoOrig = None, None
+    testThermo, benchThermo = None, None
     commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig = \
-    execute(chemkin, speciesDict, thermo, chemkinOrig, speciesDictOrig, thermoOrig, **kwargs)
+    execute(benchChemkin, benchSpeciesDict, benchThermo, testChemkin, testSpeciesDict, testThermo, **kwargs)
 
     errorModel = checkModel(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig)
 
