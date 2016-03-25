@@ -126,7 +126,7 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
             'The original model has {} species that the tested model does not have.'
             .format(len(uniqueSpeciesOrig))
             )
-        printSpecies(uniqueSpeciesOrig)
+        [printSpecies(spc) for spc in uniqueSpeciesOrig]
 
     if uniqueSpeciesTest:
         error = True
@@ -134,7 +134,7 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
             'The tested model has {} species that the original model does not have.'
             .format(len(uniqueSpeciesTest))
             )
-        printSpecies(uniqueSpeciesTest)
+        [printSpecies(spc) for spc in uniqueSpeciesTest]
 
     # check for different thermo among common species::
     if commonSpecies:
@@ -214,6 +214,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
 
     return error
 
+def printSpecies(spc):
 def printReactions(reactions):
     """
 
@@ -224,15 +225,9 @@ def printReactions(reactions):
             'rxn: {}'.format(rxn)
             )
 
-def printSpecies(spcs):
-    """
-
-    """
-
-    for spc in spcs:
-        logger.error(
-            'spc: {}'.format(spc)
-            )        
+    logger.error(
+        'spc: {}'.format(spc)
+        )        
 
 def printRates(rxn):
     """
