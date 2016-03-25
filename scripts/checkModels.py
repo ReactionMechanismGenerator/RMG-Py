@@ -198,7 +198,11 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
                         .format('k(1bar)','300K','400K','500K','600K','800K','1000K','1500K','2000K')
                         )
 
+                    logger.error('')
                     [printRates(rxn) for rxn in [rxn1, rxn2]]
+
+                    logger.error('')
+                    [printKinetics(rxn) for rxn in [rxn1, rxn2]]
 
                     if rxn1.kinetics.comment != rxn2.kinetics.comment:
                         [printReactionComments(rxn) for rxn in [rxn1, rxn2]]
@@ -268,6 +272,9 @@ def printReactionComments(rxn):
 
 def printSpeciesComments(spc):
     logger.error('thermo: {}'.format(spc.thermo.comment))
+
+def printKinetics(rxn):
+    logger.error('Kinetics: {}'.format(rxn.kinetics))
 
 def initializeLog(verbose, log_file_name='checkModels.log'):
     """
