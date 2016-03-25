@@ -150,11 +150,13 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
                     logger.error("{0:10}|{1:10}|{2:10}|{3:10}|{4:10}|{5:10}|{6:10}|{7:10}|{8:10}"
                         .format('Hf(300K)','S(300K)','Cp(300K)','Cp(400K)','Cp(500K)','Cp(600K)','Cp(800K)','Cp(1000K)','Cp(1500K)')
                         )
-                    printThermo(spec1)
-                    printThermo(spec2)
 
-                    printSpeciesComments(spec1)
-                    printSpeciesComments(spec2)
+                    [printThermo(spc) for spc in [spec1, spec2]]
+
+                    if spec1.thermo.comment != spec2.thermo.comment:
+                        [printSpeciesComments(spc) for spc in [spec1, spec2]]
+                    else:
+                        logger.error('Identical thermo comments')
 
     return error
 
