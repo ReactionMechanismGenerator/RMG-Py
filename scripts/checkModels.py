@@ -173,7 +173,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
             .format(len(uniqueReactionsOrig))
             )
         
-        printReactions(uniqueReactionsOrig)
+        [printReaction(rxn) for rxn in uniqueReactionsOrig]
 
     if uniqueReactionsTest:
         error = True
@@ -183,7 +183,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
             .format(len(uniqueReactionsTest))
             )
 
-        printReactions(uniqueReactionsTest)
+        [printReaction(rxn) for rxn in uniqueReactionsTest]
 
     if commonReactions:
         for rxn1, rxn2 in commonReactions:
@@ -193,8 +193,10 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
                     error = True
                     logger.error('')
                     logger.error('Non-identical kinetics!')
-                    logger.error('tested:\t{}'.format(rxn1))
-                    logger.error('original:\t{}'.format(rxn2))
+                    logger.error('tested:')
+                    printReaction(rxn1)
+                    logger.error('benchm:')
+                    printReaction(rxn2)
                     
                     logger.error("{0:7}|{1:7}|{2:7}|{3:7}|{4:7}|{5:7}|{6:7}|{7:7}|{8:7}"
                         .format('k(1bar)','300K','400K','500K','600K','800K','1000K','1500K','2000K')
@@ -215,15 +217,9 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
     return error
 
 def printSpecies(spc):
-def printReactions(reactions):
     """
 
     """
-
-    for rxn in reactions:
-        logger.error(
-            'rxn: {}'.format(rxn)
-            )
 
     logger.error(
         'spc: {}'.format(spc)
@@ -263,6 +259,8 @@ def printThermo(spec):
         spec.thermo.getHeatCapacity(1500) / 4.184,
     ))
 
+def printReaction(rxn):
+    logger.error('rxn: {}\t\tfamily: {}'.format(rxn, rxn.family))
 
 def printReactionComments(rxn):
     logger.error('kinetics: {}'.format(rxn.kinetics.comment))
