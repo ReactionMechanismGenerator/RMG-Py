@@ -59,7 +59,7 @@ class TestSoluteDatabase(TestCase):
         T = 298
         solventViscosity = 0.001
         D = soluteData.getStokesDiffusivity(T, solventViscosity)
-        self.assertAlmostEqual((D*1E12), 0.00000979)
+        self.assertAlmostEqual((D*1E12), 8.264e-10)
         
     def testSolventLibrary(self):
         "Test we can obtain solvent parameters from a library"
