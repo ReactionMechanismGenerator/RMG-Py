@@ -114,12 +114,20 @@ class ObservablesTestCase:
         """
         Creates a list of conditions from from the lists provided. 
         
-        `reactorType`: a string indicating the Cantera reactor type
-        `reactionTime`: ScalarQuantity object for time
-        `molFracList`: a list of dictionaries containing species smiles and their mole fraction values
-        `Tlist`: ArrayQuantity object of temperatures
-        `Plist`: ArrayQuantity object of pressures
-        `Vlist`: ArrayQuantity object of specific volumes
+        ======================= ====================================================
+        Argument                Description
+        ======================= ====================================================
+        `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
+            IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+
+        `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
+        `molFracList`           A list of molfrac dictionaries with species object keys
+                               and mole fraction values
+        To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
+        `T0List`                A tuple giving the ([list of initial temperatures], units)
+        'P0List'                A tuple giving the ([list of initial pressures], units)
+        'V0List'                A tuple giving the ([list of initial specific volumes], units)
         
         This saves all the reaction conditions into both the old and new cantera jobs.
         """
@@ -192,9 +200,13 @@ class ObservablesTestCase:
 
             # Compare species observables
             if 'species' in self.observables:
+                smilesList=[] #This is to make sure we don't have species with duplicate smiles
+                multiplicityList=['','(S)','(D)','(T)','(Q)'] #list ot add multiplcity
                 for species in self.observables['species']:
 
-                    smiles=species.molecule[0].toSMILES()
+                    smiles=species.molecule[0].toSMILES() #For purpose of naming the plot only
+                    if smiles in smilesList: smiles=smiles+multiplicityList[species.molecule[0].multiplicity]
+                    smilesList.append(smiles)
                     
                     fail = False
                     oldRmgSpecies = oldSpeciesDict[species]
