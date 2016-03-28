@@ -639,14 +639,26 @@ class Reaction:
 
     def fixDiffusionLimitedA(self, T):
         """
-        Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
-        to account for the diffusion limit.
+        Decrease the pre-exponential factor (A) by the diffusion factor
+        to account for the diffusion limit at the specified temperature.
         """
         # Decrease self.kinetics.A (if Arrhenius or ArrheniusEP)
-        self.kinetics.A = self.kinetics.A * self.getDiffusionFactor(T)
-        # Add a comment to self.kinetics.comment
-        self.kinetics.comment.append("Pre-exponential factor A has been decreased by the diffusion factor.")
-    
+        if diffusionLimiter.enabled:
+            # Add a comment to self.kinetics.comment
+            self.kinetics.comment.append("Pre-exponential factor A has been decreased by the diffusion factor.")
+            # Obtain effective rate
+            try:
+                k = self.__k_effective_cache[T]
+            except KeyError:
+                k = diffusionLimiter.getEffectiveRate(self, T)
+                self.__k_effective_cache[T] = k
+        else:
+            k=self.kinetics.getRateCoefficient(T, P=0)
+        # calculate diffusion factor
+        diffusionFactor=k/self.kinetics.getRateCoefficient(T,P=0)
+        # update preexponential factor
+        self.kinetics.A = self.kinetics.A * diffusionFactor
+        
     def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)

@@ -60,6 +60,13 @@ class DiffusionLimited():
                     k_eff = k_eff_reverse * Keq
         return k_eff        
     
+    def getDiffusionFactor(self, reaction, T):
+        """
+        Return the diffusion factor of the specified reaction.
+        """
+        return self.getEffectiveRate(reaction, T)/reaction.kinetics.getRateCoefficient(T,P=0)
+
+    
     def getDiffusionLimit(self, T, reaction, forward=True):
         """
         Return the diffusive limit on the rate coefficient, k_diff.
