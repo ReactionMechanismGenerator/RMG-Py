@@ -47,10 +47,16 @@ def parseCommandLineArguments():
     
     parser.add_argument('name', metavar='NAME', type=str, nargs=1,
         help='Name of test target model')
-    parser.add_argument('chemkin', metavar='CHEMKIN', type=str, nargs=1,
-        help='the Chemkin file of the tested model')
-    parser.add_argument('speciesDict', metavar='SPECIESDICT', type=str, nargs=1,
-        help='the species dictionary file of the tested model')
+
+    parser.add_argument('benchChemkin', metavar='BENCHCHEMKIN', type=str, nargs=1,
+        help='The path to the the Chemkin file of the benchmark model')
+    parser.add_argument('benchSpeciesDict', metavar='BENCHSPECIESDICT', type=str, nargs=1,
+        help='The path to the the species dictionary file of the benchmark model')
+    
+    parser.add_argument('testChemkin', metavar='TESTEDCHEMKIN', type=str, nargs=1,
+        help='The path to the the Chemkin file of the tested model')
+    parser.add_argument('testSpeciesDict', metavar='TESTEDSPECIESDICT', type=str, nargs=1,
+        help='The path to the the species dictionary file of the tested model')
     
     args = parser.parse_args()
 
@@ -64,32 +70,26 @@ def main():
 
     name = args.name[0]
     initializeLog(logging.WARNING, name + '.log')
-    chemkin = os.path.join(os.getcwd(), args.chemkin[0])
-    speciesDict = os.path.join(os.getcwd(), args.speciesDict[0])
 
-    check(name, chemkin, speciesDict)
+    benchChemkin = args.benchChemkin[0]
+    benchSpeciesDict = args.benchSpeciesDict[0]
 
-def check(name, chemkin, speciesDict):
+    testChemkin = args.testChemkin[0]
+    testSpeciesDict = args.testSpeciesDict[0]
+
+    check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict)
+
+def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
     """
-    Compare the provided chemkin model to the
-    default chemkin model.
+    Compare the tested model to the benchmark model.
     """
-
-    filename_chemkin = os.path.split(chemkin)[-1]
-    filename_spcDict = os.path.split(speciesDict)[-1]
-
-    folder = os.path.join(os.getcwd(),'testing/check/', name)
-    chemkinOrig = os.path.join(folder,filename_chemkin)
-    speciesDictOrig = os.path.join(folder,filename_spcDict)
-
     kwargs = {
-        'wd': os.getcwd(),
         'web': True,
         }
 
-    thermo, thermoOrig = None, None
+    testThermo, benchThermo = None, None
     commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig = \
-    execute(chemkin, speciesDict, thermo, chemkinOrig, speciesDictOrig, thermoOrig, **kwargs)
+    execute(benchChemkin, benchSpeciesDict, benchThermo, testChemkin, testSpeciesDict, testThermo, **kwargs)
 
     errorModel = checkModel(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig)
 
@@ -126,7 +126,7 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
             'The original model has {} species that the tested model does not have.'
             .format(len(uniqueSpeciesOrig))
             )
-        printSpecies(uniqueSpeciesOrig)
+        [printSpecies(spc) for spc in uniqueSpeciesOrig]
 
     if uniqueSpeciesTest:
         error = True
@@ -134,7 +134,7 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
             'The tested model has {} species that the original model does not have.'
             .format(len(uniqueSpeciesTest))
             )
-        printSpecies(uniqueSpeciesTest)
+        [printSpecies(spc) for spc in uniqueSpeciesTest]
 
     # check for different thermo among common species::
     if commonSpecies:
@@ -150,11 +150,13 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
                     logger.error("{0:10}|{1:10}|{2:10}|{3:10}|{4:10}|{5:10}|{6:10}|{7:10}|{8:10}"
                         .format('Hf(300K)','S(300K)','Cp(300K)','Cp(400K)','Cp(500K)','Cp(600K)','Cp(800K)','Cp(1000K)','Cp(1500K)')
                         )
-                    printThermo(spec1)
-                    printThermo(spec2)
 
-                    printSpeciesComments(spec1)
-                    printSpeciesComments(spec2)
+                    [printThermo(spc) for spc in [spec1, spec2]]
+
+                    if spec1.thermo.comment != spec2.thermo.comment:
+                        [printSpeciesComments(spc) for spc in [spec1, spec2]]
+                    else:
+                        logger.error('Identical thermo comments')
 
     return error
 
@@ -171,7 +173,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
             .format(len(uniqueReactionsOrig))
             )
         
-        printReactions(uniqueReactionsOrig)
+        [printReaction(rxn) for rxn in uniqueReactionsOrig]
 
     if uniqueReactionsTest:
         error = True
@@ -181,7 +183,7 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
             .format(len(uniqueReactionsTest))
             )
 
-        printReactions(uniqueReactionsTest)
+        [printReaction(rxn) for rxn in uniqueReactionsTest]
 
     if commonReactions:
         for rxn1, rxn2 in commonReactions:
@@ -191,14 +193,20 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
                     error = True
                     logger.error('')
                     logger.error('Non-identical kinetics!')
-                    logger.error('tested:\t{}'.format(rxn1))
-                    logger.error('original:\t{}'.format(rxn2))
+                    logger.error('tested:')
+                    printReaction(rxn1)
+                    logger.error('benchm:')
+                    printReaction(rxn2)
                     
                     logger.error("{0:7}|{1:7}|{2:7}|{3:7}|{4:7}|{5:7}|{6:7}|{7:7}|{8:7}"
                         .format('k(1bar)','300K','400K','500K','600K','800K','1000K','1500K','2000K')
                         )
 
+                    logger.error('')
                     [printRates(rxn) for rxn in [rxn1, rxn2]]
+
+                    logger.error('')
+                    [printKinetics(rxn) for rxn in [rxn1, rxn2]]
 
                     if rxn1.kinetics.comment != rxn2.kinetics.comment:
                         [printReactionComments(rxn) for rxn in [rxn1, rxn2]]
@@ -208,25 +216,14 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
 
     return error
 
-def printReactions(reactions):
+def printSpecies(spc):
     """
 
     """
 
-    for rxn in reactions:
-        logger.error(
-            'rxn: {}'.format(rxn)
-            )
-
-def printSpecies(spcs):
-    """
-
-    """
-
-    for spc in spcs:
-        logger.error(
-            'spc: {}'.format(spc)
-            )        
+    logger.error(
+        'spc: {}'.format(spc)
+        )        
 
 def printRates(rxn):
     """
@@ -262,12 +259,17 @@ def printThermo(spec):
         spec.thermo.getHeatCapacity(1500) / 4.184,
     ))
 
+def printReaction(rxn):
+    logger.error('rxn: {}\t\tfamily: {}'.format(rxn, rxn.family))
 
 def printReactionComments(rxn):
     logger.error('kinetics: {}'.format(rxn.kinetics.comment))
 
 def printSpeciesComments(spc):
     logger.error('thermo: {}'.format(spc.thermo.comment))
+
+def printKinetics(rxn):
+    logger.error('Kinetics: {}'.format(rxn.kinetics))
 
 def initializeLog(verbose, log_file_name='checkModels.log'):
     """
