@@ -102,8 +102,8 @@ def generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tl
             IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
             IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
 
-        `reactionTimeList`      A tuple object giving the (reaction time, units)
-        `molFracList`           A list of molfrac dictionaries with either string or species object keys 
+        `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
+        `molFracList`           A list of molfrac dictionaries with species object keys
                                and mole fraction values
         To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
         `T0List`                A tuple giving the ([list of initial temperatures], units)
@@ -185,20 +185,26 @@ class Cantera:
             except:
                 raise Exception('Cantera output directory could not be created.')
 
-    def generateConditions(self, reactorType, reactionTime, molFracList, Tlist=None, Plist=None, Vlist=None):
+    def generateConditions(self, reactorTypeList, reactionTimeList, molFracList, Tlist=None, Plist=None, Vlist=None):
         """
         This saves all the reaction conditions into the Cantera class.
-        
-        `reactorType`: a string indicating the Cantera reactor type
-        `reactionTime`: ScalarQuantity object for time
-        `molFracList`: a list of molfrac dictionaries with either string or species object keys 
-                       and mole fraction values
-        `Tlist`: ArrayQuantity object of temperatures
-        `Plist`: ArrayQuantity object of pressures
-        `Vlist`: ArrayQuantity object of volumes
-        
+        ======================= ====================================================
+        Argument                Description
+        ======================= ====================================================
+        `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
+            IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+
+        `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
+        `molFracList`           A list of molfrac dictionaries with species object keys
+                               and mole fraction values
+        To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
+        `T0List`                A tuple giving the ([list of initial temperatures], units)
+        'P0List'                A tuple giving the ([list of initial pressures], units)
+        'V0List'                A tuple giving the ([list of initial specific volumes], units)
         """
-        self.conditions = generateCanteraConditions(reactorType, reactionTime, molFracList, Tlist, Plist)
+
+        self.conditions = generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tlist, Plist)
 
     def loadModel(self):
         """
@@ -397,10 +403,13 @@ class Cantera:
 def getRMGSpeciesFromUserSpecies(userList, RMGList):
     """
     Args:
-        smilesList: list of SMIlES for species of interest
+        userList: list of generic Class Species Objects created by user
         speciesList: a list of RMG species objects
 
-    Returns: A dict containing the Species Object from userList and RMG species objects as their values
+    This function takes a list of generic species objects and returns the species object generated from a loaded RMG
+    dictionary, thereby gaining the correct label for a given mechanism.
+
+    Returns: A dict containing the Species Object from userList and RMG Species objects as their values
     If the species is not found, the value will be returned as None
     """
     mapping = {}
@@ -410,7 +419,7 @@ def getRMGSpeciesFromUserSpecies(userList, RMGList):
         for rmgSpecies in RMGList:
             if userSpecies.isIsomorphic(rmgSpecies):
                 if userSpecies in mapping:
-                    raise KeyError("The SMILES {0} has appeared twice in the species list!".format(userSpecies.molecule[0].toSMILES()))
+                    raise KeyError("The Species with SMIlES {0} has appeared twice in the species list!".format(userSpecies.molecule[0].toSMILES()))
                 mapping[userSpecies] = rmgSpecies
                 break
         else: 
