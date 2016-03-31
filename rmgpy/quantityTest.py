@@ -942,3 +942,100 @@ class TestVolume(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0e-3, delta=1e-9)
         self.assertEqual(q.units, "L")
+
+class TestQuantity(unittest.TestCase):
+    """
+    Contains unit tests testing the value and uncertainty storage behavior for ScalarQuantity and ArrayQuantity objects
+    """
+
+    def setUp(self):
+        """
+        A function run before each unit test in this class.  This tests the creation of several both ScalarQuantity
+        and ArrayQuantity objects
+        """
+        self.Cp = quantity.Quantity([-6.51,-5.19333,-4.47333,-3.76,-3.44333,-2.94667,-2.47],'cal/(mol*K)',
+            '+|-',[2.72057,3.42407,4.84068,5.11681,5.13207,5.8757,8.29108])
+        self.v = quantity.Quantity([5,10,12],'cm/s','*|/',[1.2,0.4,1])
+        self.H = quantity.Quantity(33.1097,'kcal/mol','+|-',24.8344)
+        self.A = quantity.Quantity(7.25e+13, 'cm^3/(mol*s)', '*|/', 5)
+        self.Cp_array =  quantity.ArrayQuantity([-6.51,-5.19333,-4.47333,-3.76,-3.44333,-2.94667,-2.47],'cal/(mol*K)',
+            [2.72057,3.42407,4.84068,5.11681,5.13207,5.8757,8.29108],'+|-')
+        self.v_array = quantity.ArrayQuantity([5,10,12],'cm/s',[1.2,0.4,1],'*|/')
+        self.H_scalar = quantity.ScalarQuantity(33.1097,'kcal/mol',24.8344,'+|-',)
+        self.A_scalar = quantity.ScalarQuantity(7.25e+13, 'cm^3/(mol*s)',  5,'*|/')
+        
+    def test_scalar_conversion(self):
+        """
+        ScalarQuantity: test that the value and uncertainty get converted to the proper si value.
+        """
+        # Uncertainty of type +|- must be adjusted by units
+        self.assertAlmostEqual(self.H.value_si,self.H.value*4184)
+        self.assertAlmostEqual(self.H.uncertainty_si, self.H.uncertainty*4184)
+        self.assertAlmostEqual(self.H_scalar.value_si,self.H_scalar.value*4184)
+        self.assertAlmostEqual(self.H_scalar.uncertainty_si, self.H_scalar.uncertainty*4184)
+        
+        # Uncertainty of type *|/ does not need to be adjusted by units
+        self.assertAlmostEqual(self.A.value_si,self.A.value*1e-6)
+        self.assertAlmostEqual(self.A.uncertainty_si, self.A.uncertainty)
+        self.assertAlmostEqual(self.A_scalar.value_si, self.A_scalar.value*1e-6)
+        self.assertAlmostEqual(self.A_scalar.uncertainty_si, self.A_scalar.uncertainty)
+    
+    def test_array_conversion(self):
+        """
+        ArrayQuantity: test that the value and uncertainty get converted to the proper si value.
+        """
+        numpy.testing.assert_array_almost_equal(self.v.value_si, self.v.value*1e-2)
+        numpy.testing.assert_array_almost_equal(self.v.uncertainty_si, self.v.uncertainty)
+        numpy.testing.assert_array_almost_equal(self.v_array.value_si, self.v.value*1e-2)
+        numpy.testing.assert_array_almost_equal(self.v_array.uncertainty_si, self.v.uncertainty)
+
+        numpy.testing.assert_array_almost_equal(self.Cp.value_si, self.Cp.value*4.184)
+        numpy.testing.assert_array_almost_equal(self.Cp.uncertainty_si, self.Cp.uncertainty*4.184)
+        numpy.testing.assert_array_almost_equal(self.Cp_array.value_si, self.Cp.value*4.184)
+        numpy.testing.assert_array_almost_equal(self.Cp_array.uncertainty_si, self.Cp.uncertainty*4.184)
+        
+    def test_scalar_repr(self):
+        """
+        Test that the ScalarQuantity objects can be recreated using their __repr__ function
+        """
+        # Test that the values can be reconstituted
+        H = quantity.Quantity(eval(repr(self.H)))
+        self.assertEqual(H.value_si, self.H.value_si)
+        self.assertEqual(H.uncertainty_si, self.H.uncertainty_si)
+        self.assertEqual(H.uncertaintyType, self.H.uncertaintyType)
+        self.assertEqual(H.units, self.H.units)
+        
+        A = quantity.Quantity(eval(repr(self.A)))
+        self.assertEqual(A.value_si, self.A.value_si)
+        self.assertEqual(A.uncertainty_si, self.A.uncertainty_si)
+        self.assertEqual(A.uncertaintyType, self.A.uncertaintyType)
+        self.assertEqual(A.units, self.A.units)
+        
+        # Test that the __repr__ strings are the same
+        self.assertEqual(repr(H),repr(self.H))
+        self.assertEqual(repr(self.H),repr(self.H_scalar))
+        self.assertEqual(repr(A),repr(self.A))
+        self.assertEqual(repr(self.A),repr(self.A_scalar))
+
+    def test_array_repr(self):
+        """
+        Test that the ArrayQuantity objects can be recreated using their __repr__ function
+        """
+        # Test that the values can be reconstituted
+        Cp = quantity.Quantity(eval(repr(self.Cp)))
+        numpy.testing.assert_array_almost_equal(Cp.value_si, self.Cp.value_si)
+        numpy.testing.assert_array_almost_equal(Cp.uncertainty_si, self.Cp.uncertainty_si)
+        self.assertEqual(Cp.uncertaintyType, self.Cp.uncertaintyType)
+        self.assertEqual(Cp.units, self.Cp.units)
+        
+        v = quantity.Quantity(eval(repr(self.v)))
+        numpy.testing.assert_array_almost_equal(v.value_si, self.v.value_si)
+        numpy.testing.assert_array_almost_equal(v.uncertainty_si, self.v.uncertainty_si)
+        self.assertEqual(v.uncertaintyType, self.v.uncertaintyType)
+        self.assertEqual(v.units, self.v.units)
+        
+        # Test that the __repr__ strings are the same
+        self.assertEqual(repr(Cp),repr(self.Cp))
+        self.assertEqual(repr(self.Cp),repr(self.Cp_array))
+        self.assertEqual(repr(v),repr(self.v))
+        self.assertEqual(repr(self.v),repr(self.v_array))
