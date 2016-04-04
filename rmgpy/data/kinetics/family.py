@@ -89,6 +89,7 @@ class TemplateReaction(Reaction):
                 family=None,
                 template=None,
                 estimator=None,
+                reverse=None
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -104,6 +105,7 @@ class TemplateReaction(Reaction):
         self.family = family
         self.template = template
         self.estimator = estimator
+        self.reverse = reverse
 
     def __reduce__(self):
         """
@@ -120,7 +122,8 @@ class TemplateReaction(Reaction):
                                    self.pairs,
                                    self.family,
                                    self.template,
-                                   self.estimator
+                                   self.estimator,
+                                   self.reverse,
                                    ))
 
     def getSource(self):
@@ -1225,10 +1228,13 @@ class KineticsFamily(Database):
         Return ``True`` if the molecule is forbidden in this family, or
         ``False`` otherwise. 
         """
-        from rmgpy.data.rmg import database
+        from rmgpy.data.rmg import getDB
+        
+        forbidden_structures = getDB('forbidden')
+
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
-        if database.forbiddenStructures.isMoleculeForbidden(molecule):
+        if forbidden_structures.isMoleculeForbidden(molecule):
             return True
         return False
 
@@ -1340,17 +1346,6 @@ class KineticsFamily(Database):
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(self.__generateReactions(reactants, forward=False))
             
-        # Return the reactions as containing Species objects, not Molecule objects
-        for reaction in reactionList:
-            moleculeDict = {}
-            for molecule in reaction.reactants:
-                moleculeDict[molecule] = Species(molecule=[molecule])
-            for molecule in reaction.products:
-                moleculeDict[molecule] = Species(molecule=[molecule])
-            reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
-            reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
-            reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
-
         return reactionList
     
     def calculateDegeneracy(self, reaction):
