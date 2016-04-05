@@ -206,7 +206,7 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
             
         return thermoData1
     
-def removeThermoData(thermoData1, thermoData2):
+def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
     """
     Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
     and return `thermoData1`.
@@ -219,6 +219,11 @@ def removeThermoData(thermoData1, thermoData2):
     thermoData1.H298.value_si -= thermoData2.H298.value_si
     thermoData1.S298.value_si -= thermoData2.S298.value_si
 
+    if groupAdditivity:
+        if thermoData1.comment:
+            thermoData1.comment += ' - {0}'.format(thermoData2.comment)
+        else:
+            thermoData1.comment = 'Thermo group additivity estimation: ' + ' - {0}'.format(thermoData2.comment)
     return thermoData1
 
 def averageThermoData(thermoDataList=None):
