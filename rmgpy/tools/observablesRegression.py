@@ -30,26 +30,41 @@
 
 import sys
 import os.path
-import numpy 
+import numpy
+import csv
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.tools.plot import GenericData, GenericPlot, SimulationPlot, findNearest
 from rmgpy.tools.canteraModel import Cantera, generateCanteraConditions, getRMGSpeciesFromUserSpecies
 
 
-def curvesSimilar(t1, y1, t2, y2, tol):
+def curvesSimilar(t1, y1, t2, y2, tol, method='maxDiff', ignore1=0.0, ignore2=0.0):
     """
     This function returns True if the two given curves are similar enough within tol. Otherwise returns False.
 
-    t1: time/domain of standard curve we assume to be correct
-    y1: values of standard curve, usually either temperature in (K) or log of a mol fraction
-    t2: time/domain of test curve
-    y2: values of test curve, usually either temperature in (K) or log of a mol fraction
+    t1: List for time/domain of standard curve we assume to be correct (curve 1)
+    y1: List for values of standard curve, usually either temperature in (K) or log of a mol fraction
+    t2: List for time/domain of test curve (curve 2)
+    y2: List for values of test curve, usually either temperature in (K) or log of a mol fraction
+    tol: maximum percent difference that curve 2 can be from curve 1 before we return False
+    method: can be 'maxDiff' or 'avgDiff', describing method for determining similarity (see below)
+    ignore1: First domain point defining interval to ignore (see below)
+    ignore2: Second domain point defining interval to ignore (see below)
 
-    The test curve is first synchronized to the standard curve using geatNearestTime function. We then calculate the value of
-    abs((y1-y2')/y1), giving us a normalized difference for every point. If the average value of these differences is less
-    than tol, we say the curves are similar.
+    For the maxDiff method:
+    The test curve is first synchronized to the standard curve using geatNearestTime function. We then calculate the
+    value of abs((y1-y2')/y1), giving us a normalized difference for every point. If any point has a greater percent
+    difference than tol, then we say the curves are not similar
 
-    We choose this criteria because it is compatible with step functions we expect to see in ignition systems.
+    For the avgDiff method:
+    The test curve is first synchronized to the standard curve using geatNearestTime function. We then calculate the
+    value of abs((y1-y2')/y1), giving us a normalized difference for every point. If the average value of these
+    differences is greater than tol, we say the curves are not similar.
+
+    Additionally, we can add a domain interval where we do not test the difference between the two curves. This could
+    be useful in the case of ignition, where we expect a large difference in y-values between and after ignition. If
+    the ignition event did not occur at exactly the same time, we would could potentially fail the above criteria when
+    the curves are still quite similar. In this case you would set ignore1 to the ignition delay from curve 1 and
+    ignore2 to the ignition delay of curve 2. (And rely on the compareIgnitionDelay function to test if that is similar)
     """
     # Make synchornized version of t2,y2 called t2sync,y2sync.
     t2sync=numpy.zeros_like(t1)
@@ -59,14 +74,39 @@ def curvesSimilar(t1, y1, t2, y2, tol):
         t2sync[i]=t2[time_index]
         y2sync[i]=y2[time_index]
 
-    # Get R^2 value equivalent:
-    normalizedError=abs((y1-y2sync)/y1)
-    normalizedError=sum(normalizedError)/len(y1)
-
-    if normalizedError > tol:
-        return False
+    #Determine which of the ignore intervals is larger
+    if ignore2 < ignore1:
+        sign=1.0
+    #If ignore 2 is smaller than ignore1, then flip the sign on both so we can do the same operation to see if
+    #ignore1<sign*t<ignore2 for both cases
     else:
-        return True
+        ignore1=-ignore1
+        ignore2=-ignore2
+        sign=-1.0
+
+    if method=='maxDiff':
+        for i, timepoint1 in enumerate(t1):
+            if ignore1<sign*timepoint1 and ignore2>sign*timepoint1: pass
+            else:
+                if abs((y1[i]-y2sync[i])/y1[i])>tol: return False
+        else: return True
+
+    elif method=='avgDiff':
+        #check to see that we are not in ignore interval
+        totalError=0.0
+        ignoredTimePoints=0.0
+        for i, timepoint1 in enumerate(t1):
+            if ignore1<sign*timepoint1 and ignore2>sign*timepoint1:
+                ignoredTimePoints+=1
+            else:totalError+=abs((y1[i]-y2sync[i])/y1[i])
+
+        normalizedError=totalError/(len(y1)-ignoredTimePoints)
+
+        if normalizedError > tol:
+            return False
+        else:
+            return True
+    else: raise Exception("Method {0} for comparing curves is not supported".format(method))
 
 class ObservablesTestCase:
     """
@@ -188,7 +228,7 @@ class ObservablesTestCase:
         self.oldSim.generateConditions(reactorTypeList, reactionTimeList, oldMolFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
         self.newSim.generateConditions(reactorTypeList, reactionTimeList, newMolFracList, Tlist=Tlist, Plist=Plist, Vlist=Vlist)
 
-    def compare(self, tol, plot=False):
+    def compare(self, tol, method="maxDiff", plot=False):
         """
         Compare the old and new model
         'tol':  average error acceptable between old and new model for variables
@@ -201,6 +241,11 @@ class ObservablesTestCase:
         """
         # Ignore Inerts
         inertList = ['[Ar]','[He]','[N#N]','[Ne]']
+
+        #Dictionary that gives string to be printed depending on method of comparison
+        methodString={"maxDiff": "at least once",
+                      "avgDiff": "on average",
+        }
 
         oldConditionData, newConditionData = self.runSimulations()
 
@@ -254,7 +299,7 @@ class ObservablesTestCase:
                         fail = True
                     
                     if fail is False:
-                        if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, tol):
+                        if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, tol, method):
                             fail = True
                             
                         # Try plotting only when species are found in both models
@@ -272,12 +317,13 @@ class ObservablesTestCase:
                             print failHeader
                             failHeaderPrinted=True
                         if i not in conditionsBroken: conditionsBroken.append(i)
-                        print "Observable species {0} varied by more than {1:.3f} on average between old model {2} and \
-new model {3} in condition {4:d}.".format(smiles,
-                                          tol,
-                                           variableOld.label, 
-                                           variableNew.label,
-                                           i+1)
+                        print "Observable species {0} varied by more than {1:.3f} {2} between old model {3} and " \
+                              "new model {4} in condition {5:d}.".format(smiles,
+                                                                         tol,
+                                                                         methodString[method],
+                                                                         variableOld.label,
+                                                                         variableNew.label,
+                                                                         i+1)
                         variablesFailed.append((self.conditions[i], smiles, variableOld, variableNew))
                     
             
@@ -286,14 +332,14 @@ new model {3} in condition {4:d}.".format(smiles,
                 for varName in self.observables['variable']:
                     variableOld = next((data for data in dataListOld if data.label == varName), None)
                     variableNew = next((data for data in dataListNew if data.label == varName), None)
-                    if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, 0.05):
+                    if not curvesSimilar(timeOld.data, variableOld.data, timeNew.data, variableNew.data, tol, method):
                         if i not in conditionsBroken: conditionsBroken.append(i)
                         if not failHeaderPrinted:
                             failHeaderPrinted=True
                             print failHeader
 
-                        print "Observable variable {0} varied by more than {1:.3f} on average between old model and \
-new model in condition {2:d}.".format(variableOld.label, i+1)
+                        print "Observable variable {0} varied by more than {1:.3f} {2} between old model and \
+new model in condition {3:d}.".format(variableOld.label, methodString[method], i+1)
                         variablesFailed.append((self.conditions[i], tol, varName, variableOld, variableNew))
                     
                     if plot:
@@ -320,8 +366,12 @@ new model in condition {2:d}.".format(variableOld.label, i+1)
             return variablesFailed
         else:
             print ''
-            print 'All Observables varied by less than {0:.3f} on average between old model and \
-new model in all conditions!'.format(tol)
+            if method=='avgDiff':
+                print 'All Observables varied by less than {0:.3f} on average between old model and ' \
+                      'new model in all conditions!'.format(tol)
+            elif method=='maxDiff':
+                print 'All Observables always varied by less than {0:.3f} between old model and ' \
+                      'new model in all conditions!'.format(tol)
             print ''
 
     def runSimulations(self):
