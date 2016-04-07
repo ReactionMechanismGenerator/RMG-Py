@@ -31,7 +31,7 @@ surfaceReactor(
     initialSurfaceCoverages={
         "site": 1.0,
     },
-    surfaceVolumeRatio=(1., 'm^-1'),
+    surfaceVolumeRatio=(1.e5, 'm^-1'),
     surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
     terminationTime=(1e-3, 's'),
 )
