@@ -19,10 +19,11 @@ import rmgpy.constants as constants
 
 
 class SurfaceReactorCheck(unittest.TestCase):
-    def testSolve(self):
+    def testSolveH2(self):
         """
-        Test the surface batch reactor with a simple kinetic model. Here we
-        choose a kinetic model consisting of the dissociative adsorption reaction
+        Test the surface batch reactor with a dissociative adsorption of H2
+        
+        Here we choose a kinetic model consisting of the dissociative adsorption reaction
         H2 + 2X <=> 2 HX
         """
         H2 = Species(
@@ -73,8 +74,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies,
                                   edgeReactions)
 
-        tlist = numpy.array([10 ** (i / 10.0)
-                             for i in range(-130, -49)], numpy.float64)
+        tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 
         # Integrate to get the solution at each time point
         t = []
@@ -109,7 +109,6 @@ class SurfaceReactorCheck(unittest.TestCase):
         # Check that we've reached equilibrium
         self.assertAlmostEqual(reactionRates[-1, 0], 0.0, delta=1e-2)
 
-
         # Visualize the simulation results
         import pylab
         fig = pylab.figure(figsize=(6, 6))
@@ -122,10 +121,10 @@ class SurfaceReactorCheck(unittest.TestCase):
         pylab.legend(['H2', 'X', 'HX'], loc=4)
         pylab.xlabel('Time (s)')
         pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
-        fig.subplots_adjust(left=0.12, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
+        #fig.subplots_adjust(left=0.21, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
+        pylab.tight_layout()
         #pylab.show()
         pylab.savefig('surfaceTest.pdf')
-
 
         return
 
