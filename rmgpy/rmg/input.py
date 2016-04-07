@@ -128,11 +128,23 @@ def simpleReactor(temperature,
     for value in initialMoleFractions.values():
         if value < 0:
             raise InputError('Initial mole fractions cannot be negative.')
+        
+    for spec in initialMoleFractions:
+            initialMoleFractions[spec] = float(initialMoleFractions[spec])
+
     totalInitialMoles = sum(initialMoleFractions.values())
     if totalInitialMoles != 1:
-        logging.warning('Initial mole fractions do not sum to one; renormalizing.')
+        logging.warning('Initial mole fractions do not sum to one; normalizing.')
+        logging.info('')
+        logging.info('Original composition:')
+        for spec, molfrac in initialMoleFractions.iteritems():
+            logging.info("{0} = {1}".format(spec,molfrac))
         for spec in initialMoleFractions:
             initialMoleFractions[spec] /= totalInitialMoles
+        logging.info('')
+        logging.info('Normalized mole fractions:')
+        for spec, molfrac in initialMoleFractions.iteritems():
+            logging.info("{0} = {1}".format(spec,molfrac))
 
     T = Quantity(temperature)
     P = Quantity(pressure)
@@ -161,7 +173,8 @@ def liquidReactor(temperature,
                   terminationConversion=None,
                   terminationTime=None,
                   sensitivity=None,
-                  sensitivityThreshold=1e-3):
+                  sensitivityThreshold=1e-3,
+                  constantSpecies=None):
     
     logging.debug('Found LiquidReactor reaction system')
     T = Quantity(temperature)
@@ -183,7 +196,17 @@ def liquidReactor(temperature,
     if sensitivity:
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
-    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold)
+    
+    ##chatelak: check the constant species exist
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for constantSpecie in constantSpecies:
+            logging.debug("  {0}".format(constantSpecie))
+            if not speciesDict.has_key(constantSpecie):
+                raise InputError('Species {0} not found in the input file'.format(constantSpecie))
+             
+            
+    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold,constantSpecies)
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):

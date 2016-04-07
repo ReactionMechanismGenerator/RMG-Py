@@ -207,6 +207,16 @@ class TestArrhenius(unittest.TestCase):
             kact = self.arrhenius.getRateCoefficient(T)
             self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
+    def test_toCanteraKinetics(self):
+        """
+        Test that the Arrhenius cantera object can be set properly within 
+        a cantera ElementaryReaction object
+        """
+        ctArrhenius = self.arrhenius.toCanteraKinetics()
+        self.assertAlmostEqual(ctArrhenius.pre_exponential_factor, 1e9,6)
+        self.assertAlmostEqual(ctArrhenius.temperature_exponent, 0.5)
+        self.assertAlmostEqual(ctArrhenius.activation_energy, 41.84e6)
+
 ################################################################################
 
 class TestArrheniusEP(unittest.TestCase):

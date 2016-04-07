@@ -26,7 +26,7 @@
 ################################################################################
 
 """
-Contains the :class:`SimpleReactor` class, providing a reaction system
+Contains the :class:`LiquidReactor` class, providing a reaction system
 consisting of a homogeneous, isothermal, isobaric batch reactor.
 """
 
@@ -54,15 +54,20 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public ScalarQuantity P    
     cdef public double V
     cdef public bint constantVolume
+    cdef public constSPCNames
+    cdef public list constSPCIndices
     cdef public dict initialConcentrations
 
-    def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
+    def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3, constSPCNames=None):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         self.T = Quantity(T)
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = 0 # will be set from initialConcentrations in initializeModel
         self.constantVolume = True
+        #Constant concentration attributes
+        self.constSPCIndices=None
+        self.constSPCNames = constSPCNames #store index of constant species 
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
@@ -73,10 +78,19 @@ cdef class LiquidReactor(ReactionSystem):
         for label, moleFrac in self.initialConcentrations.iteritems():
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
-
+    
+    def get_constSPCIndices (self, coreSpecies):
+        "Allow to identify constant Species position in solver"
+        for spc in self.constSPCNames:
+            if self.constSPCIndices is None: #initialize once the list if constant SPC declared
+                self.constSPCIndices=[]
+            for iter in coreSpecies: #Need to identify the species object corresponding to the the string written in the input file
+                if iter.label == spc:
+                    self.constSPCIndices.append(coreSpecies.index(iter))#get 
+  
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
-        Initialize a simulation of the simple reactor using the provided kinetic
+        Initialize a simulation of the liquid reactor using the provided kinetic
         model.
         """
 
@@ -141,14 +155,14 @@ cdef class LiquidReactor(ReactionSystem):
         
         for j in xrange(self.numCoreSpecies):
             self.y0[j] = self.coreSpeciesConcentrations[j] * V
-            
+       
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
 
         """
         Return the residual function for the governing DAE system for the
-        simple reaction system.
+        liquid reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
@@ -184,6 +198,7 @@ cdef class LiquidReactor(ReactionSystem):
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
+        
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         V =  self.V # constant volume reactor
@@ -271,6 +286,13 @@ cdef class LiquidReactor(ReactionSystem):
             else: # three reactants!! (really?)
                 reactionRate = k * C[inet[j,0]] * C[inet[j,1]] * C[inet[j,2]]
             networkLeakRates[j] = reactionRate
+
+
+        #chatelak: Same as in Java, coreSpecies rate = 0 if declared as constatn 
+        if self.constSPCIndices is not None:
+            for spcIndice in self.constSPCIndices:
+                coreSpeciesRates[spcIndice] = 0
+
 
         self.coreSpeciesConcentrations = coreSpeciesConcentrations
         self.coreSpeciesRates = coreSpeciesRates

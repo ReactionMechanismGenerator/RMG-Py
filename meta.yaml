@@ -23,8 +23,9 @@ requirements:
     - guppy
     - jinja2
     - libgcc # [unix]
+    - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
     - markupsafe
-    - matplotlib
+    - matplotlib >=1.5
     - nose
     - numpy
     - openbabel
@@ -46,6 +47,7 @@ requirements:
     - argparse # [py26]
     - cairo # [unix]
     - cairocffi # [unix]
+    - cantera >=2.2
     - coverage
     - cython ==0.21
     - gprof2dot
@@ -53,8 +55,9 @@ requirements:
     - guppy
     - jinja2
     - libgcc # [unix]
+    - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
     - markupsafe
-    - matplotlib
+    - matplotlib >=1.5
     - mopac
     - nose
     - numpy

@@ -39,6 +39,7 @@ from functools import wraps
 
 try:
     from scoop import futures
+    from scoop.futures import map
     from scoop import shared
     from scoop import logger as logging
 
@@ -137,13 +138,13 @@ def get(key):
     """
 
     try:
-        data = shared.getConst(key)
+        data = shared.getConst(key, timeout=1e-9)
         return data
-    except KeyError, e:
-        logging.error('An object with the key {} could not be found.'.format(key))
-        raise e
     except NameError:
         """
         Name error will be caught when the SCOOP library is not imported properly.
         """
         logging.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
+
+def map_(*args, **kwargs):
+    return map(*args, **kwargs)

@@ -40,6 +40,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
+from rmgpy.rmg.react import react
 
 ################################################################################
 
@@ -262,12 +263,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         return ratios
 
-    def exploreIsomer(self, isomer, reactionModel, database):
+    def exploreIsomer(self, isomer):
         """
         Explore a previously-unexplored unimolecular `isomer` in this partial
         network using the provided core-edge reaction model `reactionModel`,
         returning the new reactions and new species.
         """
+
         if isomer in self.explored:
             logging.warning('Already explored isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
             return []
@@ -286,13 +288,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.products.remove(product)
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
-        newReactionList = reactionModel.react(database, isomer)
+
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with itself (e.g. A + A <---> products)
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        return newReactionList
+        newReactions = react(isomer)
+        
+        return newReactions
 
     def addPathReaction(self, newReaction, newSpecies):
         """

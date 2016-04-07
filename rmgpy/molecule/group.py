@@ -90,7 +90,9 @@ class GroupAtom(Vertex):
         """
         d = {
             'edges': self.edges,
-            'connectivity': self.connectivity,
+            'connectivity1': self.connectivity1,
+            'connectivity2': self.connectivity2,
+            'connectivity3': self.connectivity3,
             'sortingLabel': self.sortingLabel,
         }
         atomType = self.atomType
@@ -103,7 +105,9 @@ class GroupAtom(Vertex):
         A helper function used when unpickling an object.
         """
         self.edges = d['edges']
-        self.connectivity = d['connectivity']
+        self.connectivity1 = d['connectivity1']
+        self.connectivity2 = d['connectivity2']
+        self.connectivity3 = d['connectivity3']
         self.sortingLabel = d['sortingLabel']
 
     def __str__(self):
@@ -682,8 +686,11 @@ class Group(Graph):
         for atom in self.vertices:
             if atom.label != '':
                 if atom.label in labeled:
-                    labeled[atom.label] = [labeled[atom.label]]
-                    labeled[atom.label].append(atom)
+                    if isinstance(labeled[atom.label],list):
+                        labeled[atom.label].append(atom)
+                    else:
+                        labeled[atom.label] = [labeled[atom.label]]
+                        labeled[atom.label].append(atom)
                 else:
                     labeled[atom.label] = atom
         return labeled

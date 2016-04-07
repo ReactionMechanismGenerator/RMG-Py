@@ -258,6 +258,13 @@ class KineticsLibrary(Database):
                 
             if not rxn.isBalanced():
                 raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
+
+            if len(rxn.reactants) > 3: 
+                raise DatabaseError('RMG does not accept reactions with more than 3 reactants in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.reactants)))
+            if len(rxn.products) > 3:
+                raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.products)))
+            
+
             
         self.checkForDuplicates()
         
