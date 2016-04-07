@@ -41,8 +41,10 @@ cimport rmgpy.constants as constants
 include "settings.pxi"
 if DASPK == 1:
     from pydas.daspk cimport DASPK as DASx
+    from pydas.daspk import DASPKError as DASxError
 else:
     from pydas.dassl cimport DASSL as DASx
+    from pydas.daspk import DASSLError as DASxError
     
 import cython
 import logging
@@ -428,7 +430,17 @@ cdef class ReactionSystem(DASx):
         prevTime = self.t
         while not terminated:
             # Integrate forward in time by one time step
-            self.step(stepTime)
+            try:
+                self.step(stepTime)
+            except DASxError as e:
+                logging.error("Trying to step from time {} to {}".format(prevTime, stepTime))
+                logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
+                logging.error("Core species moles: {!r}".format(self.y[:numCoreSpecies]))
+                logging.error("Volume: {!r}".format(self.V))
+                logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
+                logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
+                logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
+                raise e
             
             y_coreSpecies = self.y[:numCoreSpecies]
             totalMoles = numpy.sum(y_coreSpecies)
