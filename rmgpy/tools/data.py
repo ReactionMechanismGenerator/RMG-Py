@@ -166,3 +166,17 @@ class ComparisonBundle:
                         "The GenericData for {0} index {1} has inconsistent {2} with the '{3}' or " \
                         "other GenericData objects in the ComparisonBundle".format(objAttr[2], data.index, slaveAttr,
                                                                                    str(self))
+    def addDataSet(self, xData, yData):
+        """
+        Adds a new set of data to the ComparisonBundle where xData and yData are :class: GenericData objects with either
+        matching species, reaction, and units, or with all the former units unintialized with None
+        """
+        newIndex=len(self.xDataList)
+        xData.index=newIndex
+        self.xDataList.append(xData)
+
+        yData.index=newIndex
+        self.yDataList.append(yData)
+
+        #Recheck that the newly added data set conforms to the correct attributes
+        self.checkAndMakeConsistent()
