@@ -180,3 +180,34 @@ class ComparisonBundle:
 
         #Recheck that the newly added data set conforms to the correct attributes
         self.checkAndMakeConsistent()
+
+    def removeDataSet(self, yLabel=None, index=None):
+        """
+        Removes a data set (a pair of :class: GenericData objects, one from xDataList and one from yDataList). The data
+        set is recognized by the label of the yData OR the index of data set which is the same as the list index in
+        xDataList or yDataList.
+        """
+        if index is None and yLabel is None:
+            raise Exception("No label or index was given to identify the Data set to be removed")
+
+        #Find index if label is provided
+        if yLabel:
+            for newIndex, yData in enumerate(self.yDataList):
+                if yData.label==yLabel:
+                    index=newIndex
+                    break
+            else: raise Exception("The inputted label {0} did not match the label for any of the data sets " \
+                                  "(checks the y variable)".format(yLabel))
+
+        #Remove the data set
+        del self.xDataList[index]
+        del self.yDataList[index]
+
+        #reindex all remaining data sets
+        for xData, yData in zip(self.xDataList[index:], self.yDataList[index:]):
+            xData.index+=-1
+            yData.index+=-1
+
+
+
+
