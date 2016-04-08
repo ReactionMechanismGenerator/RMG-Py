@@ -101,6 +101,12 @@ class ComparisonBundle:
         #Check that species, reaction, and unit are consistent across all data
         self.checkAndMakeConsistent()
 
+    def __str__(self):
+        """
+        Return a string representation of this test case, using its title'.
+        """
+        return 'Comparison Bundle: {0}'.format(self.title)
+
     def checkAndMakeConsistent(self):
         """
         Checks that the species, reaction, and units are consistent across all data, raising an assertion error if
@@ -112,6 +118,9 @@ class ComparisonBundle:
         Conversely, if species, reaction, or units are None in any of the GenericData objects in xDataList or
         yDataList, this function will set those attributes equal to the appropriate analog from the ComparisonBundle.
         """
+
+        #Check that there is a xData for every yData
+        assert len(self.xDataList) == len(self.yDataList), "The length of xDataList and yDataList are not the same."
 
         #If there is no data, there is nothing to check
         if not self.xDataList>0:
@@ -141,6 +150,19 @@ class ComparisonBundle:
             for data in dataList:
                 if getattr(data, slaveAttr) is None:
                     setattr(data, slaveAttr, getattr(self, headAttr))
-                assert getattr(data, slaveAttr)==getattr(self, headAttr), \
-                    "The GenericData in {0} index {1} has inconsistent {3} with the ComparisonBundle {4} or other " \
-                    "GenericData objects in the ComparisonBundle".format(objAttr[2], data.index, slaveAttr, str(self))
+
+                if getattr(self,headAttr) is None:
+                    assert getattr(data, slaveAttr)==getattr(self, headAttr), \
+                        "The GenericData for {0} index {1} has inconsistent {2} with the '{3}' or " \
+                        "other GenericData objects in the ComparisonBundle".format(objAttr[2], data.index, slaveAttr,
+                                                                                   str(self))
+                elif headAttr== "species" or headAttr=="reaction":
+                    assert getattr(self, headAttr).isIsomorphic(getattr(data, slaveAttr)), \
+                        "The GenericData for {0} index {1} has inconsistent {2} with the '{3}' or " \
+                        "other GenericData objects in the ComparisonBundle".format(objAttr[2], data.index, slaveAttr,
+                                                                                   str(self))
+                else:
+                    assert getattr(data, slaveAttr)==getattr(self, headAttr), \
+                        "The GenericData for {0} index {1} has inconsistent {2} with the '{3}' or " \
+                        "other GenericData objects in the ComparisonBundle".format(objAttr[2], data.index, slaveAttr,
+                                                                                   str(self))
