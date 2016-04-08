@@ -54,12 +54,13 @@ class TestSoluteDatabase(TestCase):
     
     def testDiffusivity(self):
         "Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity"
-        species = Species(molecule=[Molecule(SMILES='COC=O')])
+        species = Species(molecule=[Molecule(SMILES='O')])  # water
         soluteData = self.database.getSoluteData(species)
-        T = 298
-        solventViscosity = 0.001
-        D = soluteData.getStokesDiffusivity(T, solventViscosity)
-        self.assertAlmostEqual((D*1E12), 8.264e-10)
+        T = 298.
+        solventViscosity = 0.00089  # water is about 8.9e-4 Pa.s
+        D = soluteData.getStokesDiffusivity(T, solventViscosity)  # m2/s
+        self.assertAlmostEqual((D * 1e9), 1.3, 1)
+        # self-diffusivity of water is about 2e-9 m2/s
         
     def testSolventLibrary(self):
         "Test we can obtain solvent parameters from a library"
