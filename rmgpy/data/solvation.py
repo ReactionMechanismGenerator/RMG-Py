@@ -208,13 +208,16 @@ class SoluteData():
     
     def getStokesDiffusivity(self, T, solventViscosity):
         """
-        Get diffusivity of solute using the Stokes-Einstein sphere relation. Radius is 
-        found from the McGowan volume.
+        Get diffusivity of solute using the Stokes-Einstein sphere relation. 
+        Radius is found from the McGowan volume.
+        solventViscosity should be given in  kg/s/m which equals Pa.s
+        (water is about 9e-4 Pa.s at 25C, propanol is 2e-3 Pa.s)
+        Returns D in m2/s
         """
         k_b = 1.3806488e-23 # m2*kg/s2/K
         radius = math.pow((75*self.V/3.14159/6.0221409e23),(1.0/3.0))/100 # in meters, V is in MgGowan volume in cm3/mol/100
         D = k_b*T/6/3.14159/solventViscosity/radius # m2/s
-        return D
+        return D  # m2/s
             
     def setMcGowanVolume(self, species):
         """
