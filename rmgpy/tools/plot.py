@@ -796,6 +796,13 @@ class ComparisonBundle:
             yData.data=numpy.array(yTuple)
 
     def printToCsv(self, outputPath):
+        """
+        Args:
+            outputPath: Pathway to where csv will be saved
+
+        Returns: Saves a csv file of human readable data for the ComparisonBundle
+
+        """
         #Sort to make human readable
         self.sortByX()
         with open(outputPath, 'wb') as output:
@@ -833,4 +840,24 @@ class ComparisonBundle:
             #write out data points
             for line in newDataMatrix:
                 spamwriter.writerow(line)
+
+    def plot(self, filename):
+        """
+        Function to plot a Comparison Bundle
+
+        filename is str path to where the plot.png will be saved
+        """
+        #Take title, xlabel and ylabel from ComparisonBundle
+        title= self.title + " Comparison"
+        xlabel= "{0} ({1})".format(self.xDataList[0].label, self.xUnits)
+        ylabel= "{0} ({1})".format(self.title, self.yUnits)
+
+        #Make Generic Plot objects out of xData and yData
+        plotList=[]
+
+        for xData, yData in zip(self.xDataList, self.yDataList):
+            #Careful that the ylabel here yData.label (so each line has a separate legend entry) instead of ylabel
+            plotList.append(GenericPlot(xData, yData, title, xlabel, yData.label))
+
+        plotList[0].comparePlot(plotList[1:], filename, ylabel=ylabel, styles=['o', '-', '--'])
 
