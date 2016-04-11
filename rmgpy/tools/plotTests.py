@@ -1,6 +1,7 @@
 import unittest
 from rmgpy.species import Species
-import rmgpy.tools.data as dt
+from rmgpy.tools.data import GenericData
+import rmgpy.tools.plot as plt
 import numpy
 
 class ComparisonBundleTest(unittest.TestCase):
@@ -10,12 +11,12 @@ class ComparisonBundleTest(unittest.TestCase):
         """
 
         acetylene=Species().fromSMILES('C#C')
-        x1=dt.GenericData(label='time', data=[3,1,2], species=None, reaction=None, units='s', index=None)
-        y1=dt.GenericData(label='oldModel', data=[0,1,10], species=acetylene, reaction=None, units='molFrac', index=None)
-        x2=dt.GenericData(label='time', data=[8,9,7], species=None, reaction=None, units=None, index=None)
-        y2=dt.GenericData(label='newModel', data=[-1,1,100], species=None, reaction=None, units='molFrac', index=None)
+        x1=GenericData(label='time', data=[3, 1, 2], species=None, reaction=None, units='s', index=None)
+        y1=GenericData(label='oldModel', data=[0, 1, 10], species=acetylene, reaction=None, units='molFrac', index=None)
+        x2=GenericData(label='time', data=[8, 9, 7], species=None, reaction=None, units=None, index=None)
+        y2=GenericData(label='newModel', data=[-1, 1, 100], species=None, reaction=None, units='molFrac', index=None)
 
-        self.example=dt.ComparisonBundle(title="test", xDataList=[x2, x1], yDataList=[y2, y1])
+        self.example=plt.ComparisonBundle(title="test", xDataList=[x2, x1], yDataList=[y2, y1])
 
 
     def testCheckAndMakeConsistent(self):
@@ -41,8 +42,8 @@ class ComparisonBundleTest(unittest.TestCase):
 
         #define some variables for the tests
         acetylene=Species().fromSMILES('C#C')
-        x3=dt.GenericData(label='time', data=[1,2,3], species=None, reaction=None, units='s', index=None)
-        y3=dt.GenericData(label='expt', data=[4,5,6], species=acetylene, reaction=None, units='molFrac', index=None)
+        x3=GenericData(label='time', data=[1, 2, 3], species=None, reaction=None, units='s', index=None)
+        y3=GenericData(label='expt', data=[4, 5, 6], species=acetylene, reaction=None, units='molFrac', index=None)
 
         #tests that addSet Function works correctly
         test2=self.example
@@ -54,15 +55,15 @@ class ComparisonBundleTest(unittest.TestCase):
 
         #define some variables for the tests
         acetylene=Species().fromSMILES('C#C')
-        x1=dt.GenericData(label='time', data=[1,2,3], species=None, reaction=None, units='s', index=None)
-        y1=dt.GenericData(label='oldModel', data=[4,5,6], species=acetylene, reaction=None, units='molFrac', index=None)
-        x2=dt.GenericData(label='time', data=[7,8,9], species=None, reaction=None, units=None, index=None)
-        y2=dt.GenericData(label='newModel', data=[10,11,12], species=None, reaction=None, units=None, index=None)
-        x3=dt.GenericData(label='time', data=[1,2,3], species=None, reaction=None, units='s', index=None)
-        y3=dt.GenericData(label='expt', data=[4,5,6], species=acetylene, reaction=None, units='molFrac', index=None)
+        x1=GenericData(label='time', data=[1, 2, 3], species=None, reaction=None, units='s', index=None)
+        y1=GenericData(label='oldModel', data=[4, 5, 6], species=acetylene, reaction=None, units='molFrac', index=None)
+        x2=GenericData(label='time', data=[7, 8, 9], species=None, reaction=None, units=None, index=None)
+        y2=GenericData(label='newModel', data=[10, 11, 12], species=None, reaction=None, units=None, index=None)
+        x3=GenericData(label='time', data=[1, 2, 3], species=None, reaction=None, units='s', index=None)
+        y3=GenericData(label='expt', data=[4, 5, 6], species=acetylene, reaction=None, units='molFrac', index=None)
 
         #Check to see that class catches the incorrect units
-        test3=dt.ComparisonBundle(title="RemoveTest", xDataList=[x2, x1, x3], yDataList=[y2, y1, y3])
+        test3=plt.ComparisonBundle(title="RemoveTest", xDataList=[x2, x1, x3], yDataList=[y2, y1, y3])
 
         #tests that the removeSet Function works correctly for yLabel
         test3.removeDataSet(yLabel="oldModel")
@@ -84,8 +85,8 @@ class ComparisonBundleTest(unittest.TestCase):
         #define some variables for the tests
         acetylene=Species().fromSMILES('C#C')
         methane=Species().fromSMILES('C')
-        x4=dt.GenericData(label='time', data=[1,2,3], species=None, reaction=None, units='ms', index=None)
-        y4=dt.GenericData(label='expt', data=[4,5,6], species=methane, reaction=None, units='molFrac', index=None)
+        x4=GenericData(label='time', data=[1, 2, 3], species=None, reaction=None, units='ms', index=None)
+        y4=GenericData(label='expt', data=[4, 5, 6], species=methane, reaction=None, units='molFrac', index=None)
 
         #Check to see that class catches the incorrect units
         test4=self.example
