@@ -30,6 +30,7 @@
 
 import numpy
 import math
+import csv
 
 class GenericData(object):
     """
@@ -249,3 +250,42 @@ class ComparisonBundle:
             #set data
             xData.data=numpy.array(xTuple)
             yData.data=numpy.array(yTuple)
+
+    def printToCsv(self, outputPath):
+        #Sort to make human readable
+        self.sortByX()
+        with open(outputPath, 'wb') as output:
+            spamwriter=csv.writer(output)
+            #write out headings and units
+            labelLine=[]
+            unitLine=[]
+            for xData, yData in zip(self.xDataList, self.yDataList):
+                labelLine.append(xData.label)
+                labelLine.append(yData.label)
+                unitLine.append(xData.units)
+                unitLine.append(yData.units)
+
+            spamwriter.writerow(labelLine)
+            spamwriter.writerow(unitLine)
+
+            dataMatrix=[]
+            largestLength=max([len(xData.data) for xData in self.xDataList])
+            for xData, yData in zip(self.xDataList, self.yDataList):
+                #Concatenate extra blank entries if length is not longest
+                if len(xData.data)<largestLength:
+                    tail=numpy.array(['']*(largestLength-len(xData.data)))
+                    newXData=numpy.concatenate((xData.data,tail))
+                    newYData=numpy.concatenate((yData.data,tail))
+                    dataMatrix.append(newXData)
+                    dataMatrix.append(newYData)
+                else:
+                    dataMatrix.append(xData.data)
+                    dataMatrix.append(yData.data)
+
+            #transpose dataMatrix
+            numpy.array(dataMatrix)
+            newDataMatrix=numpy.transpose(dataMatrix)
+
+            #write out data points
+            for line in newDataMatrix:
+                spamwriter.writerow(line)
