@@ -237,4 +237,15 @@ class ComparisonBundle:
         #Change units on ComparisonBundle
         self.yUnits="log" +str(base)+ " " + self.yUnits
 
+    def sortByX(self):
+        """
+        Sort all the datapoints in each GenericData in xDataList in ascending order and perform a corresponding sort
+        on the datapoints in each GenericData in yDataList
+        """
 
+        for xData, yData in zip(self.xDataList, self.yDataList):
+            #decorated sort
+            xTuple, yTuple=zip(*sorted(zip(xData.data, yData.data)))
+            #set data
+            xData.data=numpy.array(xTuple)
+            yData.data=numpy.array(yTuple)

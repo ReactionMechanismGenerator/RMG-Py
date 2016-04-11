@@ -10,9 +10,9 @@ class ComparisonBundleTest(unittest.TestCase):
         """
 
         acetylene=Species().fromSMILES('C#C')
-        x1=dt.GenericData(label='time', data=[1,2,3], species=None, reaction=None, units='s', index=None)
+        x1=dt.GenericData(label='time', data=[3,1,2], species=None, reaction=None, units='s', index=None)
         y1=dt.GenericData(label='oldModel', data=[0,1,10], species=acetylene, reaction=None, units='molFrac', index=None)
-        x2=dt.GenericData(label='time', data=[7,8,9], species=None, reaction=None, units=None, index=None)
+        x2=dt.GenericData(label='time', data=[8,9,7], species=None, reaction=None, units=None, index=None)
         y2=dt.GenericData(label='newModel', data=[-1,1,100], species=None, reaction=None, units='molFrac', index=None)
 
         self.example=dt.ComparisonBundle(title="test", xDataList=[x2, x1], yDataList=[y2, y1])
@@ -102,9 +102,9 @@ class ComparisonBundleTest(unittest.TestCase):
         test5.makeLog(10)
 
         #What should be outputted (should remove first data point and print correct logs)
-        x2New=numpy.array([8,9])
+        x2New=numpy.array([9,7])
         y2New=numpy.array([0,1])
-        x1New=numpy.array([2,3])
+        x1New=numpy.array([1,2])
         y1New=numpy.array([0,2])
 
         #Check values
@@ -117,3 +117,20 @@ class ComparisonBundleTest(unittest.TestCase):
         self.assertEqual(test5.yUnits, 'log10 molFrac')
         self.assertEqual(test5.yDataList[0].units, 'log10 molFrac')
         self.assertEqual(test5.yDataList[1].units, 'log10 molFrac')
+
+    def testSortbyX(self):
+
+        test6=self.example
+        test6.sortByX()
+
+        #What should be outputted
+        x2New=numpy.array([7,8,9])
+        y2New=numpy.array([100, -1, 1])
+        x1New=numpy.array([1,2,3])
+        y1New=numpy.array([1,10,0])
+
+        #Check values
+        self.assertAlmostEqual(test6.xDataList[0].data.all(), x2New.all())
+        self.assertAlmostEqual(test6.yDataList[0].data.all(), y2New.all())
+        self.assertAlmostEqual(test6.xDataList[1].data.all(), x1New.all())
+        self.assertAlmostEqual(test6.yDataList[1].data.all(), y1New.all())
