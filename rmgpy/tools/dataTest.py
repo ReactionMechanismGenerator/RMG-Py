@@ -1,6 +1,7 @@
 import unittest
 from rmgpy.species import Species
 import rmgpy.tools.data as dt
+import numpy
 
 class ComparisonBundleTest(unittest.TestCase):
     def testCheckAndMakeConsistent(self):
@@ -95,3 +96,31 @@ class ComparisonBundleTest(unittest.TestCase):
         test4=dt.ComparisonBundle(title="CheckTest", xDataList=[x2, x1], yDataList=[y2, y1])
         y4.species=acetylene
         self.assertRaises(AssertionError, test4.addDataSet,x4,y4)
+
+    def testMakeLog(self):
+
+        acetylene=Species().fromSMILES('C#C')
+        x1=dt.GenericData(label='time', data=[1,2,3], species=None, reaction=None, units='s', index=None)
+        y1=dt.GenericData(label='oldModel', data=[0,1,10], species=acetylene, reaction=None, units='molFrac', index=None)
+        x2=dt.GenericData(label='time', data=[7,8,9], species=None, reaction=None, units=None, index=None)
+        y2=dt.GenericData(label='newModel', data=[-1,1,100], species=None, reaction=None, units='molFrac', index=None)
+
+        test5=dt.ComparisonBundle(title="CheckLog", xDataList=[x2, x1], yDataList=[y2, y1])
+        test5.makeLog(10)
+
+        #What should be outputted (should remove first data point and print correct logs)
+        x2New=numpy.array([8,9])
+        y2New=numpy.array([0,1])
+        x1New=numpy.array([2,3])
+        y1New=numpy.array([0,2])
+
+        #Check values
+        self.assertAlmostEqual(test5.xDataList[0].data.all(), x2New.all())
+        self.assertAlmostEqual(test5.yDataList[0].data.all(), y2New.all())
+        self.assertAlmostEqual(test5.xDataList[1].data.all(), x1New.all())
+        self.assertAlmostEqual(test5.yDataList[1].data.all(), y1New.all())
+
+        #Check units
+        self.assertEqual(test5.yUnits, 'log10 molFrac')
+        self.assertEqual(test5.yDataList[0].units, 'log10 molFrac')
+        self.assertEqual(test5.yDataList[1].units, 'log10 molFrac')

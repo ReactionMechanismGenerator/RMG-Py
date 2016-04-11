@@ -29,6 +29,7 @@
 ###############################################################################
 
 import numpy
+import math
 
 class GenericData(object):
     """
@@ -62,6 +63,7 @@ class GenericData(object):
         self.reaction = reaction
         self.units = str(units) if units else None
         self.index = int(index) if index else None
+
 
 class ComparisonBundle:
     """
@@ -208,6 +210,31 @@ class ComparisonBundle:
             xData.index+=-1
             yData.index+=-1
 
+    def makeLog(self, base=10.0):
+        """
+        Converts the yData arrays to logarithms. The variable 'base' is a float defining the base of the logarithm.
 
+        Any data points that are not compatible (negative value or 0), will be discarded along with the corresponding
+        point in xData
+        """
+
+        for xData, yData in zip(self.xDataList, self.yDataList):
+            newXArray=[]
+            newYArray=[]
+            for xPoint, yPoint in zip(xData.data, yData.data):
+                if yPoint >0:
+                    newXArray.append(xPoint)
+                    newYArray.append(math.log(yPoint,base))
+            #Convert to numpy array and set data
+            newXArray=numpy.array(newXArray)
+            newYArray=numpy.array(newYArray)
+            xData.data=newXArray
+            yData.data=newYArray
+
+            #Change units on yData
+            yData.units="log" +str(base)+ " " + yData.units
+
+        #Change units on ComparisonBundle
+        self.yUnits="log" +str(base)+ " " + self.yUnits
 
 
