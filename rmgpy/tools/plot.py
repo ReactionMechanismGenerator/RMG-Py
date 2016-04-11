@@ -235,9 +235,15 @@ class GenericPlot(object):
         plt.axis('tight')
         fig.savefig(filename, bbox_inches='tight')
     
-    def comparePlot(self, otherGenericPlot, filename='', title='', xlabel='', ylabel=''):
+    def comparePlot(self, otherGenericPlots, filename='', title='', xlabel='', ylabel='', styles=None):
         """
-        Plot a comparison data plot of this data vs a second GenericPlot class
+        Plot a comparison data plot of this data vs a other Generic Plot classes
+
+        otherGenericPlots is a single GenericPlot or list of GenericPlots to plot against
+
+        styles is a list of strings corresponding to matplotlib shorthand line/marker styles for each corresponding
+            other Generic Plot.
+            -If the number of plots is greater than 4, then it is mandatory to give a custom styles
         """
         
         mpl.rc('font',family='sans-serif')
@@ -245,10 +251,13 @@ class GenericPlot(object):
         fig=plt.figure()
         
         ax = fig.add_subplot(111)
-        
-        styles = ['-',':']
+
+        if styles is None:
+            styles = ['-','--', ':', '-.']
+        if not type(otherGenericPlots) is list:
+            otherGenericPlots=[otherGenericPlots]
         # Plot the sets of data
-        for i, plot in enumerate([self, otherGenericPlot]):
+        for i, plot in enumerate([self]+otherGenericPlots):
             # Reset the color cycle per plot to get matching colors in each set
             plt.gca().set_prop_cycle(None)
             
@@ -268,7 +277,7 @@ class GenericPlot(object):
                     if y.units: self.ylabel += ' ({0})'.format(y.units)
             else:
                 for y in yVar:
-                    ax.plot(xVar.data, y.data, styles[i], label=y.label)
+                    ax.plot(xVar.data, y.data, styles[i], label=y.label, markevery=5)
             
             # Plot the second set of data
             
