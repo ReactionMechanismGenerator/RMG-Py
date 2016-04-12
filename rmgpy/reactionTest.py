@@ -926,7 +926,28 @@ class TestReaction(unittest.TestCase):
         
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)   
-        
+    
+    def testPickleLiquidReaction(self):
+        """
+        Test that a Reaction with a __k_effective_cache object can be successfully pickled and unpickled with no loss of information.
+        """
+        global diffusionLimiter        
+        import cPickle
+        from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+
+        rxn = Reaction()
+        reaction = cPickle.loads(cPickle.dumps(rxn,-1))
+
+        self.assertIsNone(reaction.k_effective_cache)
+
+        diffusionLimiter.enabled = True
+
+        rxn = Reaction()
+        reaction = cPickle.loads(cPickle.dumps(rxn,-1))
+
+        self.assertIsNotNone(reaction.k_effective_cache)
+
+        diffusionLimiter.enabled = False
 
 class TestReactionToCantera(unittest.TestCase):
     """

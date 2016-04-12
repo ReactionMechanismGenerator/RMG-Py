@@ -115,7 +115,7 @@ class Reaction:
         self.pairs = pairs
         
         if diffusionLimiter.enabled:
-            self.__k_effective_cache = {}
+            self.k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -629,10 +629,10 @@ class Reaction:
         """
         if diffusionLimiter.enabled:
             try:
-                k = self.__k_effective_cache[T]
+                k = self.k_effective_cache[T]
             except KeyError:
                 k = diffusionLimiter.getEffectiveRate(self, T)
-                self.__k_effective_cache[T] = k
+                self.k_effective_cache[T] = k
             return k
         else:
             return  self.kinetics.getRateCoefficient(T, P)
