@@ -1120,8 +1120,9 @@ class CoreEdgeReactionModel:
                 # This is to ensure we have an overestimate of that species flux
                 ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
                 for spec, frac in ratios.iteritems():
-                    index = self.edge.species.index(spec)
-                    maxEdgeSpeciesRateRatios[index] += frac * rateRatio
+                    if spec in self.edge.species:
+                        index = self.edge.species.index(spec)
+                        maxEdgeSpeciesRateRatios[index] += frac * rateRatio
                 # Mark any species that is explored in any partial network as ineligible for pruning
                 for spec in network.explored:
                     if spec not in ineligibleSpecies:
