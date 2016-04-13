@@ -19,6 +19,8 @@ class CanteraCondition:
     `reactorType`           A string of the cantera reactor type. List of supported types below:
         IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
         IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+        IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
+                            for ideal gas mixtures (the same as RMG's SimpleReactor)
 
     `reactionTime`          A tuple object giving the (reaction time, units)
     `molFrac`               A dictionary giving the initial mol Fractions. Keys are species objects and the values are floats
@@ -101,6 +103,8 @@ def generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tl
         `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
             IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
             IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
+                                for ideal gas mixtures (the same as RMG's SimpleReactor)
 
         `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
         `molFracList`           A list of molfrac dictionaries with species object keys
@@ -194,6 +198,8 @@ class Cantera:
         `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
             IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
             IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
+                                for ideal gas mixtures (the same as RMG's SimpleReactor)
 
         `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
         `molFracList`           A list of molfrac dictionaries with species object keys
@@ -344,7 +350,9 @@ class Cantera:
             if condition.reactorType == 'IdealGasReactor':
                 canteraReactor=ct.IdealGasReactor(self.model)
             elif condition.reactorType == 'IdealGasConstPressureReactor':
-                canteraReactor=ct.IdealConstPressureGasReactor(self.model)
+                canteraReactor=ct.IdealGasConstPressureReactor(contents=self.model)
+            elif condition.reactorType == 'IdealGasConstPressureTemperatureReactor':
+                canteraReactor=ct.IdealGasConstPressureReactor(contents=self.model, energy='off')
             else:
                 raise Exception('Other types of reactor conditions are currently not supported')
             
