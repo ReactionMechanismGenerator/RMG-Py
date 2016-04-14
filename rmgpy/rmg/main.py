@@ -564,7 +564,7 @@ class RMG(util.Subject):
                     # Turn pruning off if we haven't reached minimum core size.
                     prune = False
                     
-                terminated, obj = reactionSystem.simulate(
+                try: terminated, obj = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
@@ -577,6 +577,14 @@ class RMG(util.Subject):
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
                 )
+                except:
+                    logging.error("Model core reactions:")
+                    if len(self.reactionModel.core.reactions) > 5:
+                        logging.error("Too many to print in detail")
+                    else:
+                        from rmgpy.cantherm.output import prettify
+                        logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                    raise
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
