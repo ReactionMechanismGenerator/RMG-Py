@@ -238,7 +238,12 @@ cdef class SurfaceReactor(ReactionSystem):
         ReactionSystem.compute_network_variables(self, pdepNetworks)
 
     @cython.boundscheck(False)
-    def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
+    def residual(self,
+                 double t,
+                 numpy.ndarray[numpy.float64_t, ndim=1] N,
+                 numpy.ndarray[numpy.float64_t, ndim=1] dNdt,
+                 numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)
+                 ):
 
         """
         Return the residual function for the governing DAE system for the
@@ -289,9 +294,9 @@ cdef class SurfaceReactor(ReactionSystem):
 
         for j in xrange(numCoreSpecies):
             if surfaceSpecies[j]:
-                C[j] = (y[j] / V) / surfaceVolumeRatio_si
+                C[j] = (N[j] / V) / surfaceVolumeRatio_si
             else:
-                C[j] = y[j] / V
+                C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
             coreSpeciesConcentrations[j] = C[j]
         
@@ -386,22 +391,22 @@ cdef class SurfaceReactor(ReactionSystem):
         res = coreSpeciesRates * V 
         # mol/s
         
-        if self.sensitivity:
-            delta = numpy.zeros(len(y), numpy.float64)
+        if self.sensitivity and False:
+            delta = numpy.zeros(len(N), numpy.float64)
             delta[:numCoreSpecies] = res
             if self.jacobianMatrix is None:
-                jacobian = self.jacobian(t,y,dydt,0,senpar)
+                jacobian = self.jacobian(t,N,dNdt,0,senpar)
             else:
                 jacobian = self.jacobianMatrix
             dgdk = ReactionSystem.computeRateDerivative(self)
             for j in xrange(numCoreReactions+numCoreSpecies):
                 for i in xrange(numCoreSpecies):
                     for z in xrange(numCoreSpecies):
-                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*y[(j+1)*numCoreSpecies + z] 
+                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*N[(j+1)*numCoreSpecies + z] 
                     delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
         else:
             delta = res
-        delta = delta - dydt
+        delta = delta - dNdt
         
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
