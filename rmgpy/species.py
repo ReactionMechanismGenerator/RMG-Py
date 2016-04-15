@@ -160,7 +160,7 @@ class Species(object):
         return self._molecularWeight
     def setMolecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
-    molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
+    molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
     def generateResonanceIsomers(self):
         """
