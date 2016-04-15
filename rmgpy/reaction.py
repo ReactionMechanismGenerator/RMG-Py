@@ -674,9 +674,9 @@ class Reaction:
                     adsorbate = r
             if adsorbate is None or adsorbate.containsSurfaceSite():
                 raise ReactionError("Couldn't find the adsorbate!")
-            molecularWeight_kg_mol = adsorbate.getMolecularWeight().value_si / constants.amu / 1000
-            # molecularWeight now in kg/mol
-            rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight_kg_mol))
+            molecularWeight_kg = adsorbate.getMolecularWeight().value_si
+            # molecularWeight_kg in kg per molecule
+            rateCoefficient *= math.sqrt(constants.kB * T / (2 * math.pi * molecularWeight_kg))
 
             # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
             return rateCoefficient
