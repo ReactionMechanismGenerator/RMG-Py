@@ -653,7 +653,8 @@ class Reaction:
     def getSurfaceRateCoefficient(self, T, surfaceSiteDensity):
         """
         Return the overall surface rate coefficient for the forward reaction at
-        temperature `T` in K with surface site density `surfaceSiteDensity` in mol/m2
+        temperature `T` in K with surface site density `surfaceSiteDensity` in mol/m2.
+        Value is returned in combination of [m,mol,s]
         """
         #ToDo: this is copied from gas phase Reaction
         if diffusionLimiter.enabled:
@@ -671,11 +672,11 @@ class Reaction:
                     rateCoefficient /= surfaceSiteDensity
                 else:
                     adsorbate = r
-            if adsorbate.containsSurfaceSite():
+            if adsorbate is None or adsorbate.containsSurfaceSite():
                 raise ReactionError("Couldn't find the adsorbate!")
-            molecularWeight = adsorbate.getMolecularWeight().value_si
-
-            rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight))
+            molecularWeight_kg_mol = adsorbate.getMolecularWeight().value_si / constants.amu / 1000
+            # molecularWeight now in kg/mol
+            rateCoefficient *= math.sqrt(constants.R * T / (2 * math.pi * molecularWeight_kg_mol))
 
             # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
             return rateCoefficient
