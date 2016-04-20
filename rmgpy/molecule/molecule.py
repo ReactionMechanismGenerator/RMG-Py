@@ -41,7 +41,7 @@ import os
 import re
 import numpy
 import urllib
-
+from collections import OrderedDict
 
 import element as elements
 try:
@@ -56,6 +56,7 @@ import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
+from rmgpy.molecule.group import GroupAtom, GroupBond, Group
 
 ################################################################################
 
@@ -1552,3 +1553,30 @@ class Molecule(Graph):
         self.multiplicity = 1
 
         return added
+
+    def toGroup(self):
+        """
+        This method converts a list of atoms in a Molecule to a Group object.
+        """
+        
+        # Create GroupAtom object for each atom in the molecule
+        groupAtoms = OrderedDict()# preserver order of atoms in original container
+        for atom in self.atoms:
+            groupAtoms[atom] = GroupAtom(atomType=[atom.atomType],
+                                         radicalElectrons=[atom.radicalElectrons],
+                                         charge=[atom.charge],
+                                         lonePairs=[atom.lonePairs]
+                                         )
+                    
+        group = Group(atoms=groupAtoms.values())            
+        
+        # Create GroupBond for each bond between atoms in the molecule
+        for atom in self.atoms:
+            for bondedAtom, bond in atom.edges.iteritems():
+                group.addBond(GroupBond(groupAtoms[atom],groupAtoms[bondedAtom], order=[bond.order]))
+            
+        group.update()
+        
+        return group
+
+
