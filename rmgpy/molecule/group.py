@@ -534,9 +534,9 @@ class Group(Graph):
     Corresponding alias methods have also been provided.
     """
 
-    def __init__(self, atoms=None):
+    def __init__(self, atoms=None, multiplicity=[]):
         Graph.__init__(self, atoms)
-        self.multiplicity = []
+        self.multiplicity = multiplicity
         self.update()
 
     def __reduce__(self):
