@@ -1568,7 +1568,7 @@ class Molecule(Graph):
                                          lonePairs=[atom.lonePairs]
                                          )
                     
-        group = Group(atoms=groupAtoms.values())            
+        group = Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])            
         
         # Create GroupBond for each bond between atoms in the molecule
         for atom in self.atoms:
