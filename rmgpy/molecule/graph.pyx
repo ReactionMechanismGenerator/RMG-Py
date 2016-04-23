@@ -769,10 +769,11 @@ cdef class Graph:
 
                 # Choose root vertex as vertex with smallest number of edges
                 rootVertex = None
+                graph.updateConnectivityValues()
                 for vertex in graph.vertices:
                     if rootVertex is None:
                         rootVertex = vertex
-                    elif len(vertex.edges) < len(rootVertex.edges):
+                    elif getVertexConnectivityValue(vertex) > getVertexConnectivityValue(rootVertex):
                         rootVertex = vertex
 
                 # Get all cycles involving the root vertex

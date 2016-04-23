@@ -1515,6 +1515,43 @@ multiplicity 2
         monorings, polyrings = m5.getDisparateRings()
         self.assertEqual(len(monorings),3)
         self.assertEqual(len(polyrings),0)
+
+    def testGetSmallestSetOfSmallestRings(self):
+        """
+        Test that SSSR within a molecule are returned properly in the function
+        `Graph().getSmallestSetOfSmallestRings()`
+        """
+
+        m1 = Molecule(SMILES='C12CCC1C3CC2CC3')
+        sssr1 = m1.getSmallestSetOfSmallestRings()
+        sssr1_sizes = sorted([len(ring) for ring in sssr1])
+        sssr1_sizes_expected = [4, 5, 5]
+        self.assertEqual(sssr1_sizes, sssr1_sizes_expected)
+        
+        m2 = Molecule(SMILES='C1(CC2)C(CC3)CC3C2C1')
+        sssr2 = m2.getSmallestSetOfSmallestRings()
+        sssr2_sizes = sorted([len(ring) for ring in sssr2])
+        sssr2_sizes_expected = [5, 5, 6]
+        self.assertEqual(sssr2_sizes, sssr2_sizes_expected)
+        
+        
+        m3 = Molecule(SMILES='C1(CC2)C2C(CCCC3)C3C1')
+        sssr3 = m3.getSmallestSetOfSmallestRings()
+        sssr3_sizes = sorted([len(ring) for ring in sssr3])
+        sssr3_sizes_expected = [4, 5, 6]
+        self.assertEqual(sssr3_sizes, sssr3_sizes_expected)
+        
+        m4 = Molecule(SMILES='C12=CC=CC=C1C3=C2C=CC=C3')
+        sssr4 = m4.getSmallestSetOfSmallestRings()
+        sssr4_sizes = sorted([len(ring) for ring in sssr4])
+        sssr4_sizes_expected = [4, 6, 6]
+        self.assertEqual(sssr4_sizes, sssr4_sizes_expected)
+        
+        m5 = Molecule(SMILES='C12=CC=CC=C1CC3=C(C=CC=C3)C2')
+        sssr5 = m5.getSmallestSetOfSmallestRings()
+        sssr5_sizes = sorted([len(ring) for ring in sssr5])
+        sssr5_sizes_expected = [6, 6, 6]
+        self.assertEqual(sssr5_sizes, sssr5_sizes_expected)
         
 ################################################################################
 
