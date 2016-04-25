@@ -627,10 +627,16 @@ class ComparisonBundle:
     `index`                 An integer containing the index associated with the data
     ======================= ==============================================================================================
     """
-    def __init__(self, title='', xDataList=[], yDataList=[], species=None, reaction=None, xUnits=None, yUnits=None, index=None):
+    def __init__(self, title='', xDataList=None, yDataList=None, species=None, reaction=None, xUnits=None, yUnits=None, index=None):
         self.title=title
-        self.xDataList=xDataList
-        self.yDataList=yDataList
+        if xDataList:
+            self.xDataList=xDataList
+        else:
+            self.xDataList=[]
+        if yDataList:
+            self.yDataList=yDataList
+        else:
+            self.yDataList=[]
         self.species=species
         self.reaction=reaction
         self.xUnits=xUnits
@@ -641,7 +647,7 @@ class ComparisonBundle:
         assert len(self.xDataList) == len(self.yDataList), "The length of xDataList and yDataList are not the same."
 
         #assign indicies to the xData and yData
-        for index, (x,y) in enumerate(zip(self.xDataList, yDataList)):
+        for index, (x,y) in enumerate(zip(self.xDataList, self.yDataList)):
             x.index=index
             y.index=index
 
