@@ -58,6 +58,8 @@ cdef class Atom(Vertex):
 
     cpdef bint isOxygen(self)
     
+    cpdef bint isSurfaceSite(self)
+    
     cpdef incrementRadical(self)
 
     cpdef decrementRadical(self)

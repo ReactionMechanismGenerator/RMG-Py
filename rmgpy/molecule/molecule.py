@@ -286,6 +286,12 @@ class Atom(Vertex):
         """
         return self.element.number == 8
 
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.symbol == 'X'
+
     def incrementRadical(self):
         """
         Update the atom pattern as a result of applying a GAIN_RADICAL action,
@@ -709,7 +715,7 @@ class Molecule(Graph):
 
     def isSurfaceSite(self):
         "Returns ``True`` iff the molecule is nothing but a surface site 'X'."
-        return (len(self.atoms) == 1 and self.atoms[0].symbol == 'X')
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
 
     def removeAtom(self, atom):
         """
