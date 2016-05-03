@@ -146,7 +146,7 @@ if __name__ == '__main__':
             'RMG': RMG
             }
 
-        command = """rmg = RMG(); rmg.execute(inputFile, output_dir, **kwargs)"""
+        command = """rmg = RMG(inputFile=inputFile, outputDirectory=output_dir); rmg.execute(**kwargs)"""
 
         stats_file = os.path.join(args.output_directory,'RMG.profile')
         print("Running under cProfile")
@@ -160,6 +160,5 @@ if __name__ == '__main__':
         
     else:
 
-        rmg = RMG()
-
-        rmg.execute(inputFile, output_dir, **kwargs)
+        rmg = RMG(inputFile=inputFile, outputDirectory=output_dir)
+        rmg.execute(**kwargs)

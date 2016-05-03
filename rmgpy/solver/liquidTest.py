@@ -265,9 +265,10 @@ class LiquidReactorCheck(unittest.TestCase):
         rmg = RMG()
 
         ##use the liquid phase example to load every input parameters
-        inp=os.path.join("examples","rmg","liquid_phase_constSPC","input.py") #In order to work on every system, use of os.path
-        
-        rmg.initialize(inp, rmg.outputDirectory)
+        inp = os.path.join("examples","rmg","liquid_phase_constSPC","input.py") #In order to work on every system, use of os.path
+        rmg.inputFile = inp
+
+        rmg.initialize()
             
         if rmg.solvent is not None:
             ##call the function to identify indices in the solver

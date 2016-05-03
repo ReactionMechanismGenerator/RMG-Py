@@ -13,8 +13,8 @@ class GenerateReactionsTest(unittest.TestCase):
         
         inputFile = os.path.join(folder,'input.py')
         
-        rmg = RMG()
-        rmg = execute(rmg, inputFile, folder)
+        rmg = RMG(inputFile=inputFile, outputDirectory=folder)
+        rmg = execute(rmg)
 
         self.assertIsNotNone(rmg)
         self.assertIsNotNone(rmg.reactionModel.outputSpeciesList)
@@ -40,8 +40,8 @@ class GenerateReactionsTest(unittest.TestCase):
         
         inputFile = os.path.join(folder,'input.py')
 
-        rmg = RMG()
-        rmg = execute(rmg, inputFile, folder)
+        rmg = RMG(inputFile=inputFile, outputDirectory=folder)
+        rmg = execute(rmg)
 
         self.assertIsNotNone(rmg)
         
@@ -75,8 +75,8 @@ class GenerateReactionsTest(unittest.TestCase):
         
         inputFile = os.path.join(folder,'input.py')
 
-        rmg = RMG()
-        rmg = execute(rmg, inputFile, folder)
+        rmg = RMG(inputFile=inputFile, outputDirectory=folder)
+        rmg = execute(rmg)
 
         self.assertIsNotNone(rmg)
         

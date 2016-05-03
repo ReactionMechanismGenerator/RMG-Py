@@ -323,7 +323,7 @@ class RMG(util.Subject):
             for family in self.database.kinetics.families.values():
                 family.fillKineticsRulesByAveragingUp()
     
-    def initialize(self, inputFile, output_directory, **kwargs):
+    def initialize(self, **kwargs):
         """
         Initialize an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
@@ -338,9 +338,6 @@ class RMG(util.Subject):
         # Print out RMG header
         self.logHeader()
         
-        # Set directories
-        self.outputDirectory = output_directory
-        
         try:
             restart = kwargs['restart']
         except KeyError:
@@ -352,7 +349,7 @@ class RMG(util.Subject):
                 raise Exception("No restart file")
             
         # Read input file
-        self.loadInput(inputFile)
+        self.loadInput(self.inputFile)
 
         # Check input file 
         self.checkInput()
@@ -513,13 +510,13 @@ class RMG(util.Subject):
                     self.outputDirectory, index, self.reactionModel.core.species))  
         
 
-    def execute(self, inputFile, output_directory, **kwargs):
+    def execute(self, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
         """
     
-        self.initialize(inputFile, output_directory, **kwargs)
+        self.initialize(**kwargs)
 
         # register listeners
         self.register_listeners()
