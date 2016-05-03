@@ -731,7 +731,7 @@ class ThermoDatabase(object):
             thermo0 = thermo0[0]
 
         elif species.containsSurfaceSite():
-            self.getThermoDataForSurfaceSpecies(species, quantumMechanics=quantumMechanics)
+            thermo0 = self.getThermoDataForSurfaceSpecies(species, quantumMechanics=quantumMechanics)
             
         elif quantumMechanics:
             original_molecule = species.molecule[0]
@@ -839,10 +839,43 @@ class ThermoDatabase(object):
     def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
         assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
         dummySpecies = Species()
-        for molecule in species.molecule:
-            raise NotImplementedError("To be continued...")
-        self.getThermoData(species, quantumMechanics=None)
+        logging.warning(("Trying to generate thermo for surface species"
+                        " with these {} resonance isomer(s):").format(len(species.molecule)))
+        for i, molecule in enumerate(species.molecule):
+            logging.warning("Isomer {}\n".format(i) + molecule.toAdjacencyList())
 
+            dummyMolecule = molecule.copy(deep=True)
+            sitesToRemove = []
+            for atom in dummyMolecule.atoms:
+                if atom.isSurfaceSite():
+                    sitesToRemove.append(atom)
+            for site in sitesToRemove:
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bondedAtom = site.bonds.keys()[0]
+                bond = site.bonds[bondedAtom]
+                dummyMolecule.removeBond(bond)
+                if bond.isSingle():
+                    bondedAtom.incrementRadical()
+                elif bond.isVanDerWaals():
+                    pass
+                elif bond.isDouble():
+                    bondedAtom.incrementRadical()
+                    bondedAtom.incrementRadical()
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+
+                dummyMolecule.removeAtom(site)
+
+            dummyMolecule.update()
+
+            logging.warning("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
+
+            dummySpecies.molecule.append(dummyMolecule)
+        thermo = self.getThermoData(dummySpecies, quantumMechanics=quantumMechanics)
+        logging.warning("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
+
+        return thermo
+        #raise NotImplementedError("To be continued...")
         
     def getThermoDataFromLibraries(self, species, trainingSet=None):
         """
