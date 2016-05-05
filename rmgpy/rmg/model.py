@@ -399,12 +399,14 @@ class CoreEdgeReactionModel:
         and the matched species (if found) or
         ``False`` and ``None`` (if not found).
         """
+        new_spec = Species(molecule=[molecule])
+        new_spec.generateResonanceIsomers()
 
         # First check cache and return if species is found
         for i, spec in enumerate(self.speciesCache):
             if spec is not None:
                 for mol in spec.molecule:
-                    if molecule.isIsomorphic(mol):
+                    if new_spec.isIsomorphic(mol):
                         self.speciesCache.pop(i)
                         self.speciesCache.insert(0, spec)
                         return True, spec
@@ -416,7 +418,7 @@ class CoreEdgeReactionModel:
         except KeyError:
             return False, None
         for spec in speciesList:
-            if spec.isIsomorphic(molecule):
+            if spec.isIsomorphic(new_spec):
                 self.speciesCache.pop()
                 self.speciesCache.insert(0, spec)
                 return True, spec
