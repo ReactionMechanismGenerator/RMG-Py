@@ -680,27 +680,6 @@ class CoreEdgeReactionModel:
                     logging.info('Adding species {0} to model core'.format(newSpecies))
                     display(newSpecies) # if running in IPython --pylab mode, draws the picture!
 
-                    # Find reactions involving the new species as unimolecular reactant
-                    # or product (e.g. A <---> products)
-
-                    results_A = react(newSpecies.copy(deep=True))
-
-                    # Find reactions involving the new species as bimolecular reactants
-                    # or products with other core species (e.g. A + B <---> products)
-
-                    corespeciesList = self.core.species
-
-                    results_AB = react(newSpecies.copy(deep=True), corespeciesList)                    
-
-                    # Find reactions involving the new species as bimolecular reactants
-                    # or products with itself (e.g. A + A <---> products)
-                    results_AA = react(newSpecies.copy(deep=True), [newSpecies.copy(deep=True)])
-                            
-                    newReactions.extend(results_A)
-                    newReactions.extend(results_AB)
-                    newReactions.extend(results_AA)
-                    newReactions = [self.inflate(rxn) for rxn in newReactions]
-
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
