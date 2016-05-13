@@ -3,8 +3,10 @@
 
 import unittest
 
-import os
+import distutils.spawn
+import logging
 import numpy as np
+import os
 
 from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
@@ -12,13 +14,24 @@ from rmgpy.molecule import Molecule
 from rmgpy.qm.mopac import MopacMolPM3, MopacMolPM6, MopacMolPM7
 
 
-mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
-if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
-	executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
-elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
-	executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
-else:
-	executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+executablesToTry = ('MOPAC2012.exe', 'MOPAC2009.exe', 'mopac')
+
+for exe in executablesToTry:
+    try:
+        executablePath = distutils.spawn.find_executable(exe)
+    except:
+        executablePath = None
+    if executablePath is not None:
+        break
+else:  # didn't break
+    logging.debug("Did not find MOPAC on path, checking if it exists in a declared MOPAC_DIR...")
+    mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
+    for exe in executablesToTry:
+        executablePath = os.path.join(mopacEnv, exe)
+        if os.path.exists(executablePath):
+            break
+    else:  # didn't break
+        executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
 
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
