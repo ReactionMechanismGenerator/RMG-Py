@@ -70,4 +70,29 @@ class ChemkinTest(unittest.TestCase):
 		os.remove(tempTransportPath)
 		
 
+	def testUseChemkinNames(self):
+		"""
+		Test that the official chemkin names are used as labels for the created Species objects.
+		"""
+
+		folder = os.path.join(os.path.dirname(rmgpy.__file__),'test_data/chemkin/chemkin_py')
 		
+		chemkinPath = os.path.join(folder, 'minimal', 'chem.inp')
+		dictionaryPath = os.path.join(folder,'minimal', 'species_dictionary.txt')
+
+		# loadChemkinFile
+		species, reactions = loadChemkinFile(chemkinPath, dictionaryPath, useChemkinNames=True) 
+
+		expected = [
+			'Ar',
+			'He',
+			'Ne',
+			'N2',
+			'ethane',
+			'CH3',
+			'C2H5',
+			'C'
+		]
+
+		for spc, label in zip(species, expected):
+			self.assertEqual(spc.label, label)
