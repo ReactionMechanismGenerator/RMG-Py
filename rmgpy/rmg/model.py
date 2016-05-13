@@ -1120,8 +1120,9 @@ class CoreEdgeReactionModel:
                 # This is to ensure we have an overestimate of that species flux
                 ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
                 for spec, frac in ratios.iteritems():
-                    index = self.edge.species.index(spec)
-                    maxEdgeSpeciesRateRatios[index] += frac * rateRatio
+                    if spec in self.edge.species:
+                        index = self.edge.species.index(spec)
+                        maxEdgeSpeciesRateRatios[index] += frac * rateRatio
                 # Mark any species that is explored in any partial network as ineligible for pruning
                 for spec in network.explored:
                     if spec not in ineligibleSpecies:
@@ -1164,13 +1165,15 @@ class CoreEdgeReactionModel:
         # Delete any networks that became empty as a result of pruning
         if self.pressureDependence:
             networksToDelete = []
-            if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
-                networksToDelete.append(network)
+            for network in self.networkList:
+                if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+                    networksToDelete.append(network)
+            
             if len(networksToDelete) > 0:
                 logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
                 for network in networksToDelete:
                     logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                    source = network.source
+                    source = tuple(network.source)
                     nets_with_this_source = self.networkDict[source]
                     nets_with_this_source.remove(network)
                     if not nets_with_this_source:
