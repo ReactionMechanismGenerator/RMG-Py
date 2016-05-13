@@ -120,6 +120,7 @@ class TestGaussianMolPM6(unittest.TestCase):
 
 		self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
+	@unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
 	def testGenerateThermoData(self):
 		"""
 		Test that generateThermoData() works correctly.
@@ -140,6 +141,7 @@ class TestGaussianMolPM6(unittest.TestCase):
 		if result.molecularMass.units=='amu':
 			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
+	@unittest.skipIf('g03' in executablePath, "This test was shown not to work on g03.")
 	def testLoadThermoData(self):
 		"""
 		Test that generateThermoData() can load thermo from a previous run.
