@@ -81,9 +81,6 @@ class TestGaussianMolPM3(unittest.TestCase):
 		if result.molecularMass.units=='amu':
 			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169908.3376, 0) # to 0 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 335.5438748, 0) # to 0 decimal place
-
 	def testLoadThermoData(self):
 		"""
 		Test that generateThermoData() can load thermo from a previous run.
@@ -97,12 +94,8 @@ class TestGaussianMolPM3(unittest.TestCase):
 		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		self.assertAlmostEqual(result.energy.value_si, 169908.7581, 0)
 		if result.molecularMass.units=='amu':
 			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
-
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169908.3376, 0) # to 0 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 335.5438748, 0) # to 0 decimal place
 		
 class TestGaussianMolPM6(unittest.TestCase):
 	"""
@@ -147,9 +140,6 @@ class TestGaussianMolPM6(unittest.TestCase):
 		if result.molecularMass.units=='amu':
 			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169326.2504, 0) # to 0 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.2696063, 0) # to 0 decimal place
-
 	def testLoadThermoData(self):
 		"""
 		Test that generateThermoData() can load thermo from a previous run.
@@ -163,13 +153,8 @@ class TestGaussianMolPM6(unittest.TestCase):
 		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		self.assertAlmostEqual(result.energy.value_si, 169325.9867, 1)
 		if result.molecularMass.units=='amu':
 			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
-
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169326.2504, 0) # to 0 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.2696063, 0) # to 0 decimal place
-
 
 
 ################################################################################
