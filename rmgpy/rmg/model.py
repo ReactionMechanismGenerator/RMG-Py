@@ -79,6 +79,21 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
+    def getThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
+        """
+        Returns a `thermoData` object of the current Species object.
+
+        Returns the stored `thermoData` object if it is found,
+        generates a new `thermoData` object if it not found.
+        
+        """
+        if self.thermo:
+            self.processThermoData(database, self.thermo, thermoClass)
+        else:
+            self.generateThermoData(database, thermoClass, quantumMechanics)
+
+        return self.thermo
+
     def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
         """
         Generates thermo data, first checking Libraries, then using either QM or Database.
