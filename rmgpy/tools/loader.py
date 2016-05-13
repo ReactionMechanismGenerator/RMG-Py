@@ -38,19 +38,19 @@ from rmgpy.chemkin import loadChemkinFile
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 
-def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False):
+def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False, useChemkinNames=False):
 
     if useJava:
         # The argument is an RMG-Java input file
-        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages)
+        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages, useChemkinNames=useChemkinNames)
         
     else:
         # The argument is an RMG-Py input file
-        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages)
+        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages, useChemkinNames=useChemkinNames)
 
     return rmg
 
-def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True):
+def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useChemkinNames=False):
     """
     Load the results of an RMG-Py job generated from the given `inputFile`.
     """
@@ -66,7 +66,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'chemkin', 'species_dictionary.txt')
-    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict)
+    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict, useChemkinNames=useChemkinNames)
     
     # Map species in input file to corresponding species in Chemkin file
     speciesDict = {}
@@ -106,7 +106,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     
     return rmg
 
-def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None):
+def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinNames=False):
     """
     Load the results of an RMG-Java job generated from the given `inputFile`.
     """
@@ -124,7 +124,7 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None):
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'RMG_Dictionary.txt')
-    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict)
+    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict, useChemkinNames=useChemkinNames)
     
     # Bath gas species don't appear in RMG-Java species dictionary, so handle
     # those as a special case
