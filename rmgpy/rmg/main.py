@@ -460,7 +460,7 @@ class RMG(util.Subject):
                         """.format(spec.label))
                         
             for spec in self.initialSpecies:
-                spec.generateThermoData(self.database, quantumMechanics=self.quantumMechanics)
+                spec.getThermoData(self.database, quantumMechanics=self.quantumMechanics)
                 spec.generateTransportData(self.database)
                 
             # Add nonreactive species (e.g. bath gases) to core first

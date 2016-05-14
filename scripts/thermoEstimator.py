@@ -38,7 +38,7 @@ def runThermoEstimator(inputFile):
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
     library = ThermoLibrary(name='Thermo Estimation Library')
     for species in rmg.initialSpecies:
-        species.generateThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
+        species.getThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
 
         library.loadEntry(
             index = len(library.entries) + 1,
