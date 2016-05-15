@@ -769,7 +769,7 @@ def loadTransportFile(path, speciesDict):
                     comment = comment.strip(),
                 )
 
-def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None, useChemkinNames=False):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermoPath' point to a separate thermo file, or, if 'None' is 
@@ -905,12 +905,13 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
     if transportPath:
         loadTransportFile(transportPath, speciesDict)
     
-    # Apply species aliases if known
-    for spec in speciesList:
-        try:
-            spec.label = speciesAliases[spec.label]
-        except KeyError:
-            pass
+    if not useChemkinNames:
+        # Apply species aliases if known
+        for spec in speciesList:
+            try:
+                spec.label = speciesAliases[spec.label]
+            except KeyError:
+                pass
     
     # Attempt to extract index from species label
     indexPattern = re.compile(r'\(\d+\)$')
