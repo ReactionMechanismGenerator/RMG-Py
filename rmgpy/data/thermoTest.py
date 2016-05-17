@@ -6,7 +6,9 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy import settings
-from rmgpy.species import Species
+from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import Species
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule.molecule import Molecule
 
@@ -248,6 +250,32 @@ class TestCyclicThermo(unittest.TestCase):
         # therefore is not selected.  Note that this unit test will have to change if the correction is fixed later.
         self.assertEqual(polycyclicGroups[0].label, 'PolycyclicRing')
         self.assertEqual(selected_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
+    
+
+    def testGetRingGroupsFromComments(self):
+        """
+        Test that getRingGroupsFromComments method works for fused polycyclics.
+        """
+        # set-up RMG object
+        rmg = RMG()
+
+        # load kinetic database and forbidden structures
+        rmg.database = RMGDatabase()
+        path = os.path.join(settings['database.directory'])
+
+        # forbidden structure loading
+        rmg.database.loadThermo(os.path.join(path, 'thermo'))
+
+        smi = 'C12C(C3CCC2C3)C4CCC1C4'#two norbornane rings fused together
+        spc = Species().fromSMILES(smi)
+
+        spc.generateThermoData(rmg.database)
+
+        thermodb = rmg.database.thermo
+        thermodb.getRingGroupsFromComments(spc.thermo)
+
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
         
 ################################################################################
 
