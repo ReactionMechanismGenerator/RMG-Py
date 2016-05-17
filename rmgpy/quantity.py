@@ -711,7 +711,7 @@ RATECOEFFICIENT_CONVERSION_FACTORS = {
     (pq.m**6/(pq.mol**2*pq.s)).dimensionality: 1.0,              
     (pq.m**9/(pq.mol**3*pq.s)).dimensionality: 1.0,              
 }
-RATECOEFFICIENT_COMMON_UNITS = ['s^-1', 'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)', 'cm^5/(mol^2*s)']
+RATECOEFFICIENT_COMMON_UNITS = ['s^-1', 'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)']
 def RateCoefficient(*args, **kwargs):
     # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
     quantity = Quantity(*args, **kwargs)
