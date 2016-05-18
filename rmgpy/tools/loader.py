@@ -57,7 +57,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     from rmgpy.rmg.main import RMG
     
     # Load the specified RMG input file
-    rmg = RMG()
+    rmg = RMG(inputFile=inputFile)
     rmg.loadInput(inputFile)
     rmg.outputDirectory = os.path.abspath(os.path.dirname(inputFile))
     
@@ -115,7 +115,7 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinName
     
     # Load the specified RMG-Java input file
     # This implementation only gets the information needed to generate flux diagrams
-    rmg = RMG()
+    rmg = RMG(inputFile=inputFile)
     rmg.loadRMGJavaInput(inputFile)
     rmg.outputDirectory = os.path.abspath(os.path.dirname(inputFile))
     

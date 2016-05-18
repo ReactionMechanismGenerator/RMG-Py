@@ -117,15 +117,15 @@ def main():
 
     initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
 
-    rmg = RMG()
+    rmg = RMG(inputFile=inputFile, outputDirectory=args.output_directory)
 
     # Add output listeners:
     rmg.attach(ChemkinWriter(args.output_directory))
     rmg.attach(OutputHTMLWriter(args.output_directory))
 
-    execute(rmg, inputFile, args.output_directory, **kwargs)
+    execute(rmg, **kwargs)
 
-def execute(rmg, inputFile, output_directory, **kwargs):
+def execute(rmg, **kwargs):
     """
 
     Generates all the possible reactions involving a given
@@ -137,7 +137,7 @@ def execute(rmg, inputFile, output_directory, **kwargs):
     Returns an RMG object.
     """   
     import numpy
-    rmg.initialize(inputFile, output_directory, **kwargs)
+    rmg.initialize(**kwargs)
     
     rmg.reactionModel.enlarge(reactEdge=True,
         unimolecularReact=rmg.unimolecularReact,
