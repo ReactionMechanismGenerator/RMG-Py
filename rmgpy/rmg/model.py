@@ -530,14 +530,17 @@ class CoreEdgeReactionModel:
             if (rxn_id == rxn_id0):
                 if isinstance(familyObj, KineticsLibrary):
                     # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
-                    if not rxn.duplicate:
-                        return True, rxn0
+                    if areIdenticalSpeciesReferences(rxn, rxn0):
+                        if not rxn.duplicate:
+                            return True, rxn0
                 else:
-                    return True, rxn0
+                    if areIdenticalSpeciesReferences(rxn, rxn0):
+                        return True, rxn0
             
             if isinstance(familyObj, KineticsFamily) and familyObj.ownReverse:
                 if (rxn_id == rxn_id0[::-1]):
-                    return True, rxn0
+                    if areIdenticalSpeciesReferences(rxn, rxn0):
+                        return True, rxn0
 
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
@@ -554,17 +557,16 @@ class CoreEdgeReactionModel:
                 
                 for rxn0 in shortlist:
                     rxn_id0 = generateReactionId(rxn0)
-                    if (rxn_id == rxn_id0) or \
-                        (rxn_id == rxn_id0[::-1]):
-                        return True, rxn0
+                    if (rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1]):
+                        if areIdenticalSpeciesReferences(rxn, rxn0):
+                            return True, rxn0
                 
                 # Now get the seed short-list of the reverse reaction
 
                 shortlist = self.retrieve(library, r1_rev, r2_rev)
                 
                 for rxn0 in shortlist:
-                    if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products) or \
-                        (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
+                    if areIdenticalSpeciesReferences(rxn, rxn0):
                         return True, rxn0
 
         return False, None
@@ -1859,3 +1861,13 @@ def getKey(spc):
     """
 
     return spc.label
+
+def areIdenticalSpeciesReferences(rxn1, rxn2):
+    """
+    Checks if the references of the reactants and products of the two reactions
+    are identical, in either direction.
+    """
+
+    return any([rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products, \
+            rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
+            ])
