@@ -320,7 +320,6 @@ def generatedSpeciesConstraints(**kwargs):
     validConstraints = [
         'allowed',
         'maximumCarbonAtoms',
-        'maximumHydrogenAtoms',
         'maximumOxygenAtoms',
         'maximumNitrogenAtoms',
         'maximumSiliconAtoms',
