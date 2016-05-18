@@ -6,8 +6,7 @@ openssl aes-256-cbc -K $encrypted_244ac3091cff_key -iv $encrypted_244ac3091cff_i
 
 echo 'Travis Build Dir: '$TRAVIS_BUILD_DIR
 
-if $TRAVIS_PULL_REQUEST
-  then
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     DEPLOY_BRANCH=$TRAVIS_PULL_REQUEST
 else
   DEPLOY_BRANCH=$TRAVIS_BRANCH
