@@ -48,14 +48,14 @@ def failsSpeciesConstraints(species):
     
 
     explicitlyAllowedMolecules = speciesConstraints.get('explicitlyAllowedMolecules', [])
-    maxCarbonAtoms = speciesConstraints.get('maximumCarbonAtoms', 1000000)
-    maxHydrogenAtoms = speciesConstraints.get('maximumHydrogenAtoms', 1000000)
-    maxOxygenAtoms = speciesConstraints.get('maximumOxygenAtoms', 1000000)
-    maxNitrogenAtoms = speciesConstraints.get('maximumNitrogenAtoms', 1000000)
-    maxSiliconAtoms = speciesConstraints.get('maximumSiliconAtoms', 1000000)
-    maxSulfurAtoms = speciesConstraints.get('maximumSulfurAtoms', 1000000)
-    maxHeavyAtoms = speciesConstraints.get('maximumHeavyAtoms', 1000000)
-    maxRadicals = speciesConstraints.get('maximumRadicalElectrons', 1000000)
+    maxCarbonAtoms = speciesConstraints.get('maximumCarbonAtoms', -1)
+    maxHydrogenAtoms = speciesConstraints.get('maximumHydrogenAtoms', -1)
+    maxOxygenAtoms = speciesConstraints.get('maximumOxygenAtoms', -1)
+    maxNitrogenAtoms = speciesConstraints.get('maximumNitrogenAtoms', -1)
+    maxSiliconAtoms = speciesConstraints.get('maximumSiliconAtoms', -1)
+    maxSulfurAtoms = speciesConstraints.get('maximumSulfurAtoms', -1)
+    maxHeavyAtoms = speciesConstraints.get('maximumHeavyAtoms', -1)
+    maxRadicals = speciesConstraints.get('maximumRadicalElectrons', -1)
     
     if isinstance(species, Species):
         struct = species.molecule[0]
@@ -64,22 +64,30 @@ def failsSpeciesConstraints(species):
         struct = species
     for molecule in explicitlyAllowedMolecules:
         if struct.isIsomorphic(molecule):
-            return False        
-    H = struct.getNumAtoms('H')
-    if struct.getNumAtoms('C') > maxCarbonAtoms:
-        return True
-    if H > maxHydrogenAtoms:
-        return True
-    if struct.getNumAtoms('O') > maxOxygenAtoms:
-        return True
-    if struct.getNumAtoms('N') > maxNitrogenAtoms:
-        return True
-    if struct.getNumAtoms('Si') > maxSiliconAtoms:
-        return True
-    if struct.getNumAtoms('S') > maxSulfurAtoms:
-        return True
-    if len(struct.atoms) - H > maxHeavyAtoms:
-        return True
-    if (struct.getNumberOfRadicalElectrons() > maxRadicals):
-        return True
+            return False  
+                  
+    if maxCarbonAtoms != -1:
+        if struct.getNumAtoms('C') > maxCarbonAtoms:
+            return True
+    if maxHydrogenAtoms != -1:
+        if struct.getNumAtoms('H') > maxHydrogenAtoms:
+            return True
+    if maxOxygenAtoms != -1:
+        if struct.getNumAtoms('O') > maxOxygenAtoms:
+            return True
+    if maxNitrogenAtoms != -1:
+        if struct.getNumAtoms('N') > maxNitrogenAtoms:
+            return True
+    if maxSiliconAtoms != -1:
+        if struct.getNumAtoms('Si') > maxSiliconAtoms:
+            return True
+    if maxSulfurAtoms != -1:
+        if struct.getNumAtoms('S') > maxSulfurAtoms:
+            return True
+    if maxHeavyAtoms != -1:
+        if struct.getNumAtoms() - struct.getNumAtoms('H') > maxHeavyAtoms:
+            return True
+    if maxRadicals != -1:
+        if (struct.getNumberOfRadicalElectrons() > maxRadicals):
+            return True
     return False
