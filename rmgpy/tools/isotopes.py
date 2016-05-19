@@ -47,7 +47,6 @@ from rmgpy.tools.loader import loadRMGJob
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.rmg.model import Species
-import rmgpy.data.rmg
 from rmgpy.rmg.listener import SimulationProfileWriter
 
 def initializeIsotopeModel(rmg, isotopes):
@@ -63,20 +62,13 @@ def initializeIsotopeModel(rmg, isotopes):
     rmg.checkInput()
 
     # Load databases
-    rmgpy.data.rmg.database = None
     rmg.loadDatabase()
-
-    database = rmgpy.data.rmg.database
 
     for spc in isotopes:
         spec, isNew = rmg.reactionModel.makeNewSpecies(spc)
         if isNew:
             rmg.reactionModel.addSpeciesToEdge(spec)
             rmg.initialSpecies.append(spec)
-
-    for spec in rmg.initialSpecies:
-        spec.generateThermoData(database, quantumMechanics=rmg.quantumMechanics)
-        spec.generateTransportData(database)
 
     # Add nonreactive species (e.g. bath gases) to core first
     # This is necessary so that the PDep algorithm can identify the bath gas            
