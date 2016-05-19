@@ -36,6 +36,8 @@ def parseCommandLineArguments():
     parser.add_argument('input', help='RMG input file')
     parser.add_argument('isotopeinput', help='RMG input file for the isotope model')
     parser.add_argument('output', help='Output folder')
+    parser.add_argument('--original', help='Location of the isotopeless mechanism')
+    parser.add_argument('--isotopes', help='Location of the isotope mechanism')
     args = parser.parse_args()
     
     return args
@@ -100,8 +102,10 @@ def main():
     inputFile = args.input
     inputIsoFile = args.isotopeinput
     outputdir = os.path.abspath(args.output)
+    original = os.path.abspath(args.original) if args.original else None
+    isotopeLoc = os.path.abspath(args.isotopes) if args.isotopes else None
 
-    probs, spcs, spcdata = run(inputFile, inputIsoFile, outputdir)
+    probs, spcs, spcdata = run(inputFile, inputIsoFile, outputdir, original=original, isotopeLoc=isotopeLoc)
     
     figs = os.path.join(outputdir, 'figs')
     os.mkdir(figs)

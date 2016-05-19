@@ -124,7 +124,6 @@ def generateIsotopomers(spc):
 
         isospc.generateResonanceIsomers()
         spcs.append(isospc)
-        
 
     # do not retain identical species:
     filtered = []
@@ -269,7 +268,7 @@ def generateRMGModel(inputFile, outputDirectory):
 
     return rmg
 
-def run(inputFile, isotopeInputFile, outputDir):
+def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
     """
     Accepts two input files, one input file with the RMG-Py model to generate, NOT
     containing any non-normal isotopomers, and one input file for the model to be 
@@ -287,27 +286,36 @@ def run(inputFile, isotopeInputFile, outputDir):
     - a pandas data frame with isotopomer speciation data as a function of reaction time
     """
 
-    outputdirRMG = os.path.join(outputDir, 'rmg')
-    os.mkdir(outputdirRMG)
+    if not original:
+        outputdirRMG = os.path.join(outputDir, 'rmg')
+        os.mkdir(outputdirRMG)
 
-    rmg = generateRMGModel(inputFile, outputdirRMG)
+        rmg = generateRMGModel(inputFile, outputdirRMG)
+    else:
+        outputdirRMG = original
+        chemkinFile = os.path.join(outputdirRMG, 'chemkin', 'chem_annotated.inp')
+        dictFile = os.path.join(outputdirRMG, 'chemkin', 'species_dictionary.txt')
+        rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, useChemkinNames=True)
 
-    print('Generating isotopomers for the core species in {}'.format(outputdirRMG))
-    isotopes = []
-    for spc in rmg.reactionModel.core.species:
-        isotopes.append(generateIsotopomers(spc))
+    if not isotopeLoc:
+        print('Generating isotopomers for the core species in {}'.format(outputdirRMG))
+        isotopes = []
+        for spc in rmg.reactionModel.core.species:
+            isotopes.append(generateIsotopomers(spc))
 
-    isotopes = list(itertools.chain(*isotopes))
+        isotopes = list(itertools.chain(*isotopes))
 
-    # add the original unlabeled species:
-    isotopes.extend(rmg.reactionModel.core.species)
-    print('Number of isotopomers: {}'.format(len(isotopes)))
+        # add the original unlabeled species:
+        isotopes.extend(rmg.reactionModel.core.species)
+        print('Number of isotopomers: {}'.format(len(isotopes)))
 
-    outputdirIso = os.path.join(outputDir, 'iso')
-    os.mkdir(outputdirIso)
+        outputdirIso = os.path.join(outputDir, 'iso')
+        os.mkdir(outputdirIso)
 
-    print('Generating RMG isotope model in {}'.format(outputdirIso))
-    rmgIso = generateIsotopeModel(outputdirIso, rmg, isotopes)
+        print('Generating RMG isotope model in {}'.format(outputdirIso))
+        rmgIso = generateIsotopeModel(outputdirIso, rmg, isotopes)
+    else:
+        outputdirIso= isotopeLoc
 
     isotopeInputFile = os.path.abspath(isotopeInputFile)
     chemkinFileIso = os.path.join(outputdirIso, 'chemkin', 'chem_annotated.inp')
