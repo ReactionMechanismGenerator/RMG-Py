@@ -691,6 +691,7 @@ def loadSpeciesDictionary(path):
     """
     speciesDict = {}
     
+    inerts = [Species().fromSMILES(inert) for inert in ('[He]', '[Ne]', 'N#N', '[Ar]')]
     with open(path, 'r') as f:
         adjlist = ''
         for line in f:
@@ -699,6 +700,10 @@ def loadSpeciesDictionary(path):
                 species = Species().fromAdjacencyList(adjlist)
                 species.generateResonanceIsomers()
                 label = species.label
+                for inert in inerts:
+                    if inert.isIsomorphic(species):
+                        species.reactive = False
+                        break
                 speciesDict[label] = species
                 adjlist = ''
             else:
