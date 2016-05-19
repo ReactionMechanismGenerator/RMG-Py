@@ -12,7 +12,6 @@ database(
 generatedSpeciesConstraints(
     allowed = ['seed mechanisms', 'reaction libraries'],
     #maximumCarbonAtoms = 7,
-    #maximumHydrogenAtoms = 8,
     #maximumOxygenAtoms = 5,
     maximumNitrogenAtoms = 2,
     #maximumSiliconAtoms = 0,

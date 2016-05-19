@@ -196,7 +196,6 @@ generatedSpeciesConstraints(
     allowed=['input species','seed mechanisms','reaction libraries'],
 	#maximum number of each atom in a molecule
     maximumCarbonAtoms=4,
-    maximumHydrogenAtoms=10,
     maximumOxygenAtoms=7,
     maximumNitrogenAtoms=0,
     maximumSiliconAtoms=0,
