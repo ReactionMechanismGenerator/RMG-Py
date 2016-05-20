@@ -43,14 +43,35 @@ def react(spcA, speciesList=[]):
     """
     Generate reactions between spcA and the list of 
     species for all the reaction families available.
+
+    Returns an empty list if the spcA is non-reactive.
+
+    For the spcA, a list of tuples is created for each
+    resonance isomer of the species. Each tuple consists of (Molecule, index)
+    with the index the species index of the Species object.
+
+    For each Species in the the speciesList, its corresponding
+    resonance isomers are stored in a tuple ([Molecule], index) with the index 
+    the species index of the Species object.
+
+    Each tuple ([Molecule], index) is expanded into a list of tuples (Molecule, index)
+    resulting in one large list [(Molecule, index)].
+
+    Possible combinations between the spcA, and a species from the 
+    speciesList is obtained by taking the combinatorial product of the
+    two generated [(Molecule, index)] lists.
     """
     if not spcA.reactive: return []
     
     molsA = [(mol, spcA.index) for mol in spcA.molecule]
 
-    molsB = molsB = [spcB.molecule for spcB in speciesList if spcB.reactive]
-    molsB = list(itertools.chain.from_iterable(molsB))
-    molsB = [(mol, spcB.index) for mol in molsB]
+    molsB = [(spcB.molecule, spcB.index) for spcB in speciesList if spcB.reactive]
+
+    temp = []
+    for mols, index in molsB:
+        for molB in mols:
+            temp.append((molB, index))
+    molsB = temp
 
     if not molsB:
         combos = [(t,) for t in molsA]
