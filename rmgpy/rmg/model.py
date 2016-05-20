@@ -399,14 +399,29 @@ class CoreEdgeReactionModel:
         and the matched species (if found) or
         ``False`` and ``None`` (if not found).
         """
-        new_spec = Species(molecule=[molecule])
-        new_spec.generateResonanceIsomers()
+        # Create obj to check against existing species
+        # obj can be `Molecule` object or `Species` object
+
+        # For non-cyclic molecules, obj is `Molecule` object
+        # We expect it to be part of the list of isomers in a species
+        # object if it has a match
+        obj = molecule
+
+        # For cyclic molecules, obj is `Species` object and aromatic resonance
+        # isomers are generated.  This is due to the hysteresis of isomer generation
+        # for aromatic/polyaromatic compounds: not all kekulized forms can be found
+        # within the list of isomers for a species object describing a unique aromatic compound
+        if molecule.isCyclic():
+            obj = Species(molecule=[molecule])
+            from rmgpy.molecule.resonance import generateAromaticResonanceIsomers
+            aromaticIsomers = generateAromaticResonanceIsomers(molecule)
+            obj.molecule.extend(aromaticIsomers)
 
         # First check cache and return if species is found
         for i, spec in enumerate(self.speciesCache):
             if spec is not None:
                 for mol in spec.molecule:
-                    if new_spec.isIsomorphic(mol):
+                    if obj.isIsomorphic(mol):
                         self.speciesCache.pop(i)
                         self.speciesCache.insert(0, spec)
                         return True, spec
@@ -414,11 +429,11 @@ class CoreEdgeReactionModel:
         # Return an existing species if a match is found
         formula = molecule.getFormula()
         try:
-             speciesList = self.speciesDict[formula]
+            speciesList = self.speciesDict[formula]
         except KeyError:
             return False, None
         for spec in speciesList:
-            if spec.isIsomorphic(new_spec):
+            if spec.isIsomorphic(obj):
                 self.speciesCache.pop()
                 self.speciesCache.insert(0, spec)
                 return True, spec
