@@ -35,6 +35,7 @@ from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule
+from rmgpy.reaction import Reaction
 
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import Species
@@ -87,6 +88,43 @@ class TestReact(unittest.TestCase):
         reactionList = list(react(spcA, spcs))
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
+
+    def testDeflate(self):
+        """
+        Test that reaction deflate function works.
+        """
+        molA = Molecule().fromSMILES('[OH]')
+        molB = Molecule().fromSMILES('CC')
+        molC = Molecule().fromSMILES('[CH3]')
+
+        reactants = [molA, molB]
+
+        # both reactants were already part of the core:
+        reactantIndices = [1, 2]
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+        pairs=[(molA, molC), (molB, molC)])
+
+        deflate(rxn, reactants, reactantIndices)
+
+        for spc, t in zip(rxn.reactants, [int, int]):
+            self.assertTrue(isinstance(spc, t))
+        self.assertEquals(rxn.reactants, reactantIndices)
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
+        # one of the reactants was not yet part of the core:
+        reactantIndices = [-1, 2]
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+                pairs=[(molA, molC), (molB, molC)])
+
+        deflate(rxn, reactants, reactantIndices)
+
+        for spc, t in zip(rxn.reactants, [Species, int]):
+            self.assertTrue(isinstance(spc, t))
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
 
     def tearDown(self):
         """
