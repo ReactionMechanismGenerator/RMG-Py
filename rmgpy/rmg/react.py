@@ -43,14 +43,35 @@ def react(spcA, speciesList=[]):
     """
     Generate reactions between spcA and the list of 
     species for all the reaction families available.
+
+    Returns an empty list if the spcA is non-reactive.
+
+    For the spcA, a list of tuples is created for each
+    resonance isomer of the species. Each tuple consists of (Molecule, index)
+    with the index the species index of the Species object.
+
+    For each Species in the the speciesList, its corresponding
+    resonance isomers are stored in a tuple ([Molecule], index) with the index 
+    the species index of the Species object.
+
+    Each tuple ([Molecule], index) is expanded into a list of tuples (Molecule, index)
+    resulting in one large list [(Molecule, index)].
+
+    Possible combinations between the spcA, and a species from the 
+    speciesList is obtained by taking the combinatorial product of the
+    two generated [(Molecule, index)] lists.
     """
     if not spcA.reactive: return []
     
     molsA = [(mol, spcA.index) for mol in spcA.molecule]
 
-    molsB = molsB = [spcB.molecule for spcB in speciesList if spcB.reactive]
-    molsB = list(itertools.chain.from_iterable(molsB))
-    molsB = [(mol, spcB.index) for mol in molsB]
+    molsB = [(spcB.molecule, spcB.index) for spcB in speciesList if spcB.reactive]
+
+    temp = []
+    for mols, index in molsB:
+        for molB in mols:
+            temp.append((molB, index))
+    molsB = temp
 
     if not molsB:
         combos = [(t,) for t in molsA]
@@ -86,34 +107,41 @@ def reactMolecules(moleculeTuples):
     for reactant in molecules:
         reactant.clearLabeledAtoms()
 
-    deflate(reactionList, molecules, reactantIndices)
-
-    return reactionList
-
-def deflate(reactionList, reactants, reactantIndices):
-    """
-    Return the reactions' reactants, products and pairs
-    as containing Species objects, not Molecule objects.
-    
-    Replace the species objects by unique integers for molecule 
-    objects that are found the parameter 'reactants' list.
-    """
-
     for rxn in reactionList:
-        molDict = {}
-
-        for mol in rxn.reactants:
-            molDict[mol] = Species(molecule=[mol])
-
-        for mol in rxn.products:
-            molDict[mol] = Species(molecule=[mol])
-
-        for i, coreIndex in enumerate(reactantIndices):
-            if coreIndex != -1:
-                molDict[reactants[i]] = coreIndex 
-
-        rxn.reactants = [molDict[mol] for mol in rxn.reactants]
-        rxn.products = [molDict[mol] for mol in rxn.products]
-        rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]
+        deflate(rxn, molecules, reactantIndices)
 
     return reactionList
+
+def deflate(rxn, reactants, reactantIndices):
+    """
+    Creates a dictionary with Molecule objects as keys and newly 
+    creatd Species objects as values.
+
+    Iterates over the reactantIndices array.
+    The elements in this array correspond to the indices of the
+    core species.
+
+    The Species object, stored as a value of the newly created dictionary,
+    is retrieved by using a Molecule object from the reactants array 
+    as a dictionary key. The elements in this array correspond to the 
+    Molecule objects that were used as reactants to generate reactions.
+
+    The Species object is replaced by the core species index in the newly
+    created dictionary.
+
+    The reactants, products, and pairs objects of the reaction
+    are replaced by index integers for those cases the Molecule object
+    exists as a key in the newly created dictionary.
+    """    
+
+    molDict = {}
+    for mol in itertools.chain(rxn.reactants, rxn.products):
+        molDict[mol] = Species(molecule=[mol])
+
+    for i, coreIndex in enumerate(reactantIndices):
+        if coreIndex != -1:
+            molDict[reactants[i]] = coreIndex 
+
+    rxn.reactants = [molDict[mol] for mol in rxn.reactants]
+    rxn.products = [molDict[mol] for mol in rxn.products]
+    rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]

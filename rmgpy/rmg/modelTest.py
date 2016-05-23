@@ -34,6 +34,8 @@ import unittest
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.rmg.main import RMG
+from rmgpy.reaction import Reaction
+
 from rmgpy.rmg.model import *
 
 ###################################################
@@ -83,6 +85,130 @@ class TestSpecies(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+class TestCoreEdgeReactionModel(unittest.TestCase):
+    """
+    Contains unit tests of the CoreEdgeReactionModel class.
+    """
+
+    def setUp(self):
+        """
+        A method that is run before each unit test in this class.
+        """
+        TESTFAMILY = 'H_Abstraction'
+
+        # set-up RMG object
+        self.rmg = RMG()
+
+        # load kinetic database and forbidden structures
+        self.rmg.database = RMGDatabase()
+        path = os.path.join(settings['database.directory'])
+
+        # forbidden structure loading
+        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        # kinetics family loading
+        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
+                                       kineticsFamilies=[TESTFAMILY],
+                                       reactionLibraries=[]
+                                       )
+
+    def testMakeNewSpecies(self):
+        """
+        Test that CoreEdgeReactionModel.makeNewSpecies method correctly stores the unique species.
+        """
+
+        # adding 3 unique species:
+        cerm = CoreEdgeReactionModel()
+
+        spcs = [Species().fromSMILES('[OH]'), 
+                Species().fromSMILES('CC'),
+                Species().fromSMILES('[CH3]')]
+
+        for spc in spcs:
+            cerm.makeNewSpecies(spc)
+
+        self.assertEquals(len(cerm.speciesDict), len(spcs))    
+        self.assertEquals(len(cerm.indexSpeciesDict), len(spcs))
+
+        # adding 3 unique, and 1 already existing species:
+        cerm = CoreEdgeReactionModel()
+
+        spcs = [Species().fromSMILES('[OH]'), 
+                Species().fromSMILES('CC'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('CC')]#duplicate species
+
+        for spc in spcs:
+            cerm.makeNewSpecies(spc)
+
+        self.assertEquals(len(cerm.speciesDict), len(spcs) - 1)    
+        self.assertEquals(len(cerm.indexSpeciesDict), len(spcs) - 1)
+
+    def testMakeNewReaction(self):
+        """
+        Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
+        """
+
+        spcA = Species().fromSMILES('[OH]')
+        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+
+        rxns = list(react(spcA, spcs))
+
+        cerm = CoreEdgeReactionModel()
+
+        for rxn in rxns:
+            cerm.makeNewReaction(rxn)
+
+        """
+        3 expected H-abstraction reactions:
+            OH + CC = H2O + C[CH2]
+            OH + [CH3] = H2O + [CH2]
+            OH + [CH3] = [O] + C
+        """
+
+        # count no. of entries in reactionDict:
+        counter = 0
+        for fam, v1 in cerm.reactionDict.iteritems():
+            for key2, v2 in v1.iteritems():
+                for key3, rxnList in v2.iteritems():
+                    counter += len(rxnList)
+
+        self.assertEquals(counter, 3)
+
+    def testInflate(self):
+        """
+        Test that CoreEdgeReactionModel.inflate method correctly works.
+        """
+        spcA = Species().fromSMILES('[OH]')
+        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+
+        rxns = list(react(spcA, spcs))
+
+        cerm = CoreEdgeReactionModel()
+
+        for rxn in rxns:
+            cerm.makeNewReaction(rxn)
+
+        """
+        3 expected H-abstraction reactions:
+            OH + CC = H2O + C[CH2]
+            OH + [CH3] = H2O + [CH2]
+            OH + [CH3] = [O] + C
+        """
+        for i, rxn in enumerate(rxns):
+            rxns[i] = cerm.inflate(rxn)
+
+        for rxn in rxns:
+            self.assertTrue(rxn.isBalanced())
+
+
+    def tearDown(self):
+        """
+        Reset the loaded database
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
 
 if __name__ == '__main__':
     unittest.main()

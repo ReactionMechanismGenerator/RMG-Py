@@ -35,9 +35,10 @@ from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule
+from rmgpy.reaction import Reaction
 
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.rmg.react import *
 
 ###################################################
@@ -87,6 +88,66 @@ class TestReact(unittest.TestCase):
         reactionList = list(react(spcA, spcs))
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
+
+    def testDeflate(self):
+        """
+        Test that reaction deflate function works.
+        """
+        molA = Molecule().fromSMILES('[OH]')
+        molB = Molecule().fromSMILES('CC')
+        molC = Molecule().fromSMILES('[CH3]')
+
+        reactants = [molA, molB]
+
+        # both reactants were already part of the core:
+        reactantIndices = [1, 2]
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+        pairs=[(molA, molC), (molB, molC)])
+
+        deflate(rxn, reactants, reactantIndices)
+
+        for spc, t in zip(rxn.reactants, [int, int]):
+            self.assertTrue(isinstance(spc, t))
+        self.assertEquals(rxn.reactants, reactantIndices)
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
+        # one of the reactants was not yet part of the core:
+        reactantIndices = [-1, 2]
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+                pairs=[(molA, molC), (molB, molC)])
+
+        deflate(rxn, reactants, reactantIndices)
+
+        for spc, t in zip(rxn.reactants, [Species, int]):
+            self.assertTrue(isinstance(spc, t))
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
+    def testReactStoreIndices(self):
+        """
+        Test that reaction generation keeps track of the original species indices.
+        """
+
+        indices = {'[OH]':1, 'CC':2, '[CH3]':3}
+
+        # make it bidirectional so that we can look-up indices as well:
+        revd=dict([reversed(i) for i in indices.items()])
+        indices.update(revd)
+
+        spcA = Species(index=indices['[OH]']).fromSMILES('[OH]')
+        spcs = [Species(index=indices['CC']).fromSMILES('CC'),
+                Species(index=indices['[CH3]']).fromSMILES('[CH3]')]
+
+        reactionList = list(react(spcA, spcs))
+        self.assertIsNotNone(reactionList)
+        self.assertEquals(len(reactionList), 3)
+        for rxn in reactionList:
+            for i, reactant in enumerate(rxn.reactants):
+                rxn.reactants[i] = Molecule().fromSMILES(indices[reactant])
+            self.assertTrue(rxn.isBalanced())
 
     def tearDown(self):
         """
