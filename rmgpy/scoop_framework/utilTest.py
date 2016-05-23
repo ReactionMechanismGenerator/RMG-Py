@@ -16,6 +16,7 @@ try:
 except ImportError, e:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
+    raise
 
 from .util import *
 
