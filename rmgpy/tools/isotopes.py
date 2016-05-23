@@ -324,7 +324,7 @@ def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
     print('Loading isotope chemkin model.\nInput file: {}\nChemkin file: {}\nDict file: {}'\
         .format(isotopeInputFile, chemkinFileIso, dictFileIso))
 
-    rmgIso = loadRMGJob(isotopeInputFile, chemkinFileIso, dictFileIso, generateImages=False, useChemkinNames=True)
+    rmgIso = loadRMGJob(isotopeInputFile, chemkinFileIso, dictFileIso, generateImages=True, useChemkinNames=True)
     rmgIso.outputDirectory = outputdirIso
 
     print('Clustering isotopomers...')
