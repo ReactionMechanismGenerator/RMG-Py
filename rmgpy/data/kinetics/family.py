@@ -1528,6 +1528,8 @@ class KineticsFamily(Database):
                             elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
                                 match = True
                                 break
+                elif len(products) == len(products0) == 3:
+                    raise NotImplementedError("Need to get this working for reverse of dissociative adsorption: AX + BX => AB + X + X")
                     
                 # If we found a match, remove it from the list
                 # Also increment the reaction path degeneracy of the remaining reaction
