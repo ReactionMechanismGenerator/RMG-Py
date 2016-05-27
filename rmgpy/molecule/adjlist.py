@@ -638,11 +638,23 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             if not group:
                 partialCharges.append(0)
         
+
+        # Next the isotope (if provided)
+        isotope = -1
+        if len(data) > index:
+            iState = data[index]
+            if iState[0] == 'i':
+                isotope = int(iState[1:])
+                index += 1
+
+
         # Create a new atom based on the above information
         if group:
             atom = GroupAtom(atomType, unpairedElectrons, partialCharges, label, lonePairs)
         else:
             atom = Atom(atomType[0], unpairedElectrons[0], partialCharges[0], label, lonePairs[0])
+            if isotope != -1:
+                atom.element = getElement(atom.number, isotope)
 
         # Add the atom to the list
         atoms.append(atom)
