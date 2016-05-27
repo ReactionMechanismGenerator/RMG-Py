@@ -107,7 +107,7 @@ class Element:
     
 ################################################################################
 
-def getElement(value):
+def getElement(value, isotope=-1):
     """
     Return the :class:`Element` object corresponding to the given parameter
     `value`. If an integer is provided, the value is treated as the atomic
@@ -119,22 +119,22 @@ def getElement(value):
         # The parameter is an integer; assume this is the atomic number
         number = value
         for element in elementList:
-            if element.number == number:
+            if element.number == number and element.isotope == isotope:
                 return element
         # If we reach this point that means we did not find an appropriate element,
         # so we raise an exception
-        raise ElementError("No element found with atomic number %i." % (number))
+        raise ElementError("No element found with atomic number %i, and isotope %i" % (number, isotope))
     elif isinstance(value, str):
         # The parameter is a string; assume this is the element symbol
         symbol = value
         for element in elementList:
-            if element.symbol == symbol:
+            if element.symbol == symbol and element.isotope == isotope:
                 return element
         # If we reach this point that means we did not find an appropriate element,
         # so we raise an exception
-        raise ElementError("No element found with symbol %s." % (symbol))
+        raise ElementError("No element found with symbol %s, and isotope %i." % (symbol, isotope))
     else:
-        raise ElementError('No element found based on parameter %s "%r".' % (type(value), value))
+        raise ElementError('No element found based on parameter %s "%r", isotope: %i.' % (type(value), value, isotope))
 
 ################################################################################
 
