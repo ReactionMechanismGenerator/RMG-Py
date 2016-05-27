@@ -67,17 +67,19 @@ class Element:
     `name`      ``str``         The IUPAC name of the element
     `mass`      ``float``       The mass of the element in kg/mol
     `covRadius` ``float``       Covalent bond radius in Angstrom
+    `isotope`   ``int``         The isotope integer of the element
     =========== =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
     """
     
-    def __init__(self, number, symbol, name, mass):
+    def __init__(self, number, symbol, name, mass, isotope=-1):
         self.number = number
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
+        self.isotope = isotope
         try:
             self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
         except RuntimeError:
@@ -95,13 +97,13 @@ class Element:
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Element(%s, '%s', '%s', %s)" % (self.number, self.symbol, self.name, self.mass)
+        return "Element(%s, '%s', '%s', %s, %s)" % (self.number, self.symbol, self.name, self.mass, self.isotope)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Element, (self.number, self.symbol, self.name, self.mass))
+        return (Element, (self.number, self.symbol, self.name, self.mass, self.isotope))
     
 ################################################################################
 
