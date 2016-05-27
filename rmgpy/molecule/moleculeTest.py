@@ -233,7 +233,19 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
-        
+    
+    def testIsotopeEquivalent(self):
+        """
+        Test the Atom.equivalent() method for non-normal isotopes
+        """
+
+        atom1 = Atom(element=getElement('H'))
+        atom2 = Atom(element=getElement('H', 2))
+        atom3 = Atom(element=getElement('H'))
+
+        self.assertFalse(atom1.equivalent(atom2))
+        self.assertTrue(atom1.equivalent(atom3))
+
 ################################################################################
 
 class TestBond(unittest.TestCase):
