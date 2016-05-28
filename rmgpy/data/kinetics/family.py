@@ -1384,9 +1384,9 @@ class KineticsFamily(Database):
         reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
         if len(reactions) != 1:
             for reactant in reaction.reactants:
-                logging.error(reactant)
+                logging.error("Reactant: {0!r}".format(reactant))
             for product in reaction.products:
-                logging.error(product)
+                logging.error("Product: {0!r}".format(product))
             raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
