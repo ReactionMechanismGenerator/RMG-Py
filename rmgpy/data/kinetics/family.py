@@ -36,6 +36,7 @@ import os.path
 import logging
 import codecs
 from copy import deepcopy
+import itertools
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -1511,6 +1512,8 @@ class KineticsFamily(Database):
                             elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
                                 match = True
                                 break
+                elif len(products) == len(products0):
+                    raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
                     
                 if match: 
                     rxnList.append(reaction)
@@ -1535,7 +1538,7 @@ class KineticsFamily(Database):
                 # We know the reactants are the same, so we only need to compare the products
                 match = False
                 if len(products) == len(products0) == 1:
-                    for product in products0[0]:
+                    for product in products0[0]: # for each resonance isomer of the only product0
                         if products[0].isIsomorphic(product):
                             match = True
                             break
@@ -1548,7 +1551,46 @@ class KineticsFamily(Database):
                             elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
                                 match = True
                                 break
-                    
+                elif len(products) == len(products0) == 3:
+                    for productA, productB, productC in itertools.product(products0[0], products0[1], products0[2]):
+                    # This is equivalent to three nested for loops,
+                    # but allows us to break out of them all at once
+                    # with a single break statement.
+                        if (    products[0].isIsomorphic(productA) and
+                                products[1].isIsomorphic(productB) and
+                                products[2].isIsomorphic(productC) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productA) and
+                                products[1].isIsomorphic(productC) and
+                                products[2].isIsomorphic(productB) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productB) and
+                                products[1].isIsomorphic(productA) and
+                                products[2].isIsomorphic(productC) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productC) and
+                                products[1].isIsomorphic(productA) and
+                                products[2].isIsomorphic(productB) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productB) and
+                                products[1].isIsomorphic(productC) and
+                                products[2].isIsomorphic(productA) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productC) and
+                                products[1].isIsomorphic(productB) and
+                                products[2].isIsomorphic(productA) ):
+                            match = True
+                            break
+                elif len(products) == len(products0):
+                    raise NotImplementedError(
+                        "Can't yet check degeneracy of reactions with {0} products".format(len(products))
+                        )
+
                 # If we found a match, remove it from the list
                 # Also increment the reaction path degeneracy of the remaining reaction
                 if match:
