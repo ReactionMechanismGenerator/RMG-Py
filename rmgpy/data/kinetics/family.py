@@ -1462,6 +1462,10 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
+            # Termolecular reactants: A + B + C --> products
+        elif len(reactants) == 3 and len(template.reactants) == 3:
+            raise NotImplementedError("Oops, need termolecular reaction generation!")
+
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
