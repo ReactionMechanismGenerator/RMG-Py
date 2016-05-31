@@ -126,6 +126,8 @@ def saveEntry(f, entry):
     except (UnicodeEncodeError, UnicodeDecodeError):
         f.write(entry.longDesc.strip().encode('ascii', 'replace') + "\n")
     f.write('""",\n')
+    if entry.rank:
+        f.write("    rank = {0},\n".format(entry.rank))
 
     f.write(')\n\n')
 
