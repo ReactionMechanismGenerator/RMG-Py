@@ -875,10 +875,10 @@ class Database:
             return False
         
         #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
-        #so it gets an automatic pass. However, we do need to check that everything down this
+        #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return True
+            return childNode.parent is parentNode
         
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
