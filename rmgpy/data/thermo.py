@@ -381,11 +381,9 @@ class ThermoGroups(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  rank=3,
+                  rank=None,
                   ):
-        """
-        Default rank for thermo groups is 3.
-        """
+
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
