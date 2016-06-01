@@ -872,6 +872,7 @@ class ThermoDatabase(object):
 
             dummySpecies.molecule.append(dummyMolecule)
         thermo = self.getThermoData(dummySpecies, quantumMechanics=quantumMechanics)
+        thermo.comment = "Using thermo from gas phase species for adsorbate! Gas phase thermo from " + thermo.comment
         logging.warning("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
         return thermo
