@@ -386,6 +386,13 @@ class GroupAtom(Vertex):
             if group.charge: return False
         # Otherwise self is in fact a specific case of other
         return True
+
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        siteType = atomTypes['X']
+        return all([s.isSpecificCaseOf(siteType) for s in self.atomType])
 ################################################################################
 
 class GroupBond(Edge):
@@ -870,3 +877,7 @@ class Group(Graph):
             return False
         else:
             return True
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the group is nothing but a surface site 'X'."
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
