@@ -1329,7 +1329,10 @@ class KineticsFamily(Database):
                     # been formed in the first place.
                     tempObject = self.forbidden
                     self.forbidden = ForbiddenStructures()  # Initialize with empty one
-                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                    try:
+                        reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                    finally:
+                        self.forbidden = tempObject
                     if len(reactions) != 1:
                         logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                         raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
