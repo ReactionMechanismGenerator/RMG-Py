@@ -1064,7 +1064,7 @@ class ThermoDatabase(object):
                     
                     # Use rank as a metric for prioritizing thermo. 
                     # The smaller the rank, the better.
-                    sumRank = numpy.sum([entry.rank for entry in ringGroups + polycyclicGroups])
+                    sumRank = numpy.sum([3 if entry.rank is None else entry.rank for entry in ringGroups + polycyclicGroups])
                     entries.append((thermo, sumRank))
                 
                 # Sort first by rank, then by enthalpy at 298 K
