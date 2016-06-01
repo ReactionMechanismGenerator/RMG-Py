@@ -423,6 +423,53 @@ class ThermoGroups(Database):
         """
         return processOldLibraryEntry(data)
 
+    def removeEntry(self, entryToRemove):
+        """
+        Removes an entry from the database. In addition to deleting from
+        self.entries, it must also update the parent/child relationships
+        and re-point any unicode thermoData that may have pointed to the
+        entry.
+        """
+        parentR = entryToRemove.parent
+
+        #If the parent.data points toward the entryToRemove, then copy,
+        if parentR.data == entryToRemove.label:
+            parentR.data = deepcopy(entryToRemove.data)
+            #if actually a ThermoGroup, then copy metaData
+            if not isinstance(parentR.data, basestring):
+                parentR.reference = entryToRemove.reference
+                parentR._longDesc = entryToRemove._longDesc
+                parentR._shortDesc = entryToRemove._shortDesc
+                parentR._longDesc = entryToRemove.longDesc
+                parentR._shortDesc = entryToRemove.shortDesc
+                parentR.rank = entryToRemove.rank
+                parentR.referenceType = entryToRemove.referenceType
+
+        #look for other pointers that point toward entry.
+        for entryName, entry in self.entries.iteritems():
+            if isinstance(entry.data, basestring):
+                if entry.data == entryToRemove.label:
+                    print entryName
+                    #if the entryToRemove.data is also a pointer, then copy
+                    if isinstance(entryToRemove.data, basestring):
+                        entry.data = entryToRemove.data
+                    #otherwise, point toward entryToRemove's parent
+                    else:
+                        entry.data = unicode(parentR.label)
+
+        #Remove from entryToRemove from entries
+        self.entries.pop(entryToRemove.label)
+
+        #Remove from parent's children attribute
+        parentR.children.remove(entryToRemove)
+
+        #change children's parent attribute to former grandparent
+        for child in entryToRemove.children:
+            child.parent = parentR
+
+        #extend parent's children attribute with new children
+        parentR.children.extend(entryToRemove.children)
+
 ################################################################################
 
 class ThermoDatabase(object):
