@@ -1466,8 +1466,24 @@ class KineticsFamily(Database):
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
             # Termolecular reactants: A + B + C --> products
+        elif len(reactants) == 2 and len(template.reactants) == 3:
+            # might be A + X + X --> AXX (bidentate) or BX + CX (dissociative)
+            count = sum([r.item.isSurfaceSite() for r in template.reactants])
+            if count == 2:
+                print "Two surface sites in template!"
+                if reactants[0][0].isSurfaceSite():
+                    print "found one"
+                elif reactants[1][0].isSurfaceSite():
+                    print "found it!"
+                    "Duplicate it, map both onto the template site, and find mappings of the other reactant"
+            raise NotImplementedError("Adsorption with two sites?")
         elif len(reactants) == 3 and len(template.reactants) == 3:
-            raise NotImplementedError("Oops, need termolecular reaction generation!")
+            count = sum([r.item.isSurfaceSite() for r in template.reactants])
+            if count == 2:
+                print "Two surface sites in template!"
+                "Should be 2 surface sites in reactants too. Find them, and find mappings of the other"
+            else:
+                raise NotImplementedError("Oops, need termolecular reaction generation!")
 
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
