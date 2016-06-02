@@ -1378,7 +1378,7 @@ class KineticsFamily(Database):
         isomer of the species of interest.
         """
 
-        rxnList = []; speciesList = []
+        rxnList = []
 
         # Wrap each reactant in a list if not already done (this is done to 
         # allow for passing multiple resonance structures for each molecule)
@@ -1467,23 +1467,103 @@ class KineticsFamily(Database):
                                         if rxn: rxnList.append(rxn)
             # Termolecular reactants: A + B + C --> products
         elif len(reactants) == 2 and len(template.reactants) == 3:
-            # might be A + X + X --> AXX (bidentate) or BX + CX (dissociative)
-            count = sum([r.item.isSurfaceSite() for r in template.reactants])
-            if count == 2:
-                print "Two surface sites in template!"
-                if reactants[0][0].isSurfaceSite():
-                    print "found one"
-                elif reactants[1][0].isSurfaceSite():
-                    print "found it!"
-                    "Duplicate it, map both onto the template site, and find mappings of the other reactant"
-            raise NotImplementedError("Adsorption with two sites?")
-        elif len(reactants) == 3 and len(template.reactants) == 3:
-            count = sum([r.item.isSurfaceSite() for r in template.reactants])
-            if count == 2:
-                print "Two surface sites in template!"
-                "Should be 2 surface sites in reactants too. Find them, and find mappings of the other"
+            """
+            Two reactants but a termoleculare template.
+            Could be A + X + X <=> BX + CX (dissociative adsorption)
+            or A + X + X <=> AXX (bidentate adsorption)
+            in which case, if one of the two reactants is an X
+            then we have a match and can just use it twice.
+            """
+            templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
+            if len(templateSites) == 2:
+                "Two surface sites in template. If there's a site in the reactants, use it twice."
+                if reactants[0][0].isSurfaceSite() and not reactants[1][0].isSurfaceSite():
+                    site1 = reactants[0][0]
+                    site2 = deepcopy(reactants[0][0])
+                    adsorbateMolecules = reactants[1]
+                    reactants.append([site2])
+                elif reactants[1][0].isSurfaceSite() and not reactants[0][0].isSurfaceSite():
+                    site1 = reactants[1][0]
+                    site2 = deepcopy(reactants[1][0])
+                    adsorbateMolecules = reactants[0]
+                    reactants.append([site2])
+                else:
+                    "No reaction with these reactants in this template"
+                    return []
+
+                for r in template.reactants:
+                    if not r.item.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
+
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]  # should be in same order as reaction template recipe?
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
             else:
-                raise NotImplementedError("Oops, need termolecular reaction generation!")
+                raise NotImplementedError("Termolecluar template not containing two surface sites")
+
+        elif len(reactants) == 3 and len(template.reactants) == 3:
+            """
+            Three reactants and a termolecular template.
+            Could be A + X + X <=> BX + CX (dissociative adsorption)
+            or A + X + X <=> AXX (bidentate adsorption)
+            that was first found in the reverse direction
+            and so is being passed in with all three reactants identified.
+            """
+            templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
+            if len(templateSites) == 2:
+                "Should be 2 surface sites in reactants too. Find them, and find mappings of the other"
+                m1, m2, m3 = (r[0] for r in reactants)
+                if m1.isSurfaceSite() and m2.isSurfaceSite() and not m3.isSurfaceSite():
+                    site1, site2 = m1, m2
+                    adsorbateMolecules = reactants[2]
+                elif m1.isSurfaceSite() and not m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m1, m3
+                    adsorbateMolecules = reactants[1]
+                elif not m1.isSurfaceSite() and m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m2, m3
+                    adsorbateMolecules = reactants[0]
+                else:
+                    raise NotImplementedError("Three reactants not containing two surface sites")
+
+                for r in template.reactants:
+                    if not r.item.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
+
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    # this just copied/pasted from above - not checked
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
+
+            else:
+                raise NotImplementedError("Termolecluar template not containing two surface sites")
 
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
