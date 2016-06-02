@@ -39,6 +39,7 @@ import os.path
 import numpy
 
 import rmgpy.kinetics as _kinetics
+from rmgpy.molecule.element import getElement
 from rmgpy.reaction import Reaction
 #from species import Species
 from rmgpy.rmg.model import Species
@@ -1774,7 +1775,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    f.write('ELEMENTS H C O N Ne Ar He Si S Cl END\n\n')
+    writeElementsSection(f)
 
     # Species section
     f.write('SPECIES\n')
@@ -1910,6 +1911,29 @@ def saveChemkinFiles(rmg):
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+def writeElementsSection(f):
+    """
+    Write the ELEMENTS section of the chemkin file.    
+    """
+
+    s = 'ELEMENTS\n'
+
+    # map of isotope elements with chemkin-compatible element representation:
+
+    elements = ('H', 'C', ('C', 13), 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'Cl')
+    for el in elements:
+        if isinstance(el, tuple):
+            symbol, isotope = el
+            chemkinName = getElement(symbol, isotope=isotope).chemkinName
+            mass = 1000 * getElement(symbol, isotope=isotope).mass
+            s += '\t' + chemkinName + ' /' +  '{0:.3f}'.format(mass) + '/' + '\n'
+        else:
+            s += '\t' + el + '\n'
+    s += 'END\n\n'
+
+    f.write(s)
+
 
 class ChemkinWriter(object):
     """
