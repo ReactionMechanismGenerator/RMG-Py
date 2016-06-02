@@ -51,6 +51,7 @@ from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.util import retrieveElementCount
 from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
@@ -1343,23 +1344,7 @@ def writeThermoEntry(species, verbose = True):
     assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
 
     # Determine the number of each type of element in the molecule
-    elements = ['C','H','N','O']; elementCounts = [0,0,0,0]
-    for atom in species.molecule[0].atoms:
-        # The atom itself
-        symbol = atom.element.symbol
-        if symbol not in elements:
-            elements.append(symbol)
-            elementCounts.append(1)
-        else:
-            elementCounts[elements.index(symbol)] += 1
-    # Remove elements with zero count
-    index = 0
-    while index < len(elementCounts):
-        if elementCounts[index] == 0:
-            del elements[index]
-            del elementCounts[index]
-        else:
-            index += 1
+    elementCounts = retrieveElementCount(species.molecule[0])
     
     string = ''
     # Write thermo comments
@@ -1375,20 +1360,30 @@ def writeThermoEntry(species, verbose = True):
 
     # Line 1
     string += '{0:<16}        '.format(getSpeciesIdentifier(species))
-    if len(elements) <= 4:
+    if len(elementCounts) <= 4:
         # Use the original Chemkin syntax for the element counts
-        for symbol, count in zip(elements, elementCounts):
-            string += '{0!s:<2}{1:<3d}'.format(symbol, count)
-        string += '     ' * (4 - len(elements))
+        for key, count in elementCounts.iteritems():
+            if isinstance(key, tuple):
+                symbol, isotope = key
+                chemkinName = getElement(symbol, isotope=isotope).chemkinName
+            else:
+                chemkinName = key
+            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
+        string += '     ' * (4 - len(elementCounts))
     else:
         string += '     ' * 4
     string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
-    if len(elements) > 4:
+    if len(elementCounts) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
         # This will only be recognized by Chemkin 4 or later
-        for symbol, count in zip(elements, elementCounts):
-            string += '{0!s:<2}{1:<3d}'.format(symbol, count)
+        for key, count in elementCounts.iteritems():
+            if isinstance(key, tuple):
+                symbol, isotope = key
+                chemkinName = getElement(symbol, isotope=isotope).chemkinName
+            else:
+                chemkinName = key
+            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
     string += '\n'
 
     # Line 2
