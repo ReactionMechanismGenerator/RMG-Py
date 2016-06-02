@@ -68,18 +68,20 @@ class Element:
     `mass`      ``float``       The mass of the element in kg/mol
     `covRadius` ``float``       Covalent bond radius in Angstrom
     `isotope`   ``int``         The isotope integer of the element
+    `chemkinName` ``str``       The chemkin compatible representation of the element
     =========== =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
     """
     
-    def __init__(self, number, symbol, name, mass, isotope=-1):
+    def __init__(self, number, symbol, name, mass, isotope=-1, chemkinName=None):
         self.number = number
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
         self.isotope = isotope
+        self.chemkinName = chemkinName or self.name
         try:
             self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
         except RuntimeError:
@@ -147,8 +149,8 @@ def getElement(value, isotope=-1):
 # Period 1
 #: Hydrogen
 H  = Element(1,   'H' , 'hydrogen'      , 0.00100794)
-D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2)
-T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3)
+D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2, 'D')
+T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3, 'T')
 He = Element(2,   'He', 'helium'        , 0.004002602)
 
 # Period 2
@@ -156,10 +158,10 @@ Li = Element(3,   'Li', 'lithium'       , 0.006941)
 Be = Element(4,   'Be', 'beryllium'     , 0.009012182)
 B  = Element(5,   'B',  'boron'         , 0.010811)
 C  = Element(6,   'C' , 'carbon'        , 0.0120107)
-C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13)
+C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13, 'CI')
 N  = Element(7,   'N' , 'nitrogen'      , 0.01400674)
 O  = Element(8,   'O' , 'oxygen'        , 0.0159994)
-O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18)
+O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18, 'OI')
 F  = Element(9,   'F' , 'fluorine'      , 0.018998403)
 Ne = Element(10,  'Ne', 'neon'          , 0.0201797)
 
