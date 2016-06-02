@@ -1491,6 +1491,10 @@ class KineticsFamily(Database):
                     "No reaction with these reactants in this template"
                     return []
 
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    "An adsorbed molecule can't adsorb again"
+                    return []
+
                 for r in template.reactants:
                     if not r.item.isSurfaceSite():
                         templateAdsorbate = r
@@ -1538,6 +1542,10 @@ class KineticsFamily(Database):
                     adsorbateMolecules = reactants[0]
                 else:
                     raise NotImplementedError("Three reactants not containing two surface sites")
+
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    "An adsorbed molecule can't adsorb again"
+                    return []
 
                 for r in template.reactants:
                     if not r.item.isSurfaceSite():
