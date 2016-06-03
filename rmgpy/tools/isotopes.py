@@ -107,23 +107,24 @@ def generateIsotopeModel(outputDirectory, rmg0, isotopes):
 
     return rmg   
 
-def generateIsotopomers(spc):
+def generateIsotopomers(spc, N=1):
     """
-    Generate all isotopomers of the parameter species by adding max. N=1 carbon isotopes to the
+    Generate all isotopomers of the parameter species by adding max. N carbon isotopes to the
     atoms of the species.
     """
 
-    spcs = []
     mol = spc.molecule[0]
-    carbons = filter(lambda at: at.symbol == 'C', mol.atoms)
-    for at in carbons:
-        isotopomer = mol.copy(deep=True)
-        isotopomer.atoms[mol.atoms.index(at)].element = getElement(6, 13)
+    isotope = getElement(6, 13)
+    carbons = filter(lambda at: at.symbol == isotope.symbol, mol.atoms)
+    
+    mols = []
+    addIsotope(0, N, mol, mols, isotope)
 
-        isospc = Species(molecule=[isotopomer], thermo=spc.thermo, transportData=spc.transportData, reactive=spc.reactive)
-
-        isospc.generateResonanceIsomers()
-        spcs.append(isospc)
+    spcs = []
+    for isomol in mols:
+        isotopomer = Species(molecule=[isomol], thermo=spc.thermo, transportData=spc.transportData, reactive=spc.reactive)
+        isotopomer.generateResonanceIsomers()
+        spcs.append(isotopomer)
 
     # do not retain identical species:
     filtered = []
@@ -137,6 +138,29 @@ def generateIsotopomers(spc):
         if unique: filtered.append(candidate)
 
     return filtered
+
+
+def addIsotope(i, N, mol, mols, element):
+    """
+    
+    Iterate over the atoms of the molecule, and changes the element object
+    of the atom by the provide parameter element object. Add the newly created
+    isotopomer to the list of Molecule objects. For each created isotopomer,
+    recursively call the method, until the maximum number of isotopes per molecule
+    (N) is reached.
+
+    """
+    if i == N: return
+    else:
+        atoms = filter(lambda at: at.symbol == element.symbol, mol.atoms)
+        for at in atoms:
+            if at.element == element: continue
+            else:
+                isotopomer = mol.copy(deep=True)
+                isotopomer.atoms[mol.atoms.index(at)].element = element
+                mols.append(isotopomer)
+                addIsotope(i+1, N, isotopomer, mols, element)
+
 
 def solve(rmg):
     """
