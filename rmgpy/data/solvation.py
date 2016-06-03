@@ -211,8 +211,9 @@ class SoluteData():
         Get diffusivity of solute using the Stokes-Einstein sphere relation. Radius is 
         found from the McGowan volume.
         """
+        N_a=6.0221409e+23 #Avogadro's number, mol^-1
         k_b = 1.3806488e-23 # m2*kg/s2/K
-        radius = math.pow((75*self.V/3.14159),(1.0/3.0))/100 # in meters
+        radius = math.pow((75*self.V/(3.14159*N_a)),(1.0/3.0))/100 # in meters
         D = k_b*T/6/3.14159/solventViscosity/radius # m2/s
         return D
             
