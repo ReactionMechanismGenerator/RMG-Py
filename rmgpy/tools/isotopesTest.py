@@ -141,3 +141,22 @@ class IsotopesTest(unittest.TestCase):
                     self.assertAlmostEqual(sample, 1.)            
 
         shutil.rmtree(os.path.join(folder,'solver'))
+
+    def testGenerateIsotopomers(self):
+        """
+        Test that the generation of isotopomers with N isotopes works.
+        """
+
+        spc = Species().fromSMILES('CC')
+
+        spcs = generateIsotopomers(spc, 0)
+        self.assertEquals(len(spcs), 0)
+
+        spcs = generateIsotopomers(spc)
+        self.assertEquals(len(spcs), 1)
+
+        spcs = generateIsotopomers(spc, 2)
+        self.assertEquals(len(spcs), 2)
+
+        spcs = generateIsotopomers(spc, 3)
+        self.assertEquals(len(spcs), 2)
