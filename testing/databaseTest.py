@@ -102,6 +102,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
+
+            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+            test_name = "Thermo groups {0}: sibling relationships are correct?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
             
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.iteritems():
@@ -349,5 +356,19 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 if isinstance(ancestorNode, Group):
                     nose.tools.assert_true(group.matchNodeToChild(ancestorNode, childNode),
                                     "In {group} group, node {ancestor} is not a proper ancestor of its child {child}.".format(group=group_name, ancestor=ancestorNode, child=nodeName))
+
+    def general_checkSiblingsForParents(self, group_name, group):
+        """
+        This test checks that siblings in a tree are not actually parent/child
+        """
+        for nodeName, node in group.entries.iteritems():
+            for index, child1 in enumerate(node.children):
+                for child2 in node.children[index+1:]:
+                    #Don't check a node against itself
+                    if child1 is child2: continue
+                    nose.tools.assert_false(group.matchNodeToChild(child1, child2),
+                                            "In {0} group, node {1} is written as a sibling of {2}, when it is actually a parent.".format(group_name, child1, child2))
+                    nose.tools.assert_false(group.matchNodeToChild(child2, child1),
+                                            "In {0} group, node {1} is written as a sibling of {2}, when it is actually a parent.".format(group_name, child2, child1))
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
