@@ -45,6 +45,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.element import getElement
 from rmgpy.tools.loader import loadRMGJob
 from rmgpy.chemkin import ChemkinWriter
+from rmgpy.rmg.input import getInput
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.rmg.model import Species
 from rmgpy.rmg.listener import SimulationProfileWriter
@@ -321,11 +322,28 @@ def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
         dictFile = os.path.join(outputdirRMG, 'chemkin', 'species_dictionary.txt')
         rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, useChemkinNames=True)
 
+    isotopeInputFile = os.path.abspath(isotopeInputFile)
+    rmgIso = RMG(inputFile = isotopeInputFile)
+    rmgIso.loadInput(rmgIso.inputFile)
+
     if not isotopeLoc:
         print('Generating isotopomers for the core species in {}'.format(outputdirRMG))
         isotopes = []
+
+        try:
+            speciesConstraints = getInput('speciesConstraints')
+        except Exception, e:
+            logging.debug('Species constraints could not be found.')
+            raise e
+
+        try:
+            maxIsotopes = speciesConstraints['maximumIsotopicAtoms']
+        except KeyError, e:
+            print ('Could not find the maxIsotopicAtoms constraint in the input file. Exiting...')
+            raise e
+
         for spc in rmg.reactionModel.core.species:
-            isotopes.append(generateIsotopomers(spc))
+            isotopes.append(generateIsotopomers(spc, maxIsotopes))
 
         isotopes = list(itertools.chain(*isotopes))
 
@@ -341,7 +359,6 @@ def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
     else:
         outputdirIso= isotopeLoc
 
-    isotopeInputFile = os.path.abspath(isotopeInputFile)
     chemkinFileIso = os.path.join(outputdirIso, 'chemkin', 'chem_annotated.inp')
     dictFileIso = os.path.join(outputdirIso, 'chemkin', 'species_dictionary.txt')
 
