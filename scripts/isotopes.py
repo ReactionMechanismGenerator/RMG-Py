@@ -12,6 +12,7 @@ import logging
 import numpy as np
 import os
 import os.path
+import pandas as pd
 
 import matplotlib
 # Force matplotlib to not use any Xwindows backend.
@@ -69,10 +70,14 @@ def findSMILES(label, spcList):
 
     raise Exception('Could not find the label {} in the list of species...'.format(label))
 
-def plot(probs, spcList, timeData, outputDirectory):
+def plot(probs, spcList, timeData, outputdir):
     """
     
     """
+
+    folder = os.path.join(outputdir, 'figs')
+    os.mkdir(folder)
+    print ('Creating figures in {}.'.format(folder))
 
     for df in probs:
         spcLabel = df.columns[0]
@@ -90,10 +95,27 @@ def plot(probs, spcList, timeData, outputDirectory):
             plt.ylabel('Probability (-)')
             plt.grid(b=True, which='major')
             plt.yticks(np.arange(0, 1.1, 0.1))
-
+            plt.xscale('log')
 
             print 'Saving figure: {}'.format(os.path.abspath(smi)+'.png')
-            plt.savefig(os.path.join(outputDirectory, smi+'.png'))
+            plt.savefig(os.path.join(folder, smi+'.png'))
+
+def to_csv(probs, spcs, spcdata, outputdir):
+    """
+
+    """
+    folder = os.path.join(outputdir, 'probs')
+    os.mkdir(folder)
+    print ('Writing probabilities in {}.'.format(folder))
+
+    for df in probs:
+        added = pd.concat([spcdata['Time (s)'], df], axis=1)
+        spcLabel = df.columns[0]
+        smi = findSMILES(spcLabel, spcs)
+        if smi:
+            filename = os.path.join(folder, smi+'.csv')
+            print('Saving csv in: {}'.format(filename))
+            added.to_csv(filename, header=True, index=False)
 
 def main():
 
@@ -106,11 +128,10 @@ def main():
     isotopeLoc = os.path.abspath(args.isotopes) if args.isotopes else None
 
     probs, spcs, spcdata = run(inputFile, inputIsoFile, outputdir, original=original, isotopeLoc=isotopeLoc)
+
+    to_csv(probs, spcs, spcdata, outputdir)
     
-    figs = os.path.join(outputdir, 'figs')
-    os.mkdir(figs)
-    print ('Creating figures in {}.'.format(figs))
-    plot(probs, spcs, spcdata['Time (s)'], figs)
+    plot(probs, spcs, spcdata['Time (s)'], outputdir)
 
 if __name__ == '__main__':
     main()
