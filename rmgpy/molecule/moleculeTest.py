@@ -233,7 +233,19 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
-        
+    
+    def testIsotopeEquivalent(self):
+        """
+        Test the Atom.equivalent() method for non-normal isotopes
+        """
+
+        atom1 = Atom(element=getElement('H'))
+        atom2 = Atom(element=getElement('H', 2))
+        atom3 = Atom(element=getElement('H'))
+
+        self.assertFalse(atom1.equivalent(atom2))
+        self.assertTrue(atom1.equivalent(atom3))
+
 ################################################################################
 
 class TestBond(unittest.TestCase):
@@ -1572,6 +1584,115 @@ multiplicity 2
             groupAtom = group.atoms[i]
             atomTypes = [groupAtomType.equivalent(molAt.atomType) for groupAtomType in groupAtom.atomType]
             self.assertTrue(any(atomTypes))
+
+    def testToAdjacencyListWithIsotopes(self):
+        """
+        Test the Molecule.toAdjacencyList() method works for atoms with unexpected isotopes.
+        """
+
+        mol = Molecule().fromSMILES('CC')
+        mol.atoms[0].element = getElement('C', 13)
+
+        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlistExp = """
+        1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """.translate(None, '\n ')
+        
+        self.assertEquals(adjlist, adjlistExp)
+
+        mol = Molecule().fromSMILES('CC')
+        mol.atoms[2].element = getElement('H', 2)
+
+        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlistExp = """
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 i2 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """.translate(None, '\n ')
+        
+        self.assertEquals(adjlist, adjlistExp)
+
+
+        mol = Molecule().fromSMILES('OC')
+        mol.atoms[0].element = getElement('O', 18)
+
+        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlistExp = """
+        1 O u0 p2 c0 i18 {2,S} {3,S}
+        2 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {2,S}
+        5 H u0 p0 c0 {2,S}
+        6 H u0 p0 c0 {2,S}
+        """.translate(None, '\n ')
+        
+        self.assertEquals(adjlist, adjlistExp)
+
+    def testFromAdjacencyListWithIsotopes(self):
+        """
+        Test the Molecule.fromAdjacencyList() method works for atoms with unexpected isotopes.
+        """
+
+        exp = Molecule().fromSMILES('CC')
+        exp.atoms[0].element = getElement('C', 13)
+
+        adjlistCalc = """
+        1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """
+        calc = Molecule().fromAdjacencyList(adjlistCalc)
+        
+        self.assertTrue(exp.isIsomorphic(calc))
+
+        exp = Molecule().fromSMILES('CC')
+        exp.atoms[2].element = getElement('H', 2)
+
+        adjlistCalc = """
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 i2 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """
+        calc = Molecule().fromAdjacencyList(adjlistCalc)
+        
+        self.assertTrue(exp.isIsomorphic(calc))
+
+        exp = Molecule().fromSMILES('OC')
+        exp.atoms[0].element = getElement('O', 18)
+
+        adjlistCalc = """
+        1 O u0 p2 c0 i18 {2,S} {3,S}
+        2 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {2,S}
+        5 H u0 p0 c0 {2,S}
+        6 H u0 p0 c0 {2,S}
+        """
+        calc = Molecule().fromAdjacencyList(adjlistCalc)
+        
+        self.assertTrue(exp.isIsomorphic(calc))
 
 ################################################################################
 

@@ -29,7 +29,8 @@
 ################################################################################
 
 import logging
-
+from numpy import isclose
+from rmgpy.molecule.element import getElement
 from rmgpy.species import Species
 
 def failsSpeciesConstraints(species):
@@ -91,5 +92,13 @@ def failsSpeciesConstraints(species):
     if maxRadicals != -1:
         if (struct.getNumberOfRadicalElectrons() > maxRadicals):
             return True
-            
+
+    maxIsotopes = speciesConstraints.get('maximumIsotopicAtoms', -1)
+    if maxIsotopes != -1:
+        counter = 0
+        for atom in struct.atoms:
+            if not isclose(atom.mass, getElement(atom.symbol).mass, atol=1e-04):
+                counter += 1
+            if counter > maxIsotopes: return True
+
     return False
