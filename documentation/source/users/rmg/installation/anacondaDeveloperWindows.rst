@@ -26,7 +26,9 @@ Installation by Source Using Anaconda Environment for Windows
     conda env create -f environment_windows.yml
     activate rmg_env
     
-  Every time you open a new command prompt and want to use RMG, you must reactivate this environment by typing ``activate rmg_env``.
+  Every time you open a new command prompt and want to complie or use RMG, you must reactivate this environment by typing ::
+  
+    activate rmg_env
 
 * Now you can compile RMG-Py ::
     
