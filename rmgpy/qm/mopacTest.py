@@ -21,7 +21,7 @@ class TestMopacMolPM3(unittest.TestCase):
 	Contains unit tests for the Geometry class.
 	"""
 	
-	@unittest.skipIf(os.path.exists(executablePath)==False, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+	@unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
 	def setUp(self):
 		"""
 		A function run before each unit test in this class.
@@ -86,7 +86,7 @@ class TestMopacMolPM6(unittest.TestCase):
 	Contains unit tests for the Geometry class.
 	"""
 
-	@unittest.skipIf(os.path.exists(executablePath)==False, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+	@unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
 	def setUp(self):
 		"""
 		A function run before each unit test in this class.
@@ -151,7 +151,7 @@ class TestMopacMolPM7(unittest.TestCase):
 	Contains unit tests for the Geometry class.
 	"""
 	
-	@unittest.skipIf(os.path.exists(executablePath)==False, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+	@unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
 	def setUp(self):
 		"""
 		A function run before each unit test in this class.
