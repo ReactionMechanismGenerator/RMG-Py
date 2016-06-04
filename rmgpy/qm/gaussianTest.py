@@ -48,12 +48,9 @@ class TestGaussianMolPM3(unittest.TestCase):
         """
         Test that generateThermoData() works correctly.
         """
-        try:
-            fileList = os.listdir(self.qmmol1.settings.fileStore)
-            for fileName in fileList:
-                os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
-        except OSError:
-            pass
+        # First ensure any old data are removed, or else they'll be reused!
+        for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+            shutil.rmtree(directory, ignore_errors=True)
 
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
@@ -108,12 +105,9 @@ class TestGaussianMolPM6(unittest.TestCase):
         """
         Test that generateThermoData() works correctly.
         """
-        try:
-            fileList = os.listdir(self.qmmol1.settings.fileStore)
-            for fileName in fileList:
-                os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
-        except OSError:
-            pass
+        # First ensure any old data are removed, or else they'll be reused!
+        for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+            shutil.rmtree(directory, ignore_errors=True)
 
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
