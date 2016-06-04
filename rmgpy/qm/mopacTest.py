@@ -53,7 +53,7 @@ class TestMopacMolPM3(unittest.TestCase):
 
     def testGenerateThermoData(self):
         """
-        Test that generateThermoData() works correctly for PM3
+        Test that generateThermoData() works correctly for MOPAC PM3
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
@@ -73,7 +73,7 @@ class TestMopacMolPM3(unittest.TestCase):
 
     def testLoadThermoData(self):
         """
-        Test that generateThermoData() can load thermo from a previous PM3 run.
+        Test that generateThermoData() can load thermo from the previous MOPAC PM3 run.
         
         Check that it loaded, and the values are the same as above.
         """
@@ -116,7 +116,7 @@ class TestMopacMolPM6(unittest.TestCase):
 
     def testGenerateThermoData(self):
         """
-        Test that generateThermoData() works correctly for PM6
+        Test that generateThermoData() works correctly for MOPAC PM6
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
@@ -136,7 +136,7 @@ class TestMopacMolPM6(unittest.TestCase):
 
     def testLoadThermoData(self):
         """
-        Test that generateThermoData() can load thermo from a PM6 previous run.
+        Test that generateThermoData() can load thermo from the previous MOPAC PM6 run.
         
         Check that it loaded, and the values are the same as above.
         """
@@ -180,7 +180,7 @@ class TestMopacMolPM7(unittest.TestCase):
 
     def testGenerateThermoData(self):
         """
-        Test that generateThermoData() works correctly for PM7
+        Test that generateThermoData() works correctly for MOPAC PM7
         """
         # First ensure any old data are removed, or else they'll be reused!
         for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
@@ -200,7 +200,7 @@ class TestMopacMolPM7(unittest.TestCase):
 
     def testLoadThermoData(self):
         """
-        Test that generateThermoData() can load thermo from a previous PM7 run.
+        Test that generateThermoData() can load thermo from the previous MOPAC PM7 run.
         
         Check that it loaded, and the values are the same as above.
         """
