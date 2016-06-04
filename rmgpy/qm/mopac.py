@@ -2,7 +2,7 @@ import os
 import re
 import external.cclib as cclib
 import logging
-from subprocess import Popen
+from subprocess import Popen, PIPE
 import distutils.spawn
 
 from rmgpy.molecule import Molecule
@@ -75,9 +75,10 @@ class Mopac:
     def run(self):
         self.testReady()
         # submits the input file to mopac
-        process = Popen([self.executablePath, self.inputFilePath])
-        process.communicate()# necessary to wait for executable termination!
-    
+        process = Popen([self.executablePath, self.inputFilePath], stderr=PIPE)
+        stdout, stderr = process.communicate()  # necessary to wait for executable termination!
+        if "ended normally" not in stderr.strip():
+            logging.warning("Mopac error message:" + stderr)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
