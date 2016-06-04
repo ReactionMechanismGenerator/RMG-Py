@@ -3,18 +3,28 @@
 
 import unittest
 
-import logging
 import numpy as np
 import os
 import shutil
+import subprocess
 
 from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
 from rmgpy.molecule import Molecule
 from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
 
-
 executablePath = Mopac.executablePath
+if not os.path.exists(executablePath):
+    NO_MOPAC = NO_LICENCE = True
+else:
+    NO_MOPAC = False
+    process = subprocess.Popen(executablePath,
+                               stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate("\n")
+    NO_LICENCE = 'To install the MOPAC license' in stderr
+
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
 class TestMopacMolPM3(unittest.TestCase):
@@ -22,7 +32,8 @@ class TestMopacMolPM3(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -84,7 +95,8 @@ class TestMopacMolPM6(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -146,7 +158,8 @@ class TestMopacMolPM7(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def setUp(self):
         """
         A function run before each unit test in this class.
