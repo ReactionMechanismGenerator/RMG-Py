@@ -12,28 +12,11 @@ import os
 from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
 from rmgpy.molecule import Molecule
-from rmgpy.qm.gaussian import GaussianMolPM3, GaussianMolPM6
+from rmgpy.qm.gaussian import Gaussian, GaussianMolPM3, GaussianMolPM6
 
 
-executablesToTry = ('g09', 'g03')
-
-for exe in executablesToTry:
-    try:
-        executablePath = distutils.spawn.find_executable(exe)
-    except:
-        executablePath = None
-    if executablePath is not None:
-        break
-else:  # didn't break
-    logging.debug("Did not find Gaussian on path, checking if it exists in a declared GAUSS_EXEDIR, g09root or g03root...")
-    gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-    possibleDirs = gaussEnv.split(':')# GAUSS_EXEDIR may be a list like "path1:path2:path3"
-    for exe, possibleDir in itertools.product(executablesToTry, possibleDirs):
-        executablePath = os.path.join(possibleDir, exe)
-        if os.path.exists(executablePath):
-            break
-    else:  # didn't break
-        executablePath = os.path.join(gaussEnv , '(Gaussian 2003 or 2009)')
+executablePath = Gaussian.executablePath
+NO_GAUSSIAN = not os.path.exists(executablePath)
     
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
@@ -42,7 +25,7 @@ class TestGaussianMolPM3(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(os.path.exists(executablePath)==False, "Gaussian not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -102,7 +85,7 @@ class TestGaussianMolPM6(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(os.path.exists(executablePath)==False, "Gaussian not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
     def setUp(self):
         """
         A function run before each unit test in this class.
