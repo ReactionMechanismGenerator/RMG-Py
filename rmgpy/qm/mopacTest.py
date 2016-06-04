@@ -18,194 +18,194 @@ executablePath = Mopac.executablePath
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
 class TestMopacMolPM3(unittest.TestCase):
-	"""
-	Contains unit tests for the Geometry class.
-	"""
-	
-	@unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
-	def setUp(self):
-		"""
-		A function run before each unit test in this class.
-		"""
-		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-		
-		qm = QMCalculator(software = 'mopac',
-						  method = 'pm3',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
-						  )
-		
-		if not os.path.exists(qm.settings.fileStore):
-			os.makedirs(qm.settings.fileStore)
-			
-		self.qmmol1 = MopacMolPM3(mol1, qm.settings)
-	
-	def testGenerateThermoData(self):
-		"""
-		Test that generateThermoData() works correctly for PM3
-		"""
-		# First ensure any old data are removed, or else they'll be reused!
-		for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
-			shutil.rmtree(directory, ignore_errors=True)
-		
-		self.qmmol1.generateThermoData()
-		result = self.qmmol1.qmData
-		
-		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
-		self.assertEqual(result.numberOfAtoms, 18)
-		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		if result.molecularMass.units=='amu':
-			self.assertAlmostEqual(result.molecularMass.value, 128.173,2)
-		
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
-	
-	def testLoadThermoData(self):
-		"""
-		Test that generateThermoData() can load thermo from a previous PM3 run.
-		
-		Check that it loaded, and the values are the same as above.
-		"""
-		
-		self.qmmol1.generateThermoData()
-		result = self.qmmol1.qmData
-		
-		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
-		self.assertEqual(result.numberOfAtoms, 18)
-		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		if result.molecularMass.units=='amu':
-			self.assertAlmostEqual(result.molecularMass.value, 128.173,2)
-		
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
-			
+    """
+    Contains unit tests for the Geometry class.
+    """
+
+    @unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
+
+        qm = QMCalculator(software='mopac',
+                          method='pm3',
+                          fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+                          )
+
+        if not os.path.exists(qm.settings.fileStore):
+            os.makedirs(qm.settings.fileStore)
+
+        self.qmmol1 = MopacMolPM3(mol1, qm.settings)
+
+    def testGenerateThermoData(self):
+        """
+        Test that generateThermoData() works correctly for PM3
+        """
+        # First ensure any old data are removed, or else they'll be reused!
+        for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+            shutil.rmtree(directory, ignore_errors=True)
+
+        self.qmmol1.generateThermoData()
+        result = self.qmmol1.qmData
+
+        self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
+        self.assertEqual(result.numberOfAtoms, 18)
+        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        if result.molecularMass.units == 'amu':
+            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1)  # to 1 decimal place
+
+    def testLoadThermoData(self):
+        """
+        Test that generateThermoData() can load thermo from a previous PM3 run.
+        
+        Check that it loaded, and the values are the same as above.
+        """
+
+        self.qmmol1.generateThermoData()
+        result = self.qmmol1.qmData
+
+        self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
+        self.assertEqual(result.numberOfAtoms, 18)
+        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        if result.molecularMass.units == 'amu':
+            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1)  # to 1 decimal place
+
 class TestMopacMolPM6(unittest.TestCase):
-	"""
-	Contains unit tests for the Geometry class.
-	"""
+    """
+    Contains unit tests for the Geometry class.
+    """
 
-	@unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
-	def setUp(self):
-		"""
-		A function run before each unit test in this class.
-		"""
-		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-		
-		qm = QMCalculator(software = 'mopac',
-						  method = 'pm6',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
-						  )
+    @unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
 
-		if not os.path.exists(qm.settings.fileStore):
-			os.makedirs(qm.settings.fileStore)
+        qm = QMCalculator(software='mopac',
+                          method='pm6',
+                          fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+                          )
 
-		self.qmmol1 = MopacMolPM6(mol1, qm.settings)
+        if not os.path.exists(qm.settings.fileStore):
+            os.makedirs(qm.settings.fileStore)
 
-	def testGenerateThermoData(self):
-		"""
-		Test that generateThermoData() works correctly for PM6
-		"""
-		# First ensure any old data are removed, or else they'll be reused!
-		for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
-			shutil.rmtree(directory, ignore_errors=True)
+        self.qmmol1 = MopacMolPM6(mol1, qm.settings)
 
-		self.qmmol1.generateThermoData()
-		result = self.qmmol1.qmData
-		
-		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
-		self.assertEqual(result.numberOfAtoms, 18)
-		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		if result.molecularMass.units=='amu':
-			self.assertAlmostEqual(result.molecularMass.value, 128.173,2)
-		
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.4270, 0) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1) # to 1 decimal place
-	
-	def testLoadThermoData(self):
-		"""
-		Test that generateThermoData() can load thermo from a PM6 previous run.
-		
-		Check that it loaded, and the values are the same as above.
-		"""
-		
-		self.qmmol1.generateThermoData()
-		result = self.qmmol1.qmData
-		
-		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
-		self.assertEqual(result.numberOfAtoms, 18)
-		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		if result.molecularMass.units=='amu':
-			self.assertEqual(result.molecularMass.value, 128.173)
-		
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.0681, 0) # to 0 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1) # to 1 decimal place
+    def testGenerateThermoData(self):
+        """
+        Test that generateThermoData() works correctly for PM6
+        """
+        # First ensure any old data are removed, or else they'll be reused!
+        for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+            shutil.rmtree(directory, ignore_errors=True)
+
+        self.qmmol1.generateThermoData()
+        result = self.qmmol1.qmData
+
+        self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
+        self.assertEqual(result.numberOfAtoms, 18)
+        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        if result.molecularMass.units == 'amu':
+            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.4270, 0)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1)  # to 1 decimal place
+
+    def testLoadThermoData(self):
+        """
+        Test that generateThermoData() can load thermo from a PM6 previous run.
+        
+        Check that it loaded, and the values are the same as above.
+        """
+
+        self.qmmol1.generateThermoData()
+        result = self.qmmol1.qmData
+
+        self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
+        self.assertEqual(result.numberOfAtoms, 18)
+        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        if result.molecularMass.units == 'amu':
+            self.assertEqual(result.molecularMass.value, 128.173)
+
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.0681, 0)  # to 0 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1)  # to 1 decimal place
 
 class TestMopacMolPM7(unittest.TestCase):
-	"""
-	Contains unit tests for the Geometry class.
-	"""
-	
-	@unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
-	def setUp(self):
-		"""
-		A function run before each unit test in this class.
-		"""
-		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-		
-		qm = QMCalculator(software = 'mopac',
-						  method = 'pm7',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-						  scratchDirectory = os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
-						  )
+    """
+    Contains unit tests for the Geometry class.
+    """
 
-		if not os.path.exists(qm.settings.fileStore):
-			os.makedirs(qm.settings.fileStore)
+    @unittest.skipIf(not os.path.exists(executablePath), "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
 
-		mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
-		self.qmmol1 = MopacMolPM7(mol1, qm.settings)
+        qm = QMCalculator(software='mopac',
+                          method='pm7',
+                          fileStore=os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+                          scratchDirectory=os.path.join(RMGpy_path, 'testing', 'qm', 'QMscratch'),
+                          )
 
-	def testGenerateThermoData(self):
-		"""
-		Test that generateThermoData() works correctly for PM7
-		"""
-		# First ensure any old data are removed, or else they'll be reused!
-		for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
-			shutil.rmtree(directory, ignore_errors=True)
-		
-		self.qmmol1.generateThermoData()
-		result = self.qmmol1.qmData
-		
-		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
-		self.assertEqual(result.numberOfAtoms, 18)
-		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		if result.molecularMass.units=='amu':
-			self.assertAlmostEqual(result.molecularMass.value, 128.173,2)
-		
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.9863, 0) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1) # to 1 decimal place
-	
-	def testLoadThermoData(self):
-		"""
-		Test that generateThermoData() can load thermo from a previous PM7 run.
-		
-		Check that it loaded, and the values are the same as above.
-		"""
-		
-		self.qmmol1.generateThermoData()
-		result = self.qmmol1.qmData
-		
-		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
-		self.assertEqual(result.numberOfAtoms, 18)
-		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		if result.molecularMass.units=='amu':
-			self.assertAlmostEqual(result.molecularMass.value, 128.173,2)
-		
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.8571, 0) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1) # to 1 decimal place	
+        if not os.path.exists(qm.settings.fileStore):
+            os.makedirs(qm.settings.fileStore)
 
-		
+        mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+        self.qmmol1 = MopacMolPM7(mol1, qm.settings)
+
+    def testGenerateThermoData(self):
+        """
+        Test that generateThermoData() works correctly for PM7
+        """
+        # First ensure any old data are removed, or else they'll be reused!
+        for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+            shutil.rmtree(directory, ignore_errors=True)
+
+        self.qmmol1.generateThermoData()
+        result = self.qmmol1.qmData
+
+        self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
+        self.assertEqual(result.numberOfAtoms, 18)
+        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        if result.molecularMass.units == 'amu':
+            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.9863, 0)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
+
+    def testLoadThermoData(self):
+        """
+        Test that generateThermoData() can load thermo from a previous PM7 run.
+        
+        Check that it loaded, and the values are the same as above.
+        """
+
+        self.qmmol1.generateThermoData()
+        result = self.qmmol1.qmData
+
+        self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
+        self.assertEqual(result.numberOfAtoms, 18)
+        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        if result.molecularMass.units == 'amu':
+            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.8571, 0)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
+
+
 ################################################################################
 
 if __name__ == '__main__':
-	unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
