@@ -6,6 +6,7 @@ import unittest
 import logging
 import numpy as np
 import os
+import shutil
 
 from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
@@ -43,12 +44,9 @@ class TestMopacMolPM3(unittest.TestCase):
 		"""
 		Test that generateThermoData() works correctly for PM3
 		"""
-		try:
-			fileList = os.listdir(self.qmmol1.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
-		except OSError:
-			pass
+		# First ensure any old data are removed, or else they'll be reused!
+		for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 		
 		self.qmmol1.generateThermoData()
 		result = self.qmmol1.qmData
@@ -108,13 +106,10 @@ class TestMopacMolPM6(unittest.TestCase):
 		"""
 		Test that generateThermoData() works correctly for PM6
 		"""
-		try:
-			fileList = os.listdir(self.qmmol1.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
-		except OSError:
-			pass
-		
+		# First ensure any old data are removed, or else they'll be reused!
+		for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
+
 		self.qmmol1.generateThermoData()
 		result = self.qmmol1.qmData
 		
@@ -174,12 +169,9 @@ class TestMopacMolPM7(unittest.TestCase):
 		"""
 		Test that generateThermoData() works correctly for PM7
 		"""
-		try:
-			fileList = os.listdir(self.qmmol1.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
-		except OSError:
-			pass
+		# First ensure any old data are removed, or else they'll be reused!
+		for directory in (self.qmmol1.settings.fileStore, self.qmmol1.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 		
 		self.qmmol1.generateThermoData()
 		result = self.qmmol1.qmData
