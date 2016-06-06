@@ -929,7 +929,7 @@ class TestReaction(unittest.TestCase):
     
     def testPickleLiquidReaction(self):
         """
-        Test that a Reaction with a __k_effective_cache object can be successfully pickled and unpickled with no loss of information.
+        Test that a Reaction with a k_effective_cache object can be successfully pickled and unpickled with no loss of information.
         """
         global diffusionLimiter        
         import cPickle

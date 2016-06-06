@@ -1,5 +1,6 @@
 import rmgpy.quantity as quantity
 import logging
+import rmgpy.constants as constants
 from rmgpy.species import Species
 from rmgpy.data.solvation import SolventData, SoluteData, SoluteGroups, SolvationDatabase
 from rmgpy.reaction import Reaction
@@ -60,12 +61,20 @@ class DiffusionLimited():
                     k_eff = k_eff_reverse * Keq
         return k_eff        
     
+    def getDiffusionFactor(self, reaction, T):
+        """
+        Return the diffusion factor of the specified reaction.
+        """
+        return self.getEffectiveRate(reaction, T)/reaction.kinetics.getRateCoefficient(T,P=0)
+
+    
     def getDiffusionLimit(self, T, reaction, forward=True):
         """
         Return the diffusive limit on the rate coefficient, k_diff.
         
         This is the upper limit on the rate, in the specified direction.
         (ie. forward direction if forward=True [default] or reverse if forward=False)
+        Returns the rate coefficient k_diff in m3/mol/s.
         """
         if forward:
             reacting = reaction.reactants
@@ -77,12 +86,12 @@ class DiffusionLimited():
         for spec in reacting:
             soluteData = self.database.getSoluteData(spec)
             # calculate radius with the McGowan volume and assuming sphere
-            radius = ((75*soluteData.V/3.14159)**(1/3))/100
+            radius = ((75 * soluteData.V / constants.pi / constants.Na) ** (1. / 3)) / 100  # m
             diff = soluteData.getStokesDiffusivity(T, self.getSolventViscosity(T))
-            radii += radius
-            diffusivities += diff
-        N_a = 6.022e23 # Avogadro's Number
-        k_diff = 4*3.14159*radii*diffusivities*N_a
+            radii += radius  # meters
+            diffusivities += diff #m^2/s
+        
+        k_diff = 4 * constants.pi * radii * diffusivities * constants.Na  # m3/mol/s
         return k_diff
 
 
