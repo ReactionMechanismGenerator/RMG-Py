@@ -216,7 +216,7 @@ class SoluteData():
         Returns D in m2/s
         """
         radius = math.pow((75*self.V/constants.pi/constants.Na),(1.0/3.0))/100 # in meters, V is in MgGowan volume in cm3/mol/100
-        D = constants.kB*T/6/3.14159/solventViscosity/radius # m2/s
+        D = constants.kB*T/6/constants.pi/solventViscosity/radius # m2/s
         return D  # m2/s
             
     def setMcGowanVolume(self, species):
