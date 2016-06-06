@@ -646,10 +646,10 @@ class Reaction:
             return
         # Obtain effective rate
         try:
-            k = self.__k_effective_cache[T]
+            k = self.k_effective_cache[T]
         except KeyError:
             k = diffusionLimiter.getEffectiveRate(self, T)
-            self.__k_effective_cache[T] = k
+            self.k_effective_cache[T] = k
 
         # calculate diffusion factor
         diffusionFactor = k / self.kinetics.getRateCoefficient(T, P=0)
