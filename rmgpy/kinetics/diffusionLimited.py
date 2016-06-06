@@ -1,5 +1,6 @@
 import rmgpy.quantity as quantity
 import logging
+import rmgpy.constants as constants
 from rmgpy.species import Species
 from rmgpy.data.solvation import SolventData, SoluteData, SoluteGroups, SolvationDatabase
 from rmgpy.reaction import Reaction
@@ -80,18 +81,17 @@ class DiffusionLimited():
         else:
             reacting = reaction.products
         assert len(reacting)==2, "Can only calculate diffusion limit in a bimolecular direction"
-        N_a = 6.022e23 # Avogadro's Number
         radii = 0.0
         diffusivities = 0.0
         for spec in reacting:
             soluteData = self.database.getSoluteData(spec)
             # calculate radius with the McGowan volume and assuming sphere
-            radius = ((75 * soluteData.V / 3.14159 / N_a) ** (1. / 3)) / 100  # m
+            radius = ((75 * soluteData.V / 3.14159 / constants.Na) ** (1. / 3)) / 100  # m
             diff = soluteData.getStokesDiffusivity(T, self.getSolventViscosity(T))
             radii += radius  # meters
             diffusivities += diff #m^2/s
         
-        k_diff = 4 * 3.14159 * radii * diffusivities * N_a  # m3/mol/s
+        k_diff = 4 * 3.14159 * radii * diffusivities * constants.Na  # m3/mol/s
         return k_diff
 
 
