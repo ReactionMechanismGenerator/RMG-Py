@@ -3,9 +3,9 @@
 
 import unittest
 from external.wip import work_in_progress
-from rmgpy.molecule.molecule import Atom, Bond, Molecule, ActionError
-from rmgpy.molecule.group import Group
-from rmgpy.molecule.element import getElement, elementList
+from .molecule import Atom, Bond, Molecule, ActionError
+from .group import Group
+from .element import getElement, elementList
 
 ################################################################################
 
@@ -233,7 +233,19 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
-        
+    
+    def testIsotopeEquivalent(self):
+        """
+        Test the Atom.equivalent() method for non-normal isotopes
+        """
+
+        atom1 = Atom(element=getElement('H'))
+        atom2 = Atom(element=getElement('H', 2))
+        atom3 = Atom(element=getElement('H'))
+
+        self.assertFalse(atom1.equivalent(atom2))
+        self.assertTrue(atom1.equivalent(atom3))
+
 ################################################################################
 
 class TestBond(unittest.TestCase):
@@ -519,7 +531,29 @@ class TestMolecule(unittest.TestCase):
             else:
                 self.assertFalse(atom.label in labeled)
                 self.assertFalse(atom in labeled.values())
-
+        
+        multipleLabelMolecule = Molecule().fromAdjacencyList("""
+1 * C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
+2 * C u0 p0 c0 {1,S} {4,S} {7,S} {8,S}
+3 * C u0 p0 c0 {1,S} {9,S} {10,S} {11,S}
+4 * C u0 p0 c0 {2,S} {12,S} {13,S} {14,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {1,S}
+7 *1 H u0 p0 c0 {2,S}
+8 *1 H u0 p0 c0 {2,S}
+9 H u0 p0 c0 {3,S}
+10 *1 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+""")
+        labeled = multipleLabelMolecule.getLabeledAtoms()
+        self.assertTrue('*' in labeled)
+        self.assertTrue('*1' in labeled)
+        self.assertEqual(len(labeled['*']),4)
+        self.assertEqual(len(labeled['*1']),3)
+        
     def testGetFormula(self):
         """
         Test the Molecule.getLabeledAtoms() method.
@@ -961,29 +995,6 @@ class TestMolecule(unittest.TestCase):
             s = m.toSMILES()
             self.assertEqual(s, smiles, "Generated SMILES string {0} instead of {1}".format(s, smiles))
         
-        
-    @work_in_progress
-    def testMultipleKekulizedResonanceIsomers(self):
-        "Test we can make both Kekulized resonance isomers of 2-Hydroxy-1-methylbenzene"
-
-        adjlist_aromatic = """multiplicity 1
-1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
-2 C u0 p0 c0 {1,S} {3,B} {4,B}
-3 C u0 p0 c0 {2,B} {5,B} {8,S}
-4 C u0 p0 c0 {2,B} {7,B} {15,S}
-5 C u0 p0 c0 {3,B} {6,B} {12,S}
-6 C u0 p0 c0 {5,B} {7,B} {13,S}
-7 C u0 p0 c0 {4,B} {6,B} {14,S}
-8 O u0 p2 c0 {3,S} {16,S}
-9 H u0 p0 c0 {1,S}
-10 H u0 p0 c0 {1,S}
-11 H u0 p0 c0 {1,S}
-12 H u0 p0 c0 {5,S}
-13 H u0 p0 c0 {6,S}
-14 H u0 p0 c0 {7,S}
-15 H u0 p0 c0 {4,S}
-16 H u0 p0 c0 {8,S}
-"""
 
     def testKekuleRoundTripSMILES(self):
         """
@@ -1008,25 +1019,25 @@ class TestMolecule(unittest.TestCase):
         
     def testAugmentedInChI(self):
         """
-        Test that Augmented InChI generation is printing the /mult layer
+        Test the Augmented InChI generation
         """
         mol = Molecule().fromAdjacencyList("""
             1     C     u1 p0 c0 {2,S}
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3/u1,2')
+        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/u1,2')
         
     def testAugmentedInChIKey(self):
         """
-        Test that Augmented InChI Key generation is printing the mult layer
+        Test the Augmented InChI Key generation
         """
         mol = Molecule().fromAdjacencyList("""
             1     C     u1 p0 c0 {2,S}
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-mult3-u1,2')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-u1,2')
 
     def testLinearMethane(self):
         """
@@ -1158,7 +1169,7 @@ class TestMolecule(unittest.TestCase):
         
         mol = Molecule().fromAdjacencyList(ch2_t)
     
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3/u1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/u1,1')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
 
@@ -1170,7 +1181,7 @@ class TestMolecule(unittest.TestCase):
         '''
         
         mol = Molecule().fromAdjacencyList(ch2_s)
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/lp1')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
         
@@ -1217,248 +1228,6 @@ class TestMolecule(unittest.TestCase):
         This is a "hard" test that currently fails.
         """
         self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
-    
-    def testKekulizeResonanceIsomer(self):
-        """
-        Tests that an aromatic molecule returns at least one Kekulized resonance isomer.
-        
-        A molecule formed using an aromatic adjacency list returns both
-        the aromatic and a kekulized form as resonance isomers.
-        """
-        toluene = Molecule().fromAdjacencyList("""
-1  H 0 {2,S}
-2  C 0 {3,S} {9,S} {10,S} {1,S}
-3  C 0 {4,B} {8,B} {2,S}
-4  C 0 {3,B} {5,B} {11,S}
-5  C 0 {4,B} {6,B} {12,S}
-6  C 0 {5,B} {7,B} {13,S}
-7  C 0 {6,B} {8,B} {14,S}
-8  C 0 {3,B} {7,B} {15,S}
-9  H 0 {2,S}
-10  H 0 {2,S}
-11  H 0 {4,S}
-12  H 0 {5,S}
-13  H 0 {6,S}
-14  H 0 {7,S}
-15  H 0 {8,S}""")
-        
-        toluene_kekulized = Molecule().fromAdjacencyList("""
-1  C u0 p0 c0 {2,D} {6,S} {7,S}
-2  C u0 p0 c0 {1,D} {3,S} {8,S}
-3  C u0 p0 c0 {2,S} {4,D} {9,S}
-4  C u0 p0 c0 {3,D} {5,S} {10,S}
-5  C u0 p0 c0 {4,S} {6,D} {11,S}
-6  C u0 p0 c0 {1,S} {5,D} {12,S}
-7  C u0 p0 c0 {1,S} {13,S} {14,S} {15,S}
-8  H u0 p0 c0 {2,S}
-9  H u0 p0 c0 {3,S}
-10 H u0 p0 c0 {4,S}
-11 H u0 p0 c0 {5,S}
-12 H u0 p0 c0 {6,S}
-13 H u0 p0 c0 {7,S}
-14 H u0 p0 c0 {7,S}
-15 H u0 p0 c0 {7,S}
-""")
-        kekulized_isomer = toluene.getKekulizedResonanceIsomers()[0]
-        self.assertTrue(kekulized_isomer.isIsomorphic(toluene_kekulized))
-
-        for isomer in toluene.generateResonanceIsomers():
-            if isomer.isIsomorphic(toluene_kekulized):
-                break
-        else:  # didn't brake
-            self.assertTrue(False, "Didn't find the Kekulized toulene in the result of getResonanceIsomers()")
-
-    @work_in_progress
-    def testMultipleKekulizedResonanceIsomers(self):
-        "Test we can make both Kekulized resonance isomers of 2-Hydroxy-1-methylbenzene"
-
-        adjlist_aromatic = """multiplicity 1
-1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
-2 C u0 p0 c0 {1,S} {3,B} {4,B}
-3 C u0 p0 c0 {2,B} {5,B} {8,S}
-4 C u0 p0 c0 {2,B} {7,B} {15,S}
-5 C u0 p0 c0 {3,B} {6,B} {12,S}
-6 C u0 p0 c0 {5,B} {7,B} {13,S}
-7 C u0 p0 c0 {4,B} {6,B} {14,S}
-8 O u0 p2 c0 {3,S} {16,S}
-9 H u0 p0 c0 {1,S}
-10 H u0 p0 c0 {1,S}
-11 H u0 p0 c0 {1,S}
-12 H u0 p0 c0 {5,S}
-13 H u0 p0 c0 {6,S}
-14 H u0 p0 c0 {7,S}
-15 H u0 p0 c0 {4,S}
-16 H u0 p0 c0 {8,S}
-"""
-        molecule = Molecule().fromAdjacencyList(adjlist_aromatic)
-        self.assertTrue(molecule.isAromatic(), "Starting molecule should be aromatic")
-        isomers = molecule.generateResonanceIsomers()
-        self.assertEqual(len(isomers), 3, "Didn't generate 3 resonance isomers")
-        self.assertFalse(isomers[1].isAromatic(), "Second resonance isomer shouldn't be aromatic")
-        self.assertFalse(isomers[2].isAromatic(), "Third resonance isomer shouldn't be aromatic")
-        self.assertFalse(isomers[1].isIsomorphic(isomers[2]), "Second and third resonance isomers should be different")
-
-    @work_in_progress
-    def testKekulizedResonanceIsomersFused(self):
-        """Test we can make aromatic and Kekulized resonance isomers of 2-methylanthracen-1-ol
-        
-        This fused ring PAH will be harder"""
-
-        kekulized1 = """multiplicity 1
-1 C u0 p0 c0 {2,S} {17,S} {18,S} {19,S}
-2 C u0 p0 c0 {1,S} {7,S} {10,D}
-3 C u0 p0 c0 {4,S} {7,D} {9,S}
-4 C u0 p0 c0 {3,S} {8,S} {11,D}
-5 C u0 p0 c0 {6,S} {8,D} {12,S}
-6 C u0 p0 c0 {5,S} {9,D} {13,S}
-7 C u0 p0 c0 {2,S} {3,D} {16,S}
-8 C u0 p0 c0 {4,S} {5,D} {22,S}
-9 C u0 p0 c0 {3,S} {6,D} {27,S}
-10 C u0 p0 c0 {2,D} {11,S} {20,S}
-11 C u0 p0 c0 {4,D} {10,S} {21,S}
-12 C u0 p0 c0 {5,S} {14,D} {23,S}
-13 C u0 p0 c0 {6,S} {15,D} {26,S}
-14 C u0 p0 c0 {12,D} {15,S} {24,S}
-15 C u0 p0 c0 {13,D} {14,S} {25,S}
-16 O u0 p2 c0 {7,S} {28,S}
-17 H u0 p0 c0 {1,S}
-18 H u0 p0 c0 {1,S}
-19 H u0 p0 c0 {1,S}
-20 H u0 p0 c0 {10,S}
-21 H u0 p0 c0 {11,S}
-22 H u0 p0 c0 {8,S}
-23 H u0 p0 c0 {12,S}
-24 H u0 p0 c0 {14,S}
-25 H u0 p0 c0 {15,S}
-26 H u0 p0 c0 {13,S}
-27 H u0 p0 c0 {9,S}
-28 H u0 p0 c0 {16,S}
-"""
-        kekulized2 = """multiplicity 1
-1 C u0 p0 c0 {2,S} {17,S} {18,S} {19,S}
-2 C u0 p0 c0 {1,S} {7,D} {10,S}
-3 C u0 p0 c0 {4,S} {7,S} {9,D}
-4 C u0 p0 c0 {3,S} {8,D} {11,S}
-5 C u0 p0 c0 {6,S} {8,S} {12,D}
-6 C u0 p0 c0 {5,S} {9,S} {13,D}
-7 C u0 p0 c0 {2,D} {3,S} {16,S}
-8 C u0 p0 c0 {4,D} {5,S} {22,S}
-9 C u0 p0 c0 {3,D} {6,S} {27,S}
-10 C u0 p0 c0 {2,S} {11,D} {20,S}
-11 C u0 p0 c0 {4,S} {10,D} {21,S}
-12 C u0 p0 c0 {5,D} {14,S} {23,S}
-13 C u0 p0 c0 {6,D} {15,S} {26,S}
-14 C u0 p0 c0 {12,S} {15,D} {24,S}
-15 C u0 p0 c0 {13,S} {14,D} {25,S}
-16 O u0 p2 c0 {7,S} {28,S}
-17 H u0 p0 c0 {1,S}
-18 H u0 p0 c0 {1,S}
-19 H u0 p0 c0 {1,S}
-20 H u0 p0 c0 {10,S}
-21 H u0 p0 c0 {11,S}
-22 H u0 p0 c0 {8,S}
-23 H u0 p0 c0 {12,S}
-24 H u0 p0 c0 {14,S}
-25 H u0 p0 c0 {15,S}
-26 H u0 p0 c0 {13,S}
-27 H u0 p0 c0 {9,S}
-28 H u0 p0 c0 {16,S}
-"""
-        kekulized3 = """multiplicity 1
-1 C u0 p0 c0 {2,S} {17,S} {18,S} {19,S}
-2 C u0 p0 c0 {1,S} {7,D} {10,S}
-3 C u0 p0 c0 {4,S} {7,S} {9,D}
-4 C u0 p0 c0 {3,S} {8,D} {11,S}
-5 C u0 p0 c0 {6,D} {8,S} {12,S}
-6 C u0 p0 c0 {5,D} {9,S} {13,S}
-7 C u0 p0 c0 {2,D} {3,S} {16,S}
-8 C u0 p0 c0 {4,D} {5,S} {20,S}
-9 C u0 p0 c0 {3,D} {6,S} {21,S}
-10 C u0 p0 c0 {2,S} {11,D} {22,S}
-11 C u0 p0 c0 {4,S} {10,D} {23,S}
-12 C u0 p0 c0 {5,S} {14,D} {24,S}
-13 C u0 p0 c0 {6,S} {15,D} {25,S}
-14 C u0 p0 c0 {12,D} {15,S} {26,S}
-15 C u0 p0 c0 {13,D} {14,S} {27,S}
-16 O u0 p2 c0 {7,S} {28,S}
-17 H u0 p0 c0 {1,S}
-18 H u0 p0 c0 {1,S}
-19 H u0 p0 c0 {1,S}
-20 H u0 p0 c0 {8,S}
-21 H u0 p0 c0 {9,S}
-22 H u0 p0 c0 {10,S}
-23 H u0 p0 c0 {11,S}
-24 H u0 p0 c0 {12,S}
-25 H u0 p0 c0 {13,S}
-26 H u0 p0 c0 {14,S}
-27 H u0 p0 c0 {15,S}
-28 H u0 p0 c0 {16,S}
-"""
-        kekulized4 = """multiplicity 1
-1  C u0 p0 c0 {2,S} {17,S} {18,S} {19,S}
-2  C u0 p0 c0 {1,S} {7,D} {10,S}
-3  C u0 p0 c0 {4,D} {7,S} {9,S}
-4  C u0 p0 c0 {3,D} {8,S} {11,S}
-5  C u0 p0 c0 {6,S} {8,D} {12,S}
-6  C u0 p0 c0 {5,S} {9,D} {13,S}
-7  C u0 p0 c0 {2,D} {3,S} {16,S}
-8  C u0 p0 c0 {4,S} {5,D} {20,S}
-9  C u0 p0 c0 {3,S} {6,D} {21,S}
-10 C u0 p0 c0 {2,S} {11,D} {22,S}
-11 C u0 p0 c0 {4,S} {10,D} {23,S}
-12 C u0 p0 c0 {5,S} {14,D} {24,S}
-13 C u0 p0 c0 {6,S} {15,D} {25,S}
-14 C u0 p0 c0 {12,D} {15,S} {26,S}
-15 C u0 p0 c0 {13,D} {14,S} {27,S}
-16 O u0 p2 c0 {7,S} {28,S}
-17 H u0 p0 c0 {1,S}
-18 H u0 p0 c0 {1,S}
-19 H u0 p0 c0 {1,S}
-20 H u0 p0 c0 {8,S}
-21 H u0 p0 c0 {9,S}
-22 H u0 p0 c0 {10,S}
-23 H u0 p0 c0 {11,S}
-24 H u0 p0 c0 {12,S}
-25 H u0 p0 c0 {13,S}
-26 H u0 p0 c0 {14,S}
-27 H u0 p0 c0 {15,S}
-28 H u0 p0 c0 {16,S}
-"""
-        m1 = Molecule().fromAdjacencyList(kekulized1)
-        m2 = Molecule().fromAdjacencyList(kekulized2)
-        m3 = Molecule().fromAdjacencyList(kekulized3)
-        m4 = Molecule().fromAdjacencyList(kekulized4)
-        resonance_forms = (m1, m2, m3, m4)
-
-        for starting in resonance_forms:
-            self.assertFalse(starting.isAromatic(), "Starting molecule should not be aromatic")
-
-            isomers = starting.generateResonanceIsomers()
-            # print "starting with {0!r} I generated these:".format(starting)
-            # print repr(isomers)
-            for isomer in isomers:
-                if isomer.isAromatic():
-                    break
-            else:  # didn't break
-                self.fail("None of the generated resonance isomers {0!r} are aromatic".format(isomers))
-
-            for generated in isomers:
-                for expected in resonance_forms:
-                    if generated.isIsomorphic(expected):
-                        break
-                else:  # didn't break
-                    if generated.isAromatic():
-                        continue  # because the aromatic isomer isn't in our resonance_forms list
-                    self.fail("Generated a resonance form {0!r} that was not expected!\n{1}\nAlthough that may be a bug in the unit test (not sure I got them all)".format(generated, generated.toAdjacencyList()))
-
-            for expected in resonance_forms:
-                for generated in isomers:
-                    if expected.isIsomorphic(generated):
-                        break
-                else:  # didn't break
-                    self.fail(("Expected a resonance form {0!r} that was not generated.\n"
-                              "Only generated these:\n{1}").format(expected, '\n'.join([repr(g) for g in isomers])))
-
         
     def testSaturateAromaticRadical(self):
         """
@@ -1548,7 +1317,7 @@ multiplicity 2
 
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
-        from rmgpy.molecule.inchi import InchiException
+        from .inchi import InchiException
 
         malform_aug_inchi = 'foo'
         with self.assertRaises(InchiException):
@@ -1562,13 +1331,13 @@ multiplicity 2
 
     def testMalformedAugmentedInChI_Wrong_Mult(self):
         """Test that augmented inchi with wrong layer is caught."""
-        malform_aug_inchi = 'InChI=1S/CH3/h1H3/mult3'
+        malform_aug_inchi = 'InChI=1S/CH3/h1H3'
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
     def testMalformedAugmentedInChI_Wrong_Indices(self):
         """Test that augmented inchi with wrong layer is caught."""
-        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/mult3/u4,1'
+        malform_aug_inchi = 'InChI=1S/C6H6/c1-3-5-6-4-2/h1,6H,2,5H2/u4,1'
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
@@ -1577,7 +1346,7 @@ multiplicity 2
         Test that the atom mapping returned by toRDKitMol contains the correct
         atom indices of the atoms of the molecule when hydrogens are removed.
         """
-        from rmgpy.molecule.parser import toRDKitMol
+        from .generator import toRDKitMol
 
         adjlist = '''
 1 H u0 p0 c0 {2,S}
@@ -1600,6 +1369,368 @@ multiplicity 2
                     except RuntimeError:
                         self.fail("RDKit failed in finding the bond in the original atom!")
                         
+    def testLargeMolUpdate(self):
+        adjlist = """
+1  C u0 p0 c0 {7,S} {33,S} {34,S} {35,S}
+2  C u0 p0 c0 {8,S} {36,S} {37,S} {38,S}
+3  C u0 p0 c0 {5,S} {9,D} {39,S}
+4  C u0 p0 c0 {6,S} {10,D} {40,S}
+5  C u0 p0 c0 {3,S} {17,S} {41,S} {85,S}
+6  C u0 p0 c0 {4,S} {18,D} {42,S}
+7  C u0 p0 c0 {1,S} {11,S} {43,S} {44,S}
+8  C u0 p0 c0 {2,S} {12,S} {45,S} {46,S}
+9  C u0 p0 c0 {3,D} {31,S} {47,S}
+10 C u0 p0 c0 {4,D} {32,S} {48,S}
+11 C u0 p0 c0 {7,S} {19,S} {51,S} {52,S}
+12 C u0 p0 c0 {8,S} {20,S} {53,S} {54,S}
+13 C u0 p0 c0 {18,S} {32,S} {50,S} {86,S}
+14 C u0 p0 c0 {17,D} {31,S} {49,S}
+15 C u0 p0 c0 {17,S} {25,S} {63,S} {64,S}
+16 C u0 p0 c0 {18,S} {26,S} {65,S} {66,S}
+17 C u0 p0 c0 {5,S} {14,D} {15,S}
+18 C u0 p0 c0 {6,D} {13,S} {16,S}
+19 C u0 p0 c0 {11,S} {23,S} {55,S} {56,S}
+20 C u0 p0 c0 {12,S} {24,S} {57,S} {58,S}
+21 C u0 p0 c0 {25,S} {29,S} {75,S} {76,S}
+22 C u0 p0 c0 {26,S} {30,S} {77,S} {78,S}
+23 C u0 p0 c0 {19,S} {27,S} {71,S} {72,S}
+24 C u0 p0 c0 {20,S} {28,S} {73,S} {74,S}
+25 C u0 p0 c0 {15,S} {21,S} {59,S} {60,S}
+26 C u0 p0 c0 {16,S} {22,S} {61,S} {62,S}
+27 C u0 p0 c0 {23,S} {29,S} {79,S} {80,S}
+28 C u0 p0 c0 {24,S} {30,S} {81,S} {82,S}
+29 C u0 p0 c0 {21,S} {27,S} {67,S} {68,S}
+30 C u0 p0 c0 {22,S} {28,S} {69,S} {70,S}
+31 C u0 p0 c0 {9,S} {14,S} {32,S} {83,S}
+32 C u0 p0 c0 {10,S} {13,S} {31,S} {84,S}
+33 H u0 p0 c0 {1,S}
+34 H u0 p0 c0 {1,S}
+35 H u0 p0 c0 {1,S}
+36 H u0 p0 c0 {2,S}
+37 H u0 p0 c0 {2,S}
+38 H u0 p0 c0 {2,S}
+39 H u0 p0 c0 {3,S}
+40 H u0 p0 c0 {4,S}
+41 H u0 p0 c0 {5,S}
+42 H u0 p0 c0 {6,S}
+43 H u0 p0 c0 {7,S}
+44 H u0 p0 c0 {7,S}
+45 H u0 p0 c0 {8,S}
+46 H u0 p0 c0 {8,S}
+47 H u0 p0 c0 {9,S}
+48 H u0 p0 c0 {10,S}
+49 H u0 p0 c0 {14,S}
+50 H u0 p0 c0 {13,S}
+51 H u0 p0 c0 {11,S}
+52 H u0 p0 c0 {11,S}
+53 H u0 p0 c0 {12,S}
+54 H u0 p0 c0 {12,S}
+55 H u0 p0 c0 {19,S}
+56 H u0 p0 c0 {19,S}
+57 H u0 p0 c0 {20,S}
+58 H u0 p0 c0 {20,S}
+59 H u0 p0 c0 {25,S}
+60 H u0 p0 c0 {25,S}
+61 H u0 p0 c0 {26,S}
+62 H u0 p0 c0 {26,S}
+63 H u0 p0 c0 {15,S}
+64 H u0 p0 c0 {15,S}
+65 H u0 p0 c0 {16,S}
+66 H u0 p0 c0 {16,S}
+67 H u0 p0 c0 {29,S}
+68 H u0 p0 c0 {29,S}
+69 H u0 p0 c0 {30,S}
+70 H u0 p0 c0 {30,S}
+71 H u0 p0 c0 {23,S}
+72 H u0 p0 c0 {23,S}
+73 H u0 p0 c0 {24,S}
+74 H u0 p0 c0 {24,S}
+75 H u0 p0 c0 {21,S}
+76 H u0 p0 c0 {21,S}
+77 H u0 p0 c0 {22,S}
+78 H u0 p0 c0 {22,S}
+79 H u0 p0 c0 {27,S}
+80 H u0 p0 c0 {27,S}
+81 H u0 p0 c0 {28,S}
+82 H u0 p0 c0 {28,S}
+83 H u0 p0 c0 {31,S}
+84 H u0 p0 c0 {32,S}
+85 H u0 p0 c0 {5,S}
+86 H u0 p0 c0 {13,S}
+        """
+        mol = Molecule().fromAdjacencyList(adjlist)
+
+        mol.resetConnectivityValues()
+
+        try:
+            mol.updateConnectivityValues()
+        except OverflowError:
+            self.fail("updateConnectivityValues() raised OverflowError unexpectedly!")
+
+    def testLargeMolCreation(self):
+        """
+        Test molecules between C1 to C201 in 10 carbon intervals to make
+        sure that overflow errors are not generated.
+        """
+        for i in xrange(1,202,10):
+            smi = 'C'*i
+            try:
+                m = Molecule(SMILES=smi)
+            except OverflowError:
+                self.fail('Creation of C{} failed!'.format(i))
+
+    def testGetPolycyclicRings(self):
+        """
+        Test that polycyclic rings within a molecule are returned properly in the function
+        `Graph().getPolycyclicRings()`
+        """
+        # norbornane
+        m1 = Molecule(SMILES='C1CC2CCC1C2')
+        polyrings1 = m1.getPolycyclicRings()
+        self.assertEqual(len(polyrings1), 1)
+        ring = polyrings1[0]
+        self.assertEqual(len(ring),7)  # 7 carbons in cycle
+        
+        # dibenzyl
+        m2 = Molecule(SMILES='C1=CC=C(C=C1)CCC1C=CC=CC=1')
+        polyrings2 = m2.getPolycyclicRings()
+        self.assertEqual(len(polyrings2), 0)
+        
+        # spiro[2.5]octane
+        m3 = Molecule(SMILES='C1CCC2(CC1)CC2')
+        polyrings3 = m3.getPolycyclicRings()
+        self.assertEqual(len(polyrings3), 1)
+        ring = polyrings3[0]
+        self.assertEqual(len(ring),8)
+        
+        # 1-phenyl norbornane
+        m4 = Molecule(SMILES='C1=CC=C(C=C1)C12CCC(CC1)C2')
+        polyrings4 = m4.getPolycyclicRings()
+        self.assertEqual(len(polyrings4), 1)
+        ring = polyrings4[0]
+        self.assertEqual(len(ring),7)
+        
+    def testGetMonocyclicRings(self):
+        """
+        Test that monocyclic rings within a molecule are returned properly in the function
+        `Graph().getMonocyclicRings()`
+        """
+        m1 = Molecule(SMILES='C(CCCC1CCCCC1)CCCC1CCCC1')
+        monorings = m1.getMonocyclicRings()
+        self.assertEqual(len(monorings),2)
+        
+        m2 = Molecule(SMILES='C(CCC1C2CCC1CC2)CC1CCC1')
+        monorings = m2.getMonocyclicRings()
+        self.assertEqual(len(monorings),1)
+        self.assertEqual(len(monorings[0]),4)
+        
+        m3 = Molecule(SMILES='CCCCC')
+        monorings = m3.getMonocyclicRings()
+        self.assertEqual(len(monorings),0)
+        
+    def testGetDisparateRings(self):
+        """
+        Test that monocyclic rings within a molecule are returned properly in the function
+        `Graph().getDisparateRings()`
+        """
+        
+        # norbornane
+        m1 = Molecule(SMILES='C1CC2CCC1C2')
+        monorings, polyrings = m1.getDisparateRings()
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(polyrings[0]),7)  # 7 carbons in cycle
+        
+        m2 = Molecule(SMILES='C(CCC1C2CCC1CC2)CC1CCC1')
+        monorings, polyrings = m2.getDisparateRings()
+        self.assertEqual(len(monorings),1)
+        self.assertEqual(len(polyrings),1)
+        self.assertEqual(len(monorings[0]),4)
+        self.assertEqual(len(polyrings[0]),7)
+        
+        
+        m3 = Molecule(SMILES='C1CCC2(CC1)CC2CCCCC1CCC1')
+        monorings, polyrings = m3.getDisparateRings()
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(monorings),1)
+        self.assertEqual(len(monorings[0]),4)
+        self.assertEqual(len(polyrings[0]),8)
+        
+        m4 = Molecule(SMILES='CCCC')
+        monorings, polyrings = m4.getDisparateRings()
+        self.assertEqual(len(monorings),0)
+        self.assertEqual(len(polyrings),0)
+        
+        m5 = Molecule(SMILES='C1=CC=C(CCCC2CC2)C(=C1)CCCCCC1CC1')
+        monorings, polyrings = m5.getDisparateRings()
+        self.assertEqual(len(monorings),3)
+        self.assertEqual(len(polyrings),0)
+
+    def testGetSmallestSetOfSmallestRings(self):
+        """
+        Test that SSSR within a molecule are returned properly in the function
+        `Graph().getSmallestSetOfSmallestRings()`
+        """
+
+        m1 = Molecule(SMILES='C12CCC1C3CC2CC3')
+        sssr1 = m1.getSmallestSetOfSmallestRings()
+        sssr1_sizes = sorted([len(ring) for ring in sssr1])
+        sssr1_sizes_expected = [4, 5, 5]
+        self.assertEqual(sssr1_sizes, sssr1_sizes_expected)
+        
+        m2 = Molecule(SMILES='C1(CC2)C(CC3)CC3C2C1')
+        sssr2 = m2.getSmallestSetOfSmallestRings()
+        sssr2_sizes = sorted([len(ring) for ring in sssr2])
+        sssr2_sizes_expected = [5, 5, 6]
+        self.assertEqual(sssr2_sizes, sssr2_sizes_expected)
+        
+        
+        m3 = Molecule(SMILES='C1(CC2)C2C(CCCC3)C3C1')
+        sssr3 = m3.getSmallestSetOfSmallestRings()
+        sssr3_sizes = sorted([len(ring) for ring in sssr3])
+        sssr3_sizes_expected = [4, 5, 6]
+        self.assertEqual(sssr3_sizes, sssr3_sizes_expected)
+        
+        m4 = Molecule(SMILES='C12=CC=CC=C1C3=C2C=CC=C3')
+        sssr4 = m4.getSmallestSetOfSmallestRings()
+        sssr4_sizes = sorted([len(ring) for ring in sssr4])
+        sssr4_sizes_expected = [4, 6, 6]
+        self.assertEqual(sssr4_sizes, sssr4_sizes_expected)
+        
+        m5 = Molecule(SMILES='C12=CC=CC=C1CC3=C(C=CC=C3)C2')
+        sssr5 = m5.getSmallestSetOfSmallestRings()
+        sssr5_sizes = sorted([len(ring) for ring in sssr5])
+        sssr5_sizes_expected = [6, 6, 6]
+        self.assertEqual(sssr5_sizes, sssr5_sizes_expected)
+    
+    def testToGroup(self):
+        """
+        Test if we can convert a Molecule object into a Group object.
+        """
+        mol = Molecule().fromSMILES('CC(C)CCCC(C)C1CCC2C3CC=C4CC(O)CCC4(C)C3CCC12C')#cholesterol
+        group = mol.toGroup()
+        
+        self.assertTrue(isinstance(group, Group))
+        
+        self.assertEquals(len(mol.atoms), len(group.atoms))
+
+        molbondcount = sum([1 for atom in mol.atoms for bondedAtom, bond in atom.edges.iteritems()])
+        groupbondcount = sum([1 for atom in group.atoms for bondedAtom, bond in atom.edges.iteritems()])
+        self.assertEquals(molbondcount, groupbondcount)
+
+        for i, molAt in enumerate(mol.atoms):
+            groupAtom = group.atoms[i]
+            atomTypes = [groupAtomType.equivalent(molAt.atomType) for groupAtomType in groupAtom.atomType]
+            self.assertTrue(any(atomTypes))
+
+    def testToAdjacencyListWithIsotopes(self):
+        """
+        Test the Molecule.toAdjacencyList() method works for atoms with unexpected isotopes.
+        """
+
+        mol = Molecule().fromSMILES('CC')
+        mol.atoms[0].element = getElement('C', 13)
+
+        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlistExp = """
+        1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """.translate(None, '\n ')
+        
+        self.assertEquals(adjlist, adjlistExp)
+
+        mol = Molecule().fromSMILES('CC')
+        mol.atoms[2].element = getElement('H', 2)
+
+        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlistExp = """
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 i2 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """.translate(None, '\n ')
+        
+        self.assertEquals(adjlist, adjlistExp)
+
+
+        mol = Molecule().fromSMILES('OC')
+        mol.atoms[0].element = getElement('O', 18)
+
+        adjlist = mol.toAdjacencyList().translate(None, '\n ')
+        adjlistExp = """
+        1 O u0 p2 c0 i18 {2,S} {3,S}
+        2 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {2,S}
+        5 H u0 p0 c0 {2,S}
+        6 H u0 p0 c0 {2,S}
+        """.translate(None, '\n ')
+        
+        self.assertEquals(adjlist, adjlistExp)
+
+    def testFromAdjacencyListWithIsotopes(self):
+        """
+        Test the Molecule.fromAdjacencyList() method works for atoms with unexpected isotopes.
+        """
+
+        exp = Molecule().fromSMILES('CC')
+        exp.atoms[0].element = getElement('C', 13)
+
+        adjlistCalc = """
+        1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """
+        calc = Molecule().fromAdjacencyList(adjlistCalc)
+        
+        self.assertTrue(exp.isIsomorphic(calc))
+
+        exp = Molecule().fromSMILES('CC')
+        exp.atoms[2].element = getElement('H', 2)
+
+        adjlistCalc = """
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 i2 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """
+        calc = Molecule().fromAdjacencyList(adjlistCalc)
+        
+        self.assertTrue(exp.isIsomorphic(calc))
+
+        exp = Molecule().fromSMILES('OC')
+        exp.atoms[0].element = getElement('O', 18)
+
+        adjlistCalc = """
+        1 O u0 p2 c0 i18 {2,S} {3,S}
+        2 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {2,S}
+        5 H u0 p0 c0 {2,S}
+        6 H u0 p0 c0 {2,S}
+        """
+        calc = Molecule().fromAdjacencyList(adjlistCalc)
+        
+        self.assertTrue(exp.isIsomorphic(calc))
 
 ################################################################################
 

@@ -222,3 +222,12 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.E0.value, nasa.E0.value)
         self.assertEqual(self.nasa.E0.units, nasa.E0.units)
         self.assertEqual(self.nasa.comment, nasa.comment)
+        
+    def test_toCantera(self):
+        """
+        Test that conversion to a Cantera NasaPoly2 object works
+        """
+        nasapoly2 = self.nasa.toCantera()
+        # NasaPoly2 units use J/kmol rather than J/mol
+        self.assertAlmostEqual(self.nasa.getEnthalpy(900), nasapoly2.h(900)/1000, 1)
+        self.assertAlmostEqual(self.nasa.getEntropy(700), nasapoly2.s(700)/1000, 1)

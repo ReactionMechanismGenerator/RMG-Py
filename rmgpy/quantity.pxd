@@ -26,6 +26,8 @@
 
 cimport numpy
 
+cpdef list NOT_IMPLEMENTED_UNITS
+
 ################################################################################
 
 cdef class Units(object):
@@ -58,8 +60,11 @@ cdef class ScalarQuantity(Units):
 cdef class ArrayQuantity(Units):
 
     cdef public numpy.ndarray value_si
-    cdef public str uncertaintyType
-    cdef public numpy.ndarray uncertainty
+    cdef public str _uncertaintyType
+    cdef public numpy.ndarray uncertainty_si
+
+    cpdef str getUncertaintyType(self)
+    cpdef     setUncertaintyType(self, str v)
 
     cpdef bint isUncertaintyAdditive(self) except -2
 

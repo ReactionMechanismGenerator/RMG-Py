@@ -241,3 +241,38 @@ cdef class Chebyshev(PDepKineticsModel):
         Changes kinetics rates by a multiple ``factor``.
         """
         self.coeffs.value_si[0,0] += log10(factor)
+
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets the kinetics parameters for a Cantera ChebyshevReaction() object
+        Uses set_parameters(self,Tmin,Tmax,Pmin,Pmax,coeffs)
+        where T's are in units of K, P's in units of Pa, and coeffs is 2D array of (nTemperature, nPressure).
+        """
+        import cantera as ct
+        import copy
+        assert isinstance(ctReaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+
+        Tmin = self.Tmin.value_si
+        Tmax = self.Tmax.value_si
+        Pmin = self.Pmin.value_si
+        Pmax = self.Pmax.value_si
+        coeffs = copy.deepcopy(self.coeffs.value_si)
+        
+        # The first coefficient must be adjusted to match Cantera units
+        rateUnitsDimensionality = {'1/s':0,
+                                   's^-1':0, 
+                               'm^3/(mol*s)':1,
+                               'm^6/(mol^2*s)':2,
+                               'cm^3/(mol*s)':1,
+                               'cm^6/(mol^2*s)':2,
+                               'm^3/(molecule*s)': 1, 
+                               'm^6/(molecule^2*s)': 2,
+                               'cm^3/(molecule*s)': 1,
+                               'cm^6/(molecule^2*s)': 2,
+                               }
+        try:
+            factor = 1000**rateUnitsDimensionality[self.kunits]
+            coeffs[0,0] += log10(factor)
+        except:
+            raise Exception('Chebyshev units {0} not found among accepted units for converting to Cantera Chebyshev object.'.format(self.kunits))
+        ctReaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)

@@ -259,6 +259,12 @@ cdef class KineticsModel:
                 
         return discrepancy
     
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets the kinetics for a cantera reaction object.
+        """
+        raise NotImplementedError('Unexpected call to KineticsModel.setCanteraKinetics(); you should be using a class derived from KineticsModel.')
+    
 ################################################################################
 
 cdef class PDepKineticsModel(KineticsModel):
@@ -475,6 +481,26 @@ cdef class PDepKineticsModel(KineticsModel):
             return False
 
         return True
+
+    def getCanteraEfficiencies(self, speciesList):
+        """
+        Returns a dictionary containing the collider efficiencies for this PDepKineticsModel object
+        suitable for setting the efficiencies in the following cantera reaction objects:
+        `ThreeBodyReaction`, `FalloffReaction`,`ChemicallyActivatedReaction`
+        """
+        efficiencies = {}
+        for collider, efficiency in sorted(self.efficiencies.items(), key=lambda item: id(item[0])):
+            for species in speciesList:
+                if any([collider.isIsomorphic(molecule) for molecule in species.molecule]):
+                    efficiencies[species.toChemkin()] = efficiency
+                    break
+        return efficiencies
+    
+    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+        """
+        Sets the kinetics for a cantera reaction object.
+        """
+        raise NotImplementedError('Unexpected call to KineticsModel.setCanteraKinetics(); you should be using a class derived from KineticsModel.')
 
 ################################################################################
 

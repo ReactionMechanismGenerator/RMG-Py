@@ -204,4 +204,40 @@ class QMCalculator():
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
         return thermo0
     
+
+def save(rmg):
+    # Save the QM thermo to a library if QM was turned on
+    if rmg.quantumMechanics:
+        logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
+        rmg.quantumMechanics.database.save(os.path.join(rmg.outputDirectory,'qmThermoLibrary.py'))    
+
+class QMDatabaseWriter(object):
+    """
+    This class listens to a RMG subject
+    and saves the thermochemistry of species computed via the 
+    QMTPmethods.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = QMDatabaseWriter()
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
+    def __init__(self):
+        super(QMDatabaseWriter, self).__init__()
+    
+    def update(self, rmg):
+        save(rmg)
+
         
+    

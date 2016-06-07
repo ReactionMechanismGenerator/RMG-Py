@@ -46,6 +46,7 @@ import logging
 import re
 import os.path
 from copy import copy, deepcopy
+import urllib
 
 import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -114,7 +115,7 @@ class Reaction:
         self.pairs = pairs
         
         if diffusionLimiter.enabled:
-            self.__k_effective_cache = {}
+            self.k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -172,20 +173,98 @@ class Reaction:
             return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
         else:
             return rmgpy.chemkin.writeReactionString(self)
+    
+    def toCantera(self, speciesList=[]):
+        """
+        Converts the RMG Reaction object to a Cantera Reaction object
+        with the appropriate reaction class.
+        """
+        from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
+                    
+        import cantera as ct
         
+        # Create the dictionaries containing species strings and their stoichiometries
+        # for initializing the cantera reaction object
+        ctReactants = {}
+        for reactant in self.reactants:
+            reactantName = reactant.toChemkin()  # Use the chemkin name for the species
+            if reactantName in ctReactants:
+                ctReactants[reactantName] += 1
+            else:
+                ctReactants[reactantName] = 1
+        ctProducts = {}
+        for product in self.products:
+            productName = product.toChemkin()  # Use the chemkin name for the species
+            if productName in ctProducts:
+                ctProducts[productName] += 1
+            else:
+                ctProducts[productName] = 1
+                
+        if self.kinetics:
+            if isinstance(self.kinetics, Arrhenius):
+                # Create an Elementary Reaction
+                ctReaction = ct.ElementaryReaction(reactants=ctReactants, products=ctProducts)
+            elif isinstance(self.kinetics, MultiArrhenius):
+                # Return a list of elementary reactions which are duplicates
+                ctReaction = [ct.ElementaryReaction(reactants=ctReactants, products=ctProducts) for arr in self.kinetics.arrhenius]
+                
+            elif isinstance(self.kinetics, PDepArrhenius):
+                ctReaction = ct.PlogReaction(reactants=ctReactants, products=ctProducts)
+                
+            elif isinstance(self.kinetics, MultiPDepArrhenius):
+                ctReaction = [ct.PlogReaction(reactants=ctReactants, products=ctProducts) for arr in self.kinetics.arrhenius]
+                
+            
+            elif isinstance(self.kinetics, Chebyshev):
+                ctReaction = ct.ChebyshevReaction(reactants=ctReactants, products=ctProducts)
+            
+            elif isinstance(self.kinetics, ThirdBody):
+                ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
+                
+            elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
+                ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
+            else:
+                raise NotImplementedError('Not able to set cantera kinetics for {0}'.format(self.kinetics))
+            
+            
+            # Set reversibility, duplicate, and ID attributes
+            if isinstance(ctReaction,list):
+                for rxn in ctReaction:
+                    rxn.reversible = self.reversible
+                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius 
+                    rxn.duplicate = True
+                    # Set the ID flag to the original rmg index 
+                    rxn.ID = str(self.index) 
+            else:
+                ctReaction.reversible = self.reversible
+                ctReaction.duplicate = self.duplicate
+                ctReaction.ID = str(self.index)
+                
+            
+            self.kinetics.setCanteraKinetics(ctReaction, speciesList)
+            
+            return ctReaction
+                
+        else:
+            raise Exception('Cantera reaction cannot be created because there was no kinetics.')
+    
     def getURL(self):
         """
         Get a URL to search for this reaction in the rmg website.
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        base_url = "http://rmg.mit.edu/database/kinetics/reaction/"
+
+        rxn_string = ''
         for i,species in enumerate(self.reactants):
             adjlist = species.molecule[0].toAdjacencyList(removeH=False)
-            url += "reactant{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+            rxn_string += "reactant{0}={1}__".format(i+1, adjlist)
         for i,species in enumerate(self.products):
             adjlist = species.molecule[0].toAdjacencyList(removeH=False)
-            url += "product{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+            rxn_string += "product{0}={1}__".format(i+1, adjlist)
+
+        url = base_url + urllib.quote(rxn_string)
         return url.strip('_')
         
     def isIsomerization(self):
@@ -550,24 +629,38 @@ class Reaction:
         """
         if diffusionLimiter.enabled:
             try:
-                k = self.__k_effective_cache[T]
+                k = self.k_effective_cache[T]
             except KeyError:
                 k = diffusionLimiter.getEffectiveRate(self, T)
-                self.__k_effective_cache[T] = k
+                self.k_effective_cache[T] = k
             return k
         else:
             return  self.kinetics.getRateCoefficient(T, P)
 
     def fixDiffusionLimitedA(self, T):
         """
-        Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
-        to account for the diffusion limit.
+        Decrease the pre-exponential factor (A) by the diffusion factor
+        to account for the diffusion limit at the specified temperature.
         """
-        # Decrease self.kinetics.A (if Arrhenius or ArrheniusEP)
-        self.kinetics.A = self.kinetics.A * self.getDiffusionFactor(T)
+        if not diffusionLimiter.enabled:
+            return
+        # Obtain effective rate
+        try:
+            k = self.k_effective_cache[T]
+        except KeyError:
+            k = diffusionLimiter.getEffectiveRate(self, T)
+            self.k_effective_cache[T] = k
+
+        # calculate diffusion factor
+        diffusionFactor = k / self.kinetics.getRateCoefficient(T, P=0)
+        # update preexponential factor
+        self.kinetics.A = self.kinetics.A * diffusionFactor
         # Add a comment to self.kinetics.comment
-        self.kinetics.comment.append("Pre-exponential factor A has been decreased by the diffusion factor.")
-    
+        self.kinetics.comment.append(
+            ("Pre-exponential factor A has been decreased by the "
+             "diffusion factor {0.2g} evaluated at {1} K.").format(
+                diffusionFactor, T))
+
     def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
@@ -629,6 +722,18 @@ class Reaction:
         """
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
 
+        supported_types = (
+                            KineticsData.__name__,
+                            Arrhenius.__name__,
+                            MultiArrhenius.__name__,
+                            PDepArrhenius.__name__,
+                            MultiPDepArrhenius.__name__,
+                            Chebyshev.__name__,
+                            ThirdBody.__name__,
+                            Lindemann.__name__,
+                            Troe.__name__,
+                            )
+
         # Get the units for the reverse rate coefficient
         kunits = getRateCoefficientUnitsFromReactionOrder(len(self.products))
             
@@ -637,9 +742,7 @@ class Reaction:
             
             Tlist = kf.Tdata.value_si
             klist = numpy.zeros_like(Tlist)
-            print Tlist
             for i in range(len(Tlist)):
-                print kf.getRateCoefficient(Tlist[i]), self.getEquilibriumConstant(Tlist[i])
                 klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
             
             kr = KineticsData(Tdata=(Tlist,"K"), kdata=(klist,kunits), Tmin=(numpy.min(Tlist),"K"), Tmax=(numpy.max(Tlist),"K"))
@@ -714,9 +817,7 @@ class Reaction:
             kr = Troe(krHigh, krLow, *parameters[2:])
             return kr
         else:
-            raise ReactionError(("Unexpected kinetics type {0}; should be KineticsData, Arrhenius, "
-                                 "MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, "
-                                 "ThirdBody, Lindemann, or Troe!").format(self.kinetics.__class__))
+            raise ReactionError(("Unexpected kinetics type {0}; should be one of {1}").format(self.kinetics.__class__, supported_types))
 
     def calculateTSTRateCoefficients(self, Tlist):
         return numpy.array([self.calculateTSTRateCoefficient(T) for T in Tlist], numpy.float64)
@@ -890,6 +991,17 @@ class Reaction:
         from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, format, path)
+        
+    def _repr_png_(self):
+        """
+        Return a png picture of the reaction, useful for ipython-qtconsole.
+        """
+        from rmgpy.molecule.draw import ReactionDrawer
+        tempFileName = 'temp_reaction.png'
+        ReactionDrawer().draw(self, 'png', tempFileName)
+        png = open(tempFileName,'rb').read()
+        os.unlink(tempFileName)
+        return png
             
     # Build the transition state geometry
     def generate3dTS(self, reactants, products):

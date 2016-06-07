@@ -35,6 +35,7 @@ import logging
 import re
 from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
+from .element import getElement
 #import chempy.molecule.atomtype as atomtypes
 
 bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
@@ -51,7 +52,7 @@ class PeriodicSystem(object):
     valence_electrons.update(valence_electrons_second_period_elements)
     valence_electrons.update(valence_electrons_third_period_elements)
     
-    lone_pairs         = {'H': 0, 'C': 0, 'N': 1, 'O': 2, 'Si':0, 'S': 2, 'Cl':3 }
+    lone_pairs         = {'H': 0, 'He':1, 'C': 0, 'N': 1, 'Ne': 4, 'O': 2, 'Si':0, 'S': 2, 'Cl':3, 'Ar':4 }
     
 class Saturator(object):
     @staticmethod
@@ -143,6 +144,7 @@ class ConsistencyChecker(object):
         elif nRad == 2:
             if not int(multiplicity) in [1,3]: raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
         #else: logging.info("Consistency checking of multiplicity of molecules with more than 2 unpaired electrons is not implemented yet!")
+
     
     @staticmethod
     def check_hund_rule(atom, multiplicity):
@@ -648,11 +650,23 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             if not group:
                 partialCharges.append(0)
         
+
+        # Next the isotope (if provided)
+        isotope = -1
+        if len(data) > index:
+            iState = data[index]
+            if iState[0] == 'i':
+                isotope = int(iState[1:])
+                index += 1
+
+
         # Create a new atom based on the above information
         if group:
             atom = GroupAtom(atomType, unpairedElectrons, partialCharges, label, lonePairs)
         else:
             atom = Atom(atomType[0], unpairedElectrons[0], partialCharges[0], label, lonePairs[0])
+            if isotope != -1:
+                atom.element = getElement(atom.number, isotope)
 
         # Add the atom to the list
         atoms.append(atom)
@@ -774,6 +788,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     atomUnpairedElectrons = {}
     atomLonePairs = {}
     atomCharge = {}
+    atomIsotope = {}
     if group:
         for atom in atomNumbers:
             # Atom type(s)
@@ -804,6 +819,9 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 atomCharge[atom] = None   # Empty list indicates wildcard
             else:
                 atomCharge[atom] = '[{0}]'.format(','.join(['+'+str(charge) if charge > 0 else ''+str(charge) for charge in atom.charge]))
+
+            # Isotopes
+            atomIsotope[atom] = -1    
     else:
         for atom in atomNumbers:
             # Atom type
@@ -814,6 +832,9 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
             atomLonePairs[atom] = str(atom.lonePairs)
             # Partial Charge(s)
             atomCharge[atom] = '+'+str(atom.charge) if atom.charge > 0 else '' + str(atom.charge)
+            # Isotopes
+            atomIsotope[atom] = atom.element.isotope
+
     
     # Determine field widths
     atomNumberWidth = max([len(s) for s in atomNumbers.values()]) + 1
@@ -842,7 +863,10 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
         # Partial charges
         if atomCharge[atom] != None:
             adjlist += ' c{0}'.format(atomCharge[atom])
-        
+        # Isotopes
+        if atomIsotope[atom] != -1:
+            adjlist += ' i{0}'.format(atomIsotope[atom])
+
         # Bonds list
         atoms2 = atom.bonds.keys()
         # sort them the same way as the atoms

@@ -34,6 +34,7 @@ for working with the RMG database.
 """
 
 import os.path
+import logging
 
 from base import ForbiddenStructures
 from thermo import ThermoDatabase
@@ -41,6 +42,8 @@ from transport import TransportDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
+
+from rmgpy.scoop_framework.util import get, broadcast
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
 database = None
@@ -66,7 +69,6 @@ class RMGDatabase:
         if database is None:
             database = self
         else:
-            import logging
             logging.warning("Should only make one instance of RMGDatabase because it's stored as a module-level variable!")
             logging.warning("Unexpected behaviour may result!")
 
@@ -110,6 +112,7 @@ class RMGDatabase:
         """
         self.thermo = ThermoDatabase()
         self.thermo.load(path, thermoLibraries, depository)
+        broadcast(self.thermo, 'thermo')
 
     def loadTransport(self, path, transportLibraries=None):
         """
@@ -118,6 +121,7 @@ class RMGDatabase:
         """
         self.transport = TransportDatabase()
         self.transport.load(path, transportLibraries)
+        broadcast(self.transport, 'transport')
         
     def loadForbiddenStructures(self, path):
         """
@@ -126,6 +130,7 @@ class RMGDatabase:
         """
         self.forbiddenStructures = ForbiddenStructures()
         self.forbiddenStructures.load(path)
+        broadcast(self.forbiddenStructures, 'forbidden')
 
     def loadKinetics(self,
                      path,
@@ -159,6 +164,8 @@ class RMGDatabase:
                            depositories=kineticsDepositories
                            )
 
+        broadcast(self.kinetics, 'kinetics')
+
     def loadSolvation(self, path):
         """
         Load the RMG solvation database from the given `path` on disk, where
@@ -166,6 +173,7 @@ class RMGDatabase:
         """
         self.solvation = SolvationDatabase()
         self.solvation.load(path)
+        broadcast(self.solvation, 'solvation')
         
     def loadStatmech(self, path, statmechLibraries=None, depository=True):
         """
@@ -174,6 +182,7 @@ class RMGDatabase:
         """
         self.statmech = StatmechDatabase()
         self.statmech.load(path, statmechLibraries, depository)
+        broadcast(self.statmech, 'statmech')
 
     def loadOld(self, path):
         """
@@ -217,3 +226,41 @@ class RMGDatabase:
         self.forbiddenStructures.saveOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics.saveOld(path)
         self.statmech.saveOld(path)
+
+def getDB(name):
+    """
+    Returns the RMG database object that corresponds
+    to the parameter name.
+
+    First, the module level is queried. If this variable
+    is empty, the broadcasted variables are queried.
+    """
+    global database
+
+    if database:
+        if name == 'kinetics':
+            return database.kinetics
+        elif name == 'thermo':
+            return database.thermo
+        elif name == 'transport':
+            return database.transport
+        elif name == 'solvation':
+            return database.solvation
+        elif name == 'statmech':
+            return database.statmech
+        elif name == 'forbidden':
+            return database.forbiddenStructures
+        else:
+            raise Exception('Unrecognized database keyword: {}'.format(name))
+    else:
+        try:
+            db = get(name)
+            if db:
+                return db
+            else:
+                raise Exception
+        except Exception, e:
+            logging.error("Did not find a way to obtain the broadcasted database for {}.".format(name))
+            raise e
+
+    raise Exception('Could not get database with name: {}'.format(name))

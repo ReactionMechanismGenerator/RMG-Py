@@ -1,6 +1,7 @@
 # global imports
 
 cimport element as elements
+cimport inchi as inchiutil
 
 # no .pxd files for these:
 #from .util cimport retrieveElementCount, VALENCES, ORDERS
@@ -9,67 +10,49 @@ cimport element as elements
 from .molecule cimport Atom, Bond, Molecule
 
 cpdef list BACKENDS
+cpdef dict INSTALLED_BACKENDS
 cpdef dict INCHI_LOOKUPS
 cpdef dict SMILES_LOOKUPS
-cpdef dict _known_smiles_molecules
-cpdef _known_smiles_radicals
 
-cpdef reset_lone_pairs_to_default(Atom at)
 
-cdef Molecule convert_unsaturated_bond_to_biradical(Molecule mol, list u_indices)
-
-cpdef bint isUnsaturated(Molecule mol)
-    
-cpdef bint check_number_unpaired_electrons(Molecule mol)
+#  from <identifier> functions:
 
 cdef Molecule __fromSMILES(Molecule mol, str smilesstr, str backend)
 
 cdef Molecule __fromInChI(Molecule mol, str inchistr, str backend)
 
-cdef __parse(Molecule mol, str identifier, str type_identifier, str backend)
+cdef Molecule __parse(Molecule mol, str identifier, str type_identifier, str backend)
 
-cpdef parse_openbabel(Molecule mol, str identifier, str type_identifier)
+cpdef Molecule parse_openbabel(Molecule mol, str identifier, str type_identifier)
 
-cpdef isCorrectlyParsed(Molecule mol, str identifier)
+cpdef Molecule fromInChI(Molecule mol, str inchistr, backend=*)
 
-cdef __lookup(Molecule mol, str identifier, str type_identifier)
+cpdef Molecule fromSMILES(Molecule mol, str smilesstr, str backend=*)
 
-cpdef isZwitterIon(Molecule mol)
-   
-cpdef check(Molecule mol, aug_inchi)
-
-cpdef correct_O_triple_bond(Molecule mol)
-
-cpdef fromInChI(Molecule mol, str inchistr, backend=*)
+cpdef Molecule fromSMARTS(Molecule mol, str smartsstr)
 
 cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
-
-cpdef fromSMILES(Molecule mol, str smilesstr, str backend=*)
-
-
-cpdef fromSMARTS(Molecule mol, str smartsstr)
     
 cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol)
 
-cpdef fromOBMol(Molecule mol, object obmol)
+cpdef Molecule fromOBMol(Molecule mol, object obmol)
 
-cpdef str toSMARTS(Molecule mol)
+cdef Molecule __lookup(Molecule mol, str identifier, str type_identifier)
 
-cpdef str toSMILES(Molecule mol)
+# parser helper functions: 
 
-cpdef toOBMol(Molecule mol)
+cpdef reset_lone_pairs(Molecule mol, list p_indices)
 
-cpdef toRDKitMol(Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanitize=*)
+cdef Molecule fix_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
 
-cpdef str toInChI(Molecule mol)
+cpdef bint isUnsaturated(Molecule mol)
 
-cpdef createULayer(Molecule mol)
+cpdef isCorrectlyParsed(Molecule mol, str identifier)
+   
+cpdef check(Molecule mol, aug_inchi)
 
-# returns an AugmentedInChI but there's no pxd file for that yet
-cpdef toAugmentedInChI(Molecule mol)
+cpdef fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
 
-cpdef str toInChIKey(Molecule mol)
+cpdef fixCharge(Molecule mol, list u_indices)
 
-cpdef str toAugmentedInChIKey(Molecule mol)
-
-cpdef str createMultiplicityLayer(int multiplicity)
+cpdef fix_triplet_to_singlet(Molecule mol, list p_indices)

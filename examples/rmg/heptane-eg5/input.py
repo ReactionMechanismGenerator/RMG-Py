@@ -16,7 +16,6 @@ generatedSpeciesConstraints(
 # List of species
 species(
     label='n-heptane',
-    reactive=True,
     structure=SMILES("CCCCCCC"),
 )
 
@@ -26,17 +25,31 @@ species(
     structure=SMILES("[Ar]"),
 )
 
+
 simpleReactor(
-    temperature=(1500,'K'),
+    temperature=(1600,'K'),
     pressure=(400,'Pa'),
     initialMoleFractions={
         "n-heptane": 0.02,
         "Ar": 0.98,
     },
     terminationConversion={
-        'n-heptane': 0.5,
+        'n-heptane': 0.99,
     },
-    terminationTime=(1e0,'s'),
+    terminationTime=(1e6,'s'),
+)
+
+simpleReactor(
+    temperature=(2000,'K'),
+    pressure=(400,'Pa'),
+    initialMoleFractions={
+        "n-heptane": 0.02,
+        "Ar": 0.98,
+    },
+    terminationConversion={
+        'n-heptane': 0.99,
+    },
+    terminationTime=(1e6,'s'),
 )
 
 simulator(
@@ -45,9 +58,8 @@ simulator(
 )
 
 model(
-    toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.1,
-    maximumEdgeSpecies=100000
+    toleranceInterruptSimulation=0.1
 )
 
 pressureDependence(
@@ -59,8 +71,4 @@ pressureDependence(
     interpolation=('Chebyshev', 6, 4),
 )
 
-options(
-    units='si',
-    generateOutputHTML=False,
-    generatePlots=False,
-)
+

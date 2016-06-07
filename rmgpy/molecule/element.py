@@ -67,17 +67,19 @@ class Element:
     `name`      ``str``         The IUPAC name of the element
     `mass`      ``float``       The mass of the element in kg/mol
     `covRadius` ``float``       Covalent bond radius in Angstrom
+    `isotope`   ``int``         The isotope integer of the element
     =========== =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
     """
     
-    def __init__(self, number, symbol, name, mass):
+    def __init__(self, number, symbol, name, mass, isotope=-1):
         self.number = number
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
+        self.isotope = isotope
         try:
             self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
         except RuntimeError:
@@ -95,17 +97,17 @@ class Element:
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "Element(%s, '%s', '%s', %s)" % (self.number, self.symbol, self.name, self.mass)
+        return "Element(%s, '%s', '%s', %s, %s)" % (self.number, self.symbol, self.name, self.mass, self.isotope)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Element, (self.number, self.symbol, self.name, self.mass))
+        return (Element, (self.number, self.symbol, self.name, self.mass, self.isotope))
     
 ################################################################################
 
-def getElement(value):
+def getElement(value, isotope=-1):
     """
     Return the :class:`Element` object corresponding to the given parameter
     `value`. If an integer is provided, the value is treated as the atomic
@@ -117,22 +119,22 @@ def getElement(value):
         # The parameter is an integer; assume this is the atomic number
         number = value
         for element in elementList:
-            if element.number == number:
+            if element.number == number and element.isotope == isotope:
                 return element
         # If we reach this point that means we did not find an appropriate element,
         # so we raise an exception
-        raise ElementError("No element found with atomic number %i." % (number))
+        raise ElementError("No element found with atomic number %i, and isotope %i" % (number, isotope))
     elif isinstance(value, str):
         # The parameter is a string; assume this is the element symbol
         symbol = value
         for element in elementList:
-            if element.symbol == symbol:
+            if element.symbol == symbol and element.isotope == isotope:
                 return element
         # If we reach this point that means we did not find an appropriate element,
         # so we raise an exception
-        raise ElementError("No element found with symbol %s." % (symbol))
+        raise ElementError("No element found with symbol %s, and isotope %i." % (symbol, isotope))
     else:
-        raise ElementError('No element found based on parameter %s "%r".' % (type(value), value))
+        raise ElementError('No element found based on parameter %s "%r", isotope: %i.' % (type(value), value, isotope))
 
 ################################################################################
 
@@ -145,6 +147,8 @@ def getElement(value):
 # Period 1
 #: Hydrogen
 H  = Element(1,   'H' , 'hydrogen'      , 0.00100794)
+D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2)
+T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3)
 He = Element(2,   'He', 'helium'        , 0.004002602)
 
 # Period 2
@@ -152,8 +156,10 @@ Li = Element(3,   'Li', 'lithium'       , 0.006941)
 Be = Element(4,   'Be', 'beryllium'     , 0.009012182)
 B  = Element(5,   'B',  'boron'         , 0.010811)
 C  = Element(6,   'C' , 'carbon'        , 0.0120107)
+C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13)
 N  = Element(7,   'N' , 'nitrogen'      , 0.01400674)
 O  = Element(8,   'O' , 'oxygen'        , 0.0159994)
+O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18)
 F  = Element(9,   'F' , 'fluorine'      , 0.018998403)
 Ne = Element(10,  'Ne', 'neon'          , 0.0201797)
 
@@ -271,8 +277,8 @@ Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
 elementList = [
-    H, He,
-    Li, Be, B, C, N, O, F, Ne,
+    H, D, T, He,
+    Li, Be, B, C, C13, N, O, O18, F, Ne,
     Na, Mg, Al, Si, P, S, Cl, Ar,
     K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
     Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,

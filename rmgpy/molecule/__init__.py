@@ -28,7 +28,6 @@
 #
 ################################################################################
 
-from .adjlist import *
 from .atomtype import *
 from .element import *
 from .molecule import *

@@ -41,7 +41,7 @@ import logging
 
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity
-from rmgpy.kinetics import Chebyshev, PDepArrhenius, getRateCoefficientUnitsFromReactionOrder
+from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 

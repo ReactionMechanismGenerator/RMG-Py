@@ -1,6 +1,8 @@
 import os
 
+import distutils.spawn
 import external.cclib as cclib
+import itertools
 import logging
 from subprocess import Popen
 import re
@@ -19,18 +21,25 @@ class Gaussian:
     inputFileExtension = '.gjf'
     outputFileExtension = '.log'
     
-    gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-    
-    # GAUSS_EXEDIR may be a list like "path1:path2:path3"
-    for possibleDir in gaussEnv.split(':'):
-        if os.path.exists(os.path.join(possibleDir , 'g09')):
-            executablePath = os.path.join(possibleDir , 'g09')
+    executablesToTry = ('g09', 'g03')
+
+    for exe in executablesToTry:
+        try:
+            executablePath = distutils.spawn.find_executable(exe)
+        except:
+            executablePath = None
+        if executablePath is not None:
             break
-        elif os.path.exists(os.path.join(possibleDir , 'g03')):
-            executablePath = os.path.join(possibleDir , 'g03')
-            break
-    else:
-        executablePath = os.path.join(gaussEnv , '(g03 or g09)')
+    else:  # didn't break
+        logging.debug("Did not find Gaussian on path, checking if it exists in a declared GAUSS_EXEDIR, g09root or g03root...")
+        gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
+        possibleDirs = gaussEnv.split(':')# GAUSS_EXEDIR may be a list like "path1:path2:path3"
+        for exe, possibleDir in itertools.product(executablesToTry, possibleDirs):
+            executablePath = os.path.join(possibleDir, exe)
+            if os.path.exists(executablePath):
+                break
+        else:  # didn't break
+            executablePath = os.path.join(gaussEnv , '(Gaussian 2003 or 2009)')
 
     usePolar = False
     

@@ -182,7 +182,7 @@ def fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     if not numpy.isfinite(x).all():
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
+        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule.toSMILES()))
 
     # Postprocess optimization results
     vib = list(x[0:Nvib])
@@ -233,7 +233,7 @@ def fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     if not numpy.isfinite(x).all():
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
+        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule.toSMILES()))
 
     # Postprocess optimization results
     vib = list(x[0:Nvib])
@@ -289,7 +289,7 @@ def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     if not numpy.isfinite(x).all():
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
-        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
+        logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule.toSMILES()))
 
     # Postprocess optimization results
     Nvib2 = int(round(x[1]))

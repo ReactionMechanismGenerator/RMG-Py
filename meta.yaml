@@ -13,37 +13,41 @@ requirements:
   build:
     - argparse # [py26]
     - boost ==1.56.0
-    - cairo
-    - cairocffi
+    - cairo # [unix]
+    - cairocffi # [unix]
     - coverage
     - cython ==0.21
     - gcc # [unix]
+    - gcc ==4.8.2 # [linux32]
     - gprof2dot
     - guppy
     - jinja2
     - libgcc # [unix]
+    - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
     - markupsafe
-    - matplotlib
+    - matplotlib >=1.5
     - nose
     - numpy
     - openbabel
     - psutil
-    - pydas >=1.0.1
-    - pydot
-    - pydqed
+    - pydas >=1.0.2
+    - pydot 
+    - pydqed >=1.0.1
     - pyparsing
     - python
+    - pyzmq
     - quantities
-    - rdkit
-    - rdkit ==2015.03.1
+    - rdkit >=2015.09.2
     - scipy
+    - scoop
     - setuptools
     - xlwt
 
   run:
     - argparse # [py26]
-    - cairo
-    - cairocffi
+    - cairo # [unix]
+    - cairocffi # [unix]
+    - cantera >=2.2
     - coverage
     - cython ==0.21
     - gprof2dot
@@ -51,21 +55,25 @@ requirements:
     - guppy
     - jinja2
     - libgcc # [unix]
+    - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
     - markupsafe
-    - matplotlib
+    - matplotlib >=1.5
     - mopac
     - nose
     - numpy
     - openbabel
     - psutil
-    - pydas >=1.0.1
-    - pydot
-    - pydqed
+    - pydas >=1.0.2
+    - pydot 
+    - pydqed >=1.0.1
     - pyparsing
     - python
+    - pyzmq
     - quantities
-    - rdkit ==2015.03.1
+    - rdkit >=2015.09.2
+    - rmgdatabase >=1.0.2
     - scipy
+    - scoop
     - symmetry
     - xlwt
 
@@ -75,7 +83,10 @@ test:
   imports:
     - rmgpy
   commands:
-    - make -C $SRC_DIR test
+    - cp $PREFIX/lib/python2.7/site-packages/rmgpy/rmgrc $SRC_DIR [unix]
+    - make -C $SRC_DIR test [unix]
+    - cp %PREFIX%\Lib\site-packages\rmgpy\rmgrc %SRC_DIR% [win]
+    - mingw32-make -C %SRC_DIR% test [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py

@@ -31,6 +31,8 @@ Brute force symmetry determination program and the associated test set.
 Published under GNU General Public License
 http://www.cobalt.chem.ucalgary.ca/ps/symmetry/
 This is based on Revision 1.16  2003/04/04
+This program is no longer stored in the external programs folder but is instead found on the anaconda platform.
+
 
 cclib
 An open source library, written in Python, for parsing and interpreting

@@ -129,12 +129,11 @@ class Settings(dict):
                 index = line.find('#')
                 if index != -1: line = line[:index]
                 # Is there a key-value pair remaining?
-                if line.find(':') != -1:
-                    key, value = line.split(':')
-                    key = key.strip()
+                if line.find('database.directory') != -1:
+                    value = line.split()[-1]  # Get the last token from this line
                     value = value.strip()
-                    self[key] = value
-                    self.sources[key] = "from {0}".format(self.filename)
+                    self['database.directory'] = value
+                    self.sources['database.directory'] = "from {0}".format(self.filename)
     
     def reset(self):
         """

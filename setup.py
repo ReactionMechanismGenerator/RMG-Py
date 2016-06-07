@@ -74,8 +74,11 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
         Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.generator', ['rmgpy/molecule/generator.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.resonance', ['rmgpy/molecule/resonance.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.pathfinder', ['rmgpy/molecule/pathfinder.py'], include_dirs=['.']),
         # Pressure dependence
         Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
         Extension('rmgpy.pdep.configuration', ['rmgpy/pdep/configuration.pyx']),
@@ -153,20 +156,20 @@ if 'install' in sys.argv:
     # This is so users can still do simply `python setup.py install`
     ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getSolverExtensionModules())
-elif 'main' in sys.argv:
+if 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
     sys.argv.remove('main')
     ext_modules.extend(getMainExtensionModules())
-elif 'solver' in sys.argv:
+if 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
     ext_modules.extend(getSolverExtensionModules())
-elif 'cantherm' in sys.argv:
+if 'cantherm' in sys.argv:
     # This is for `python setup.py build_ext cantherm`
     sys.argv.remove('cantherm')
     ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getCanthermExtensionModules())
-elif 'minimal' in sys.argv:
+if 'minimal' in sys.argv:
     # This starts with the full install list, but removes anything that has a pure python mode
     # i.e. in only includes things whose source is .pyx
     sys.argv.remove('minimal')
@@ -201,7 +204,7 @@ setup(name='RMG-Py',
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
-    url='http://rmg.mit.edu/',
+    url='http://reactionmechanismgenerator.github.io',
     packages=['rmgpy'],
     py_modules = modules,
     scripts=scripts,

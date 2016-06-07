@@ -1,0 +1,85 @@
+ELEMENTS H C O N Ne Ar He Si S Cl END
+
+SPECIES
+    Ar                  ! Ar
+    He                  ! He
+    Ne                  ! Ne
+    N2                  ! N2
+    ethane(1)           ! ethane(1)
+    CH3(2)              ! [CH3](2)
+    C2H5(3)             ! C[CH2](3)
+    C(6)                ! C(6)
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+Ar                      Ar1                 G200.000   6000.000  1000.00       1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+He                      He1                 G200.000   6000.000  1000.00       1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 9.28724000E-01 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 9.28724000E-01                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne1                 G200.000   6000.000  1000.00       1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+N2                      N 2                 G200.000   6000.000  1000.00       1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R)
+ethane(1)               C 2  H 6            G100.000   5000.000  954.51        1
+ 4.58979542E+00 1.41508364E-02-4.75965787E-06 8.60302924E-10-6.21723861E-14    2
+-1.27217507E+04-3.61718979E+00 3.78034578E+00-3.24276131E-03 5.52385395E-05    3
+-6.38587729E-08 2.28639990E-11-1.16203414E+04 5.21029728E+00                   4
+
+! Thermo library: primaryThermoLibrary + radical(CH3)
+CH3(2)                  C 1  H 3            G100.000   5000.000  1337.62       1
+ 3.54143640E+00 4.76790043E-03-1.82150130E-06 3.28880372E-10-2.22548587E-14    2
+ 1.62239681E+04 1.66047100E+00 3.91546905E+00 1.84152818E-03 3.48746163E-06    3
+-3.32752224E-09 8.49972445E-13 1.62856393E+04 3.51736167E-01                   4
+
+! Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + radical(CCJ)
+C2H5(3)                 C 2  H 5            G100.000   5000.000  900.30        1
+ 5.15612045E+00 9.43138098E-03-1.81955176E-06 2.21217842E-10-1.43499849E-14    2
+ 1.20641180E+04-2.91049253E+00 3.82186937E+00-3.43402515E-03 5.09273311E-05    3
+-6.20234394E-08 2.37084005E-11 1.30660115E+04 7.61631555E+00                   4
+
+! Thermo library: primaryThermoLibrary
+C(6)                    C 1  H 4            G100.000   5000.000  1084.12       1
+ 9.08263478E-01 1.14540895E-02-4.57174036E-06 8.29192155E-10-5.66315291E-14    2
+-9.71997345E+03 1.39931071E+01 4.20541563E+00-5.35557811E-03 2.51123416E-05    3
+-2.13763028E-08 5.97524682E-12-1.01619433E+04-9.21280686E-01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #1
+! Template reaction: R_Recombination
+! Exact match found for rate rule (C_methyl;C_methyl)
+CH3(2)+CH3(2)=ethane(1)                             8.260e+17 -1.400    1.000    
+
+! Reaction index: Chemkin #2; RMG #4
+! Template reaction: H_Abstraction
+! Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\H3;C_methyl)
+! Multiplied by reaction path degeneracy 6
+ethane(1)+CH3(2)=C(6)+C2H5(3)                       4.488e-05 4.990     8.000    
+
+END
+

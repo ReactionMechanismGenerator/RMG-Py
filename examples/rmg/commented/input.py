@@ -141,7 +141,9 @@ model(
         #make sure that the pruned edge species have existed for a set number of RMG iterations.  
         #the user can specify to increase it from the default value of 2
     minSpeciesExistIterationsForPrune=2,
-    
+        #filter the reactions during the enlarge step to omit species from reacting if their
+        #concentration are deemed to be too low
+    filterReactions=False,
 )
 
 options(
@@ -194,7 +196,6 @@ generatedSpeciesConstraints(
     allowed=['input species','seed mechanisms','reaction libraries'],
 	#maximum number of each atom in a molecule
     maximumCarbonAtoms=4,
-    maximumHydrogenAtoms=10,
     maximumOxygenAtoms=7,
     maximumNitrogenAtoms=0,
     maximumSiliconAtoms=0,
@@ -206,6 +207,8 @@ generatedSpeciesConstraints(
     #If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered 
     #which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
     #allowSingletO2=False,
+    # maximum allowed number of non-normal isotope atoms:
+    #maximumIsotopicAtoms=2,
 )
 
 #optional block allows thermo to be estimated through quantum calculations

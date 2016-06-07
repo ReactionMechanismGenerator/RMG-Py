@@ -53,6 +53,16 @@ pq.UnitQuantity('debye', 1.0/(constants.c*1e21)*pq.C*pq.m, symbol='De')
 
 ################################################################################
 
+# Units that should not be used in RMG-Py:
+NOT_IMPLEMENTED_UNITS = [
+                        'degC',
+                        'C',
+                        'degF',
+                        'F',
+                        'degR',
+                        'R'
+                        ]
+
 class QuantityError(Exception):
     """
     An exception to be raised when an error occurs while working with physical
@@ -83,6 +93,10 @@ class Units(object):
     conversionFactors = {'cm^-1': 1.0}
     
     def __init__(self, units=''):
+        if units in NOT_IMPLEMENTED_UNITS:
+            raise NotImplementedError(
+        'The units {} are not yet supported. Please choose SI units.'.format(units)
+                                     )
         self.units = units
 
     def getConversionFactorToSI(self):
@@ -121,9 +135,10 @@ class ScalarQuantity(Units):
     =================== ========================================================
     `value`             The numeric value of the quantity in the given units
     `units`             The units the value was specified in
-    `uncertainty`       The numeric uncertainty in the value
+    `uncertainty`       The numeric uncertainty in the value in the given units (unitless if multiplicative)
     `uncertaintyType`   The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
     `value_si`          The numeric value of the quantity in the corresponding SI units
+    `uncertainty_si`    The numeric value of the uncertainty in the corresponding SI units (unitless if multiplicative)
     =================== ========================================================
 
     It is often more convenient to perform computations using SI units instead
@@ -207,15 +222,12 @@ class ScalarQuantity(Units):
         return self._uncertaintyType
     def setUncertaintyType(self, v):
         """
-        Check the uncertainty type is valid, then set it, and set the uncertainty to -1.
-        
-        If you set the uncertainty then change the type, we have no idea what to do with 
-        the units. This ensures you set the type first.
+        Check the uncertainty type is valid, then set it.
         """
         if v not in ['+|-','*|/']:
             raise QuantityError("Invalid uncertainty type")
         self._uncertaintyType = v
-        self.uncertainty_si = -1
+
     uncertaintyType = property(getUncertaintyType, setUncertaintyType)
     
     
@@ -275,7 +287,7 @@ class ScalarQuantity(Units):
 
 class ArrayQuantity(Units):
     """
-    The :class:`ScalarQuantity` class provides a representation of an array of
+    The :class:`ArrayQuantity` class provides a representation of an array of
     physical quantity values, with optional units and uncertainty information. 
     The attributes are:
 
@@ -284,9 +296,10 @@ class ArrayQuantity(Units):
     =================== ========================================================
     `value`             The numeric value of the quantity in the given units
     `units`             The units the value was specified in
-    `uncertainty`       The numeric uncertainty in the value
+    `uncertainty`       The numeric uncertainty in the value (unitless if multiplicative)
     `uncertaintyType`   The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
     `value_si`          The numeric value of the quantity in the corresponding SI units
+    `uncertainty_si`    The numeric value of the uncertainty in the corresponding SI units (unitless if multiplicative)
     =================== ========================================================
 
     It is often more convenient to perform computations using SI units instead
@@ -384,11 +397,47 @@ class ArrayQuantity(Units):
         return ArrayQuantity(self.value.copy(), self.units, self.uncertainty.copy(), self.uncertaintyType)
 
     def getValue(self):
+        """
+        The numeric value of the array quantity, in the given units.
+        """
         return self.value_si * self.getConversionFactorFromSI()
     def setValue(self, v):
         self.value_si = numpy.array(v) * self.getConversionFactorToSI()
     value = property(getValue, setValue)
     
+    def getUncertainty(self):
+        """
+        The numeric value of the uncertainty, in the given units if additive, or no units if multiplicative.
+        """
+        if self.isUncertaintyAdditive():
+            return self.uncertainty_si * self.getConversionFactorFromSI()
+        else:
+            return self.uncertainty_si
+    def setUncertainty(self, v):
+        if self.isUncertaintyAdditive():
+            self.uncertainty_si = numpy.array(v) * self.getConversionFactorToSI()
+        else:
+            self.uncertainty_si = numpy.array(v)
+    uncertainty = property(getUncertainty, setUncertainty)
+    
+    def getUncertaintyType(self):
+        """
+        The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
+        """
+        return self._uncertaintyType
+    def setUncertaintyType(self, v):
+        """
+        Check the uncertainty type is valid, then set it.
+        
+        If you set the uncertainty then change the type, we have no idea what to do with 
+        the units. This ensures you set the type first.
+        """
+        if v not in ['+|-','*|/']:
+            raise QuantityError("Invalid uncertainty type")
+        self._uncertaintyType = v
+
+    uncertaintyType = property(getUncertaintyType, setUncertaintyType)
+
     def equals(self, quantity):
         """
         Return ``True`` if the everything in a quantity object matches
@@ -641,7 +690,7 @@ Power = UnitType('W')
 
 Pressure = UnitType('Pa', commonUnits=['bar', 'atm', 'torr', 'psi', 'mbar'])
 
-Temperature = UnitType('K', commonUnits=['degC', 'degF', 'degR'])
+Temperature = UnitType('K', commonUnits=[])
 
 Time = UnitType('s')
 

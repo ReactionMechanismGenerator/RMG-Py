@@ -40,58 +40,6 @@ from rmgpy.species import Species
 
 ################################################################################
 
-# The names of all of the RMG reaction families that are bimolecular
-BIMOLECULAR_KINETICS_FAMILIES = [
-    'H_Abstraction',
-    'R_Addition_MultipleBond',
-    'R_Recombination',
-    'Disproportionation',
-    '1+2_Cycloaddition',
-    '2+2_cycloaddition_Cd',
-    '2+2_cycloaddition_CO',
-    '2+2_cycloaddition_CCO',
-    'Diels_alder_addition',
-    '1,2_Insertion',
-    '1,3_Insertion_CO2',
-    '1,3_Insertion_ROR',
-    'R_Addition_COm',
-    'Oa_R_Recombination',
-    'Substitution_O',
-    'SubstitutionS',
-    'R_Addition_CSm',
-    '1,3_Insertion_RSR',
-    'lone_electron_pair_bond',
-]
-
-# The names of all of the RMG reaction families that are unimolecular
-UNIMOLECULAR_KINETICS_FAMILIES = [
-    'intra_H_migration',
-    'Birad_recombination',
-    'intra_OH_migration',
-    'HO2_Elimination_from_PeroxyRadical',
-    'H_shift_cyclopentadiene',
-    'Cyclic_Ether_Formation',
-    'Intra_R_Add_Exocyclic',
-    'Intra_R_Add_Endocyclic',
-    '1,2-Birad_to_alkene',
-    'Intra_Disproportionation',
-    'Korcek_step1',
-    'Korcek_step2',
-    '1,2_shiftS',
-    'intra_substitutionCS_cyclization',
-    'intra_substitutionCS_isomerization',
-    'intra_substitutionS_cyclization',
-    'intra_substitutionS_isomerization',
-    'intra_NO2_ONO_conversion',
-    '1,4_Cyclic_birad_scission',
-    '1,4_Linear_birad_scission',
-    'Intra_Diels_alder',
-    'ketoenol',
-    'Retroen'
-]
-
-################################################################################
-
 class KineticsError(Exception):
     """
     An exception for problems with kinetics. Pass a string describing the problem.

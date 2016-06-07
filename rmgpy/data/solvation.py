@@ -35,6 +35,7 @@
 import os.path
 import math
 import logging
+import rmgpy.constants as constants
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
@@ -208,13 +209,15 @@ class SoluteData():
     
     def getStokesDiffusivity(self, T, solventViscosity):
         """
-        Get diffusivity of solute using the Stokes-Einstein sphere relation. Radius is 
-        found from the McGowan volume.
+        Get diffusivity of solute using the Stokes-Einstein sphere relation. 
+        Radius is found from the McGowan volume.
+        solventViscosity should be given in  kg/s/m which equals Pa.s
+        (water is about 9e-4 Pa.s at 25C, propanol is 2e-3 Pa.s)
+        Returns D in m2/s
         """
-        k_b = 1.3806488e-23 # m2*kg/s2/K
-        radius = math.pow((75*self.V/3.14159),(1.0/3.0))/100 # in meters
-        D = k_b*T/6/3.14159/solventViscosity/radius # m2/s
-        return D
+        radius = math.pow((75*self.V/constants.pi/constants.Na),(1.0/3.0))/100 # in meters, V is in MgGowan volume in cm3/mol/100
+        D = constants.kB*T/6/constants.pi/solventViscosity/radius # m2/s
+        return D  # m2/s
             
     def setMcGowanVolume(self, species):
         """
@@ -446,7 +449,6 @@ class SolvationDatabase(object):
         d = {
             'libraries': self.libraries,
             'groups': self.groups,
-            'libraryOrder': self.libraryOrder,
             }
         return (SolvationDatabase, (), d)
 
@@ -456,7 +458,6 @@ class SolvationDatabase(object):
         """
         self.libraries = d['libraries']
         self.groups = d['groups']
-        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, libraries=None, depository=True):
         """

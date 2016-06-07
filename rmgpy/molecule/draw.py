@@ -1505,6 +1505,6 @@ class ReactionDrawer:
         
         # Finish Cairo drawing
         if format == 'png':
-            surface.write_to_png(path)
+            rxn_surface.write_to_png(path)
         else:
-            surface.finish()
+            rxn_surface.finish()

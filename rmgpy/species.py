@@ -78,12 +78,10 @@ class Species(object):
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
     `transportData`          A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
-    `dipoleMoment`          The molecular dipole moment
-    `polarizability`        The polarizability alpha
-    `Zrot`                  The rotational relaxation collision number
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
-    'props'                 A generic 'properties' dictionary to store user-defined flags
+    `props`                 A generic 'properties' dictionary to store user-defined flags
+    `aug_inchi`             Unique augmented inchi
     ======================= ====================================================
 
     note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
@@ -91,8 +89,7 @@ class Species(object):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 dipoleMoment=None, polarizability=None, Zrot=None, 
-                 energyTransferModel=None, reactive=True, props=None):
+                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -101,11 +98,9 @@ class Species(object):
         self.transportData = transportData
         self.reactive = reactive
         self.molecularWeight = molecularWeight
-        self.dipoleMoment = dipoleMoment
-        self.polarizability = polarizability
-        self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
+        self.aug_inchi = aug_inchi
         
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
@@ -131,9 +126,6 @@ class Species(object):
         if self.transportData is not None: string += 'transportData={0!r}, '.format(self.transportData)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
-        if self.dipoleMoment is not None: string += 'dipoleMoment={0!r}, '.format(self.dipoleMoment)
-        if self.polarizability is not None: string += 'polarizability={0!r}, '.format(self.polarizability)
-        if self.Zrot is not None: string += 'Zrot={0!r}, '.format(self.Zrot)
         if self.energyTransferModel is not None: string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
         string = string[:-2] + ')'
         return string
@@ -155,31 +147,13 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.props))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
     def getMolecularWeight(self):
         return self._molecularWeight
     def setMolecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
-
-    def getDipoleMoment(self):
-        return self._dipoleMoment
-    def setDipoleMoment(self, value):
-        self._dipoleMoment = quantity.DipoleMoment(value)
-    dipoleMoment = property(getDipoleMoment, setDipoleMoment, """The molecular dipole moment.""")
-
-    def getPolarizability(self):
-        return self._polarizability
-    def setPolarizability(self, value):
-        self._polarizability = quantity.Volume(value)
-    polarizability = property(getPolarizability, setPolarizability, """The polarizability alpha.""")
-
-    def getZrot(self):
-        return self._Zrot
-    def setZrot(self, value):
-        self._Zrot = quantity.Dimensionless(value)
-    Zrot = property(getZrot, setZrot, """The rotational relaxation collision number.""")
 
     def generateResonanceIsomers(self):
         """
@@ -245,6 +219,43 @@ class Species(object):
         """
         output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
         return output
+    
+    def toChemkin(self):
+        """
+        Return the chemkin-formatted string for this species.
+        """
+        from rmgpy.chemkin import getSpeciesIdentifier
+        return getSpeciesIdentifier(self)
+        
+    def toCantera(self, speciesList=[]):
+        """
+        Converts the RMG Species object to a Cantera Species object
+        with the appropriate thermo data.
+        """
+        import cantera as ct
+        
+        # Determine the number of each type of element in the molecule
+        elementDict = {} # elementCounts = [0,0,0,0]
+        for atom in self.molecule[0].atoms:
+            # The atom itself
+            symbol = atom.element.symbol
+            if symbol not in elementDict:
+                elementDict[symbol] = 1
+            else:
+                elementDict[symbol] += 1
+        
+        ctSpecies = ct.Species(self.toChemkin(), elementDict)
+        if self.thermo:
+            try:
+                ctSpecies.thermo = self.thermo.toCantera()
+            except Exception, e:
+                print e
+                raise Exception('Could not convert thermo to create Cantera Species object. Check that thermo is a NASA polynomial.')
+        
+        if self.transportData:
+            ctSpecies.transport = self.transportData.toCantera()
+            
+        return ctSpecies
 
     def hasStatMech(self):
         """
@@ -373,6 +384,58 @@ class Species(object):
         Return the value of the heat capacity at infinite temperature in J/mol*K.
         """
         return self.molecule[0].calculateCpInf()
+
+    def copy(self, deep=False):
+        """
+        Create a copy of the current species. If the 
+        kw argument 'deep' is True, then a deep copy will be made of the 
+        Molecule objects in self.molecule.
+
+        For other complex attributes, a deep copy will always be made.
+        """
+        from copy import deepcopy
+
+        cython.declare(other=Species)
+
+        other = Species.__new__(Species)
+
+        other.index = self.index
+
+        other.label = self.label
+
+        other.thermo = deepcopy(self.thermo)
+
+        other.molecule = []
+        for mol in self.molecule:
+            other.molecule.append(mol.copy(deep=deep))
+
+        other.conformer = deepcopy(self.conformer)
+
+        other.transportData = deepcopy(self.transportData)
+
+        other.molecularWeight = deepcopy(self.molecularWeight)
+        other.energyTransferModel = deepcopy(self.energyTransferModel)
+        other.reactive = self.reactive        
+        other.props = deepcopy(self.props)
+
+        return other
+
+    def getAugmentedInChI(self):
+        if self.aug_inchi is None:
+            self.aug_inchi = self.generate_aug_inchi()
+            return self.aug_inchi
+        else:
+            return self.aug_inchi
+
+    def generate_aug_inchi(self):
+        candidates = []
+        self.generateResonanceIsomers()
+        for mol in self.molecule:
+            cand = mol.toAugmentedInChI()
+            candidates.append(cand)
+
+        candidates.sort()
+        return candidates[0]        
 
 ################################################################################
 

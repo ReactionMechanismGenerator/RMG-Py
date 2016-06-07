@@ -1,15 +1,15 @@
-name: rmg
+name: rmg_env
 channels:
   - defaults
   - rmg
-  - rdkit
 dependencies:
   - libgcc # [unix]
   - python
-  - numpy
+  - numpy >=1.10.0
+  - cantera >=2.2
   - cython ==0.21
-  - matplotlib
-  - rdkit ==2015.03.1
+  - matplotlib >=1.5
+  - rdkit >=2015.09.2
   - pydas >=1.0.1
   - pydqed >=1.0.0
   - quantities
@@ -31,3 +31,5 @@ dependencies:
   - symmetry
   - mopac
   - graphviz
+  - scoop
+  - libgfortran ==1.0 # You may need to comment this out for mac osx

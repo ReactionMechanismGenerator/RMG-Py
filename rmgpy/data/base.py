@@ -43,7 +43,8 @@ try:
 except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
-from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
+from rmgpy.molecule import Molecule, Group
+from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 
 from reference import Reference, Article, Book, Thesis
 
@@ -930,9 +931,11 @@ class Database:
                 if center is None or atom is None:
                     return False
                 if isinstance(center, list):
-                    center = center[0]
+                    # Currently, no node in the database should have duplicate labels
+                    # The capability to have duplicate labels in Group() exists but does not have any functionality.
+                    raise DatabaseError('Nodes in the database should not have duplicate labels. Node {0} does.'.format(node))
                 # Semantic check #1: atoms with same label are equivalent
-                elif not atom.isSpecificCaseOf(center):
+                if not atom.isSpecificCaseOf(center):
                     return False
                 # Semantic check #2: labeled atoms that share bond in the group (node)
                 # also share equivalent (or more specific) bond in the structure

@@ -7,6 +7,7 @@ virtualenv:
 env:
   global:
     - secure: "L2ja+ZnV83w4qG3E8FwTjm0D6IWNOnj5wuFOjYTwbzQP4OAgLAWBzCMtxzWy5sMxFLtRgkswBH1d5f5kg8Ab7GIyAMFgQwe8UFqMJ+N05QNszE1mJkAvJtv2XN7669XXQhTt5EXfHrCcGZaODVnI2CEA8GB5DxiHO2Lcqf/xvgE="
+    - secure: "Fa/qcHKKkTzgNanhgz+XWXg5K+uae5Ukxd0hfzYaiOI4+ldFbyMrYbPpxxoYVXw1SSO0psSupLfPfXzHwyJpFOyc46P+fo+R3YgNTJwr2VfdvSC0bp9K01nlRJ/z62IpMwmDwR2UH5xnfTeB9nhtzviFNKZoDZ/GR7F1Wqd/nnU="
 addons:
   apt:
     packages:
@@ -14,10 +15,10 @@ addons:
 
 before_install:
   # Set up anaconda
-  - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
+  - wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/anaconda/bin:$PATH
+  - ./miniconda.sh -b -p $HOME/miniconda
+  - export PATH=$HOME/miniconda/bin:$PATH
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/RMG-Py:$PYTHONPATH
   # Update conda itself
   - conda update --yes conda
@@ -27,14 +28,13 @@ before_install:
 
 install:
   - conda env create 
-  - source activate rmg
+  - source activate rmg_env
+  - yes 'Yes' | $CONDA_ENV_PATH/bin/mopac $MOPACKEY > /dev/null
   - make
 
 script: 
   - make test
   - make test-database
-  - make eg1
-  - make eg4
-  - make eg5
-  - make eg6
-  - make eg7
+
+after_success:
+  - bash ./deploy.sh
