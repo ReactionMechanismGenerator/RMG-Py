@@ -2109,7 +2109,8 @@ class ModelMatcher():
                             self.identified_unprocessed_labels))
 
             logging.info("Saving chemkin files")
-            rm.saveChemkinFile(os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
+            rmgpy.chemkin.saveChemkin(rm,
+                               os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
                                os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin_verbose.txt'),
                                os.path.join(self.rmg_object.outputDirectory, 'identified_RMG_dictionary.txt'))
 
