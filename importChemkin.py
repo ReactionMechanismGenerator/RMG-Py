@@ -30,6 +30,7 @@ import urllib2
 
 import rmgpy
 import rmgpy.rmg
+import rmgpy.util
 import rmgpy.rmg.input
 from rmgpy.display import display
 import rmgpy.kinetics
@@ -614,7 +615,7 @@ class ModelMatcher():
         rmg = RMG()
         rmg.outputDirectory = args.output_directory
         rmg.scratchDirectory = args.scratch_directory
-        rmg.makeOutputSubdirectory('species')
+        rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'species')
         rmg.databaseDirectory = databaseDirectory
         rmg.thermoLibraries = ['primaryThermoLibrary',
                                'KlippensteinH2O2',
@@ -687,7 +688,7 @@ class ModelMatcher():
         rmg.initialSpecies = []
         rmg.reactionSystems = []
 
-        rmg.makeOutputSubdirectory('pdep')  # deletes contents
+        rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'pdep')  # deletes contents
         # This is annoying!
         if rmg.pressureDependence:
             rmg.pressureDependence.outputFile = rmg.outputDirectory
