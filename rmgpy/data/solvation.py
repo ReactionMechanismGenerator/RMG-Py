@@ -271,22 +271,25 @@ class SolventLibrary(Database):
     def loadEntry(self,
                   index,
                   label,
-                  molecule,
                   solvent,
+                  molecule=None,
                   reference=None,
                   referenceType='',
                   shortDesc='',
                   longDesc='',
                   ):
-        try:
-            mol = Species().fromSMILES(molecule)
-        except:
+        mol = molecule
+        if molecule is not None:
             try:
-                mol = Species().fromAdjacencyList(molecule)
+                mol = Species().fromSMILES(molecule)
             except:
-                logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule,self.name))
-                raise
-        mol.generateResonanceIsomers()
+                logging.debug("Solvent '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
+                try:
+                    mol = Species().fromAdjacencyList(molecule)
+                except:
+                    logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule, self.name))
+                    raise
+            mol.generateResonanceIsomers()
 
         self.entries[label] = Entry(
             index = index,
