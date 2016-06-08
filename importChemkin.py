@@ -1815,7 +1815,7 @@ class ModelMatcher():
             # This is also limited to only reactions that occur in the chemkin file.
             if self.speciesReactAccordingToChemkin(newSpecies, newSpecies):
                 try:
-                    newReactions.extend(rmgpy.rmg.react.react(newSpecies, [newSpecies]))
+                    newReactions.extend(rmgpy.rmg.react.react(newSpecies, [newSpecies.copy(deep=True)]))
                 except KineticsError as e:
                     logging.error(str(e))
                     logging.error("Not reacting {0!r} with itself".format(newSpecies))
