@@ -64,7 +64,9 @@ from pdep import PDepReaction, PDepNetwork
 class Species(rmgpy.species.Species):
     solventName = None
     solventData = None
+    solventStructure = None
     solventViscosity = None
+    isSolvent = False
     diffusionTemp = None
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 

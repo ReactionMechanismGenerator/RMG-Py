@@ -36,6 +36,7 @@ import os.path
 import math
 import logging
 import rmgpy.constants as constants
+from rmgpy.species import Species
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
@@ -270,15 +271,27 @@ class SolventLibrary(Database):
     def loadEntry(self,
                   index,
                   label,
+                  molecule,
                   solvent,
                   reference=None,
                   referenceType='',
                   shortDesc='',
                   longDesc='',
                   ):
+        try:
+            mol = Species().fromSMILES(molecule)
+        except:
+            try:
+                mol = Species().fromAdjacencyList(molecule)
+            except:
+                logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule,self.name))
+                raise
+        mol.generateResonanceIsomers()
+
         self.entries[label] = Entry(
             index = index,
             label = label,
+            item = mol,
             data = solvent,
             reference = reference,
             referenceType = referenceType,
@@ -303,7 +316,12 @@ class SolventLibrary(Database):
         Get a solvent's data from its name
         """
         return self.entries[label].data
-        
+
+    def getSolventStructure(self, label):
+        """
+        Get a solvent's molecular structure as SMILES or adjacency list from its name
+        """
+        return self.entries[label].item
         
 class SoluteLibrary(Database):
     """
@@ -478,7 +496,13 @@ class SolvationDatabase(object):
         except:
             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
         return solventData
-        
+
+    def getSolventStructure(self, solvent_name):
+        try:
+            solventStructure = self.libraries['solvent'].getSolventStructure(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return solventStructure
         
     def loadGroups(self, path):
         """
