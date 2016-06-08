@@ -436,7 +436,16 @@ class RMG(util.Subject):
                         pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
-            
+
+            # For liquidReactor, checks whether the solvent is listed as one of the initial species by comparing the
+            # the molecular structures of the initialSpecies and the solvent
+            if self.solvent:
+                for spec in self.initialSpecies:
+                    spec.isSolvent = spec.isIsomorphic(Species.solventStructure)
+                if not sum(1 if spec.isSolvent else 0 for spec in self.initialSpecies):
+                    logging.info('One of the initial species must be a solvent')
+                    raise Exception('One of the initial species must be a solvent')
+
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
             if 'allowSingletO2' in self.speciesConstraints and self.speciesConstraints['allowSingletO2']:
