@@ -30,6 +30,7 @@ import urllib2
 
 import rmgpy
 import rmgpy.rmg
+import rmgpy.util
 import rmgpy.rmg.input
 from rmgpy.display import display
 import rmgpy.kinetics
@@ -614,7 +615,7 @@ class ModelMatcher():
         rmg = RMG()
         rmg.outputDirectory = args.output_directory
         rmg.scratchDirectory = args.scratch_directory
-        rmg.makeOutputSubdirectory('species')
+        rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'species')
         rmg.databaseDirectory = databaseDirectory
         rmg.thermoLibraries = ['primaryThermoLibrary',
                                'KlippensteinH2O2',
@@ -687,7 +688,7 @@ class ModelMatcher():
         rmg.initialSpecies = []
         rmg.reactionSystems = []
 
-        rmg.makeOutputSubdirectory('pdep')  # deletes contents
+        rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'pdep')  # deletes contents
         # This is annoying!
         if rmg.pressureDependence:
             rmg.pressureDependence.outputFile = rmg.outputDirectory
@@ -1418,7 +1419,7 @@ class ModelMatcher():
                 if reactionsMatch(edgeReaction, chemkinReaction):
                     edgeReactionMatchesSomething = True
                     logging.info("Chemkin reaction     {0}\n matches RMG {1} reaction  {2}".format(
-                        chemkinReaction, edgeReaction.family.name, edgeReaction))
+                        chemkinReaction, edgeReaction.family, edgeReaction))
                     if self.suggestedMatches:
                         logging.info(" suggesting new species match: {0!r}".format(
                            dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
@@ -1637,7 +1638,7 @@ class ModelMatcher():
                 f.write('{0!r}'.format('Bug!: ' + str(e)))
                 generated_reactions = []
             for reaction in generated_reactions:
-                f.write('{0!r}, '.format(reaction.family.label))
+                f.write('{0!r}, '.format(reaction.family))
             f.write(' ],\n')
             f.write('},\n\n')
             del generated_reactions
@@ -1791,7 +1792,7 @@ class ModelMatcher():
             # Find reactions involving the new species as unimolecular reactant
             # or product (e.g. A <---> products)
             try:
-                newReactions.extend(rm.react(database, newSpecies))
+                newReactions.extend(rmgpy.rmg.react.react(newSpecies))
             except KineticsError as e:
                 logging.error(str(e))
                 logging.error("Not reacting {0!r} on its own".format(newSpecies))
@@ -1805,7 +1806,7 @@ class ModelMatcher():
                 if coreSpecies.reactive:
                     if self.speciesReactAccordingToChemkin(newSpecies, coreSpecies):
                         try:
-                            newReactions.extend(rm.react(database, newSpecies, coreSpecies))
+                            newReactions.extend(rmgpy.rmg.react.react(newSpecies, [coreSpecies]))
                         except KineticsError as e:
                             logging.error(str(e))
                             logging.error("Not reacting {0!r} with {1!r}".format(newSpecies, coreSpecies))
@@ -1814,7 +1815,7 @@ class ModelMatcher():
             # This is also limited to only reactions that occur in the chemkin file.
             if self.speciesReactAccordingToChemkin(newSpecies, newSpecies):
                 try:
-                    newReactions.extend(rm.react(database, newSpecies, newSpecies))
+                    newReactions.extend(rmgpy.rmg.react.react(newSpecies, [newSpecies.copy(deep=True)]))
                 except KineticsError as e:
                     logging.error(str(e))
                     logging.error("Not reacting {0!r} with itself".format(newSpecies))
@@ -1822,6 +1823,8 @@ class ModelMatcher():
         # Add new species
         reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
 
+        # "inflate" the new reactions to turn them into species not integers
+        newReactions = [rm.inflate(rxn) for rxn in newReactions]
         # Process the new reactions
         # While adding to core/edge/pdep network, this clears atom labels:
         rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
@@ -1856,7 +1859,7 @@ class ModelMatcher():
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p, r) for r, p in reaction.pairs]
-                if reaction.family.ownReverse and hasattr(reaction, 'reverse'):
+                if rmgpy.rmg.model.getFamilyLibraryObject(reaction.family).ownReverse and hasattr(reaction, 'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
@@ -2108,7 +2111,8 @@ class ModelMatcher():
                             self.identified_unprocessed_labels))
 
             logging.info("Saving chemkin files")
-            rm.saveChemkinFile(os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
+            rmgpy.chemkin.saveChemkin(rm,
+                               os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
                                os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin_verbose.txt'),
                                os.path.join(self.rmg_object.outputDirectory, 'identified_RMG_dictionary.txt'))
 
@@ -2712,7 +2716,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     if matchingSpecies in this_reaction_votes_for:
                         rmgRxns = this_reaction_votes_for[matchingSpecies]
                         output.append("<td style='font-size: small;'>{family}</td>".format(
-                            family='<br/>'.join([r.family.label for r in rmgRxns])))
+                            family='<br/>'.join([r.family for r in rmgRxns])))
                     else:
                         output.append("<td>-</td>")
                 output.append("</tr>")
@@ -2784,7 +2788,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         chemkinrxn = str(rxn[0])
                         rmgrxn = str(rxn[1])
                         rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
-                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
+                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
