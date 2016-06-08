@@ -1419,7 +1419,7 @@ class ModelMatcher():
                 if reactionsMatch(edgeReaction, chemkinReaction):
                     edgeReactionMatchesSomething = True
                     logging.info("Chemkin reaction     {0}\n matches RMG {1} reaction  {2}".format(
-                        chemkinReaction, edgeReaction.family.name, edgeReaction))
+                        chemkinReaction, edgeReaction.family, edgeReaction))
                     if self.suggestedMatches:
                         logging.info(" suggesting new species match: {0!r}".format(
                            dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
@@ -1638,7 +1638,7 @@ class ModelMatcher():
                 f.write('{0!r}'.format('Bug!: ' + str(e)))
                 generated_reactions = []
             for reaction in generated_reactions:
-                f.write('{0!r}, '.format(reaction.family.label))
+                f.write('{0!r}, '.format(reaction.family))
             f.write(' ],\n')
             f.write('},\n\n')
             del generated_reactions
@@ -1859,7 +1859,7 @@ class ModelMatcher():
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p, r) for r, p in reaction.pairs]
-                if reaction.family.ownReverse and hasattr(reaction, 'reverse'):
+                if rmgpy.rmg.model.getFamilyLibraryObject(reaction.family).ownReverse and hasattr(reaction, 'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
@@ -2716,7 +2716,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     if matchingSpecies in this_reaction_votes_for:
                         rmgRxns = this_reaction_votes_for[matchingSpecies]
                         output.append("<td style='font-size: small;'>{family}</td>".format(
-                            family='<br/>'.join([r.family.label for r in rmgRxns])))
+                            family='<br/>'.join([r.family for r in rmgRxns])))
                     else:
                         output.append("<td>-</td>")
                 output.append("</tr>")
@@ -2788,7 +2788,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         chemkinrxn = str(rxn[0])
                         rmgrxn = str(rxn[1])
                         rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
-                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
+                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
