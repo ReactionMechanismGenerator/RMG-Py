@@ -861,6 +861,9 @@ class ThermoDatabase(object):
                 elif bond.isDouble():
                     bondedAtom.incrementRadical()
                     bondedAtom.incrementRadical()
+                elif bond.isTriple():
+                    bondedAtom.incrementRadical()
+                    bondedAtom.incrementLonePairs()
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
 
