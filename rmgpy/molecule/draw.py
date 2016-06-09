@@ -1023,6 +1023,14 @@ class MoleculeDrawer:
             self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
             self.__drawLine(cr, x1     , y1     , x2     , y2     )
             self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
+        elif bond.isQuadruple() and (self.symbols[atom1] != '' or self.symbols[atom2] != ''):
+            # Draw quadruple bond centered on bond axis
+            du *= 1.5; dv *= 1.5
+            self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+            self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
+            du *= 2.2; dv *= 2.2
+            self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+            self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
         else:
             # Draw bond on skeleton
             self.__drawLine(cr, x1, y1, x2, y2)
@@ -1034,6 +1042,11 @@ class MoleculeDrawer:
                 du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
                 self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
                 self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
+            elif bond.isQuadruple():
+                du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
+                self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
+                self.__drawLine(cr, x1 + 2 * du + dx, y1 + 2 * dv + dy, x2 + 2 * du - dx, y2 + 2 * dv - dy)
         
     def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True, drawLonePairs=False):
         """
