@@ -656,16 +656,16 @@ class Reaction:
         temperature `T` in K with surface site density `surfaceSiteDensity` in mol/m2.
         Value is returned in combination of [m,mol,s]
         """
-        #ToDo: this is copied from gas phase Reaction
+        cython.declare(rateCoefficient=cython.double, 
+                       molecularWeight_kg=cython.double, )
+
         if diffusionLimiter.enabled:
             raise NotImplementedError()
         if not self.isSurfaceReaction():
             raise ReactionError("This is not a surface reaction!")
 
         if isinstance(self.kinetics, StickingCoefficient):
-            stickingCoefficient = self.kinetics.getStickingCoefficient(T)
-
-            rateCoefficient = stickingCoefficient
+            rateCoefficient= self.kinetics.getStickingCoefficient(T)
             adsorbate = None
             for r in self.reactants:
                 if r.isSurfaceSite():

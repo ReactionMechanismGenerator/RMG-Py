@@ -85,7 +85,7 @@ cdef class Reaction:
 
     cpdef double getRateCoefficient(self, double T, double P=?)
     
-    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity)
+    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity) except -2
 
     cpdef fixBarrierHeight(self, bint forcePositive=?)
 
