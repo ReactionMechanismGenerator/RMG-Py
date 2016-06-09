@@ -1218,6 +1218,7 @@ class MoleculeDrawer:
             elif heavyAtom == 'Cl': cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
             elif heavyAtom == 'Br': cr.set_source_rgba(0.6, 0.2, 0.2, 1.0)
             elif heavyAtom == 'I':  cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
+            elif heavyAtom == 'X':  cr.set_source_rgba(0.5, 0.25, 0.5, 1.0)
             else:                   cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
     
             # Text itself
