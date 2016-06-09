@@ -304,6 +304,7 @@ class MoleculeDrawer:
         """
         Generate the 2D coordinates to be used when drawing the current 
         molecule. The function uses rdKits 2D coordinate generation.
+        Updates the self.coordinates Array in place.
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
@@ -372,8 +373,6 @@ class MoleculeDrawer:
             # minimize likelihood of overlap
             self.__generateNeighborCoordinates(backbone)
             
-            return coordinates
-            
         else:
             
             # Use rdkit 2D coordinate generation:
@@ -401,7 +400,21 @@ class MoleculeDrawer:
                 coordinates[:,0] = temp[:,1]
                 coordinates[:,1] = temp[:,0]
             
-            return coordinates
+        # For surface species:
+        if self.molecule.containsSurfaceSite():
+            if len(self.molecule.atoms) == 1:
+                return coordinates
+            for site in self.molecule.atoms:
+                if site.isSurfaceSite():
+                    break
+            else:
+                raise Exception("Can't find surface site")
+            adsorbate = site.bonds.keys()[0]
+            coordinates[atoms.index(site), :] = [0, 0]
+            coordinates[atoms.index(adsorbate), :] = [0, 1.0]
+            backbone = [site, adsorbate]
+            self.__generateNeighborCoordinates(backbone)
+
     
     def __findCyclicBackbone(self):
         """
