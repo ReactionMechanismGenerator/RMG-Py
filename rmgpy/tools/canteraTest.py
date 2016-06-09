@@ -94,4 +94,21 @@ class RMGToCanteraTest(unittest.TestCase):
         from rmgpy.tools.canteraModel import checkEquivalentCanteraReaction
         for i in range(len(self.ctReactions)):
             self.assertTrue(checkEquivalentCanteraReaction(self.ctReactions[i],self.rmg_ctReactions[i]))
+    
+    def testIsotopeModel(self):
+        """
+        Test that converting a chemkin model with user-defined elements to a cantera model works.
+        """
+
+        folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools/data/isotopes')
         
+        chemkinPath = os.path.join(folder, 'chem_annotated.inp')
+        base = os.path.basename(chemkinPath)
+        baseName = os.path.splitext(base)[0]
+        outName = os.path.join(folder, baseName + ".cti")
+
+        import cantera as ct
+        from cantera import ck2cti
+        parser = ck2cti.Parser()
+        parser.convertMech(chemkinPath)
+        model = ct.Solution(outName)
