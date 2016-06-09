@@ -333,68 +333,67 @@ def getAtomType(atom, bonds):
     atomType = ''
     
     # Count numbers of each higher-order bond type
-    single = 0; double = 0; doubleO = 0; triple = 0; benzene = 0
+    single = 0; doubleR = 0; doubleO = 0; doubleS = 0; triple = 0; benzene = 0
     for atom2, bond12 in bonds.iteritems():
         if bond12.isSingle():
             single += 1
         elif bond12.isDouble():
-            if atom2.isOxygen(): doubleO += 1
-            else:                double += 1
+            if atom2.isOxygen(): 
+                doubleO += 1
+            elif atom2.isSulfur():
+                doubleS += 1
+            else:
+                #We should decide if this is for double bonds to C only or not. Each contributer
+                #seems to have differing opinions
+                doubleR += 1
         elif bond12.isTriple(): triple += 1
         elif bond12.isBenzene(): benzene += 1
 
+    double = doubleR + doubleO + doubleS
     # Use element and counts to determine proper atom type
     if atom.symbol == 'H':
         atomType = 'H'
     elif atom.symbol == 'He':
         atomType = 'He'
     elif atom.symbol == 'C':
-        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cs'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cd'
-        elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Cdd'
-        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ct'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'CO'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Cb'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Cbf'
+        if   double == 0 and triple == 0 and benzene == 0:                  atomType = 'Cs'
+        elif double == 1 and triple == 0 and benzene == 0 and doubleR == 1: atomType = 'Cd'
+        elif double == 2 and triple == 0 and benzene == 0:                  atomType = 'Cdd'
+        elif double == 0 and triple == 1 and benzene == 0:                  atomType = 'Ct'
+        elif double == 1 and triple == 0 and benzene == 0 and doubleO == 1: atomType = 'CO'
+        elif double == 1 and triple == 0 and benzene == 0 and doubleS == 1: atomType = 'CS'
+        elif double == 0 and triple == 0 and benzene == 2:                  atomType = 'Cb'
+        elif double == 0 and triple == 0 and benzene == 3:                  atomType = 'Cbf'
     elif atom.symbol == 'N':
-        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0: atomType = 'N3s'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0 and atom.lonePairs == 2: atomType = 'N1d'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 1: atomType = 'N3s'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 2: atomType = 'N3s'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 3: atomType = 'N3s'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0: atomType = 'N3d'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0 and single == 0: atomType = 'N3d'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 1: atomType = 'N3d'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0 and single == 1: atomType = 'N3d'
-        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0 and single == 0: atomType = 'N3t'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2 and single == 0: atomType = 'N3b'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 4: atomType = 'N5s'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 2: atomType = 'N5d'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0 and single == 2: atomType = 'N5d'
-        elif double == 2 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
-        elif double == 0 and doubleO == 2 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
-        elif double == 1 and doubleO == 1 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
-        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0 and single == 1: atomType = 'N5t'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2 and single == 1: atomType = 'N5b'
+        if   double == 0 and triple == 0 and benzene == 0 and single in [0, 1, 2, 3]: atomType = 'N3s'
+        elif double == 1 and triple == 0 and benzene == 0 and single == 0 and doubleR == 1 and atom.lonePairs == 2: atomType = 'N1d'
+        elif double == 1 and triple == 0 and benzene == 0 and single in [0, 1]: atomType = 'N3d'
+        elif double == 0 and triple == 1 and benzene == 0 and single == 0: atomType = 'N3t'
+        elif double == 0 and triple == 0 and benzene == 2 and single == 0: atomType = 'N3b'
+        elif double == 0 and triple == 0 and benzene == 0 and single == 4: atomType = 'N5s'
+        elif double == 1 and triple == 0 and benzene == 0 and single == 2: atomType = 'N5d'
+        elif double == 2 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
+        elif double == 0 and triple == 1 and benzene == 0 and single == 1: atomType = 'N5t'
+        elif double == 0 and triple == 0 and benzene == 2 and single == 1: atomType = 'N5b'
     elif atom.symbol == 'O':
-        if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Os'
-        elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
-        elif len(bonds) == 0:                                        atomType = 'Oa'
-        elif double + doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
+        if   double == 0 and triple == 0 and benzene == 0: atomType = 'Os'
+        elif double == 1 and triple == 0 and benzene == 0: atomType = 'Od'
+        elif len(bonds) == 0:                              atomType = 'Oa'
+        elif double == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
     elif atom.symbol == 'Ne':
         atomType = 'Ne'
     elif atom.symbol == 'Si':
-        if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sid'
-        elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Sidd'
-        elif double == 0 and doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
-        elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'SiO'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
-        elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
+        if   double == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
+        elif double == 1 and triple == 0 and benzene == 0 and doubleO == 1: atomType = 'SiO'
+        elif double == 1 and triple == 0 and benzene == 0: atomType = 'Sid'
+        elif double == 2 and triple == 0 and benzene == 0: atomType = 'Sidd'
+        elif double == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
+        elif double == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
+        elif double == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
     elif atom.symbol == 'S':
-        if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
-        elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
-        elif len(bonds) == 0:                                        atomType = 'Sa'
+        if   double == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
+        elif double == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
+        elif len(bonds) == 0:                              atomType = 'Sa'
     elif atom.symbol == 'Cl':
         atomType = 'Cl'
     elif atom.symbol == 'Ar':
@@ -402,6 +401,6 @@ def getAtomType(atom, bonds):
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
-        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} triple bonds, and {4:d} benzene bonds.'.format(atom, double, doubleO, triple, benzene))
+        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, doubleR, doubleO, doubleS, triple, benzene))
 
     return atomTypes[atomType]
