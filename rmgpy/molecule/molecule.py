@@ -293,6 +293,13 @@ class Atom(Vertex):
         """
         return self.element.number == 14
 
+    def isSulfur(self):
+        """
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if
+        not.
+        """
+        return self.element.number == 16
+
     def incrementRadical(self):
         """
         Update the atom pattern as a result of applying a GAIN_RADICAL action,
