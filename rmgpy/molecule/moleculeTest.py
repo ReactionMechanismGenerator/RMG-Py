@@ -258,7 +258,7 @@ class TestBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = Bond(atom1=None, atom2=None, order='D')
-        self.orderList = ['S','D','T','B']
+        self.orderList = ['S','D','T','B','Q']
     
     def testIsSingle(self):
         """
@@ -304,6 +304,17 @@ class TestBond(unittest.TestCase):
             else:
                 self.assertFalse(bond.isBenzene())
 
+    def testIsQuadruple(self):
+        """
+        Test the Bond.isQuadruple() method.
+        """
+        for order in self.orderList:
+            bond = Bond(None, None, order=order)
+            if order == 'Q':
+                self.assertTrue(bond.isQuadruple())
+            else:
+                self.assertFalse(bond.isQuadruple())
+                
     def testIncrementOrder(self):
         """
         Test the Bond.incrementOrder() method.
@@ -316,8 +327,10 @@ class TestBond(unittest.TestCase):
                     self.assertTrue(bond.isDouble())
                 elif order == 'D': 
                     self.assertTrue(bond.isTriple())
+                elif order == 'T':
+                    self.assertTrue(bond.isQuadruple())
             except ActionError:
-                self.assertTrue(order in ['T','B'])
+                self.assertTrue(order in ['Q','B'])
         
     def testDecrementOrder(self):
         """
@@ -331,6 +344,8 @@ class TestBond(unittest.TestCase):
                     self.assertTrue(bond.isSingle())
                 elif order == 'T': 
                     self.assertTrue(bond.isDouble())
+                elif order == 'Q':
+                    self.assertTrue(bond.isTriple())
             except ActionError:
                 self.assertTrue(order in ['S','B'])
                 
@@ -373,7 +388,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('T' == order0 or 'B' == order0)
+                self.assertTrue('Q' == order0 or 'B' == order0)
                 
     def testApplyActionDecrementBond(self):
         """

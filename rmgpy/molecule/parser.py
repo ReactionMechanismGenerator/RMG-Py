@@ -351,6 +351,7 @@ def fromRDKitMol(mol, rdkitmol):
                 elif rdbondtype.name == 'DOUBLE': order = 'D'
                 elif rdbondtype.name == 'TRIPLE': order = 'T'
                 elif rdbondtype.name == 'AROMATIC': order = 'B'
+                elif rdbondtype.name == 'QUADRUPLE': order = 'Q'
     
                 bond = Bond(mol.vertices[i], mol.vertices[j], order)
                 mol.addBond(bond)
@@ -406,6 +407,7 @@ def fromOBMol(mol, obmol):
         elif oborder == 2: order = 'D'
         elif oborder == 3: order = 'T'
         elif obbond.IsAromatic() : order = 'B'
+        elif oborder == 4: order = 'Q'
 
         bond = Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], order)#python array indices start at 0
         mol.addBond(bond)

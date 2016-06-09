@@ -273,7 +273,7 @@ def toOBMol(mol):
         a = obmol.NewAtom()
         a.SetAtomicNum(atom.number)
         a.SetFormalCharge(atom.charge)
-    orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
+    orders = {'S': 1, 'D': 2, 'T': 3, 'Q': 4, 'B': 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
             index1 = atoms.index(atom1)

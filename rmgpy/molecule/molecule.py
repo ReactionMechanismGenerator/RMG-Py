@@ -349,7 +349,7 @@ class Atom(Vertex):
         number and types of bonds, radicals, and lone pairs.
         """
         valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5, 'Q': 4}
         valence = valences[self.symbol]
         order = 0
         for atom2, bond in self.bonds.items():
@@ -862,8 +862,11 @@ class Molecule(Graph):
                 elif order == 'T':
                     bonded.incrementRadical()
                     bonded.incrementLonePairs()
+                elif order == 'Q':
+                    bonded.incrementLonePairs()
+                    bonded.incrementLonePairs()
             mol.removeAtom(atom)
-                
+        raise NotImplementedError("Code not finished?")
             
 
     def copy(self, deep=False):
@@ -1578,13 +1581,15 @@ class Molecule(Graph):
                 for atom2, bond12 in atom1.edges.items():
                     if bond12.isSingle():
                         order = order + 1
-                    if bond12.isDouble():
+                    elif bond12.isDouble():
                         order = order + 2
-                    if bond12.isTriple():
+                    elif bond12.isTriple():
                         order = order + 3
-                    if bond12.isBenzene():
+                    elif bond12.isBenzene():
                         order = order + 1.5
-                        
+                    elif bond12.isQuadruple():
+                        order = order + 4
+
                 atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
         
             else:
