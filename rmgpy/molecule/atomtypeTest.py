@@ -181,6 +181,7 @@ class TestGetAtomType(unittest.TestCase):
                                                      9  H u0 p0 {3,S}
                                                      10 H u0 p0 {4,S}
                                                      11 H u0 p0 {5,S}''')
+        self.mol19 = Molecule().fromSMILES('C=S')
         
     
     def atomType(self, mol, atomID):
@@ -207,6 +208,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol1, 9), 'Ct')
         self.assertEqual(self.atomType(self.mol1, 2), 'CO')
         self.assertEqual(self.atomType(self.mol2, 0), 'Cb')
+        self.assertEqual(self.atomType(self.mol19, 0), 'CS')
     
     def testNitrogenTypes(self):
         """
