@@ -278,23 +278,23 @@ class SolventLibrary(Database):
                   shortDesc='',
                   longDesc='',
                   ):
-        mol = molecule
+        spc = molecule
         if molecule is not None:
             try:
-                mol = Species().fromSMILES(molecule)
+                spc = Species().fromSMILES(molecule)
             except:
                 logging.debug("Solvent '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
                 try:
-                    mol = Species().fromAdjacencyList(molecule)
+                    spc = Species().fromAdjacencyList(molecule)
                 except:
                     logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule, self.name))
                     raise
-            mol.generateResonanceIsomers()
+            spc.generateResonanceIsomers()
 
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = mol,
+            item = spc,
             data = solvent,
             reference = reference,
             referenceType = referenceType,
@@ -344,10 +344,11 @@ class SoluteLibrary(Database):
                   longDesc='',
                   ):
         try:
-            mol = Molecule(SMILES=molecule)
+            spc = Species().fromSMILES(molecule)
         except:
+            logging.debug("Solute '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
             try:
-                mol = Molecule().fromAdjacencyList(molecule)
+                spc = Species().fromAdjacencyList(molecule)
             except:
                 logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule,self.name))
                 raise
@@ -355,7 +356,7 @@ class SoluteLibrary(Database):
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = mol,
+            item = spc,
             data = solute,
             reference = reference,
             referenceType = referenceType,
@@ -661,9 +662,8 @@ class SolvationDatabase(object):
         :class:`DatabaseError` is raised.
         """
         for label, entry in library.entries.iteritems():
-            for molecule in species.molecule:
-                if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                    return (deepcopy(entry.data), library, entry)
+            if species.isIsomorphic(entry.item) and entry.data is not None:
+                return (deepcopy(entry.data), library, entry)
         return None
 
     def getSoluteDataFromGroups(self, species):
