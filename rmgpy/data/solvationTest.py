@@ -7,8 +7,9 @@ from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.molecule import Molecule
-from rmgpy.species import Species
+from rmgpy.rmg.main import Species
 from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase
+from rmgpy.rmg.main import RMG
 
 ###################################################
 
@@ -182,6 +183,37 @@ multiplicity 2
             solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)
             self.assertAlmostEqual(solvationCorrection.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.enthalpy, H))  #0 decimal place, in 10kJ.
             self.assertAlmostEqual(solvationCorrection.gibbs / 10000., G / 10000., 0, msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.gibbs, G))
+
+    def testInitialSpecies(self):
+        " Test we can check whether the solvent is listed as one of the initial species in various scenarios "
+
+        # Case 1. when SMILES for solvent is available, the molecular structures of the initial species and the solvent
+        # are compared to check whether the solvent is in the initial species list
+        # Case 1-1: the solvent water is not in the initialSpecies list, so it raises Exception
+        self.rmg=RMG()
+        self.rmg.initialSpecies = []
+        solute = Species(label='n-octane', molecule=[Molecule().fromSMILES('C(CCCCC)CC')])
+        self.rmg.initialSpecies.append(solute)
+        self.rmg.solvent = 'water'
+        self.solventStructure = Species().fromSMILES('O')
+        self.assertRaises(Exception,self.database.checkSolventinInitialSpecies,self.rmg,self.solventStructure)
+        # Case 1-2: the solvent is now octane and it is listed as the initialSpecies. Although the string
+        # names of the solute and the solvent are different, because the solvent SMILES is provided,
+        # it can identify the 'n-octane' as the solvent
+        self.rmg.solvent = 'octane'
+        self.solventStructure = Species().fromSMILES('CCCCCCCC')
+        self.database.checkSolventinInitialSpecies(self.rmg,self.solventStructure)
+        self.assertEqual(1,self.rmg.initialSpecies[0].isSolvent)
+
+        # Case 2: the solvent SMILES is not provided. In this case, it can identify the species as the
+        # solvent by looking at the string name.
+        # Case 2-1: Since 'n-octane and 'octane' are not equal, it raises Exception
+        self.solventStructure = None
+        self.assertRaises(Exception,self.database.checkSolventinInitialSpecies,self.rmg,self.solventStructure)
+        # Case 2-2: The label 'n-ocatne' is corrected to 'octane', so it is identified as the solvent
+        self.rmg.initialSpecies[0].label = 'octane'
+        self.database.checkSolventinInitialSpecies(self.rmg,self.solventStructure)
+        self.assertEqual(1,self.rmg.initialSpecies[0].isSolvent)
 #####################################################
 
 if __name__ == '__main__':

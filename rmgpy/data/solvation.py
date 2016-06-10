@@ -924,3 +924,25 @@ class SolvationDatabase(object):
         correction.gibbs = self.calcG(soluteData, solventData)  
         correction.entropy = self.calcS(correction.gibbs, correction.enthalpy) 
         return correction
+
+    def checkSolventinInitialSpecies(self,rmg,solventStructure):
+        """
+        Given the instance of RMG class and the solventStructure, it checks whether the solvent is listed as one
+        of the initial species.
+        If the SMILES / adjacency list for all the solvents exist in the solvent library, it uses the solvent's
+        molecular structure to determine whether the species is the solvent or not.
+        If the solvent library does not have SMILES / adjacency list, then it uses the solvent's string name
+        to determine whether the species is the solvent or not
+        """
+        for spec in rmg.initialSpecies:
+            if solventStructure is not None:
+                spec.isSolvent = spec.isIsomorphic(solventStructure)
+            else:
+                spec.isSolvent = rmg.solvent == spec.label
+            if not sum(1 if spec.isSolvent else 0 for spec in rmg.initialSpecies):
+                if solventStructure is not None:
+                    logging.info('One of the initial species must be the solvent')
+                    raise Exception('One of the initial species must be the solvent')
+                else:
+                    logging.info('One of the initial species must be the solvent with the same string name')
+                    raise Exception('One of the initial species must be the solvent with the same string name')
