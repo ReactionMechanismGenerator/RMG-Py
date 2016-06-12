@@ -328,7 +328,9 @@ def getAtomType(atom, bonds):
     """
 
     cython.declare(atomType=str)
-    cython.declare(double=cython.int, double0=cython.int, triple=cython.int, benzene=cython.int)
+    cython.declare(single=cython.int, double=cython.int, doubleR=cython.int,
+                   doubleS=cython.int, doubleO=cython.int, triple=cython.int,
+                   benzene=cython.int)
     
     atomType = ''
     
