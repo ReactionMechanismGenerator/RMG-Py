@@ -91,6 +91,8 @@ cdef class Bond(Edge):
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
+    
+    cpdef bint isBenzene(self) except -2
 
     cpdef incrementOrder(self)
 
