@@ -40,45 +40,45 @@ class ReductionReaction(object):
     when requested.
 
     """
-    def __init__(self, rmg_reaction):
+    def __init__(self, rmgReaction):
         super(ReductionReaction, self).__init__()
-        self.rmg_reaction = rmg_reaction
-        self.reactants = rmg_reaction.reactants
-        self.products = rmg_reaction.products
+        self.rmgReaction = rmgReaction
+        self.reactants = rmgReaction.reactants
+        self.products = rmgReaction.products
         self.kf = None
         self.kb = None
         self.stoichio = {}
-        self.create_stoichio()
+        self.createStoichio()
     
     def __str__(self):
-        return str(self.rmg_reaction)
+        return str(self.rmgReaction)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (self.__class__, (self.rmg_reaction, ))
+        return (self.__class__, (self.rmgReaction, ))
 
 
     def getRateCoefficient(self, T,P):
         if self.kf is None:
-            self.kf = self.rmg_reaction.getRateCoefficient(T,P)
+            self.kf = self.rmgReaction.getRateCoefficient(T,P)
             return self.kf
         else: return self.kf
     
     def getReverseRateCoefficient(self, T, P):
         if self.kb is None:
             kf = self.getRateCoefficient(T,P) 
-            self.kb = kf / self.rmg_reaction.getEquilibriumConstant(T)
+            self.kb = kf / self.rmgReaction.getEquilibriumConstant(T)
             return self.kb
         else: return self.kb
     
-    def create_stoichio(self):
-        c_reactants = Counter([mol.label for mol in self.reactants])
-        self.stoichio['reactant'] = c_reactants
+    def createStoichio(self):
+        cReactants = Counter([mol.label for mol in self.reactants])
+        self.stoichio['reactant'] = cReactants
 
-        c_products = Counter([mol.label for mol in self.products])
-        self.stoichio['product'] = c_products
+        cProducts = Counter([mol.label for mol in self.products])
+        self.stoichio['product'] = cProducts
 
-    def get_stoichiometric_coefficient(self, spc_i, reactant_or_product):       
-        return self.stoichio[reactant_or_product][spc_i.label]
+    def getStoichiometricCoefficient(self, spc, reactantOrProduct):       
+        return self.stoichio[reactantOrProduct][spc.label]

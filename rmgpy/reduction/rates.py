@@ -33,73 +33,73 @@ from rmgpy.scoop_framework.util import logger as logging
 
 CLOSE_TO_ZERO = 1E-20
 
-def compute_reaction_rate(rxn_j, forward, T, P, coreSpeciesConcentrations): 
+def computeReactionRate(rxn, forward, T, P, coreSpeciesConcentrations): 
     """
 
     Computes reaction rate r as follows:
 
-    r = k * Product(Ci^nu_ij, for all j)
+    r = k * Product(Ci^nuij, for all j)
     with:
 
-    k = rate coefficient for rxn_j,
+    k = rate coefficient for rxn,
     Cij = the concentration for molecule i ,
-    nu_ij = the stoichiometric coefficient for molecule i in reaction j.
+    nuij = the stoichiometric coefficient for molecule i in reaction j.
 
     ...
     """
 
-    species_list = rxn_j.reactants if forward == 'reactants' else rxn_j.products
+    speciesList = rxn.reactants if forward == 'reactants' else rxn.products
 
     totconc = 1.0
-    for spc_i in species_list:
-        ci = coreSpeciesConcentrations[spc_i.label]
+    for spc in speciesList:
+        ci = coreSpeciesConcentrations[spc.label]
         if abs(ci) < CLOSE_TO_ZERO:
             return 0.
-        nu_i = rxn_j.get_stoichiometric_coefficient(spc_i, forward)
-        conc = ci**nu_i
+        nui = rxn.getStoichiometricCoefficient(spc, forward)
+        conc = ci**nui
 
         totconc *= conc
 
-    k = rxn_j.getRateCoefficient(T,P) if forward == 'reactants' else rxn_j.getReverseRateCoefficient(T,P)
+    k = rxn.getRateCoefficient(T,P) if forward == 'reactants' else rxn.getReverseRateCoefficient(T,P)
     r = k * totconc
 
     return r
 
 
-def calc_rij(rxn_j, spc_i, isReactant, T, P, coreSpeciesConcentrations):
+def calcRij(rxn, spc, isReactant, T, P, coreSpeciesConcentrations):
     """
     This function computes the rate of formation of species i
     through the reaction j.
 
     This function multiplies:
-    - nu(i): stoichiometric coefficient of spc_i in rxn_j
-    - r(rxn_j): reaction rate of rxn_j
+    - nu(i): stoichiometric coefficient of spc in rxn
+    - r(rxn): reaction rate of rxn
 
     Returns a reaction rate
 
     Units: mol / m^3 s
     """
    
-    nu_i = rxn_j.get_stoichiometric_coefficient(spc_i, isReactant)
+    nui = rxn.getStoichiometricCoefficient(spc, isReactant)
     sign = -1 if isReactant else 1
 
     forward = isReactant
 
-    r_j = compute_reaction_rate(rxn_j, forward, T, P, coreSpeciesConcentrations)
+    rj = computeReactionRate(rxn, forward, T, P, coreSpeciesConcentrations)
 
-    rij = nu_i * sign * r_j
+    rij = nui * sign * rj
     return rij
 
 
-def calc_Rf(spc_i, reactions, reactant_or_product, T, P, coreSpeciesConcentrations, formation_or_consumption):
+def calcRf(spc, reactions, reactantOrProduct, T, P, coreSpeciesConcentrations, formationOrConsumption):
     """
     Calculates the total rate of formation/consumption of species i.
 
-    Computes the sum of the rates of formation/consumption of spc_i for all of 
-    the reactions in which spc_i is a product. 
+    Computes the sum of the rates of formation/consumption of spc for all of 
+    the reactions in which spc is a product. 
 
-    if formation_or_consumption == 'formation', spc_i will be compared to the 
-    products of the reaction. Else, spc_i will be compared to the reactants of
+    if formationOrConsumption == 'formation', spc will be compared to the 
+    products of the reaction. Else, spc will be compared to the reactants of
     the reaction.
 
     units of rate: mol/(m^3.s)
@@ -107,52 +107,52 @@ def calc_Rf(spc_i, reactions, reactant_or_product, T, P, coreSpeciesConcentratio
     rate = 0.0
 
     for reaction in reactions:
-        molecules = reaction.products if formation_or_consumption == 'formation:' else reaction.reactants
+        molecules = reaction.products if formationOrConsumption == 'formation:' else reaction.reactants
         labels = [mol.label for mol in molecules]
-        if spc_i.label in labels:
-            rij = calc_rij(reaction, spc_i,  reactant_or_product, T, P, coreSpeciesConcentrations)
+        if spc.label in labels:
+            rij = calcRij(reaction, spc,  reactantOrProduct, T, P, coreSpeciesConcentrations)
             rate = rate + rij
 
     logging.debug('Rf: {rate}'.format(**locals()))
 
     return rate
     
-def calc_Rf_closure(spc_i, reactions, reactant_or_product, T, P, coreSpeciesConcentrations):
+def calcRfClosure(spc, reactions, reactantOrProduct, T, P, coreSpeciesConcentrations):
     """
-    Closure to avoid replicating function calls to calc_Rf.
+    Closure to avoid replicating function calls to calcRf.
     """
-    def myfilter(formation_or_consumption):
-        return calc_Rf(spc_i, reactions, reactant_or_product, T, P, coreSpeciesConcentrations, formation_or_consumption)
+    def myfilter(formationOrConsumption):
+        return calcRf(spc, reactions, reactantOrProduct, T, P, coreSpeciesConcentrations, formationOrConsumption)
     
     return myfilter
 
-def calc_Ri(spc_i,rij, reactions, reactant_or_product, T, P, coreSpeciesConcentrations):
+def calcRi(spc,rij, reactions, reactantOrProduct, T, P, coreSpeciesConcentrations):
     """
 
     Checks whether the sign of rij to decide to compute the
-    total rate of formation or consumption of spc_i.
+    total rate of formation or consumption of spc.
 
     units of rate: mol/(m^3.s)
     """
 
-    f_closure = calc_Rf_closure(spc_i, reactions, reactant_or_product, T, P, coreSpeciesConcentrations)
+    closure = calcRfClosure(spc, reactions, reactantOrProduct, T, P, coreSpeciesConcentrations)
 
     if rij > 0:
-        return f_closure('formation')
+        return closure('formation')
     elif rij < 0:
-        return f_closure('consumption') 
+        return closure('consumption') 
     elif np.absolute([rij]) < CLOSE_TO_ZERO:
         """Pick the largest value so that the ratio rij / RX remains small."""
-        Rf = f_closure('formation')
-        Rb = f_closure('consumption')
+        Rf = closure('formation')
+        Rb = closure('consumption')
 
         """What happens when Rf ~ Rb <<< 1?"""
         return max(abs(Rf),abs(Rb))
 
-def isImportant(rxn, species_i, reactions, reactant_or_product, tolerance, T, P, coreSpeciesConcentrations):
+def isImportant(rxn, spc, reactions, reactantOrProduct, tolerance, T, P, coreSpeciesConcentrations):
     """
     This function computes:
-    - Ri = R(species_i)
+    - Ri = R(spc)
     - rij = r(rxn)
     - alpha = ratio of rij / Ri
     
@@ -165,23 +165,23 @@ def isImportant(rxn, species_i, reactions, reactant_or_product, tolerance, T, P,
     else:
         this reaction is unimportant for this species.
 
-    Returns whether or not rxn is important for species_i.
+    Returns whether or not rxn is important for spc.
     keep = True
     remove = False
     """
 
 
-    rij = calc_rij(rxn, species_i, reactant_or_product, T, P, coreSpeciesConcentrations) 
-    Ri = calc_Ri(species_i, rij, reactions, reactant_or_product, T, P, coreSpeciesConcentrations)
+    rij = calcRij(rxn, spc, reactantOrProduct, T, P, coreSpeciesConcentrations) 
+    Ri = calcRi(spc, rij, reactions, reactantOrProduct, T, P, coreSpeciesConcentrations)
 
-    logging.debug("rij: {rij}, Ri: {Ri}, rxn: {rxn}, species: {species_i}, reactant: {reactant_or_product}, tol: {tolerance}"\
+    logging.debug("rij: {rij}, Ri: {Ri}, rxn: {rxn}, species: {spc}, reactant: {reactantOrProduct}, tol: {tolerance}"\
     .format(**locals()))
 
     if np.any(np.absolute([rij, Ri]) < CLOSE_TO_ZERO):
        return False
 
     else:
-        assert Ri != 0, "rij: {0}, Ri: {1}, rxn: {2}, species: {3}, reactant: {4}".format(rij, Ri, rxn, species_i, reactant_or_product)
+        assert Ri != 0, "rij: {0}, Ri: {1}, rxn: {2}, species: {3}, reactant: {4}".format(rij, Ri, rxn, spc, reactantOrProduct)
         alpha = rij / Ri
         if alpha < 0: return False
 

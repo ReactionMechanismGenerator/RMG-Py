@@ -12,7 +12,7 @@ except ImportError, e:
     logging.debug("Could not properly import SCOOP.")
 
 from .input import load
-from .reduction import initialize, compute_observables
+from .reduction import initialize, computeObservables
 
 from .optimization import *
 
@@ -28,14 +28,14 @@ def funcOptimize(rmg, targets):
     reactionSystem = rmg.reactionSystems[index]
 
     #compute original target observables
-    observables = compute_observables(targets, reactionModel, reactionSystem, \
+    observables = computeObservables(targets, reactionModel, reactionSystem, \
      rmg.absoluteTolerance, rmg.relativeTolerance)
 
     # optimize reduction tolerance
-    tol, important_rxns = optimize(targets, reactionModel, rmg, index, error, observables)
+    tol, importantRxns = optimize(targets, reactionModel, rmg, index, error, observables)
 
     try:
-        assert len(important_rxns) == 30
+        assert len(importantRxns) == 30
     except AssertionError:
         return False
 
@@ -49,7 +49,7 @@ class OptimizeTest(TestScoopCommon):
     inputFile = os.path.join(wd, 'input.py')
     reductionFile = os.path.join(wd, 'reduction_input.py')
     chemkinFile = os.path.join(wd, 'chemkin','chem.inp')
-    spc_dict = os.path.join(wd, 'chemkin','species_dictionary.txt')
+    spcDict = os.path.join(wd, 'chemkin','species_dictionary.txt')
 
     def __init__(self, *args, **kwargs):
         # Parent initialization
@@ -61,13 +61,13 @@ class OptimizeTest(TestScoopCommon):
     @classmethod
     def setUpClass(cls):
         super(OptimizeTest, cls).setUpClass()
-        rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spc_dict)
+        rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spcDict)
         cls.rmg = rmg
         cls.targets = targets
         cls.error = error
 
 
-    def test_optimize(self):
+    def testOptimize(self):
         rmg = OptimizeTest.rmg
         targets = OptimizeTest.targets
         

@@ -34,7 +34,7 @@ from rmgpy.chemkin import saveChemkinFile
 
 from rmgpy.scoop_framework.util import logger as logging
 
-def write_model(rmg, chemkin_name='chem_reduced.inp'):
+def writeModel(rmg, chemkin_name='chem_reduced.inp'):
     """
     Writes the reduced reaction model to a chemkin compatible files.
     """

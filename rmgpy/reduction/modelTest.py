@@ -30,7 +30,7 @@ class ReductionReactionTest(unittest.TestCase):
         del self.rrxn
 
 
-    def test_constructor(self):
+    def testConstructor(self):
         rrxn = self.rrxn
         rxn = self.rxn
 
@@ -39,7 +39,7 @@ class ReductionReactionTest(unittest.TestCase):
         # attributes
         self.assertIsNotNone(rrxn.reactants, rxn.reactants)
         self.assertIs(rrxn.products, rxn.products)
-        self.assertIs(rrxn.rmg_reaction, rxn)
+        self.assertIs(rrxn.rmgReaction, rxn)
         self.assertIsNotNone(rrxn.stoichio)
         self.assertIsNone(rrxn.kf)
         self.assertIsNone(rrxn.kb)
@@ -52,7 +52,7 @@ class ReductionReactionTest(unittest.TestCase):
 
 
 
-    def test_reduce(self):
+    def testReduce(self):
         import pickle
         reaction = pickle.loads(pickle.dumps(self.rrxn))
 

@@ -11,7 +11,7 @@ class ReduceTest(unittest.TestCase):
     inputFile = os.path.join(wd, 'input.py')
     reductionFile = os.path.join(wd, 'reduction_input.py')
     chemkinFile = os.path.join(wd, 'chemkin','chem.inp')
-    spc_dict = os.path.join(wd, 'chemkin','species_dictionary.txt')
+    spcDict = os.path.join(wd, 'chemkin','species_dictionary.txt')
 
 
     @classmethod
@@ -20,7 +20,7 @@ class ReduceTest(unittest.TestCase):
 
         super(ReduceTest, cls).setUpClass()
 
-        rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spc_dict)
+        rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spcDict)
         cls.rmg = rmg
         cls.targets = targets
         cls.error = error
@@ -29,7 +29,7 @@ class ReduceTest(unittest.TestCase):
         initialize(rmg.outputDirectory, reactionModel.core.reactions)
     
 
-    def test_compute_conversion(self):
+    def testComputeConversion(self):
         rmg = ReduceTest.rmg
         target = ReduceTest.targets[0]
         reactionModel = rmg.reactionModel
@@ -38,12 +38,12 @@ class ReduceTest(unittest.TestCase):
         index = 0
         reactionSystem = rmg.reactionSystems[index]
 
-        conv = compute_conversion(target, reactionModel, reactionSystem,\
+        conv = computeConversion(target, reactionModel, reactionSystem,\
          rmg.absoluteTolerance, rmg.relativeTolerance)
         self.assertIsNotNone(conv)
 
 
-    def test_reduce_compute(self):
+    def testReduceCompute(self):
         rmg = ReduceTest.rmg
         targets = ReduceTest.targets
         reactionModel = rmg.reactionModel
@@ -53,12 +53,12 @@ class ReduceTest(unittest.TestCase):
         index = 0
         reactionSystem = rmg.reactionSystems[index]
 
-        observables = compute_observables(targets, reactionModel, reactionSystem, \
+        observables = computeObservables(targets, reactionModel, reactionSystem, \
             rmg.absoluteTolerance, rmg.relativeTolerance)
 
         tols = [0.7, 1e-3, 1e-6]
         for tol in tols:
-            conv, important_rxns = reduce_model(tol, targets, reactionModel, rmg, index)
+            conv, importantRxns = reduceModel(tol, targets, reactionModel, rmg, index)
             self.assertIsNotNone(conv)
 
 if __name__ == '__main__':

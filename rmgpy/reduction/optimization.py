@@ -30,10 +30,10 @@
 
 import numpy as np
 
-from reduction import reduce_model
+from reduction import reduceModel
 from rmgpy.scoop_framework.util import logger as logging
 
-def optimize(target_label, reactionModel, rmg, reaction_system_index, error, orig_observable):
+def optimize(target_label, reactionModel, rmg, reactionSystemIndex, error, orig_observable):
     """
     The optimization algorithm that searches for the most reduced model that satisfies the
     applied constraints.
@@ -61,12 +61,12 @@ def optimize(target_label, reactionModel, rmg, reaction_system_index, error, ori
     model by a few reactions.
     """
 
-    tol, important_reactions = \
-     bisect(low, high, error, target_label, reactionModel, rmg, reaction_system_index, orig_observable)
+    tol, importantReactions = \
+     bisect(low, high, error, target_label, reactionModel, rmg, reactionSystemIndex, orig_observable)
 
-    return tol, important_reactions
+    return tol, importantReactions
 
-def compute_deviation(original, reduced, targets):
+def computeDeviation(original, reduced, targets):
     """
     Computes the relative deviation between the observables of the
     original and reduced model.
@@ -89,7 +89,7 @@ def isInvalid(devs, error):
     invalid = np.any(devs > error)
     return invalid
 
-def bisect(low, high, error, targets, reactionModel, rmg, reaction_system_index, orig_observable):
+def bisect(low, high, error, targets, reactionModel, rmg, reactionSystemIndex, orig_observable):
     """
     Bisect method in log space.
 
@@ -99,20 +99,20 @@ def bisect(low, high, error, targets, reactionModel, rmg, reaction_system_index,
 
     THRESHOLD = 0.05
 
-    important_reactions = None
+    importantReactions = None
     final_devs = None
     old_trial = low
     while True:
         midpoint = (low + high) / 2.0
-        reduced_observable, new_important_reactions = evaluate(midpoint, targets, reactionModel, rmg, reaction_system_index)
+        reduced_observable, newImportantReactions = evaluate(midpoint, targets, reactionModel, rmg, reactionSystemIndex)
         
-        devs = compute_deviation(orig_observable, reduced_observable, targets)
+        devs = computeDeviation(orig_observable, reduced_observable, targets)
 
         if isInvalid(devs, error):
             high = midpoint
         else:
             low = midpoint
-            important_reactions = new_important_reactions
+            importantReactions = newImportantReactions
             final_devs = devs
             
         if np.abs((midpoint - old_trial) / old_trial) < THRESHOLD:
@@ -120,23 +120,23 @@ def bisect(low, high, error, targets, reactionModel, rmg, reaction_system_index,
 
         old_trial = low
 
-    if not important_reactions:
+    if not importantReactions:
         logging.error("Could not find a good guess...")
-        important_reactions = []
+        importantReactions = []
 
     logging.info('Final deviations: '.format())
     for dev, target in zip(final_devs, targets):
         logging.info('Final deviation for {}: {:.2f}%'.format(target, dev * 100))
 
 
-    return low, important_reactions
+    return low, importantReactions
 
-def evaluate(guess, targets, reactionModel, rmg, reaction_system_index):
+def evaluate(guess, targets, reactionModel, rmg, reactionSystemIndex):
     """
     
     """
     logging.info('Trial tolerance: {:.2E}'.format(10**guess))
 
-    observable, new_important_reactions = reduce_model(10**guess, targets, reactionModel, rmg, reaction_system_index)
+    observable, newImportantReactions = reduceModel(10**guess, targets, reactionModel, rmg, reactionSystemIndex)
 
-    return observable, new_important_reactions
+    return observable, newImportantReactions

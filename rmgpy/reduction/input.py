@@ -76,9 +76,9 @@ def loadReductionInput(reductionFile):
 
     return targets, tolerance
 
-def load(rmg_inputFile, reductionFile, chemkinFile, speciesDict):
+def load(rmgInputFile, reductionFile, chemkinFile, speciesDict):
     
-    rmg = loadRMGPyJob(rmg_inputFile, chemkinFile, speciesDict, generateImages=False)
+    rmg = loadRMGPyJob(rmgInputFile, chemkinFile, speciesDict, generateImages=False)
     targets, tolerance = loadReductionInput(reductionFile)
 
     return rmg, targets, tolerance

@@ -48,7 +48,7 @@ from rates import isImportant
 reactions = None
 
 
-def simulate_one(reactionModel, atol, rtol, reactionSystem):
+def simulateOne(reactionModel, atol, rtol, reactionSystem):
     """
 
     Simulates one reaction system, listener registers results, 
@@ -71,13 +71,13 @@ def simulate_one(reactionModel, atol, rtol, reactionSystem):
 
     coreSpecies = reactionModel.core.species
     regex = r'\([0-9]+\)'#cut of '(one or more digits)'
-    species_names = []
+    speciesNames = []
     for spc in coreSpecies:
         name = getSpeciesIdentifier(spc)
         name_cutoff = re.split(regex, name)[0]
-        species_names.append(name_cutoff)
+        speciesNames.append(name_cutoff)
 
-    listener.species_names = species_names
+    listener.speciesNames = speciesNames
 
     reactionSystem.attach(listener)
 
@@ -103,9 +103,9 @@ def simulate_one(reactionModel, atol, rtol, reactionSystem):
     #unregister as a listener
     reactionSystem.detach(listener) 
 
-    return listener.species_names, listener.data
+    return listener.speciesNames, listener.data
 
-def simulate_all(rmg):
+def simulateAll(rmg):
     """
     Simulate the RMG job, 
     for each of the simulated reaction systems.
@@ -118,7 +118,7 @@ def simulate_all(rmg):
 
     atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
     for reactionSystem in rmg.reactionSystems:
-        data.append(simulate_one(reactionModel, atol, rtol, reactionSystem))
+        data.append(simulateOne(reactionModel, atol, rtol, reactionSystem))
 
     return data
         
@@ -134,7 +134,7 @@ def initialize(wd, rxns):
     broadcast(reactions, 'reactions')
     
 
-def retrieve_reactions():
+def retrieveReactions():
     """
     Reactions can be retrieved either through the global variable 'reactions' if parallel computing
     is not used.
@@ -148,12 +148,12 @@ def retrieve_reactions():
     """
     global reactions    
 
-    broadcasted_reactions = get('reactions')
-    if broadcasted_reactions:
-        reactions = broadcasted_reactions
+    broadcastedReactions = get('reactions')
+    if broadcastedReactions:
+        reactions = broadcastedReactions
     return reactions
 
-def find_important_reactions(rmg, tolerance):
+def findImportantReactions(rmg, tolerance):
     """
     This function:
 
@@ -169,10 +169,10 @@ def find_important_reactions(rmg, tolerance):
     """
     
     # run the simulation, creating concentration profiles for each reaction system defined in input.
-    simdata = simulate_all(rmg)
+    simdata = simulateAll(rmg)
 
 
-    reduce_reactions = retrieve_reactions()
+    reduceReactions = retrieveReactions()
 
     def chunks(l, n):
         """Yield successive n-sized chunks from l."""
@@ -181,11 +181,11 @@ def find_important_reactions(rmg, tolerance):
 
     CHUNKSIZE = 40
     boolean_array = []
-    for chunk in chunks(reduce_reactions,CHUNKSIZE):
+    for chunk in chunks(reduceReactions,CHUNKSIZE):
         N = len(chunk)
         partial_results = list(
             map_(
-                WorkerWrapper(assess_reaction), chunk, [rmg.reactionSystems] * N, [tolerance] * N, [simdata] * N
+                WorkerWrapper(assessReaction), chunk, [rmg.reactionSystems] * N, [tolerance] * N, [simdata] * N
                 )
             )
         boolean_array.extend(partial_results)
@@ -195,16 +195,16 @@ def find_important_reactions(rmg, tolerance):
     are identical, iterate over the boolean array and retain those reactions of the reaction model
     that are deemed 'important'.
     """
-    important_rxns = []
+    importantRxns = []
     for isImport, rxn in zip(boolean_array, rmg.reactionModel.core.reactions):
         logging.debug('Is rxn {rxn} important? {isImport}'.format(**locals()))
         if isImport:
-            important_rxns.append(rxn)
+            importantRxns.append(rxn)
 
 
-    return important_rxns
+    return importantRxns
 
-def assess_reaction(rxn, reactionSystems, tolerance, data):
+def assessReaction(rxn, reactionSystems, tolerance, data):
     """
     Returns whether the reaction is important or not in the reactions.
 
@@ -219,14 +219,14 @@ def assess_reaction(rxn, reactionSystems, tolerance, data):
 
     logging.debug('Assessing reaction {}'.format(rxn))
 
-    reactions = retrieve_reactions()    
+    reactions = retrieveReactions()    
 
     # read in the intermediate state variables
 
     for datum, reactionSystem in zip(data, reactionSystems):    
         T, P = reactionSystem.T.value_si, reactionSystem.P.value_si
         
-        species_names, profile = datum
+        speciesNames, profile = datum
 
         # take N evenly spaced indices from the table with simulation results:
 
@@ -250,7 +250,7 @@ def assess_reaction(rxn, reactionSystems, tolerance, data):
             assert profile[index] is not None
             timepoint, coreSpeciesConcentrations = profile[index]
 
-            coreSpeciesConcentrations = {key: float(value) for (key, value) in zip(species_names, coreSpeciesConcentrations)}
+            coreSpeciesConcentrations = {key: float(value) for (key, value) in zip(speciesNames, coreSpeciesConcentrations)}
             
             for species_i in rxn.reactants:
                 if isImportant(rxn, species_i, reactions, 'reactant', tolerance, T, P, coreSpeciesConcentrations):
@@ -264,20 +264,20 @@ def assess_reaction(rxn, reactionSystems, tolerance, data):
     return False
 
     
-def search_target_index(target_label, reactionModel):
+def searchTargetIndex(targetLabel, reactionModel):
     """
     Searches for the Species object in the core species
     of the reaction that has the same label as the parameter string.
     """
 
     for i, spc in enumerate(reactionModel.core.species):
-        if spc.label == target_label:
+        if spc.label == targetLabel:
             return i
 
-    raise Exception('{} could not be found...'.format(target_label))
+    raise Exception('{} could not be found...'.format(targetLabel))
 
 
-def compute_observables(targets, reactionModel, reactionSystem, atol, rtol):
+def computeObservables(targets, reactionModel, reactionSystem, atol, rtol):
     """
     Computes the observables of the targets, provided in the function signature.
 
@@ -293,13 +293,13 @@ def compute_observables(targets, reactionModel, reactionSystem, atol, rtol):
         [], atol, rtol)
 
     #run the simulation:
-    simulate_one(reactionModel, atol, rtol, reactionSystem)
+    simulateOne(reactionModel, atol, rtol, reactionSystem)
 
-    observables = compute_mole_fractions(targets, reactionModel, reactionSystem)
+    observables = computeMoleFractions(targets, reactionModel, reactionSystem)
 
     return observables
 
-def compute_mole_fractions(targets, reactionModel, reactionSystem):
+def computeMoleFractions(targets, reactionModel, reactionSystem):
     """
     Computes the mole fractions of the targets, identified by the list 
     of species names in the function signature.
@@ -312,16 +312,16 @@ def compute_mole_fractions(targets, reactionModel, reactionSystem):
     - fetching the computed moles variable y
 
     """
-    mole_fractions = np.zeros(len(targets), np.float64)
+    moleFractions = np.zeros(len(targets), np.float64)
 
     for i, label in enumerate(targets):
-        target_index = search_target_index(label, reactionModel)
+        targetIndex = searchTargetIndex(label, reactionModel)
 
-        mole_fractions[i] = reactionSystem.y[target_index]
+        moleFractions[i] = reactionSystem.y[targetIndex]
 
-    return mole_fractions
+    return moleFractions
 
-def compute_conversion(target_label, reactionModel, reactionSystem, atol, rtol):
+def computeConversion(targetLabel, reactionModel, reactionSystem, atol, rtol):
     """
     Computes the conversion of a target molecule by
 
@@ -334,7 +334,7 @@ def compute_conversion(target_label, reactionModel, reactionSystem, atol, rtol):
     - computing conversion
     """
 
-    target_index = search_target_index(target_label, reactionModel)
+    targetIndex = searchTargetIndex(targetLabel, reactionModel)
 
     #reset reaction system variables:
     logging.info('No. of rxns in core reactions: {}'.format(len(reactionModel.core.reactions)))
@@ -348,49 +348,49 @@ def compute_conversion(target_label, reactionModel, reactionSystem, atol, rtol):
     y0 = reactionSystem.y.copy()
 
     #run the simulation:
-    simulate_one(reactionModel, atol, rtol, reactionSystem)
+    simulateOne(reactionModel, atol, rtol, reactionSystem)
 
     #compute conversion:
-    conv = 1 - (reactionSystem.y[target_index] / y0[target_index])
+    conv = 1 - (reactionSystem.y[targetIndex] / y0[targetIndex])
     return conv
 
-def reduce_model(tolerance, targets, reactionModel, rmg, reaction_system_index):
+def reduceModel(tolerance, targets, reactionModel, rmg, reactionSystemIndex):
     """
     Reduces the model for the given tolerance and evaluates the 
     target observables.
     """
 
     # reduce model with the tolerance specified earlier:
-    important_reactions = find_important_reactions(rmg, tolerance)
+    importantReactions = findImportantReactions(rmg, tolerance)
 
     original_size = len(reactionModel.core.reactions)
 
-    no_important_reactions = len(important_reactions)
-    logging.info('No. of reactions in tested reduced model: {}'.format(no_important_reactions))
+    no_importantReactions = len(importantReactions)
+    logging.info('No. of reactions in tested reduced model: {}'.format(no_importantReactions))
 
     #set the core reactions to the reduced reaction set:
-    original_reactions = reactionModel.core.reactions
-    rmg.reactionModel.core.reactions = important_reactions
+    originalReactions = reactionModel.core.reactions
+    rmg.reactionModel.core.reactions = importantReactions
 
     #re-compute observables: 
-    observables = compute_observables(targets, rmg.reactionModel,\
-     rmg.reactionSystems[reaction_system_index],\
+    observables = computeObservables(targets, rmg.reactionModel,\
+     rmg.reactionSystems[reactionSystemIndex],\
      rmg.absoluteTolerance, rmg.relativeTolerance)
 
     #reset the reaction model to its original state:
-    rmg.reactionModel.core.reactions = original_reactions
+    rmg.reactionModel.core.reactions = originalReactions
 
-    logging.info('Observables of reduced model ({} rxns):'.format(no_important_reactions))
+    logging.info('Observables of reduced model ({} rxns):'.format(no_importantReactions))
     for target, observable in zip(targets, observables):
         logging.info('Observable in reduced model: {}: {:.2f}%'.format(target, observable * 100))
 
-    return observables, important_reactions
+    return observables, importantReactions
 
 class ConcentrationListener(object):
     """Returns the species concentration profiles at each time step."""
 
     def __init__(self):
-        self.species_names = []
+        self.speciesNames = []
         self.data = []
 
     def update(self, subject):

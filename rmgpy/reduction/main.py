@@ -32,24 +32,24 @@ import sys
 import os.path
 
 from input import load
-from output import write_model
+from output import writeModel
 from optimization import optimize
-from reduction import compute_observables, initialize
+from reduction import computeObservables, initialize
 
 from rmgpy.scoop_framework.util import logger
 
 def main():
     level = 20#10 : debug, 20: info
     initializeLog(level)
-    inputFile, reductionFile, chemkinFile, spc_dict = sys.argv[-4:]
+    inputFile, reductionFile, chemkinFile, spcDict = sys.argv[-4:]
 
-    for f in [inputFile, reductionFile, chemkinFile, spc_dict]:
+    for f in [inputFile, reductionFile, chemkinFile, spcDict]:
         assert os.path.isfile(f), 'Could not find {}'.format(f)
 
     inputDirectory = os.path.abspath(os.path.dirname(inputFile))
     output_directory = inputDirectory
 
-    rmg, targets, error = load(inputFile, reductionFile, chemkinFile, spc_dict)
+    rmg, targets, error = load(inputFile, reductionFile, chemkinFile, spcDict)
     logger.info('Allowed error in target observables: {0:.0f}%'.format(error * 100))
 
     reactionModel = rmg.reactionModel
@@ -60,7 +60,7 @@ def main():
     reactionSystem = rmg.reactionSystems[index]    
     
     #compute original target observables
-    observables = compute_observables(targets, reactionModel, reactionSystem, \
+    observables = computeObservables(targets, reactionModel, reactionSystem, \
      rmg.absoluteTolerance, rmg.relativeTolerance)
 
     logger.info('Observables of original model:')
@@ -68,13 +68,13 @@ def main():
         logger.info('{}: {:.2f}%'.format(target, observable * 100))
 
     # optimize reduction tolerance
-    tol, important_reactions = optimize(targets, reactionModel, rmg, index, error, observables)
+    tol, importantReactions = optimize(targets, reactionModel, rmg, index, error, observables)
     logger.info('Optimized tolerance: {:.0E}'.format(10**tol))
-    logger.info('Number of reactions in optimized reduced model : {}'.format(len(important_reactions)))
+    logger.info('Number of reactions in optimized reduced model : {}'.format(len(importantReactions)))
 
     # plug the important reactions into the RMG object and write:
-    rmg.reactionModel.core.reactions = important_reactions
-    write_model(rmg)
+    rmg.reactionModel.core.reactions = importantReactions
+    writeModel(rmg)
 
 def initializeLog(level):
     """
