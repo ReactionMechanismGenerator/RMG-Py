@@ -345,13 +345,14 @@ def getAtomType(atom, bonds):
             elif atom2.isSulfur():
                 doubleS += 1
             else:
-                #We should decide if this is for double bonds to C only or not. Each contributer
-                #seems to have differing opinions
+                # doubleR is for double bonds NOT to Oxygen or Sulfur
                 doubleR += 1
         elif bond12.isTriple(): triple += 1
         elif bond12.isBenzene(): benzene += 1
 
+    # double is for all double bonds, to anything
     double = doubleR + doubleO + doubleS
+
     # Use element and counts to determine proper atom type
     if atom.symbol == 'H':
         atomType = 'H'
