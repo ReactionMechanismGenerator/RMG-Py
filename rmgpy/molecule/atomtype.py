@@ -327,11 +327,11 @@ def getAtomType(atom, bonds):
     with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
     """
 
-    cython.declare(atomType=str)
+    cython.declare(atomType=str, atomSymbol=str)
     cython.declare(single=cython.int, double=cython.int, doubleR=cython.int,
                    doubleS=cython.int, doubleO=cython.int, triple=cython.int,
                    benzene=cython.int)
-    
+
     atomType = ''
     
     # Count numbers of each higher-order bond type
@@ -354,11 +354,12 @@ def getAtomType(atom, bonds):
     double = doubleR + doubleO + doubleS
 
     # Use element and counts to determine proper atom type
-    if atom.symbol == 'H':
+    atomSymbol = atom.symbol
+    if atomSymbol == 'H':
         atomType = 'H'
-    elif atom.symbol == 'He':
+    elif atomSymbol == 'He':
         atomType = 'He'
-    elif atom.symbol == 'C':
+    elif atomSymbol == 'C':
         if   double == 0 and triple == 0 and benzene == 0:                  atomType = 'Cs'
         elif double == 1 and triple == 0 and benzene == 0 and doubleR == 1: atomType = 'Cd'
         elif double == 2 and triple == 0 and benzene == 0:                  atomType = 'Cdd'
@@ -367,7 +368,7 @@ def getAtomType(atom, bonds):
         elif double == 1 and triple == 0 and benzene == 0 and doubleS == 1: atomType = 'CS'
         elif double == 0 and triple == 0 and benzene == 2:                  atomType = 'Cb'
         elif double == 0 and triple == 0 and benzene == 3:                  atomType = 'Cbf'
-    elif atom.symbol == 'N':
+    elif atomSymbol == 'N':
         if   double == 0 and triple == 0 and benzene == 0 and single in [0, 1, 2, 3]: atomType = 'N3s'
         elif double == 1 and triple == 0 and benzene == 0 and single == 0 and doubleR == 1 and atom.lonePairs == 2: atomType = 'N1d'
         elif double == 1 and triple == 0 and benzene == 0 and single in [0, 1]: atomType = 'N3d'
@@ -378,14 +379,14 @@ def getAtomType(atom, bonds):
         elif double == 2 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
         elif double == 0 and triple == 1 and benzene == 0 and single == 1: atomType = 'N5t'
         elif double == 0 and triple == 0 and benzene == 2 and single == 1: atomType = 'N5b'
-    elif atom.symbol == 'O':
+    elif atomSymbol == 'O':
         if   double == 0 and triple == 0 and benzene == 0: atomType = 'Os'
         elif double == 1 and triple == 0 and benzene == 0: atomType = 'Od'
         elif len(bonds) == 0:                              atomType = 'Oa'
         elif double == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
-    elif atom.symbol == 'Ne':
+    elif atomSymbol == 'Ne':
         atomType = 'Ne'
-    elif atom.symbol == 'Si':
+    elif atomSymbol == 'Si':
         if   double == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
         elif double == 1 and triple == 0 and benzene == 0 and doubleO == 1: atomType = 'SiO'
         elif double == 1 and triple == 0 and benzene == 0: atomType = 'Sid'
@@ -393,13 +394,13 @@ def getAtomType(atom, bonds):
         elif double == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
         elif double == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
         elif double == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
-    elif atom.symbol == 'S':
+    elif atomSymbol == 'S':
         if   double == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
         elif double == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
         elif len(bonds) == 0:                              atomType = 'Sa'
-    elif atom.symbol == 'Cl':
+    elif atomSymbol == 'Cl':
         atomType = 'Cl'
-    elif atom.symbol == 'Ar':
+    elif atomSymbol == 'Ar':
         atomType = 'Ar'
 
     # Raise exception if we could not identify the proper atom type
