@@ -6,6 +6,8 @@ import numpy as np
 from rmgpy.scoop_framework.framework import TestScoopCommon
 from rmgpy.scoop_framework.util import logger as logging
 
+import rmgpy
+
 try:
     from scoop import futures, _control, shared
 except ImportError, e:
@@ -45,7 +47,7 @@ def funcOptimize(rmg, targets):
 class OptimizeTest(TestScoopCommon):
 
     #MINIMAL
-    wd = os.path.join('rmgpy/reduction/test_data/minimal/')
+    wd = os.path.join(os.path.dirname(rmgpy.__file__),'reduction/test_data/minimal/')
     inputFile = os.path.join(wd, 'input.py')
     reductionFile = os.path.join(wd, 'reduction_input.py')
     chemkinFile = os.path.join(wd, 'chemkin','chem.inp')

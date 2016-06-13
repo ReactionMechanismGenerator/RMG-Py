@@ -2,12 +2,14 @@
 import os.path
 import unittest
 
+import rmgpy
+
 from .reduction import *
 
 class ReduceTest(unittest.TestCase):
 
     #MINIMAL
-    wd = os.path.join('rmgpy/reduction/test_data/minimal/')
+    wd = os.path.join(os.path.dirname(rmgpy.__file__), 'reduction/test_data/minimal/')
     inputFile = os.path.join(wd, 'input.py')
     reductionFile = os.path.join(wd, 'reduction_input.py')
     chemkinFile = os.path.join(wd, 'chemkin','chem.inp')
