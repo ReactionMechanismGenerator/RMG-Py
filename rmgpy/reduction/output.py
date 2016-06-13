@@ -42,4 +42,4 @@ def writeModel(rmg, chemkin_name='chem_reduced.inp'):
     speciesList = rmg.reactionModel.core.species
     rxnList = rmg.reactionModel.core.reactions
     path = os.path.join(os.getcwd(), chemkin_name)
-    saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)
+    saveChemkinFile(path, speciesList, rxnList, verbose = True, checkForDuplicates=True)

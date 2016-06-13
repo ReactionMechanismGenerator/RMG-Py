@@ -12,7 +12,7 @@ class ReduceTest(unittest.TestCase):
     wd = os.path.join(os.path.dirname(rmgpy.__file__), 'reduction/test_data/minimal/')
     inputFile = os.path.join(wd, 'input.py')
     reductionFile = os.path.join(wd, 'reduction_input.py')
-    chemkinFile = os.path.join(wd, 'chemkin','chem.inp')
+    chemkinFile = os.path.join(wd, 'chemkin','chem_annotated.inp')
     spcDict = os.path.join(wd, 'chemkin','species_dictionary.txt')
 
 
