@@ -390,7 +390,6 @@ def test_isomorphism_group_group():
     assert_false(gp3.isSubgraphIsomorphic(gp2))    
     assert_false(len(gp3.findSubgraphIsomorphisms(gp2)) > 0)
 
-@work_in_progress
 def test_isomorphism_sulfurGroup_sulfurMolecule():
     """
     Test isormophism check of a CS group vs. a sulfur containing molecule

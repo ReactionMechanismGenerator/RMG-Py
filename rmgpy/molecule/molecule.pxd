@@ -57,6 +57,8 @@ cdef class Atom(Vertex):
     cpdef bint isCarbon(self)
 
     cpdef bint isOxygen(self)
+
+    cpdef bint isSulfur(self)
     
     cpdef incrementRadical(self)
 
@@ -89,6 +91,8 @@ cdef class Bond(Edge):
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
+    
+    cpdef bint isBenzene(self) except -2
 
     cpdef incrementOrder(self)
 
