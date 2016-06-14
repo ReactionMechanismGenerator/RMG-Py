@@ -1297,9 +1297,14 @@ class KineticsFamily(Database):
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
         or lists of same. Does not estimate the kinetics of these reactions
-        at this time. Returns a list of :class:`TemplateReaction` objects
-        using :class:`Species` objects for both reactants and products
-        (but does not generate resonance isomers of these Species.)
+        at this time.
+
+        Returns a list of :class:`TemplateReaction` objects
+        using either :class:`Species` objects for reactants and products
+        or either an index for those species that are already part of the core.
+        The index corresponds to the index of the Species given when it was added
+        to the core.
+
         The reactions are constructed such that the forward direction is
         consistent with the template of this reaction family.
         """
