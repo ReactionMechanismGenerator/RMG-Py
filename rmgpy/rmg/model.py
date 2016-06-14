@@ -64,7 +64,11 @@ from pdep import PDepReaction, PDepNetwork
 class Species(rmgpy.species.Species):
     solventName = None
     solventData = None
+    # solventStructure is the instance of species class whose molecule attribute corresponds to the solvent SMILES.
+    # If the solvent library does not contain the SMILES of the solvent, then the solventStructure is None
+    solventStructure = None
     solventViscosity = None
+    isSolvent = False # returns True if the species is the solvent and False if not
     diffusionTemp = None
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 

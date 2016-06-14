@@ -7,8 +7,9 @@ from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.molecule import Molecule
-from rmgpy.species import Species
-from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase
+from rmgpy.rmg.main import Species
+from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary
+from rmgpy.rmg.main import RMG
 
 ###################################################
 
@@ -182,6 +183,81 @@ multiplicity 2
             solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)
             self.assertAlmostEqual(solvationCorrection.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.enthalpy, H))  #0 decimal place, in 10kJ.
             self.assertAlmostEqual(solvationCorrection.gibbs / 10000., G / 10000., 0, msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.gibbs, G))
+
+    def testInitialSpecies(self):
+        " Test we can check whether the solvent is listed as one of the initial species in various scenarios "
+
+        # Case 1. when SMILES for solvent is available, the molecular structures of the initial species and the solvent
+        # are compared to check whether the solvent is in the initial species list
+
+        # Case 1-1: the solvent water is not in the initialSpecies list, so it raises Exception
+        rmg=RMG()
+        rmg.initialSpecies = []
+        solute = Species(label='n-octane', molecule=[Molecule().fromSMILES('C(CCCCC)CC')])
+        rmg.initialSpecies.append(solute)
+        rmg.solvent = 'water'
+        solventStructure = Species().fromSMILES('O')
+        self.assertRaises(Exception, self.database.checkSolventinInitialSpecies, rmg, solventStructure)
+
+        # Case 1-2: the solvent is now octane and it is listed as the initialSpecies. Although the string
+        # names of the solute and the solvent are different, because the solvent SMILES is provided,
+        # it can identify the 'n-octane' as the solvent
+        rmg.solvent = 'octane'
+        solventStructure = Species().fromSMILES('CCCCCCCC')
+        self.database.checkSolventinInitialSpecies(rmg, solventStructure)
+        self.assertTrue(rmg.initialSpecies[0].isSolvent)
+
+        # Case 2: the solvent SMILES is not provided. In this case, it can identify the species as the
+        # solvent by looking at the string name.
+
+        # Case 2-1: Since 'n-octane and 'octane' are not equal, it raises Exception
+        solventStructure = None
+        self.assertRaises(Exception, self.database.checkSolventinInitialSpecies, rmg, solventStructure)
+
+        # Case 2-2: The label 'n-ocatne' is corrected to 'octane', so it is identified as the solvent
+        rmg.initialSpecies[0].label = 'octane'
+        self.database.checkSolventinInitialSpecies(rmg, solventStructure)
+        self.assertTrue(rmg.initialSpecies[0].isSolvent)
+
+    def testSolventMolecule(self):
+        " Test we can give a proper value for the solvent molecular structure when different solvent databases are given "
+
+        # solventlibrary.entries['solvent_label'].item should be the instance of Species with the solvent's molecular structure
+        # if the solvent database contains the solvent SMILES or adjacency list. If not, then item is None
+
+        # Case 1: When the solventDatabase does not contain the solvent SMILES, the item attribute is None
+        solventlibrary = SolventLibrary()
+        solventlibrary.loadEntry(index=1, label='water', solvent=None)
+        self.assertTrue(solventlibrary.entries['water'].item is None)
+
+        # Case 2: When the solventDatabase contains the correct solvent SMILES, the item attribute is the instance of
+        # Species with the correct solvent molecular structure
+        solventlibrary.loadEntry(index=2, label='octane', solvent=None, molecule='CCCCCCCC')
+        solventSpecies = Species().fromSMILES('C(CCCCC)CC')
+        self.assertTrue(solventSpecies.isIsomorphic(solventlibrary.entries['octane'].item))
+
+        # Case 3: When the solventDatabase contains the correct solvent adjacency list, the item attribute is the instance of
+        # the species with the correct solvent molecular structure.
+        # This will display the SMILES Parse Error message from the external function, but ignore it.
+        solventlibrary.loadEntry(index=3, label='ethanol', solvent=None, molecule=
+"""
+1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2 C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3 O u0 p2 c0 {2,S} {9,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {1,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+9 H u0 p0 c0 {3,S}
+""")
+        solventSpecies = Species().fromSMILES('CCO')
+        self.assertTrue(solventSpecies.isIsomorphic(solventlibrary.entries['ethanol'].item))
+
+        # Case 4: when the solventDatabase contains incorrect values for the molecule attribute, it raises Exception
+        # This will display the SMILES Parse Error message from the external function, but ignore it.
+        self.assertRaises(Exception, solventlibrary.loadEntry, index=4, label='benzene', solvent=None, molecule='ring')
+
 #####################################################
 
 if __name__ == '__main__':

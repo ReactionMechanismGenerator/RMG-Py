@@ -36,6 +36,7 @@ import os.path
 import math
 import logging
 import rmgpy.constants as constants
+from rmgpy.species import Species
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
@@ -271,14 +272,29 @@ class SolventLibrary(Database):
                   index,
                   label,
                   solvent,
+                  molecule=None,
                   reference=None,
                   referenceType='',
                   shortDesc='',
                   longDesc='',
                   ):
+        spc = molecule
+        if molecule is not None:
+            try:
+                spc = Species().fromSMILES(molecule)
+            except:
+                logging.debug("Solvent '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
+                try:
+                    spc = Species().fromAdjacencyList(molecule)
+                except:
+                    logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule, self.name))
+                    raise
+            spc.generateResonanceIsomers()
+
         self.entries[label] = Entry(
             index = index,
             label = label,
+            item = spc,
             data = solvent,
             reference = reference,
             referenceType = referenceType,
@@ -303,7 +319,12 @@ class SolventLibrary(Database):
         Get a solvent's data from its name
         """
         return self.entries[label].data
-        
+
+    def getSolventStructure(self, label):
+        """
+        Get a solvent's molecular structure as SMILES or adjacency list from its name
+        """
+        return self.entries[label].item
         
 class SoluteLibrary(Database):
     """
@@ -323,10 +344,11 @@ class SoluteLibrary(Database):
                   longDesc='',
                   ):
         try:
-            mol = Molecule(SMILES=molecule)
+            spc = Species().fromSMILES(molecule)
         except:
+            logging.debug("Solute '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
             try:
-                mol = Molecule().fromAdjacencyList(molecule)
+                spc = Species().fromAdjacencyList(molecule)
             except:
                 logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule,self.name))
                 raise
@@ -334,7 +356,7 @@ class SoluteLibrary(Database):
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = mol,
+            item = spc,
             data = solute,
             reference = reference,
             referenceType = referenceType,
@@ -478,7 +500,13 @@ class SolvationDatabase(object):
         except:
             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
         return solventData
-        
+
+    def getSolventStructure(self, solvent_name):
+        try:
+            solventStructure = self.libraries['solvent'].getSolventStructure(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return solventStructure
         
     def loadGroups(self, path):
         """
@@ -634,9 +662,8 @@ class SolvationDatabase(object):
         :class:`DatabaseError` is raised.
         """
         for label, entry in library.entries.iteritems():
-            for molecule in species.molecule:
-                if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                    return (deepcopy(entry.data), library, entry)
+            if species.isIsomorphic(entry.item) and entry.data is not None:
+                return (deepcopy(entry.data), library, entry)
         return None
 
     def getSoluteDataFromGroups(self, species):
@@ -897,3 +924,25 @@ class SolvationDatabase(object):
         correction.gibbs = self.calcG(soluteData, solventData)  
         correction.entropy = self.calcS(correction.gibbs, correction.enthalpy) 
         return correction
+
+    def checkSolventinInitialSpecies(self,rmg,solventStructure):
+        """
+        Given the instance of RMG class and the solventStructure, it checks whether the solvent is listed as one
+        of the initial species.
+        If the SMILES / adjacency list for all the solvents exist in the solvent library, it uses the solvent's
+        molecular structure to determine whether the species is the solvent or not.
+        If the solvent library does not have SMILES / adjacency list, then it uses the solvent's string name
+        to determine whether the species is the solvent or not
+        """
+        for spec in rmg.initialSpecies:
+            if solventStructure is not None:
+                spec.isSolvent = spec.isIsomorphic(solventStructure)
+            else:
+                spec.isSolvent = rmg.solvent == spec.label
+            if not any([spec.isSolvent for spec in rmg.initialSpecies]):
+                if solventStructure is not None:
+                    logging.info('One of the initial species must be the solvent')
+                    raise Exception('One of the initial species must be the solvent')
+                else:
+                    logging.info('One of the initial species must be the solvent with the same string name')
+                    raise Exception('One of the initial species must be the solvent with the same string name')

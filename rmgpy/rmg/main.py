@@ -376,6 +376,7 @@ class RMG(util.Subject):
         if self.solvent:
             Species.solventData = self.database.solvation.getSolventData(self.solvent)
             Species.solventName = self.solvent
+            Species.solventStructure = self.database.solvation.getSolventStructure(self.solvent)
             diffusionLimiter.enable(Species.solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
     
@@ -435,7 +436,11 @@ class RMG(util.Subject):
                         pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
-            
+
+            # For liquidReactor, checks whether the solvent is listed as one of the initial species.
+            if self.solvent:
+                self.database.solvation.checkSolventinInitialSpecies(self,Species.solventStructure)
+
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
             if 'allowSingletO2' in self.speciesConstraints and self.speciesConstraints['allowSingletO2']:
