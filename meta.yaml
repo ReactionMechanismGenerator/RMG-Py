@@ -48,6 +48,7 @@ requirements:
     - cairo # [unix]
     - cairocffi # [unix]
     - cantera >=2.2
+    - coolprop
     - coverage
     - cython ==0.21
     - gprof2dot
