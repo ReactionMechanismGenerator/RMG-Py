@@ -1563,7 +1563,7 @@ class CoreEdgeReactionModel:
                 self.networkList.append(network)
 
         # Add the path reaction to that network
-        network.addPathReaction(newReaction, newSpecies)
+        network.addPathReaction(newReaction)
         
         # Return the network that the reaction was added to
         return network
