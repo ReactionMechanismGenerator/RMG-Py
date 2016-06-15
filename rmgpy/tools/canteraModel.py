@@ -314,8 +314,8 @@ class Cantera:
             speciesData = [data for data in dataList if data.species not in inertList]
             
             # plot
-            GenericPlot(xVar=time, yVar=TData).plot('{0}_temperature.png'.format(i+1))
-            GenericPlot(xVar=time, yVar=PData).plot('{0}_pressure.png'.format(i+1))
+            GenericPlot(xVar=time, yVar=TData).plot(os.path.join(self.outputDirectory,'{0}_temperature.png'.format(i+1)))
+            GenericPlot(xVar=time, yVar=PData).plot(os.path.join(self.outputDirectory,'{0}_pressure.png'.format(i+1)))
             SimulationPlot(xVar=time, yVar=speciesData[:topSpecies], ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
             
             
