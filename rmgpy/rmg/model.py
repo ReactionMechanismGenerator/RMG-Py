@@ -932,7 +932,7 @@ class CoreEdgeReactionModel:
                 # because of the way partial networks are explored
                 # Since PDepReactions are created as irreversible, not doing so
                 # would cause you to miss the reverse reactions!
-                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
+                self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
                 if isinstance(rxn, LibraryReaction):
                     # If reaction came from a reaction library, omit it from the core and edge so that it does 
                     # not get double-counted with the pdep network
@@ -1549,7 +1549,7 @@ class CoreEdgeReactionModel:
                 except KeyError:
                     pass
             else:
-                return None
+                return
 
             # If no suitable network exists, create a new one
             if network is None:
@@ -1564,9 +1564,6 @@ class CoreEdgeReactionModel:
 
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
-        
-        # Return the network that the reaction was added to
-        return network
 
     def updateUnimolecularReactionNetworks(self, database):
         """
