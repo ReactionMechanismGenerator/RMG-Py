@@ -84,8 +84,9 @@ class TestReact(unittest.TestCase):
         """
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spcTuples = [(spcA, spc) for spc in spcs]
 
-        reactionList = list(react(spcA, spcs))
+        reactionList = list(react(*spcTuples))
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
@@ -141,7 +142,9 @@ class TestReact(unittest.TestCase):
         spcs = [Species(index=indices['CC']).fromSMILES('CC'),
                 Species(index=indices['[CH3]']).fromSMILES('[CH3]')]
 
-        reactionList = list(react(spcA, spcs))
+        spcTuples = [(spcA, spc) for spc in spcs]
+
+        reactionList = list(react(*spcTuples))
         self.assertIsNotNone(reactionList)
         self.assertEquals(len(reactionList), 3)
         for rxn in reactionList:

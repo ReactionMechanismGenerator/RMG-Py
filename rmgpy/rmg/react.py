@@ -39,45 +39,35 @@ from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_
 from rmgpy.species import Species
         
-def react(spcA, speciesList=None):
+def react(*spcTuples):
     """
-    Generate reactions between spcA and the list of 
-    species for all the reaction families available.
+    Generate reactions between the species in the 
+    list of species tuples for all the reaction families available.
 
-    Returns an empty list if the spcA is non-reactive.
+    For each tuple of one or more Species objects [(spc1,), (spc2, spc3), ...]
+    the following is done:
 
-    For the spcA, a list of tuples is created for each
-    resonance isomer of the species. Each tuple consists of (Molecule, index)
-    with the index the species index of the Species object.
+    A list of tuples is created for each resonance isomer of the species.
+    Each tuple consists of (Molecule, index) with the index the species index of the Species object.
 
-    For each Species in the the speciesList, its corresponding
-    resonance isomers are stored in a tuple ([Molecule], index) with the index 
-    the species index of the Species object.
+    Possible combinations between the first spc in the tuple, and the second species in the tuple
+    is obtained by taking the combinatorial product of the two generated [(Molecule, index)] lists.
 
-    Each tuple ([Molecule], index) is expanded into a list of tuples (Molecule, index)
-    resulting in one large list [(Molecule, index)].
-
-    Possible combinations between the spcA, and a species from the 
-    speciesList is obtained by taking the combinatorial product of the
-    two generated [(Molecule, index)] lists.
+    Returns a flat generator object containing the generated Reaction objects.
     """
-    speciesList = speciesList if speciesList else []
-    if not spcA.reactive: return []
     
-    molsA = [(mol, spcA.index) for mol in spcA.molecule]
+    combos = []
 
-    molsB = [(spcB.molecule, spcB.index) for spcB in speciesList if spcB.reactive]
-
-    temp = []
-    for mols, index in molsB:
-        for molB in mols:
-            temp.append((molB, index))
-    molsB = temp
-
-    if not molsB:
-        combos = [(t,) for t in molsA]
-    else:
-        combos = list(itertools.product(molsA, molsB))
+    for t in spcTuples:
+        if len(t) == 1:#unimolecular reaction
+            spc, = t
+            mols = [(mol, spc.index) for mol in spc.molecule]
+            combos.extend([(combo,) for combo in mols])
+        elif len(t) == 2:#bimolecular reaction
+            spcA, spcB = t
+            molsA = [(mol, spcA.index) for mol in spcA.molecule]
+            molsB = [(mol, spcB.index) for mol in spcB.molecule]
+            combos.extend(itertools.product(molsA, molsB))
 
     results = map_(
                 reactMolecules,

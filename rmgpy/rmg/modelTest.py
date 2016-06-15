@@ -35,7 +35,7 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.rmg.main import RMG
 from rmgpy.reaction import Reaction
-
+from rmgpy.rmg.react import react
 from rmgpy.rmg.model import *
 
 ###################################################
@@ -151,8 +151,9 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spcTuples = [(spcA, spc) for spc in spcs]
 
-        rxns = list(react(spcA, spcs))
+        rxns = list(react(*spcTuples))
 
         cerm = CoreEdgeReactionModel()
 
@@ -181,8 +182,9 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         """
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spcTuples = [(spcA, spc) for spc in spcs]
 
-        rxns = list(react(spcA, spcs))
+        rxns = list(react(*spcTuples))
 
         cerm = CoreEdgeReactionModel()
 
