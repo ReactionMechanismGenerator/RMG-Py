@@ -36,7 +36,7 @@ import itertools
 
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import getDB
-from rmgpy.scoop_framework.util import map_, WorkerWrapper
+from rmgpy.scoop_framework.util import map_
 from rmgpy.species import Species
         
 def react(spcA, speciesList=None):
@@ -80,7 +80,7 @@ def react(spcA, speciesList=None):
         combos = list(itertools.product(molsA, molsB))
 
     results = map_(
-                WorkerWrapper(reactMolecules),
+                reactMolecules,
                 combos
             )
 

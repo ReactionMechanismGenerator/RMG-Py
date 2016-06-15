@@ -36,7 +36,7 @@ import re
 
 #local imports
 from rmgpy.chemkin import getSpeciesIdentifier
-from rmgpy.scoop_framework.util import broadcast, get, WorkerWrapper, map_
+from rmgpy.scoop_framework.util import broadcast, get, map_
 from rmgpy.scoop_framework.util import logger as logging
 from rmgpy.rmg.main import RMG
 
@@ -185,7 +185,7 @@ def findImportantReactions(rmg, tolerance):
         N = len(chunk)
         partial_results = list(
             map_(
-                WorkerWrapper(assessReaction), chunk, [rmg.reactionSystems] * N, [tolerance] * N, [simdata] * N
+                assessReaction, chunk, [rmg.reactionSystems] * N, [tolerance] * N, [simdata] * N
                 )
             )
         boolean_array.extend(partial_results)
