@@ -294,7 +294,7 @@ class Cantera:
         ctSpecies = self.model.species(rmgSpeciesIndex)
         ctSpecies.thermo = modified_ctSpecies.thermo
 
-    def plot(self, data):
+    def plot(self, data, topSpecies=10):
         """
         Plots data from the simulations from this cantera job.
         Takes data in the format of a list of tuples containing (time, [list of temperature, pressure, and species data]) 
@@ -302,7 +302,7 @@ class Cantera:
         3 plots will be created for each condition:
         - T vs. time
         - P vs. time
-        - Maximum 10 species mole fractions vs time
+        - Maximum species mole fractions (the number of species plotted is based on the `topSpecies` argument)
         """
         for i, conditionData in enumerate(data):
             time, dataList = conditionData
@@ -316,7 +316,8 @@ class Cantera:
             # plot
             GenericPlot(xVar=time, yVar=TData).plot('{0}_temperature.png'.format(i+1))
             GenericPlot(xVar=time, yVar=PData).plot('{0}_pressure.png'.format(i+1))
-            SimulationPlot(xVar=time, yVar=speciesData, ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
+            SimulationPlot(xVar=time, yVar=speciesData[:topSpecies], ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
+            
             
     def simulate(self):
         """
