@@ -34,6 +34,13 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
                                        kineticsFamilies=['R_Addition_MultipleBond'],reactionLibraries=[])
 
+    def tearDown(self):
+        """
+        Reset the loaded database
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        
     @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
