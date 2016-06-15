@@ -768,23 +768,24 @@ class CoreEdgeReactionModel:
         else:
             # We are reacting the edge
 
-            for i in xrange(numOldCoreSpecies):
-                if unimolecularReact[i]:
-                    # Find reactions involving the species that are unimolecular
-                    reactions = list(react(self.core.species[i].copy(deep=True)))
-                    reactions = [self.inflate(reaction) for reaction in reactions]
-                    self.processNewReactions(reactions, self.core.species[i], None)
+            # Select reactive species that can undergo unimolecular reactions:
+            spcTuples = [(self.core.species[i].copy(deep=True),)
+             for i in xrange(numOldCoreSpecies) if (unimolecularReact[i] and self.core.species[i].reactive)]
 
             for i in xrange(numOldCoreSpecies):
-                for j in xrange(i,numOldCoreSpecies):
+                for j in xrange(i, numOldCoreSpecies):
                     # Find reactions involving the species that are bimolecular
                     # This includes a species reacting with itself (if its own concentration is high enough)
-                    
                     if bimolecularReact[i,j]:
-                        reactions = list(react(self.core.species[i].copy(deep=True), [self.core.species[j]]))
-                        # Consider the latest added core species as the 'new' species
-                        reactions = [self.inflate(reaction) for reaction in reactions]
-                        self.processNewReactions(reactions, self.core.species[j], None)
+                        if self.core.species[i].reactive and self.core.species[j].reactive:
+                            spcTuples.append((self.core.species[i].copy(deep=True), self.core.species[j].copy(deep=True)))
+
+            rxns = list(react(*spcTuples))
+            spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
+            
+            for rxn, spc in zip(rxns, spcs):
+                rxn = self.inflate(rxn)    
+                self.processNewReactions([rxn], spc)
 
         ################################################################
         # Begin processing the new species and reactions
@@ -1810,6 +1811,20 @@ class CoreEdgeReactionModel:
                 raise e
 
         return obj
+
+    def retrieveNewSpecies(self, deflatedRxn):
+        """
+        Searches for the first reactant or product in the deflated reaction
+        that is represented by an integer.
+
+        Such an object refers to a core species that was used to generate the
+        reaction in the first place. Reactants or products represented by an
+        object that is not an integer will be a newly-generated structure.
+        """
+        for obj in itertools.chain(deflatedRxn.reactants, deflatedRxn.products):
+            if isinstance(obj, int):
+                return self.getSpecies(obj)
+
 
 def generateReactionKey(rxn, useProducts=False):
     """
