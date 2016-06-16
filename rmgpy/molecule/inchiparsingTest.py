@@ -12,7 +12,7 @@ from .parser import *
 
 class InChIParsingTest(unittest.TestCase):
 
-    def compare(self, inchi, u_indices=[], p_indices = []):        
+    def compare(self, inchi, u_indices=None, p_indices = None):        
         u_layer = U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices)) if u_indices else None
         p_layer = P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices)) if p_indices else None
 
