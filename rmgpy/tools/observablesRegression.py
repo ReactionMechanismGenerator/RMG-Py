@@ -195,8 +195,8 @@ class ObservablesTestCase:
         failHeader='\nThe following observables did not match:\n'
         failHeaderPrinted=False
         for i in range(len(oldConditionData)):
-            timeOld, dataListOld = oldConditionData[i]
-            timeNew, dataListNew = newConditionData[i]
+            timeOld, dataListOld, reactionSensitivityDataOld = oldConditionData[i]
+            timeNew, dataListNew, reactionSensitivityDataOld = newConditionData[i]
 
             # Compare species observables
             if 'species' in self.observables:
