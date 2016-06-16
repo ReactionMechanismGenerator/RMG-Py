@@ -136,3 +136,23 @@ def deflate(rxn, reactants, reactantIndices):
     rxn.reactants = [molDict[mol] for mol in rxn.reactants]
     rxn.products = [molDict[mol] for mol in rxn.products]
     rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]
+
+def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
+    """
+    Reacts the core species list via uni- and bimolecular reactions.
+    """
+
+    # Select reactive species that can undergo unimolecular reactions:
+    spcTuples = [(coreSpcList[i].copy(deep=True),)
+     for i in xrange(numOldCoreSpecies) if (unimolecularReact[i] and coreSpcList[i].reactive)]
+
+    for i in xrange(numOldCoreSpecies):
+        for j in xrange(i, numOldCoreSpecies):
+            # Find reactions involving the species that are bimolecular
+            # This includes a species reacting with itself (if its own concentration is high enough)
+            if bimolecularReact[i,j]:
+                if coreSpcList[i].reactive and coreSpcList[j].reactive:
+                    spcTuples.append((coreSpcList[i].copy(deep=True), coreSpcList[j].copy(deep=True)))
+
+    rxns = list(react(*spcTuples))
+    return rxns

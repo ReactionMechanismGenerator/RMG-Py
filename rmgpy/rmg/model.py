@@ -54,7 +54,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
-from .react import react
+from .react import reactAll
 
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
@@ -768,19 +768,7 @@ class CoreEdgeReactionModel:
         else:
             # We are reacting the edge
 
-            # Select reactive species that can undergo unimolecular reactions:
-            spcTuples = [(self.core.species[i].copy(deep=True),)
-             for i in xrange(numOldCoreSpecies) if (unimolecularReact[i] and self.core.species[i].reactive)]
-
-            for i in xrange(numOldCoreSpecies):
-                for j in xrange(i, numOldCoreSpecies):
-                    # Find reactions involving the species that are bimolecular
-                    # This includes a species reacting with itself (if its own concentration is high enough)
-                    if bimolecularReact[i,j]:
-                        if self.core.species[i].reactive and self.core.species[j].reactive:
-                            spcTuples.append((self.core.species[i].copy(deep=True), self.core.species[j].copy(deep=True)))
-
-            rxns = list(react(*spcTuples))
+            rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
             
             for rxn, spc in zip(rxns, spcs):
