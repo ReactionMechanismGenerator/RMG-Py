@@ -39,7 +39,7 @@ from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_, WorkerWrapper
 from rmgpy.species import Species
         
-def react(spcA, speciesList=[]):
+def react(spcA, speciesList=None):
     """
     Generate reactions between spcA and the list of 
     species for all the reaction families available.
@@ -61,6 +61,7 @@ def react(spcA, speciesList=[]):
     speciesList is obtained by taking the combinatorial product of the
     two generated [(Molecule, index)] lists.
     """
+    speciesList = speciesList if speciesList else []
     if not spcA.reactive: return []
     
     molsA = [(mol, spcA.index) for mol in spcA.molecule]
