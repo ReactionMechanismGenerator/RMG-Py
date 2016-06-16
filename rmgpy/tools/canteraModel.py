@@ -371,6 +371,9 @@ class Cantera:
             
             numCtReactions = len(self.model.reactions())
             if self.sensitiveSpecies:
+                if ct.__version__ == '2.2.1':
+                    print 'Warning: Cantera version 2.2.1 may not support sensitivity analysis unless SUNDIALS was used during compilation.'
+                    print 'Warning: Upgrade to newer of Cantera in anaconda using the command "conda update -c rmg cantera"'
                 # Add all the reactions as part of the analysis
                 for i in range(numCtReactions):
                     canteraReactor.add_sensitivity_reaction(i)
