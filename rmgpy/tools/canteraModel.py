@@ -344,7 +344,7 @@ class Cantera:
             if condition.reactorType == 'IdealGasReactor':
                 canteraReactor=ct.IdealGasReactor(self.model)
             elif condition.reactorType == 'IdealGasConstPressureReactor':
-                canteraReactor=ct.IdealConstPressureGasReactor(self.model)
+                canteraReactor=ct.IdealGasConstPressureReactor(self.model)
             else:
                 raise Exception('Other types of reactor conditions are currently not supported')
             
