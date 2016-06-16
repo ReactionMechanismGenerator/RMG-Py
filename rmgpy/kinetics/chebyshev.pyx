@@ -242,7 +242,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         self.coeffs.value_si[0,0] += log10(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+    def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics parameters for a Cantera ChebyshevReaction() object
         Uses set_parameters(self,Tmin,Tmax,Pmin,Pmax,coeffs)

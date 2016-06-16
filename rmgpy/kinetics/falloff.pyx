@@ -119,14 +119,14 @@ cdef class ThirdBody(PDepKineticsModel):
         """
         self.arrheniusLow.changeRate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList = []):
+    def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics and efficiencies for a cantera `ThreeBodyReaction` object
         """
         import cantera as ct
         assert isinstance(ctReaction, ct.ThreeBodyReaction), "Must be a Cantera ThreeBodyReaction object"
         ctReaction.efficiencies = PDepKineticsModel.getCanteraEfficiencies(self,speciesList)
-        self.arrheniusLow.setCanteraKinetics(ctReaction)
+        self.arrheniusLow.setCanteraKinetics(ctReaction, speciesList)
 
 ################################################################################
 
@@ -216,7 +216,7 @@ cdef class Lindemann(PDepKineticsModel):
         self.arrheniusLow.changeRate(factor)
         self.arrheniusHigh.changeRate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+    def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the efficiencies and kinetics for a cantera reaction.
         """
@@ -374,7 +374,7 @@ cdef class Troe(PDepKineticsModel):
         self.arrheniusLow.changeRate(factor)
         self.arrheniusHigh.changeRate(factor)
 
-    def setCanteraKinetics(self, ctReaction, speciesList = []):
+    def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the efficiencies, kinetics, and troe falloff parameters
         for a cantera FalloffReaction.

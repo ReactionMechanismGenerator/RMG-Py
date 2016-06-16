@@ -259,7 +259,7 @@ cdef class KineticsModel:
                 
         return discrepancy
     
-    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+    def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics for a cantera reaction object.
         """
@@ -496,7 +496,7 @@ cdef class PDepKineticsModel(KineticsModel):
                     break
         return efficiencies
     
-    def setCanteraKinetics(self, ctReaction, speciesList=[]):
+    def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics for a cantera reaction object.
         """
