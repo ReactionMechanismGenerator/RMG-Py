@@ -419,7 +419,8 @@ class ReactionSensitivityPlot(GenericPlot):
         if self.numReactions:
             self.yVar = self.yVar[:self.numReactions]
         
-        self.xlabel = 'dln(c)/dln(k_i)'
+        if not self.xlabel:
+            self.xlabel = 'dln(c)/dln(k_i)'
         GenericPlot.barplot(self, filename=filename, idx=idx)
         
 class ThermoSensitivityPlot(GenericPlot):
@@ -482,5 +483,8 @@ class ThermoSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[idx]), reverse = True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        self.xlabel = 'dln(c)/dln(G_i)'
+
+        if not self.xlabel:
+            self.xlabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.barplot(self, filename=filename, idx=idx)
+

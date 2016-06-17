@@ -5,7 +5,7 @@ import cantera as ct
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.species import Species
 from rmgpy.tools.data import GenericData
-from rmgpy.tools.plot import GenericPlot, SimulationPlot
+from rmgpy.tools.plot import GenericPlot, SimulationPlot, ReactionSensitivityPlot
 from rmgpy.quantity import Quantity
 
 
@@ -19,6 +19,8 @@ class CanteraCondition:
     `reactorType`           A string of the cantera reactor type. List of supported types below:
         IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
         IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+        IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
+                            for ideal gas mixtures (the same as RMG's SimpleReactor)
 
     `reactionTime`          A tuple object giving the (reaction time, units)
     `molFrac`               A dictionary giving the initial mol Fractions. Keys are species objects and the values are floats
@@ -101,6 +103,8 @@ def generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tl
         `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
             IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
             IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
+                                for ideal gas mixtures (the same as RMG's SimpleReactor)
 
         `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
         `molFracList`           A list of molfrac dictionaries with species object keys
@@ -163,13 +167,14 @@ class Cantera:
     This class contains functions associated with an entire Cantera job
     """
     
-    def __init__(self, speciesList=None, reactionList=None, canteraFile='', outputDirectory='', conditions=[]):
+    def __init__(self, speciesList=None, reactionList=None, canteraFile='', outputDirectory='', conditions=[], sensitiveSpecies = []):
         """
         `speciesList`: list of RMG species objects
         `reactionList`: list of RMG reaction objects
         `reactionMap`: dict mapping the RMG reaction index within the `reactionList` to cantera model reaction(s) indices
         `canteraFile` path of the chem.cti file associated with this job
         `conditions`: a list of `CanteraCondition` objects
+        `sensitiveSpecies`: a list of RMG species objects for conductng sensitivity analysis on
         """
         self.speciesList = speciesList 
         self.reactionList = reactionList 
@@ -177,6 +182,7 @@ class Cantera:
         self.model = ct.Solution(canteraFile) if canteraFile else None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
         self.conditions = conditions
+        self.sensitiveSpecies = sensitiveSpecies
 
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.outputDirectory):
@@ -194,6 +200,8 @@ class Cantera:
         `reactorTypeList`        A list of strings of the cantera reactor type. List of supported types below:
             IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
             IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+            IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
+                                for ideal gas mixtures (the same as RMG's SimpleReactor)
 
         `reactionTimeList`      A tuple object giving the ([list of reaction times], units)
         `molFracList`           A list of molfrac dictionaries with species object keys
@@ -288,7 +296,7 @@ class Cantera:
         ctSpecies = self.model.species(rmgSpeciesIndex)
         ctSpecies.thermo = modified_ctSpecies.thermo
 
-    def plot(self, data):
+    def plot(self, data, topSpecies=10, topSensitiveReactions=10):
         """
         Plots data from the simulations from this cantera job.
         Takes data in the format of a list of tuples containing (time, [list of temperature, pressure, and species data]) 
@@ -296,10 +304,15 @@ class Cantera:
         3 plots will be created for each condition:
         - T vs. time
         - P vs. time
-        - Maximum 10 species mole fractions vs time
+        - Maximum species mole fractions (the number of species plotted is based on the `topSpecies` argument)
+        
+        Reaction sensitivity plots will also be plotted automatically if there were sensitivities evaluated.
+        The number of reactions to be plotted is defined by the `topSensitiveReactions` argument.
+        
         """
+        numCtReactions = len(self.model.reactions())
         for i, conditionData in enumerate(data):
-            time, dataList = conditionData
+            time, dataList, reactionSensitivityData = conditionData
             # In RMG, any species with an index of -1 is an inert and should not be plotted
             inertList = [species for species in self.speciesList if species.index == -1 ]
             
@@ -308,9 +321,12 @@ class Cantera:
             speciesData = [data for data in dataList if data.species not in inertList]
             
             # plot
-            GenericPlot(xVar=time, yVar=TData).plot('{0}_temperature.png'.format(i+1))
-            GenericPlot(xVar=time, yVar=PData).plot('{0}_pressure.png'.format(i+1))
-            SimulationPlot(xVar=time, yVar=speciesData, ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
+            GenericPlot(xVar=time, yVar=TData).plot(os.path.join(self.outputDirectory,'{0}_temperature.png'.format(i+1)))
+            GenericPlot(xVar=time, yVar=PData).plot(os.path.join(self.outputDirectory,'{0}_pressure.png'.format(i+1)))
+            SimulationPlot(xVar=time, yVar=speciesData, numSpecies=topSpecies, ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
+            
+            for j, species in enumerate(self.sensitiveSpecies):
+                ReactionSensitivityPlot(xVar=time, yVar=reactionSensitivityData[j*numCtReactions:(j+1)*numCtReactions], numReactions=topSensitiveReactions).barplot(os.path.join(self.outputDirectory,'{0}_{1}_sensitivity.png'.format(i+1,species.toChemkin())))
             
     def simulate(self):
         """
@@ -320,7 +336,7 @@ class Cantera:
         """
         # Get all the cantera names for the species
         speciesNamesList = [getSpeciesIdentifier(species) for species in self.speciesList]
-
+        inertIndexList = [self.speciesList.index(species) for species in self.speciesList if species.index == -1]
         
         allData = []
         for condition in self.conditions:
@@ -344,18 +360,33 @@ class Cantera:
             if condition.reactorType == 'IdealGasReactor':
                 canteraReactor=ct.IdealGasReactor(self.model)
             elif condition.reactorType == 'IdealGasConstPressureReactor':
-                canteraReactor=ct.IdealConstPressureGasReactor(self.model)
+                canteraReactor=ct.IdealGasConstPressureReactor(contents=self.model)
+            elif condition.reactorType == 'IdealGasConstPressureTemperatureReactor':
+                canteraReactor=ct.IdealGasConstPressureReactor(contents=self.model, energy='off')
             else:
                 raise Exception('Other types of reactor conditions are currently not supported')
             
             # Run this individual condition as a simulation
             canteraSimulation=ct.ReactorNet([canteraReactor])
-
+            
+            numCtReactions = len(self.model.reactions())
+            if self.sensitiveSpecies:
+                if ct.__version__ == '2.2.1':
+                    print 'Warning: Cantera version 2.2.1 may not support sensitivity analysis unless SUNDIALS was used during compilation.'
+                    print 'Warning: Upgrade to newer of Cantera in anaconda using the command "conda update -c rmg cantera"'
+                # Add all the reactions as part of the analysis
+                for i in range(numCtReactions):
+                    canteraReactor.add_sensitivity_reaction(i)
+                # Set the tolerances for the sensitivity coefficients
+                canteraSimulation.rtol_sensitivity = 1e-4
+                canteraSimulation.atol_sensitivity = 1e-6
+                
             # Initialize the variables to be saved
             times=[]
             temperature=[]
             pressure=[]
             speciesData=[]
+            sensitivityData = []
             
             # Begin integration
             time = 0.0
@@ -368,9 +399,43 @@ class Cantera:
                 temperature.append(canteraReactor.T)
                 pressure.append(canteraReactor.thermo.P)
                 speciesData.append(canteraReactor.thermo[speciesNamesList].X)
+                
+                
+                if self.sensitiveSpecies:
+                    # Cantera returns mass-based sensitivities rather than molar concentration or mole fraction based sensitivities.
+                    # The equation for converting between them is:
+                    # 
+                    # d ln xi = d ln wi - sum_(species i) (dln wi) (xi)
+                    # 
+                    # where xi is the mole fraction of species i and wi is the mass fraction of species i
+                    
+                    massFracSensitivityArray = canteraSimulation.sensitivities()
+                    if condition.reactorType =='IdealGasReactor':
+                        # Row 0: mass, Row 1: volume, Row 2: internal energy or temperature, Row 3+: mass fractions of species
+                        massFracSensitivityArray = massFracSensitivityArray[3:,:]
+                    elif condition.reactorType == 'IdealGasConstPressureReactor' or condition.reactorType == 'IdealGasConstPressureTemperatureReactor':
+                        # Row 0: mass, Row 1: enthalpy or temperature, Row 2+: mass fractions of the species
+                        massFracSensitivityArray = massFracSensitivityArray[2:,:]
+                    else:
+                        raise Exception('Other types of reactor conditions are currently not supported')
+                    
+                    for i in range(len(massFracSensitivityArray)):
+                        massFracSensitivityArray[i] *= speciesData[-1][i]
+                        
+                    sensitivityArray= np.zeros(len(self.sensitiveSpecies)*len(self.model.reactions()))
+                    for index, species in enumerate(self.sensitiveSpecies):
+                        for j in range(numCtReactions):
+                            sensitivityArray[numCtReactions*index+j] = canteraSimulation.sensitivity(species.toChemkin(),j)
 
-            # Convert speciesData to a numpy array
+                            for i in range(len(massFracSensitivityArray)):
+                                if i not in inertIndexList:
+                                    # massFracSensitivity for inerts are returned as nan in Cantera, so we must not include them here
+                                    sensitivityArray[numCtReactions*index+j] -= massFracSensitivityArray[i][j]
+                    sensitivityData.append(sensitivityArray)
+                
+            # Convert speciesData and sensitivityData to a numpy array
             speciesData=np.array(speciesData)
+            sensitivityData = np.array(sensitivityData)
 
             # Resave data into generic data objects
             time = GenericData(label = 'Time', 
@@ -395,7 +460,18 @@ class Cantera:
                                           )
                 conditionData.append(speciesGenericData)
             
-            allData.append((time,conditionData))
+            reactionSensitivityData = []
+            for index, species in enumerate(self.sensitiveSpecies):
+                for j in range(numCtReactions):
+                    reactionSensitivityGenericData = GenericData(label = 'dln[{0}]/dln[k{1}]: {2}'.format(species.toChemkin(),j+1, self.model.reactions()[j]),
+                                  species = species,
+                                  reaction = self.model.reactions()[j],
+                                  data = sensitivityData[:,numCtReactions*index+j],
+                                  index = j+1,
+                                  )
+                    reactionSensitivityData.append(reactionSensitivityGenericData)
+            
+            allData.append((time,conditionData,reactionSensitivityData))
             
         return allData
 
