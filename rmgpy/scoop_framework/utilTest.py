@@ -8,6 +8,7 @@ This module contains unit tests of the rmgpy.parallel module.
 import os
 import sys
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy.scoop_framework.framework import TestScoopCommon
 
@@ -71,6 +72,7 @@ def funcRetrieve():
     
     return True    
 
+@work_in_progress
 class BroadcastTest(TestScoopCommon):
 
     def __init__(self, *args, **kwargs):
@@ -90,6 +92,7 @@ class BroadcastTest(TestScoopCommon):
         result = futures._startup(funcBroadcast)
         self.assertEquals(result, True)
 
+@work_in_progress
 class GetTest(TestScoopCommon):
 
     def __init__(self, *args, **kwargs):

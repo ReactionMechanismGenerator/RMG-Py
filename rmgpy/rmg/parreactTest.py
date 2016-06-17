@@ -9,6 +9,7 @@ import os
 import sys
 import unittest
 import logging
+from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
@@ -72,6 +73,7 @@ def generate():
 
     return True
 
+@work_in_progress
 class ParallelReactTest(TestScoopCommon):
 
     def __init__(self, *args, **kwargs):

@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 import numpy as np
+from external.wip import work_in_progress
 
 from rmgpy.scoop_framework.framework import TestScoopCommon
 from rmgpy.scoop_framework.util import logger as logging
@@ -43,7 +44,7 @@ def funcOptimize(rmg, targets):
 
     return True
     
-
+@work_in_progress
 class OptimizeTest(TestScoopCommon):
 
     #MINIMAL
