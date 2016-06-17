@@ -323,7 +323,7 @@ class Cantera:
             # plot
             GenericPlot(xVar=time, yVar=TData).plot(os.path.join(self.outputDirectory,'{0}_temperature.png'.format(i+1)))
             GenericPlot(xVar=time, yVar=PData).plot(os.path.join(self.outputDirectory,'{0}_pressure.png'.format(i+1)))
-            SimulationPlot(xVar=time, yVar=speciesData[:topSpecies], ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
+            SimulationPlot(xVar=time, yVar=speciesData, numSpecies=topSpecies, ylabel='Mole Fraction').plot(os.path.join(self.outputDirectory,'{0}_mole_fractions.png'.format(i+1)))
             
             for j, species in enumerate(self.sensitiveSpecies):
                 ReactionSensitivityPlot(xVar=time, yVar=reactionSensitivityData[j*numCtReactions:(j+1)*numCtReactions], numReactions=topSensitiveReactions).barplot(os.path.join(self.outputDirectory,'{0}_{1}_sensitivity.png'.format(i+1,species.toChemkin())))
