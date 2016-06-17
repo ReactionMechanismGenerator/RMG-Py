@@ -64,13 +64,13 @@ class ObservablesTestCase:
 
 
     """
-    def __init__(self, title='', oldDir='', newDir='', observables = {}, exptData = [], ck2cti=True):
+    def __init__(self, title='', oldDir='', newDir='', observables = None, exptData = None, ck2cti=True):
         self.title=title
         self.newDir=newDir
         self.oldDir=oldDir
         self.conditions=None
-        self.exptData=exptData
-        self.observables=observables
+        self.exptData=exptData if exptData else []
+        self.observables=observables if observables else {}
 
         # Detect if the transport file exists
         oldTransportPath = None

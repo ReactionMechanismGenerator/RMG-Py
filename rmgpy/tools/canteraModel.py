@@ -167,7 +167,7 @@ class Cantera:
     This class contains functions associated with an entire Cantera job
     """
     
-    def __init__(self, speciesList=None, reactionList=None, canteraFile='', outputDirectory='', conditions=[], sensitiveSpecies = []):
+    def __init__(self, speciesList=None, reactionList=None, canteraFile='', outputDirectory='', conditions=None, sensitiveSpecies = None):
         """
         `speciesList`: list of RMG species objects
         `reactionList`: list of RMG reaction objects
@@ -181,8 +181,8 @@ class Cantera:
         self.reactionMap = {}
         self.model = ct.Solution(canteraFile) if canteraFile else None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
-        self.conditions = conditions
-        self.sensitiveSpecies = sensitiveSpecies
+        self.conditions = conditions if conditions else []
+        self.sensitiveSpecies = sensitiveSpecies if sensitiveSpecies else []
 
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.outputDirectory):

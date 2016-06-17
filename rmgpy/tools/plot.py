@@ -289,11 +289,11 @@ class SimulationPlot(GenericPlot):
     This should be formulated as 
     {'desired_name_for_species': 'corresponding_chemkin_name_of_species'}
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species={}):
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
-        self.species = species
+        self.species = species if species else {}
         
     def load(self):
         if self.xVar == None and self.yVar == None:
@@ -361,11 +361,11 @@ class ReactionSensitivityPlot(GenericPlot):
     barplot() will instead plot a horizontal bar plot of the sensitivities at a given
     time step.  If time step is not given, the end step will automatically be chosen
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None, reactions={}):
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None, reactions=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numReactions = numReactions
-        self.reactions = reactions
+        self.reactions = reactions if reactions else {}
         
     def load(self):
         if self.xVar == None and self.yVar == None:
@@ -434,11 +434,11 @@ class ThermoSensitivityPlot(GenericPlot):
     barplot() will instead plot a horizontal bar plot of the sensitivities at a given
     time step.  If time step is not given, the end step will automatically be chosen
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species={}):
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
-        self.species = species
+        self.species = species if species else {}
     
     def load(self):
         if self.xVar == None and self.yVar == None:

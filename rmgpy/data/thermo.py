@@ -218,7 +218,7 @@ def removeThermoData(thermoData1, thermoData2):
 
     return thermoData1
 
-def averageThermoData(thermoDataList=[]):
+def averageThermoData(thermoDataList=None):
     """
     Average a list of thermoData values together.
     Sets uncertainty values to be the approximately the 95% confidence interval, equivalent to
@@ -229,6 +229,9 @@ def averageThermoData(thermoDataList=[]):
     
     Note that uncertainties are only computed when number of values is greater than 1.
     """
+    if thermoDataList is None:
+        thermoDataList = []
+        
     import copy
     numValues = len(thermoDataList)
         

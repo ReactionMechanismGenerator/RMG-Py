@@ -174,7 +174,7 @@ class Reaction:
         else:
             return rmgpy.chemkin.writeReactionString(self)
     
-    def toCantera(self, speciesList=[]):
+    def toCantera(self, speciesList=None):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
         with the appropriate reaction class.
@@ -182,6 +182,9 @@ class Reaction:
         from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
                     
         import cantera as ct
+        
+        if speciesList is None:
+            speciesList = []
         
         # Create the dictionaries containing species strings and their stoichiometries
         # for initializing the cantera reaction object

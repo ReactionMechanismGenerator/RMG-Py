@@ -111,7 +111,8 @@ def find_allyl_end_with_charge(start):
     # Could not find a resonance path from start atom to end atom
     return paths
 
-def find_shortest_path(start, end, path=[]):
+def find_shortest_path(start, end, path=None):
+    path = path if path else []
     path = path + [start]
     if start == end:
         return path
