@@ -421,53 +421,55 @@ class ThermoGroups(Database):
         """
         return processOldLibraryEntry(data)
 
-    def removeEntry(self, entryToRemove):
+    def copyData(self, source, destination):
         """
-        Removes an entry from the database. In addition to deleting from
-        self.entries, it must also update the parent/child relationships
-        and re-point any unicode thermoData that may have pointed to the
-        entry.
+        This method copys the ThermoData object and all meta data
+        from source to destination
+        Args:
+            source: The entry for which data is being copied
+            destination: The entry for which data is being overwritten
+
         """
-        parentR = entryToRemove.parent
+        destination.data = source.data
+        destination.reference = source.reference
+        destination._longDesc = source._longDesc
+        destination._shortDesc = source._shortDesc
+        destination._longDesc = source.longDesc
+        destination._shortDesc = source.shortDesc
+        destination.rank = source.rank
+        destination.referenceType = source.referenceType    
 
-        #If the parent.data points toward the entryToRemove, then copy,
-        if parentR.data == entryToRemove.label:
-            parentR.data = deepcopy(entryToRemove.data)
-            #if actually a ThermoGroup, then copy metaData
-            if not isinstance(parentR.data, basestring):
-                parentR.reference = entryToRemove.reference
-                parentR._longDesc = entryToRemove._longDesc
-                parentR._shortDesc = entryToRemove._shortDesc
-                parentR._longDesc = entryToRemove.longDesc
-                parentR._shortDesc = entryToRemove.shortDesc
-                parentR.rank = entryToRemove.rank
-                parentR.referenceType = entryToRemove.referenceType
 
-        #look for other pointers that point toward entry.
+    def removeGroup(self, groupToRemove):
+        """
+        Removes a group that is in a tree from the database. For thermo
+        groups we also, need to re-point any unicode thermoData that may
+        have pointed to the entry.
+
+        Returns the removed group
+        """
+
+        #First call base class method
+        Database.removeGroup(self, groupToRemove)
+
+        parentR = groupToRemove.parent
+
+        #look for other pointers that point toward entry
         for entryName, entry in self.entries.iteritems():
             if isinstance(entry.data, basestring):
-                if entry.data == entryToRemove.label:
-                    print entryName
+                if entry.data == groupToRemove.label:
                     #if the entryToRemove.data is also a pointer, then copy
-                    if isinstance(entryToRemove.data, basestring):
-                        entry.data = entryToRemove.data
+                    if isinstance(groupToRemove.data, basestring):
+                        entry.data = groupToRemove.data
+                    #if the parent points toward entry and the data is
+                    #not a base string, we need to copy the data to the parent
+                    elif entry is parentR:
+                        self.copyData(groupToRemove, parentR)
                     #otherwise, point toward entryToRemove's parent
                     else:
                         entry.data = unicode(parentR.label)
 
-        #Remove from entryToRemove from entries
-        self.entries.pop(entryToRemove.label)
-
-        #Remove from parent's children attribute
-        parentR.children.remove(entryToRemove)
-
-        #change children's parent attribute to former grandparent
-        for child in entryToRemove.children:
-            child.parent = parentR
-
-        #extend parent's children attribute with new children
-        parentR.children.extend(entryToRemove.children)
-
+        return groupToRemove
 ################################################################################
 
 class ThermoDatabase(object):
