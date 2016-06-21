@@ -11,6 +11,7 @@ from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import Species
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule.molecule import Molecule
+import rmgpy
 
 ################################################################################
 
@@ -276,7 +277,58 @@ class TestCyclicThermo(unittest.TestCase):
 
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
-        
+
+    def testRemoveGroup(self):
+        """
+        Test that removing groups using nodes near the root of radical.py
+        """
+        #load up test data designed for this test
+        database2 = ThermoDatabase()
+        path = os.path.join(os.path.dirname(rmgpy.__file__),'data/test_data/')
+        database2.load(os.path.join(path, 'thermo'), depository = False)
+
+        #load up the thermo radical database as a test
+        radGroup = database2.groups['radical']
+
+        #use root as removed groups parent, which should be an LogicOr node
+        root = radGroup.top[0]
+        #use group to remove as
+        groupToRemove = radGroup.entries['RJ']
+        children = groupToRemove.children
+
+        #remove the group
+        radGroup.removeGroup(groupToRemove)
+
+        #afterwards groupToRemove should not be in the database or root's children
+        self.assertFalse(groupToRemove in radGroup.entries.values())
+        self.assertFalse(groupToRemove in root.children)
+
+        for child in children:
+            #groupToRemove children should all be in roots item.component and children attribuetes
+            self.assertTrue(child.label in root.item.components)
+            self.assertTrue(child in root.children)
+            #the children should all have root a their parent now
+            self.assertTrue(child.parent is root)
+
+        #Specific to ThermoDatabase, (above test apply to all base class Database)
+        #we check that unicode entry.data pointers are correctly reassigned
+
+        #if groupToRemove is a pointer and another node pointed to it, we copy
+        #groupToRemove pointer
+        self.assertTrue(radGroup.entries['OJ'].data is groupToRemove.data)
+
+        #Remove an entry with a ThermoData object
+        groupToRemove2 = radGroup.entries['CsJ']
+        radGroup.removeGroup(groupToRemove2)
+        #If groupToRemove was a data object, we point toward parent instead
+        self.assertTrue(radGroup.entries['RJ2_triplet'].data == groupToRemove2.parent.label)
+        #If the parent pointed toward groupToRemove, we need should have copied data object
+        Tlist=[300, 400, 500, 600, 800, 1000, 1500]
+        self.assertFalse(isinstance(groupToRemove2.parent.data, basestring))
+        self.assertTrue(groupToRemove2.parent.data.getEnthalpy(298) == groupToRemove2.data.getEnthalpy(298))
+        self.assertTrue(groupToRemove2.parent.data.getEntropy(298) == groupToRemove2.data.getEntropy(298))
+        self.assertFalse(False in [groupToRemove2.parent.data.getHeatCapacity(x) == groupToRemove2.data.getHeatCapacity(x) for x in Tlist])
+
 ################################################################################
 
 if __name__ == '__main__':
