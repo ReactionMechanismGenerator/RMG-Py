@@ -1798,6 +1798,8 @@ class Molecule(Graph):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
+        if self.containsSurfaceSite():
+            return 0.01
         if len(self.atoms) == 1:
             return 2.5 * constants.R
         else:
@@ -1809,10 +1811,13 @@ class Molecule(Graph):
         """
         cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
         
+        if self.containsSurfaceSite():
+            # ToDo: internal rotors could still act as rotors
+            return constants.R * 3 * len(self.vertices)
+
         if len(self.vertices) == 1:
             return self.calculateCp0()
         else:
-            
             Natoms = len(self.vertices)
             Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
             Nrotors = self.countInternalRotors()
