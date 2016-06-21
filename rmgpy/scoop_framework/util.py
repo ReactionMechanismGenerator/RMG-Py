@@ -37,14 +37,18 @@ import traceback
 import warnings
 from functools import wraps
 
+logger = None
+
 try:
     from scoop import futures
     from scoop.futures import map
     from scoop import shared
-    from scoop import logger as logging
-
+    from scoop import logger as scooplogger
+    logger = scooplogger
+    # logger.setLevel(20)#10 : debug, 20: info
 except ImportError:
     import logging as logging
+    logger = logging.getLogger()
     logging.debug("Could not properly import SCOOP.")
 
 def warnScoopStartedProperly(func):
