@@ -159,7 +159,25 @@ cdef class StickingCoefficient(KineticsModel):
 
 cdef class SurfaceArrhenius(Arrhenius):
     """
-    A kinetics model based on (modified) Arrhenius for surface reactions
+    A kinetics model based on (modified) Arrhenius for surface reactions.
+    
+    It is very similar to the gas phase :class:`Arrhenius`
+    
+    The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `T0`            The reference temperature
+    `n`             The temperature exponent
+    `Ea`            The activation energy
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
     """
     property A:
         """The preexponential factor. 
@@ -192,4 +210,74 @@ cdef class SurfaceArrhenius(Arrhenius):
 
 
 ################################################################################
+
+cdef class SurfaceArrheniusBEP(ArrheniusEP):
+    """
+    A kinetics model based on the (modified) Arrhenius equation, using the
+    Bronsted-Evans-Polanyi equation to determine the activation energy. 
+    
+    It is very similar to the gas-phase :class:`ArrheniusEP`.
+    The only differences being the A factor has different units,
+    (and the catalysis community prefers to call it BEP rather than EP!)
+    
+    The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `n`             The temperature exponent
+    `alpha`         The Evans-Polanyi slope
+    `E0`            The activation energy for a thermoneutral reaction
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+    
+    """
+    property A:
+        """The preexponential factor. 
+    
+        This is the only thing different from a normal ArrheniusEP class."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.SurfaceRateCoefficient(value)
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        SurfaceArrheniusBEP object.
+        """
+        string = 'SurfaceArrheniusBEP(A={0!r}, n={1!r}, alpha={2!r}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an SurfaceArrheniusBEP object.
+        """
+        return (SurfaceArrheniusBEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+    
+    cpdef SurfaceArrhenius toArrhenius(self, double dHrxn):
+        """
+        Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
+        given enthalpy of reaction `dHrxn` to determine the activation energy.
+        """
+        return SurfaceArrhenius(
+            A = self.A,
+            n = self.n,
+            Ea = (self.getActivationEnergy(dHrxn)*0.001,"kJ/mol"),
+            T0 = (1,"K"),
+            Tmin = self.Tmin,
+            Tmax = self.Tmax,
+            comment = self.comment,
+        )
 

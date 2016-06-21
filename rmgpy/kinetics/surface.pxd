@@ -28,7 +28,7 @@
 cimport numpy
 
 from rmgpy.kinetics.model cimport KineticsModel
-from rmgpy.kinetics.arrhenius cimport Arrhenius
+from rmgpy.kinetics.arrhenius cimport Arrhenius, ArrheniusEP
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
@@ -51,3 +51,8 @@ cdef class StickingCoefficient(KineticsModel):
 ################################################################################
 cdef class SurfaceArrhenius(Arrhenius):
     pass
+
+################################################################################
+cdef class SurfaceArrheniusBEP(ArrheniusEP):
+    pass
+
