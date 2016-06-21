@@ -838,47 +838,71 @@ class ThermoDatabase(object):
         return thermo0
     
     def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
+        """
+        Get the thermo data for an adsorbed species,
+        by desorbing it, finding the thermo of the gas-phase
+        species, then adding an adsorption correction that
+        is found from the groups/adsorption tree.
+        
+        Returns a :class:`ThermoData` object, with no Cp0 or CpInf
+        """
         assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
-        dummySpecies = Species()
+
         logging.warning(("Trying to generate thermo for surface species"
                         " with these {} resonance isomer(s):").format(len(species.molecule)))
-        for i, molecule in enumerate(species.molecule):
-            logging.warning("Isomer {}\n".format(i) + molecule.toAdjacencyList())
+        molecule = species.molecule[0]
+        # only want/need to do one resonance structure,
+        # because will need to regenerate others in gas phase
+        dummyMolecule = molecule.copy(deep=True)
+        sitesToRemove = []
+        for atom in dummyMolecule.atoms:
+            if atom.isSurfaceSite():
+                sitesToRemove.append(atom)
+        for site in sitesToRemove:
+            assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+            bondedAtom = site.bonds.keys()[0]
+            bond = site.bonds[bondedAtom]
+            dummyMolecule.removeBond(bond)
+            if bond.isSingle():
+                bondedAtom.incrementRadical()
+            elif bond.isVanDerWaals():
+                pass
+            elif bond.isDouble():
+                bondedAtom.incrementRadical()
+                bondedAtom.incrementRadical()
+            elif bond.isTriple():
+                bondedAtom.incrementRadical()
+                bondedAtom.incrementLonePairs()
+            else:
+                raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+            dummyMolecule.removeAtom(site)
 
-            dummyMolecule = molecule.copy(deep=True)
-            sitesToRemove = []
-            for atom in dummyMolecule.atoms:
-                if atom.isSurfaceSite():
-                    sitesToRemove.append(atom)
-            for site in sitesToRemove:
-                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bondedAtom = site.bonds.keys()[0]
-                bond = site.bonds[bondedAtom]
-                dummyMolecule.removeBond(bond)
-                if bond.isSingle():
-                    bondedAtom.incrementRadical()
-                elif bond.isVanDerWaals():
-                    pass
-                elif bond.isDouble():
-                    bondedAtom.incrementRadical()
-                    bondedAtom.incrementRadical()
-                elif bond.isTriple():
-                    bondedAtom.incrementRadical()
-                    bondedAtom.incrementLonePairs()
-                else:
-                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
 
-                dummyMolecule.removeAtom(site)
+        dummyMolecule.update()
 
-            dummyMolecule.update()
+        logging.warning("Before removing from surface:\n" + molecule.toAdjacencyList())
+        logging.warning("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
 
-            logging.warning("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
-
-            dummySpecies.molecule.append(dummyMolecule)
+        dummySpecies = Species()
+        dummySpecies.molecule.append(dummyMolecule)
+        dummySpecies.generateResonanceIsomers()
         thermo = self.getThermoData(dummySpecies, quantumMechanics=quantumMechanics)
-        thermo.comment = "Using thermo from gas phase species for adsorbate! Gas phase thermo from " + thermo.comment
+
+        thermo.comment = "Gas phase thermo from {0}. Asorption correction:".format(thermo.comment)
         logging.warning("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
+        if not isinstance(thermo, ThermoData):
+            thermo = thermo.toThermoData()
+
+        try:
+            self.__addGroupThermoData(thermo, self.groups['adsorption'], molecule, {})
+        except KeyError:
+            logging.error("Couldn't find in adsorption thermo database:")
+            logging.error(molecule)
+            logging.error(molecule.toAdjacencyList())
+            raise
+        thermo.Cp0 = None
+        thermo.CpInf = None
         return thermo
         #raise NotImplementedError("To be continued...")
         
