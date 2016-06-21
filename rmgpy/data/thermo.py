@@ -513,6 +513,7 @@ class ThermoDatabase(object):
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
         self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
+        self.groups['adsorption'] = ThermoGroups(label='adsorption').load(os.path.join(path, 'adsorption.py'), self.local_context, self.global_context)
 
     def save(self, path):
         """
