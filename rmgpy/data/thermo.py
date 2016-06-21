@@ -1616,6 +1616,7 @@ class ThermoDatabase(object):
         Determine the group additivity thermodynamic data for the atom `atom`
         in the structure `structure`, and add it to the existing thermo data
         `thermoData`.
+        The parameter `atom` is a dictionary of label-atom pairs like {'*',atom}
         """
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
