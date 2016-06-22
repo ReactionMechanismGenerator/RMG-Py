@@ -59,6 +59,7 @@ def react(*spcTuples):
     combos = []
 
     for t in spcTuples:
+        t = tuple([spc.copy(deep=True) for spc in t])
         if len(t) == 1:#unimolecular reaction
             spc, = t
             mols = [(mol, spc.index) for mol in spc.molecule]
@@ -89,7 +90,7 @@ def reactMolecules(moleculeTuples):
     families = getDB('kinetics').families
     
     molecules, reactantIndices = zip(*moleculeTuples)
-    
+
     reactionList = []
     for _, family in families.iteritems():
         rxns = family.generateReactions(molecules)
@@ -143,7 +144,7 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
     """
 
     # Select reactive species that can undergo unimolecular reactions:
-    spcTuples = [(coreSpcList[i].copy(deep=True),)
+    spcTuples = [(coreSpcList[i],)
      for i in xrange(numOldCoreSpecies) if (unimolecularReact[i] and coreSpcList[i].reactive)]
 
     for i in xrange(numOldCoreSpecies):
@@ -152,7 +153,7 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
             # This includes a species reacting with itself (if its own concentration is high enough)
             if bimolecularReact[i,j]:
                 if coreSpcList[i].reactive and coreSpcList[j].reactive:
-                    spcTuples.append((coreSpcList[i].copy(deep=True), coreSpcList[j].copy(deep=True)))
+                    spcTuples.append((coreSpcList[i], coreSpcList[j]))
 
     rxns = list(react(*spcTuples))
     return rxns
