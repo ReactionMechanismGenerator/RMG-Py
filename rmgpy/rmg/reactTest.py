@@ -30,6 +30,7 @@
 
 import os
 import unittest 
+import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
@@ -151,6 +152,22 @@ class TestReact(unittest.TestCase):
             for i, reactant in enumerate(rxn.reactants):
                 rxn.reactants[i] = Molecule().fromSMILES(indices[reactant])
             self.assertTrue(rxn.isBalanced())
+
+    def testReactAll(self):
+        """
+        Test that the reactAll function works.
+        """
+
+        spcs = [
+                Species().fromSMILES('CC'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('[OH]')
+                ]
+
+        N = len(spcs)
+        rxns = reactAll(spcs, N, np.ones(N), np.ones([N,N]))
+        self.assertIsNotNone(rxns)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
 
     def tearDown(self):
         """
