@@ -1,7 +1,7 @@
 # Data sources
 database(
     thermoLibraries=['surfaceThermo', 'primaryThermoLibrary'],
-    reactionLibraries = [('Surface', True)],
+    reactionLibraries = [('Deutschmann_Ni', True)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = 'default',
@@ -15,18 +15,25 @@ database(
 #    structure=SMILES("[CH3]"),
 #)
 
-# List of species
-#species(
-#    label='methylene',
-#    reactive=True,
-#    structure=SMILES("[CH2]"),
-#)
+
 
 species(
-    label='methane',
+    label='CH4',
     reactive=True,
     structure=SMILES("[CH4]"),
 )
+
+#species(
+#    label='water',
+#    reactive=True,
+#    structure=adjacencyList(
+#       """
+#1 O u0 p2 {2,S} {3,S} {4,vdW}
+#2 H u0 p0 {1,S}
+#3 H u0 p0 {1,S}
+#4 X u0 p0 {1,vdW}
+#"""),
+#)
 
 #species(
 #   label='c2h4',
@@ -43,13 +50,25 @@ species(
 #)
 
 species(
-   label='o2',
+   label='O2',
    reactive=True,
    structure=adjacencyList(
        """
 1 O u1 p2 c0 {2,S}
 2 O u1 p2 c0 {1,S}
 """),
+)
+
+species(
+    label='CO2',
+    reactive=True,
+    structure=SMILES("O=C=O"),
+)
+
+species(
+    label='H2O',
+    reactive=True,
+    structure=SMILES("O"),
 )
 
 
@@ -65,15 +84,18 @@ surfaceReactor(
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
 #        "methyl": 1.0,
-        "methane": 1.0,
-	"o2": 1.0,
+        "CH4": 1.0,
+        "O2": 0.0,
+        "CO2": 1.0,
+        "H2O": 0.0,
     },
     initialSurfaceCoverages={
         "site": 2.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
     surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
-    terminationTime=(1e-1, 's'),
+    terminationConversion = { "CH4":0.5,},
+    terminationTime=(1e-2, 's'),
 )
 
 simulator(
