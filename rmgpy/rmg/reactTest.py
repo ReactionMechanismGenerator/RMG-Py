@@ -107,7 +107,7 @@ class TestReact(unittest.TestCase):
         rxn = Reaction(reactants=[molA, molB], products=[molC],
         pairs=[(molA, molC), (molB, molC)])
 
-        deflate(rxn, reactants, reactantIndices)
+        deflate([rxn], reactants, reactantIndices)
 
         for spc, t in zip(rxn.reactants, [int, int]):
             self.assertTrue(isinstance(spc, t))
@@ -121,7 +121,7 @@ class TestReact(unittest.TestCase):
         rxn = Reaction(reactants=[molA, molB], products=[molC],
                 pairs=[(molA, molC), (molB, molC)])
 
-        deflate(rxn, reactants, reactantIndices)
+        deflate([rxn], reactants, reactantIndices)
 
         for spc, t in zip(rxn.reactants, [Species, int]):
             self.assertTrue(isinstance(spc, t))

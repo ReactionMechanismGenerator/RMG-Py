@@ -99,12 +99,11 @@ def reactMolecules(moleculeTuples):
     for reactant in molecules:
         reactant.clearLabeledAtoms()
 
-    for rxn in reactionList:
-        deflate(rxn, molecules, reactantIndices)
+    deflate(reactionList, molecules, reactantIndices)
 
     return reactionList
 
-def deflate(rxn, reactants, reactantIndices):
+def deflate(rxns, molecules, reactantIndices):
     """
     Creates a dictionary with Molecule objects as keys and newly 
     creatd Species objects as values.
@@ -114,9 +113,9 @@ def deflate(rxn, reactants, reactantIndices):
     core species.
 
     The Species object, stored as a value of the newly created dictionary,
-    is retrieved by using a Molecule object from the reactants array 
+    is retrieved by using a Molecule object from the molecules array 
     as a dictionary key. The elements in this array correspond to the 
-    Molecule objects that were used as reactants to generate reactions.
+    Molecule objects that were used as molecules to generate reactions.
 
     The Species object is replaced by the core species index in the newly
     created dictionary.
@@ -127,16 +126,19 @@ def deflate(rxn, reactants, reactantIndices):
     """    
 
     molDict = {}
-    for mol in itertools.chain(rxn.reactants, rxn.products):
-        molDict[mol] = Species(molecule=[mol])
 
     for i, coreIndex in enumerate(reactantIndices):
         if coreIndex != -1:
-            molDict[reactants[i]] = coreIndex 
+            molDict[molecules[i]] = coreIndex 
 
-    rxn.reactants = [molDict[mol] for mol in rxn.reactants]
-    rxn.products = [molDict[mol] for mol in rxn.products]
-    rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]
+    for rxn in rxns:
+        for mol in itertools.chain(rxn.reactants, rxn.products):
+            if not mol in molDict:
+                molDict[mol] = Species(molecule=[mol])
+
+        rxn.reactants = [molDict[mol] for mol in rxn.reactants]
+        rxn.products = [molDict[mol] for mol in rxn.products]
+        rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]
 
 def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
     """
