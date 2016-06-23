@@ -126,6 +126,8 @@ def saveEntry(f, entry):
     except (UnicodeEncodeError, UnicodeDecodeError):
         f.write(entry.longDesc.strip().encode('ascii', 'replace') + "\n")
     f.write('""",\n')
+    if entry.rank:
+        f.write("    rank = {0},\n".format(entry.rank))
 
     f.write(')\n\n')
 
@@ -379,11 +381,9 @@ class ThermoGroups(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  rank=3,
+                  rank=None,
                   ):
-        """
-        Default rank for thermo groups is 3.
-        """
+
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
@@ -421,6 +421,55 @@ class ThermoGroups(Database):
         """
         return processOldLibraryEntry(data)
 
+    def copyData(self, source, destination):
+        """
+        This method copys the ThermoData object and all meta data
+        from source to destination
+        Args:
+            source: The entry for which data is being copied
+            destination: The entry for which data is being overwritten
+
+        """
+        destination.data = source.data
+        destination.reference = source.reference
+        destination._longDesc = source._longDesc
+        destination._shortDesc = source._shortDesc
+        destination._longDesc = source.longDesc
+        destination._shortDesc = source.shortDesc
+        destination.rank = source.rank
+        destination.referenceType = source.referenceType    
+
+
+    def removeGroup(self, groupToRemove):
+        """
+        Removes a group that is in a tree from the database. For thermo
+        groups we also, need to re-point any unicode thermoData that may
+        have pointed to the entry.
+
+        Returns the removed group
+        """
+
+        #First call base class method
+        Database.removeGroup(self, groupToRemove)
+
+        parentR = groupToRemove.parent
+
+        #look for other pointers that point toward entry
+        for entryName, entry in self.entries.iteritems():
+            if isinstance(entry.data, basestring):
+                if entry.data == groupToRemove.label:
+                    #if the entryToRemove.data is also a pointer, then copy
+                    if isinstance(groupToRemove.data, basestring):
+                        entry.data = groupToRemove.data
+                    #if the parent points toward entry and the data is
+                    #not a base string, we need to copy the data to the parent
+                    elif entry is parentR:
+                        self.copyData(groupToRemove, parentR)
+                    #otherwise, point toward entryToRemove's parent
+                    else:
+                        entry.data = unicode(parentR.label)
+
+        return groupToRemove
 ################################################################################
 
 class ThermoDatabase(object):
@@ -1017,7 +1066,7 @@ class ThermoDatabase(object):
                     
                     # Use rank as a metric for prioritizing thermo. 
                     # The smaller the rank, the better.
-                    sumRank = numpy.sum([entry.rank for entry in ringGroups + polycyclicGroups])
+                    sumRank = numpy.sum([3 if entry.rank is None else entry.rank for entry in ringGroups + polycyclicGroups])
                     entries.append((thermo, sumRank))
                 
                 # Sort first by rank, then by enthalpy at 298 K

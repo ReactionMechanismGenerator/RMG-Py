@@ -875,10 +875,10 @@ class Database:
             return False
         
         #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
-        #so it gets an automatic pass. However, we do need to check that everything down this
+        #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return True
+            return childNode.parent is parentNode
         
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
@@ -1003,7 +1003,48 @@ class Database:
             #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
             return self.descendTree(structure, atoms, next[0], strict)
 
-################################################################################
+    def areSiblings(self, node, nodeOther):
+        """
+        Return `True` if `node` and `nodeOther` have the same parent node.  Otherwise, return `False`.
+        Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
+        """
+        if node.parent is nodeOther.parent: return True
+        else: return False
+
+    def removeGroup(self, groupToRemove):
+        """
+        Removes a group that is in a tree from the database. In addition to deleting from self.entries,
+        it must also update the parent/child relationships
+
+        Returns the removed group
+        """
+        #Don't remove top nodes or LogicOrs as this will cause lots of problems
+        if groupToRemove in self.top:
+            raise Exception("Cannot remove top node: {0} from {1} because it is a top node".format(groupToRemove, self))
+        elif isinstance(groupToRemove.item, LogicOr):
+            raise Exception ("Cannot remove top node: {0} from {1} because it is a LogicOr".format(groupToRemove, self))
+        #Remove from entryToRemove from entries
+        self.entries.pop(groupToRemove.label)
+
+        #If there is a parent, then the group exists in a tree and we should edit relatives
+        parentR=groupToRemove.parent
+        if not parentR is None:
+            #Remove from parent's children attribute
+            parentR.children.remove(groupToRemove)
+
+            #change children's parent attribute to former grandparent
+            for child in groupToRemove.children:
+                child.parent = parentR
+
+            #extend parent's children attribute with new children
+            parentR.children.extend(groupToRemove.children)
+
+            #A few additional changes needed if parentR is a LogicOr node
+            if isinstance(parentR.item, LogicOr):
+                parentR.item.components.remove(groupToRemove.label)
+                parentR.item.components.extend([child.label for child in groupToRemove.children])
+
+        return groupToRemove
 
 class LogicNode:
     """
