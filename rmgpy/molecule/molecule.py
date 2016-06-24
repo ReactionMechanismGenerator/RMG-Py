@@ -708,6 +708,7 @@ class Molecule(Graph):
         """
         Returns ``True`` iff the molecule contains an 'X' surface site.
         """
+        cython.declare(atom=Atom)
         for atom in self.atoms:
             if atom.symbol == 'X':
                 return True
