@@ -1,6 +1,6 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermo', 'primaryThermoLibrary'],
+    thermoLibraries=['surfaceThermo', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
     reactionLibraries = [('Deutschmann_Ni', True)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
@@ -80,7 +80,7 @@ species(
 
 # Reaction systems
 surfaceReactor(
-    temperature=(1350,'K'),
+    temperature=(900,'K'),
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
 #        "methyl": 1.0,
@@ -90,12 +90,12 @@ surfaceReactor(
         "H2O": 0.0,
     },
     initialSurfaceCoverages={
-        "site": 2.0,
+        "site": 1.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
     surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
-    terminationConversion = { "CH4":0.5,},
-    terminationTime=(1e-2, 's'),
+    terminationConversion = { "CH4":0.9,},
+    terminationTime=(1e-1, 's'),
 )
 
 simulator(
@@ -114,7 +114,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
-    generatePlots=False,
+    generatePlots=True,
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
 )
