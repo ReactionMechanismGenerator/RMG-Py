@@ -105,24 +105,19 @@ def reactMolecules(moleculeTuples):
 
 def deflate(rxns, molecules, reactantIndices):
     """
+    The purpose of this function is to replace the reactants and
+    products of a reaction, stored as Molecule objects by 
+    integer indices, corresponding to the species core index.
+
     Creates a dictionary with Molecule objects as keys and newly 
-    creatd Species objects as values.
+    created Species objects as values.
 
-    Iterates over the reactantIndices array.
-    The elements in this array correspond to the indices of the
-    core species.
+    It iterates over the reactantIndices array, with elements in this array
+    corresponding to the indices of the core species. It creates a 
+    Molecule -> index entry in the previously created dictionary.
 
-    The Species object, stored as a value of the newly created dictionary,
-    is retrieved by using a Molecule object from the molecules array 
-    as a dictionary key. The elements in this array correspond to the 
-    Molecule objects that were used as molecules to generate reactions.
-
-    The Species object is replaced by the core species index in the newly
-    created dictionary.
-
-    The reactants, products, and pairs objects of the reaction
-    are replaced by index integers for those cases the Molecule object
-    exists as a key in the newly created dictionary.
+    It iterates over the reaction list, and iteratively updates the
+    created dictionary as more reactions are processed.    
     """    
 
     molDict = {}
@@ -132,13 +127,13 @@ def deflate(rxns, molecules, reactantIndices):
             molDict[molecules[i]] = coreIndex 
 
     for rxn in rxns:
-        for mol in itertools.chain(rxn.reactants, rxn.products):
-            if not mol in molDict:
-                molDict[mol] = Species(molecule=[mol])
+        deflateReaction(rxn, molDict)
+        try:
+            deflateReaction(rxn.reverse, molDict) 
+        except AttributeError, e:
+            pass
 
-        rxn.reactants = [molDict[mol] for mol in rxn.reactants]
-        rxn.products = [molDict[mol] for mol in rxn.products]
-        rxn.pairs = [(molDict[reactant],molDict[product]) for reactant, product in rxn.pairs]
+
 
 def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
     """
@@ -159,3 +154,26 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
 
     rxns = list(react(*spcTuples))
     return rxns
+
+def deflateReaction(rxn, molDict):
+    """
+    This function deflates a single reaction, and uses the provided 
+    dictionary to populate reactants/products/pairs with integer indices,
+    if possible.
+
+    If the Molecule object could not be found in the dictionary, a new
+    dictionary entry is created, creating a new Species object as the value
+    for the entry.
+
+    The reactants/products/pairs of both the forward and reverse reaction 
+    object are populated with the value of the dictionary, either an
+    integer index, or either a Species object.
+    """
+
+    for mol in itertools.chain(rxn.reactants, rxn.products):
+        if not mol in molDict:
+            molDict[mol] = Species(molecule=[mol])
+
+    rxn.reactants = [molDict[mol] for mol in rxn.reactants]
+    rxn.products = [molDict[mol] for mol in rxn.products]
+    rxn.pairs = [(molDict[reactant], molDict[product]) for reactant, product in rxn.pairs]

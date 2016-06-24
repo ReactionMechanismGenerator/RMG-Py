@@ -169,6 +169,47 @@ class TestReact(unittest.TestCase):
         self.assertIsNotNone(rxns)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
 
+    def testDeflateReaction(self):
+        """
+        Test if the deflateReaction function works.
+        """
+
+        molA = Molecule().fromSMILES('[OH]')
+        molB = Molecule().fromSMILES('CC')
+        molC = Molecule().fromSMILES('[CH3]')
+
+        reactants = [molA, molB]
+
+        # both reactants were already part of the core:
+        reactantIndices = [1, 2]
+        molDict = {molA: 1, molB: 2}
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+        pairs=[(molA, molC), (molB, molC)])
+
+        deflateReaction(rxn, molDict)
+
+        for spc, t in zip(rxn.reactants, [int, int]):
+            self.assertTrue(isinstance(spc, t))
+        self.assertEquals(rxn.reactants, reactantIndices)
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
+        # one of the reactants was not yet part of the core:
+        reactantIndices = [-1, 2]
+        molDict = {molA: Species(molecule=[molA]), molB: 2}
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+                pairs=[(molA, molC), (molB, molC)])
+
+        deflateReaction(rxn, molDict)
+
+        for spc, t in zip(rxn.reactants, [Species, int]):
+            self.assertTrue(isinstance(spc, t))
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
+
     def tearDown(self):
         """
         Reset the loaded database
