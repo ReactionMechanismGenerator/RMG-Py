@@ -730,7 +730,14 @@ class CoreEdgeReactionModel:
 
                 pdepNetwork, newSpecies = newObject
                 newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
-                newReactions = [self.inflate(rxn) for rxn in newReactions]
+
+                for rxn in newReactions:
+                    rxn = self.inflate(rxn)
+                    try:
+                        rxn.reverse = self.inflate(rxn.reverse)
+                    except AttributeError, e:
+                        pass
+                    
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             else:
@@ -751,7 +758,13 @@ class CoreEdgeReactionModel:
                         products = products.species
                         if len(products) == 1 and products[0] == species:
                             newReactions = network.exploreIsomer(species)
-                            newReactions = [self.inflate(rxn) for rxn in newReactions]
+                            for rxn in newReactions:
+                                rxn = self.inflate(rxn)
+                                try:
+                                    rxn.reverse = self.inflate(rxn.reverse)
+                                except AttributeError, e:
+                                    pass
+
                             self.processNewReactions(newReactions, species, network)
                             network.updateConfigurations(self)
                             index = 0
@@ -772,7 +785,11 @@ class CoreEdgeReactionModel:
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
             
             for rxn, spc in zip(rxns, spcs):
-                rxn = self.inflate(rxn)    
+                rxn = self.inflate(rxn) 
+                try:
+                    rxn.reverse = self.inflate(rxn.reverse)
+                except AttributeError, e:
+                    pass
                 self.processNewReactions([rxn], spc)
 
         ################################################################
@@ -1767,11 +1784,6 @@ class CoreEdgeReactionModel:
         """
         reactants, products, pairs = [], [], []
 
-        for reactant, product in rxn.pairs:
-            reactant = self.getSpecies(reactant)
-            product = self.getSpecies(product)
-            pairs.append((reactant, product))
-
         for reactant in rxn.reactants:
             reactant = self.getSpecies(reactant)  
             reactants.append(reactant)
@@ -1780,9 +1792,14 @@ class CoreEdgeReactionModel:
             product = self.getSpecies(product)
             products.append(product)
 
-        rxn.pairs = pairs
-        rxn.products = products
+        for reactant, product in rxn.pairs:
+            reactant = self.getSpecies(reactant)
+            product = self.getSpecies(product)
+            pairs.append((reactant, product))
+
         rxn.reactants = reactants  
+        rxn.products = products
+        rxn.pairs = pairs
 
         return rxn
 
