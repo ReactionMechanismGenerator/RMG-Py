@@ -1925,6 +1925,23 @@ class KineticsFamily(Database):
                                 # Reactants stored as B + C + A
                                 generate_products_and_reactions((1, 2, 0))
 
+        # ToDo: try to remove this hard-coding of reaction family name..
+        if not forward and 'adsorption' in self.label.lower():
+            # Desorption should have desorbed something (else it was probably bidentate)
+            # so delete reactions that don't make a gas-phase desorbed product
+            prunedList = []
+            for reaction in rxnList:
+                for reactant in reaction.reactants:
+                    if not reactant.containsSurfaceSite():
+                        # found a desorbed species, we're ok
+                        prunedList.append(reaction)
+                        break
+                else:  # didn't break, so all species still adsorbed
+                    logging.info("Removing {} reaction {!s} with no desorbed species".format(self.label, reaction))
+                    continue  # to next reaction immediately
+            rxnList = prunedList
+
+
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
