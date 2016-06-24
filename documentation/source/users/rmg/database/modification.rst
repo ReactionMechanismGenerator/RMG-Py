@@ -251,9 +251,6 @@ Sibling nodes must be exclusive from one another so that there is no question
 which group a molecule qualifies as. However, you do not need to be exhaustive and
 list out every possibility.
 
-Make sure your nodes are actually children of their parents. Currently RMG does
-no atom-by-atom checking and assumes whatever is put into the tree is correct.
-
 Be sure to give errors whenever adding rules. If you don't know the uncertainty,
 why do you trust the kinetics?
 
