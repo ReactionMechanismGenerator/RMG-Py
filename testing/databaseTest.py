@@ -9,6 +9,7 @@ from rmgpy.data.rmg import RMGDatabase
 from copy import copy, deepcopy
 from rmgpy.data.base import LogicOr
 from rmgpy.molecule import Group
+from rmgpy.molecule.atomtype import atomTypes
 
 import nose
 import nose.tools
@@ -67,6 +68,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, family_name
 
+            test = lambda x: self.kinetics_checkCdAtomType(family_name)
+            test_name = "Kinetics family {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(family_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, family_name
+            
             test = lambda x: self.kinetics_checkReactantAndProductTemplate(family_name)
             test_name = "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
             test.description = test_name
@@ -96,13 +103,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
             test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
             test_name = "Thermo groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
             test = lambda x: self.general_checkChildParentRelationships(group_name, group)
             test_name = "Thermo groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
@@ -115,7 +122,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
 
-            
+            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test_name = "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -123,7 +135,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
             test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
             test_name = "Solvation groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
@@ -141,7 +153,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
+            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test_name = "Solvation groups {0}: Cd atomtype used correctly?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
     def test_statmech(self):
         for group_name, group in self.database.statmech.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -149,13 +167,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
             test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
             test_name = "Statmech groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
             test = lambda x: self.general_checkChildParentRelationships(group_name, group)
             test_name = "Statmech groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
@@ -164,6 +182,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             test = lambda x: self.general_checkSiblingsForParents(group_name, group)
             test_name = "Statmech groups {0}: sibling relationships are correct?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
+            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test_name = "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -181,7 +205,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
             test = lambda x: self.general_checkChildParentRelationships(group_name, group)
             test_name = "Transport groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
@@ -190,6 +214,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             test = lambda x: self.general_checkSiblingsForParents(group_name, group)
             test_name = "Transport groups {0}: sibling relationships are correct?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
+            test = lambda x: self.general_checkCdAtomType(group_name, group)
+            test_name = "Transport groups {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -351,6 +381,59 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 for product_label in product_labels:
                     nose.tools.assert_false(reactant_label==product_label, "Reactant label {0} matches that of product label {1} in a non-reversible family template.  Please rename product label.".format(reactant_label,product_label))
         
+    def kinetics_checkCdAtomType(self, family_name):
+        """
+        This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
+        correctly according to their strict definitions
+        """
+        family = self.database.kinetics.families[family_name]
+        targetLabel=['Cd', 'CO', 'CS', 'Cdd']
+        targetAtomTypes=[atomTypes[x] for x in targetLabel]
+        oxygen=[atomTypes['O']] + atomTypes['O'].specific
+        sulfur=[atomTypes['S']] + atomTypes['S'].specific
+
+        #ignore product entries that get created from training reactions
+        ignore=[]
+        if not family.ownReverse:
+            for product in family.forwardTemplate.products:
+                ignore.append(product)
+                ignore.extend(product.children)
+        else: ignore=[]
+
+        for entryName, entry in family.groups.entries.iteritems():
+            #ignore products
+            if entry in ignore: continue
+            #ignore LogicOr groups
+            if isinstance(entry.item, Group):
+                for index, atom in enumerate(entry.item.atoms):
+                    for atomtype1 in atom.atomType:
+                        if atomtype1 in targetAtomTypes:
+                            break
+                    #If Cd not found in atomTypes, go to next atom
+                    else: continue
+                    #Create list of all the atomTypes that should be present in addition or instead of Cd
+                    correctAtomList=[]
+                    num_of_Dbonds=sum([1 if x.order[0] is 'D' and len(x.order)==1 else 0 for x in atom.bonds.values()])
+                    if num_of_Dbonds == 2:
+                        correctAtomList.append('Cdd')
+                    elif num_of_Dbonds == 1:
+                        for ligand, bond in atom.bonds.iteritems():
+                            #Ignore ligands that are not double bonded
+                            if 'D' in bond.order:
+                                for ligAtomType in ligand.atomType:
+                                    if ligand.atomType[0] in oxygen: correctAtomList.append('CO')
+                                    elif ligand.atomType[0] in sulfur: correctAtomList.append('CS')
+
+                    #remove duplicates from correctAtom:
+                    correctAtomList=list(set(correctAtomList))
+                    for correctAtom in correctAtomList:
+                        nose.tools.assert_true(atomTypes[correctAtom] in atom.atomType,
+                                               """In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
+The following adjList may be have atoms in a different ordering than the input file:
+{4}
+                                            """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
+
+
     def general_checkNodesFoundInTree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
@@ -416,5 +499,46 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                                             "In {0} group, node {1} is written as a sibling of {2}, when it is actually a parent.".format(group_name, child1, child2))
                     nose.tools.assert_false(group.matchNodeToChild(child2, child1),
                                             "In {0} group, node {1} is written as a sibling of {2}, when it is actually a parent.".format(group_name, child2, child1))
+
+    def general_checkCdAtomType(self, group_name, group):
+        """
+        This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
+        correctly according to their strict definitions
+        """
+        targetLabel=['Cd', 'CO', 'CS', 'Cdd']
+        targetAtomTypes=[atomTypes[x] for x in targetLabel]
+        oxygen=[atomTypes['O']] + atomTypes['O'].specific
+        sulfur=[atomTypes['S']] + atomTypes['S'].specific
+
+        for entryName, entry in group.entries.iteritems():
+            if isinstance(entry.item, Group):
+                for index, atom in enumerate(entry.item.atoms):
+                    for atomtype1 in atom.atomType:
+                        if atomtype1 in targetAtomTypes:
+                            break
+                    #If Cd not found in atomTypes, go to next atom
+                    else: continue
+                    #figure out what the correct atomType is
+                    correctAtomList=[]
+                    num_of_Dbonds=sum([1 if x.order[0] is 'D' and len(x.order)==1 else 0 for x in atom.bonds.values()])
+                    if num_of_Dbonds == 2:
+                        correctAtomList.append('Cdd')
+                    elif num_of_Dbonds == 1:
+                        for ligand, bond in atom.bonds.iteritems():
+                            #Ignore ligands that are not double bonded
+                            if 'D' in bond.order:
+                                for ligAtomType in ligand.atomType:
+                                    if ligand.atomType[0] in oxygen: correctAtomList.append('CO')
+                                    elif ligand.atomType[0] in sulfur: correctAtomList.append('CS')
+
+                    #remove duplicates from correctAtom:
+                    correctAtomList=list(set(correctAtomList))
+                    for correctAtom in correctAtomList:
+                        nose.tools.assert_true(atomTypes[correctAtom] in atom.atomType,
+                                                """In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
+The following adjList may be have atoms in a different ordering than the input file:
+{4}
+                                            """.format(group_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
+
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
