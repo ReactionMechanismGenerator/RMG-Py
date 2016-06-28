@@ -54,7 +54,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 
 from rmgpy.kinetics import KineticsData
 import rmgpy.data.rmg
-from .react import react
+from .react import reactAll
 
 from pdep import PDepReaction, PDepNetwork
 # generateThermoDataFromQM under the Species class imports the qm package
@@ -730,7 +730,14 @@ class CoreEdgeReactionModel:
 
                 pdepNetwork, newSpecies = newObject
                 newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
-                newReactions = [self.inflate(rxn) for rxn in newReactions]
+
+                for rxn in newReactions:
+                    rxn = self.inflate(rxn)
+                    try:
+                        rxn.reverse = self.inflate(rxn.reverse)
+                    except AttributeError, e:
+                        pass
+                    
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             else:
@@ -751,7 +758,13 @@ class CoreEdgeReactionModel:
                         products = products.species
                         if len(products) == 1 and products[0] == species:
                             newReactions = network.exploreIsomer(species)
-                            newReactions = [self.inflate(rxn) for rxn in newReactions]
+                            for rxn in newReactions:
+                                rxn = self.inflate(rxn)
+                                try:
+                                    rxn.reverse = self.inflate(rxn.reverse)
+                                except AttributeError, e:
+                                    pass
+
                             self.processNewReactions(newReactions, species, network)
                             network.updateConfigurations(self)
                             index = 0
@@ -768,23 +781,16 @@ class CoreEdgeReactionModel:
         else:
             # We are reacting the edge
 
-            for i in xrange(numOldCoreSpecies):
-                if unimolecularReact[i]:
-                    # Find reactions involving the species that are unimolecular
-                    reactions = list(react(self.core.species[i].copy(deep=True)))
-                    reactions = [self.inflate(reaction) for reaction in reactions]
-                    self.processNewReactions(reactions, self.core.species[i], None)
-
-            for i in xrange(numOldCoreSpecies):
-                for j in xrange(i,numOldCoreSpecies):
-                    # Find reactions involving the species that are bimolecular
-                    # This includes a species reacting with itself (if its own concentration is high enough)
-                    
-                    if bimolecularReact[i,j]:
-                        reactions = list(react(self.core.species[i].copy(deep=True), [self.core.species[j]]))
-                        # Consider the latest added core species as the 'new' species
-                        reactions = [self.inflate(reaction) for reaction in reactions]
-                        self.processNewReactions(reactions, self.core.species[j], None)
+            rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
+            spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
+            
+            for rxn, spc in zip(rxns, spcs):
+                rxn = self.inflate(rxn) 
+                try:
+                    rxn.reverse = self.inflate(rxn.reverse)
+                except AttributeError, e:
+                    pass
+                self.processNewReactions([rxn], spc)
 
         ################################################################
         # Begin processing the new species and reactions
@@ -932,7 +938,7 @@ class CoreEdgeReactionModel:
                 # because of the way partial networks are explored
                 # Since PDepReactions are created as irreversible, not doing so
                 # would cause you to miss the reverse reactions!
-                net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
+                self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
                 if isinstance(rxn, LibraryReaction):
                     # If reaction came from a reaction library, omit it from the core and edge so that it does 
                     # not get double-counted with the pdep network
@@ -1549,7 +1555,7 @@ class CoreEdgeReactionModel:
                 except KeyError:
                     pass
             else:
-                return None
+                return
 
             # If no suitable network exists, create a new one
             if network is None:
@@ -1563,10 +1569,7 @@ class CoreEdgeReactionModel:
                 self.networkList.append(network)
 
         # Add the path reaction to that network
-        network.addPathReaction(newReaction, newSpecies)
-        
-        # Return the network that the reaction was added to
-        return network
+        network.addPathReaction(newReaction)
 
     def updateUnimolecularReactionNetworks(self, database):
         """
@@ -1781,11 +1784,6 @@ class CoreEdgeReactionModel:
         """
         reactants, products, pairs = [], [], []
 
-        for reactant, product in rxn.pairs:
-            reactant = self.getSpecies(reactant)
-            product = self.getSpecies(product)
-            pairs.append((reactant, product))
-
         for reactant in rxn.reactants:
             reactant = self.getSpecies(reactant)  
             reactants.append(reactant)
@@ -1794,9 +1792,14 @@ class CoreEdgeReactionModel:
             product = self.getSpecies(product)
             products.append(product)
 
-        rxn.pairs = pairs
-        rxn.products = products
+        for reactant, product in rxn.pairs:
+            reactant = self.getSpecies(reactant)
+            product = self.getSpecies(product)
+            pairs.append((reactant, product))
+
         rxn.reactants = reactants  
+        rxn.products = products
+        rxn.pairs = pairs
 
         return rxn
 
@@ -1813,6 +1816,20 @@ class CoreEdgeReactionModel:
                 raise e
 
         return obj
+
+    def retrieveNewSpecies(self, deflatedRxn):
+        """
+        Searches for the first reactant or product in the deflated reaction
+        that is represented by an integer.
+
+        Such an object refers to a core species that was used to generate the
+        reaction in the first place. Reactants or products represented by an
+        object that is not an integer will be a newly-generated structure.
+        """
+        for obj in itertools.chain(deflatedRxn.reactants, deflatedRxn.products):
+            if isinstance(obj, int):
+                return self.getSpecies(obj)
+
 
 def generateReactionKey(rxn, useProducts=False):
     """

@@ -151,4 +151,4 @@ def get(key):
         logging.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
 
 def map_(*args, **kwargs):
-    return map(*args, **kwargs)
+    return map(WorkerWrapper(args[0]), *args[1:], **kwargs)

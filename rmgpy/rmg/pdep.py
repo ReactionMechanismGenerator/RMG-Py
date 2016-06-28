@@ -294,11 +294,11 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        newReactions = react(isomer)
+        newReactions = react((isomer,))
         
         return newReactions
 
-    def addPathReaction(self, newReaction, newSpecies):
+    def addPathReaction(self, newReaction):
         """
         Add a path reaction to the network. If the path reaction already exists,
         no action is taken.

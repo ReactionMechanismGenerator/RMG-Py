@@ -29,6 +29,9 @@
 
 import os.path
 import shutil
+from functools import wraps
+import time
+import logging
 
 
 class Subject(object):
@@ -115,3 +118,13 @@ def makeOutputSubdirectory(outputDirectory, folder):
         # The directory already exists, so delete it (and all its content!)
         shutil.rmtree(dir)
     os.mkdir(dir)
+
+def timefn(fn):
+    @wraps(fn)
+    def measure_time(*args, **kwargs):
+        t1 = time.time()
+        result = fn(*args, **kwargs)
+        t2 = time.time()
+        logging.info ("@timefn: {} took {:.2f} seconds".format(fn.func_name, t2 - t1))
+        return result
+    return measure_time

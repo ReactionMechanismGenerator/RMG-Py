@@ -34,6 +34,13 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
                                        kineticsFamilies=['R_Addition_MultipleBond'],reactionLibraries=[])
 
+    def tearDown(self):
+        """
+        Reset the loaded database
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        
     @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
@@ -48,7 +55,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generateResonanceIsomers()
         newReactions = []		
-        newReactions.extend(react(spc))
+        newReactions.extend(react((spc,)))
 
         # process newly generated reactions to make sure no duplicated reactions
         self.rmg.reactionModel.processNewReactions(newReactions, spc, None)
@@ -66,7 +73,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # react again
         newReactions_reverse = []
-        newReactions_reverse.extend(react(spc))
+        newReactions_reverse.extend(react((spc,)))
 
         # process newly generated reactions again to make sure no duplicated reactions
         self.rmg_dummy.reactionModel.processNewReactions(newReactions_reverse, spc, None)
