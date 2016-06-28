@@ -29,7 +29,7 @@ before_install:
 install:
   - conda env create 
   - source activate rmg_env
-  - yes 'Yes' | $CONDA_ENV_PATH/bin/mopac $MOPACKEY > /dev/null
+  - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
   - make
 
 script: 
