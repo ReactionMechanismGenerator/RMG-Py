@@ -260,7 +260,7 @@ def printThermo(spec):
     ))
 
 def printReaction(rxn):
-    logger.error('rxn: {}\t\tfamily: {}'.format(rxn, rxn.family))
+    logger.error('rxn: {}\t\torigin: {}'.format(rxn, rxn.getSource()))
 
 def printReactionComments(rxn):
     logger.error('kinetics: {}'.format(rxn.kinetics.comment))
