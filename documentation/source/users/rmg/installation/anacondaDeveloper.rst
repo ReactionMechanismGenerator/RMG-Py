@@ -4,7 +4,7 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.
+* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.  Install the Anaconda folder inside your home directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac).
 
 * Install `Git <https://git-scm.com/>`_, the open source version control package through the Terminal. **For Mac OS X**: Git is already packages with OS X 10.9 or later, but requires installation of Xcode's Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed. ::
 
@@ -15,12 +15,20 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-* On MacOS X you need to open the ``environment.yml`` file and comment out or delete the last line that says ``libgfortran==1.0``. (This line is required for linux but fails for MacOS X.)
+* Now create the anaconda environment for RMG-Py
 
-* Compile RMG-Py ::
+  For Linux users: ::
     
     cd RMG-Py
-    conda env create
+    conda env create -f environment_linux.yml
+    
+  For Mac users: ::
+         
+    cd RMG-Py
+    conda env create -f environment_mac.yml
+
+* Compile RMG-Py after activating the anaconda environment ::
+
     source activate rmg_env
     make
     
