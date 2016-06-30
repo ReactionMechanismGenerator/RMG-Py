@@ -298,6 +298,11 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if childNode in originalFamily.groups.top or childNode in originalFamily.forwardTemplate.products: continue
             parentNode = childNode.parent
+            
+            if parentNode is None:
+                # This is a mistake in the database, but it should be caught by kinetics_checkGroupsFoundInTree
+                # so rather than report it twice or crash, we'll just silently carry on to the next node.
+                continue
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
             nose.tools.assert_true(family.matchNodeToChild(parentNode, childNode),
