@@ -79,7 +79,15 @@ class AtomType:
 
     """
 
-    def __init__(self, label='', generic=None, specific=None):
+    def __init__(self, label='', generic=None, specific=None,
+                 single=None,
+                 allDouble=None,
+                 rDouble=None,
+                 oDouble=None,
+                 sDouble=None,
+                 triple=None,
+                 benzene=None,
+                 lonePairs=None,):
         self.label = label
         self.generic = generic or []
         self.specific = specific or []
@@ -91,6 +99,15 @@ class AtomType:
         self.decrementRadical = []
         self.incrementLonePair = []
         self.decrementLonePair = []
+        #Number of a bonds allowed in the atomtype, (empty list is a wildcard)
+        self.single = [] if single is None else single #total number of single bonds
+        self.allDouble = [] if allDouble is None else allDouble #total number of double bonds
+        self.rDouble = [] if rDouble is None else rDouble #double bonds to anything except an O or S
+        self.oDouble = [] if oDouble is None else oDouble
+        self.sDouble = [] if sDouble is None else sDouble
+        self.triple = []  if triple is None else triple #total number of triple bonds
+        self.benzene = [] if benzene is None else benzene #total number of benzene bonds
+        self.lonePairs = [] if lonePairs is None else lonePairs #total number of lonePairs
 
     def __repr__(self):
         return '<AtomType "%s">' % self.label
@@ -111,6 +128,14 @@ class AtomType:
             'decrementRadical': self.decrementRadical,
             'incrementLonePair': self.incrementLonePair,
             'decrementLonePair': self.decrementLonePair,
+            'single': self.single,
+            'allDouble': self.allDouble,
+            'rDouble': self.rDouble,
+            'oDouble': self.oDouble,
+            'sDouble': self.sDouble,
+            'triple': self.triple,
+            'benzene': self.benzene,
+            'lonePairs': self.lonePairs
         }
         return (AtomType, (), d)
 
@@ -129,6 +154,14 @@ class AtomType:
         self.decrementRadical = d['decrementRadical']
         self.incrementLonePair = d['incrementLonePair']
         self.decrementLonePair = d['decrementLonePair']
+        self.single = d['single']
+        self.allDouble = d['allDouble']
+        self.rDouble = d['rDouble']
+        self.oDouble = d['oDouble']
+        self.sDouble = d['sDouble']
+        self.triple = d['triple']
+        self.benzene = d['benzene']
+        self.lonePairs = d['lonePairs']
 
     def setActions(self, incrementBond, decrementBond, formBond, breakBond, incrementRadical, decrementRadical, incrementLonePair, decrementLonePair):
         self.incrementBond = incrementBond
@@ -185,70 +218,102 @@ atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa',
-    'Cl','Ar']
-)
+    'Cl','Ar'])
+
 atomTypes['Val4'] = AtomType(label='Val4', generic=['R','R!H'], specific=[
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
-    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf']
-)
+    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf'])
+
 atomTypes['Val5'] = AtomType(label='Val5', generic=['R','R!H'], specific=[
-    'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b']
-)
+    'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'])
+
 atomTypes['Val6'] = AtomType(label='Val6', generic=['R','R!H'], specific=[
     'O','Os','Od','Oa','Ot',
-    'S','Ss','Sd','Sa']
-)
+    'S','Ss','Sd','Sa'])
+
 atomTypes['Val7'] = AtomType(label='Val7', generic=['R','R!H'], specific=[
-    'Cl']
-)
+    'Cl'])
 
 atomTypes['H'   ] = AtomType('H',    generic=['R'],            specific=[])
 
 atomTypes['He'   ] = AtomType('He',  generic=['R','R!H'],      specific=[])
 
-atomTypes['C'   ] = AtomType('C',    generic=['R','R!H','Val4'],      specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS'])
-atomTypes['Cs'  ] = AtomType('Cs',   generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['Cd'  ] = AtomType('Cd',   generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['Cdd' ] = AtomType('Cdd',  generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['Ct'  ] = AtomType('Ct',   generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['CO'  ] = AtomType('CO',   generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['Cb'  ] = AtomType('Cb',   generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['Cbf' ] = AtomType('Cbf',  generic=['R','R!H','C','Val4'],  specific=[])
-atomTypes['CS'  ] = AtomType('CS',   generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['C'   ] = AtomType('C',    generic=['R','R!H','Val4'],      specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS'],
+                             single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[], benzene=[],)
+atomTypes['Cs'  ] = AtomType('Cs',   generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0],)
+atomTypes['Cd'  ] = AtomType('Cd',   generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[1], rDouble=[1], oDouble=[0], sDouble=[0], triple=[0], benzene=[0])
+atomTypes['Cdd' ] = AtomType('Cdd',  generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[0], allDouble=[2], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Ct'  ] = AtomType('Ct',   generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
+atomTypes['CO'  ] = AtomType('CO',   generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[1], rDouble=[0], oDouble=[1], sDouble=[0], triple=[0], benzene=[0])
+atomTypes['Cb'  ] = AtomType('Cb',   generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[0], triple=[0], benzene=[2])
+atomTypes['Cbf' ] = AtomType('Cbf',  generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[3])
+atomTypes['CS'  ] = AtomType('CS',   generic=['R','R!H','C','Val4'],  specific=[],
+                             single=[], allDouble=[1], rDouble=[0], oDouble=[0], sDouble=[1], triple=[0], benzene=[0])
 
-atomTypes['N'   ] = AtomType('N',    generic=['R','R!H','Val5'],      specific=['N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'])
-atomTypes['N1d' ] = AtomType('N1d',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N3s' ] = AtomType('N3s',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N3d' ] = AtomType('N3d',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N3t' ] = AtomType('N3t',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N3b' ] = AtomType('N3b',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N5s' ] = AtomType('N5s',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N5d' ] = AtomType('N5d',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N5dd'] = AtomType('N5dd', generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N5t' ] = AtomType('N5t',  generic=['R','R!H','N','Val5'],  specific=[])
-atomTypes['N5b' ] = AtomType('N5b',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N'   ] = AtomType('N',    generic=['R','R!H','Val5'],      specific=['N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'],
+                             single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[], benzene=[])
+atomTypes['N1d' ] = AtomType('N1d',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[0], allDouble=[1], rDouble=[1], oDouble=[], sDouble=[], triple=[0], benzene=[0], lonePairs=[2])
+atomTypes['N3s' ] = AtomType('N3s',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[0,1,2,3], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['N3d' ] = AtomType('N3d',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[0,1], allDouble=[1], rDouble=[], oDouble=[], sDouble=[], triple=[], benzene=[])
+atomTypes['N3t' ] = AtomType('N3t',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
+atomTypes['N3b' ] = AtomType('N3b',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[2])
+atomTypes['N5s' ] = AtomType('N5s',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[4], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['N5d' ] = AtomType('N5d',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[2], allDouble=[1], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['N5dd'] = AtomType('N5dd', generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[0], allDouble=[2], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['N5t' ] = AtomType('N5t',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
+atomTypes['N5b' ] = AtomType('N5b',  generic=['R','R!H','N','Val5'],  specific=[],
+                             single=[1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[2])
 
 atomTypes['O'   ] = AtomType('O',    generic=['R','R!H','Val6'],      specific=['Os','Od','Oa','Ot'])
-atomTypes['Os'  ] = AtomType('Os',   generic=['R','R!H','O','Val6'],  specific=[])
-atomTypes['Od'  ] = AtomType('Od',   generic=['R','R!H','O','Val6'],  specific=[])
-atomTypes['Oa'  ] = AtomType('Oa',   generic=['R','R!H','O','Val6'],  specific=[])
-atomTypes['Ot'  ] = AtomType('Ot',   generic=['R','R!H','O','Val6'],  specific=[])
+atomTypes['Os'  ] = AtomType('Os',   generic=['R','R!H','O','Val6'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Od'  ] = AtomType('Od',   generic=['R','R!H','O','Val6'],  specific=[],
+                             single=[], allDouble=[1], rDouble=[], oDouble=[], sDouble=[], triple=[], benzene=[])
+atomTypes['Oa'  ] = AtomType('Oa',   generic=['R','R!H','O','Val6'],  specific=[],
+                             single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Ot'  ] = AtomType('Ot',   generic=['R','R!H','O','Val6'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
 
 atomTypes['Ne'  ] = AtomType('Ne',   generic=['R','R!H'],      specific=[])
-
 atomTypes['Si'  ] = AtomType('Si',   generic=['R','R!H','Val4'],      specific=['Sis','Sid','Sidd','Sit','SiO','Sib','Sibf'])
-atomTypes['Sis' ] = AtomType('Sis',  generic=['R','R!H','Si','Val4'], specific=[])
-atomTypes['Sid' ] = AtomType('Sid',  generic=['R','R!H','Si','Val4'], specific=[])
-atomTypes['Sidd'] = AtomType('Sidd', generic=['R','R!H','Si','Val4'], specific=[])
-atomTypes['Sit' ] = AtomType('Sit',  generic=['R','R!H','Si','Val4'], specific=[])
-atomTypes['SiO' ] = AtomType('SiO',  generic=['R','R!H','Si','Val4'], specific=[])
-atomTypes['Sib' ] = AtomType('Sib',  generic=['R','R!H','Si','Val4'], specific=[])
-atomTypes['Sibf'] = AtomType('Sibf', generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['Sis' ] = AtomType('Sis',  generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['SiO' ] = AtomType('SiO',  generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[1], rDouble=[], oDouble=[1], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Sid' ] = AtomType('Sid',  generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[1], rDouble=[], oDouble=[0], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Sidd'] = AtomType('Sidd', generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[2], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Sit' ] = AtomType('Sit',  generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
+atomTypes['Sib' ] = AtomType('Sib',  generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[2])
+atomTypes['Sibf'] = AtomType('Sibf', generic=['R','R!H','Si','Val4'], specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[3])
 
 atomTypes['S'   ] = AtomType('S',    generic=['R','R!H','Val6'],      specific=['Ss','Sd','Sa'])
-atomTypes['Ss'  ] = AtomType('Ss',   generic=['R','R!H','S','Val6'],  specific=[])
-atomTypes['Sd'  ] = AtomType('Sd',   generic=['R','R!H','S','Val6'],  specific=[])
-atomTypes['Sa'  ] = AtomType('Sa',   generic=['R','R!H','S','Val6'],  specific=[])
+atomTypes['Ss'  ] = AtomType('Ss',   generic=['R','R!H','S','Val6'],  specific=[],
+                             single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Sd'  ] = AtomType('Sd',   generic=['R','R!H','S','Val6'],  specific=[],
+                             single=[], allDouble=[1], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+atomTypes['Sa'  ] = AtomType('Sa',   generic=['R','R!H','S','Val6'],  specific=[],
+                             single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
 
 atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H','Val7'],      specific=[])
 
@@ -328,30 +393,30 @@ def getAtomType(atom, bonds):
     """
 
     cython.declare(atomType=str, atomSymbol=str)
-    cython.declare(single=cython.int, double=cython.int, doubleR=cython.int,
-                   doubleS=cython.int, doubleO=cython.int, triple=cython.int,
+    cython.declare(single=cython.int, allDouble=cython.int, rDouble=cython.int,
+                   sDouble=cython.int, oDouble=cython.int, triple=cython.int,
                    benzene=cython.int)
 
     atomType = ''
     
     # Count numbers of each higher-order bond type
-    single = 0; doubleR = 0; doubleO = 0; doubleS = 0; triple = 0; benzene = 0
+    single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
     for atom2, bond12 in bonds.iteritems():
         if bond12.isSingle():
             single += 1
         elif bond12.isDouble():
             if atom2.isOxygen(): 
-                doubleO += 1
+                oDouble += 1
             elif atom2.isSulfur():
-                doubleS += 1
+                sDouble += 1
             else:
-                # doubleR is for double bonds NOT to Oxygen or Sulfur
-                doubleR += 1
+                # rDouble is for allDouble bonds NOT to Oxygen or Sulfur
+                rDouble += 1
         elif bond12.isTriple(): triple += 1
         elif bond12.isBenzene(): benzene += 1
 
-    # double is for all double bonds, to anything
-    double = doubleR + doubleO + doubleS
+    # allDouble is for all double bonds, to anything
+    allDouble = rDouble + oDouble + sDouble
 
     # Use element and counts to determine proper atom type
     atomSymbol = atom.symbol
@@ -360,43 +425,43 @@ def getAtomType(atom, bonds):
     elif atomSymbol == 'He':
         atomType = 'He'
     elif atomSymbol == 'C':
-        if   double == 0 and triple == 0 and benzene == 0:                  atomType = 'Cs'
-        elif double == 1 and triple == 0 and benzene == 0 and doubleR == 1: atomType = 'Cd'
-        elif double == 2 and triple == 0 and benzene == 0:                  atomType = 'Cdd'
-        elif double == 0 and triple == 1 and benzene == 0:                  atomType = 'Ct'
-        elif double == 1 and triple == 0 and benzene == 0 and doubleO == 1: atomType = 'CO'
-        elif double == 1 and triple == 0 and benzene == 0 and doubleS == 1: atomType = 'CS'
-        elif double == 0 and triple == 0 and benzene == 2:                  atomType = 'Cb'
-        elif double == 0 and triple == 0 and benzene == 3:                  atomType = 'Cbf'
+        if   allDouble == 0 and triple == 0 and benzene == 0:                  atomType = 'Cs'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and rDouble == 1: atomType = 'Cd'
+        elif allDouble == 2 and triple == 0 and benzene == 0:                  atomType = 'Cdd'
+        elif allDouble == 0 and triple == 1 and benzene == 0:                  atomType = 'Ct'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and oDouble == 1: atomType = 'CO'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and sDouble == 1: atomType = 'CS'
+        elif allDouble == 0 and triple == 0 and benzene == 2:                  atomType = 'Cb'
+        elif allDouble == 0 and triple == 0 and benzene == 3:                  atomType = 'Cbf'
     elif atomSymbol == 'N':
-        if   double == 0 and triple == 0 and benzene == 0 and single in [0, 1, 2, 3]: atomType = 'N3s'
-        elif double == 1 and triple == 0 and benzene == 0 and single == 0 and doubleR == 1 and atom.lonePairs == 2: atomType = 'N1d'
-        elif double == 1 and triple == 0 and benzene == 0 and single in [0, 1]: atomType = 'N3d'
-        elif double == 0 and triple == 1 and benzene == 0 and single == 0: atomType = 'N3t'
-        elif double == 0 and triple == 0 and benzene == 2 and single == 0: atomType = 'N3b'
-        elif double == 0 and triple == 0 and benzene == 0 and single == 4: atomType = 'N5s'
-        elif double == 1 and triple == 0 and benzene == 0 and single == 2: atomType = 'N5d'
-        elif double == 2 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
-        elif double == 0 and triple == 1 and benzene == 0 and single == 1: atomType = 'N5t'
-        elif double == 0 and triple == 0 and benzene == 2 and single == 1: atomType = 'N5b'
+        if   allDouble == 0 and triple == 0 and benzene == 0 and single in [0, 1, 2, 3]: atomType = 'N3s'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and single == 0 and rDouble == 1 and atom.lonePairs == 2: atomType = 'N1d'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and single in [0, 1]: atomType = 'N3d'
+        elif allDouble == 0 and triple == 1 and benzene == 0 and single == 0: atomType = 'N3t'
+        elif allDouble == 0 and triple == 0 and benzene == 2 and single == 0: atomType = 'N3b'
+        elif allDouble == 0 and triple == 0 and benzene == 0 and single == 4: atomType = 'N5s'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and single == 2: atomType = 'N5d'
+        elif allDouble == 2 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
+        elif allDouble == 0 and triple == 1 and benzene == 0 and single == 1: atomType = 'N5t'
+        elif allDouble == 0 and triple == 0 and benzene == 2 and single == 1: atomType = 'N5b'
     elif atomSymbol == 'O':
-        if   double == 0 and triple == 0 and benzene == 0: atomType = 'Os'
-        elif double == 1 and triple == 0 and benzene == 0: atomType = 'Od'
+        if   allDouble == 0 and triple == 0 and benzene == 0: atomType = 'Os'
+        elif allDouble == 1 and triple == 0 and benzene == 0: atomType = 'Od'
         elif len(bonds) == 0:                              atomType = 'Oa'
-        elif double == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
+        elif allDouble == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
     elif atomSymbol == 'Ne':
         atomType = 'Ne'
     elif atomSymbol == 'Si':
-        if   double == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
-        elif double == 1 and triple == 0 and benzene == 0 and doubleO == 1: atomType = 'SiO'
-        elif double == 1 and triple == 0 and benzene == 0: atomType = 'Sid'
-        elif double == 2 and triple == 0 and benzene == 0: atomType = 'Sidd'
-        elif double == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
-        elif double == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
-        elif double == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
+        if   allDouble == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
+        elif allDouble == 1 and triple == 0 and benzene == 0 and oDouble == 1: atomType = 'SiO'
+        elif allDouble == 1 and triple == 0 and benzene == 0: atomType = 'Sid'
+        elif allDouble == 2 and triple == 0 and benzene == 0: atomType = 'Sidd'
+        elif allDouble == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
+        elif allDouble == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
+        elif allDouble == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
     elif atomSymbol == 'S':
-        if   double == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
-        elif double == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
+        if   allDouble == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
+        elif allDouble == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
         elif len(bonds) == 0:                              atomType = 'Sa'
     elif atomSymbol == 'Cl':
         atomType = 'Cl'
@@ -405,6 +470,6 @@ def getAtomType(atom, bonds):
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
-        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, doubleR, doubleO, doubleS, triple, benzene))
+        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, rDouble, oDouble, sDouble, triple, benzene))
 
     return atomTypes[atomType]
