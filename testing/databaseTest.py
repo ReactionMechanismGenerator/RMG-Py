@@ -389,8 +389,6 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         family = self.database.kinetics.families[family_name]
         targetLabel=['Cd', 'CO', 'CS', 'Cdd']
         targetAtomTypes=[atomTypes[x] for x in targetLabel]
-        oxygen=[atomTypes['O']] + atomTypes['O'].specific
-        sulfur=[atomTypes['S']] + atomTypes['S'].specific
 
         #ignore product entries that get created from training reactions
         ignore=[]
@@ -421,8 +419,8 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                             #Ignore ligands that are not double bonded
                             if 'D' in bond.order:
                                 for ligAtomType in ligand.atomType:
-                                    if ligand.atomType[0] in oxygen: correctAtomList.append('CO')
-                                    elif ligand.atomType[0] in sulfur: correctAtomList.append('CS')
+                                    if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']): correctAtomList.append('CO')
+                                    elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']): correctAtomList.append('CS')
 
                     #remove duplicates from correctAtom:
                     correctAtomList=list(set(correctAtomList))
@@ -507,8 +505,6 @@ The following adjList may be have atoms in a different ordering than the input f
         """
         targetLabel=['Cd', 'CO', 'CS', 'Cdd']
         targetAtomTypes=[atomTypes[x] for x in targetLabel]
-        oxygen=[atomTypes['O']] + atomTypes['O'].specific
-        sulfur=[atomTypes['S']] + atomTypes['S'].specific
 
         for entryName, entry in group.entries.iteritems():
             if isinstance(entry.item, Group):
@@ -528,8 +524,8 @@ The following adjList may be have atoms in a different ordering than the input f
                             #Ignore ligands that are not double bonded
                             if 'D' in bond.order:
                                 for ligAtomType in ligand.atomType:
-                                    if ligand.atomType[0] in oxygen: correctAtomList.append('CO')
-                                    elif ligand.atomType[0] in sulfur: correctAtomList.append('CS')
+                                    if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']): correctAtomList.append('CO')
+                                    elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']): correctAtomList.append('CS')
 
                     #remove duplicates from correctAtom:
                     correctAtomList=list(set(correctAtomList))
