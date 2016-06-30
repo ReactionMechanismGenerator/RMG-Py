@@ -870,3 +870,111 @@ class Group(Graph):
             return False
         else:
             return True
+
+    def standardizeAtomType(self):
+        """
+        This function changes the atomTypes in a group if the atom must
+        be a specific atomType based on its bonds and valency.
+
+        Currently only standardizes oxygen, carbon and sulfur atomTypes
+
+        We also only check when there is exactly one atomType,
+        one bondType, one radical setting.
+        For any group where there are wildcards or multiple attributes,
+        we cannot apply this check.
+
+        For the case of CO and CS, it also removes bonded O and S atoms
+        unless the O and S atom are labelled
+
+        In the case where the atomType is ambigious based on bonds
+        and valency, this function will not change the type.
+        """
+
+        #see if this is a group we can check
+        viableToCheck = True
+        for atom in self.atoms:
+            if len(atom.atomType) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.radicalElectrons) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.lonePairs) > 1:
+                viableToCheck = False
+                break
+            for bond in atom.bonds.values():
+                if len(bond.order) > 1:
+                    viableToCheck = False
+                    break
+
+        if not viableToCheck: return
+
+        atomsToRemove=[]
+        for atom in self.atoms:
+            atomType = atom.atomType[0]
+            #Check carbon atom usage by string comparison
+            if atomType.label in atomTypes['C'].specific + ['C']:
+                num_of_Bbonds = sum([1 if x.order[0] is 'B' else 0 for x in atom.bonds.values()])
+                if num_of_Bbonds == 3:
+                    atom.atomType = [atomTypes['Cbf']]
+                    continue
+                num_of_Sbonds = sum([1 if x.order[0] is 'S' else 0 for x in atom.bonds.values()])
+                num_of_Dbonds = sum([1 if x.order[0] is 'D' else 0 for x in atom.bonds.values()])
+                num_of_Tbonds = sum([1 if x.order[0] is 'T' else 0 for x in atom.bonds.values()])
+                bondValency = num_of_Sbonds + 2 * num_of_Dbonds + 3 * num_of_Tbonds + 1.5 * num_of_Bbonds
+                filledValency =  atom.radicalElectrons[0] + bondValency
+                if num_of_Bbonds ==2 and filledValency == 4:
+                    atom.atomType = [atomTypes['Cb']]
+                    continue
+                elif num_of_Dbonds == 2:
+                    atom.atomType = [atomTypes['Cdd']]
+                    continue
+                elif num_of_Tbonds == 1:
+                    atom.atomType = [atomTypes['Ct']]
+                elif num_of_Dbonds == 1 and filledValency >=3:
+                    for ligand, bond in atom.bonds.iteritems():
+                        if not bond.order is 'D': continue
+                        if ligand.atomType.label in atomTypes['O'].specific + ['O']:
+                            atom.atomType = [atomTypes['CO']]
+                            atomsToRemove.append(ligand)
+                        elif ligand.atomType.label in atomTypes['S'].specific + ['S']:
+                            atom.atomType = [atomTypes['CS']]
+                            atomsToRemove.append(ligand)
+                        else: atom.atomType = [atomTypes ['Cd']]
+                elif filledValency == 4:
+                    atom.atomType = [atomTypes['Cs']]
+            #For O atoms
+            if atomType.label in atomTypes['O'].specific + ['O']:
+                num_of_Sbonds = sum([1 if x.order[0] is 'S' else 0 for x in atom.bonds.values()])
+                num_of_Dbonds = sum([1 if x.order[0] is 'D' else 0 for x in atom.bonds.values()])
+                num_of_Tbonds = sum([1 if x.order[0] is 'T' else 0 for x in atom.bonds.values()])
+                bondValency = num_of_Sbonds + 2 * num_of_Dbonds + 3 * num_of_Tbonds
+                filledValency = atom.radicalElectrons[0] + bondValency
+
+                if num_of_Tbonds == 1:
+                    atom.atomType = [atomTypes['Ot']]
+                elif num_of_Dbonds == 1:
+                    atom.atomType = [atomTypes['Od']]
+                elif num_of_Sbonds >= 1:
+                    atom.atomType = [atomTypes['Os']]
+
+            if atomType.label in atomTypes['S'].specific + ['S']:
+                num_of_Sbonds = sum([1 if x.order[0] is 'S' else 0 for x in atom.bonds.values()])
+                num_of_Dbonds = sum([1 if x.order[0] is 'D' else 0 for x in atom.bonds.values()])
+                num_of_Tbonds = sum([1 if x.order[0] is 'T' else 0 for x in atom.bonds.values()])
+                bondValency = num_of_Sbonds + 2 * num_of_Dbonds + 3 * num_of_Tbonds
+                filledValency = atom.radicalElectrons[0] + bondValency
+
+                if num_of_Tbonds == 1:
+                    atom.atomType = [atomTypes['St']]
+                elif num_of_Dbonds == 1:
+                    atom.atomType = [atomTypes['Sd']]
+                elif num_of_Sbonds >= 1:
+                    atom.atomType = [atomTypes['Ss']]
+
+        #Take out explicit O or S if it is not labelled:
+        for ligand in atomsToRemove:
+            if ligand.label == '':
+                self.removeAtom(ligand)
+
+
