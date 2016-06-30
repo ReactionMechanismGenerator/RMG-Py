@@ -75,9 +75,21 @@ class AtomType:
     `decrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is decremented
     `incrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is incremented
     `decrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is decremented
+
+    The following features are what are required in a given atomtype. Any int in the list is acceptable.
+    An empty list is a wildcard
+    'single'            ''list''            The total number of single bonds on the atom
+    'allDouble'         ''list''            The total number of double bonds on the atom
+    'rDouble'           ''list''            The number of double bonds to any non-oxygen, nonsulfur
+    'oDouble'           ''list''            The number of double bonds to oxygen
+    'sDouble'           ''list''            The number of double bonds to sulfur
+    'triple'            ''list''            The total number of triple bonds on the atom
+    'benzene'           ''list''            The total number of benzene bonds on the atom
+    'lonePairs'         ''list''            The number of lone pairs on the atom
     =================== =================== ====================================
 
     """
+    
 
     def __init__(self, label='', generic=None, specific=None,
                  single=None,
@@ -99,15 +111,14 @@ class AtomType:
         self.decrementRadical = []
         self.incrementLonePair = []
         self.decrementLonePair = []
-        #Number of a bonds allowed in the atomtype, (empty list is a wildcard)
-        self.single = [] if single is None else single #total number of single bonds
-        self.allDouble = [] if allDouble is None else allDouble #total number of double bonds
-        self.rDouble = [] if rDouble is None else rDouble #double bonds to anything except an O or S
+        self.single = [] if single is None else single
+        self.allDouble = [] if allDouble is None else allDouble
+        self.rDouble = [] if rDouble is None else rDouble
         self.oDouble = [] if oDouble is None else oDouble
         self.sDouble = [] if sDouble is None else sDouble
-        self.triple = []  if triple is None else triple #total number of triple bonds
-        self.benzene = [] if benzene is None else benzene #total number of benzene bonds
-        self.lonePairs = [] if lonePairs is None else lonePairs #total number of lonePairs
+        self.triple = [] if triple is None else triple
+        self.benzene = [] if benzene is None else benzene
+        self.lonePairs = [] if lonePairs is None else lonePairs
 
     def __repr__(self):
         return '<AtomType "%s">' % self.label
@@ -187,6 +198,20 @@ class AtomType:
         atom type `atomType2` or ``False``  otherwise.
         """
         return self is other or self in other.specific
+    
+    def getFeatures(self):
+        """
+        Returns a list of the features that are checked to determine atomtype
+        """
+        features=[self.single,
+                  self.allDouble,
+                  self.rDouble,
+                  self.oDouble,
+                  self.sDouble,
+                  self.triple,
+                  self.benzene,
+                  self.lonePairs,]
+        return features
 
 ################################################################################
 
@@ -245,7 +270,7 @@ atomTypes['Cs'  ] = AtomType('Cs',   generic=['R','R!H','C','Val4'],  specific=[
 atomTypes['Cd'  ] = AtomType('Cd',   generic=['R','R!H','C','Val4'],  specific=[],
                              single=[], allDouble=[1], rDouble=[1], oDouble=[0], sDouble=[0], triple=[0], benzene=[0])
 atomTypes['Cdd' ] = AtomType('Cdd',  generic=['R','R!H','C','Val4'],  specific=[],
-                             single=[0], allDouble=[2], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+                             single=[0], allDouble=[2], rDouble=[0,1,2], oDouble=[0,1,2], sDouble=[0,1,2], triple=[0], benzene=[0])
 atomTypes['Ct'  ] = AtomType('Ct',   generic=['R','R!H','C','Val4'],  specific=[],
                              single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
 atomTypes['CO'  ] = AtomType('CO',   generic=['R','R!H','C','Val4'],  specific=[],
@@ -259,6 +284,7 @@ atomTypes['CS'  ] = AtomType('CS',   generic=['R','R!H','C','Val4'],  specific=[
 
 atomTypes['N'   ] = AtomType('N',    generic=['R','R!H','Val5'],      specific=['N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'],
                              single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[], benzene=[])
+#Eg: [N-]=[N+]=N terminal nitrogen on azide (two lone pairs)
 atomTypes['N1d' ] = AtomType('N1d',  generic=['R','R!H','N','Val5'],  specific=[],
                              single=[0], allDouble=[1], rDouble=[1], oDouble=[], sDouble=[], triple=[0], benzene=[0], lonePairs=[2])
 atomTypes['N3s' ] = AtomType('N3s',  generic=['R','R!H','N','Val5'],  specific=[],
@@ -269,12 +295,16 @@ atomTypes['N3t' ] = AtomType('N3t',  generic=['R','R!H','N','Val5'],  specific=[
                              single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
 atomTypes['N3b' ] = AtomType('N3b',  generic=['R','R!H','N','Val5'],  specific=[],
                              single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[2])
+#Eg [NH4+]
 atomTypes['N5s' ] = AtomType('N5s',  generic=['R','R!H','N','Val5'],  specific=[],
                              single=[4], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+#Eg O[N+](=O)(O-) nitrate group
 atomTypes['N5d' ] = AtomType('N5d',  generic=['R','R!H','N','Val5'],  specific=[],
                              single=[2], allDouble=[1], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+#Eg N=[N+]=[N-] center nitrogen on azide
 atomTypes['N5dd'] = AtomType('N5dd', generic=['R','R!H','N','Val5'],  specific=[],
                              single=[0], allDouble=[2], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+#Eg C[N+]#[C-] isocyano group
 atomTypes['N5t' ] = AtomType('N5t',  generic=['R','R!H','N','Val5'],  specific=[],
                              single=[1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
 atomTypes['N5b' ] = AtomType('N5b',  generic=['R','R!H','N','Val5'],  specific=[],
@@ -299,7 +329,7 @@ atomTypes['SiO' ] = AtomType('SiO',  generic=['R','R!H','Si','Val4'], specific=[
 atomTypes['Sid' ] = AtomType('Sid',  generic=['R','R!H','Si','Val4'], specific=[],
                              single=[], allDouble=[1], rDouble=[], oDouble=[0], sDouble=[], triple=[0], benzene=[0])
 atomTypes['Sidd'] = AtomType('Sidd', generic=['R','R!H','Si','Val4'], specific=[],
-                             single=[], allDouble=[2], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0])
+                             single=[], allDouble=[2], rDouble=[0,1,2], oDouble=[0,1,2], sDouble=[0,1,2], triple=[0], benzene=[0])
 atomTypes['Sit' ] = AtomType('Sit',  generic=['R','R!H','Si','Val4'], specific=[],
                              single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[1], benzene=[0])
 atomTypes['Sib' ] = AtomType('Sib',  generic=['R','R!H','Si','Val4'], specific=[],
@@ -379,6 +409,10 @@ atomTypes['Cl'  ].setActions(incrementBond=[],               decrementBond=['Cl'
 
 atomTypes['Ar'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
+#list of elements that do not have more specific atomTypes
+allElements=['H', 'He', 'C', 'O', 'N', 'Si', 'S', 'Ne','Cl', 'Ar', ]
+nonSpecifics=['H', 'He', 'Ne', 'Cl', 'Ar',]
+
 for atomType in atomTypes.values():
     for items in [atomType.generic, atomType.specific,
       atomType.incrementBond, atomType.decrementBond, atomType.formBond,
@@ -392,12 +426,11 @@ def getAtomType(atom, bonds):
     with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
     """
 
-    cython.declare(atomType=str, atomSymbol=str)
+    cython.declare(atomSymbol=str)
     cython.declare(single=cython.int, allDouble=cython.int, rDouble=cython.int,
                    sDouble=cython.int, oDouble=cython.int, triple=cython.int,
                    benzene=cython.int)
-
-    atomType = ''
+    cython.declare(molFeatureList=cython.list, featureNames=cython.list)
     
     # Count numbers of each higher-order bond type
     single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
@@ -410,66 +443,27 @@ def getAtomType(atom, bonds):
             elif atom2.isSulfur():
                 sDouble += 1
             else:
-                # rDouble is for allDouble bonds NOT to Oxygen or Sulfur
+                # rDouble is for double bonds NOT to oxygen or Sulfur
                 rDouble += 1
         elif bond12.isTriple(): triple += 1
         elif bond12.isBenzene(): benzene += 1
 
     # allDouble is for all double bonds, to anything
     allDouble = rDouble + oDouble + sDouble
+    molFeatureList = [single, allDouble, rDouble, oDouble, sDouble, triple, benzene, atom.lonePairs]
 
     # Use element and counts to determine proper atom type
     atomSymbol = atom.symbol
-    if atomSymbol == 'H':
-        atomType = 'H'
-    elif atomSymbol == 'He':
-        atomType = 'He'
-    elif atomSymbol == 'C':
-        if   allDouble == 0 and triple == 0 and benzene == 0:                  atomType = 'Cs'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and rDouble == 1: atomType = 'Cd'
-        elif allDouble == 2 and triple == 0 and benzene == 0:                  atomType = 'Cdd'
-        elif allDouble == 0 and triple == 1 and benzene == 0:                  atomType = 'Ct'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and oDouble == 1: atomType = 'CO'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and sDouble == 1: atomType = 'CS'
-        elif allDouble == 0 and triple == 0 and benzene == 2:                  atomType = 'Cb'
-        elif allDouble == 0 and triple == 0 and benzene == 3:                  atomType = 'Cbf'
-    elif atomSymbol == 'N':
-        if   allDouble == 0 and triple == 0 and benzene == 0 and single in [0, 1, 2, 3]: atomType = 'N3s'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and single == 0 and rDouble == 1 and atom.lonePairs == 2: atomType = 'N1d'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and single in [0, 1]: atomType = 'N3d'
-        elif allDouble == 0 and triple == 1 and benzene == 0 and single == 0: atomType = 'N3t'
-        elif allDouble == 0 and triple == 0 and benzene == 2 and single == 0: atomType = 'N3b'
-        elif allDouble == 0 and triple == 0 and benzene == 0 and single == 4: atomType = 'N5s'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and single == 2: atomType = 'N5d'
-        elif allDouble == 2 and triple == 0 and benzene == 0 and single == 0: atomType = 'N5dd'
-        elif allDouble == 0 and triple == 1 and benzene == 0 and single == 1: atomType = 'N5t'
-        elif allDouble == 0 and triple == 0 and benzene == 2 and single == 1: atomType = 'N5b'
-    elif atomSymbol == 'O':
-        if   allDouble == 0 and triple == 0 and benzene == 0: atomType = 'Os'
-        elif allDouble == 1 and triple == 0 and benzene == 0: atomType = 'Od'
-        elif len(bonds) == 0:                              atomType = 'Oa'
-        elif allDouble == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
-    elif atomSymbol == 'Ne':
-        atomType = 'Ne'
-    elif atomSymbol == 'Si':
-        if   allDouble == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
-        elif allDouble == 1 and triple == 0 and benzene == 0 and oDouble == 1: atomType = 'SiO'
-        elif allDouble == 1 and triple == 0 and benzene == 0: atomType = 'Sid'
-        elif allDouble == 2 and triple == 0 and benzene == 0: atomType = 'Sidd'
-        elif allDouble == 0 and triple == 1 and benzene == 0: atomType = 'Sit'
-        elif allDouble == 0 and triple == 0 and benzene == 2: atomType = 'Sib'
-        elif allDouble == 0 and triple == 0 and benzene == 3: atomType = 'Sibf'
-    elif atomSymbol == 'S':
-        if   allDouble == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
-        elif allDouble == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
-        elif len(bonds) == 0:                              atomType = 'Sa'
-    elif atomSymbol == 'Cl':
-        atomType = 'Cl'
-    elif atomSymbol == 'Ar':
-        atomType = 'Ar'
+    #These elements do not do not have a more specific atomType
+    if atomSymbol in nonSpecifics:
+        return atomTypes[atomSymbol]
+    for specificAtomType in atomTypes[atomSymbol].specific:
+        atomtypeFeatureList = specificAtomType.getFeatures()
+        for molFeature, atomtypeFeature in zip(molFeatureList, atomtypeFeatureList):
+            if atomtypeFeature == []:
+                continue
+            elif not molFeature in atomtypeFeature:
+                break
+        else: return specificAtomType
+    else: raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, rDouble, oDouble, sDouble, triple, benzene))
 
-    # Raise exception if we could not identify the proper atom type
-    if atomType == '':
-        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, rDouble, oDouble, sDouble, triple, benzene))
-
-    return atomTypes[atomType]

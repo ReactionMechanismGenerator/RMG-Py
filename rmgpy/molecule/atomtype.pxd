@@ -52,4 +52,6 @@ cdef class AtomType:
 
     cpdef bint equivalent(self, AtomType other)
 
+    cpdef list getFeatures(self)
+
 cpdef AtomType getAtomType(atom, dict bonds)
