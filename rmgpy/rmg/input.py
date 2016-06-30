@@ -309,10 +309,14 @@ def pressureDependence(
 def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
+    if generateOutputHTML:
+        logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
     rmg.generateOutputHTML = generateOutputHTML 
     rmg.generatePlots = generatePlots
     rmg.saveSimulationProfiles = saveSimulationProfiles
     rmg.verboseComments = verboseComments
+    if saveEdgeSpecies:
+        logging.warning('Edge species saving was turned on.  This will slow down model generation for large simulations.')
     rmg.saveEdgeSpecies = saveEdgeSpecies
 
 def generatedSpeciesConstraints(**kwargs):
