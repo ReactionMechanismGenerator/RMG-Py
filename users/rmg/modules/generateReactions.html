@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.3. Generate Reactions &mdash; RMG Py 1.0.2 documentation</title>
+    <title>16.3. Generate Reactions &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
     <link rel="up" title="16. Standalone Modules" href="index.html" />
     <link rel="next" title="16.4. Sensitivity Analysis" href="sensitivity.html" />
     <link rel="prev" title="16.2. Merging Models" href="mergeModels.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="mergeModels.html" title="16.2. Merging Models"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -74,80 +74,79 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="generatereactions"></span><h1>16.3. Generate Reactions<a class="headerlink" href="#generate-reactions" title="Permalink to this headline">¶</a></h1>
 <p>The script generateReactions.py generates reactions between all species mentioned in an input file.
 To call this method type:</p>
-<div class="highlight-python"><div class="highlight"><pre>python generateReactions.py Input_File
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateReactions</span><span class="o">.</span><span class="n">py</span> <span class="n">Input_File</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">Input_File</span></code> is a file similar to a general RMG input file which contains all the species
 for RMG to generate reactions between.  An example file is placed in <code class="docutils literal"><span class="pre">$RMGPy/examples/generateReactions/input.py</span></code></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Data sources for kinetics</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources for kinetics</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;KlippensteinH2O2&#39;</span><span class="p">,</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;KlippensteinH2O2&#39;</span><span class="p">,</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s1">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>  
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span> 
-    <span class="c">#this section lists possible reaction families to find reactioons with</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!Intra_Disproportionation&#39;</span><span class="p">,</span><span class="s">&#39;!Substitution_O&#39;</span><span class="p">],</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span> 
+    <span class="c1">#this section lists possible reaction families to find reactioons with</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!Intra_Disproportionation&#39;</span><span class="p">,</span><span class="s1">&#39;!Substitution_O&#39;</span><span class="p">],</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c"># List all species you want reactions between</span>
+<span class="c1"># List all species you want reactions between</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;CC&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-
-<span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[H]&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;butane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;CCCC&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[H]&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;butane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CCCC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 
-<span class="c"># you must list reactor conditions (though this may not effect the output)</span>
+<span class="c1"># you must list reactor conditions (though this may not effect the output)</span>
 <span class="n">simpleReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">650</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">650</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
     <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&quot;ethane&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;ethane&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&#39;butane&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">99</span><span class="p">,</span>
+        <span class="s1">&#39;butane&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">99</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c">#optional module if you want to get pressure dependent kinetics. </span>
+<span class="c1">#optional module if you want to get pressure dependent kinetics. </span>
 
-<span class="c">#pressureDependence(</span>
-<span class="c">#     method=&#39;modified strong collision&#39;,</span>
-<span class="c">#     maximumGrainSize=(0.5,&#39;kcal/mol&#39;),</span>
-<span class="c">#     minimumNumberOfGrains=250,</span>
-<span class="c">#     temperatures=(300,2200,&#39;K&#39;,2),</span>
-<span class="c">#     pressures=(0.01,100,&#39;bar&#39;,3),</span>
-<span class="c">#     interpolation=(&#39;Chebyshev&#39;, 6, 4),</span>
-<span class="c">#     maximumAtoms=15,</span>
-<span class="c">#)</span>
+<span class="c1">#pressureDependence(</span>
+<span class="c1">#     method=&#39;modified strong collision&#39;,</span>
+<span class="c1">#     maximumGrainSize=(0.5,&#39;kcal/mol&#39;),</span>
+<span class="c1">#     minimumNumberOfGrains=250,</span>
+<span class="c1">#     temperatures=(300,2200,&#39;K&#39;,2),</span>
+<span class="c1">#     pressures=(0.01,100,&#39;bar&#39;,3),</span>
+<span class="c1">#     interpolation=(&#39;Chebyshev&#39;, 6, 4),</span>
+<span class="c1">#     maximumAtoms=15,</span>
+<span class="c1">#)</span>
 
-<span class="c">#optional module if you want to limit species produced in reactions. </span>
+<span class="c1">#optional module if you want to limit species produced in reactions. </span>
 
-<span class="c">#generatedSpeciesConstraints(</span>
-<span class="c">#    allowed=[&#39;input species&#39;,&#39;seed mechanisms&#39;,&#39;reaction libraries&#39;],</span>
-<span class="c">#    maximumCarbonAtoms=4,</span>
-<span class="c">#    maximumHydrogenAtoms=10,</span>
-<span class="c">#    maximumOxygenAtoms=7,</span>
-<span class="c">#    maximumNitrogenAtoms=0,</span>
-<span class="c">#    maximumSiliconAtoms=0,</span>
-<span class="c">#    maximumSulfurAtoms=0,</span>
-<span class="c">#    maximumHeavyAtoms=20,</span>
-<span class="c">#    maximumRadicalElectrons=1,</span>
-<span class="c">#)</span>
+<span class="c1">#generatedSpeciesConstraints(</span>
+<span class="c1">#    allowed=[&#39;input species&#39;,&#39;seed mechanisms&#39;,&#39;reaction libraries&#39;],</span>
+<span class="c1">#    maximumCarbonAtoms=4,</span>
+<span class="c1">#    maximumOxygenAtoms=7,</span>
+<span class="c1">#    maximumNitrogenAtoms=0,</span>
+<span class="c1">#    maximumSiliconAtoms=0,</span>
+<span class="c1">#    maximumSulfurAtoms=0,</span>
+<span class="c1">#    maximumHeavyAtoms=20,</span>
+<span class="c1">#    maximumRadicalElectrons=1,</span>
+<span class="c1">#)</span>
 </pre></div>
 </div>
 <p>This method will produce an <code class="docutils literal"><span class="pre">output.html</span></code> file in the directory of <code class="docutils literal"><span class="pre">input.py</span></code> which contains the all the reactions produced between the species.</p>
@@ -171,9 +170,6 @@ for RMG to generate reactions between.  An example file is placed in <code class
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -265,7 +261,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

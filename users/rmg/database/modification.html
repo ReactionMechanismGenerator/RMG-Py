@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.4. Database Modification &mdash; RMG Py 1.0.2 documentation</title>
+    <title>11.4. Database Modification &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
     <link rel="up" title="11. Databases" href="index.html" />
     <link rel="next" title="12. Thermochemistry Estimation" href="../thermo.html" />
     <link rel="prev" title="11.3. Kinetics Database" href="kinetics.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="kinetics.html" title="11.3. Kinetics Database"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -125,39 +125,39 @@ of thumb is to see if the all neighbours of the reacting atoms are as specified
 as possible. For example, assume your species is ethanol</p>
 <a class="reference internal image-reference" href="../../../_images/ethanol.png"><img alt="../../../_images/ethanol.png" class="align-center" src="../../../_images/ethanol.png" style="width: 100.5px; height: 121.5px;" /></a>
 <p>and RMG suggests the group:</p>
-<div class="highlight-python"><div class="highlight"><pre>label = &quot;C_sec&quot;,
-group =
-&quot;&quot;&quot;
-1 *1 Cs  0 {2,S} {3,S} {4,S}
-2 *2 H   0 {1,S}
-3    R!H 0 {1,S}
-4    R!H 0 {1,S}
-&quot;&quot;&quot;,
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
+<span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S}</span>
+<span class="sd">2 *2 H   0 {1,S}</span>
+<span class="sd">3    R!H 0 {1,S}</span>
+<span class="sd">4    R!H 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
 </pre></div>
 </div>
 <p>If you use the suggested groups you will not capture the effect of the alcohol
 group. Therefore it is better to make a new group.</p>
-<div class="highlight-python"><div class="highlight"><pre>label = &quot;C/H2/CsO&quot;,
-group =
-&quot;&quot;&quot;
-1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}
-2 *2 H  0 {1,S}
-3    H  0 {1,S}
-4    O  0 {1,S}
-5    Cs 0 {1,S}
-&quot;&quot;&quot;,
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
+<span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
+<span class="sd">2 *2 H  0 {1,S}</span>
+<span class="sd">3    H  0 {1,S}</span>
+<span class="sd">4    O  0 {1,S}</span>
+<span class="sd">5    Cs 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
 </pre></div>
 </div>
 <p>If you have determined the suggested groups is appropriate, skip to
-<a class="reference internal" href="#kinetic-training-set"><span>Adding Training Reactions</span></a> or <a class="reference internal" href="#kinetic-rules"><span>Adding Kinetic Rules</span></a>. Otherwise proceed to the
+<a class="reference internal" href="#kinetic-training-set"><span class="std std-ref">Adding Training Reactions</span></a> or <a class="reference internal" href="#kinetic-rules"><span class="std std-ref">Adding Kinetic Rules</span></a>. Otherwise proceed to the
 next section for instructions on creating the new group.</p>
 </div>
 <div class="section" id="creating-a-new-group">
 <h3>11.4.2.4. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
 <p>In the family&#8217;s groups.py, you will need to add an entry of the format:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C_sec&quot;</span><span class="p">,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
         <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs   0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -166,11 +166,11 @@ next section for instructions on creating the new group.</p>
 <span class="sd">4    H   0 {1,S}</span>
 <span class="sd">5    R!H 0 {1,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
-        <span class="n">kinetics</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
-        <span class="n">reference</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
-        <span class="n">referenceType</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
-        <span class="n">longDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">kinetics</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">referenceType</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">longDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -183,13 +183,13 @@ next section for instructions on creating the new group.</p>
 <p>Next, you must enter your new group into the tree. At the bottom of groups.py
 you will find the trees. Place your group in the appropriate position. In the
 example given in the previous section, the new group would be added under the C_sec.</p>
-<div class="highlight-python"><div class="highlight"><pre>L1: X_H
-        L2: H2
-        L2: Cs_H
-                L3: C_pri
-                L3: C_sec
-                        L4: C/H2/CsO
-                L3: C_ter
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">L1</span><span class="p">:</span> <span class="n">X_H</span>
+        <span class="n">L2</span><span class="p">:</span> <span class="n">H2</span>
+        <span class="n">L2</span><span class="p">:</span> <span class="n">Cs_H</span>
+                <span class="n">L3</span><span class="p">:</span> <span class="n">C_pri</span>
+                <span class="n">L3</span><span class="p">:</span> <span class="n">C_sec</span>
+                        <span class="n">L4</span><span class="p">:</span> <span class="n">C</span><span class="o">/</span><span class="n">H2</span><span class="o">/</span><span class="n">CsO</span>
+                <span class="n">L3</span><span class="p">:</span> <span class="n">C_ter</span>
 </pre></div>
 </div>
 </div>
@@ -199,9 +199,9 @@ example given in the previous section, the new group would be added under the C_
 cases, your kinetic parameters describe a specific reaction in which case you
 will want to add your reaction to the training set.</p>
 <p>The rule must be added into rules.py in the form:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
         <span class="n">group1</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -216,17 +216,17 @@ will want to add your reaction to the training set.</p>
 <span class="sd">2    O 0 {1,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
         <span class="n">kinetics</span> <span class="o">=</span> <span class="n">ArrheniusEP</span><span class="p">(</span>
-                <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2800000000000.0</span><span class="p">,</span> <span class="s">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="s">&#39;*|/&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2800000000000.0</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="s1">&#39;*|/&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.013</span><span class="p">,</span> <span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span> <span class="s">&#39;+|-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">),</span>
-                <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">),</span>
+                <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.013</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span> <span class="s1">&#39;+|-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
+                <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
         <span class="p">),</span>
-        <span class="n">reference</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
-        <span class="n">referenceType</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">referenceType</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">rank</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Curran et al. [8] Rate expressions for H atom abstraction from fuels.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;Curran et al. [8] Rate expressions for H atom abstraction from fuels.&quot;&quot;&quot;</span><span class="p">,</span>
         <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 <span class="sd">[8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.</span>
@@ -272,7 +272,7 @@ are formed by matching the reaction to the most most specific template nodes wit
 the reaction&#8217;s respective family. If you do not want the
 training depository reactions to create new rate rules in the database, set the option for
 <code class="docutils literal"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal"><span class="pre">database</span></code> field in your input file to</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!training&#39;</span><span class="p">],</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
 </pre></div>
 </div>
 <p>Currently, RMG&#8217;s rate rule estimates overrides all kinetics depository kinetics, including training
@@ -310,8 +310,6 @@ you should try to be general so that you do not exclude reactions.</p>
 <p>Sibling nodes must be exclusive from one another so that there is no question
 which group a molecule qualifies as. However, you do not need to be exhaustive and
 list out every possibility.</p>
-<p>Make sure your nodes are actually children of their parents. Currently RMG does
-no atom-by-atom checking and assumes whatever is put into the tree is correct.</p>
 <p>Be sure to give errors whenever adding rules. If you don&#8217;t know the uncertainty,
 why do you trust the kinetics?</p>
 <p>After you are done always check via populate reactions or the website, that your
@@ -367,9 +365,6 @@ activation energy truly does reflect the reaction barrier height.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -461,7 +456,7 @@ activation energy truly does reflect the reaction barrier height.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

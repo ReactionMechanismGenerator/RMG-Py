@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.kinetics.Troe &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.kinetics.Troe &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Kinetics (rmgpy.kinetics)" href="index.html" />
     <link rel="next" title="rmgpy.kinetics.Wigner" href="wigner.html" />
     <link rel="prev" title="rmgpy.kinetics.Lindemann" href="lindemann.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="lindemann.html" title="rmgpy.kinetics.Lindemann"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &raquo;</li> 
@@ -131,13 +131,13 @@ a broadening factor <span class="math">\(F\)</span>. The formulation is as follo
 \[k(T,P) = k_\infty(T) \left[ \frac{P_\mathrm{r}}{1 + P_\mathrm{r}} \right] F\]</div>
 <p>where</p>
 <div class="math">
-\[\begin{split}P_\mathrm{r} &amp;= \frac{k_0(T)}{k_\infty(T)} [\mathrm{M}]\end{split}\]\[\begin{split}k_0(T) &amp;= A_0 T^{n_0} \exp \left( - \frac{E_0}{RT} \right)\end{split}\]\[\begin{split}k_\infty(T) &amp;= A_\infty T^{n_\infty} \exp \left( - \frac{E_\infty}{RT} \right)\end{split}\]</div>
+\[ \begin{align}\begin{aligned}P_\mathrm{r} &amp;= \frac{k_0(T)}{k_\infty(T)} [\mathrm{M}]\\k_0(T) &amp;= A_0 T^{n_0} \exp \left( - \frac{E_0}{RT} \right)\\k_\infty(T) &amp;= A_\infty T^{n_\infty} \exp \left( - \frac{E_\infty}{RT} \right)\end{aligned}\end{align} \]</div>
 <p>and <span class="math">\([\mathrm{M}] \approx P/RT\)</span> is the concentration of the bath gas. The
 Arrhenius expressions <span class="math">\(k_0(T)\)</span> and <span class="math">\(k_\infty(T)\)</span> represent the
 low-pressure and high-pressure limit kinetics, respectively. The broadening
 factor <span class="math">\(F\)</span> is computed via</p>
 <div class="math">
-\[\begin{split}\log F &amp;= \left\{1 + \left[ \frac{\log P_\mathrm{r} + c}{n - d (\log P_\mathrm{r} + c)} \right]^2 \right\}^{-1} \log F_\mathrm{cent}\end{split}\]\[\begin{split}c &amp;= -0.4 - 0.67 \log F_\mathrm{cent}\end{split}\]\[\begin{split}n &amp;= 0.75 - 1.27 \log F_\mathrm{cent}\end{split}\]\[\begin{split}d &amp;= 0.14\end{split}\]\[\begin{split}F_\mathrm{cent} &amp;= (1 - \alpha) \exp \left( -T/T_3 \right) + \alpha \exp \left( -T/T_1 \right) + \exp \left( -T_2/T \right)\end{split}\]</div>
+\[ \begin{align}\begin{aligned}\log F &amp;= \left\{1 + \left[ \frac{\log P_\mathrm{r} + c}{n - d (\log P_\mathrm{r} + c)} \right]^2 \right\}^{-1} \log F_\mathrm{cent}\\c &amp;= -0.4 - 0.67 \log F_\mathrm{cent}\\n &amp;= 0.75 - 1.27 \log F_\mathrm{cent}\\d &amp;= 0.14\\F_\mathrm{cent} &amp;= (1 - \alpha) \exp \left( -T/T_3 \right) + \alpha \exp \left( -T/T_1 \right) + \exp \left( -T_2/T \right)\end{aligned}\end{align} \]</div>
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.Pmax">
 <code class="descname">Pmax</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Pmax" title="Permalink to this definition">¶</a></dt>
@@ -223,6 +223,14 @@ factor <span class="math">\(F\)</span> is computed via</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.kinetics.Troe.getCanteraEfficiencies">
+<code class="descname">getCanteraEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>speciesList</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.getCanteraEfficiencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary containing the collider efficiencies for this PDepKineticsModel object
+suitable for setting the efficiencies in the following cantera reaction objects:
+<cite>ThreeBodyReaction</cite>, <cite>FalloffReaction</cite>,`ChemicallyActivatedReaction`</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.kinetics.Troe.getEffectiveColliderEfficiencies">
 <code class="descname">getEffectiveColliderEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>list species</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.kinetics.Troe.getEffectiveColliderEfficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective collider efficiencies for all species in the form of
@@ -293,6 +301,13 @@ returned.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.kinetics.Troe.setCanteraKinetics">
+<code class="descname">setCanteraKinetics</code><span class="sig-paren">(</span><em>self</em>, <em>ctReaction</em>, <em>speciesList</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.setCanteraKinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the efficiencies, kinetics, and troe falloff parameters
+for a cantera FalloffReaction.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.kinetics.Troe.toHTML">
 <code class="descname">toHTML</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.toHTML" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
@@ -319,9 +334,6 @@ returned.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -413,7 +425,7 @@ returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

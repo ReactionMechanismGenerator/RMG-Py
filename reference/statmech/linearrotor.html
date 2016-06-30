@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.statmech.LinearRotor &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.statmech.LinearRotor &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Statistical mechanics (rmgpy.statmech)" href="index.html" />
     <link rel="next" title="rmgpy.statmech.NonlinearRotor" href="nonlinearrotor.html" />
     <link rel="prev" title="Translational degrees of freedom" href="idealgastranslation.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="idealgastranslation.html" title="Translational degrees of freedom"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &raquo;</li> 
@@ -114,7 +114,7 @@ the physics convention &#8211; where <span class="math">\(0 \le \theta \le \pi\)
 angle and <span class="math">\(0 \le \phi \le 2\pi\)</span> is the azimuth &#8211; the Schrodinger
 equation for the rotor is given by</p>
 <div class="math">
-\[\begin{split}-\frac{\hbar^2}{2I} \left[ \frac{1}{\sin \theta} \frac{\partial}{\partial \theta} \left( \sin \theta \frac{\partial}{\partial \theta} \right) + \frac{1}{\sin^2 \theta} \frac{\partial^2}{\partial \phi^2} \right] \Psi(\theta, \phi) &amp;= E \Psi(\theta, \phi)\end{split}\]</div>
+\[-\frac{\hbar^2}{2I} \left[ \frac{1}{\sin \theta} \frac{\partial}{\partial \theta} \left( \sin \theta \frac{\partial}{\partial \theta} \right) + \frac{1}{\sin^2 \theta} \frac{\partial^2}{\partial \phi^2} \right] \Psi(\theta, \phi) &amp;= E \Psi(\theta, \phi)\]</div>
 <p>where <span class="math">\(I \equiv \mu R^2\)</span> is the moment of inertia of the rotating body,
 and <span class="math">\(\mu \equiv m_1 m_2 / (m_1 + m_2)\)</span> is the reduced mass. Note that
 there is no potential term in the above expression; for this reason, a rigid
@@ -241,9 +241,6 @@ these states.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -335,7 +332,7 @@ these states.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

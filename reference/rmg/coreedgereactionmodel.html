@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.rmg.model.CoreEdgeReactionModel &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.rmg.model.CoreEdgeReactionModel &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
     <link rel="next" title="RMG input files" href="input.html" />
     <link rel="prev" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="Reaction mechanism generation (rmgpy.rmg)"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &raquo;</li> 
@@ -103,6 +103,9 @@ the model are called the <em>edge</em>. The attributes are:</p>
 </tr>
 <tr class="row-even"><td><cite>networkCount</cite></td>
 <td>A counter for the number of pressure-dependent networks created</td>
+</tr>
+<tr class="row-odd"><td><cite>indexSpeciesDict</cite></td>
+<td>A dictionary with a unique index pointing to the species objects</td>
 </tr>
 </tbody>
 </table>
@@ -239,11 +242,34 @@ corresponding species and reaction lists.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getSpecies">
+<code class="descname">getSpecies</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve species object, by
+polling the index species dictionary.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix">
 <code class="descname">getStoichiometryMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometry matrix for all generated species and reactions.
 The id of each species and reaction is the corresponding row and column,
 respectively, in the matrix.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.inflate">
+<code class="descname">inflate</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.inflate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert reactions from
+reactants/products that are referring
+to the core species index, to the respective Species objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.initializeIndexSpeciesDict">
+<code class="descname">initializeIndexSpeciesDict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.initializeIndexSpeciesDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populates the core species dictionary</p>
+<p>integer -&gt; core Species</p>
+<p>with the species that are currently in the core.</p>
 </dd></dl>
 
 <dl class="method">
@@ -314,14 +340,6 @@ the list of <cite>reactionSystems</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.react">
-<code class="descname">react</code><span class="sig-paren">(</span><em>database</em>, <em>speciesA</em>, <em>speciesB=None</em>, <em>only_families=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.react" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates reactions involving <a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal"><span class="pre">rmgpy.species.Species</span></code></a> speciesA and speciesB.
-The optional only_families flag allows the user to input a list of familylabels which then
-allow the reactions to only be generated from those families.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.registerReaction">
 <code class="descname">registerReaction</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.registerReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the reaction to the reaction database.</p>
@@ -352,6 +370,16 @@ list.</p>
 <dd><p>Returns a list of reactions from the reaction database with the 
 same keys as the parameters.</p>
 <p>Returns an empty list when one of the keys could not be found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieveNewSpecies">
+<code class="descname">retrieveNewSpecies</code><span class="sig-paren">(</span><em>deflatedRxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieveNewSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for the first reactant or product in the deflated reaction
+that is represented by an integer.</p>
+<p>Such an object refers to a core species that was used to generate the
+reaction in the first place. Reactants or products represented by an
+object that is not an integer will be a newly-generated structure.</p>
 </dd></dl>
 
 <dl class="method">
@@ -409,9 +437,6 @@ model and <cite>other</cite>.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -503,7 +528,7 @@ model and <cite>other</cite>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.rmg.model.Species &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.rmg.model.Species &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
     <link rel="next" title="Reaction system simulation (rmgpy.solver)" href="../solver/index.html" />
     <link rel="prev" title="rmgpy.rmg.pdep.PDepReaction" href="pdepreaction.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="pdepreaction.html" title="rmgpy.rmg.pdep.PDepReaction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &raquo;</li> 
@@ -73,7 +73,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.rmg.model.Species<a class="headerlink" href="#rmgpy-rmg-model-species" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.model.Species">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>dipoleMoment=None</em>, <em>polarizability=None</em>, <em>Zrot=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>coreSizeAtCreation=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>coreSizeAtCreation=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="rmgpy.rmg.model.Species.calculateCp0">
 <code class="descname">calculateCp0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.calculateCp0" title="Permalink to this definition">¶</a></dt>
@@ -214,6 +214,14 @@ requires additional calculateSymmetryNumber calls.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.Species.getThermoData">
+<code class="descname">getThermoData</code><span class="sig-paren">(</span><em>database</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em>, <em>quantumMechanics=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <cite>thermoData</cite> object of the current Species object.</p>
+<p>Returns the stored <cite>thermoData</cite> object if it is found,
+generates a new <cite>thermoData</cite> object if it not found.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.Species.hasStatMech">
 <code class="descname">hasStatMech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.hasStatMech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the species has statistical mechanical parameters,
@@ -247,6 +255,19 @@ either a <code class="xref py py-class docutils literal"><span class="pre">Molec
 <dd><p>Return a string containing each of the molecules&#8217; adjacency lists.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.toCantera">
+<code class="descname">toCantera</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toCantera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the RMG Species object to a Cantera Species object
+with the appropriate thermo data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.toChemkin">
+<code class="descname">toChemkin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toChemkin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chemkin-formatted string for this species.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -268,9 +289,6 @@ either a <code class="xref py py-class docutils literal"><span class="pre">Molec
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -362,7 +380,7 @@ either a <code class="xref py py-class docutils literal"><span class="pre">Molec
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

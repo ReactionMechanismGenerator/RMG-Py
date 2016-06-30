@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.1. Introduction &mdash; RMG Py 1.0.2 documentation</title>
+    <title>11.1. Introduction &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
     <link rel="up" title="11. Databases" href="index.html" />
     <link rel="next" title="11.2. Thermo Database" href="thermo.html" />
     <link rel="prev" title="11. Databases" href="index.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="11. Databases"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -76,7 +76,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <div class="section" id="group-definitions">
 <h2>11.1.1. Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h2>
 <p>The main section in many of RMG&#8217;s databases are the &#8216;group&#8217; definitions. Groups are
-<a class="reference internal" href="../../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span>adjacency lists</span></a>
+<a class="reference internal" href="../../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacency lists</span></a>
 that describe structures around the reacting atoms. Between the adjacency
 list&#8217;s index number and atom type, a starred number is inserted if the
 atom is a reacting atom.</p>
@@ -90,9 +90,9 @@ on the right (the numbers correspond to the index from the adjacency list).</p>
 table below shows all atoms types in RMG.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="13%" />
-<col width="25%" />
-<col width="61%" />
+<col width="12%" />
+<col width="23%" />
+<col width="65%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Atom Type</th>
@@ -123,7 +123,7 @@ table below shows all atoms types in RMG.</p>
 </tr>
 <tr class="row-odd"><td>Cd</td>
 <td>Carbon</td>
-<td>Exactly one double bond to any non-oxygen atom</td>
+<td>Exactly one double bond a non-oxygen, non-sulfur atom</td>
 </tr>
 <tr class="row-even"><td>Cdd</td>
 <td>Carbon</td>
@@ -137,51 +137,55 @@ table below shows all atoms types in RMG.</p>
 <td>Carbon</td>
 <td>Exactly one double bond to an oxygen atom</td>
 </tr>
-<tr class="row-odd"><td>Cb</td>
+<tr class="row-odd"><td>CS</td>
+<td>Carbon</td>
+<td>Exactly one double bond to an sulfur atom</td>
+</tr>
+<tr class="row-even"><td>Cb</td>
 <td>Carbon</td>
 <td>Exactly two benzene bonds</td>
 </tr>
-<tr class="row-even"><td>Cbf</td>
+<tr class="row-odd"><td>Cbf</td>
 <td>Carbon</td>
 <td>Three benzene bonds (Fused aromatics)</td>
 </tr>
-<tr class="row-odd"><td>O</td>
+<tr class="row-even"><td>O</td>
 <td>Oxygen</td>
 <td>No requirements</td>
 </tr>
-<tr class="row-even"><td>Os</td>
+<tr class="row-odd"><td>Os</td>
 <td>Oxygen</td>
 <td>No double bonds</td>
 </tr>
-<tr class="row-odd"><td>Od</td>
+<tr class="row-even"><td>Od</td>
 <td>Oxygen</td>
 <td>One double bond</td>
 </tr>
-<tr class="row-even"><td>Oa</td>
+<tr class="row-odd"><td>Oa</td>
 <td>Oxygen</td>
 <td>No bonds (Oxygen atom)</td>
 </tr>
-<tr class="row-odd"><td>S</td>
+<tr class="row-even"><td>S</td>
 <td>Sulfur</td>
 <td>No requirements</td>
 </tr>
-<tr class="row-even"><td>Ss</td>
+<tr class="row-odd"><td>Ss</td>
 <td>Sulfur</td>
 <td>No double bond</td>
 </tr>
-<tr class="row-odd"><td>Sd</td>
+<tr class="row-even"><td>Sd</td>
 <td>Sulfur</td>
 <td>One double bond</td>
 </tr>
-<tr class="row-even"><td>Sa</td>
+<tr class="row-odd"><td>Sa</td>
 <td>Sulfur</td>
 <td>No bonds (Sulfur atom)</td>
 </tr>
 </tbody>
 </table>
 <p>Additionally, groups can also be defined as unions of other groups. For example,:</p>
-<div class="highlight-python"><div class="highlight"><pre>label=&quot;X_H_or_Xrad_H&quot;,
-group=OR{X_H, Xrad_H},
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;X_H_or_Xrad_H&quot;</span><span class="p">,</span>
+<span class="n">group</span><span class="o">=</span><span class="n">OR</span><span class="p">{</span><span class="n">X_H</span><span class="p">,</span> <span class="n">Xrad_H</span><span class="p">},</span>
 </pre></div>
 </div>
 </div>
@@ -195,25 +199,25 @@ or products that are forbidden.  These groups are stored in in the file located 
 <p>To ban certain specific pathways in the kinetics
 families, a <cite>forbidden</cite> group must be created, like the following group
 in the <code class="docutils literal"><span class="pre">intra_H_migration</span></code> family</p>
-<div class="highlight-python"><div class="highlight"><pre>forbidden(
-    label = &quot;bridged56_1254&quot;,
-group =
-&quot;&quot;&quot;&quot;&quot;&quot;&quot;
-1 *1 C 1 {2,S} {6,S}
-2 *4 C 0 {1,S} {3,S} {7,S}
-3    C 0 {2,S} {4,S}
-4 *2 C 0 {3,S} {5,S} {8,S}
-5 *5 C 0 {4,S} {6,S} {7,S}
-6    C 0 {1,S} {5,S}
-7    C 0 {2,S} {5,S}
-8 *3 H 0 {4,S}
-&quot;&quot;&quot;,
-    shortDesc = u&quot;&quot;&quot;&quot;&quot;&quot;,
-    longDesc =
-u&quot;&quot;&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;bridged56_1254&quot;</span><span class="p">,</span>
+<span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="s2">&quot;</span>
+<span class="mi">1</span> <span class="o">*</span><span class="mi">1</span> <span class="n">C</span> <span class="mi">1</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">6</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">2</span> <span class="o">*</span><span class="mi">4</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">7</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">3</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">4</span> <span class="o">*</span><span class="mi">2</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">5</span> <span class="o">*</span><span class="mi">5</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">6</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">7</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">6</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">7</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">8</span> <span class="o">*</span><span class="mi">3</span> <span class="n">H</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="sd">&quot;&quot;&quot;,</span>
+<span class="sd">    shortDesc = u&quot;&quot;&quot;</span><span class="s2">&quot;&quot;&quot;,</span>
+<span class="s2">    longDesc =</span>
+<span class="s2">u&quot;&quot;&quot;</span>
 
-&quot;&quot;&quot;,
-)
+<span class="s2">&quot;&quot;&quot;,</span>
+<span class="s2">)</span>
 </pre></div>
 </div>
 <p>Forbidden groups should be placed inside the groups.py file located inside the
@@ -264,9 +268,6 @@ Templates can be filled in with kinetic parameters from the training set or rule
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -358,7 +359,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

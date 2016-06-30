@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX &mdash; RMG Py 1.0.2 documentation</title>
+    <title>4.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
     <link rel="up" title="4. Installation" href="index.html" />
     <link rel="next" title="4.2.2. Installation by Source Using Anaconda Environment for Windows" href="anacondaDeveloperWindows.html" />
     <link rel="prev" title="4.1.3. Setting up Windows Environment Variables for RMG" href="windowsEnvironment.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="windowsEnvironment.html" title="4.1.3. Setting up Windows Environment Variables for RMG"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -76,62 +76,64 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <li><p class="first">Download and install the <a class="reference external" href="http://continuum.io/downloads">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.</p>
 </li>
 <li><p class="first">Install <a class="reference external" href="https://git-scm.com/">Git</a>, the open source version control package through the Terminal. <strong>For Mac OS X</strong>: Git is already packages with OS X 10.9 or later, but requires installation of Xcode&#8217;s Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed.</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">git</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an appropriate local directory where you want both RMG-Py and RMG-database folders to exist.</p>
-<div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
-git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">Py</span><span class="o">.</span><span class="n">git</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">database</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 </li>
+<li><p class="first">On MacOS X you need to open the <code class="docutils literal"><span class="pre">environment.yml</span></code> file and comment out or delete the last line that says <code class="docutils literal"><span class="pre">libgfortran==1.0</span></code>. (This line is required for linux but fails for MacOS X.)</p>
+</li>
 <li><p class="first">Compile RMG-Py</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-conda env create
-source activate rmg_env
-make
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">conda</span> <span class="n">env</span> <span class="n">create</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">rmg_env</span>
+<span class="n">make</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any python prompt.  Modify your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file by adding the following line</p>
-<div class="highlight-python"><div class="highlight"><pre>export PYTHONPATH=$PYTHONPATH:YourFolder/RMG-Py/
+<div class="highlight-default"><div class="highlight"><pre><span></span>export PYTHONPATH=$PYTHONPATH:YourFolder/RMG-Py/
 </pre></div>
 </div>
 </li>
 <li><p class="first">If you wish to always be able to run RMG-Py, you can modify the anaconda path to point to the RMG environment. Modify the following line in your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file</p>
-<div class="highlight-python"><div class="highlight"><pre>export PATH=~/anaconda/bin:$PATH
+<div class="highlight-default"><div class="highlight"><pre><span></span>export PATH=~/anaconda/bin:$PATH
 </pre></div>
 </div>
 <p>by changing it to the following line</p>
-<div class="highlight-python"><div class="highlight"><pre>export PATH=~/anaconda/envs/rmg/bin:$PATH
+<div class="highlight-default"><div class="highlight"><pre><span></span>export PATH=~/anaconda/envs/rmg/bin:$PATH
 </pre></div>
 </div>
 <p>be sure to either close and reopen your terminal to refresh your environment variables, or type the following command</p>
-<div class="highlight-python"><div class="highlight"><pre>source ~/.bashrc
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Optional: If you wish to use the <a class="reference internal" href="../thermo.html#qm"><span>QMTP interface</span></a> with <a class="reference external" href="http://openmopac.net/">MOPAC</a> to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the <a class="reference external" href="http://openmopac.net/form.php">MOPAC License Request Form</a>.  Once you have it, type the following into your Terminal</p>
-<div class="highlight-python"><div class="highlight"><pre>mopac password_string_here
+<li><p class="first">Optional: If you wish to use the <a class="reference internal" href="../thermo.html#qm"><span class="std std-ref">QMTP interface</span></a> with <a class="reference external" href="http://openmopac.net/">MOPAC</a> to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the <a class="reference external" href="http://openmopac.net/form.php">MOPAC License Request Form</a>.  Once you have it, type the following into your Terminal</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mopac</span> <span class="n">password_string_here</span>
 </pre></div>
 </div>
 </li>
 </ul>
-<p>You may now use RMG-Py, CanTherm, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span>Standalone Modules</span></a> included in the RMG-Py package.</p>
+<p>You may now use RMG-Py, CanTherm, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
 <div class="section" id="test-suite">
 <h2>4.2.1.1. Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.</p>
 <ul>
 <li><p class="first"><strong>Unit test suite</strong>: this will run all the unit tests in the <code class="docutils literal"><span class="pre">rmgpy</span></code> package</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-make test
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">test</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first"><strong>Database test suite</strong>: this will run the database unit tests to ensure that groups, rate rules, and libraries are well formed</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-make test-database
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">test</span><span class="o">-</span><span class="n">database</span>
 </pre></div>
 </div>
 </li>
@@ -139,29 +141,29 @@ make test-database
 </div>
 <div class="section" id="running-examples">
 <h2>4.2.1.2. Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h2>
-<p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal"><span class="pre">RMG-Py/examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span>Example Input Files</span></a> in the documentation.</p>
+<p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal"><span class="pre">RMG-Py/examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
 <ul>
 <li><p class="first"><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal"><span class="pre">RMG-Py/testing/minimal</span></code> folder:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-make eg1
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">eg1</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first"><strong>Hexadiene Example</strong>: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the <code class="docutils literal"><span class="pre">RMG-Py/testing/hexadiene</span></code> folder:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-make eg2
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">eg2</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first"><strong>Liquid Phase Example</strong>: this will run a liquid phase RMG model.  The results will be in the <code class="docutils literal"><span class="pre">RMG-Py/testing/liquid_phase</span></code> folder</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-make eg3
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">eg3</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>ThermoEstimator Example</strong>: this will run the <a class="reference internal" href="../modules/thermoEstimation.html#thermomodule"><span>Thermo Estimation Module</span></a> on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the <code class="docutils literal"><span class="pre">RMG-Py/testing/thermoEstimator</span></code> folder</p>
-<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
-make eg4
+<li><p class="first"><strong>ThermoEstimator Example</strong>: this will run the <a class="reference internal" href="../modules/thermoEstimation.html#thermomodule"><span class="std std-ref">Thermo Estimation Module</span></a> on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the <code class="docutils literal"><span class="pre">RMG-Py/testing/thermoEstimator</span></code> folder</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">eg4</span>
 </pre></div>
 </div>
 </li>
@@ -195,9 +197,6 @@ make eg4
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -289,7 +288,7 @@ make eg4
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

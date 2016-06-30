@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.Molecule &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.molecule.Molecule &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.GroupAtom" href="groupatom.html" />
     <link rel="prev" title="rmgpy.molecule.Bond" href="bond.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="bond.html" title="rmgpy.molecule.Bond"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
@@ -302,6 +302,15 @@ that vertex.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getDisparateRings">
+<code class="descname">getDisparateRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getDisparateRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of distinct polycyclic and monocyclic rings within the graph.
+There is some code duplication in this function in order to maximize speed up
+so as to call <cite>self.getSmallestSetOfSmallestRings()</cite> only once.</p>
+<p>Returns: monocyclicRingsList, polycyclicRingsList</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getEdge">
 <code class="descname">getEdge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the edge connecting vertices <cite>vertex1</cite> and <cite>vertex2</cite>.</p>
@@ -350,6 +359,12 @@ same label, the value is converted to a list of these atoms.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getMonocyclicRings">
+<code class="descname">getMonocyclicRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getMonocyclicRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of cycles that are monocyclic.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getNetCharge">
 <code class="descname">getNetCharge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getNetCharge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate through the atoms in the structure and calculate the net charge
@@ -369,6 +384,15 @@ the number of atoms of that element is returned.</p>
 <dd><p>Return the total number of radical electrons on all atoms in the
 molecule. In this function, monoradical atoms count as one, biradicals
 count as two, etc.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.getPolycyclicRings">
+<code class="descname">getPolycyclicRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getPolycyclicRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of cycles that are polycyclic.
+In other words, merge the cycles which are fused or spirocyclic into 
+a single polycyclic cycle, and return only those cycles. 
+Cycles which are not polycyclic are not returned.</p>
 </dd></dl>
 
 <dl class="method">
@@ -629,6 +653,12 @@ character like forward slash.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.toGroup">
+<code class="descname">toGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method converts a list of atoms in a Molecule to a Group object.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.toInChI">
 <code class="descname">toInChI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string. Uses
@@ -743,9 +773,6 @@ number of lone electron pairs, assuming a neutral molecule.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -837,7 +864,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

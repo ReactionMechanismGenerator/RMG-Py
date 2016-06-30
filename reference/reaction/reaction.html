@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.reaction.Reaction &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.reaction.Reaction &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Reactions (rmgpy.reaction)" href="index.html" />
     <link rel="next" title="Reaction mechanism generation (rmgpy.rmg)" href="../rmg/index.html" />
     <link rel="prev" title="Reactions (rmgpy.reaction)" href="index.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="Reactions (rmgpy.reaction)"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reactions (<code class="docutils literal"><span class="pre">rmgpy.reaction</span></code>)</a> &raquo;</li> 
@@ -212,8 +212,8 @@ are forced to have a non-negative barrier.</p>
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.fixDiffusionLimitedA">
 <code class="descname">fixDiffusionLimitedA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.fixDiffusionLimitedA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
-to account for the diffusion limit.</p>
+<dd><p>Decrease the pre-exponential factor (A) by the diffusion factor
+to account for the diffusion limit at the specified temperature.</p>
 </dd></dl>
 
 <dl class="method">
@@ -434,6 +434,13 @@ The equilibrium constant is evaluated from the current reaction instance (self).
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.reaction.Reaction.toCantera">
+<code class="descname">toCantera</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the RMG Reaction object to a Cantera Reaction object
+with the appropriate reaction class.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.reaction.Reaction.toChemkin">
 <code class="descname">toChemkin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
@@ -463,9 +470,6 @@ Otherwise, only the reaction string will be returned.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -557,7 +561,7 @@ Otherwise, only the reaction string will be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

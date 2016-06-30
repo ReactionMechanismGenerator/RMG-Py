@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.2. Thermo Database &mdash; RMG Py 1.0.2 documentation</title>
+    <title>11.2. Thermo Database &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
     <link rel="up" title="11. Databases" href="index.html" />
     <link rel="next" title="11.3. Kinetics Database" href="kinetics.html" />
     <link rel="prev" title="11.1. Introduction" href="introduction.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="introduction.html" title="11.1. Introduction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -87,10 +87,10 @@ extrapolation of the heat capacity data as a function of temperature.</p>
 <span id="thermolibrarytype"></span><h3>11.2.1.1. Library types<a class="headerlink" href="#library-types" title="Permalink to this headline">¶</a></h3>
 <p>Two types of thermo libraries are available in RMG: &#8220;gas phase&#8221; and &#8220;liquid thermo&#8221; libraries respectively identified thanks to the absence or presence of the keyword
 <cite>solvent = &#8220;solvent_name&#8221;</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
-<div class="highlight-python"><div class="highlight"><pre>name = &quot;example_liquid_thermo_library&quot;
-solvent = &quot;octane&quot;
-shortDesc = u&quot;test&quot;
-longDesc = u&quot;&quot;&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;example_liquid_thermo_library&quot;</span>
+<span class="n">solvent</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span>
+<span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;test&quot;</span>
+<span class="n">longDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;</span>
 </pre></div>
 </div>
 <p>In this example the library name is &#8220;example_liquid_thermo_library&#8221; and thermo data provided was obtained in <cite>octane</cite> solvent.
@@ -109,21 +109,21 @@ RMG will also raise an error if user try to use liquid phase thermo library in g
 species thermochemistry libraries. Each particularly library is stored in a file
 with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 <p>An example of a species thermochemistry entry is shown here below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;H2&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H2&quot;</span><span class="p">,</span>
     <span class="n">molecule</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 H 0 0 {2,S}</span>
 <span class="sd">2 H 0 0 {1,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.949</span><span class="p">,</span><span class="mf">6.954</span><span class="p">,</span><span class="mf">6.995</span><span class="p">,</span><span class="mf">7.095</span><span class="p">,</span><span class="mf">7.493</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">31.095</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.949</span><span class="p">,</span><span class="mf">6.954</span><span class="p">,</span><span class="mf">6.995</span><span class="p">,</span><span class="mf">7.095</span><span class="p">,</span><span class="mf">7.493</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">31.095</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 
@@ -135,8 +135,8 @@ with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 labeled &#8216;H2&#8217;, through the adjacency list representation. Heat capacity data (&#8216;Cpdata&#8217;) is described
 at 7 different temperatures, along with the standard enthalpy of formation at 298K (&#8216;H298&#8217;), and
 the standard entropy at 298K (&#8216;S298&#8217;).</p>
-<p>According to the <cite>thermo classes</cite> availble in RMG, you can provide different thermo data: <a class="reference internal" href="../../../reference/thermo/nasa.html#thermonasa"><span>NASA</span></a>, <a class="reference internal" href="../../../reference/thermo/thermodata.html#thermothermodata"><span>thermodata</span></a> (as shown above),
-<a class="reference internal" href="../../../reference/thermo/wilhoit.html#thermowilhoit"><span>wilhoit</span></a> or <a class="reference internal" href="../../../reference/thermo/nasapolynomial.html#thermonasapolynomial"><span>NASAPolynomial</span></a>.</p>
+<p>According to the <cite>thermo classes</cite> availble in RMG, you can provide different thermo data: <a class="reference internal" href="../../../reference/thermo/nasa.html#thermonasa"><span class="std std-ref">NASA</span></a>, <a class="reference internal" href="../../../reference/thermo/thermodata.html#thermothermodata"><span class="std std-ref">thermodata</span></a> (as shown above),
+<a class="reference internal" href="../../../reference/thermo/wilhoit.html#thermowilhoit"><span class="std std-ref">wilhoit</span></a> or <a class="reference internal" href="../../../reference/thermo/nasapolynomial.html#thermonasapolynomial"><span class="std std-ref">NASAPolynomial</span></a>.</p>
 </div>
 </div>
 <div class="section" id="groups">
@@ -180,33 +180,33 @@ with the extension .py, e.g. &#8216;groups.py&#8217;:</p>
 </table>
 <p>Like many other entities in RMG, the database of each type of group contribution
 is organized in a hierarchical tree, and is defined at the bottom of the database file. E.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre>tree(
-&quot;&quot;&quot;
-L1: R
-    L2: C
-        L3: Cbf
-            L4: Cbf-CbCbCbf
-            L4: Cbf-CbCbfCbf
-            L4: Cbf-CbfCbfCbf
-        L3: Cb
-            L4: Cb-H
-            L4: Cb-Os
-            L4: Cb-Ss
-            L4: Cb-C
-                L5: Cb-Cs
-                L5: Cb-Cds
-                    L6: Cb-(Cds-Od)
-                    ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="p">(</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">L1: R</span>
+<span class="s2">    L2: C</span>
+<span class="s2">        L3: Cbf</span>
+<span class="s2">            L4: Cbf-CbCbCbf</span>
+<span class="s2">            L4: Cbf-CbCbfCbf</span>
+<span class="s2">            L4: Cbf-CbfCbfCbf</span>
+<span class="s2">        L3: Cb</span>
+<span class="s2">            L4: Cb-H</span>
+<span class="s2">            L4: Cb-Os</span>
+<span class="s2">            L4: Cb-Ss</span>
+<span class="s2">            L4: Cb-C</span>
+<span class="s2">                L5: Cb-Cs</span>
+<span class="s2">                L5: Cb-Cds</span>
+<span class="s2">                    L6: Cb-(Cds-Od)</span>
+<span class="s2">                    ...</span>
 </pre></div>
 </div>
 <p>More information on hierarchical tree structures in RMG can be found here:
-<a class="reference internal" href="introduction.html#introdatabase"><span>Introduction</span></a>.</p>
+<a class="reference internal" href="introduction.html#introdatabase"><span class="std std-ref">Introduction</span></a>.</p>
 <div class="section" id="group-additive-values-gav">
 <h3>11.2.2.1. Group additive values (GAV)<a class="headerlink" href="#group-additive-values-gav" title="Permalink to this headline">¶</a></h3>
 <p>An example of a GAV entry in group.py is shown here below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Cbf-CbCbCbf&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cbf-CbCbCbf&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 * Cbf 0 {2,B} {3,B} {4,B}</span>
@@ -215,13 +215,13 @@ L1: R
 <span class="sd">4   Cbf 0 {1,B}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">3.01</span><span class="p">,</span><span class="mf">3.68</span><span class="p">,</span><span class="mf">4.2</span><span class="p">,</span><span class="mf">4.61</span><span class="p">,</span><span class="mf">5.2</span><span class="p">,</span><span class="mf">5.7</span><span class="p">,</span><span class="mf">6.2</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;+|-&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.8</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.17</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">3.01</span><span class="p">,</span><span class="mf">3.68</span><span class="p">,</span><span class="mf">4.2</span><span class="p">,</span><span class="mf">4.61</span><span class="p">,</span><span class="mf">5.2</span><span class="p">,</span><span class="mf">5.7</span><span class="p">,</span><span class="mf">6.2</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;+|-&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.8</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s1">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.17</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">,</span><span class="s1">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Cbf-CbfCbCb STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;Cbf-CbfCbCb STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 <span class="sd">Taken from STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714</span>
@@ -238,9 +238,9 @@ specification. A short description &#8216;shortDesc&#8217; specifies the origin 
 <p>RMG distinguishes between monocyclic and polycyclic ring correction databases.</p>
 <p>Monocyclic RSCs are used for molecules that contain one single ring.
 An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Cyclopropane&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cyclopropane&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 * Cs 0 {2,S} {3,S}</span>
@@ -248,12 +248,12 @@ An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
 <span class="sd">3   Cs 0 {1,S} {2,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">3.227</span><span class="p">,</span><span class="o">-</span><span class="mf">2.849</span><span class="p">,</span><span class="o">-</span><span class="mf">2.536</span><span class="p">,</span><span class="o">-</span><span class="mf">2.35</span><span class="p">,</span><span class="o">-</span><span class="mf">2.191</span><span class="p">,</span><span class="o">-</span><span class="mf">2.111</span><span class="p">,</span><span class="o">-</span><span class="mf">1.76</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">27.53</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">32.0088</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">3.227</span><span class="p">,</span><span class="o">-</span><span class="mf">2.849</span><span class="p">,</span><span class="o">-</span><span class="mf">2.536</span><span class="p">,</span><span class="o">-</span><span class="mf">2.35</span><span class="p">,</span><span class="o">-</span><span class="mf">2.191</span><span class="p">,</span><span class="o">-</span><span class="mf">2.111</span><span class="p">,</span><span class="o">-</span><span class="mf">1.76</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">27.53</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">32.0088</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Cyclopropane ring BENSON&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;Cyclopropane ring BENSON&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 
@@ -265,9 +265,9 @@ An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
 strain correction may be more adequate. RMG identifies molecules with fused ring systems and subsequently
 searches through polycyclic.py to identify an adequate RSC.</p>
 <p>An example of a  polycyclic RSC entry in polycyclic.py is shown here below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;norbornane&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;norbornane&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 * Cs 0 {3,S} {4,S} {7,S}</span>
@@ -279,12 +279,12 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <span class="sd">7   Cs 0 {1,S} {6,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">4.5</span><span class="p">,</span><span class="o">-</span><span class="mf">3.942</span><span class="p">,</span><span class="o">-</span><span class="mf">3.291</span><span class="p">,</span><span class="o">-</span><span class="mf">2.759</span><span class="p">,</span><span class="o">-</span><span class="mf">2.08</span><span class="p">,</span><span class="o">-</span><span class="mf">1.628</span><span class="p">,</span><span class="o">-</span><span class="mf">0.898</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.14</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">53.47</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">4.5</span><span class="p">,</span><span class="o">-</span><span class="mf">3.942</span><span class="p">,</span><span class="o">-</span><span class="mf">3.291</span><span class="p">,</span><span class="o">-</span><span class="mf">2.759</span><span class="p">,</span><span class="o">-</span><span class="mf">2.08</span><span class="p">,</span><span class="o">-</span><span class="mf">1.628</span><span class="p">,</span><span class="o">-</span><span class="mf">0.898</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.14</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">53.47</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 
@@ -296,9 +296,9 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <div class="section" id="hydrogen-bond-increments-hbi">
 <h3>11.2.2.3. Hydrogen Bond Increments (HBI)<a class="headerlink" href="#hydrogen-bond-increments-hbi" title="Permalink to this headline">¶</a></h3>
 <p>An example of a HBI entry in radical.py is shown here below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;CH3&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CH3&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 * C 1 {2,S} {3,S} {4,S}</span>
@@ -307,12 +307,12 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <span class="sd">4   H 0 {1,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.71</span><span class="p">,</span><span class="mf">0.34</span><span class="p">,</span><span class="o">-</span><span class="mf">0.33</span><span class="p">,</span><span class="o">-</span><span class="mf">1.07</span><span class="p">,</span><span class="o">-</span><span class="mf">2.43</span><span class="p">,</span><span class="o">-</span><span class="mf">3.54</span><span class="p">,</span><span class="o">-</span><span class="mf">5.43</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">104.81</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.52</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.71</span><span class="p">,</span><span class="mf">0.34</span><span class="p">,</span><span class="o">-</span><span class="mf">0.33</span><span class="p">,</span><span class="o">-</span><span class="mf">1.07</span><span class="p">,</span><span class="o">-</span><span class="mf">2.43</span><span class="p">,</span><span class="o">-</span><span class="mf">3.54</span><span class="p">,</span><span class="o">-</span><span class="mf">5.43</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">104.81</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s1">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.52</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Calculated in relation to methane from NIST values&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;Calculated in relation to methane from NIST values&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 
@@ -327,9 +327,9 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 number include entropy or heat capacity corrections. The database other.py contains
 cis-, ortho- and ketene-corrections.</p>
 <p>An example of a NNI entry in gauche.py is shown here below:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Cs(Cs(CsCsR)Cs(CsCsR)RR)&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cs(Cs(CsCsR)Cs(CsCsR)RR)&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1  * Cs                         0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -345,12 +345,12 @@ cis-, ortho- and ketene-corrections.</p>
 <span class="sd">11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 
@@ -398,9 +398,6 @@ cis-, ortho- and ketene-corrections.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -492,7 +489,7 @@ cis-, ortho- and ketene-corrections.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

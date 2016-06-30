@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.Atom &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.molecule.Atom &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.Bond" href="bond.html" />
     <link rel="prev" title="Reaction recipes" href="recipe.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="recipe.html" title="Reaction recipes"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
@@ -90,7 +90,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tbody valign="top">
 <tr class="row-even"><td><cite>atomType</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">AtomType</span></code></td>
-<td>The <a class="reference internal" href="atomtype.html#atom-types"><span>atom type</span></a></td>
+<td>The <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom type</span></a></td>
 </tr>
 <tr class="row-odd"><td><cite>element</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">Element</span></code></td>
@@ -127,7 +127,7 @@ e.g. <code class="docutils literal"><span class="pre">atom.symbol</span></code> 
 <dd><p>Update the atom pattern as a result of applying <cite>action</cite>, a tuple
 containing the name of the reaction recipe action along with any
 required parameters. The available actions can be found
-<a class="reference internal" href="recipe.html#reaction-recipe-actions"><span>here</span></a>.</p>
+<a class="reference internal" href="recipe.html#reaction-recipe-actions"><span class="std std-ref">here</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -209,6 +209,13 @@ not.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Atom.isSilicon">
+<code class="descname">isSilicon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.isSilicon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an silicon atom or <code class="docutils literal"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Atom.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal"><span class="pre">False</span></code>
@@ -216,6 +223,13 @@ otherwise. If <cite>other</cite> is an <code class="xref py py-class docutils li
 as the <code class="xref py py-meth docutils literal"><span class="pre">equivalent()</span></code> method. If <cite>other</cite> is an
 <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object, then the atom must match or be more
 specific than any of the combinations in the atom pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isSulfur">
+<code class="descname">isSulfur</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.isSulfur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal"><span class="pre">False</span></code> if
+not.</p>
 </dd></dl>
 
 <dl class="method">
@@ -264,9 +278,6 @@ number and types of bonds, radicals, and lone pairs.</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -358,7 +369,7 @@ number and types of bonds, radicals, and lone pairs.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

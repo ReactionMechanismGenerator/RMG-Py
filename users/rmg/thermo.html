@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>12. Thermochemistry Estimation &mdash; RMG Py 1.0.2 documentation</title>
+    <title>12. Thermochemistry Estimation &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="13. Kinetics Estimation" href="kinetics.html" />
     <link rel="prev" title="11.4. Database Modification" href="database/modification.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="database/modification.html" title="11.4. Database Modification"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
@@ -88,7 +88,7 @@ along with a values for the thermochemistry in a format that allows
 the evaluation of each thermodynamic variable as a function of temperature.</p>
 <p>RMG is shipped with a number of species thermochemistry libraries, located in the
 &#8216;libraries&#8217; folder of RMG-database. More information on these species thermochemistry libraries can be found in
-<a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
+<a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="group-contribution-methods">
 <h2>12.2. Group contribution methods<a class="headerlink" href="#group-contribution-methods" title="Permalink to this headline">¶</a></h2>
@@ -115,7 +115,7 @@ of the contributions <span class="math">\(C_{i}\)</span>. E.g.:</p>
 <p>The term &#8216;group additive value&#8217; (GAV) denotes a polyvalent (ligancy &gt; 1) monoatomic central atom
 <span class="math">\(C_{i}\)</span> surrounded by its nearest-neighbor ligands.</p>
 <p>Values for each central atomtype (e.g. &#8220;tertiary carbon atom&#8221;) and its surrounding ligands can be found in the thermo
-group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
+group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 <div class="section" id="nnis">
 <h3>12.2.1. NNIs<a class="headerlink" href="#nnis" title="Permalink to this headline">¶</a></h3>
 <p>Besides the main group-centered (GAV) contributions, non-next-nearest
@@ -127,7 +127,7 @@ alkene single and double cis, ene-yne cis and ortho interactions.</p>
 <div class="math">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + \sum_{j}NNI_{j}\]</div>
 <p>RMG contains a database with NNIs, named gauche.py and int15.py. More information on the nature on the available NNIs, and corresponding values
-can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
+can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="ring-strain">
 <h3>12.2.2. Ring Strain<a class="headerlink" href="#ring-strain" title="Permalink to this headline">¶</a></h3>
@@ -142,7 +142,7 @@ ring correction (RSC) needs to be added to the sum of the GAVs of the individual
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + RSC\]</div>
 <p>RMG contains a database with single-ring corrections, &#8216;ring.py&#8217; and polycyclic ring corrections,
 &#8216;polycyclic.py&#8217;. More information on the nature on the available NNIs, and corresponding values
-can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
+can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="hydrogen-bond-increment-hbi-method">
 <h3>12.2.3. Hydrogen Bond Increment (HBI) method<a class="headerlink" href="#hydrogen-bond-increment-hbi-method" title="Permalink to this headline">¶</a></h3>
@@ -160,7 +160,7 @@ standard enthalpies of formation the HBI is defined as</p>
 Similar expressions are valid for the entropy and heat capacity.</p>
 <p>As a result the thermochemistry of the radical is calculated as follows:</p>
 <div class="math">
-\[\Delta_fH_{298}^{o}(R^*) = HBI(\Delta_fH_{298}^{o}) + \Delta_fH_{298}^{o}(R-H)\]\[C_{p}^{o}(R^*) = HBI(C_{p}^{o}) + C_{p}^{o}(R-H)\]\[S_{298}^{o}(R^*) = HBI(S_{298}^{o}) + S_{298}^{o}(R-H)\]</div>
+\[ \begin{align}\begin{aligned}\Delta_fH_{298}^{o}(R^*) = HBI(\Delta_fH_{298}^{o}) + \Delta_fH_{298}^{o}(R-H)\\C_{p}^{o}(R^*) = HBI(C_{p}^{o}) + C_{p}^{o}(R-H)\\S_{298}^{o}(R^*) = HBI(S_{298}^{o}) + S_{298}^{o}(R-H)\end{aligned}\end{align} \]</div>
 <p>The HBI method is the default method use to estimate thermochemistry of radicals. Thus,
 the effect of resonance stabilization on the enthalpy of the radical will be accounted for
 through the corresponding HBI. For example, the HBI labeled as &#8220;C=CC=CCJ&#8221; will account
@@ -172,7 +172,7 @@ have priority over QM value.  This ensures that there is a systematic HBI correc
 in the final model: if the saturated molecule thermo uses a library as a source, the radical thermo
 applies the HBI correction to that same library value.</p>
 <p>RMG contains a database for with HBIs, named radical.py. More information on the nature on the available HBIs, and corresponding values
-can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span>Thermo Database</span></a>.</p>
+can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp">
@@ -384,9 +384,6 @@ symmetry elements).</p>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -478,7 +475,7 @@ symmetry elements).</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>2. The Master Equation &mdash; RMG Py 1.0.2 documentation</title>
+    <title>2. The Master Equation &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Pressure-Dependence Theory Guide" href="index.html" />
     <link rel="next" title="3. Methods for Determining Phenomenological Rate Coefficients" href="methods.html" />
     <link rel="prev" title="1. Introduction" href="introduction.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="introduction.html" title="1. Introduction"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure-Dependence Theory Guide</a> &raquo;</li> 
@@ -154,7 +154,7 @@ Boltzmann distribution at long times:</p>
 <div class="math">
 \[P(E, J, E^\prime, J^\prime) b(E^\prime, J^\prime) = P(E^\prime, J^\prime, E, J) b(E, J)\]</div>
 <div class="math">
-\[\begin{split}P_i(E^\prime, J^\prime, E, J) = \frac{\rho_i(E^\prime, J^\prime)}{\rho_i(E, J)} \exp \left(- \frac{E^\prime - E}{k_\mathrm{B} T} \right) P_i(E, J, E^\prime, J^\prime) \hspace{40pt} E &lt; E^\prime\end{split}\]</div>
+\[P_i(E^\prime, J^\prime, E, J) = \frac{\rho_i(E^\prime, J^\prime)}{\rho_i(E, J)} \exp \left(- \frac{E^\prime - E}{k_\mathrm{B} T} \right) P_i(E, J, E^\prime, J^\prime) \hspace{40pt} E &lt; E^\prime\]</div>
 <p>Rather than define models directly for <span class="math">\(P(E, J, E^\prime, J^\prime)\)</span>,
 we usually eliminate the angular momentum contribution and instead define
 <span class="math">\(P(E, E^\prime)\)</span>. This can be related to
@@ -165,7 +165,7 @@ we usually eliminate the angular momentum contribution and instead define
 <p>There are a variety of models used for <span class="math">\(P(E, E^\prime)\)</span>.
 By far the most common is the single exponential down model</p>
 <div class="math">
-\[\begin{split}P(E, E^\prime) = C(E^\prime) \exp \left( -\frac{E^\prime - E}{\alpha} \right) \hspace{40pt} E &lt; E^\prime\end{split}\]</div>
+\[P(E, E^\prime) = C(E^\prime) \exp \left( -\frac{E^\prime - E}{\alpha} \right) \hspace{40pt} E &lt; E^\prime\]</div>
 <p>where <span class="math">\(C(E^\prime)\)</span> is determined from the normalization constraint. Note
 that this function has been defined for the deactivating direction
 (<span class="math">\(E &lt; E^\prime\)</span>) only, as the activating direction (<span class="math">\(E &gt; E^\prime\)</span>)
@@ -175,10 +175,10 @@ the average energy transferred in a deactivating collision
 temperature.</p>
 <p>Other models for <span class="math">\(P(E, J, E^\prime, J^\prime)\)</span> include the Gaussian down</p>
 <div class="math">
-\[\begin{split}P(E, E^\prime) = C(E^\prime) \exp \left[ - \frac{(E^\prime - E)^2}{\alpha^2} \right] \hspace{40pt} E &lt; E^\prime\end{split}\]</div>
+\[P(E, E^\prime) = C(E^\prime) \exp \left[ - \frac{(E^\prime - E)^2}{\alpha^2} \right] \hspace{40pt} E &lt; E^\prime\]</div>
 <p>and the double exponential down</p>
 <div class="math">
-\[\begin{split}P(E, E^\prime) = C(E^\prime) \left[ (1 - f) \exp \left( -\frac{E^\prime - E}{\alpha_1} \right) + f \exp \left( -\frac{E^\prime - E}{\alpha_2} \right) \right] \hspace{40pt} E &lt; E^\prime\end{split}\]</div>
+\[P(E, E^\prime) = C(E^\prime) \left[ (1 - f) \exp \left( -\frac{E^\prime - E}{\alpha_1} \right) + f \exp \left( -\frac{E^\prime - E}{\alpha_2} \right) \right] \hspace{40pt} E &lt; E^\prime\]</div>
 <p>The parameters for these simple models generally contain so much uncertainty
 that more complex functional forms are generally not used.</p>
 </div>
@@ -264,11 +264,11 @@ preexpoential, temperature exponent, and activation energy, respectively. For
 <span class="math">\(n = 0\)</span> and <span class="math">\(E_\mathrm{a} &gt; 0\)</span> the inverse Laplace transform can be
 easily evaluated to give</p>
 <div class="math">
-\[\begin{split}k(E) = A \frac{\rho(E - E_\mathrm{a})}{\rho(E)} \hspace{40pt} E &gt; E_\mathrm{a}\end{split}\]</div>
+\[k(E) = A \frac{\rho(E - E_\mathrm{a})}{\rho(E)} \hspace{40pt} E &gt; E_\mathrm{a}\]</div>
 <p>We can also determine an expression when <span class="math">\(n &gt; 0\)</span> and
 <span class="math">\(E_\mathrm{a} &gt; 0\)</span> using a convolution integral:</p>
 <div class="math">
-\[\begin{split}k(E) = A \frac{\phi(E - E_\mathrm{a})}{\rho(E)} \hspace{40pt} E &gt; E_\mathrm{a}\end{split}\]</div>
+\[k(E) = A \frac{\phi(E - E_\mathrm{a})}{\rho(E)} \hspace{40pt} E &gt; E_\mathrm{a}\]</div>
 <div class="math">
 \[\phi(E) = \mathcal{L}^{-1} \left[ T^n Q(\beta) \right] = \frac{1}{k_\mathrm{B}^n \Gamma(n)} \int_0^E (E - x)^{n-1} \rho(x) \ dx\]</div>
 <p>Finally, for cases where <span class="math">\(n &lt; 0\)</span> and/or <span class="math">\(E_\mathrm{a} &lt; 0\)</span> we
@@ -305,10 +305,10 @@ of each isomer <span class="math">\(i\)</span> and the reactant concentrations
 <span class="math">\(y_{n\mathrm{A}}(t)\)</span> and <span class="math">\(y_{n\mathrm{B}}(t)\)</span> combines the
 collision and reaction models to give a linear integro-differential equation:</p>
 <div class="math">
-\[\begin{split}\frac{d}{dt} p_i(E, J, t) &amp;= \omega_i(T, P) \sum_{J^\prime} \int_0^\infty P_i(E, J, E^\prime, J^\prime) p_i(E^\prime, J^\prime, t) \ dE^\prime - \omega_i(T, P) p_i(E, J, t) \\
+\[ \begin{align}\begin{aligned}\begin{split}\frac{d}{dt} p_i(E, J, t) &amp;= \omega_i(T, P) \sum_{J^\prime} \int_0^\infty P_i(E, J, E^\prime, J^\prime) p_i(E^\prime, J^\prime, t) \ dE^\prime - \omega_i(T, P) p_i(E, J, t) \\
                        &amp;  \mbox{} + \sum_{j \ne i}^{N_\mathrm{isom}} k_{ij}(E, J) p_j(E, J, t) - \sum_{j \ne i}^{N_\mathrm{isom}} k_{ji}(E, J) p_i(E, J, t) \\
-                       &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E, J) b_n(E, J, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E, J) p_i(E, J, t) \\\end{split}\]\[\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E, J) p_i(E, J, t) \ dE \\
-                                                                  &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E, J) b_n(E, J, t) \  dE\end{split}\]</div>
+                       &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E, J) b_n(E, J, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E, J) p_i(E, J, t) \\\end{split}\\\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E, J) p_i(E, J, t) \ dE \\
+                                                                  &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E, J) b_n(E, J, t) \  dE\end{split}\end{aligned}\end{align} \]</div>
 <p>A summary of the variables is given below:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -365,10 +365,10 @@ reactant channels), the pair of terms refer to dissociation/association.</p>
 <p>We can also simplify the above to the one-dimensional form, which
 only has <span class="math">\(E\)</span> as a dimension:</p>
 <div class="math">
-\[\begin{split}\frac{d}{dt} p_i(E, t) &amp;= \omega_i(T, P) \int_0^\infty P_i(E, E^\prime) p_i(E^\prime, t) \ dE^\prime - \omega_i(T, P) p_i(E, t) \\
+\[ \begin{align}\begin{aligned}\begin{split}\frac{d}{dt} p_i(E, t) &amp;= \omega_i(T, P) \int_0^\infty P_i(E, E^\prime) p_i(E^\prime, t) \ dE^\prime - \omega_i(T, P) p_i(E, t) \\
                        &amp;  \mbox{} + \sum_{j \ne i}^{N_\mathrm{isom}} k_{ij}(E) p_j(E, t) - \sum_{j \ne i}^{N_\mathrm{isom}} k_{ji}(E) p_i(E, t) \\
-                       &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E) b_n(E, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E) p_i(E, t) \\\end{split}\]\[\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E) p_i(E, t) \ dE \\
-                                                                  &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E) b_n(E, t) \ dE\end{split}\]</div>
+                       &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E) b_n(E, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E) p_i(E, t) \\\end{split}\\\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E) p_i(E, t) \ dE \\
+                                                                  &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E) b_n(E, t) \ dE\end{split}\end{aligned}\end{align} \]</div>
 <p>The equations as given are nonlinear, both due to the presence of the
 bimolecular reactants and because both <span class="math">\(\omega_i\)</span> and
 <span class="math">\(P_i(E, E^\prime)\)</span> depend on the composition, which is changing with time.
@@ -515,9 +515,6 @@ Cambridge University Press (2003).</td></tr>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -609,7 +606,7 @@ Cambridge University Press (2003).</td></tr>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

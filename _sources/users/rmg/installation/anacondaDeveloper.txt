@@ -14,7 +14,9 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-    
+
+* On MacOS X you need to open the ``environment.yml`` file and comment out or delete the last line that says ``libgfortran==1.0``. (This line is required for linux but fails for MacOS X.)
+
 * Compile RMG-Py ::
     
     cd RMG-Py

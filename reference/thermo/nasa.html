@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.thermo.NASA &mdash; RMG Py 1.0.2 documentation</title>
+    <title>rmgpy.thermo.NASA &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
     <link rel="up" title="Thermodynamics (rmgpy.thermo)" href="index.html" />
     <link rel="next" title="rmgpy.thermo.NASAPolynomial" href="nasapolynomial.html" />
     <link rel="prev" title="rmgpy.thermo.Wilhoit" href="wilhoit.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="wilhoit.html" title="rmgpy.thermo.Wilhoit"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &raquo;</li> 
@@ -242,6 +242,12 @@ returned.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.thermo.NASA.toCantera">
+<code class="descname">toCantera</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASA.toCantera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the cantera equivalent NasaPoly2 object from this NASA object.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.thermo.NASA.toThermoData">
 <code class="descname">toThermoData</code><span class="sig-paren">(</span><em>self</em>, <em>double Cp0=0.0</em>, <em>double CpInf=0.0</em><span class="sig-paren">)</span> &rarr; ThermoData<a class="headerlink" href="#rmgpy.thermo.NASA.toThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Wilhoit model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal"><span class="pre">ThermoData</span></code></a> object.</p>
@@ -260,36 +266,36 @@ limits at zero and infinite temperature.</p>
 </dd></dl>
 
 <p>Here is an example of a NASA entry:</p>
-<div class="highlight-python"><div class="highlight"><pre>    entry(
-index = 2,
-label = &quot;octane&quot;,
-molecule =
-    &quot;&quot;&quot;
-    1 C 0 {2,S}
-    2 C 0 {1,S} {3,S}
-    3 C 0 {2,S} {4,S}
-    4 C 0 {3,S} {5,S}
-    5 C 0 {4,S} {6,S}
-    6 C 0 {5,S} {7,S}
-    7 C 0 {6,S} {8,S}
-    8 C 0 {7,S}
-    &quot;&quot;&quot;,
-thermo = NASA(
-    polynomials = [
-        NASAPolynomial(coeffs=[1.25245480E+01,-1.01018826E-02,2.21992610E-04,-2.84863722E-07,1.12410138E-10,-2.98434398E+04,-1.97109989E+01], Tmin=(200,&#39;K&#39;), Tmax=(1000,&#39;K&#39;)),
-        NASAPolynomial(coeffs=[2.09430708E+01,4.41691018E-02,-1.53261633E-05,2.30544803E-09,-1.29765727E-13,-3.55755088E+04,-8.10637726E+01], Tmin=(1000,&#39;K&#39;), Tmax=(6000,&#39;K&#39;)),
-    ],
-    Tmin = (200,&#39;K&#39;),
-    Tmax = (6000,&#39;K&#39;),
-),
-reference = Reference(authors=[&quot;check on burcat&quot;], title=&#39;burcat&#39;, year=&quot;1999&quot;, url=&quot;http://www.me.berkeley.edu/gri-mech/version30/text30.html&quot;),
-referenceType = &quot;review&quot;,
-shortDesc = u&quot;&quot;&quot;&quot;&quot;&quot;,
-longDesc =
-    u&quot;&quot;&quot;
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">entry</span><span class="p">(</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span><span class="p">,</span>
+<span class="n">molecule</span> <span class="o">=</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    1 C 0 {2,S}</span>
+<span class="sd">    2 C 0 {1,S} {3,S}</span>
+<span class="sd">    3 C 0 {2,S} {4,S}</span>
+<span class="sd">    4 C 0 {3,S} {5,S}</span>
+<span class="sd">    5 C 0 {4,S} {6,S}</span>
+<span class="sd">    6 C 0 {5,S} {7,S}</span>
+<span class="sd">    7 C 0 {6,S} {8,S}</span>
+<span class="sd">    8 C 0 {7,S}</span>
+<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+<span class="n">thermo</span> <span class="o">=</span> <span class="n">NASA</span><span class="p">(</span>
+    <span class="n">polynomials</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.25245480E+01</span><span class="p">,</span><span class="o">-</span><span class="mf">1.01018826E-02</span><span class="p">,</span><span class="mf">2.21992610E-04</span><span class="p">,</span><span class="o">-</span><span class="mf">2.84863722E-07</span><span class="p">,</span><span class="mf">1.12410138E-10</span><span class="p">,</span><span class="o">-</span><span class="mf">2.98434398E+04</span><span class="p">,</span><span class="o">-</span><span class="mf">1.97109989E+01</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">2.09430708E+01</span><span class="p">,</span><span class="mf">4.41691018E-02</span><span class="p">,</span><span class="o">-</span><span class="mf">1.53261633E-05</span><span class="p">,</span><span class="mf">2.30544803E-09</span><span class="p">,</span><span class="o">-</span><span class="mf">1.29765727E-13</span><span class="p">,</span><span class="o">-</span><span class="mf">3.55755088E+04</span><span class="p">,</span><span class="o">-</span><span class="mf">8.10637726E+01</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">6000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+    <span class="p">],</span>
+    <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+<span class="p">),</span>
+<span class="n">reference</span> <span class="o">=</span> <span class="n">Reference</span><span class="p">(</span><span class="n">authors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;check on burcat&quot;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;burcat&#39;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;1999&quot;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://www.me.berkeley.edu/gri-mech/version30/text30.html&quot;</span><span class="p">),</span>
+<span class="n">referenceType</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span><span class="p">,</span>
+<span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="n">longDesc</span> <span class="o">=</span>
+    <span class="sd">u&quot;&quot;&quot;</span>
 
-    &quot;&quot;&quot;,
-    )
+<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -311,9 +317,6 @@ longDesc =
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -405,7 +408,7 @@ longDesc =
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.3. Kinetics Database &mdash; RMG Py 1.0.2 documentation</title>
+    <title>11.3. Kinetics Database &mdash; RMG Py 1.0.4 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.2',
+        VERSION:     '1.0.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.2 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
     <link rel="up" title="11. Databases" href="index.html" />
     <link rel="next" title="11.4. Database Modification" href="modification.html" />
     <link rel="prev" title="11.2. Thermo Database" href="thermo.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="thermo.html" title="11.2. Thermo Database"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.2</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -72,7 +72,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="kinetics-database">
 <span id="kineticsdatabase"></span><h1>11.3. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
-<p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span>Modifying the Kinetics Database</span></a> for
+<p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span class="std std-ref">Modifying the Kinetics Database</span></a> for
 instructions on modifying the database.</p>
 <p>Pressure independent reaction rates in RMG are calculated using a modified
 Arrhenius equation, designating the reaction coefficient as <span class="math">\(k(T)\)</span> at
@@ -289,9 +289,9 @@ reaction. A template exact match is usually accurate within about one order
 of magnitude. When there is no kinetics available for for the template in
 either the training set or rules, the kinetics are averaged from the children
 nodes as an estimate. In these cases, the kinetic parameters are much less reliable.
-For more information on the estimation algorithm see <a class="reference internal" href="../kinetics.html#kinetics"><span>Kinetics Estimation</span></a>.</p>
+For more information on the estimation algorithm see <a class="reference internal" href="../kinetics.html#kinetics"><span class="std std-ref">Kinetics Estimation</span></a>.</p>
 <p>The training set can be modified in training.py and the rules can be modified in
-rules.py. For more information on modification see <a class="reference internal" href="modification.html#kinetic-training-set"><span>Adding Training Reactions</span></a> and <a class="reference internal" href="modification.html#kinetic-rules"><span>Adding Kinetic Rules</span></a>.</p>
+rules.py. For more information on modification see <a class="reference internal" href="modification.html#kinetic-training-set"><span class="std std-ref">Adding Training Reactions</span></a> and <a class="reference internal" href="modification.html#kinetic-rules"><span class="std std-ref">Adding Kinetic Rules</span></a>.</p>
 </div>
 </div>
 </div>
@@ -326,9 +326,6 @@ rules.py. For more information on modification see <a class="reference internal"
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
@@ -420,7 +417,7 @@ rules.py. For more information on modification see <a class="reference internal"
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>
