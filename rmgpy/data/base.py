@@ -869,8 +869,8 @@ class Database:
         """
         
         if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
-            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
-                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms()) is False:
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms(), strict=True) is True:
+                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms(), strict=True) is False:
                     return True                
             return False
         
