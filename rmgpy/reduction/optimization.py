@@ -112,6 +112,10 @@ def bisect(low, high, error, targets, reactionModel, rmg, reactionSystemIndex, o
         if isInvalid(devs, error):
             high = midpoint
         else:
+            if len(newImportantReactions) == 0:
+                logging.error('Model reduction resulted in a model with 0 reactions.')
+                logging.error('Perhaps change reactor conditions to allow for more adequate reduction. Exiting...')
+                break
             low = midpoint
             importantReactions = newImportantReactions
             final_devs = devs
