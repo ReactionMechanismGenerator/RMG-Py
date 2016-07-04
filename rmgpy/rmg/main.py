@@ -209,6 +209,7 @@ class RMG(util.Subject):
             self.reactionModel.pressureDependence = self.pressureDependence
 
         self.reactionModel.verboseComments = self.verboseComments
+        self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
         
         if self.quantumMechanics:
             self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)

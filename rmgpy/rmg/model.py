@@ -395,6 +395,7 @@ class CoreEdgeReactionModel:
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
         self.indexSpeciesDict = {}
+        self.saveEdgeSpecies = False
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -854,9 +855,10 @@ class CoreEdgeReactionModel:
         for rxn in newCoreReactions:
             markDuplicateReaction(rxn, checkedReactions)
             checkedReactions.append(rxn)
-        for rxn in newEdgeReactions:
-            markDuplicateReaction(rxn, checkedReactions)
-            checkedReactions.append(rxn)
+        if self.saveEdgeSpecies:
+            for rxn in newEdgeReactions:
+                markDuplicateReaction(rxn, checkedReactions)
+                checkedReactions.append(rxn)
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
