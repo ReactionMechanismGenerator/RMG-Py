@@ -54,4 +54,6 @@ cdef class AtomType:
 
     cpdef list getFeatures(self)
 
+cpdef list getFeatures(atom, dict bonds)
+
 cpdef AtomType getAtomType(atom, dict bonds)

@@ -420,25 +420,25 @@ for atomType in atomTypes.values():
         for index in range(len(items)):
             items[index] = atomTypes[items[index]]
 
-def getAtomType(atom, bonds):
+def getFeatures(atom, bonds):
     """
-    Determine the appropriate atom type for an :class:`Atom` object `atom`
-    with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
-    """
+    Returns a list of features needed to determine atomType for :class:'Atom'
+    or :class:'GroupAtom' object 'atom and with local bond structure `bonds`,
+    a ``dict`` containing atom-bond pairs.
 
-    cython.declare(atomSymbol=str)
+    """
     cython.declare(single=cython.int, allDouble=cython.int, rDouble=cython.int,
                    sDouble=cython.int, oDouble=cython.int, triple=cython.int,
                    benzene=cython.int)
-    cython.declare(molFeatureList=cython.list, featureNames=cython.list)
-    
+    cython.declare(features=cython.list)
+
     # Count numbers of each higher-order bond type
     single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
     for atom2, bond12 in bonds.iteritems():
         if bond12.isSingle():
             single += 1
         elif bond12.isDouble():
-            if atom2.isOxygen(): 
+            if atom2.isOxygen():
                 oDouble += 1
             elif atom2.isSulfur():
                 sDouble += 1
@@ -450,13 +450,26 @@ def getAtomType(atom, bonds):
 
     # allDouble is for all double bonds, to anything
     allDouble = rDouble + oDouble + sDouble
-    molFeatureList = [single, allDouble, rDouble, oDouble, sDouble, triple, benzene, atom.lonePairs]
+    features = [single, allDouble, rDouble, oDouble, sDouble, triple, benzene, atom.lonePairs]
+
+    return features
+
+def getAtomType(atom, bonds):
+    """
+    Determine the appropriate atom type for an :class:`Atom` object `atom`
+    with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
+    """
+
+    cython.declare(atomSymbol=str)
+    cython.declare(molFeatureList=cython.list, atomTypeFeatureList=cython.list)
 
     # Use element and counts to determine proper atom type
     atomSymbol = atom.symbol
     #These elements do not do not have a more specific atomType
     if atomSymbol in nonSpecifics:
         return atomTypes[atomSymbol]
+
+    molFeatureList = getFeatures(atom, bonds)
     for specificAtomType in atomTypes[atomSymbol].specific:
         atomtypeFeatureList = specificAtomType.getFeatures()
         for molFeature, atomtypeFeature in zip(molFeatureList, atomtypeFeatureList):
@@ -465,5 +478,12 @@ def getAtomType(atom, bonds):
             elif not molFeature in atomtypeFeature:
                 break
         else: return specificAtomType
-    else: raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, rDouble, oDouble, sDouble, triple, benzene))
+    else:
+        rDouble = molFeatureList[2]
+        oDouble = molFeatureList[3]
+        sDouble = molFeatureList[4]
+        triple = molFeatureList[5]
+        benzene = molFeatureList[6]
+
+        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} double bonds to S, {4:d} triple bonds, and {5:d} benzene bonds.'.format(atom, rDouble, oDouble, sDouble, triple, benzene))
 
