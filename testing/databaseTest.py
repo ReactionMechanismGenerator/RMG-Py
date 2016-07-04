@@ -331,9 +331,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     #Don't check a node against itself
                     if child1 is child2: continue
                     nose.tools.assert_false(family.matchNodeToChild(child1, child2),
-                                            "In family {0}, node {1} is written as a sibling of {2}, when it is actually a parent.".format(family_name, child1, child2))
+                                            "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child1, child2))
                     nose.tools.assert_false(family.matchNodeToChild(child2, child1),
-                                            "In family {0}, node {1} is written as a sibling of {2}, when it is actually a parent.".format(family_name, child2, child1))
+                                            "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child2, child1))
 
     def kinetics_checkAdjlistsNonidentical(self, database):
         """
@@ -429,7 +429,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     for correctAtom in correctAtomList:
                         nose.tools.assert_true(atomTypes[correctAtom] in atom.atomType,
                                                """In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
-The following adjList may be have atoms in a different ordering than the input file:
+The following adjList may have atoms in a different ordering than the input file:
 {4}
                                             """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
 
@@ -496,9 +496,9 @@ The following adjList may be have atoms in a different ordering than the input f
                     #Don't check a node against itself
                     if child1 is child2: continue
                     nose.tools.assert_false(group.matchNodeToChild(child1, child2),
-                                            "In {0} group, node {1} is written as a sibling of {2}, when it is actually a parent.".format(group_name, child1, child2))
+                                            "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child1, child2))
                     nose.tools.assert_false(group.matchNodeToChild(child2, child1),
-                                            "In {0} group, node {1} is written as a sibling of {2}, when it is actually a parent.".format(group_name, child2, child1))
+                                            "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child2, child1))
 
     def general_checkCdAtomType(self, group_name, group):
         """
@@ -536,7 +536,7 @@ The following adjList may be have atoms in a different ordering than the input f
                     for correctAtom in correctAtomList:
                         nose.tools.assert_true(atomTypes[correctAtom] in atom.atomType,
                                                 """In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
-The following adjList may be have atoms in a different ordering than the input file:
+The following adjList may have atoms in a different ordering than the input file:
 {4}
                                             """.format(group_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
 
