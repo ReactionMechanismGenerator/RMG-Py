@@ -375,7 +375,12 @@ class RMG(util.Subject):
             diffusionLimiter.enable(Species.solventData, self.database.solvation)
             Species.isSolventinCoolProp = self.database.solvation.isSolventinCoolProp(self.solvent)
             Species.SolventNameinCoolProp = self.database.solvation.getSolventNameinCoolProp(self.solvent)
+            Species.rxnTemp = self.reactionSystems[0].T
             logging.info("Setting solvent data for {0}".format(self.solvent))
+            if Species.isSolventinCoolProp:
+                logging.info("Found {0} in CoolProp: More accurate temperature dependence is used for solvation free energy".format(self.solvent))
+            else:
+                logging.info("{0} cannot be found in CoolProp: Linear temperature dependence is assumed for solvation free energy".format(self.solvent))
     
         # Set wall time
         try:
