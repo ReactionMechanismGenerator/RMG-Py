@@ -1024,5 +1024,50 @@ class Group(Graph):
 
         return modified
 
+    def addExplicitLigands(self):
+        """
+        This function Od/Sd ligand to CO or CS atomtypes if they are not already there.
 
+        Returns a 'True' if the group was modified otherwise returns 'False'
+        """
 
+        modified = False
+
+        atomsToAddTo=[]
+
+        viableToCheck = True
+        for atom in self.atoms:
+            if len(atom.atomType) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.radicalElectrons) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.lonePairs) > 1:
+                viableToCheck = False
+                break
+            for bond in atom.bonds.values():
+                if len(bond.order) > 1:
+                    viableToCheck = False
+                    break
+        if not viableToCheck: return modified
+
+        for index, atom in enumerate(self.atoms):
+            claimedAtomType = atom.atomType[0]
+            if claimedAtomType is atomTypes['CO'] or claimedAtomType is atomTypes['CS']:
+                for atom2, bond12 in atom.bonds.iteritems():
+                    if bond12.isDouble():
+                        break
+                else: atomsToAddTo.append(index)
+
+        for atomIndex in atomsToAddTo:
+            modified = True
+            if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
+                newAtom = GroupAtom(atomType=[atomTypes['Od']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+            elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
+                newAtom = GroupAtom(atomType=[atomTypes['Sd']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+            self.addAtom(newAtom)
+            newBond = GroupBond(self.atoms[atomIndex], newAtom, order=['D'])
+            self.addBond(newBond)
+
+        return modified

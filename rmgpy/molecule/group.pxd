@@ -145,3 +145,5 @@ cdef class Group(Graph):
     cpdef bint isIdentical(self, Graph other)
 
     cpdef bint standardizeAtomType(self)
+
+    cpdef bint addExplicitLigands(self)
