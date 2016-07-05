@@ -373,6 +373,8 @@ class RMG(util.Subject):
             Species.solventName = self.solvent
             Species.solventStructure = self.database.solvation.getSolventStructure(self.solvent)
             diffusionLimiter.enable(Species.solventData, self.database.solvation)
+            Species.isSolventinCoolProp = self.database.solvation.isSolventinCoolProp(self.solvent)
+            Species.SolventNameinCoolProp = self.database.solvation.getSolventNameinCoolProp(self.solvent)
             logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time

@@ -101,6 +101,8 @@ def saveEntry(f, entry):
         f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
         f.write('        beta = {0!r},\n'.format(entry.data.beta))
         f.write('        eps = {0!r},\n'.format(entry.data.eps))
+        f.write('        inCoolProp = {0!r},\n'.format(entry.data.inCoolProp))
+        f.write('        NameinCoolProp = "{0}",\n'.format(entry.data.NameinCoolProp))
         f.write('    ),\n')
     elif entry.data is None:
         f.write('    solute = None,\n')
@@ -144,7 +146,7 @@ class SolventData():
     """
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
     c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None, 
-    C=None, D=None, E=None, alpha=None, beta=None, eps=None):
+    C=None, D=None, E=None, alpha=None, beta=None, eps=None, inCoolProp=None, NameinCoolProp=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
@@ -168,6 +170,9 @@ class SolventData():
         self.beta = beta
         # This is the dielectric constant
         self.eps = eps
+        # This describes the availability of the solvent data in CoolProp and its name in CoolProp
+        self.inCoolProp = inCoolProp
+        self.NameinCoolProp = NameinCoolProp
     
     def getHAbsCorrection(self):
         """
@@ -325,7 +330,19 @@ class SolventLibrary(Database):
         Get a solvent's molecular structure as SMILES or adjacency list from its name
         """
         return self.entries[label].item
-        
+
+    def isSolventinCoolProp(self, label):
+        """
+        Check whether the solvent data are available in CoolProp. Returns "True" if they are available and "False" if not
+        """
+        return self.entries[label].data.inCoolProp
+
+    def getSolventNameinCoolProp(self, label):
+        """
+        Get the solvent's name that can be recognized by CoolProp. If the solvent is unavailable in CoolProp, this returns None
+        """
+        return self.entries[label].data.NameinCoolProp
+
 class SoluteLibrary(Database):
     """
     A class for working with a RMG solute library. Not currently used.
@@ -507,7 +524,21 @@ class SolvationDatabase(object):
         except:
             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
         return solventStructure
-        
+
+    def isSolventinCoolProp(self, solvent_name):
+        try:
+            isSolventinCoolProp = self.libraries['solvent'].isSolventinCoolProp(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return isSolventinCoolProp
+
+    def getSolventNameinCoolProp(self, solvent_name):
+         try:
+             SolventNameinCoolProp = self.libraries['solvent'].getSolventNameinCoolProp(solvent_name)
+         except:
+             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+         return SolventNameinCoolProp
+
     def loadGroups(self, path):
         """
         Load the solute database from the given `path` on disk, where `path`
@@ -903,14 +934,14 @@ class SolvationDatabase(object):
         # Use Abraham parameters for solvents to get log K
         logK = (soluteData.S*solventData.s_g)+(soluteData.B*solventData.b_g)+(soluteData.E*solventData.e_g)+(soluteData.L*solventData.l_g)+(soluteData.A*solventData.a_g)+solventData.c_g
         # Convert to delG with units of J/mol
-        delG = -8.314*298*2.303*logK
+        delG = -constants.R*298*math.log(10.)*logK
         return delG
         
     def calcS(self, delG, delH):
         """
         Returns the entropy of solvation, at 298K, in J/mol/K
         """
-        delS = (delH-delG)/298
+        delS = (delH-delG)/298.
         return delS
     
     def getSolvationCorrection(self, soluteData, solventData):
