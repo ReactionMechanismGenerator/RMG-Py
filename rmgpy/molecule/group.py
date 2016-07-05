@@ -36,7 +36,7 @@ reaction sites).
 import cython
 
 from .graph import Vertex, Edge, Graph
-from .atomtype import atomTypes
+from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
 
 ################################################################################
 
@@ -931,14 +931,23 @@ class Group(Graph):
         For any group where there are wildcards or multiple attributes,
         we cannot apply this check.
 
-        For the case of CO and CS, it also removes bonded O and S atoms
-        unless the O and S atom are labelled
-
         In the case where the atomType is ambigious based on bonds
         and valency, this function will not change the type.
+
+        Returns a 'True' if the group was modified otherwise returns 'False'
         """
 
-        #see if this is a group we can check
+        modified = False
+
+        #dictionary of element to expected valency
+        valency = {atomTypes['C'] : 4,
+                   atomTypes['O'] : 2,
+                   atomTypes ['S']: 2,
+                   atomTypes['Si']:4
+                   }
+
+        #see if this is a group we can check, must not have any OR groups in
+        #its bonds or atomtypes
         viableToCheck = True
         for atom in self.atoms:
             if len(atom.atomType) > 1:
@@ -954,75 +963,66 @@ class Group(Graph):
                 if len(bond.order) > 1:
                     viableToCheck = False
                     break
+        if not viableToCheck: return modified
 
-        if not viableToCheck: return
+        #list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
+        specifics= [elementLabel for elementLabel in allElements if not elementLabel in nonSpecifics]
+        for index, atom in enumerate(self.atoms):
+            claimedAtomType = atom.atomType[0]
+            newAtomType = None
+            element = None
+            #Ignore elements that do not have more than one atomtype
+            if claimedAtomType.label in nonSpecifics: continue
+            for elementLabel in specifics:
+                if claimedAtomType.label == elementLabel or atomTypes[claimedAtomType.label] in atomTypes[elementLabel].specific:
+                    element = atomTypes[elementLabel]
+                    break
 
-        atomsToRemove=[]
-        for atom in self.atoms:
-            atomType = atom.atomType[0]
-            #Check carbon atom usage by string comparison
-            if atomType.label in atomTypes['C'].specific + ['C']:
-                num_of_Bbonds = sum([1 if x.order[0] is 'B' else 0 for x in atom.bonds.values()])
-                if num_of_Bbonds == 3:
-                    atom.atomType = [atomTypes['Cbf']]
-                    continue
-                num_of_Sbonds = sum([1 if x.order[0] is 'S' else 0 for x in atom.bonds.values()])
-                num_of_Dbonds = sum([1 if x.order[0] is 'D' else 0 for x in atom.bonds.values()])
-                num_of_Tbonds = sum([1 if x.order[0] is 'T' else 0 for x in atom.bonds.values()])
-                bondValency = num_of_Sbonds + 2 * num_of_Dbonds + 3 * num_of_Tbonds + 1.5 * num_of_Bbonds
-                filledValency =  atom.radicalElectrons[0] + bondValency
-                if num_of_Bbonds ==2 and filledValency == 4:
-                    atom.atomType = [atomTypes['Cb']]
-                    continue
-                elif num_of_Dbonds == 2:
-                    atom.atomType = [atomTypes['Cdd']]
-                    continue
-                elif num_of_Tbonds == 1:
-                    atom.atomType = [atomTypes['Ct']]
-                elif num_of_Dbonds == 1 and filledValency >=3:
-                    for ligand, bond in atom.bonds.iteritems():
-                        if not bond.order is 'D': continue
-                        if ligand.atomType.label in atomTypes['O'].specific + ['O']:
-                            atom.atomType = [atomTypes['CO']]
-                            atomsToRemove.append(ligand)
-                        elif ligand.atomType.label in atomTypes['S'].specific + ['S']:
-                            atom.atomType = [atomTypes['CS']]
-                            atomsToRemove.append(ligand)
-                        else: atom.atomType = [atomTypes ['Cd']]
-                elif filledValency == 4:
-                    atom.atomType = [atomTypes['Cs']]
-            #For O atoms
-            if atomType.label in atomTypes['O'].specific + ['O']:
-                num_of_Sbonds = sum([1 if x.order[0] is 'S' else 0 for x in atom.bonds.values()])
-                num_of_Dbonds = sum([1 if x.order[0] is 'D' else 0 for x in atom.bonds.values()])
-                num_of_Tbonds = sum([1 if x.order[0] is 'T' else 0 for x in atom.bonds.values()])
-                bondValency = num_of_Sbonds + 2 * num_of_Dbonds + 3 * num_of_Tbonds
-                filledValency = atom.radicalElectrons[0] + bondValency
+            #claimedAtomType is not in one of the specified elements
+            if not element: continue
+            #Don't standardize atomtypes for nitrogen for now. My feeling is that
+            # the work on the nitrogen atomtypes is still incomplete
+            elif element == atomTypes['N']: continue
 
-                if num_of_Tbonds == 1:
-                    atom.atomType = [atomTypes['Ot']]
-                elif num_of_Dbonds == 1:
-                    atom.atomType = [atomTypes['Od']]
-                elif num_of_Sbonds >= 1:
-                    atom.atomType = [atomTypes['Os']]
+            groupFeatures = getFeatures(atom, atom.bonds)
+            # print groupFeatures
 
-            if atomType.label in atomTypes['S'].specific + ['S']:
-                num_of_Sbonds = sum([1 if x.order[0] is 'S' else 0 for x in atom.bonds.values()])
-                num_of_Dbonds = sum([1 if x.order[0] is 'D' else 0 for x in atom.bonds.values()])
-                num_of_Tbonds = sum([1 if x.order[0] is 'T' else 0 for x in atom.bonds.values()])
-                bondValency = num_of_Sbonds + 2 * num_of_Dbonds + 3 * num_of_Tbonds
-                filledValency = atom.radicalElectrons[0] + bondValency
+            single = groupFeatures[0]
+            allDouble = groupFeatures[1]
+            triple = groupFeatures[5]
+            benzene = groupFeatures[6]
+            if benzene == 3:
+                bondValency = single + 2 * allDouble + 3 * triple + 4.0/3.0 * benzene
+            else:
+                bondValency =  single + 2 * allDouble + 3 * triple + 3.0/2.0 * benzene
+            filledValency =  atom.radicalElectrons[0] + bondValency
+            # print index, atom, filledValency
 
-                if num_of_Tbonds == 1:
-                    atom.atomType = [atomTypes['St']]
-                elif num_of_Dbonds == 1:
-                    atom.atomType = [atomTypes['Sd']]
-                elif num_of_Sbonds >= 1:
-                    atom.atomType = [atomTypes['Ss']]
+            #For an atomtype to be known for certain, the valency must be filled
+            #within 1 of the total valency available
+            if filledValency >= valency[element] - 1:
+                for specificAtomType in element.specific:
+                    atomtypeFeatureList = specificAtomType.getFeatures()
+                    for molFeature, atomtypeFeature in zip(groupFeatures, atomtypeFeatureList):
+                        if atomtypeFeature == []:
+                            continue
+                        elif not molFeature in atomtypeFeature:
+                            break
+                    else:
+                        if specificAtomType is atomTypes['Oa'] or specificAtomType is atomTypes['Sa']:
+                            if atom.lonePairs == 3 or atom.radicalElectrons == 2:
+                                newAtomType = specificAtomType
+                                break
+                        else:
+                            newAtomType = specificAtomType
+                            break
 
-        #Take out explicit O or S if it is not labelled:
-        for ligand in atomsToRemove:
-            if ligand.label == '':
-                self.removeAtom(ligand)
+            #set the new atom type if the algorithm found one
+            if newAtomType and not newAtomType is claimedAtomType:
+                atom.atomType[0] = newAtomType
+                modified = True
+
+        return modified
+
 
 
