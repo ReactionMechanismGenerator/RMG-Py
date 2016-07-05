@@ -164,8 +164,8 @@ multiplicity 2
         soluteData = self.database.getSoluteDataFromGroups(species)
         self.assertTrue(soluteData is not None)
 
-    def testCorrectionGeneration(self):
-        "Test we can estimate solvation thermochemistry."
+    def testCorrectionGeneration298(self):
+        "Test we can estimate solvation thermochemistry at 298 K."
         self.testCases = [
         # solventName, soluteName, soluteSMILES, Hsolv, Gsolv
         ['water', 'acetic acid', 'C(C)(=O)O', -56500, -6700*4.184],
@@ -180,9 +180,9 @@ multiplicity 2
             species = Species(molecule=[Molecule(SMILES=smiles)])
             soluteData = self.database.getSoluteData(species)
             solventData = self.database.getSolventData(solventName)
-            solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)
-            self.assertAlmostEqual(solvationCorrection.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.enthalpy, H))  #0 decimal place, in 10kJ.
-            self.assertAlmostEqual(solvationCorrection.gibbs / 10000., G / 10000., 0, msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.gibbs, G))
+            solvationCorrection298 = self.database.getSolvationCorrection298(soluteData, solventData)
+            self.assertAlmostEqual(solvationCorrection298.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection298.enthalpy, H))  #0 decimal place, in 10kJ.
+            self.assertAlmostEqual(solvationCorrection298.gibbs / 10000., G / 10000., 0, msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection298.gibbs, G))
 
     def testInitialSpecies(self):
         " Test we can check whether the solvent is listed as one of the initial species in various scenarios "
@@ -284,6 +284,48 @@ multiplicity 2
         solventlibrary.loadEntry(index=3, label='hexadecane', solvent=solventdata)
         self.assertFalse(solventlibrary.entries['hexadecane'].data.inCoolProp)
         self.assertTrue(solventlibrary.entries['hexadecane'].data.NameinCoolProp is None)
+
+    def testSoluteKfactors(self):
+        " Test we can get correct coefficients for the solute's K-factor formula"
+
+        # Test O2 in water
+        spc = Species().fromSMILES('[O][O]')
+        spc.SolventNameinCoolProp = 'water'
+        spc.solventData = self.database.getSolventData('water')
+        soluteData = self.database.getSoluteData(spc)
+        Kfactor = self.database.getSoluteKfactorCoefficients(spc, soluteData)
+        self.assertAlmostEqual(Kfactor.linear, 0.1092, 3)
+        self.assertAlmostEqual(Kfactor.quadratic[0] * 1e5, -2.6737, 3)
+        self.assertAlmostEqual(Kfactor.quadratic[1], 1.9835, 3)
+        self.assertAlmostEqual(Kfactor.quadratic[2] * 1e-4, -3.2835, 3)
+
+        # Test methane in water
+        spc = Species().fromSMILES('C')
+        spc.SolventNameinCoolProp = 'water'
+        spc.solventData = self.database.getSolventData('water')
+        soluteData = self.database.getSoluteData(spc)
+        Kfactor = self.database.getSoluteKfactorCoefficients(spc, soluteData)
+        self.assertAlmostEqual(Kfactor.linear, 0.1130, 3)
+        self.assertAlmostEqual(Kfactor.quadratic[0] * 1e5, -3.8270, 3)
+        self.assertAlmostEqual(Kfactor.quadratic[1], 2.7953, 3)
+        self.assertAlmostEqual(Kfactor.quadratic[2] * 1e-4, -4.7000, 3)
+
+    def testSolvationCorrection(self):
+        " Test we can get the solvation correction at the specified temperature"
+
+        # Test O2 in water
+        spc = Species().fromSMILES('[O][O]')
+        spc.SolventNameinCoolProp = 'water'
+        spc.solventData = self.database.getSolventData('water')
+        soluteData = self.database.getSoluteData(spc)
+
+        Tlist = [298., 350., 400., 450., 500., 550., 600.]
+        dGsolv_list = [6.38, 8.73, 9.33, 8.96, 7.95, 6.19, 3.20] # in kJ/mol
+
+        for i in range(len(Tlist)):
+            correction = self.database.getSolvationCorrection(spc, soluteData, Tlist[i])
+            self.assertAlmostEqual(correction.gibbs / 1000., dGsolv_list[i], 1)
+            self.assertAlmostEqual((correction.enthalpy - Tlist[i] * correction.entropy) / 1000., dGsolv_list[i], 1)
 
 #####################################################
 

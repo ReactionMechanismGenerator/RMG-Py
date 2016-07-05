@@ -146,10 +146,10 @@ class Species(rmgpy.species.Species):
         if Species.solventData and not "Liquid thermo library" in thermo0.comment:
             #logging.info("Making solvent correction for {0}".format(Species.solventName))
             soluteData = database.solvation.getSoluteData(self)
-            solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
+            solvation_correction298 = database.solvation.getSolvationCorrection298(soluteData, Species.solventData)
             # correction is added to the entropy and enthalpy
-            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction298.entropy)
+            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction298.enthalpy)
             
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:

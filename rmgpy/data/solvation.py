@@ -35,10 +35,13 @@
 import os.path
 import math
 import logging
+import numpy
 import rmgpy.constants as constants
 from rmgpy.species import Species
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
+from CoolProp.CoolProp import PropsSI
+import rmgpy.quantity as quantity
 
 from rmgpy.molecule import Molecule, Atom, Bond, Group, atomTypes
 
@@ -197,7 +200,18 @@ class SolvationCorrection():
         self.enthalpy = enthalpy
         self.entropy = entropy
         self.gibbs = gibbs
-            
+
+class KfactorCoefficients():
+    """
+    Stores the 4 coefficients for the following K-factor relationships and the transition temperature T_transition:
+    298 K <= T <= T_transition : 2nd order polynomial, Tln(K-factor) = A * (rho - rho_c)^2 + B * (rho - rho_c) + C
+    T_transition <= T <= T_c : linear relationship, Tln(K-factor) = D * (rho - rho_c)
+    """
+    def __init__(self, A=None, B=None, C=None, D=None, T_transition=None):
+        self.quadratic = [A, B, C]
+        self.linear = D
+        self.T_transition = T_transition
+
 class SoluteData():
     """
     Stores Abraham parameters to characterize a solute
@@ -944,7 +958,7 @@ class SolvationDatabase(object):
         delS = (delH-delG)/298.
         return delS
     
-    def getSolvationCorrection(self, soluteData, solventData):
+    def getSolvationCorrection298(self, soluteData, solventData):
         """ 
         Given a soluteData and solventData object, calculates the enthalpy, entropy,
         and Gibbs free energy of solvation at 298 K. Returns a SolvationCorrection
@@ -977,3 +991,120 @@ class SolvationDatabase(object):
             else:
                 logging.info('One of the initial species must be the solvent with the same string name')
                 raise Exception('One of the initial species must be the solvent with the same string name')
+
+    def getSoluteKfactorCoefficients(self, species, soluteData):
+        """
+        Given the instance of the Species and SoluteData for the solute species, it returns the relevant coefficients for the relationship between
+        T*ln(K-factor) vs. rho - rho_c by using the Abraham LSER, the Mintz LSER, the linear relationship of Tln(K-factor) vs.
+        rho - rho_c near the critical temperature, and the critical limit of the K-factor. (K-factor = 1 at the critical point of the solvent)
+
+        First, it uses the Abraham and Mintz LSERs to calculate the dGsolv, dHsolv and dSsolv at 298 K and uses these values
+        to calculate dGsolv at T = T_limit (350 K) by assuming dHsolv and dSsolv are constant. Then it calculates K-factor @ T_limit
+        by using the following eqn:  dGsol(T) = R * T * ln( K-factor(T) * Pvap(T) / (R * T * rho(T)) )
+        For T > T_limit, it uses the extrapolated K-factor at T_limit and the critical limit of K-factor to calculate the slope
+        for the linear relationship of Tln(K-factor) vs. rho - rho_c. The y-intercept is zero.
+        Finally, in order to make the curve smooth, it fits the Tln(K-factor) vs. rho - rho_c to a 2nd order polynomial
+        from 298 K to T_transition (380 K) by using the two points at 298 K (from Abraham LSER) and T_transition (from the previously derived linear
+        model) and the linear slope at T_transition. For temperature above T_transition up to the critical temperature, it uses
+        the linear relationship.
+        The final relationships are:
+                298 K < T < T_transition : 2nd order polynomial, Tln(K-factor) = A * (rho - rho_c)^2 + B * (rho - rho_c) + C
+                T_transition < T < T_c : linear relationship, Tln(K-factor) = D * (rho - rho_c)
+                @ 298 K: 298*ln(K-factor(298, Abraham)) = A * (rho(298) - rho_c)^2 + B * (rho(298) - rho_c) + C
+                @ T_transition: D * (rho(T_transition) - rho_c) = A * (rho(T_transition) - rho_c)^2 + B * (rho(T_transition) - rho_c) + C
+                @ T_transition: D = 2 * A * (rho(T_transition) - rho_c) + B
+                * The curve is smooth and continuous at T_transition
+
+        * All critical points refer to the critical point of the solvent
+        rho = molar density of the solvent [=] mol / m^3
+        rho_c = critical molar density of the solvent [=] mol / m^3
+        K-factor = y_solute / x_solute
+        y_solute = mole fraction of the solute in a gas phase at equilibrium in a binary dilute mixture
+        x_solute = mole fraction of the solute at equilibrium in a binary dilute mixture
+        Pvap = vapor pressure of the solvent [=] Pa
+        """
+
+        solvationCorrection298 = self.getSolvationCorrection298(soluteData, species.solventData)
+        dGsolv298 = solvationCorrection298.gibbs # the Gibbs free energy of solvation, at 298K, in J/mol
+        dHsolv298 = solvationCorrection298.enthalpy # the enthalpy of solvation, at 298K, in J/mol
+        dSsolv298 = solvationCorrection298.entropy # the entropy of solvation, at 298K, in J/mol/K
+        solventName = species.SolventNameinCoolProp
+        rho_c = PropsSI('rhomolar_critical', solventName) # the critical molar density of the solvent, in mol/m^3
+
+        # 1. Use the Abraham and Mintz LSERs to extrapolate the K-factor at  T = T_limit
+        T_limit = 350. # the upper temperature limit for using the constant dHsolv and dSsolv assumptions
+        rho = PropsSI('Dmolar', 'T', T_limit, 'Q', 0, solventName)# the molar density of the solvent, in mol/m^3
+        Pvap = PropsSI('P', 'T', T_limit, 'Q', 0, solventName) # the vapor pressure of the solvent, in Pa
+        dGsolv = dHsolv298 - T_limit * dSsolv298 # the free energy of solvation, in J/mol
+        K = math.exp(dGsolv / (T_limit * constants.R)) / Pvap * constants.R * T_limit * rho # K-factor
+        x = T_limit * math.log(K) # Tln(K-factor), in K
+
+        # 2. Use the extrapolated point at T_limit and the critical limit of K-factor to find the linear relationship of Tln(K-factor) = D * (rho - rho_c) for T_transition < T < T_c
+        D = x / (rho - rho_c) # slope of the linear relationship, in K*m^3/mol
+
+        # 3. Find the 2nd order polynomial for 298 K < T < T_transition
+
+        # 3-1. Find the Tln(K-factor) value at T = 298 K
+        rho298 = PropsSI('Dmolar', 'T', 298, 'Q', 0, solventName)# the molar density of the solvent, in mol/m^3
+        Pvap298 = PropsSI('P', 'T', 298, 'Q', 0, solventName) # the vapor pressure of the solvent, in Pa
+        K298 = math.exp(dGsolv298 / (298. * constants.R)) / Pvap298 * constants.R * 298. * rho298 # K-factor
+        x298 = 298. * math.log(K298) # Tln(K-factor), in K
+
+        # 3-2. Find the Tln(K-factor) value at T = T_transition
+        T_transition = 380. # the transition temperature, in K
+        rho_transition = PropsSI('Dmolar','T',T_transition,'Q',0,solventName) # the molar density of the solvent, in mol/m^3
+        x_transition = D * (rho_transition - rho_c) # Tln(K-factor), in K
+
+        # 3-3. Since the 2nd order polynomial is linear, the exact solution can be found
+        A_matrix = [ [(rho298 - rho_c)**2., rho298 - rho_c, 1.],
+              [(rho_transition - rho_c)**2., rho_transition - rho_c, 1.],
+              [2.*(rho_transition - rho_c), 1., 0.] ]
+        b_vector = [ [x298], [x_transition], [D] ]
+        coeff, residues, ranks, s = numpy.linalg.lstsq(A_matrix, b_vector)
+
+        coefficients = KfactorCoefficients()
+        coefficients.quadratic = [float(coeff[0]), float(coeff[1]), float(coeff[2])]
+        coefficients.linear = D
+        coefficients.T_transition = quantity.ScalarQuantity(T_transition, 'K')
+
+        return coefficients
+
+    def getSolvationCorrection(self, species, soluteData, T):
+        """
+        Given the instances of Species, SoluteData, and the temperature, it returns the enthalpy, entropy,
+        and Gibbs free energy of solvation at the specified temperature T. Returns a SolvationCorrection object.
+        """
+
+        # Calculate the K-factor using the appropriate polynomial at the specified temperature, T.
+        # If T < T_transition, the 2nd order polynomial of Tln(K-factor) vs. drho is used.
+        # If T > = T_transition, the linear equation is used. If T = T_critical, K-factor = 1.
+        KfactorCoeff = self.getSoluteKfactorCoefficients(species, soluteData)
+        [A, B, C] = KfactorCoeff.quadratic # 2nd order polynomial coefficients
+        D = KfactorCoeff.linear # linear fit slope
+        solventName = species.SolventNameinCoolProp
+        T_c = PropsSI('T_critical', solventName) # critical temperature of the solvent, in K
+        rho_c = PropsSI('rhomolar_critical', solventName) # the critical molar density of the solvent, in mol/m^3
+        rho = PropsSI('Dmolar', 'T', T, 'Q', 0, solventName) # molar density of the solvent, in mol/m^3
+        drho = rho - rho_c # rho - rho_c, in mol/m^3
+        Pvap = PropsSI('P', 'T', T, 'Q', 0, solventName) # vapor pressure of the solvent, in Pa
+        if T < KfactorCoeff.T_transition.value_si:
+            Kfactor = math.exp((A * (drho ** 2.) + B * drho + C) / T)
+        elif T == T_c:
+            Kfactor = 1.
+        else:
+            Kfactor = math.exp(D * drho / T)
+
+        # Calculate the solvation free energies from K-factor list. The formula is:
+        # dGsolv(T) = R * T * ln( K-factor(T) * Pvap(T) / (R * T * rho(T)) )
+        # The solvation free energy is evaluated at the saturation curve, so it is only a function of temperature.
+        dGsolv = constants.R * T * math.log(Kfactor * Pvap / (constants.R * T * rho))
+
+        # The entropy of solvation is set equal to the value at 298 K. The enthalpy of solvation is
+        # calulated so that (dGsolv = dH - T * dS) is satisfied at the specified temperature.
+        correction = SolvationCorrection(0.0, 0.0, 0.0)
+        correction298 = self.getSolvationCorrection298(soluteData, species.solventData)
+        correction.entropy = correction298.entropy
+        correction.gibbs = dGsolv
+        correction.enthalpy = dGsolv + T * correction.entropy
+
+        return correction
