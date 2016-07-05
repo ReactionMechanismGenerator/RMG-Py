@@ -59,6 +59,9 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
+    cpdef bint isOxygen(self)
+
+    cpdef bint isSulfur(self)
 ################################################################################
 
 cdef class GroupBond(Edge):

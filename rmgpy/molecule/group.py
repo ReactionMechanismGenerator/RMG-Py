@@ -386,6 +386,26 @@ class GroupAtom(Vertex):
             if group.charge: return False
         # Otherwise self is in fact a specific case of other
         return True
+
+    def isOxygen(self):
+        """
+        Return ``True`` if the atom represents an oxygen atom or ``False`` if
+        not.
+        """
+        allOxygens = [atomTypes['O']] + atomTypes['O'].specific
+        checkList=[x in allOxygens for x in self.atomType]
+
+        return not False in checkList
+
+    def isSulfur(self):
+        """
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if
+        not.
+        """
+        allSulfur = [atomTypes['S']] + atomTypes['S'].specific
+        checkList=[x in allSulfur for x in self.atomType]
+
+        return not False in checkList
 ################################################################################
 
 class GroupBond(Edge):
