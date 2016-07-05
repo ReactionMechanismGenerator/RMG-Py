@@ -7,6 +7,7 @@
 DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
 DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
 RDKIT_VERSION=$(shell python -c 'import rdkit; print rdkit.__version__')
+COOLPROP=$(shell python -c 'import CoolProp; print CoolProp.__file__')
 
 .PHONY : all minimal main solver cantherm clean decython documentation QM mopac_travis
 
@@ -21,18 +22,24 @@ main:
 	@ echo "Checking you have PyDQED..."
 	@ python -c 'import pydqed; print pydqed.__file__'
 	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
+	@ echo "Checking you have the CoolProp module"
+ifneq ($(COOLPROP),)
+	@ echo "CoolProp module found."
+else
+	$(error CoolProp module cannot be found. Please check if you have updated the conda environment. (Use the following command to update: conda env update -f environment_[operatingSystemName].yml));
+endif
 
 solver:
 
 ifneq ($(DASPK),)
 	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
-	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi 
+	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi
 else ifneq ($(DASSL),)
 	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
 	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
 else
 	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
-	@ python -c 'import pydas.dassl' 
+	@ python -c 'import pydas.dassl'
 endif
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
 
@@ -62,7 +69,7 @@ clean:
 	rm -rf build/
 	find . -name '*.so' -exec rm -f '{}' \;
 	find . -name '*.pyc' -exec rm -f '{}' \;
-	
+
 clean-solver:
 	rm -r build/pyrex/rmgpy/solver/
 	rm -r build/build/pyrex/rmgpy/solver/
@@ -83,7 +90,7 @@ else
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 endif
 test-database:
-	nosetests -v -d testing/databaseTest.py	
+	nosetests -v -d testing/databaseTest.py
 
 eg1: noQM
 	mkdir -p testing/eg1
@@ -134,7 +141,7 @@ eg7: all
 	cp examples/rmg/gri_mech_rxn_lib/input.py testing/eg7/input.py
 	@ echo "Running eg7: gri_mech_rxn_lib example"
 	python rmg.py testing/eg7/input.py
-	
+
 scoop: noQM
 	mkdir -p testing/scoop
 	rm -rf testing/scoop/*
