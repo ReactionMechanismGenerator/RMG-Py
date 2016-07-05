@@ -228,7 +228,7 @@ cdef class Wilhoit(HeatCapacityModel):
         procedure requires an optimization, using the ``fminbound`` function
         in the ``scipy.optimize`` module. The data consists of a set
         of heat capacity points `Cpdata` in J/mol*K at a given set of 
-        temperatures `Tdata` in K, along with the enthalpy `H298` in kJ/mol and
+        temperatures `Tdata` in K, along with the enthalpy `H298` in J/mol and
         entropy `S298` in J/mol*K at 298 K. The linearity of the molecule, 
         number of vibrational frequencies, and number of internal rotors 
         (`linear`, `Nfreq`, and `Nrotors`, respectively) is used to set the 
