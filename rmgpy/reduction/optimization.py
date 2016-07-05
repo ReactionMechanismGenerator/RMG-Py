@@ -31,6 +31,7 @@
 import numpy as np
 
 from reduction import reduceModel
+from output import writeModel
 from rmgpy.scoop_framework.util import logger as logging
 
 def optimize(target_label, reactionModel, rmg, reactionSystemIndex, error, orig_observable):
@@ -111,9 +112,14 @@ def bisect(low, high, error, targets, reactionModel, rmg, reactionSystemIndex, o
         if isInvalid(devs, error):
             high = midpoint
         else:
+            if len(newImportantReactions) == 0:
+                logging.error('Model reduction resulted in a model with 0 reactions.')
+                logging.error('Perhaps change reactor conditions to allow for more adequate reduction. Exiting...')
+                break
             low = midpoint
             importantReactions = newImportantReactions
             final_devs = devs
+            writeModel(rmg, chemkin_name='chem_reduced_{}.inp'.format(len(importantReactions)))
             
         if np.abs((midpoint - old_trial) / old_trial) < THRESHOLD:
             break
