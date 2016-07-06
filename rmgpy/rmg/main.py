@@ -42,6 +42,7 @@ import numpy
 import csv
 import gc
 import copy
+from CoolProp.CoolProp import PropsSI
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
@@ -378,7 +379,13 @@ class RMG(util.Subject):
             Species.rxnTemp = self.reactionSystems[0].T
             logging.info("Setting solvent data for {0}".format(self.solvent))
             if Species.isSolventinCoolProp:
-                logging.info("Found {0} in CoolProp: More accurate temperature dependence is used for solvation free energy".format(self.solvent))
+                T_c = PropsSI('T_critical', Species.SolventNameinCoolProp) # critical temperature of the solvent
+                if Species.rxnTemp.value_si > T_c:
+                    logging.info("\nWarning: the reactor temperature is above the critical temperature of the solvent, {0} K.\n"
+                                 "CoolProp cannot be used above the critical temperature. Switching to the linear tempearture dependence assumption for solvation free energy...\n".format(T_c))
+                    Species.isSolventinCoolProp = False
+                else:
+                    logging.info("Found {0} in CoolProp: More accurate temperature dependence is used for solvation free energy".format(self.solvent))
             else:
                 logging.info("{0} cannot be found in CoolProp: Linear temperature dependence is assumed for solvation free energy".format(self.solvent))
     
