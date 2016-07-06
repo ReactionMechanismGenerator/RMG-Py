@@ -946,25 +946,6 @@ class Group(Graph):
                    atomTypes['Si']:4
                    }
 
-        #see if this is a group we can check, must not have any OR groups in
-        #its bonds or atomtypes
-        viableToCheck = True
-        for atom in self.atoms:
-            if len(atom.atomType) > 1:
-                viableToCheck = False
-                break
-            elif len(atom.radicalElectrons) > 1:
-                viableToCheck = False
-                break
-            elif len(atom.lonePairs) > 1:
-                viableToCheck = False
-                break
-            for bond in atom.bonds.values():
-                if len(bond.order) > 1:
-                    viableToCheck = False
-                    break
-        if not viableToCheck: return modified
-
         #list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
         specifics= [elementLabel for elementLabel in allElements if not elementLabel in nonSpecifics]
         for index, atom in enumerate(self.atoms):
@@ -1035,23 +1016,6 @@ class Group(Graph):
 
         atomsToAddTo=[]
 
-        viableToCheck = True
-        for atom in self.atoms:
-            if len(atom.atomType) > 1:
-                viableToCheck = False
-                break
-            elif len(atom.radicalElectrons) > 1:
-                viableToCheck = False
-                break
-            elif len(atom.lonePairs) > 1:
-                viableToCheck = False
-                break
-            for bond in atom.bonds.values():
-                if len(bond.order) > 1:
-                    viableToCheck = False
-                    break
-        if not viableToCheck: return modified
-
         for index, atom in enumerate(self.atoms):
             claimedAtomType = atom.atomType[0]
             if claimedAtomType is atomTypes['CO'] or claimedAtomType is atomTypes['CS']:
@@ -1071,3 +1035,45 @@ class Group(Graph):
             self.addBond(newBond)
 
         return modified
+
+    def standardizeGroup(self):
+        """
+        This function modifies groups to make them have a standard AdjList form.
+
+        Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
+        have explicit Od/Sd ligands. Other functions can be added as necessary
+
+        We also only check when there is exactly one atomType, one bondType, one
+        radical setting. For any group where there are wildcards or multiple
+        attributes, we do not apply this check.
+
+        Returns a 'True' if the group was modified otherwise returns 'False'
+        """
+
+        modified = False
+
+        #see if this is a group we can check, must not have any OR groups in
+        #its bonds or atomtypes
+        viableToCheck = True
+        for atom in self.atoms:
+            if len(atom.atomType) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.radicalElectrons) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.lonePairs) > 1:
+                viableToCheck = False
+                break
+            for bond in atom.bonds.values():
+                if len(bond.order) > 1:
+                    viableToCheck = False
+                    break
+        if not viableToCheck: return modified
+
+        #If viable then we apply current conventions:
+        checkList=[]
+        checkList.append(self.standardizeAtomType())
+        checkList.append(self.addExplicitLigands())
+
+        return True in checkList

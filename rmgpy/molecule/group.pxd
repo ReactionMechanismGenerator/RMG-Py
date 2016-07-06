@@ -147,3 +147,5 @@ cdef class Group(Graph):
     cpdef bint standardizeAtomType(self)
 
     cpdef bint addExplicitLigands(self)
+
+    cpdef bint standardizeGroup(self)
