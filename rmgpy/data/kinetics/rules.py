@@ -573,6 +573,8 @@ class KineticsRules(Database):
                     # Check whether the exact rate rule for the original template (most specific
                     # leaves) were found or not.
                     matchedLeaves = getTemplateLabel(t)
+                    if kinetics.comment:
+                        kinetics.comment += '\n'
                     if matchedLeaves == originalLeaves:
                         if 'Average' in kinetics.comment:
                             kinetics.comment += 'Estimated using an average'
@@ -580,8 +582,6 @@ class KineticsRules(Database):
                             kinetics.comment += 'Exact match found' 
                     else:
                     # Using a more general node to estimate original template
-                        if kinetics.comment:
-                            kinetics.comment += '\n'
                         kinetics.comment +='Estimated using template ' + matchedLeaves
                             
                 else:
