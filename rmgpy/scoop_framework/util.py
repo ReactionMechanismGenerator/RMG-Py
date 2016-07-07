@@ -41,7 +41,7 @@ logger = None
 
 try:
     from scoop import futures
-    from scoop.futures import map
+    from scoop.futures import map, submit
     from scoop import shared
     from scoop import logger as scooplogger
     logger = scooplogger
@@ -49,7 +49,7 @@ try:
 except ImportError:
     import logging as logging
     logger = logging.getLogger()
-    logging.debug("Could not properly import SCOOP.")
+    logger.debug("Could not properly import SCOOP.")
 
 def warnScoopStartedProperly(func):
     @wraps(func)
@@ -125,14 +125,14 @@ def broadcast(obj, key):
     kwargs = {key : obj}
     try:
         if shared.getConst(key):
-            logging.debug('An object with the key {} was already broadcasted.'.format(key))
+            logger.debug('An object with the key {} was already broadcasted.'.format(key))
         else:
             shared.setConst(**kwargs)
     except NameError, e:
         """
         Name error will be caught when the SCOOP library is not imported properly.
         """
-        logging.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
+        logger.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
 
 @warnScoopStartedProperly
 def get(key):    
@@ -148,7 +148,24 @@ def get(key):
         """
         Name error will be caught when the SCOOP library is not imported properly.
         """
-        logging.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
+        logger.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
 
 def map_(*args, **kwargs):
     return map(WorkerWrapper(args[0]), *args[1:], **kwargs)
+
+def submit_(func, *args, **kwargs):
+    """
+    Task submission of a function.
+
+    returns the return value of the called function, or
+    when SCOOP is loaded, the future object.
+    """
+    try:
+        task = submit(WorkerWrapper(func), *args, **kwargs)#returns immediately
+        return task
+    except Exception, e:
+        """
+        Name error will be caught when the SCOOP library is not imported properly.
+        """
+        logger.debug('SCOOP not loaded. Submitting serial mode.')
+        return func(*args, **kwargs)
