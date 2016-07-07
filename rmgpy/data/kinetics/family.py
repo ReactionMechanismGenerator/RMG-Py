@@ -1906,4 +1906,29 @@ class KineticsFamily(Database):
             return (None, None)
         else:
             raise Exception('You have {0} reactants, which is unexpected!'.format(len(reactants)))
-
+        
+    def addAtomLabelsForReaction(self, reaction):
+        """
+        Apply atom labels on a reaction using the appropriate atom labels from this this reaction family.  
+        The reaction's reactants and products must be lists of Molecule objects.
+        The reaction is modified to use Species objects containing the labeled molecules after this function.
+        """
+        reactants = reaction.reactants[:]
+        products = reaction.products[:]
+       
+        labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(reactants, products)
+        if not labeledReactants and not labeledProducts:
+            if len(reactants) > 1:
+                # Check for swapped reactants if there are more than 1
+                labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(list(reversed(reactants)), products)
+        if not labeledReactants and not labeledProducts:
+            raise Exception("RMG could not label atoms for this reaction in {}.".format(self.label))
+        
+        labeledProducts_spcs = []
+        labeledReactants_spcs = []
+        for labeledProduct in labeledProducts:
+            labeledProducts_spcs.append(Species(molecule=[labeledProduct]))
+        reaction.products = labeledProducts_spcs
+        for labeledReactant in labeledReactants:
+            labeledReactants_spcs.append(Species(molecule=[labeledReactant]))
+        reaction.reactants = labeledReactants_spcs
