@@ -21,7 +21,6 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     from rmgpy.rmg.model import Species
 
     thermo = None
-    solvationdatabase = getDB('solvation')
 
     # Always convert to Wilhoit so we can compute E0
     if isinstance(thermo0, Wilhoit):
@@ -42,6 +41,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
 
     # Add on solvation correction
     if Species.solventData and not "Liquid thermo library" in thermo0.comment:
+        solvationdatabase = getDB('solvation')
         #logging.info("Making solvent correction for {0}".format(Species.solventName))
         soluteData = solvationdatabase.getSoluteData(spc)
         solvation_correction = solvationdatabase.getSolvationCorrection(soluteData, Species.solventData)
