@@ -272,6 +272,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 ascendParent = ascendParent.parent
                 nose.tools.assert_true(ascendParent is not None, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=child, family=family_name))
                 nose.tools.assert_true(child in ascendParent.children, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=nodeName, family=family_name))
+                nose.tools.assert_false(child is ascendParent, "Group {group} in {family} family is a parent to itself".format(group=nodeName, family=family_name))
 
     def kinetics_checkGroupsNonidentical(self, family_name):
         """
@@ -452,6 +453,7 @@ The following adjList may have atoms in a different ordering than the input file
                 ascendParent = ascendParent.parent
                 nose.tools.assert_true(ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name))
                 nose.tools.assert_true(child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name))
+                nose.tools.assert_false(child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name))
     
     def general_checkGroupsNonidentical(self, group_name, group):
         """
