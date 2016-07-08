@@ -324,12 +324,12 @@ class ThermoLibrary(Database):
         
         # Internal checks for adding entry to the thermo library
         if label in self.entries.keys():
-            raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library.  Please correct your library.'.format(label))
+            raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library {1}.  Please correct your library.'.format(label, self.name))
         
         for entry in self.entries.values():
             if molecule.isIsomorphic(entry.item):
                 if molecule.multiplicity == entry.item.multiplicity:
-                    raise DatabaseError('Adjacency list and multiplicity of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
+                    raise DatabaseError('Adjacency list and multiplicity of {0} matches that of existing molecule {1} in thermo library {2}.  Please correct your library.'.format(label, entry.label, self.name))
         
         self.entries[label] = Entry(
             index = index,
