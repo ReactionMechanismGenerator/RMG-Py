@@ -83,7 +83,7 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
-    def getThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
+    def getThermoData(self, database, thermoClass=NASA):
         """
         Returns a `thermoData` object of the current Species object.
 
@@ -94,16 +94,14 @@ class Species(rmgpy.species.Species):
         if self.thermo:
             self.processThermoData(database, self.thermo, thermoClass)
         else:
-            self.generateThermoData(database, thermoClass, quantumMechanics)
+            self.generateThermoData(database, thermoClass)
 
         return self.thermo
 
-    def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
+    def generateThermoData(self, database, thermoClass=NASA):
         """
         Generates thermo data, first checking Libraries, then using either QM or Database.
         
-        If quantumMechanics is not None, it is asked to calculate the thermo.
-        Failing that, the database is used.
         
         The database generates the thermo data for each structure (resonance isomer),
         picks that with lowest H298 value.
@@ -114,7 +112,7 @@ class Species(rmgpy.species.Species):
         Result stored in `self.thermo` and returned.
         """
 
-        thermo0 = database.thermo.getThermoData(self, trainingSet=None, quantumMechanics=quantumMechanics)
+        thermo0 = database.thermo.getThermoData(self, trainingSet=None)
         
         return self.processThermoData(database, thermo0, thermoClass)
 
@@ -799,7 +797,7 @@ class CoreEdgeReactionModel:
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in self.newSpeciesList:
-            spec.getThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.getThermoData(database)
             spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
@@ -1405,7 +1403,7 @@ class CoreEdgeReactionModel:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, seedMechanism.label))
 
         for spec in self.newSpeciesList:            
-            if spec.reactive: spec.getThermoData(database, quantumMechanics=self.quantumMechanics)
+            if spec.reactive: spec.getThermoData(database)
             spec.generateTransportData(database)
             self.addSpeciesToCore(spec)
 
@@ -1415,7 +1413,7 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
-                    spec.getThermoData(database, quantumMechanics=self.quantumMechanics)
+                    spec.getThermoData(database)
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
         
@@ -1472,7 +1470,7 @@ class CoreEdgeReactionModel:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, reactionLibrary.label))
        
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.getThermoData(database, quantumMechanics=self.quantumMechanics)
+            if spec.reactive: spec.getThermoData(database)
             spec.generateTransportData(database)
             self.addSpeciesToEdge(spec)
 

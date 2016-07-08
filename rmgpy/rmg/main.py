@@ -212,7 +212,6 @@ class RMG(util.Subject):
         self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
         
         if self.quantumMechanics:
-            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
             self.reactionModel.quantumMechanics = self.quantumMechanics
             
     def loadThermoInput(self, path=None):
@@ -227,7 +226,6 @@ class RMG(util.Subject):
         readThermoInputFile(path, self)
         
         if self.quantumMechanics:
-            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
             self.reactionModel.quantumMechanics = self.quantumMechanics
         
     def checkInput(self):
@@ -365,10 +363,6 @@ class RMG(util.Subject):
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
-        
-        # Do any necessary quantum mechanics startup
-        if self.quantumMechanics:
-            self.quantumMechanics.initialize()
 
         # Load databases
         self.loadDatabase()
@@ -463,7 +457,7 @@ class RMG(util.Subject):
                         """.format(spec.label))
                         
             for spec in self.initialSpecies:
-                spec.getThermoData(self.database, quantumMechanics=self.quantumMechanics)
+                spec.getThermoData(self.database)
                 spec.generateTransportData(self.database)
                 
             # Add nonreactive species (e.g. bath gases) to core first

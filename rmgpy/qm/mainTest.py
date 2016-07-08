@@ -14,37 +14,37 @@ from rmgpy.qm.gaussian import Gaussian
 from rmgpy.qm.mopac import Mopac
 
 class TestQMSettings(unittest.TestCase):
-	"""
-	Contains unit tests for the QMSettings class.
-	"""
-	
-	def setUp(self):
-		"""
-		A function run before each unit test in this class.
-		"""
-		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-		
-		self.settings1 = QMSettings(software = 'mopac',
-								   method = 'pm3',
-								   fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-								   scratchDirectory = None,
-								   onlyCyclics = False,
-								   maxRadicalNumber = 0,
-								   )
-		
-		self.settings2 = QMSettings()
+    """
+    Contains unit tests for the QMSettings class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+        
+        self.settings1 = QMSettings(software = 'mopac',
+                                   method = 'pm3',
+                                   fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+                                   scratchDirectory = None,
+                                   onlyCyclics = False,
+                                   maxRadicalNumber = 0,
+                                   )
+        
+        self.settings2 = QMSettings()
 
-	def testCheckAllSet(self):
-		"""
-		Test that checkAllSet() works correctly.
-		"""
-		try:
-			self.settings1.checkAllSet()
-		except AssertionError:
-			self.fail("checkAllSet() raised unexpected AssertionError.")
-		
-		with self.assertRaises(AssertionError):
-			self.settings2.checkAllSet()
+    def testCheckAllSet(self):
+        """
+        Test that checkAllSet() works correctly.
+        """
+        try:
+            self.settings1.checkAllSet()
+        except AssertionError:
+            self.fail("checkAllSet() raised unexpected AssertionError.")
+        
+        with self.assertRaises(AssertionError):
+            self.settings2.checkAllSet()
 
 class TestQMCalculator(unittest.TestCase):
 	"""

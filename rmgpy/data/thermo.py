@@ -47,6 +47,7 @@ from rmgpy.molecule import Molecule, Atom, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
 
+from rmgpy.scoop_framework.util import get
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
@@ -323,12 +324,12 @@ class ThermoLibrary(Database):
         
         # Internal checks for adding entry to the thermo library
         if label in self.entries.keys():
-            raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library.  Please correct your library.'.format(label))
+            raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library {1}.  Please correct your library.'.format(label, self.name))
         
         for entry in self.entries.values():
             if molecule.isIsomorphic(entry.item):
                 if molecule.multiplicity == entry.item.multiplicity:
-                    raise DatabaseError('Adjacency list and multiplicity of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
+                    raise DatabaseError('Adjacency list and multiplicity of {0} matches that of existing molecule {1} in thermo library {2}.  Please correct your library.'.format(label, entry.label, self.name))
         
         self.entries[label] = Entry(
             index = index,
@@ -763,7 +764,7 @@ class ThermoDatabase(object):
         )
 
 
-    def getThermoData(self, species, trainingSet=None, quantumMechanics=None):
+    def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -772,11 +773,17 @@ class ThermoDatabase(object):
         
         Returns: ThermoData
         """
+        from rmgpy.rmg.input import getInput
         
         thermo0 = None
         
         thermo0 = self.getThermoDataFromLibraries(species)
-        
+        try:
+            quantumMechanics = getInput('quantumMechanics')
+        except Exception, e:
+            logging.debug('Quantum Mechanics DB could not be found.')
+            quantumMechanics = None
+
         if thermo0 is not None:
             logging.info("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"

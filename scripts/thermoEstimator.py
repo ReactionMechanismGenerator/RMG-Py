@@ -9,6 +9,8 @@ heat capacity data in RMG-database format.
 """
 
 import os.path
+from rmgpy import settings
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import writeThermoEntry
@@ -24,12 +26,14 @@ def runThermoEstimator(inputFile):
     rmg = RMG()
     rmg.loadThermoInput(inputFile)
     
-    # initialize and load the database as well as any QM settings
-    rmg.loadDatabase()
-    if rmg.quantumMechanics:
-        rmg.quantumMechanics.initialize()
+    rmg.database = RMGDatabase()
+    path = os.path.join(settings['database.directory'])
+
+    # forbidden structure loading
+    rmg.database.loadThermo(os.path.join(path, 'thermo'), rmg.thermoLibraries, depository=False)
    
     if rmg.solvent:
+        rmg.database.loadSolvation(os.path.join(path, 'solvation'))
         Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
         Species.solventName = rmg.solvent
         
@@ -38,7 +42,7 @@ def runThermoEstimator(inputFile):
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
     library = ThermoLibrary(name='Thermo Estimation Library')
     for species in rmg.initialSpecies:
-        species.getThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
+        species.getThermoData(rmg.database)
 
         library.loadEntry(
             index = len(library.entries) + 1,
