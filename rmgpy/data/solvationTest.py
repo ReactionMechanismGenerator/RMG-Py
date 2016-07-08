@@ -327,6 +327,12 @@ multiplicity 2
             self.assertAlmostEqual(correction.gibbs / 1000., dGsolv_list[i], 1)
             self.assertAlmostEqual((correction.enthalpy - Tlist[i] * correction.entropy) / 1000., dGsolv_list[i], 1)
 
+    def testSolventCriticalT(self):
+        " Test we can get the solvent's critical temperature"
+        SolventName = 'water'
+        T_c = self.database.getSolventCriticalT(SolventName)
+        self.assertEqual(T_c, 647.096)
+
 #####################################################
 
 if __name__ == '__main__':

@@ -1108,3 +1108,11 @@ class SolvationDatabase(object):
         correction.enthalpy = dGsolv + T * correction.entropy
 
         return correction
+
+    def getSolventCriticalT(self, SolventNameinCoolProp):
+        '''
+        Given the solvent's name in CoolProp, it returns the solvent's critical temperature in K.
+        '''
+        T_c = PropsSI('T_critical', SolventNameinCoolProp) # critical temperature of the solvent, in K
+
+        return T_c
