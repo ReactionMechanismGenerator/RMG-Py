@@ -41,16 +41,16 @@ def runThermoEstimator(inputFile):
     for species in rmg.initialSpecies:
         submit(species)
 
-    library = ThermoLibrary(name='Thermo Estimation Library')
-    for spc in rmg.initialSpecies:
-        library.loadEntry(
-            index = len(library.entries) + 1,
-            label = species.label,
-            molecule = species.molecule[0].toAdjacencyList(),
-            thermo = species.getThermoData().toThermoData(),
-            shortDesc = species.getThermoData().comment,
-        )
-    library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
+    # library = ThermoLibrary(name='Thermo Estimation Library')
+    # for spc in rmg.initialSpecies:
+    #     library.loadEntry(
+    #         index = len(library.entries) + 1,
+    #         label = species.label,
+    #         molecule = species.molecule[0].toAdjacencyList(),
+    #         thermo = species.getThermoData().toThermoData(),
+    #         shortDesc = species.getThermoData().comment,
+    #     )
+    # library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
     
     # Generate the thermo for all the species and write them to chemkin format as well as
     # ThermoLibrary format with values for H, S, and Cp's.
