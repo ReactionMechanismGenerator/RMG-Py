@@ -178,11 +178,11 @@ class MopacMol(QMMolecule, Mopac):
 
     #: Keywords that will be added at the top and bottom of the qm input file
     keywords = [
-                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym gnorm=0.0 nonr THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym gnorm=0.0 THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym gnorm=0.0 bfgs THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000 THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
                 ]
 
     def writeInputFile(self, attempt):
