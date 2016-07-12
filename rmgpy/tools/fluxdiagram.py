@@ -165,6 +165,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     graph.set_rankdir('LR')
     graph.set_fontname('sans')
     graph.set_fontsize('10')
+    
     # Add a node for each species
     for index in nodes:
         species = speciesList[index]
@@ -194,7 +195,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.add_edge(edge) 
     
     # Generate the coordinates for all of the nodes using the specified program
-    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))
+    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))[0]
     
     # Now iterate over the time points, setting the pen widths appropriately
     # This should preserve the coordinates of the nodes from frame to frame
@@ -492,13 +493,16 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
 
 def run(inputFile, speciesPath=None, useJava=False):
     
-    rmg = loadRMGJob(inputFile, useJava)
-        
+    rmg = loadRMGJob(inputFile, useJava=useJava)
+    
+    if speciesPath is None:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+    
     # Generate a flux diagram video for each reaction system
-    util.makeOutputSubdirectory('flux')
+    util.makeOutputSubdirectory(rmg.outputDirectory, 'flux')
     for index, reactionSystem in enumerate(rmg.reactionSystems):
         
-        util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+        util.makeOutputSubdirectory(rmg.outputDirectory, 'flux/{0:d}'.format(index+1))
         
         # If there is no termination time, then add one to prevent jobs from
         # running forever
