@@ -451,7 +451,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
     a speciesDict txt file, plus an optional chemkinOutput file.
     """
 
-    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, java)
+    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, generateImages=True, useJava=java)
 
     speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
     
