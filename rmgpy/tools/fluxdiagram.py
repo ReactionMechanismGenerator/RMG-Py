@@ -268,21 +268,17 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.write_png(os.path.join(outputDirectory, 'flux_diagram_{0:04d}.png'.format(frameNumber)))
             frameNumber += 1
     
-    # Use mencoder to stitch the PNG images together into a movie
+    # Use ffmpeg to stitch the PNG images together into a movie
     import subprocess
-    command = ('mencoder',
-        'mf://*.png',
-        '-mf',
-        'type=png:fps={0:d}'.format(framesPerSecond),
-        '-ovc',
-        'lavc',
-        '-lavcopts',
-        'vcodec=mpeg4',
-        '-oac',
-        'copy',
-        '-o',
-        'flux_diagram.avi',
-    )
+    
+    command = ['ffmpeg',
+               '-framerate', '{0:d}'.format(framesPerSecond), # Duration of each image
+               '-i', 'flux_diagram_%04d.png',                 # Input file format
+               '-c:v', 'mpeg4',                               # Encoder
+               '-r', '30',                                    # Video framerate
+               '-pix_fmt', 'yuv420p',                         # Pixel format
+               'flux_diagram.avi']                            # Output filename
+    
     subprocess.check_call(command, cwd=outputDirectory)
     
 ################################################################################
