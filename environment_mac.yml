@@ -33,3 +33,4 @@ dependencies:
   - mopac
   - graphviz
   - scoop
+  - ffmpeg
