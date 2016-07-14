@@ -17,7 +17,7 @@ import rmgpy.thermo
 import rmgpy.molecule
 import symmetry
 import qmdata
-from qmdata import CCLibData
+from qmdata import parseCCLibData
 from rmgpy.molecule import parser
 
 class Geometry:
@@ -296,13 +296,13 @@ class QMMolecule:
         
     def parse(self):
         """
-        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        Parses the results of the Mopac calculation, and returns a QMData object.
         """
         parser = self.getParser(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         radicalNumber = self.molecule.getRadicalCount()
-        qmData = CCLibData(cclibData, radicalNumber+1) # Should `radicalNumber+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
+        qmData = parseCCLibData(cclibData, radicalNumber+1) # Should `radicalNumber+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qmData
     
     def generateQMData(self):

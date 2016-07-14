@@ -8,7 +8,7 @@ from subprocess import Popen
 import re
 
 from rmgpy.molecule import Molecule
-from qmdata import CCLibData
+from qmdata import parseCCLibData
 from molecule import QMMolecule
 
 class Gaussian:
@@ -149,13 +149,13 @@ class Gaussian:
         
     def parse(self):
         """
-        Parses the results of the Gaussian calculation, and returns a CCLibData object.
+        Parses the results of the Gaussian calculation, and returns a QMData object.
         """
         parser = cclib.parser.Gaussian(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
+        qmData = parseCCLibData(cclibData, radicalNumber+1)
         return qmData
 
     

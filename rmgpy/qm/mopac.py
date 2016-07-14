@@ -6,7 +6,6 @@ from subprocess import Popen, PIPE
 import distutils.spawn
 
 from rmgpy.molecule import Molecule
-from qmdata import CCLibData
 from molecule import QMMolecule
 
 
@@ -252,7 +251,7 @@ class MopacMol(QMMolecule, Mopac):
                 return None
         result = self.parse() # parsed in cclib
         result.source = source
-        return result # a CCLibData object
+        return result
 
 
 class MopacMolPMn(MopacMol):
