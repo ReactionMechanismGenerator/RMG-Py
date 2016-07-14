@@ -3,7 +3,7 @@ import re
 import logging
 from rmgpy.quantity import Energy, Mass, Length, Frequency
 
-class QMData:
+class QMData(object):
     """
     General class for data extracted from a QM calculation
     """
