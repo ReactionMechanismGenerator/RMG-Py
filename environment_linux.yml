@@ -20,7 +20,7 @@ dependencies:
   - jinja2
   #- argparse # [py26]
   - pyparsing
-  - pydot
+  - pydot ==1.2.2
   - nose
   - coverage
   - guppy
@@ -34,3 +34,4 @@ dependencies:
   - graphviz
   - scoop
   - libgfortran ==1.0 # You may need to comment this out for mac osx
+  - ffmpeg

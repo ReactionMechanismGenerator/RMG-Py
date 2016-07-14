@@ -31,7 +31,7 @@ requirements:
     - openbabel
     - psutil
     - pydas >=1.0.2
-    - pydot 
+    - pydot ==1.2.2
     - pydqed >=1.0.1
     - pyparsing
     - python
@@ -65,7 +65,7 @@ requirements:
     - openbabel
     - psutil
     - pydas >=1.0.2
-    - pydot 
+    - pydot ==1.2.2
     - pydqed >=1.0.1
     - pyparsing
     - python
