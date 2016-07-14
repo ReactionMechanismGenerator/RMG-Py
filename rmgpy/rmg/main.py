@@ -373,7 +373,20 @@ class RMG(util.Subject):
             Species.solventName = self.solvent
             Species.solventStructure = self.database.solvation.getSolventStructure(self.solvent)
             diffusionLimiter.enable(Species.solventData, self.database.solvation)
+            Species.isSolventinCoolProp = self.database.solvation.isSolventinCoolProp(self.solvent)
+            Species.SolventNameinCoolProp = self.database.solvation.getSolventNameinCoolProp(self.solvent)
+            Species.rxnTemp = self.reactionSystems[0].T
             logging.info("Setting solvent data for {0}".format(self.solvent))
+            if Species.isSolventinCoolProp:
+                T_c = self.database.solvation.getSolventCriticalT(Species.SolventNameinCoolProp) # critical temperature of the solvent
+                if Species.rxnTemp.value_si > T_c:
+                    logging.info("\nWarning: the reactor temperature is above the critical temperature of the solvent, {0} K.\n"
+                                 "CoolProp cannot be used above the critical temperature. Switching to the linear tempearture dependence assumption for solvation free energy...\n".format(T_c))
+                    Species.isSolventinCoolProp = False
+                else:
+                    logging.info("Found {0} in CoolProp: More accurate temperature dependence is used for solvation free energy".format(self.solvent))
+            else:
+                logging.info("{0} cannot be found in CoolProp: Linear temperature dependence is assumed for solvation free energy".format(self.solvent))
     
         # Set wall time
         try:

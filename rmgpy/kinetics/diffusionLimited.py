@@ -31,6 +31,9 @@ class DiffusionLimited():
         For 1<=>2 reactions, the reverse rate is limited.
         For 2<=>2 reactions, the faster direction is limited.
         For 2<=>1 or 2<=>3 reactions, the forward rate is limited.
+
+        If the solvent species is involved in the reaction, the direction in which the solvent reacts
+        is not diffusion-limited.
         """
         intrinsicKinetics = reaction.kinetics
         reactants = len(reaction.reactants)
@@ -39,23 +42,32 @@ class DiffusionLimited():
         Keq = reaction.getEquilibriumConstant(T) # Kc
         k_reverse = k_forward / Keq
         k_eff = k_forward
-        
         if reactants == 1:
             if products == 1:
                 k_eff = k_forward
             else: # two products; reverse rate is limited
-                k_diff = self.getDiffusionLimit(T, reaction, forward=False)
-                k_eff_reverse = k_reverse*k_diff/(k_reverse+k_diff)
-                k_eff = k_eff_reverse * Keq
+                if not any([prod.isSolvent for prod in reaction.products]): # none of the products is the solvent species. Thus, the reverse rate is limited
+                    k_diff = self.getDiffusionLimit(T, reaction, forward=False)
+                    k_eff_reverse = k_reverse*k_diff/(k_reverse+k_diff)
+                    k_eff = k_eff_reverse * Keq
         else: # 2 reactants
             if products == 1 or products == 3:
-                k_diff = self.getDiffusionLimit(T, reaction, forward=True)
-                k_eff = k_forward*k_diff/(k_forward+k_diff)
-            else: # 2 products
-                if Keq > 1.0: # forward rate is faster and thus limited
+                if not any([react.isSolvent for react in reaction.reactants]): # none of the reactants is the solvent species. Thus, the forward rate limited
                     k_diff = self.getDiffusionLimit(T, reaction, forward=True)
                     k_eff = k_forward*k_diff/(k_forward+k_diff)
-                else: # reverse rate is faster and thus limited
+            else: # 2 products
+                if not any([prod.isSolvent for prod in reaction.products]) and not any([react.isSolvent for react in reaction.reactants]): # ensuring that the solvent species is not involved in the rxn
+                    if Keq > 1.0: # forward rate is faster and thus limited
+                        k_diff = self.getDiffusionLimit(T, reaction, forward=True)
+                        k_eff = k_forward*k_diff/(k_forward+k_diff)
+                    else: # reverse rate is faster and thus limited
+                        k_diff = self.getDiffusionLimit(T, reaction, forward=False)
+                        k_eff_reverse = k_reverse*k_diff/(k_reverse+k_diff)
+                        k_eff = k_eff_reverse * Keq
+                elif any([prod.isSolvent for prod in reaction.products]) and not any([react.isSolvent for react in reaction.reactants]): # the solvent species is the product. Therefore, the forward rate is limited
+                    k_diff = self.getDiffusionLimit(T, reaction, forward=True)
+                    k_eff = k_forward*k_diff/(k_forward+k_diff)
+                elif not any([prod.isSolvent for prod in reaction.products]) and any([react.isSolvent for react in reaction.reactants]): # the solvent species is the reactant. Therefore, the reverse rate is limited
                     k_diff = self.getDiffusionLimit(T, reaction, forward=False)
                     k_eff_reverse = k_reverse*k_diff/(k_reverse+k_diff)
                     k_eff = k_eff_reverse * Keq

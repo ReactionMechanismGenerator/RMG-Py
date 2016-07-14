@@ -18,5 +18,12 @@ We also recommend updating the RMG-database regularly.  The repo itself can be f
     cd RMG-database
     git pull https://github.com/ReactionMechanismGenerator/RMG-database.git master
 
+It is also important to update the conda environment regularly to ensure that all the necessary packages are
+found in the active environment. ::
+
+    cd RMG-Py
+    conda env update -f environment_[operatingSystemName].yml
+    activate rmg_env      OR     source activate rmg_env
+
 For more information about how to use the Git workflow to make changes to the source code, please
 refer to the handy `Git Tutorial <http://git-scm.com/docs/gittutorial>`_

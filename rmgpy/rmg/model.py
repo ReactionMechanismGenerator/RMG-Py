@@ -69,7 +69,9 @@ class Species(rmgpy.species.Species):
     solventStructure = None
     solventViscosity = None
     isSolvent = False # returns True if the species is the solvent and False if not
-    diffusionTemp = None
+    isSolventinCoolProp = False # returns True if the solvent's data are available in CoolProp and False if not
+    SolventNameinCoolProp = None # returns the solvent's name that can be recognized by CoolProp. If the solvent is unavailable in CoolProp, it returns None
+    rxnTemp = None # returns the reaction temperature if the liquidreactor is used.
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
@@ -142,12 +144,22 @@ class Species(rmgpy.species.Species):
 
         # Add on solvation correction
         if Species.solventData and not "Liquid thermo library" in thermo0.comment:
-            #logging.info("Making solvent correction for {0}".format(Species.solventName))
             soluteData = database.solvation.getSoluteData(self)
-            solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
-            # correction is added to the entropy and enthalpy
-            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+            if self.isSolventinCoolProp:
+                # If the solvent data are available in CoolProp, the more accurate temperature dependence of the solvation free
+                # energy is applied to make the thermo correction
+                T = Species.rxnTemp.value_si # reaction temperature in K
+                solvation_correction = database.solvation.getSolvationCorrection(self, soluteData, T)
+                # correction is added to the entropy and enthalpy
+                wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
+                wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+            else:
+                # If the solvent data are unavailable in CoolProp, the linear temperature dependence of the solvation free
+                # energy is assumed, and the enthalpy and entropy of solvation at 298 K are used.
+                solvation_correction298 = database.solvation.getSolvationCorrection298(soluteData, Species.solventData)
+                # correction is added to the entropy and enthalpy
+                wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction298.entropy)
+                wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction298.enthalpy)
             
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:
