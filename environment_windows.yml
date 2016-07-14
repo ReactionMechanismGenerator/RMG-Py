@@ -18,7 +18,7 @@ dependencies:
   - jinja2
   - pyparsing
   - pydas 
-  - pydot
+  - pydot ==1.2.2
   - pydqed
   - nose
   - coverage
@@ -32,3 +32,4 @@ dependencies:
   - mopac
   - graphviz
   - scoop
+  - ffmpeg

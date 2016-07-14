@@ -165,6 +165,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     graph.set_rankdir('LR')
     graph.set_fontname('sans')
     graph.set_fontsize('10')
+    
     # Add a node for each species
     for index in nodes:
         species = speciesList[index]
@@ -194,7 +195,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.add_edge(edge) 
     
     # Generate the coordinates for all of the nodes using the specified program
-    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))
+    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))[0]
     
     # Now iterate over the time points, setting the pen widths appropriately
     # This should preserve the coordinates of the nodes from frame to frame
@@ -267,21 +268,17 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.write_png(os.path.join(outputDirectory, 'flux_diagram_{0:04d}.png'.format(frameNumber)))
             frameNumber += 1
     
-    # Use mencoder to stitch the PNG images together into a movie
+    # Use ffmpeg to stitch the PNG images together into a movie
     import subprocess
-    command = ('mencoder',
-        'mf://*.png',
-        '-mf',
-        'type=png:fps={0:d}'.format(framesPerSecond),
-        '-ovc',
-        'lavc',
-        '-lavcopts',
-        'vcodec=mpeg4',
-        '-oac',
-        'copy',
-        '-o',
-        'flux_diagram.avi',
-    )
+    
+    command = ['ffmpeg',
+               '-framerate', '{0:d}'.format(framesPerSecond), # Duration of each image
+               '-i', 'flux_diagram_%04d.png',                 # Input file format
+               '-c:v', 'mpeg4',                               # Encoder
+               '-r', '30',                                    # Video framerate
+               '-pix_fmt', 'yuv420p',                         # Pixel format
+               'flux_diagram.avi']                            # Output filename
+    
     subprocess.check_call(command, cwd=outputDirectory)
     
 ################################################################################
@@ -450,7 +447,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
     a speciesDict txt file, plus an optional chemkinOutput file.
     """
 
-    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, java)
+    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, generateImages=True, useJava=java)
 
     speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
     
@@ -492,13 +489,16 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
 
 def run(inputFile, speciesPath=None, useJava=False):
     
-    rmg = loadRMGJob(inputFile, useJava)
-        
+    rmg = loadRMGJob(inputFile, useJava=useJava)
+    
+    if speciesPath is None:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+    
     # Generate a flux diagram video for each reaction system
-    util.makeOutputSubdirectory('flux')
+    util.makeOutputSubdirectory(rmg.outputDirectory, 'flux')
     for index, reactionSystem in enumerate(rmg.reactionSystems):
         
-        util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+        util.makeOutputSubdirectory(rmg.outputDirectory, 'flux/{0:d}'.format(index+1))
         
         # If there is no termination time, then add one to prevent jobs from
         # running forever
