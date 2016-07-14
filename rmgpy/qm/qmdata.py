@@ -8,15 +8,15 @@ class QMData:
     General class for data extracted from a QM calculation
     """
     def __init__(self,
-                 groundStateDegeneracy = None,
+                 groundStateDegeneracy = -1,
                  numberOfAtoms = None,
                  stericEnergy = None,
                  molecularMass = None,
                  energy = 0,
-                 atomicNumbers = [],
-                 rotationalConstants = [],
-                 atomCoords = [],
-                 frequencies = [],
+                 atomicNumbers = None,
+                 rotationalConstants = None,
+                 atomCoords = None,
+                 frequencies = None,
                  source = None,
                  ):
         #: Electronic ground state degeneracy in RMG taken as number of radicals +1
@@ -68,7 +68,7 @@ class CCLibData(QMData):
 
     def __init__(self,
                  cclib_data,
-                 groundStateDegeneracy
+                 groundStateDegeneracy = -1
                  ):
         
         #: data object returned by a parsing tool like CCLib.parse()
