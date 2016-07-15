@@ -385,7 +385,10 @@ class ModelMatcher():
                 data = reaction.kinetics,
                 label = str(reaction)
             )
-            entry.longDesc = reaction.kinetics.comment
+            if reaction.kinetics.comment:
+                entry.longDesc = unicode(reaction.kinetics.comment, 'utf-8', 'replace')
+            else:
+                entry.longDesc = ''
             reaction.kinetics.comment = ''
             temporary_library.entries[index+1] = entry
             reaction.kinetics = None
