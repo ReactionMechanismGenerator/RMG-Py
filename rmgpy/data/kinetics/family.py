@@ -2375,6 +2375,9 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[0]])
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[0], reaction.products[2]])
+        elif self.label.lower() in ('fake_o2_elimination'):
+            # Shouldn't matter, this reaction family shouldn't be used for actual mechanism generation.
+            return pairs
         elif reaction.is_surface_reaction():
             # remove vacant active sites from consideration
             reactants = [sp for sp in reaction.reactants if not sp.is_surface_site()]
