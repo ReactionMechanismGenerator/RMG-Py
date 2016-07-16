@@ -961,6 +961,7 @@ class ModelMatcher():
              'C2H6': 'CC',
              'C2H5': 'C[CH2]',
              'C2H4': 'C=C',
+             'C2H': '[C]#C',
              'O2': '[O][O]',
              'H2': '[H][H]',
              'H2O2': 'OO',
