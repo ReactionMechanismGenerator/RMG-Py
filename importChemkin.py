@@ -2203,6 +2203,7 @@ class ModelMatcher():
     @cherrypy.expose
     def index(self):
         location = os.path.abspath(self.args.reactions or self.args.species)
+        thermo_location = os.path.abspath(self.args.thermo)
         name = self.name
         output = [self.html_head() , """
 <script>
@@ -2232,6 +2233,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         
         output.append("""Your name: <a href="setname.html">{0}</a><br/>""".format(self.getUsername()))
         output.append("""Model: <a href="chemkin.inp">{0}</a><br/>""".format(location))
+        output.append("""Thermo: <a href="therm.dat">{0}</a><br/>""".format(thermo_location))
         output.append(self.html_tail)
         return "\n".join(output)
 
@@ -2404,7 +2406,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         """The raw chemkin input file"""
         return serve_file(os.path.abspath(self.args.reactions or self.args.species),
                               content_type='text/plain')
-    
+
+    @cherrypy.expose
+    def therm_dat(self):
+        """The raw thermo data file"""
+        return serve_file(os.path.abspath(self.args.thermo),
+                              content_type='text/plain')
 
     @cherrypy.expose
     def unconfirmedspecies_html(self):
