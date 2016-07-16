@@ -1492,7 +1492,7 @@ class ModelMatcher():
                 out_file.write("Forwards rate:       {!r}\n".format(reaction.kinetics))
                 try:
                     reverse_rate = reaction.generateReverseRateCoefficient()
-                except rmgpy.reaction.ReactionError:
+                except (rmgpy.reaction.ReactionError, AttributeError):
                     out_file.write("Couldn't reverse reaction rate of type {}\n\n".format(type(reaction.kinetics)))
                 else:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
