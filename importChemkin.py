@@ -1467,13 +1467,13 @@ class ModelMatcher():
 
     def savePyThermoLibrary(self):
         "Save an RMG-Py style thermo library"
-        library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-Py-thermo-library')
+        library_path = os.path.join(self.outputPath, 'RMG-Py-thermo-library')
         makeOrEmptyDirectory(library_path)
         self.thermoLibrary.save(os.path.join(library_path, 'ThermoLibrary.py'))
 
     def savePyKineticsLibrary(self):
         "Save an RMG-Py style kinetics library"
-        library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-Py-kinetics-library')
+        library_path = os.path.join(self.outputPath, 'RMG-Py-kinetics-library')
         makeOrEmptyDirectory(library_path)
         self.kineticsLibrary.checkForDuplicates(markDuplicates=True)
         self.kineticsLibrary.convertDuplicatesToMulti()
@@ -1520,25 +1520,26 @@ class ModelMatcher():
                 out_file.write('\n')
             out_file.write("// Total {} reactions unidentified\n".format(count))
         
+        extraInfoFilePath = os.path.join(self.outputPath, 'RMG-Py-kinetics-library', 'extra_info.py')
         if 'RMG_MAKE_INFO_FILES' not in os.environ:
             # By default don't write it, because it's slow (and not always helpful)
-            with open(self.outputKineticsFile, 'w') as out_file:
+            with open(extraInfoFilePath, 'w') as out_file:
                 out_file.write('"To generate extra information file, '
                                'run with RMG_MAKE_INFO_FILES environment variable"')
         else:
-            with open(self.outputKineticsFile, 'w') as out_file:
+            with open(extraInfoFilePath, 'w') as out_file:
                 out_file.write('"Extra information about kinetics, as a list of dicts"\n\n')
                 out_file.write("info = [\n")
             for reaction in savedReactions:
-                self.saveReactionToKineticsInfoFile(reaction)
-            with open(self.outputKineticsFile, 'a') as out_file:
+                self.saveReactionToKineticsInfoFile(reaction, extraInfoFilePath)
+            with open(extraInfoFilePath, 'a') as out_file:
                 out_file.write(']\n\n')
 
     def saveJavaThermoLibrary(self):
         """
         Save an RMG-Java style thermo library
         """
-        library_path = os.path.join(os.path.dirname(self.outputThermoFile), 'RMG-Java-thermo-library')
+        library_path = os.path.join(self.outputPath, 'RMG-Java-thermo-library')
         makeOrEmptyDirectory(library_path)
         self.thermoLibrary.saveOld(
                 dictstr=os.path.join(library_path, 'Dictionary.txt'),
@@ -1550,7 +1551,7 @@ class ModelMatcher():
         """
         Save an RMG-Java style kinetics library
         """
-        library_path = os.path.join(os.path.dirname(self.outputKineticsFile), 'RMG-Java-kinetics-library')
+        library_path = os.path.join(self.outputPath, 'RMG-Java-kinetics-library')
         makeOrEmptyDirectory(library_path)
 
         reactionsToSave = []
@@ -1621,12 +1622,12 @@ class ModelMatcher():
 
         self.kineticsLibrary.entries[entry.index] = entry
 
-    def saveReactionToKineticsInfoFile(self, chemkinReaction):
+    def saveReactionToKineticsInfoFile(self, chemkinReaction, filePath):
         """
         Output to the kinetics.py information file
         """
         from rmgpy.cantherm.output import prettify
-        with open(self.outputKineticsFile, 'a') as f:
+        with open(filePath, 'a') as f:
             f.write('{\n')
             f.write(' "reaction": {!r},\n'.format(str(chemkinReaction)))
             f.write(' "chemkinKinetics": """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
@@ -1911,8 +1912,7 @@ class ModelMatcher():
         known_species_file = args.known or species_file + '.SMILES.txt'
         self.known_species_file = known_species_file
         self.blocked_matches_file = os.path.splitext(known_species_file)[0] + '-BLOCKED.txt'
-        self.outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
-        self.outputKineticsFile = os.path.splitext(reactions_file)[0] + '.kinetics.py'
+        self.outputPath = os.path.dirname(os.path.abspath(reactions_file))
 
         self.loadSpecies(species_file)
         self.loadThermo(thermo_file)
@@ -2227,7 +2227,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="blocked.html">Blocked matches.</a></li>
 <li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a> <span id="thermomatches_count"></span></li>
 <li><a href="thermolibraries.html">Loaded thermodynamics libraries.</a></li>
-<li><a href="thermo.py">Download thermo library.</a></li>
+<li><a href="ThermoLibrary.py">Download thermo library.</a></li>
 </ul>
         """]
         
@@ -2571,9 +2571,9 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return ('\n'.join(output))
 
     @cherrypy.expose
-    def thermo_py(self):
+    def ThermoLibrary_py(self):
         """The thermo database in py format"""
-        return serve_file(os.path.abspath(self.outputThermoFile),
+        return serve_file(os.path.join(self.outputPath, 'RMG-Py-thermo-library', 'ThermoLibrary.py'),
                           content_type='application/octet-stream')
 
     @cherrypy.expose
