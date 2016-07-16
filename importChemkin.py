@@ -1356,7 +1356,7 @@ class ModelMatcher():
         entry = Entry()
         entry.index = len(self.identified_labels)
         entry.label = chemkinLabel
-        source = self.args.thermo
+        source = os.path.join(self.name, self.args.thermo)
 
         # Look for the lowest energy resonance isomer that isn't aromatic,
         # because saving aromatic adjacency lists can cause problems downstream.
@@ -2613,6 +2613,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             possibleMatches = votes[chemkinLabel]
             output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
             chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
+
+            thermoComment = self.thermoDict[chemkinLabel].comment
+            if thermoComment:
+                output.append("""<table><tr><td>Thermo comment:</td>
+                <td style='font-size: small;'>{}</td>
+                </tr></table>""".format(thermoComment))
 
             myVotingChemkinReactions = dict()
             
