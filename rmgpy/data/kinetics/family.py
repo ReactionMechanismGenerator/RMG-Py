@@ -1696,6 +1696,9 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
+        elif self.label.lower() in ('fake_o2_elimination'):
+            # Shouldn't matter, this reaction family shouldn't be used for actual mechanism generation.
+            return pairs
         else:
             error = True
             
