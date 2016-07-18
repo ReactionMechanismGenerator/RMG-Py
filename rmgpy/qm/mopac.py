@@ -4,6 +4,8 @@ import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 import distutils.spawn
+import tempfile
+import shutil
 
 from rmgpy.molecule import Molecule
 from molecule import QMMolecule
@@ -74,10 +76,23 @@ class Mopac:
     def run(self):
         self.testReady()
         # submits the input file to mopac
-        process = Popen([self.executablePath, self.inputFilePath], stderr=PIPE)
+        
+        dirpath = tempfile.mkdtemp()
+        # copy input file to temp dir:
+        tempInpFile = os.path.join(dirpath, os.path.basename(self.inputFilePath))
+        shutil.copy(self.inputFilePath, dirpath)      
+
+        process = Popen([self.executablePath, tempInpFile], stderr=PIPE)
         stdout, stderr = process.communicate()  # necessary to wait for executable termination!
         if "ended normally" not in stderr.strip():
             logging.warning("Mopac error message:" + stderr)
+
+        # copy output file from temp dir to output dir:
+        tempOutFile = os.path.join(dirpath, os.path.basename(self.outputFilePath))
+        shutil.copy(tempOutFile, self.outputFilePath)
+
+        # delete temp folder:
+        shutil.rmtree(dirpath)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):

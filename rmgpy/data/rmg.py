@@ -260,7 +260,7 @@ def getDB(name):
             else:
                 raise Exception
         except Exception, e:
-            logging.error("Did not find a way to obtain the broadcasted database for {}.".format(name))
+            logging.debug("Did not find a way to obtain the broadcasted database for {}.".format(name))
             raise e
 
     raise Exception('Could not get database with name: {}'.format(name))

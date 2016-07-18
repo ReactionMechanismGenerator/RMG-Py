@@ -44,6 +44,7 @@ from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.thermo.thermoengine import submit
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
@@ -83,124 +84,17 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
-    def getThermoData(self, database, thermoClass=NASA):
-        """
-        Returns a `thermoData` object of the current Species object.
-
-        Returns the stored `thermoData` object if it is found,
-        generates a new `thermoData` object if it not found.
-        
-        """
-        if self.thermo:
-            self.processThermoData(database, self.thermo, thermoClass)
-        else:
-            self.generateThermoData(database, thermoClass)
-
-        return self.thermo
-
-    def generateThermoData(self, database, thermoClass=NASA):
-        """
-        Generates thermo data, first checking Libraries, then using either QM or Database.
-        
-        
-        The database generates the thermo data for each structure (resonance isomer),
-        picks that with lowest H298 value.
-        
-        It then calls :meth:`processThermoData`, to convert (via Wilhoit) to NASA
-        and set the E0.
-        
-        Result stored in `self.thermo` and returned.
-        """
-
-        thermo0 = database.thermo.getThermoData(self, trainingSet=None)
-        
-        return self.processThermoData(database, thermo0, thermoClass)
-
-    def processThermoData(self, database, thermo0, thermoClass=NASA):
-        """
-        Converts via Wilhoit into required `thermoClass` and sets `E0`.
-        
-        Resulting thermo is stored (`self.thermo`) and returned.
-        """
-
-        # Always convert to Wilhoit so we can compute E0
-        if isinstance(thermo0, Wilhoit):
-            wilhoit = thermo0
-        elif isinstance(thermo0, ThermoData):
-            Tdata = thermo0._Tdata.value_si
-            Cpdata = thermo0._Cpdata.value_si
-            H298 = thermo0._H298.value_si
-            S298 = thermo0._S298.value_si
-            Cp0 = thermo0._Cp0.value_si
-            CpInf = thermo0._CpInf.value_si
-            wilhoit = Wilhoit().fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=1000.0)
-        else:
-            Cp0 = self.calculateCp0()
-            CpInf = self.calculateCpInf()
-            wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
-        wilhoit.comment = thermo0.comment
-
-        # Add on solvation correction
-        if Species.solventData and not "Liquid thermo library" in thermo0.comment:
-            #logging.info("Making solvent correction for {0}".format(Species.solventName))
-            soluteData = database.solvation.getSoluteData(self)
-            solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
-            # correction is added to the entropy and enthalpy
-            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
-            
-        # Compute E0 by extrapolation to 0 K
-        if self.conformer is None:
-            self.conformer = Conformer()
-        self.conformer.E0 = wilhoit.E0
-        
-        # Convert to desired thermo class
-        if thermoClass is Wilhoit:
-            self.thermo = wilhoit
-        elif thermoClass is NASA:
-            if Species.solventData:
-                #if liquid phase simulation keep the nasa polynomial if it comes from a liquid phase thermoLibrary. Otherwise convert wilhoit to NASA
-                if "Liquid thermo library" in thermo0.comment and isinstance(thermo0, NASA):
-                    self.thermo = thermo0
-                    if self.thermo.E0 is None:
-                        self.thermo.E0 = wilhoit.E0
-                else:
-                    self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-            else: 
-                #gas phase with species matching thermo library keep the NASA from library or convert if group additivity
-                if "Thermo library" in thermo0.comment and isinstance(thermo0,NASA):
-                    self.thermo=thermo0
-                    if self.thermo.E0 is None:
-                        self.thermo.E0 = wilhoit.E0
-                else:
-                    self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        else:
-            raise Exception('thermoClass neither NASA nor Wilhoit.  Cannot process thermo data.')
-        
-        if self.thermo.__class__ != thermo0.__class__:
-            # Compute RMS error of overall transformation
-            Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
-            err = 0.0
-            for T in Tlist:
-                err += (self.thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T))**2
-            err = math.sqrt(err/len(Tlist))/constants.R
-            # logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
-
-        return self.thermo
-
     def generateStatMech(self, database):
         """
         Generate molecular degree of freedom data for the species. You must
         have already provided a thermodynamics model using e.g.
         :meth:`generateThermoData()`.
         """
-        if not self.hasThermo():
-            raise Exception("Unable to determine statmech model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
-        conformer = database.statmech.getStatmechData(molecule, self.thermo)
+        conformer = database.statmech.getStatmechData(molecule, self.getThermoData())
         if self.conformer is None:
             self.conformer = Conformer()
-        self.conformer.E0 = self.thermo.E0
+        self.conformer.E0 = self.getThermoData().E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
@@ -243,8 +137,7 @@ class Species(rmgpy.species.Species):
             alpha0 = (300*0.011962,"kJ/mol"),
             T0 = (300,"K"),
             n = 0.85,
-        )
-
+        ) 
 ################################################################################
 
 class ReactionModel:
@@ -449,6 +342,7 @@ class CoreEdgeReactionModel:
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
         object.
         """
+
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label
@@ -489,7 +383,9 @@ class CoreEdgeReactionModel:
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
-        # spec.generateTransportData(database)
+        
+        submit(spec)
+
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -793,12 +689,6 @@ class CoreEdgeReactionModel:
 
         ################################################################
         # Begin processing the new species and reactions
-            
-        # Generate thermodynamics of new species
-        logging.info('Generating thermodynamics for new species...')
-        for spec in self.newSpeciesList:
-            spec.getThermoData(database)
-            spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
@@ -1403,8 +1293,9 @@ class CoreEdgeReactionModel:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, seedMechanism.label))
 
         for spec in self.newSpeciesList:            
-            if spec.reactive: spec.getThermoData(database)
-            spec.generateTransportData(database)
+            if spec.reactive:
+                submit(spec)
+
             self.addSpeciesToCore(spec)
 
         for rxn in self.newReactionList:
@@ -1413,7 +1304,8 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
-                    spec.getThermoData(database)
+                    submit(spec)
+
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
         
@@ -1468,10 +1360,11 @@ class CoreEdgeReactionModel:
                     rmg.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, reactionLibrary.label))
-       
+
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.getThermoData(database)
-            spec.generateTransportData(database)
+            if spec.reactive: 
+                submit(spec)
+
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:

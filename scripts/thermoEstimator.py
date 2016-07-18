@@ -15,7 +15,8 @@ from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import writeThermoEntry
 from rmgpy.rmg.model import Species
-
+from rmgpy.thermo.thermoengine import submit
+                     
 ################################################################################
 
 def runThermoEstimator(inputFile):
@@ -36,26 +37,29 @@ def runThermoEstimator(inputFile):
         rmg.database.loadSolvation(os.path.join(path, 'solvation'))
         Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
         Species.solventName = rmg.solvent
-        
+
+    for species in rmg.initialSpecies:
+        submit(species)
+
+    # library = ThermoLibrary(name='Thermo Estimation Library')
+    # for spc in rmg.initialSpecies:
+    #     library.loadEntry(
+    #         index = len(library.entries) + 1,
+    #         label = species.label,
+    #         molecule = species.molecule[0].toAdjacencyList(),
+    #         thermo = species.getThermoData().toThermoData(),
+    #         shortDesc = species.getThermoData().comment,
+    #     )
+    # library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
+    
     # Generate the thermo for all the species and write them to chemkin format as well as
     # ThermoLibrary format with values for H, S, and Cp's.
-    output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
-    library = ThermoLibrary(name='Thermo Estimation Library')
-    for species in rmg.initialSpecies:
-        species.getThermoData(rmg.database)
-
-        library.loadEntry(
-            index = len(library.entries) + 1,
-            label = species.label,
-            molecule = species.molecule[0].toAdjacencyList(),
-            thermo = species.thermo.toThermoData(),
-            shortDesc = species.thermo.comment,
-        )
-        output.write(writeThermoEntry(species))
-        output.write('\n')
+    with open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb') as output:
+        for spc in rmg.initialSpecies:
+            output.write(writeThermoEntry(spc))
+            output.write('\n')
+        
     
-    output.close()
-    library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
 
 
 ################################################################################

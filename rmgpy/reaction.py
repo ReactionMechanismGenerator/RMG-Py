@@ -674,8 +674,10 @@ class Reaction:
         are forced to have a non-negative barrier.
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+
         H298 = self.getEnthalpyOfReaction(298)
-        H0 = sum([spec.thermo.E0.value_si for spec in self.products]) - sum([spec.thermo.E0.value_si for spec in self.reactants])
+        H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
+            - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, ArrheniusEP):
             Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H298)

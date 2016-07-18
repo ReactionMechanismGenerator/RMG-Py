@@ -48,6 +48,8 @@ import cython
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 
+from rmgpy.thermo import Wilhoit, NASA, ThermoData
+
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
                            
@@ -291,7 +293,7 @@ class Species(object):
         cython.declare(Cp=cython.double)
         Cp = 0.0
         if self.hasThermo():
-            Cp = self.thermo.getHeatCapacity(T)
+            Cp = self.getThermoData().getHeatCapacity(T)
         elif self.hasStatMech():
             Cp = self.conformer.getHeatCapacity(T)
         else:
@@ -306,7 +308,7 @@ class Species(object):
         cython.declare(H=cython.double)
         H = 0.0
         if self.hasThermo():
-            H = self.thermo.getEnthalpy(T)
+            H = self.getThermoData().getEnthalpy(T)
         elif self.hasStatMech():
             H = self.conformer.getEnthalpy(T) + self.conformer.E0.value_si
         else:
@@ -321,7 +323,7 @@ class Species(object):
         cython.declare(S=cython.double)
         S = 0.0
         if self.hasThermo():
-            S = self.thermo.getEntropy(T)
+            S = self.getThermoData().getEntropy(T)
         elif self.hasStatMech():
             S = self.conformer.getEntropy(T)
         else:
@@ -336,7 +338,7 @@ class Species(object):
         cython.declare(G=cython.double)
         G = 0.0
         if self.hasThermo():
-            G = self.thermo.getFreeEnergy(T)
+            G = self.getThermoData().getFreeEnergy(T)
         elif self.hasStatMech():
             G = self.conformer.getFreeEnergy(T) + self.conformer.E0.value_si
         else:
@@ -435,7 +437,50 @@ class Species(object):
             candidates.append(cand)
 
         candidates.sort()
-        return candidates[0]        
+        return candidates[0] 
+
+    def getThermoData(self):
+        """
+        Returns a `thermoData` object of the current Species object.
+
+        If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
+        type, or it is a Future.
+
+        If the type of the thermo attribute is Wilhoit, or ThermoData,
+        then it is converted into a NASA format.
+
+        If it is a Future, then a blocking call is made to retrieve the NASA object.
+        If the thermo object did not exist yet, the thermo object is generated.        
+        """
+
+        from rmgpy.thermo.thermoengine import submit
+        
+        if self.thermo:
+            self.thermo = self.getData()
+        else:
+            submit(self)
+            self.thermo = self.getData()
+
+        return self.thermo       
+
+    def getData(self):
+        """
+        Returns the data, i.e. the thermo data associated with this
+        Species.
+
+        The thermo data can either be an already computed thermo data
+        object (NASA, Wilhoit, ThermoData), or it can be a future object
+        that holds a promise to a future object.
+
+        In the latter case, a blocking call is made to the future to retrieve
+        the thermo data object.
+        """
+        if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+            return self.thermo
+        else:
+            return self.thermo.result()
+
+
 
 ################################################################################
 
@@ -507,8 +552,9 @@ class TransitionState():
         """
         cython.declare(Cp=cython.double)
         Cp = 0.0
-        if self.thermo is not None:
-            Cp = self.thermo.getHeatCapacity(T)
+
+        if self.getThermoData() is not None:
+            Cp = self.getThermoData().getHeatCapacity(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             Cp = self.conformer.getHeatCapacity(T)
         else:
@@ -522,8 +568,9 @@ class TransitionState():
         """
         cython.declare(H=cython.double)
         H = 0.0
-        if self.thermo is not None:
-            H = self.thermo.getEnthalpy(T)
+
+        if self.getThermoData() is not None:
+            H = self.getThermoData().getEnthalpy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             H = self.conformer.getEnthalpy(T)
         else:
@@ -537,8 +584,9 @@ class TransitionState():
         """
         cython.declare(S=cython.double)
         S = 0.0
-        if self.thermo is not None:
-            S = self.thermo.getEntropy(T)
+
+        if self.getThermoData() is not None:
+            S = self.getThermoData().getEntropy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             S = self.conformer.getEntropy(T)
         else:
@@ -552,8 +600,9 @@ class TransitionState():
         """
         cython.declare(G=cython.double)
         G = 0.0
-        if self.thermo is not None:
-            G = self.thermo.getFreeEnergy(T)
+
+        if self.getThermoData() is not None:
+            G = self.getThermoData().getFreeEnergy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             G = self.conformer.getFreeEnergy(T)
         else:

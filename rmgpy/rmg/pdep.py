@@ -510,7 +510,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for products in self.products:
             for spec in products.species:
                 if spec.conformer is None:
-                    spec.conformer = Conformer(E0=spec.thermo.E0)
+                    spec.conformer = Conformer(E0=spec.getThermoData().E0)
         
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to

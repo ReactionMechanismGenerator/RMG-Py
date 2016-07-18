@@ -1050,7 +1050,7 @@ def readThermoBlock(f, speciesDict):
                 thermoBlock = ''
                 line = f.readline()
                 continue
-            elif speciesDict[label].thermo:
+            elif speciesDict[label].hasThermo():
                 logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
                 thermoBlock = ''
                 line = f.readline()
@@ -1331,7 +1331,8 @@ def writeThermoEntry(species, verbose = True):
     model, and you must use the seven-coefficient forms for each.
     """
 
-    thermo = species.thermo
+    thermo = species.getThermoData()
+
     if not isinstance(thermo, NASA):
         return ''
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": Thermodynamics data must be a NASA object.'.format(species))
@@ -1738,11 +1739,13 @@ def saveTransportFile(path, species):
     7. After the last number, a comment field can be enclosed in parenthesis.
 
     """
+
     with open(path, 'w') as f:
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
-        for spec in species:            
-            if not spec.transportData:
+        for spec in species:
+            transportData = spec.transportData
+            if (not transportData):
                 missingData = True
             else:
                 missingData = False

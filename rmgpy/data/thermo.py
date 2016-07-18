@@ -830,33 +830,9 @@ class ThermoDatabase(object):
                         original_molecule = species.molecule[0]
                     thermo0 = thermo[0][3] 
                     
-                    # If priority == 2
-                    if thermo[0][0] == 2:
-                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.  (Do this only if it came from a QM calculation)
-                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
-                                                        molecule = original_molecule.toAdjacencyList(),
-                                                        thermo = thermo0,
-                                                        shortDesc = thermo0.comment
-                                                        
-                                                        )                    
-#                    # For writing thermodata HBI check for QM molecules
-#                    with open('thermoHBIcheck.txt','a') as f:
-#                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
-#                        f.write('{0}\n'.format(original_molecule.toSMILES()))
-#                        f.write('{0}\n\n'.format(original_molecule.toAdjacencyList(removeH=False)))
-
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
                 
-                    if thermo0 is not None:
-                        # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
-                        quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = original_molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[original_molecule.multiplicity]),
-                                                        molecule = original_molecule.toAdjacencyList(),
-                                                        thermo = thermo0,
-                                                        shortDesc = thermo0.comment
-                                                        )                    
         if thermo0 is None:
             # Use group additivity methods to determine thermo for molecule (or if QM fails completely)
             original_molecule = species.molecule[0]
