@@ -175,10 +175,13 @@ List of species
 
 Species to be included in the core at the start of your RMG job are defined in the species block. 
 The label, reactive or inert, and structure of each reactant must be specified.
-The label field will be used throughout your mechanism to identify the species. Inert
-species in the model can be defined by setting reactive to be ``False``, for all
-other species the reactive status must be set as ``True``. The structure of the 
-species can be defined using either by using SMILES or :ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
+
+The label field will be used throughout your mechanism to identify the species. 
+Inert species in the model can be defined by setting reactive to be ``False``. Reaction 
+families will no longer be applied to these species, but reactions of the inert from libraries 
+and seed mechanisms  will still be considered. For all other species the reactive status must 
+be set as ``True``. The structure of the species can be defined using either by using SMILES or 
+:ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
 
 The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure::
 
