@@ -81,7 +81,9 @@ class Species(object):
     `transportData`          A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
     `energyTransferModel`   The collisional energy transfer model to use
-    `reactive`              ``True`` if the species participates in reactions, ``False`` if not
+    `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
+                                Reaction libraries and seed mechanisms that include the species are
+                                always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
     ======================= ====================================================
