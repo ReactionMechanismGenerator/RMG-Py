@@ -44,6 +44,7 @@ transition states (first-order saddle points on a potential energy surface).
 
 import numpy
 import cython
+import logging
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
@@ -482,6 +483,21 @@ class Species(object):
         else:
             return self.thermo.result()
 
+            
+    def generateTransportData(self):
+        """
+        Generate the transportData parameters for the species.
+        """
+        from rmgpy.data.rmg import getDB
+        try:
+            transportDB = getDB('transport')        
+            if not transportDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the transport database. Not generating transport...')
+            raise e
+
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
+        self.transportData = transportDB.getTransportProperties(self)[0]
 
 
 ################################################################################
