@@ -41,6 +41,7 @@ from rmgpy.display import display
 #import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.constraints import failsSpeciesConstraints
+from rmgpy.data.rmg import getDB
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
@@ -98,12 +99,20 @@ class Species(rmgpy.species.Species):
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
-    def generateTransportData(self, database):
+    def generateTransportData(self):
         """
         Generate the transportData parameters for the species.
         """
+
+        try:
+            transportDB = getDB('transport')        
+            if not transportDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the transport database. Not generating transport...')
+            raise e
+
         #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.transportData = database.transport.getTransportProperties(self)[0]
+        self.transportData = transportDB.getTransportProperties(self)[0]
         
 
         #previous method for calculating transport properties
