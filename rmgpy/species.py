@@ -500,6 +500,17 @@ class Species(object):
         self.transportData = transportDB.getTransportProperties(self)[0]
 
 
+    def getTransportData(self):
+        """
+        Returns the transport data associated with this species, and
+        calculates it if it is not yet available.
+        """
+
+        if not self.transportData:
+            self.generateTransportData()
+
+        return self.transportData
+        
 ################################################################################
 
 class TransitionState():
