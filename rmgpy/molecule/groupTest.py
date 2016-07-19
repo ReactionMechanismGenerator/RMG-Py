@@ -203,6 +203,22 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
 
+    def testHasWildcards(self):
+        """
+        Tests the hasWildcards method
+        """
+        self.assertFalse(self.atom.hasWildcards())
+        adjlist = """
+1 *2 C     u0     {2,[D,T]} {3,S}
+2 *3 C     u0     {1,[D,T]} {4,S}
+3    C     ux     {1,S} {5,S}
+4    C     u[0,1] {2,S}
+5    [C,O] u0     {3,S}
+"""
+        group = Group().fromAdjacencyList(adjlist)
+        for index, atom in enumerate(group.atoms):
+            self.assertTrue(atom.hasWildcards(), 'GroupAtom with index {0} should have wildcards, but does not'.format(index))
+
 ################################################################################
 
 class TestGroupBond(unittest.TestCase):

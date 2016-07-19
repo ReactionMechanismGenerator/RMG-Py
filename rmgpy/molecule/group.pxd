@@ -62,6 +62,8 @@ cdef class GroupAtom(Vertex):
     cpdef bint isOxygen(self)
 
     cpdef bint isSulfur(self)
+
+    cpdef bint hasWildcards(self)
 ################################################################################
 
 cdef class GroupBond(Edge):
