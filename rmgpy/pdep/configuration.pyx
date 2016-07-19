@@ -168,18 +168,18 @@ cdef class Configuration:
         cdef double sigma, epsilon, mu, gasConc, frac, Tred, omega22
         
         assert self.isUnimolecular()
-        assert isinstance(self.species[0].transportData, TransportData)
+        assert isinstance(self.species[0].getTransportData(), TransportData)
         for spec, frac in bathGas.items():
-            assert isinstance(spec.transportData, TransportData)
+            assert isinstance(spec.getTransportData(), TransportData)
         
         bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
         for spec, frac in bathGas.iteritems():
-            bathGasSigma += spec.transportData.sigma.value_si * frac
-            bathGasEpsilon *= spec.transportData.epsilon.value_si ** frac
+            bathGasSigma += spec.getTransportData().sigma.value_si * frac
+            bathGasEpsilon *= spec.getTransportData().epsilon.value_si ** frac
             bathGasMW += spec._molecularWeight.value_si * frac
         
-        sigma = 0.5 * (self.species[0].transportData.sigma.value_si + bathGasSigma)
-        epsilon = sqrt((self.species[0].transportData.epsilon.value_si * bathGasEpsilon))
+        sigma = 0.5 * (self.species[0].getTransportData().sigma.value_si + bathGasSigma)
+        epsilon = sqrt((self.species[0].getTransportData().epsilon.value_si * bathGasEpsilon))
         mu = 1.0 / (1.0/self.species[0]._molecularWeight.value_si + 1.0/bathGasMW)
         gasConc = P / constants.kB / T
         
