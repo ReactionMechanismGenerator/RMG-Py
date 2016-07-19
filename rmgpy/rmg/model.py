@@ -113,29 +113,6 @@ class Species(rmgpy.species.Species):
 
         #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
         self.transportData = transportDB.getTransportProperties(self)[0]
-        
-
-        #previous method for calculating transport properties
-        '''
-        if count == 1:
-            self.transportData.sigma = (3.758e-10,"m")
-            self.transportData.epsilon = (148.6,"K")
-        elif count == 2:
-            self.transportData.sigma = (4.443e-10,"m")
-            self.transportData.epsilon = (110.7,"K")
-        elif count == 3:
-            self.transportData.sigma = (5.118e-10,"m")
-            self.transportData.epsilon = (237.1,"K")
-        elif count == 4:
-            self.transportData.sigma = (4.687e-10,"m")
-            self.transportData.epsilon = (531.4,"K")
-        elif count == 5:
-            self.transportData.sigma = (5.784e-10,"m")
-            self.transportData.epsilon = (341.1,"K")
-        else:
-            self.transportData.sigma = (5.949e-10,"m")
-            self.transportData.epsilon = (399.3,"K")
-        '''
     
     def generateEnergyTransferModel(self):
         """
