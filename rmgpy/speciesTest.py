@@ -197,6 +197,15 @@ Thermo library: primaryThermoLibrary
         self.assertEqual(type(rmg_ctSpecies.thermo), type(ctSpecies.thermo))
         self.assertEqual(type(rmg_ctSpecies.transport), type(ctSpecies.transport))
 
+    def testGetTransportData(self):
+        """
+        Test that transport data can be retrieved correctly via the getTransportData method.
+        """
+
+        spc = Species(label="Ar", molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+
+        self.assertTrue(spc.getTransportData() is spc.transportData)
+
 ################################################################################
 
 if __name__ == '__main__':
