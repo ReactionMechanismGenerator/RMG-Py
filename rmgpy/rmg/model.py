@@ -534,7 +534,6 @@ class CoreEdgeReactionModel:
         and instead the algorithm proceeds to react the core species together
         to form edge reactions.
         """
-        database = rmgpy.data.rmg.database
         
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
@@ -1331,7 +1330,6 @@ class CoreEdgeReactionModel:
         """
 
         logging.info('Adding reaction library {0} to output file...'.format(reactionLib))
-        database = rmgpy.data.rmg.database
         
         # Append the edge reactions that are from the selected reaction library to an output species and output reactions list
         for rxn in self.edge.reactions:
