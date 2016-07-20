@@ -459,30 +459,18 @@ class Species(object):
         from rmgpy.thermo.thermoengine import submit
         
         if self.thermo:
-            self.thermo = self.getData()
+            if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                return self.thermo
+            else:
+                return self.thermo.result()
         else:
             submit(self)
-            self.thermo = self.getData()
+            if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                return self.thermo
+            else:
+                return self.thermo.result()
 
         return self.thermo       
-
-    def getData(self):
-        """
-        Returns the data, i.e. the thermo data associated with this
-        Species.
-
-        The thermo data can either be an already computed thermo data
-        object (NASA, Wilhoit, ThermoData), or it can be a future object
-        that holds a promise to a future object.
-
-        In the latter case, a blocking call is made to the future to retrieve
-        the thermo data object.
-        """
-        if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-            return self.thermo
-        else:
-            return self.thermo.result()
-
             
     def generateTransportData(self):
         """
