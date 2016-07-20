@@ -82,17 +82,6 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
-    
-    def generateEnergyTransferModel(self):
-        """
-        Generate the collisional energy transfer model parameters for the
-        species. This "algorithm" is *very* much in need of improvement.
-        """
-        self.energyTransferModel = SingleExponentialDown(
-            alpha0 = (300*0.011962,"kJ/mol"),
-            T0 = (300,"K"),
-            n = 0.85,
-        ) 
 ################################################################################
 
 class ReactionModel:

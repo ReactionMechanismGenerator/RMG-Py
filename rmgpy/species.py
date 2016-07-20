@@ -518,13 +518,23 @@ class Species(object):
 
         molecule = self.molecule[0]
         conformer = statmechDB.getStatmechData(molecule, self.getThermoData())
-        
+
         if self.conformer is None:
             self.conformer = Conformer()
         self.conformer.E0 = self.getThermoData().E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
         
+    def generateEnergyTransferModel(self):
+        """
+        Generate the collisional energy transfer model parameters for the
+        species. This "algorithm" is *very* much in need of improvement.
+        """
+        self.energyTransferModel = SingleExponentialDown(
+            alpha0 = (300*0.011962,"kJ/mol"),
+            T0 = (300,"K"),
+            n = 0.85,
+        ) 
 ################################################################################
 
 class TransitionState():
