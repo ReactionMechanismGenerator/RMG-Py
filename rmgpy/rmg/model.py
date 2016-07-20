@@ -43,7 +43,6 @@ import rmgpy.constants as constants
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 import rmgpy.species
-from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.thermo.thermoengine import submit
 
 from rmgpy.data.base import ForbiddenStructureException
