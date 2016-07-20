@@ -449,7 +449,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for product in products:
             self.products.append(Configuration(*product))
 
-    def update(self, reactionModel, database, pdepSettings):
+    def update(self, reactionModel, pdepSettings):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.

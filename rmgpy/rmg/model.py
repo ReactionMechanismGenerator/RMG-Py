@@ -685,7 +685,7 @@ class CoreEdgeReactionModel:
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks(database)
+            self.updateUnimolecularReactionNetworks()
             logging.info('')
             
         # Check new core and edge reactions for Chemkin duplicates
@@ -1419,7 +1419,7 @@ class CoreEdgeReactionModel:
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
 
-    def updateUnimolecularReactionNetworks(self, database):
+    def updateUnimolecularReactionNetworks(self):
         """
         Iterate through all of the currently-existing unimolecular reaction
         networks, updating those that have been marked as invalid. In each update,
@@ -1465,7 +1465,7 @@ class CoreEdgeReactionModel:
         updatedNetworks = []
         for network in self.networkList:
             if not network.valid:
-                network.update(self, database, self.pressureDependence)
+                network.update(self, self.pressureDependence)
                 updatedNetworks.append(network)
             
         # PDepReaction objects generated from partial networks are irreversible
