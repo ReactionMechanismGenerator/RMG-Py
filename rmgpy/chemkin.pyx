@@ -399,7 +399,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         kunits = Aunits[Nreac]
         klow_units = Aunits[Nreac+1]
     except IndexError:
-        raise ChemkinError('Invalid number of reactant species for reaction {0}.'.format(reaction))
+        raise ChemkinError('Skip reaction! Invalid number of reactant species for reaction {0}.'.format(reaction))
     
     key = 'arrhenius low' if thirdBody else 'arrhenius high'
     
