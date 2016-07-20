@@ -460,21 +460,26 @@ class KineticsRules(Database):
             alreadyDone[rootLabel] = entry.data
             return entry.data
         
-        # Recursively descend to the child nodes
-        childrenList = [[group] for group in rootTemplate]
-        for group in childrenList:
-            parent = group.pop(0)
-            if len(parent.children) > 0:
-                group.extend(parent.children)
-            else:
-                group.append(parent)
-                
-        childrenList = getAllCombinations(childrenList)
+
+        # Generate the distance 1 pairings which must be averaged for this root template.
+        # The distance 1 template is created by taking the parent node from one or more trees
+        # and creating the combinations with children from a single remaining tree.  
+        # i.e. for some node (A,B), we want to fetch all combinations for the pairing of (A,B's children) and
+        # (A's children, B).  For node (A,B,C), we would retrieve all combinations of (A,B,C's children) 
+        # (A,B's children,C) etc...  
+        # If a particular node has no children, it is skipped from the children expansion altogether.
+
+        childrenList = []
+        for i, parent in enumerate(rootTemplate):
+            # Start with the root template, and replace the ith member with its children
+            if parent.children:
+                childrenSet = [[group] for group in rootTemplate]
+                childrenSet[i] = parent.children
+                childrenList.extend(getAllCombinations(childrenSet))
+
         kineticsList = []
         for template in childrenList:
             label = ';'.join([g.label for g in template])
-            if template == rootTemplate: 
-                continue
             
             if label in alreadyDone:
                 kinetics = alreadyDone[label]
