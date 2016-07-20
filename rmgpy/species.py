@@ -461,16 +461,12 @@ class Species(object):
         from rmgpy.thermo.thermoengine import submit
         
         if self.thermo:
-            if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-                return self.thermo
-            else:
-                return self.thermo.result()
+            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                self.thermo = self.thermo.result()
         else:
             submit(self)
-            if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-                return self.thermo
-            else:
-                return self.thermo.result()
+            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                self.thermo = self.thermo.result()
 
         return self.thermo       
             
