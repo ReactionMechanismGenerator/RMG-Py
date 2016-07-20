@@ -448,18 +448,6 @@ class KineticsRules(Database):
         
         if rootLabel in alreadyDone:
             return alreadyDone[rootLabel]
-        
-        # See if we already have a rate rule for this exact template 
-        entry = self.getRule(rootTemplate)
-        if entry is not None and entry.rank > 0:
-            # We already have a rate rule for this exact template
-            # If the entry has rank of zero, then we have so little faith
-            # in it that we'd rather use an averaged value if possible
-            # Since this entry does not have a rank of zero, we keep its
-            # value
-            alreadyDone[rootLabel] = entry.data
-            return entry.data
-        
 
         # Generate the distance 1 pairings which must be averaged for this root template.
         # The distance 1 template is created by taking the parent node from one or more trees
@@ -488,6 +476,18 @@ class KineticsRules(Database):
             
             if kinetics is not None:
                 kineticsList.append([kinetics, template])
+                
+        # See if we already have a rate rule for this exact template instead
+        # and return it now that we have finished searching its children
+        entry = self.getRule(rootTemplate)
+        if entry is not None and entry.rank > 0:
+            # We already have a rate rule for this exact template
+            # If the entry has rank of zero, then we have so little faith
+            # in it that we'd rather use an averaged value if possible
+            # Since this entry does not have a rank of zero, we keep its
+            # value
+            alreadyDone[rootLabel] = entry.data
+            return entry.data
         
         if len(kineticsList) > 0:
             
