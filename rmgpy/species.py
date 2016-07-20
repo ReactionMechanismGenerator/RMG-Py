@@ -44,10 +44,13 @@ transition states (first-order saddle points on a potential energy surface).
 
 import numpy
 import cython
+import logging
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 
+from rmgpy.pdep import SingleExponentialDown
+from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
 #: This dictionary is used to add multiplicity to species label
@@ -458,32 +461,80 @@ class Species(object):
         from rmgpy.thermo.thermoengine import submit
         
         if self.thermo:
-            self.thermo = self.getData()
+            if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                return self.thermo
+            else:
+                return self.thermo.result()
         else:
             submit(self)
-            self.thermo = self.getData()
+            if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                return self.thermo
+            else:
+                return self.thermo.result()
 
         return self.thermo       
-
-    def getData(self):
+            
+    def generateTransportData(self):
         """
-        Returns the data, i.e. the thermo data associated with this
-        Species.
-
-        The thermo data can either be an already computed thermo data
-        object (NASA, Wilhoit, ThermoData), or it can be a future object
-        that holds a promise to a future object.
-
-        In the latter case, a blocking call is made to the future to retrieve
-        the thermo data object.
+        Generate the transportData parameters for the species.
         """
-        if isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-            return self.thermo
-        else:
-            return self.thermo.result()
+        from rmgpy.data.rmg import getDB
+        try:
+            transportDB = getDB('transport')        
+            if not transportDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the transport database. Not generating transport...')
+            raise e
+
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
+        self.transportData = transportDB.getTransportProperties(self)[0]
 
 
+    def getTransportData(self):
+        """
+        Returns the transport data associated with this species, and
+        calculates it if it is not yet available.
+        """
 
+        if not self.transportData:
+            self.generateTransportData()
+
+        return self.transportData
+
+    def generateStatMech(self):
+        """
+        Generate molecular degree of freedom data for the species. You must
+        have already provided a thermodynamics model using e.g.
+        :meth:`generateThermoData()`.
+        """
+
+        from rmgpy.data.rmg import getDB
+        try:
+            statmechDB = getDB('statmech')        
+            if not statmechDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the stat. mech database. Not generating stat. mech...')
+            raise e
+
+        molecule = self.molecule[0]
+        conformer = statmechDB.getStatmechData(molecule, self.getThermoData())
+
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = self.getThermoData().E0
+        self.conformer.modes = conformer.modes
+        self.conformer.spinMultiplicity = conformer.spinMultiplicity
+        
+    def generateEnergyTransferModel(self):
+        """
+        Generate the collisional energy transfer model parameters for the
+        species. This "algorithm" is *very* much in need of improvement.
+        """
+        self.energyTransferModel = SingleExponentialDown(
+            alpha0 = (300*0.011962,"kJ/mol"),
+            T0 = (300,"K"),
+            n = 0.85,
+        ) 
 ################################################################################
 
 class TransitionState():

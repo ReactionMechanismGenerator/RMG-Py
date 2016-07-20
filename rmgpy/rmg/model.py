@@ -43,10 +43,7 @@ import rmgpy.constants as constants
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 import rmgpy.species
-from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.thermo.thermoengine import submit
-from rmgpy.pdep import SingleExponentialDown
-from rmgpy.statmech import  Conformer
 
 from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
@@ -84,60 +81,6 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
-    def generateStatMech(self, database):
-        """
-        Generate molecular degree of freedom data for the species. You must
-        have already provided a thermodynamics model using e.g.
-        :meth:`generateThermoData()`.
-        """
-        molecule = self.molecule[0]
-        conformer = database.statmech.getStatmechData(molecule, self.getThermoData())
-        if self.conformer is None:
-            self.conformer = Conformer()
-        self.conformer.E0 = self.getThermoData().E0
-        self.conformer.modes = conformer.modes
-        self.conformer.spinMultiplicity = conformer.spinMultiplicity
-            
-    def generateTransportData(self, database):
-        """
-        Generate the transportData parameters for the species.
-        """
-        #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.transportData = database.transport.getTransportProperties(self)[0]
-        
-
-        #previous method for calculating transport properties
-        '''
-        if count == 1:
-            self.transportData.sigma = (3.758e-10,"m")
-            self.transportData.epsilon = (148.6,"K")
-        elif count == 2:
-            self.transportData.sigma = (4.443e-10,"m")
-            self.transportData.epsilon = (110.7,"K")
-        elif count == 3:
-            self.transportData.sigma = (5.118e-10,"m")
-            self.transportData.epsilon = (237.1,"K")
-        elif count == 4:
-            self.transportData.sigma = (4.687e-10,"m")
-            self.transportData.epsilon = (531.4,"K")
-        elif count == 5:
-            self.transportData.sigma = (5.784e-10,"m")
-            self.transportData.epsilon = (341.1,"K")
-        else:
-            self.transportData.sigma = (5.949e-10,"m")
-            self.transportData.epsilon = (399.3,"K")
-        '''
-    
-    def generateEnergyTransferModel(self):
-        """
-        Generate the collisional energy transfer model parameters for the
-        species. This "algorithm" is *very* much in need of improvement.
-        """
-        self.energyTransferModel = SingleExponentialDown(
-            alpha0 = (300*0.011962,"kJ/mol"),
-            T0 = (300,"K"),
-            n = 0.85,
-        ) 
 ################################################################################
 
 class ReactionModel:
@@ -591,7 +534,6 @@ class CoreEdgeReactionModel:
         and instead the algorithm proceeds to react the core species together
         to form edge reactions.
         """
-        database = rmgpy.data.rmg.database
         
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
@@ -730,7 +672,7 @@ class CoreEdgeReactionModel:
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks(database)
+            self.updateUnimolecularReactionNetworks()
             logging.info('')
             
         # Check new core and edge reactions for Chemkin duplicates
@@ -1388,7 +1330,6 @@ class CoreEdgeReactionModel:
         """
 
         logging.info('Adding reaction library {0} to output file...'.format(reactionLib))
-        database = rmgpy.data.rmg.database
         
         # Append the edge reactions that are from the selected reaction library to an output species and output reactions list
         for rxn in self.edge.reactions:
@@ -1464,7 +1405,7 @@ class CoreEdgeReactionModel:
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
 
-    def updateUnimolecularReactionNetworks(self, database):
+    def updateUnimolecularReactionNetworks(self):
         """
         Iterate through all of the currently-existing unimolecular reaction
         networks, updating those that have been marked as invalid. In each update,
@@ -1510,7 +1451,7 @@ class CoreEdgeReactionModel:
         updatedNetworks = []
         for network in self.networkList:
             if not network.valid:
-                network.update(self, database, self.pressureDependence)
+                network.update(self, self.pressureDependence)
                 updatedNetworks.append(network)
             
         # PDepReaction objects generated from partial networks are irreversible
