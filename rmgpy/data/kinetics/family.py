@@ -1039,15 +1039,15 @@ class KineticsFamily(Database):
         else:
             return self.groups.top
     
-    def fillKineticsRulesByAveragingUp(self, rootTemplate=None, alreadyDone=None):
+    def fillKineticsRulesByAveragingUp(self):
         """
-        Fill in gaps in the kinetics rate rules by averaging child nodes.
+        Fill in gaps in the kinetics rate rules by averaging child nodes
+        recursively starting from the top level root template.
         """
-        # If no template is specified, then start at the top-level nodes
-        if rootTemplate is None:
-            rootTemplate = self.getRootTemplate()
-            alreadyDone = {}
-        self.rules.fillRulesByAveragingUp(rootTemplate, alreadyDone)
+        
+        self.rules.fillRulesByAveragingUp(self.getRootTemplate(), {})
+        
+        
 
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
