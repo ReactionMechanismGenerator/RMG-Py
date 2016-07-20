@@ -49,6 +49,8 @@ import logging
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 
+from rmgpy.pdep import SingleExponentialDown
+from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
 #: This dictionary is used to add multiplicity to species label
@@ -498,6 +500,30 @@ class Species(object):
             self.generateTransportData()
 
         return self.transportData
+
+    def generateStatMech(self):
+        """
+        Generate molecular degree of freedom data for the species. You must
+        have already provided a thermodynamics model using e.g.
+        :meth:`generateThermoData()`.
+        """
+
+        from rmgpy.data.rmg import getDB
+        try:
+            statmechDB = getDB('statmech')        
+            if not statmechDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the stat. mech database. Not generating stat. mech...')
+            raise e
+
+        molecule = self.molecule[0]
+        conformer = statmechDB.getStatmechData(molecule, self.getThermoData())
+        
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = self.getThermoData().E0
+        self.conformer.modes = conformer.modes
+        self.conformer.spinMultiplicity = conformer.spinMultiplicity
         
 ################################################################################
 

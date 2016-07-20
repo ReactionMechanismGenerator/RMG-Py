@@ -45,8 +45,6 @@ from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.thermo.thermoengine import submit
-from rmgpy.pdep import SingleExponentialDown
-from rmgpy.statmech import  Conformer
 
 from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
@@ -84,19 +82,6 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
 
-    def generateStatMech(self, database):
-        """
-        Generate molecular degree of freedom data for the species. You must
-        have already provided a thermodynamics model using e.g.
-        :meth:`generateThermoData()`.
-        """
-        molecule = self.molecule[0]
-        conformer = database.statmech.getStatmechData(molecule, self.getThermoData())
-        if self.conformer is None:
-            self.conformer = Conformer()
-        self.conformer.E0 = self.getThermoData().E0
-        self.conformer.modes = conformer.modes
-        self.conformer.spinMultiplicity = conformer.spinMultiplicity
     
     def generateEnergyTransferModel(self):
         """

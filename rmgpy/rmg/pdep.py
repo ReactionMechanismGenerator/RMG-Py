@@ -495,15 +495,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
-            if not spec.hasStatMech(): spec.generateStatMech(database)
+            if not spec.hasStatMech(): spec.generateStatMech()
         for reactants in self.reactants:
             for spec in reactants.species:
-                if not spec.hasStatMech(): spec.generateStatMech(database)
+                if not spec.hasStatMech(): spec.generateStatMech()
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.pathReactions:
             for spec in reaction.reactants:
-                if not spec.hasStatMech(): spec.generateStatMech(database)
+                if not spec.hasStatMech(): spec.generateStatMech()
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
