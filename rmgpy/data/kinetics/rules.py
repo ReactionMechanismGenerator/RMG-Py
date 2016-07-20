@@ -565,7 +565,25 @@ class KineticsRules(Database):
             E0 = (E0*0.001,"kJ/mol"),
         )
         return averagedKinetics
+    
+    def calculateNormDistance(self, template, otherTemplate):
+        """
+        Calculate the norm distance squared between two rate rules with
+        `template` and `otherTemplate`.  The norm distance is 
+        a^2 + b^2 + c^2 .... when a is the distance between the nodes in the
+        first tree, b is the distance between the nodes in the second tree, etc.
+        """
+        
+        # Do it the stupid way first and calculate distances from the top 
+        # rather than from each other for now... it's dumb but need to see results first
+        import numpy
+        depth = numpy.array([node.level for node in template])
+        otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
 
+        distance = numpy.array(depth-otherDepth)
+        norm = numpy.dot(distance,distance)
+        return norm
+        
     def estimateKinetics(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -588,7 +606,14 @@ class KineticsRules(Database):
                 kineticsList.append([kinetics, t])
             
             if len(kineticsList) > 0:                 
-                                
+                
+                if len(kineticsList) > 1:
+                    # Filter the kinetics to use templates with the lowest minimum euclidean distance 
+                    # from the specified template
+                    norms = [self.calculateNormDistance(template, t) for kinetics,t in kineticsList]
+                    minNorm = min(norms) 
+                    kineticsList = [pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)]
+                    
                 if len(kineticsList) == 1:
                     kinetics, t = kineticsList[0]
                     # Check whether the exact rate rule for the original template (most specific
