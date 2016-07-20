@@ -491,14 +491,30 @@ class KineticsRules(Database):
         
         if len(kineticsList) > 0:
             
-            # We found one or more results! Let's average them together
-            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
             if len(kineticsList) > 1:
-                kinetics.comment += 'Average of ({0})'.format(
-                    ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                # We found one or more results! Let's average them together
+                kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                kinetics.comment = 'Average of ({0})'.format(
+                     ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
+                
+                # For debug mode: uncomment the following kinetics commenting
+                # lines and use them instead of the lines above. Caution: large memory usage.
+
+                # kinetics.comment += 'Average of ({0})'.format(
+                #     ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+
             else:
                 k,t = kineticsList[0]
-                kinetics.comment += k.comment if k.comment != '' else ';'.join(g.label for g in t)
+                kinetics = deepcopy(k)
+                # Even though we are using just a single set of kinetics, it's still considered
+                # an average.  It just happens that the other distance 1 children had no data.
+                kinetics.comment = 'Average of ({0})'.format(';'.join(g.label for g in t))
+                
+                # For debug mode: uncomment the following kinetics commenting
+                # lines and use them instead of the lines above. Caution: large memory usage.
+
+                # kinetics.comment += 'Average of ({0}).format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
+            
             entry = Entry(
                 index = 0,
                 label = rootLabel,
