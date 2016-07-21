@@ -306,7 +306,7 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
+def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False, wallTime='00:00:00:00'):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     if generateOutputHTML:
@@ -318,6 +318,7 @@ def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, genera
     if saveEdgeSpecies:
         logging.warning('Edge species saving was turned on.  This will slow down model generation for large simulations.')
     rmg.saveEdgeSpecies = saveEdgeSpecies
+    rmg.wallTime = wallTime
 
 def generatedSpeciesConstraints(**kwargs):
 
@@ -624,6 +625,7 @@ def saveInputFile(path, rmg):
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
+    f.write('    wallTime = {0},\n'.format(rmg.wallTime))
     f.write(')\n\n')
     
     f.close()
