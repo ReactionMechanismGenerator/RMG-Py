@@ -210,6 +210,19 @@ def execute(path):
     plt.legend()
     plt.savefig(os.path.join(os.getcwd(),'comparison.png'))
 
+    #Print some statistics:
+    print ""
+    print "Entries in library(s):", len(csvList)
+    print "Entries with group value changed between commits:", len(prunedCsvList)
+    print ""
+    avgErrorAll = None #Average error across all library entries per commit
+    avgErrorChanged = None #Average error for library entries where there was a difference in the group additivity
+    for index, commitName in enumerate(inputDict['commitNames']):
+        avgErrorAll = round(sum([abs(x[1]-x[index+2]) for x in csvList])/len(csvList), 2)
+        avgErrorChanged = round(sum([abs(x[1]-x[index+2]) for x in prunedCsvList])/len(prunedCsvList), 2)
+        print commitName, ": has an average error of", str(avgErrorAll), units, "for all entries, and", str(avgErrorChanged), units, "for entries with different group estimation."
+        print ""
+
 def main():
     """
     Driver function that parses command line arguments and passes them to the execute function.
