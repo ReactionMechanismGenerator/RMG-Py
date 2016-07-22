@@ -837,29 +837,35 @@ class ThermoDatabase(object):
             # Use group additivity methods to determine thermo for molecule (or if QM fails completely)
             original_molecule = species.molecule[0]
             if original_molecule.getRadicalCount() > 0:
-                # Molecule is a radical, use the HBI method
+                # If the molecule is a radical, check if any of the saturated forms are in the libraries
+                # first and perform an HBI correction on them
                 thermo = []
                 for molecule in species.molecule:
                     molecule.clearLabeledAtoms()
                     # First see if the saturated molecule is in the libaries
                     tdata = self.estimateRadicalThermoViaHBI(molecule, self.getThermoDataFromLibraries)
-                    priority = 1
-                    if tdata is None:
-                        # Otherwise use normal group additivity to obtain the thermo for the molecule
-                        tdata = self.estimateThermoViaGroupAdditivity(molecule)
-                        priority = 2
-                    thermo.append((priority, tdata.getEnthalpy(298.), molecule, tdata))
+                    if tdata:
+                        thermo.append((tdata.getEnthalpy(298.), molecule, tdata))
                 
-                if len(thermo) > 1:
-                    # Sort thermo first by the priority, then by the most stable H298 value
-                    thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                if thermo:
+                    # Sort thermo by the most stable H298 value when choosing between thermoLibrary values
+                    thermo = sorted(thermo, key=lambda x: x[0])
                     for i in range(len(thermo)): 
-                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
+                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][1].toSMILES(), thermo[i][0]))
                     # Save resonance isomers reordered by their thermo
-                    species.molecule = [item[2] for item in thermo]
-                thermo0 = thermo[0][3] 
+                    species.molecule = [item[1] for item in thermo]
+                    thermo0 = thermo[0][2]
+                    
+                else:
+                    # Did not find any saturated values in the thermo libraries, so try group additivity instead
+                    thermo0 = self.getThermoDataFromGroups(species)
+                
+                
+                
+                
+                
             else:
-                # Saturated molecule, does not need HBI method
+                # Saturated molecule, estimate it via groups since we've already checked libraries much earlier
                 thermo0 = self.getThermoDataFromGroups(species)
                 
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
