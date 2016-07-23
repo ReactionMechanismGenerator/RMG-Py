@@ -707,10 +707,7 @@ class Reaction:
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
         kf = kForward
         assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
-        if kf.Tmin is not None and kf.Tmax is not None:
-            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
-        else:
-            Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
+        Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
         klist = numpy.zeros_like(Tlist)
         for i in range(len(Tlist)):
