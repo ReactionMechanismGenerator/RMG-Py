@@ -251,6 +251,13 @@ class TestCyclicThermo(unittest.TestCase):
         # therefore is not selected.  Note that this unit test will have to change if the correction is fixed later.
         self.assertEqual(polycyclicGroups[0].label, 'PolycyclicRing')
         self.assertEqual(selected_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
+        
+        
+        # Check that the same result occurs when we retrieve thermo from getThermoData
+        selected_thermo2 = self.database.getThermoData(spec)
+        
+        selected2_ringGroups, selected2_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo2)
+        self.assertEqual(selected2_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
     
 
     def testGetRingGroupsFromComments(self):
