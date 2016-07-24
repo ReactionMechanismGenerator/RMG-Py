@@ -103,8 +103,8 @@ class ExecutionStatsWriter(object):
         try:
             import psutil
             process = psutil.Process(os.getpid())
-            rss, vms = process.memory_info()
-            self.memoryUse.append(rss / 1.0e6)
+            memory_info = process.memory_info()
+            self.memoryUse.append(memory_info.rss / 1.0e6)
             logging.info('    Memory used: %.2f MB' % (self.memoryUse[-1]))
         except:
             logging.info('    Memory used: memory usage was unable to be logged')
