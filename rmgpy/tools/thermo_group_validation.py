@@ -46,7 +46,7 @@ def previousCommit(commitStr, gitDirectory):
     for line in modifiedFilesCheck:
         if re.match('modified', line.strip()):
             raise Exception("You have uncommitted changes. Please stash them or commit them before running this script.")
-    
+
     if commitStr == 'HEAD': yield
 
     #Make sure there are no
@@ -176,7 +176,8 @@ def execute(path):
                 parityData[smiles].append(parityFunction(variable, thermoData.thermoData, T0))
             else: parityData[smiles].append(parityFunction(variable, thermoData, T0))
 
-    #make list of highst stdDev of groups (first element is name, second is library value)
+    #make a list of data, first column is SMILES, second is Library Entry, third and greater
+    #are ThermoObject data from group additivity using the orders of commits in commitStr
     csvList = [[name]+data for name, data in parityData.iteritems()]
 
     #Put into kcal/cal
@@ -203,7 +204,7 @@ def execute(path):
         for line in csvList:
             spamwriter.writerow(line)
 
-    #Remove points where group estimates are the same for plotting
+    #same as csvList, but we remove groups where the group estimate does not change between commits
     prunedCsvList=[]
     #don't include header in pruned csv
     for item in csvList:
