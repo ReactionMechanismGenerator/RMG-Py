@@ -48,8 +48,6 @@ def previousCommit(commitStr, gitDirectory):
             raise Exception("You have uncommitted changes. Please stash them or commit them before running this script.")
 
     if commitStr == 'HEAD': yield
-
-    #Make sure there are no
     else:
         try:
             #Check that the commit str is not a file, so that you don't accidently check out unsaved changes
@@ -77,7 +75,12 @@ def groupValidationInputs(thermoLibraries= None,
                           commitNames= None,
                           variable = 'H',
                           temperature = 298,):
+    """
+    Function to unpack variables from the input file
+    """
+
     #Save the data from libraries into the speciesThermo dictionary
+    #key is SMILES and values is a list with one element: a LibraryEntry object
     if isinstance(thermoLibraries, str): libraryList = [thermoLibraries]
     groupsDatabase= ThermoDatabase()
     groupsDatabase.load(os.path.join(settings['database.directory'], 'thermo'))
@@ -101,7 +104,9 @@ def groupValidationInputs(thermoLibraries= None,
 
 
 def loadInput(path):
-
+    """
+    Function to read the input file
+    """
     full_path = os.path.abspath(os.path.expandvars(path))
     f = open(full_path)
 
@@ -121,6 +126,11 @@ def loadInput(path):
         f.close()
 
 def parityFunction(variable, thermoData, T0):
+    """
+    This function returns the variable ('H', 'S', 'Cp', or 'G) at the correct temperature T0
+    from the thermoData object
+    """
+
     if variable == 'H':
         return thermoData.getEnthalpy(T0)
     elif variable =='S':
@@ -133,6 +143,14 @@ def parityFunction(variable, thermoData, T0):
         raise Exception("Variable {0} is not a supported thermo attribute for comparison".format(variable))
 
 def writeCsv(outpath, heading, csvList):
+    """
+    Args:
+        outpath: path to write the csv
+        heading: list of strings to insert at the top of the csv
+        csvList: list of rows to write in the csv
+
+    This function writes a csv from a list
+    """
 
     with open(outpath, 'wb') as outFile:
         spamwriter=csv.writer(outFile)
