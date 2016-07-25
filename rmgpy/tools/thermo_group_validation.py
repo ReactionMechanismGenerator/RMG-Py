@@ -90,7 +90,7 @@ def groupValidationInputs(thermoLibraries= None,
     inputDict['temperature'] = float(temperature)
 
 
-def loadInput(path, speciesThermo0):
+def loadInput(path):
 
     full_path = os.path.abspath(os.path.expandvars(path))
     f = open(full_path)
@@ -127,7 +127,7 @@ def execute(path):
     #key is RMG-generated SMILES, value is list with first entry as LibraryEntry
     #and the rest ThermoData from group estimation
 
-    loadInput(path, speciesThermo)
+    loadInput(path)
     variable = inputDict['variable']
     heading = ''
     units =''
