@@ -8,6 +8,7 @@ differences in group additivity between different commits of RMG-database.
 from contextlib import contextmanager
 import os
 import csv
+import re
 import subprocess
 from numpy import std
 import argparse
@@ -39,7 +40,16 @@ def previousCommit(commitStr, gitDirectory):
     """
     Context to go to a previous commit before reverting back to the the original commit
     """
+
+    #Check for uncommitted changes
+    modifiedFilesCheck  = subprocess.check_output(['git', 'status'], cwd=gitDirectory).splitlines()
+    for line in modifiedFilesCheck:
+        if re.match('modified', line.strip()):
+            raise Exception("You have uncommitted changes. Please stash them or commit them before running this script.")
+    
     if commitStr == 'HEAD': yield
+
+    #Make sure there are no
     else:
         try:
             #Check that the commit str is not a file, so that you don't accidently check out unsaved changes
