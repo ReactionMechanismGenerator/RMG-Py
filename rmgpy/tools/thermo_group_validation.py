@@ -176,7 +176,7 @@ def execute(path):
         for value in point[1:]:
             if variable == 'H' or variable == 'G':
                 newPoint.append(value/1000.0/4.182)
-            else:
+            elif variable == 'S' or variable == 'Cp':
                 newPoint.append(value/4.182)
         conversionCsvList.append(newPoint)
 
