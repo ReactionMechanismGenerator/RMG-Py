@@ -132,6 +132,15 @@ def parityFunction(variable, thermoData, T0):
     else:
         raise Exception("Variable {0} is not a supported thermo attribute for comparison".format(variable))
 
+def writeCsv(outpath, heading, csvList):
+
+    with open(outpath, 'wb') as outFile:
+        spamwriter=csv.writer(outFile)
+        #add Header
+        spamwriter.writerow(heading)
+        for line in csvList:
+            spamwriter.writerow(line)
+
 def execute(path):
 
     #key is RMG-generated SMILES, value is list with first entry as LibraryEntry
@@ -197,12 +206,23 @@ def execute(path):
     csvList = sorted(csvList, key = lambda x: std(x[2:]))
     csvList.reverse()
 
-    with open(os.path.join(os.getcwd(), heading+'.csv'), 'wb') as output:
-        spamwriter=csv.writer(output)
-        #add Header
-        spamwriter.writerow(['SMILES', 'Library Value at '+str(T0)+'K']+ inputDict['commitNames'])
-        for line in csvList:
-            spamwriter.writerow(line)
+    #write out the raw data
+    mainHeader = ['SMILES', 'Library Value at '+str(T0)+'K']+ inputDict['commitNames']
+    writeCsv(os.path.join(os.getcwd(), heading+'.csv'), mainHeader, csvList)
+
+    #This creates a csv with sources for all the thermoData to help users debug thermo estimation
+    sourceCsv = []
+    for row in csvList:
+        name = row[0]
+        sourceCsv.append([name])
+        libraryRow=['', speciesThermo[name][0].libraryName, speciesThermo[name][0].entryName]
+        sourceCsv.append(libraryRow)
+        for index, commitName in enumerate(inputDict['commitNames']):
+            sourceCsv.append(['', commitName, speciesThermo[name][index+1].comment])
+
+    #write list as csv
+    sourceHeader = ['SMILES', 'Source (library or commit)', 'Name in library or group additivity comment']
+    writeCsv(os.path.join(os.getcwd(), 'source.csv'), sourceHeader, sourceCsv)
 
     #same as csvList, but we remove groups where the group estimate does not change between commits
     prunedCsvList=[]
