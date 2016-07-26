@@ -451,7 +451,7 @@ class Database:
 
     def __loadTree(self, tree):
         """
-        Parse an old-style RMG tree located at `tree`. An RMG tree is an n-ary
+        Parse an group tree located at `tree`. An RMG tree is an n-ary
         tree representing the hierarchy of items in the dictionary.
         """
 
@@ -498,7 +498,10 @@ class Database:
                 else:
                     entry.parent = None
                     self.top.append(entry)
-
+                    
+                # Save the level of the tree into the entry
+                entry.level = level
+                
                 # Add node to list of parents for subsequent iteration
                 parents.append(label)
 
