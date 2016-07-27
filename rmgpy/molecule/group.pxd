@@ -26,6 +26,7 @@
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
+cimport rmgpy.molecule.molecule as mol
 
 ################################################################################
 
@@ -151,3 +152,5 @@ cdef class Group(Graph):
     cpdef bint addExplicitLigands(self)
 
     cpdef bint standardizeGroup(self)
+
+    cpdef mol.Molecule makeSampleMolcule(self)

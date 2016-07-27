@@ -26,7 +26,7 @@
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
-from .group cimport GroupAtom, GroupBond, Group
+cimport rmgpy.molecule.group as gr
 from .element cimport Element
 cimport rmgpy.constants as constants
 cimport numpy
