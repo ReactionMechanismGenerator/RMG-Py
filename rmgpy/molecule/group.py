@@ -409,7 +409,7 @@ class GroupAtom(Vertex):
 
     def hasWildcards(self):
         """
-        Return ``True`` if the atom has  wildcards in any of the attributes:
+        Return ``True`` if the atom has wildcards in any of the attributes:
         atomtype, electronpairs, lone pairs, charge, and bond order. Returns
         ''False'' if no attribute has wildcards.
         """
@@ -959,6 +959,11 @@ class Group(Graph):
 
         modified = False
 
+        #If this atom or any of its ligands has wild cards, then don't try to standardize
+        if self.hasWildCards: return modified
+        for bond12, atom2 in self.bonds.iteritems():
+            if atom2.hasWildCards: return modified
+
         #dictionary of element to expected valency
         valency = {atomTypes['C'] : 4,
                    atomTypes['O'] : 2,
@@ -1036,7 +1041,9 @@ class Group(Graph):
 
         for index, atom in enumerate(self.atoms):
             claimedAtomType = atom.atomType[0]
-            if claimedAtomType is atomTypes['CO'] or claimedAtomType is atomTypes['CS']:
+            #Do not perform is this atom has wildCards
+            if atom.hasWildCards: continue
+            elif claimedAtomType is atomTypes['CO'] or claimedAtomType is atomTypes['CS']:
                 for atom2, bond12 in atom.bonds.iteritems():
                     if bond12.isDouble():
                         break
@@ -1061,33 +1068,10 @@ class Group(Graph):
         Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
         have explicit Od/Sd ligands. Other functions can be added as necessary
 
-        We also only check when there is exactly one atomType, one bondType, one
-        radical setting. For any group where there are wildcards or multiple
-        attributes, we do not apply this check.
-
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
 
         modified = False
-
-        #see if this is a group we can check, must not have any OR groups in
-        #its bonds or atomtypes
-        viableToCheck = True
-        for atom in self.atoms:
-            if len(atom.atomType) > 1:
-                viableToCheck = False
-                break
-            elif len(atom.radicalElectrons) > 1:
-                viableToCheck = False
-                break
-            elif len(atom.lonePairs) > 1:
-                viableToCheck = False
-                break
-            for bond in atom.bonds.values():
-                if len(bond.order) > 1:
-                    viableToCheck = False
-                    break
-        if not viableToCheck: return modified
 
         #If viable then we apply current conventions:
         checkList=[]
