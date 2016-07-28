@@ -426,7 +426,60 @@ class GroupAtom(Vertex):
                 return True
 
         return False
->>>>>>> 844fd93... Add method for GroupAtom hasWildcards
+
+    def makeAtom(self):
+        """
+
+        Returns: a class :Atom: object analagous to the GroupAtom
+
+        """
+
+        #Use the first atomtype to determine element, even if there is more than one atomtype
+        atomtype = self.atomType[0]
+        element = None
+
+        defaultLonePairs={'H': 0,
+                          'D': 0,
+                          'T': 0,
+                          'He':1,
+                          'C': 0,
+                          'O': 2,
+                          'N': 1,
+                          'Si':0,
+                          'S': 1,
+                          'Ne':4,
+                          'Cl':3,
+                          'Ar':4,
+        }
+
+        for elementLabel in allElements:
+            if atomtype is atomTypes[elementLabel] or atomtype in atomTypes[elementLabel].specific:
+                element = elementLabel
+                break
+        else:
+            #For types that correspond to more than one type of element, pick the first that appears in specific
+            for subtype in atomtype.specific:
+                if subtype.label in allElements:
+                    element = subtype.label
+                    break
+
+        #dummy defaultAtom to get default values
+        defaultAtom = mol.Atom()
+
+        newAtom = mol.Atom(element = element,
+                           radicalElectrons = self.radicalElectrons[0] if self.radicalElectrons else defaultAtom.radicalElectrons,
+                           charge = self.charge[0] if self.charge else defaultAtom.charge,
+                           lonePairs = self.lonePairs[0] if self.lonePairs else defaultAtom.lonePairs)
+
+
+        #For some reason the default when no lone pairs is set to -100,
+        #Based on git history, it is probably because RDKit requires a number instead of None
+        #Instead we will set it to 0 here
+        if newAtom.lonePairs == -100:
+            newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
+
+        return newAtom
+>>>>>>> a116992... add methods makeBond and makeSampleAtom
 ################################################################################
 
 class GroupBond(Edge):
@@ -592,6 +645,18 @@ class GroupBond(Edge):
         # Otherwise self is in fact a specific case of other
         return True
 
+    def makeBond(self, molecule, atom1, atom2):
+        """
+        Creates a :class: Bond between atom1 and atom2 analogous to self
+
+        The intended input arguments should be class :Atom: not class :GroupAtom:
+        Args:
+            atom1: First :class: Atom the bond connects
+            atom2: Second :class: Atom the bond connects
+
+        """
+        newBond = mol.Bond(atom1, atom2, order = self.order[0])
+        molecule.addBond(newBond)
 ################################################################################
 
 class Group(Graph):

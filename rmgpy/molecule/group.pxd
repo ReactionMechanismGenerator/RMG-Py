@@ -65,6 +65,8 @@ cdef class GroupAtom(Vertex):
     cpdef bint isSulfur(self)
 
     cpdef bint hasWildcards(self)
+
+    cpdef mol.Atom makeAtom(self)
 ################################################################################
 
 cdef class GroupBond(Edge):
@@ -88,6 +90,8 @@ cdef class GroupBond(Edge):
     cpdef bint equivalent(self, Edge other) except -2
 
     cpdef bint isSpecificCaseOf(self, Edge other) except -2
+
+    cpdef makeBond(self, mol.Molecule molecule, mol.Atom atom1, mol.Atom atom2)
 
 ################################################################################
 
