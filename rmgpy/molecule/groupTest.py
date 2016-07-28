@@ -6,6 +6,8 @@ from external.wip import work_in_progress
 
 from rmgpy.molecule.group import ActionError, GroupAtom, GroupBond, Group
 from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule import Molecule
+import element as elements
 
 ################################################################################
 
@@ -205,7 +207,7 @@ class TestGroupAtom(unittest.TestCase):
 
     def testHasWildcards(self):
         """
-        Tests the hasWildcards method
+        Tests the GroupAtom.hasWildcards() method
         """
         self.assertFalse(self.atom.hasWildcards())
         adjlist = """
@@ -219,6 +221,15 @@ class TestGroupAtom(unittest.TestCase):
         for index, atom in enumerate(group.atoms):
             self.assertTrue(atom.hasWildcards(), 'GroupAtom with index {0} should have wildcards, but does not'.format(index))
 
+    def testMakeSampleAtom(self):
+        """
+        Tests the GroupAtom.makeSampleAtom() method
+        """
+        newAtom = self.atom.makeSampleAtom()
+
+        self.assertEquals(newAtom.element, elements.__dict__['C'])
+        self.assertEquals(newAtom.radicalElectrons, 1)
+        self.assertEquals(newAtom.charge, 0)
 ################################################################################
 
 class TestGroupBond(unittest.TestCase):
@@ -534,7 +545,18 @@ class TestGroup(unittest.TestCase):
 
         self.assertTrue(self.group.isIsomorphic(group))
         self.assertTrue(group.isIsomorphic(self.group))
-        
+
+    def testMakeSampleMolecule(self):
+        """
+        Test the Group.makeSampleMolecule method
+        """
+        adjlist = """
+1  *1 [Cs,Cd] u0
+            """
+        group = Group().fromAdjacencyList(adjlist)
+        result = self.group.makeSampleMolecule()
+        print result.multiplicity
+        self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
 ################################################################################
 
 if __name__ == '__main__':

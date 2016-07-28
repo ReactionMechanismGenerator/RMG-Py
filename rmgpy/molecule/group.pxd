@@ -66,7 +66,7 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint hasWildcards(self)
 
-    cpdef mol.Atom makeAtom(self)
+    cpdef mol.Atom makeSampleAtom(self)
 ################################################################################
 
 cdef class GroupBond(Edge):
@@ -157,4 +157,4 @@ cdef class Group(Graph):
 
     cpdef bint standardizeGroup(self)
 
-    cpdef mol.Molecule makeSampleMolcule(self)
+    cpdef mol.Molecule makeSampleMolecule(self)

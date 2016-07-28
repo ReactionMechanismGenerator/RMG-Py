@@ -427,10 +427,13 @@ class GroupAtom(Vertex):
 
         return False
 
-    def makeAtom(self):
+    def makeSampleAtom(self):
         """
 
         Returns: a class :Atom: object analagous to the GroupAtom
+
+        This makes a sample, so it takes the first element when there are multiple options inside of
+        self.atomtype, self.radicalElectrons, self.lonePairs, and self.charge
 
         """
 
@@ -446,7 +449,7 @@ class GroupAtom(Vertex):
                           'O': 2,
                           'N': 1,
                           'Si':0,
-                          'S': 1,
+                          'S': 2,
                           'Ne':4,
                           'Cl':3,
                           'Ar':4,
@@ -469,17 +472,24 @@ class GroupAtom(Vertex):
         newAtom = mol.Atom(element = element,
                            radicalElectrons = self.radicalElectrons[0] if self.radicalElectrons else defaultAtom.radicalElectrons,
                            charge = self.charge[0] if self.charge else defaultAtom.charge,
-                           lonePairs = self.lonePairs[0] if self.lonePairs else defaultAtom.lonePairs)
-
+                           lonePairs = self.lonePairs[0] if self.lonePairs else defaultAtom.lonePairs,
+                           label = self.label if self.label else defaultAtom.label)
 
         #For some reason the default when no lone pairs is set to -100,
         #Based on git history, it is probably because RDKit requires a number instead of None
         #Instead we will set it to 0 here
+
         if newAtom.lonePairs == -100:
-            newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
+            if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b']]:
+                newAtom.lonePairs = 0
+                newAtom.charge = 1
+            elif atomtype is atomTypes['N1d']:
+                newAtom.charge = -1
+            else:
+                newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
         return newAtom
->>>>>>> a116992... add methods makeBond and makeSampleAtom
+
 ################################################################################
 
 class GroupBond(Edge):
@@ -1146,8 +1156,82 @@ class Group(Graph):
         return any(checkList)
 
 
-    def makeSampleMolcule(self):
+    def makeSampleMolecule(self):
+        """
+        Returns: A sample class :Molecule: from the group
+        """
 
-        newMolecule = mol.Molecule()
+        valency = {atomTypes['C'] : 4,
+           atomTypes['O'] : 2,
+           atomTypes ['S']: 2,
+           atomTypes['Si']: 4
+           }
+
+        print self
+        print self.atoms
+
+        #Make dictionary of :GroupAtoms: to :Atoms:
+        atomDict = {}
+        for atom in self.atoms:
+            atomDict[atom] = atom.makeSampleAtom()
+        #create the molecule
+        newMolecule = mol.Molecule(atoms = atomDict.values())
+        #Add explicit bonds to :Atoms:
+        for atom1 in self.atoms:
+            for atom2, bond12 in atom1.bonds.iteritems():
+                bond12.makeBond(newMolecule, atomDict[atom1], atomDict[atom2])
+
+        # #Add implicit double/triple bonded atoms O, S or R, for which we will use a C
+        # for atom1 in self.atoms:
+        #     atomtypeFeatureList = atom1.atomType[0].getFeatures()
+        #     allDoubleRequired = atomtypeFeatureList[1]
+        #     rDoubleRequired = atomtypeFeatureList[2]
+        #     oDoubleRequired = atomtypeFeatureList[3]
+        #     sDoubleRequired = atomtypeFeatureList[4]
+        #     tripleRequired = atomtypeFeatureList[5]
+        #     benzeneRequired = atomtypeFeatureList[6]
+        #     lonePairsRequired = atomtypeFeatureList[7]
+        #
+        #     #count up number of bonds
+        #     single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+        #     for atom2, bond12 in atom1.bonds.iteritems():
+        #         # Count numbers of each higher-order bond type
+        #         if bond12.isSingle():
+        #             single += 1
+        #         elif bond12.isDouble():
+        #             if atom2.isOxygen():
+        #                 oDouble += 1
+        #             elif atom2.isSulfur():
+        #                 sDouble += 1
+        #             else:
+        #                 # rDouble is for double bonds NOT to oxygen or Sulfur
+        #                 rDouble += 1
+        #         elif bond12.isTriple(): triple += 1
+        #         elif bond12.isBenzene(): benzene += 1
+        #
+        #     implicitAtoms = []
+        #     while oDouble < oDoubleRequired:
+        #         oDouble +=1
+        #         newAtom = mol.Atom('O', 0, 0)
+        #         newAtom.
+
+
+        #Saturate up to expected valency
+        for atom in newMolecule.atoms:
+            statedCharge = atom.charge
+            atom.updateCharge()
+            if atom.charge - statedCharge:
+                hydrogenNeeded = atom.charge - statedCharge
+                for x in range(hydrogenNeeded):
+                    newH = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
+                    newBond = mol.Bond(atom, newH, 'S')
+                    newMolecule.addAtom(newH)
+                    newMolecule.addBond(newBond)
+                atom.updateCharge()
+            print statedCharge, atom.charge, type(atom.charge)
+
+        newMolecule.update()
+        print newMolecule.atoms
+
 
         return newMolecule
