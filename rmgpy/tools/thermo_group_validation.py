@@ -191,6 +191,7 @@ def execute(path):
                 newGroups.load(os.path.join(settings['database.directory'], 'thermo'))
                 for smiles in speciesThermo:
                     newSpecies = Species().fromSMILES(smiles)
+                    newSpecies.generateResonanceIsomers()
                     speciesThermo[smiles].append(newGroups.getThermoDataFromGroups(newSpecies))
 
     parityData={}
