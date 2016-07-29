@@ -1343,14 +1343,14 @@ class ThermoDatabase(object):
         tokens = thermoData.comment.split()
         ringGroups = []
         polycyclicGroups = []
+        regex = "\((.*)\)" #only hit outermost parentheses
         for token in tokens:
-            regex = "\((.*)\)" #only hit outermost parentheses
-            if 'ring' in token:
+            if token.startswith('ring'):
                 splitTokens = re.split(regex, token)
                 assert len(splitTokens) == 3, 'token: {}'.format(token)
                 groupLabel = splitTokens[1]
                 ringGroups.append(self.groups['ring'].entries[groupLabel])
-            if 'polycyclic' in token:
+            if token.startswith('polycyclic'):
                 splitTokens = re.split(regex, token)
                 assert len(splitTokens) == 3, 'token: {}'.format(token)
                 groupLabel = splitTokens[1]
