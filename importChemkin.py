@@ -171,14 +171,14 @@ def parseCommandLineArguments():
     parser.add_argument(
         '-o', '--output-directory',
         type=str,
-        nargs=1,
+        nargs='?',
         default='',
         metavar='DIR',
         help='use DIR as output directory')
     parser.add_argument(
         '-s', '--scratch-directory',
         type=str,
-        nargs=1,
+        nargs='?',
         default='',
         metavar='DIR',
         help='use DIR as scratch directory')
