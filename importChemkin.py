@@ -1854,8 +1854,12 @@ class ModelMatcher():
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
-            spec.generateThermoData(database, quantumMechanics=rm.quantumMechanics)
-
+            try:
+                spec.generateThermoData(database, quantumMechanics=rm.quantumMechanics)
+            except:
+                logging.exception("Error generating thermo for species:\n{0!s}".format(spec.toAdjacencyList()))
+                logging.info("Trying again without QM")
+                spec.generateThermoData(database, quantumMechanics=None)
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
