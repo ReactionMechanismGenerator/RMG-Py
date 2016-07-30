@@ -576,6 +576,11 @@ class ModelMatcher():
             'excited[OH]': "1 O u3 p1 c0 {2,S}\n2 H u0 p0 c0 {1,S}",  # this is not right, but at least distinct from ground state doublet
             'excited[CH]': "1 C u1 p1 c0 {2,S}\n2 H u0 p0 c0 {1,S}",  # this is entirely backwards, but RMG thinks normal [CH] is a quartet, and this has to be different!
             'excited[O]': "1 O u0 p3 c0",  # RMG (via RDKit?) thinks this is water, and prints the wrong SMILES
+            '[NH2+][O-]': """multiplicity 2
+1 N u1 p0 c+1 {2,S} {3,S} {4,S}
+2 O u0 p3 c-1 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}""",  # workaround a bug
             }
 
         for species_label in known_names:
