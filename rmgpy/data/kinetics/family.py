@@ -695,10 +695,9 @@ class KineticsFamily(Database):
         training_file.write("\n\n")
 
         # get max reaction entry index from the existing training data
-        for depository in self.depositories:
-            if depository.label.endswith('training'):
-                break
-        else:
+        try:
+            depository = self.getTrainingDepository()
+        except:
             logging.info('Could not find training depository in family {0}.'.format(self.label))
             logging.info('Starting a new one')
             depository = KineticsDepository()
@@ -923,10 +922,9 @@ class KineticsFamily(Database):
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
         """
-        for depository in self.depositories:
-            if depository.label.endswith('training'):
-                break
-        else:
+        try:
+            depository = self.getTrainingDepository()
+        except:
             logging.info('Could not find training depository in family {0}.'.format(self.label))
             logging.info('Must be because you turned off the training depository.')
             return
@@ -1932,3 +1930,13 @@ class KineticsFamily(Database):
         for labeledReactant in labeledReactants:
             labeledReactants_spcs.append(Species(molecule=[labeledReactant]))
         reaction.reactants = labeledReactants_spcs
+
+    def getTrainingDepository(self):
+        """
+        Returns the `training` depository from self.depositories
+        """
+        for depository in self.depositories:
+            if depository.label.endswith('training'):
+                return depository
+        else:
+            raise Exception('Could not find training depository in family {0}.'.format(self.label))
