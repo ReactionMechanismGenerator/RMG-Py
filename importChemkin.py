@@ -2591,26 +2591,33 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         """Make (hopefully) non-controversial matches automatically"""
         output = [
             self.html_head(),
-            '<h1>Autoconfirm suggestions</h1><table style="width:500px">'
+            '<h1>Autoconfirm suggestions</h1><table style="width:500px">',
+            '<tr><th>Label</th>',
+            '<th>Reactions matched</th>'
+            '<th>Thermo matches</th>',
+            '<th>Count</th>',
+            '<th>Name matches</th>',
+            '</tr>'
             ]
         votes = self.votes.copy()
         for chemkinLabel in sorted(votes.keys(), key=lambda label:len(votes[label])):
             possibleMatches = votes[chemkinLabel]
-            output.append('\n<tr><td>{}</td> <td>'.format(chemkinLabel))
+            output.append('\n<tr><td>{}</td>'.format(chemkinLabel))
             if len(possibleMatches) != 1:
-                output.append('{} possible matches.'.format(len(possibleMatches)))
+                output.append('<td>{} possible matches.'.format(len(possibleMatches)))
                 output.append('Not confirming</td></tr>')
                 continue
+            autoConfirm = True  # for now...
             chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
             for matchingSpecies, votingReactions in possibleMatches.iteritems():
                 pass  # we know at this point there is only one iteritem
             fractionMatched = float(len(votingReactions)) / len(chemkinReactions)
-            output.append('{} of {} = {:.0f}% of reactions matched.'.format(len(votingReactions), len(chemkinReactions), fractionMatched * 100))
+            output.append('<td>{} of {} = {:.0f}%</td>'.format(len(votingReactions), len(chemkinReactions), fractionMatched * 100))
             if fractionMatched < 0.5:
-                output.append('Not confirming</td></tr>')
-                continue
+                autoConfirm = False
             try:
                 thermoMatches = []
+                output.append('<td>')
                 for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
                     namesMatch = ( librarySpeciesName.upper() == chemkinLabel.upper() )
                     thermoMatches.append(int(namesMatch))
@@ -2619,24 +2626,30 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                                         spec=librarySpeciesName,
                                         match=('goodmatch' if namesMatch else 'badmatch'),
                                         ))
-                output.append("have the same thermo.")
+                output.append("</td>")
             except KeyError:
-                output.append("No libraries match thermo</td><tr>")
-                continue
+                output.append("None</td>")
+                autoConfirm = False
+            output.append('<td>{} libraries'.format(len(thermoMatches)))
             if len(thermoMatches) < 2:
-                output.append("Insufficient libraries for auto match.</td></tr>")
-                continue
-            fractionMatched = float(sum(thermoMatches)) / len(thermoMatches)
-            output.append("{0:.0f}% name matches.".format(fractionMatched*100))
+                output.append(" is insufficient")
+                autoConfirm = False
+            if thermoMatches:
+                fractionMatched = float(sum(thermoMatches)) / len(thermoMatches)
+            else:
+                fractionMatched = 0
+            output.append("</td><td>{0:.0f}% name matches ".format(fractionMatched * 100))
             if fractionMatched < 0.5:
-                output.append("Insufficient name agreement for automatch</td></tr>")
-                continue
+                output.append(" is insufficient")
+                autoConfirm = False
 
             output.append("</td><td>{}".format(self._img(matchingSpecies)))
-            output.append("</td><td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a>".format(
+            output.append("</td><td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a></td>".format(
                         ckl=urllib2.quote(chemkinLabel),
                         rmgl=urllib2.quote(str(matchingSpecies))))
-            output.append('</td></tr>')
+            if autoConfirm:
+                output.append('<td>Autoconfirm passes!</td>')
+            output.append('</tr>')
         output.append("</table>")
         output.append(self.html_tail)
         return '\n'.join(output)
