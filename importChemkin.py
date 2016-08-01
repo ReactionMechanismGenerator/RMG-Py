@@ -2231,6 +2231,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="tentative.html">Tentative Matches.</a> <span id="tentative_count"></span></li>
 <li><a href="votes.html">Voting reactions list view.</a></li>
 <li><a href="votes2.html">Voting reactions table view.</a></li>
+<li><a href="autoconfirm.html">Autoconfirm table.</a></li>
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
 <li><a href="blocked.html">Blocked matches.</a></li>
@@ -2585,6 +2586,61 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return serve_file(os.path.join(self.outputPath, 'RMG-Py-thermo-library', 'ThermoLibrary.py'),
                           content_type='application/octet-stream')
 
+    @cherrypy.expose
+    def autoconfirm_html(self):
+        """Make (hopefully) non-controversial matches automatically"""
+        output = [
+            self.html_head(),
+            '<h1>Autoconfirm suggestions</h1><table style="width:500px">'
+            ]
+        votes = self.votes.copy()
+        for chemkinLabel in sorted(votes.keys(), key=lambda label:len(votes[label])):
+            possibleMatches = votes[chemkinLabel]
+            output.append('\n<tr><td>{}</td> <td>'.format(chemkinLabel))
+            if len(possibleMatches) != 1:
+                output.append('{} possible matches.'.format(len(possibleMatches)))
+                output.append('Not confirming</td></tr>')
+                continue
+            chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
+            for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                pass  # we know at this point there is only one iteritem
+            fractionMatched = float(len(votingReactions)) / len(chemkinReactions)
+            output.append('{} of {} = {:.0f}% of reactions matched.'.format(len(votingReactions), len(chemkinReactions), fractionMatched * 100))
+            if fractionMatched < 0.5:
+                output.append('Not confirming</td></tr>')
+                continue
+            try:
+                thermoMatches = []
+                for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
+                    namesMatch = ( librarySpeciesName.upper() == chemkinLabel.upper() )
+                    thermoMatches.append(int(namesMatch))
+                    output.append("<span title='{spec}' class='{match}'>{lib}</span>".format(
+                                        lib=libraryName,
+                                        spec=librarySpeciesName,
+                                        match=('goodmatch' if namesMatch else 'badmatch'),
+                                        ))
+                output.append("have the same thermo.")
+            except KeyError:
+                output.append("No libraries match thermo</td><tr>")
+                continue
+            if len(thermoMatches) < 2:
+                output.append("Insufficient libraries for auto match.</td></tr>")
+                continue
+            fractionMatched = float(sum(thermoMatches)) / len(thermoMatches)
+            output.append("{0:.0f}% name matches.".format(fractionMatched*100))
+            if fractionMatched < 0.5:
+                output.append("Insufficient name agreement for automatch</td></tr>")
+                continue
+
+            output.append("</td><td>{}".format(self._img(matchingSpecies)))
+            output.append("</td><td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a>".format(
+                        ckl=urllib2.quote(chemkinLabel),
+                        rmgl=urllib2.quote(str(matchingSpecies))))
+            output.append('</td></tr>')
+        output.append("</table>")
+        output.append(self.html_tail)
+        return '\n'.join(output)
+    
     @cherrypy.expose
     def votes2_html(self):
         votes = self.votes.copy()
