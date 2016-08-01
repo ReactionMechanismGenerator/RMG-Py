@@ -534,4 +534,47 @@ class KineticsDatabase(object):
         assert reaction is not None
         assert template is not None
         return reaction, template
+    
+    def extractSourceFromComments(self, reaction):
+        """
+        `reaction`: A reaction object containing kinetics data and kinetics data comments.  
+            Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
+            as loaded from the rmgpy.chemkin.loadChemkinFile function
+        
+        Parses the verbose string of comments from the thermo data of the species object,
+        and extracts the thermo sources.
 
+        Returns a dictionary with keys of either 'Rate Rules', 'Training', 'Library', or 'PDep'.
+        A reaction can only be estimated using one of these methods.
+        
+        source = {'RateRules': (Family_Label, OriginalTemplate, RateRules),
+                  'Library': String_Name_of_Library_Used,
+                  'PDep': Network_Index,
+                  'Training':  (Family_Label, Training_Reaction_Entry),
+                  }
+        """
+        from rmgpy.rmg.pdep import PDepReaction
+        from rmgpy.data.kinetics.library import LibraryReaction
+        from rmgpy.data.kinetics.family import TemplateReaction
+        
+        source = {}
+        
+        if isinstance(reaction, TemplateReaction):
+            # This reaction comes from rate rules
+            training, dataSource = self.families[reaction.family].extractSourceFromComments(reaction)
+            if training:
+                source['Training'] = dataSource
+            else:
+                source['Rate Rules'] = dataSource
+        elif isinstance(reaction, LibraryReaction):
+            # This reaction comes from a reaction library or seed mechanism
+            source['Library'] = reaction.library
+            
+        elif isinstance(reaction, PDepReaction):
+            # This reaction is a pressure-dependent reaction
+            source['PDep'] = reaction.network.index
+        
+        else:
+            raise Exception('Reaction {} must be either a TemplateReaction, LibraryReaction, or PDepReaction object for source data to be extracted.'.format(reaction))
+            
+        return source
