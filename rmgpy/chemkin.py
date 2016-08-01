@@ -560,7 +560,6 @@ def readReactionComments(reaction, comments, read = True):
         
         elif 'Template reaction:' in line:
             label = str(tokens[-1])
-            template = tokens[-1][1:-1].split(',')
             reaction = TemplateReaction(
                 index = reaction.index,
                 reactants = reaction.reactants, 
@@ -569,7 +568,6 @@ def readReactionComments(reaction, comments, read = True):
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 family = label,
-                template = [Entry(label=g) for g in template],
             )
             
         elif 'Library reaction:' in line or 'Seed mechanism:' in line:
