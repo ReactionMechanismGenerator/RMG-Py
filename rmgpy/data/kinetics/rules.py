@@ -440,9 +440,11 @@ class KineticsRules(Database):
         
         return entries
 
-    def fillRulesByAveragingUp(self, rootTemplate, alreadyDone):
+    def fillRulesByAveragingUp(self, rootTemplate, alreadyDone, verbose=False):
         """
         Fill in gaps in the kinetics rate rules by averaging child nodes.
+        If verbose is set to True, then exact sources of kinetics are saved in the kinetics comments
+        (warning: this uses up a lot of memory due to the extensively long comments)
         """
         rootLabel = ';'.join([g.label for g in rootTemplate])
         
@@ -472,7 +474,7 @@ class KineticsRules(Database):
             if label in alreadyDone:
                 kinetics = alreadyDone[label]
             else:
-                kinetics = self.fillRulesByAveragingUp(template, alreadyDone)
+                kinetics = self.fillRulesByAveragingUp(template, alreadyDone, verbose)
             
             if kinetics is not None:
                 kineticsList.append([kinetics, template])
@@ -494,26 +496,27 @@ class KineticsRules(Database):
             if len(kineticsList) > 1:
                 # We found one or more results! Let's average them together
                 kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                kinetics.comment = 'Average of ({0})'.format(
-                     ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
                 
-                # For debug mode: uncomment the following kinetics commenting
-                # lines and use them instead of the lines above. Caution: large memory usage.
-
-                # kinetics.comment += 'Average of ({0})'.format(
-                #     ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                if verbose:
+                    kinetics.comment = 'Average of ({0})'.format(
+                         ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                
+                else:
+                    kinetics.comment = 'Average of ({0})'.format(
+                     ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
 
             else:
                 k,t = kineticsList[0]
                 kinetics = deepcopy(k)
                 # Even though we are using just a single set of kinetics, it's still considered
                 # an average.  It just happens that the other distance 1 children had no data.
-                kinetics.comment = 'Average of ({0})'.format(';'.join(g.label for g in t))
                 
-                # For debug mode: uncomment the following kinetics commenting
-                # lines and use them instead of the lines above. Caution: large memory usage.
+                if verbose:
+                    kinetics.comment = 'Average of ({0})'.format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
+                else:
+                    kinetics.comment = 'Average of ({0})'.format(';'.join(g.label for g in t))
+                
 
-                # kinetics.comment += 'Average of ({0}).format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
             
             entry = Entry(
                 index = 0,

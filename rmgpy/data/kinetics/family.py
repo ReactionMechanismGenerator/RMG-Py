@@ -1037,13 +1037,13 @@ class KineticsFamily(Database):
         else:
             return self.groups.top
     
-    def fillKineticsRulesByAveragingUp(self):
+    def fillKineticsRulesByAveragingUp(self, verbose=False):
         """
         Fill in gaps in the kinetics rate rules by averaging child nodes
         recursively starting from the top level root template.
         """
         
-        self.rules.fillRulesByAveragingUp(self.getRootTemplate(), {})
+        self.rules.fillRulesByAveragingUp(self.getRootTemplate(), {}, verbose)
         
         
 
