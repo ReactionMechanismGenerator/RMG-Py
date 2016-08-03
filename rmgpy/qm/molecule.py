@@ -531,11 +531,6 @@ class QMMolecule:
         if not loadedMolecule.isIsomorphic(self.molecule):
             logging.error('The adjacencyList in thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
             return None
-        
-        if not local_context['thermoData'].comment.startswith('QM {0}'.format(self.__class__.__name__)):
-            logging.info('Loaded ThermoData is not for {0}'.format(self.__class__.__name__))
-            return None
-            
         thermo = local_context['thermoData']
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
         self.thermo = thermo
