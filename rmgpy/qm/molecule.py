@@ -431,29 +431,12 @@ class QMMolecule:
         Check the paths in the settings are OK. Make folders as necessary.
         """        
 
-
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
-
-#        rPath = os.path.join('Species', self.uniqueID, self.settings.method)
-#
-#        pathList = [self.settings.fileStore, self.settings.scratchDirectory]
-#        for i, path in enumerate(pathList):
-#            if 'Species' not in path:
-#                path = os.path.join(path, rPath)
-#            path = os.path.expandvars(path)
-#            pathList[i] = path
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
-
-        self.settings.fileStore, self.settings.scratchDirectory = pathList
 
     def createGeometry(self, boundsMatrix=None, atomMatch=None):
         """
@@ -536,6 +519,7 @@ class QMMolecule:
         Try loading a thermo data from a previous run.
         """
         filePath = self.getThermoFilePath()
+        
         local_context = loadThermoDataFile(filePath)
         if local_context is None:
             # file does not exist or is invalid
@@ -547,6 +531,11 @@ class QMMolecule:
         if not loadedMolecule.isIsomorphic(self.molecule):
             logging.error('The adjacencyList in thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
             return None
+        
+        if not local_context['thermoData'].comment.startswith('QM {0}'.format(self.__class__.__name__)):
+            logging.info('Loaded ThermoData is not for {0}'.format(self.__class__.__name__))
+            return None
+            
         thermo = local_context['thermoData']
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
         self.thermo = thermo

@@ -201,10 +201,10 @@ class QMCalculator():
                     logging.warning("Checking it already exists...")
                     assert os.path.exists(path), "Path {0} still doesn't exist?".format(path)
 
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+        # if not os.path.exists(self.settings.RMG_bin_path):
+        #     raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
+        # if not os.path.isdir(self.settings.RMG_bin_path):
+        #     raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
 
     def getThermoData(self, molecule):
         """
