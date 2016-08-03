@@ -218,17 +218,17 @@ class TestQMCalculator(unittest.TestCase):
 		thermo1 = self.mop1.getThermoData(mol)
 		thermo2 = self.mop2.getThermoData(mol)
 		thermo3 = self.mop3.getThermoData(mol)
-			
+		
 		self.assertTrue(thermo1.comment.startswith('QM MopacMolPM3'))
 		self.assertTrue(thermo2.comment.startswith('QM MopacMolPM6'))
 		self.assertTrue(thermo3.comment.startswith('QM MopacMolPM7'))
 		
 		self.assertAlmostEqual(thermo1.H298.value_si, 169708.0608, 1) # to 1 decimal place
 		self.assertAlmostEqual(thermo1.S298.value_si, 334.5007584, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo2.H298.value_si, 167704.4270, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo2.S298.value_si, 338.0999241, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo3.H298.value_si, 166168.8571, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo3.S298.value_si, 336.3330406, 1) # to 1 decimal place
+		self.assertAlmostEqual(thermo2.H298.value_si, 169708.0225, 1) # to 1 decimal place
+		self.assertAlmostEqual(thermo2.S298.value_si, 334.5221377, 1) # to 1 decimal place
+		self.assertAlmostEqual(thermo3.H298.value_si, 169708.0224, 1) # to 1 decimal place
+		self.assertAlmostEqual(thermo3.S298.value_si, 334.5221377, 1) # to 1 decimal place
 		
 	@unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
 	def testGetThermoDataGaussian(self):
