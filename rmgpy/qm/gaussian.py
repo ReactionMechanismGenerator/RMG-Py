@@ -1169,7 +1169,7 @@ class GaussianTS(QMReaction, Gaussian):
             for molecule in self.reaction.reactants:
                 radicalNumber += molecule.molecule[0].getRadicalCount()
 
-        self.qmData = CCLibData(cclibData, radicalNumber+1)
+        self.qmData = parseCCLibData(cclibData, radicalNumber+1)
         return self.qmData
 
     def parseTS(self, labels):

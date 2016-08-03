@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE, STDOUT
 from rmgpy.molecule import Molecule, Atom, getElement
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from qmdata import CCLibData
+from qmdata import parseCCLibData
 from molecule import QMMolecule
 from reaction import QMReaction
 from rmgpy.data.base import Entry
@@ -172,7 +172,7 @@ class NWChem:
 		parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
 		cclibData = parser.parse()
 		radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-		qmData = CCLibData(cclibData, radicalNumber+1)
+		qmData = parseCCLibData(cclibData, radicalNumber+1)
 		return qmData
 
 	def writeInputFile(self, output, attempt=None, keywords=None, inputFilePath=None):#,  numProcShared=None, memory=None, checkPoint=False, bottomKeys=None):
@@ -930,7 +930,7 @@ class NWChemTS(QMReaction, NWChem):
 			for molecule in self.reaction.reactants:
 				radicalNumber += molecule.molecule[0].getRadicalCount() 
 
-		self.qmData = CCLibData(cclibData, radicalNumber+1)
+		self.qmData = parseCCLibData(cclibData, radicalNumber+1)
 		return self.qmData
 
 	def parseTS(self, labels):
