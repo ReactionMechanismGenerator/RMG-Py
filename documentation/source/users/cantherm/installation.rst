@@ -42,10 +42,10 @@ Installing CanTherm
 Once you have obtained the required dependencies, CanTherm can be installed by 
 first obtaining the RMG-Py source code by either downloading into a directory using git::
 
-	git clone git@github.com:GreenGroup/RMG-Py.git
+	git clone git@github.com:ReactionMechanismGenerator/RMG-Py.git
 	
 or by downloading the zip file of the current RMG-Py master source code found 
-`here <https://github.com/GreenGroup/RMG-Py/archive/master.zip>`_ and unzipping into
+`here <https://github.com/ReactionMechanismGenerator/RMG-Py/archive/master.zip>`_ and unzipping into
 the appropriate directory.
 
 Inside the root package directory for ``RMG-Py``, execute the following make command::

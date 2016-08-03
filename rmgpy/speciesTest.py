@@ -62,8 +62,8 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
         self.assertEqual(self.species.molecule[0].multiplicity, species.molecule[0].multiplicity)
-        self.assertEqual(self.species.thermo.H298.value_si, species.thermo.H298.value_si)
-        self.assertEqual(self.species.thermo.H298.units, species.thermo.H298.units)
+        self.assertEqual(self.species.getThermoData().H298.value_si, species.getThermoData().H298.value_si)
+        self.assertEqual(self.species.getThermoData().H298.units, species.getThermoData().H298.units)
         self.assertEqual(len(self.species.conformer.modes), len(species.conformer.modes))
         self.assertEqual(len(self.species.molecule), len(species.molecule))
         self.assertTrue(self.species.molecule[0].isIsomorphic(species.molecule[0]))
@@ -88,8 +88,8 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
         self.assertEqual(self.species.molecule[0].multiplicity, species.molecule[0].multiplicity)
-        self.assertEqual(self.species.thermo.H298.value_si, species.thermo.H298.value_si)
-        self.assertEqual(self.species.thermo.H298.units, species.thermo.H298.units)
+        self.assertEqual(self.species.getThermoData().H298.value_si, species.getThermoData().H298.value_si)
+        self.assertEqual(self.species.getThermoData().H298.units, species.getThermoData().H298.units)
         self.assertEqual(len(self.species.conformer.modes), len(species.conformer.modes))
         self.assertEqual(len(self.species.molecule), len(species.molecule))
         self.assertTrue(self.species.molecule[0].isIsomorphic(species.molecule[0]))
@@ -132,6 +132,80 @@ class TestSpecies(unittest.TestCase):
         self.assertEquals(self.species.props['foo'], 'bar')
         self.assertDictEqual(spc2.props, {})
         self.assertDictEqual(spc3.props, {'foo': 'bla'})
+
+    def testResonanceIsomersGenerated(self):
+        "Test that 1-penten-3-yl makes 2-penten-1-yl resonance isomer"
+        spec = Species().fromSMILES('C=C[CH]CC')
+        spec.generateResonanceIsomers()
+        self.assertEquals(len(spec.molecule), 2)
+        self.assertEquals(spec.molecule[1].toSMILES(), "[CH2]C=CCC")
+
+    def testResonaceIsomersRepresented(self):
+        "Test that both resonance forms of 1-penten-3-yl are printed by __repr__"
+        spec = Species().fromSMILES('C=C[CH]CC')
+        spec.generateResonanceIsomers()
+        exec('spec2 = {0!r}'.format(spec))
+        self.assertEqual(len(spec.molecule), len(spec2.molecule))
+        for i, j in zip(spec.molecule, spec2.molecule):
+            self.assertTrue(i.isIsomorphic(j))
+
+    def testCopy(self):
+        """Test that we can make a copy of a Species object."""
+
+        spc_cp = self.species.copy()
+
+        self.assertTrue(id(self.species) != id(spc_cp))
+        self.assertTrue(self.species.isIsomorphic(spc_cp))
+        self.assertEquals(self.species.label, spc_cp.label)
+        self.assertEquals(self.species.index, spc_cp.index)
+
+        self.assertTrue(self.species.molecularWeight.equals(spc_cp.molecularWeight))
+        self.assertEquals(self.species.reactive, spc_cp.reactive)
+        
+    def testCantera(self):
+        """
+        Test that a Cantera Species object is created correctly.
+        """
+        from rmgpy.thermo import NASA, NASAPolynomial
+        import cantera as ct
+        rmgSpecies = Species(label="Ar", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,4.37967], Tmin=(200,'K'), Tmax=(1000,'K')), NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,4.37967], Tmin=(1000,'K'), Tmax=(6000,'K'))], Tmin=(200,'K'), Tmax=(6000,'K'), comment="""
+Thermo library: primaryThermoLibrary
+"""), molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+        
+        rmg_ctSpecies = rmgSpecies.toCantera()
+        
+        ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
+        atoms='Ar:1',
+        thermo=(NASA([200.00, 1000.00],
+                     [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
+                       0.00000000E+00,  0.00000000E+00, -7.45375000E+02,
+                       4.37967000E+00]),
+                NASA([1000.00, 6000.00],
+                     [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
+                       0.00000000E+00,  0.00000000E+00, -7.45375000E+02,
+                       4.37967000E+00])),
+        transport=gas_transport(geom='atom',
+                                diam=3.33,
+                                well_depth=136.501,
+                                dipole=2.0,
+                                polar=1.0,
+                                rot_relax=15.0))""")
+        self.assertEqual(type(rmg_ctSpecies),type(ctSpecies))
+        self.assertEqual(rmg_ctSpecies.name, ctSpecies.name)
+        self.assertEqual(rmg_ctSpecies.composition, ctSpecies.composition)
+        self.assertEqual(rmg_ctSpecies.size, ctSpecies.size)
+        self.assertEqual(type(rmg_ctSpecies.thermo), type(ctSpecies.thermo))
+        self.assertEqual(type(rmg_ctSpecies.transport), type(ctSpecies.transport))
+
+    def testGetTransportData(self):
+        """
+        Test that transport data can be retrieved correctly via the getTransportData method.
+        """
+
+        spc = Species(label="Ar", molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+
+        self.assertTrue(spc.getTransportData() is spc.transportData)
+
 ################################################################################
 
 if __name__ == '__main__':

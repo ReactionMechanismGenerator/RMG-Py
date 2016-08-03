@@ -40,6 +40,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
+from rmgpy.rmg.react import react
 
 ################################################################################
 
@@ -103,7 +104,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
         """
         Get the source of this PDepReaction
         """
-        return self.network
+        return str(self.network)
 
 ################################################################################
 
@@ -262,12 +263,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         return ratios
 
-    def exploreIsomer(self, isomer, reactionModel, database):
+    def exploreIsomer(self, isomer):
         """
         Explore a previously-unexplored unimolecular `isomer` in this partial
         network using the provided core-edge reaction model `reactionModel`,
         returning the new reactions and new species.
         """
+
         if isomer in self.explored:
             logging.warning('Already explored isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
             return []
@@ -286,15 +288,17 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.products.remove(product)
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
-        newReactionList = reactionModel.react(database, isomer)
+
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with itself (e.g. A + A <---> products)
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        return newReactionList
+        newReactions = react((isomer,))
+        
+        return newReactions
 
-    def addPathReaction(self, newReaction, newSpecies):
+    def addPathReaction(self, newReaction):
         """
         Add a path reaction to the network. If the path reaction already exists,
         no action is taken.
@@ -445,14 +449,14 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for product in products:
             self.products.append(Configuration(*product))
 
-    def update(self, reactionModel, database, pdepSettings):
+    def update(self, reactionModel, pdepSettings):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
         from rmgpy.kinetics import Arrhenius, KineticsData, MultiArrhenius
-        from rmgpy.measure.collision import SingleExponentialDown
-        from rmgpy.measure.reaction import fitInterpolationModel
+        from rmgpy.pdep.collision import SingleExponentialDown
+        from rmgpy.pdep.reaction import fitInterpolationModel
         
         # Get the parameters for the pressure dependence calculation
         job = pdepSettings
@@ -491,22 +495,22 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
-            if not spec.hasStatMech(): spec.generateStatMech(database)
+            if not spec.hasStatMech(): spec.generateStatMech()
         for reactants in self.reactants:
             for spec in reactants.species:
-                if not spec.hasStatMech(): spec.generateStatMech(database)
+                if not spec.hasStatMech(): spec.generateStatMech()
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.pathReactions:
             for spec in reaction.reactants:
-                if not spec.hasStatMech(): spec.generateStatMech(database)
+                if not spec.hasStatMech(): spec.generateStatMech()
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
         for products in self.products:
             for spec in products.species:
                 if spec.conformer is None:
-                    spec.conformer = Conformer(E0=spec.thermo.E0)
+                    spec.conformer = Conformer(E0=spec.getThermoData().E0)
         
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
@@ -542,7 +546,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for spec in bathGas:
             # is this really the only/best way to weight them? And what is alpha0?
             self.bathGas[spec] = 1.0 / len(bathGas)
-            spec.collisionModel = SingleExponentialDown(alpha0=4.86 * 4184)
+            spec.collisionModel = SingleExponentialDown(alpha0=(4.86,'kcal/mol'))
 
         # Save input file
         if not self.label: self.label = str(self.index)

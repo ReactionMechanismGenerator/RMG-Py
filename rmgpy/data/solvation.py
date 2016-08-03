@@ -35,6 +35,8 @@
 import os.path
 import math
 import logging
+import rmgpy.constants as constants
+from rmgpy.species import Species
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
@@ -208,13 +210,15 @@ class SoluteData():
     
     def getStokesDiffusivity(self, T, solventViscosity):
         """
-        Get diffusivity of solute using the Stokes-Einstein sphere relation. Radius is 
-        found from the McGowan volume.
+        Get diffusivity of solute using the Stokes-Einstein sphere relation. 
+        Radius is found from the McGowan volume.
+        solventViscosity should be given in  kg/s/m which equals Pa.s
+        (water is about 9e-4 Pa.s at 25C, propanol is 2e-3 Pa.s)
+        Returns D in m2/s
         """
-        k_b = 1.3806488e-23 # m2*kg/s2/K
-        radius = math.pow((75*self.V/3.14159),(1.0/3.0))/100 # in meters
-        D = k_b*T/6/3.14159/solventViscosity/radius # m2/s
-        return D
+        radius = math.pow((75*self.V/constants.pi/constants.Na),(1.0/3.0))/100 # in meters, V is in MgGowan volume in cm3/mol/100
+        D = constants.kB*T/6/constants.pi/solventViscosity/radius # m2/s
+        return D  # m2/s
             
     def setMcGowanVolume(self, species):
         """
@@ -268,14 +272,29 @@ class SolventLibrary(Database):
                   index,
                   label,
                   solvent,
+                  molecule=None,
                   reference=None,
                   referenceType='',
                   shortDesc='',
                   longDesc='',
                   ):
+        spc = molecule
+        if molecule is not None:
+            try:
+                spc = Species().fromSMILES(molecule)
+            except:
+                logging.debug("Solvent '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
+                try:
+                    spc = Species().fromAdjacencyList(molecule)
+                except:
+                    logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule, self.name))
+                    raise
+            spc.generateResonanceIsomers()
+
         self.entries[label] = Entry(
             index = index,
             label = label,
+            item = spc,
             data = solvent,
             reference = reference,
             referenceType = referenceType,
@@ -300,7 +319,12 @@ class SolventLibrary(Database):
         Get a solvent's data from its name
         """
         return self.entries[label].data
-        
+
+    def getSolventStructure(self, label):
+        """
+        Get a solvent's molecular structure as SMILES or adjacency list from its name
+        """
+        return self.entries[label].item
         
 class SoluteLibrary(Database):
     """
@@ -320,10 +344,11 @@ class SoluteLibrary(Database):
                   longDesc='',
                   ):
         try:
-            mol = Molecule(SMILES=molecule)
+            spc = Species().fromSMILES(molecule)
         except:
+            logging.debug("Solute '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
             try:
-                mol = Molecule().fromAdjacencyList(molecule)
+                spc = Species().fromAdjacencyList(molecule)
             except:
                 logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule,self.name))
                 raise
@@ -331,7 +356,7 @@ class SoluteLibrary(Database):
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = mol,
+            item = spc,
             data = solute,
             reference = reference,
             referenceType = referenceType,
@@ -446,7 +471,6 @@ class SolvationDatabase(object):
         d = {
             'libraries': self.libraries,
             'groups': self.groups,
-            'libraryOrder': self.libraryOrder,
             }
         return (SolvationDatabase, (), d)
 
@@ -456,7 +480,6 @@ class SolvationDatabase(object):
         """
         self.libraries = d['libraries']
         self.groups = d['groups']
-        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, libraries=None, depository=True):
         """
@@ -477,7 +500,13 @@ class SolvationDatabase(object):
         except:
             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
         return solventData
-        
+
+    def getSolventStructure(self, solvent_name):
+        try:
+            solventStructure = self.libraries['solvent'].getSolventStructure(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return solventStructure
         
     def loadGroups(self, path):
         """
@@ -509,8 +538,8 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.libraries['solvent'].save(os.path.join(path,'solvent.py'))
-        self.libraries['solute'].save(os.path.join(path,'solute.py'))
+        for library in self.libraries.keys():
+            self.libraries[library].save(os.path.join(path, library+'.py'))
         
     def saveGroups(self, path):
         """
@@ -518,9 +547,8 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
-        self.groups['nonacentered'].save(os.path.join(path, 'nonacentered.py'))
-        self.groups['radical'].save(os.path.join(path, 'radical.py'))
+        for group in self.groups.keys():
+            self.groups[group].save(os.path.join(path, group+'.py'))
 
     def loadOld(self, path):
         """
@@ -634,9 +662,8 @@ class SolvationDatabase(object):
         :class:`DatabaseError` is raised.
         """
         for label, entry in library.entries.iteritems():
-            for molecule in species.molecule:
-                if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                    return (deepcopy(entry.data), library, entry)
+            if species.isIsomorphic(entry.item) and entry.data is not None:
+                return (deepcopy(entry.data), library, entry)
         return None
 
     def getSoluteDataFromGroups(self, species):
@@ -719,11 +746,8 @@ class SolvationDatabase(object):
                         atom.incrementRadical()
                         addedToPairs[atom] += 1
 
-        saturatedStruct.updateConnectivityValues()
-        saturatedStruct.sortVertices()
-        saturatedStruct.updateAtomTypes()
+        saturatedStruct.update()
         saturatedStruct.updateLonePairs()
-        saturatedStruct.updateMultiplicity()
         
         return saturatedStruct, addedToPairs
 
@@ -766,7 +790,7 @@ class SolvationDatabase(object):
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the thermo wrong
-        molecule.sortVertices()
+        molecule.sortAtoms()
 
         # Create the SoluteData object with the intercepts from the Platts groups
         soluteData = SoluteData(
@@ -900,3 +924,25 @@ class SolvationDatabase(object):
         correction.gibbs = self.calcG(soluteData, solventData)  
         correction.entropy = self.calcS(correction.gibbs, correction.enthalpy) 
         return correction
+
+    def checkSolventinInitialSpecies(self,rmg,solventStructure):
+        """
+        Given the instance of RMG class and the solventStructure, it checks whether the solvent is listed as one
+        of the initial species.
+        If the SMILES / adjacency list for all the solvents exist in the solvent library, it uses the solvent's
+        molecular structure to determine whether the species is the solvent or not.
+        If the solvent library does not have SMILES / adjacency list, then it uses the solvent's string name
+        to determine whether the species is the solvent or not
+        """
+        for spec in rmg.initialSpecies:
+            if solventStructure is not None:
+                spec.isSolvent = spec.isIsomorphic(solventStructure)
+            else:
+                spec.isSolvent = rmg.solvent == spec.label
+        if not any([spec.isSolvent for spec in rmg.initialSpecies]):
+            if solventStructure is not None:
+                logging.info('One of the initial species must be the solvent')
+                raise Exception('One of the initial species must be the solvent')
+            else:
+                logging.info('One of the initial species must be the solvent with the same string name')
+                raise Exception('One of the initial species must be the solvent with the same string name')

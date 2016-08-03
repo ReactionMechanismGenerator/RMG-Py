@@ -58,6 +58,21 @@ cdef class SingleExponentialDown:
     `n`                 The temperature exponent
     =================== ========================================================
     
+    Based around the collisional energy transfer probability function
+    
+    .. math:: P(E, E^\\prime) = C(E^\\prime) \\exp \\left( -\\frac{E^\\prime - E}{\\alpha} \\right) \\hspace{40pt} E < E^\\prime
+    
+    where the parameter :math:`\\alpha = \\left< \\Delta E_\\mathrm{d} \\right>`
+    represents the average energy transferred in a deactivating collision. This
+    is the most commonly-used collision model, simply because it only has one
+    parameter to determine. The parameter :math:`\\alpha` is specified using the
+    equation
+    
+    .. math:: \\alpha = \\alpha_0 \\left( \\frac{T}{T_0} \\right)^n
+    
+    where :math:`\\alpha_0` is the value of :math:`\\alpha` at temperature
+    :math:`T_0` in K. Set the exponent :math:`n` to zero to obtain a
+    temperature-independent value for :math:`\\alpha`.
     """
 
     def __init__(self, alpha0=None, T0=None, n=0.0):

@@ -1,0 +1,21 @@
+! Species         Shape    LJ-depth  LJ-diam   DiplMom   Polzblty  RotRelaxNum Data     
+! Name            Index    epsilon/k_B sigma     mu        alpha     Zrot      Source   
+Ar                  0     136.501     3.330     0.000     0.000     0.000    ! GRI-Mech
+He                  0     148.600     3.758     0.000     0.000     0.000    ! Epsilon & sigma estimated with fixed Lennard Jones Parameters. This is the fallback method! Try improving transport databases!
+Ne                  0     148.600     3.758     0.000     0.000     0.000    ! Epsilon & sigma estimated with fixed Lennard Jones Parameters. This is the fallback method! Try improving transport databases!
+N2                  1      97.530     3.621     0.000     1.760     4.000    ! GRI-Mech
+ethane(1)           2     252.301     4.302     0.000     0.000     1.500    ! GRI-Mech
+CH3(2)              2     144.001     3.800     0.000     0.000     0.000    ! GRI-Mech
+C2H5(3)             2     252.301     4.302     0.000     0.000     1.500    ! GRI-Mech
+C(6)                2     141.400     3.746     0.000     2.600    13.000    ! GRI-Mech
+H(4)                0     145.000     2.050     0.000     0.000     0.000    ! GRI-Mech
+C2H4(8)             2     280.801     3.971     0.000     0.000     1.500    ! GRI-Mech
+H2(12)              1      38.000     2.920     0.000     0.790   280.000    ! GRI-Mech
+C3H7(14)            2     266.801     4.982     0.000     0.000     1.000    ! GRI-Mech
+C2H3(13)            2     209.001     4.100     0.000     0.000     1.000    ! GRI-Mech
+C#C(25)             1     209.001     4.100     0.000     0.000     2.500    ! GRI-Mech
+C4H7(28)            2     348.453     5.213     0.000     0.000     0.000    ! Epsilon & sigma estimated with Tc=452.54 K, Pc=46.4 bar (from Joback method)
+C4H7(38)            2     366.039     5.509     0.000     0.000     0.000    ! Epsilon & sigma estimated with Tc=475.38 K, Pc=41.3 bar (from Joback method)
+C3H5(32)            2     260.001     4.850     0.000     0.000     1.000    ! GRI-Mech
+C4H6(30)            2     357.002     5.180     0.000     0.000     1.000    ! GRI-Mech
+C4H7(42)            2     359.053     5.289     0.000     0.000     0.000    ! Epsilon & sigma estimated with Tc=466.30 K, Pc=45.78 bar (from Joback method)

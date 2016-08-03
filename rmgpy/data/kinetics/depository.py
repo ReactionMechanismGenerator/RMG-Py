@@ -98,7 +98,7 @@ class DepositoryReaction(Reaction):
         Return the database that was the source of this reaction. For a
         DepositoryReaction this should be a KineticsDepository object.
         """
-        return self.depository
+        return self.depository.label
 
 ################################################################################
 

@@ -37,6 +37,8 @@ import numpy
 
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.molecule import Molecule
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -119,21 +121,78 @@ class TestThirdBody(unittest.TestCase):
         """
         P = 1.0
         # Test that each pure bath gas gives the correct effective pressure
-        species = self.efficiencies.keys()
-        for spec, eff in self.efficiencies.items():
+        # Create list of species objects 
+        species = [Species(molecule=[mol]) for mol in self.thirdBody.efficiencies.keys()]
+        for mol, eff in self.thirdBody.efficiencies.items():
+            for spec in species:
+                if spec.isIsomorphic(mol):
+                    i = species.index(spec)
+                    break
             fractions = numpy.zeros(len(species))
-            i = species.index(spec)
             fractions[i] = 1.0
             Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
-            self.assertEqual(P * eff, Peff)
+            self.assertAlmostEqual(P * eff, Peff)
         # Also test a mixture of bath gases
         fractions = numpy.zeros(len(species))
         fractions[0] = 0.5
         fractions[1] = 0.5
-        eff = 0.5 * self.efficiencies[species[0]] + 0.5 * self.efficiencies[species[1]]
+        eff = 0
+        for mol in self.thirdBody.efficiencies.keys():
+            if species[0].isIsomorphic(mol):
+                eff += 0.5 * self.thirdBody.efficiencies[mol]
+            if species[1].isIsomorphic(mol):
+                eff += 0.5 * self.thirdBody.efficiencies[mol]
         Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
-        self.assertEqual(P * eff, Peff)
-            
+        self.assertAlmostEqual(P * eff, Peff)
+        
+        # Test the same thing, only with a list of species that are Molecule objects
+        species = [mol.copy(deep=True) for mol in self.thirdBody.efficiencies.keys()]
+        for mol, eff in self.thirdBody.efficiencies.items():
+            for spec in species:
+                if spec.isIsomorphic(mol):
+                    i = species.index(spec)
+                    break
+            fractions = numpy.zeros(len(species))
+            fractions[i] = 1.0
+            Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+            self.assertAlmostEqual(P * eff, Peff)
+        # Also test a mixture of bath gases
+        eff = 0
+        for mol in self.thirdBody.efficiencies.keys():
+            if species[0].isIsomorphic(mol):
+                eff += 0.5 * self.thirdBody.efficiencies[mol]
+            if species[1].isIsomorphic(mol):
+                eff += 0.5 * self.thirdBody.efficiencies[mol]
+        
+        fractions = numpy.zeros(len(species))
+        fractions[0] = 0.5
+        fractions[1] = 0.5
+        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        self.assertAlmostEqual(P * eff, Peff)
+        
+        # Here, test a non-normalized set of fractions (they are still 50% of each)
+        fractions = numpy.zeros(len(species))
+        fractions[0] = 0.7
+        fractions[1] = 0.7
+        Peff = self.thirdBody.getEffectivePressure(P, species, fractions)
+        self.assertAlmostEqual(P * eff, Peff)
+        
+    def test_getEffectiveColliderEfficiencies(self):
+        """
+        Test the getEffectiveColliderEfficiencies() method
+        """
+        # Create list of molecules
+        molecules = [Molecule(SMILES=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
+        methodEfficiencies = self.thirdBody.getEffectiveColliderEfficiencies(molecules)
+        efficiencies = numpy.array([3, 2, 3, 6, 0.7, 1.5, 2])
+        numpy.testing.assert_array_almost_equal(efficiencies, methodEfficiencies)
+        
+        # Use a smaller list of molecules
+        molecules = [Molecule(SMILES=smiles) for smiles in ["C", "CC", "[Ar]"]]
+        methodEfficiencies = self.thirdBody.getEffectiveColliderEfficiencies(molecules)
+        efficiencies = numpy.array([3, 3, 0.7])
+        numpy.testing.assert_array_almost_equal(efficiencies, methodEfficiencies)
+
     def test_getRateCoefficient(self):
         """
         Test the ThirdBody.getRateCoefficient() method.
@@ -174,7 +233,13 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmin.units, thirdBody.Pmin.units)
         self.assertAlmostEqual(self.thirdBody.Pmax.value, thirdBody.Pmax.value, 4)
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
-        self.assertEqual(self.thirdBody.efficiencies, thirdBody.efficiencies)
+        efficiencies = {}
+        for mol, eff in self.thirdBody.efficiencies.iteritems():
+            efficiencies[mol.toSMILES()] = eff
+        pickled_efficiencies = {}
+        for mol, eff in thirdBody.efficiencies.iteritems():
+            pickled_efficiencies[mol.toSMILES()] = eff
+        self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
 
     def test_repr(self):
@@ -200,7 +265,13 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmin.units, thirdBody.Pmin.units)
         self.assertAlmostEqual(self.thirdBody.Pmax.value, thirdBody.Pmax.value, 4)
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
-        self.assertEqual(self.thirdBody.efficiencies, thirdBody.efficiencies)
+        efficiencies = {}
+        for mol, eff in self.thirdBody.efficiencies.iteritems():
+            efficiencies[mol.toSMILES()] = eff
+        pickled_efficiencies = {}
+        for mol, eff in thirdBody.efficiencies.iteritems():
+            pickled_efficiencies[mol.toSMILES()] = eff
+        self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
         
     def test_changeRate(self):
@@ -350,7 +421,13 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmin.units, lindemann.Pmin.units)
         self.assertAlmostEqual(self.lindemann.Pmax.value, lindemann.Pmax.value, 4)
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
-        self.assertEqual(self.lindemann.efficiencies, lindemann.efficiencies)
+        efficiencies = {}
+        for mol, eff in self.lindemann.efficiencies.iteritems():
+            efficiencies[mol.toSMILES()] = eff
+        pickled_efficiencies = {}
+        for mol, eff in lindemann.efficiencies.iteritems():
+            pickled_efficiencies[mol.toSMILES()] = eff
+        self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
 
     def test_repr(self):
@@ -384,7 +461,13 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmin.units, lindemann.Pmin.units)
         self.assertAlmostEqual(self.lindemann.Pmax.value, lindemann.Pmax.value, 4)
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
-        self.assertEqual(self.lindemann.efficiencies, lindemann.efficiencies)
+        efficiencies = {}
+        for mol, eff in self.lindemann.efficiencies.iteritems():
+            efficiencies[mol.toSMILES()] = eff
+        pickled_efficiencies = {}
+        for mol, eff in lindemann.efficiencies.iteritems():
+            pickled_efficiencies[mol.toSMILES()] = eff
+        self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
         
     def test_changeRate(self):
@@ -572,8 +655,14 @@ class TestTroe(unittest.TestCase):
         self.assertAlmostEqual(self.troe.Pmin.value, troe.Pmin.value, 4)
         self.assertEqual(self.troe.Pmin.units, troe.Pmin.units)
         self.assertAlmostEqual(self.troe.Pmax.value, troe.Pmax.value, 4)
-        self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
-        self.assertEqual(self.troe.efficiencies, troe.efficiencies)
+        self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)        
+        efficiencies = {}
+        for mol, eff in self.troe.efficiencies.iteritems():
+            efficiencies[mol.toSMILES()] = eff
+        pickled_efficiencies = {}
+        for mol, eff in troe.efficiencies.iteritems():
+            pickled_efficiencies[mol.toSMILES()] = eff
+        self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
 
     def test_repr(self):
@@ -613,8 +702,14 @@ class TestTroe(unittest.TestCase):
         self.assertAlmostEqual(self.troe.Pmin.value, troe.Pmin.value, 4)
         self.assertEqual(self.troe.Pmin.units, troe.Pmin.units)
         self.assertAlmostEqual(self.troe.Pmax.value, troe.Pmax.value, 4)
-        self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
-        self.assertEqual(self.troe.efficiencies, troe.efficiencies)
+        self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)  
+        efficiencies = {}
+        for mol, eff in self.troe.efficiencies.iteritems():
+            efficiencies[mol.toSMILES()] = eff
+        pickled_efficiencies = {}
+        for mol, eff in troe.efficiencies.iteritems():
+            pickled_efficiencies[mol.toSMILES()] = eff
+        self.assertEqual(efficiencies, pickled_efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
         
     def test_changeRate(self):

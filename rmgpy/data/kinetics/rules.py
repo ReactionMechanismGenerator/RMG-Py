@@ -45,8 +45,7 @@ from rmgpy.data.base import Database, Entry, DatabaseError, getAllCombinations
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import ArrheniusEP
-from .common import KineticsError, saveEntry, \
-    BIMOLECULAR_KINETICS_FAMILIES, UNIMOLECULAR_KINETICS_FAMILIES
+from .common import KineticsError, saveEntry
 
 ################################################################################
 
@@ -103,6 +102,56 @@ class KineticsRules(Database):
         Process a list of parameters `data` as read from an old-style RMG
         thermo database, returning the corresponding kinetics object.
         """
+        
+        # The names of all of the RMG reaction families that are bimolecular
+        BIMOLECULAR_KINETICS_FAMILIES = [
+            'H_Abstraction',
+            'R_Addition_MultipleBond',
+            'R_Recombination',
+            'Disproportionation',
+            '1+2_Cycloaddition',
+            '2+2_cycloaddition_Cd',
+            '2+2_cycloaddition_CO',
+            '2+2_cycloaddition_CCO',
+            'Diels_alder_addition',
+            '1,2_Insertion',
+            '1,3_Insertion_CO2',
+            '1,3_Insertion_ROR',
+            'R_Addition_COm',
+            'Oa_R_Recombination',
+            'Substitution_O',
+            'SubstitutionS',
+            'R_Addition_CSm',
+            '1,3_Insertion_RSR',
+            'lone_electron_pair_bond',
+        ]
+        
+        # The names of all of the RMG reaction families that are unimolecular
+        UNIMOLECULAR_KINETICS_FAMILIES = [
+            'intra_H_migration',
+            'Birad_recombination',
+            'intra_OH_migration',
+            'HO2_Elimination_from_PeroxyRadical',
+            'H_shift_cyclopentadiene',
+            'Cyclic_Ether_Formation',
+            'Intra_R_Add_Exocyclic',
+            'Intra_R_Add_Endocyclic',
+            '1,2-Birad_to_alkene',
+            'Intra_Disproportionation',
+            'Korcek_step1',
+            'Korcek_step2',
+            '1,2_shiftS',
+            'intra_substitutionCS_cyclization',
+            'intra_substitutionCS_isomerization',
+            'intra_substitutionS_cyclization',
+            'intra_substitutionS_isomerization',
+            'intra_NO2_ONO_conversion',
+            '1,4_Cyclic_birad_scission',
+            '1,4_Linear_birad_scission',
+            'Intra_Diels_alder',
+            'ketoenol',
+            'Retroen'
+        ]
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
         if label in BIMOLECULAR_KINETICS_FAMILIES:
@@ -250,9 +299,10 @@ class KineticsRules(Database):
         
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        if label in BIMOLECULAR_KINETICS_FAMILIES:
+        reactionOrder = groups.groups.numReactants
+        if reactionOrder == 2:
             factor = 1.0e6
-        elif label in UNIMOLECULAR_KINETICS_FAMILIES:
+        elif reactionOrder == 1:
             factor = 1.0
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
@@ -398,8 +448,37 @@ class KineticsRules(Database):
         
         if rootLabel in alreadyDone:
             return alreadyDone[rootLabel]
-        
-        # See if we already have a rate rule for this exact template 
+
+        # Generate the distance 1 pairings which must be averaged for this root template.
+        # The distance 1 template is created by taking the parent node from one or more trees
+        # and creating the combinations with children from a single remaining tree.  
+        # i.e. for some node (A,B), we want to fetch all combinations for the pairing of (A,B's children) and
+        # (A's children, B).  For node (A,B,C), we would retrieve all combinations of (A,B,C's children) 
+        # (A,B's children,C) etc...  
+        # If a particular node has no children, it is skipped from the children expansion altogether.
+
+        childrenList = []
+        for i, parent in enumerate(rootTemplate):
+            # Start with the root template, and replace the ith member with its children
+            if parent.children:
+                childrenSet = [[group] for group in rootTemplate]
+                childrenSet[i] = parent.children
+                childrenList.extend(getAllCombinations(childrenSet))
+
+        kineticsList = []
+        for template in childrenList:
+            label = ';'.join([g.label for g in template])
+            
+            if label in alreadyDone:
+                kinetics = alreadyDone[label]
+            else:
+                kinetics = self.fillRulesByAveragingUp(template, alreadyDone)
+            
+            if kinetics is not None:
+                kineticsList.append([kinetics, template])
+                
+        # See if we already have a rate rule for this exact template instead
+        # and return it now that we have finished searching its children
         entry = self.getRule(rootTemplate)
         if entry is not None and entry.rank > 0:
             # We already have a rate rule for this exact template
@@ -410,40 +489,32 @@ class KineticsRules(Database):
             alreadyDone[rootLabel] = entry.data
             return entry.data
         
-        # Recursively descend to the child nodes
-        childrenList = [[group] for group in rootTemplate]
-        for group in childrenList:
-            parent = group.pop(0)
-            if len(parent.children) > 0:
-                group.extend(parent.children)
-            else:
-                group.append(parent)
-                
-        childrenList = getAllCombinations(childrenList)
-        kineticsList = []
-        for template in childrenList:
-            label = ';'.join([g.label for g in template])
-            if template == rootTemplate: 
-                continue
-            
-            if label in alreadyDone:
-                kinetics = alreadyDone[label]
-            else:
-                kinetics = self.fillRulesByAveragingUp(template, alreadyDone)
-            
-            if kinetics is not None:
-                kineticsList.append([kinetics, template])
-        
         if len(kineticsList) > 0:
             
-            # We found one or more results! Let's average them together
-            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
             if len(kineticsList) > 1:
-                kinetics.comment += 'Average of ({0})'.format(
-                    ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                # We found one or more results! Let's average them together
+                kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                kinetics.comment = 'Average of ({0})'.format(
+                     ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
+                
+                # For debug mode: uncomment the following kinetics commenting
+                # lines and use them instead of the lines above. Caution: large memory usage.
+
+                # kinetics.comment += 'Average of ({0})'.format(
+                #     ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+
             else:
                 k,t = kineticsList[0]
-                kinetics.comment += k.comment if k.comment != '' else ';'.join(g.label for g in t)
+                kinetics = deepcopy(k)
+                # Even though we are using just a single set of kinetics, it's still considered
+                # an average.  It just happens that the other distance 1 children had no data.
+                kinetics.comment = 'Average of ({0})'.format(';'.join(g.label for g in t))
+                
+                # For debug mode: uncomment the following kinetics commenting
+                # lines and use them instead of the lines above. Caution: large memory usage.
+
+                # kinetics.comment += 'Average of ({0}).format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
+            
             entry = Entry(
                 index = 0,
                 label = rootLabel,
@@ -494,7 +565,25 @@ class KineticsRules(Database):
             E0 = (E0*0.001,"kJ/mol"),
         )
         return averagedKinetics
+    
+    def calculateNormDistance(self, template, otherTemplate):
+        """
+        Calculate the norm distance squared between two rate rules with
+        `template` and `otherTemplate`.  The norm distance is 
+        a^2 + b^2 + c^2 .... when a is the distance between the nodes in the
+        first tree, b is the distance between the nodes in the second tree, etc.
+        """
+        
+        # Do it the stupid way first and calculate distances from the top 
+        # rather than from each other for now... it's dumb but need to see results first
+        import numpy
+        depth = numpy.array([node.level for node in template])
+        otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
 
+        distance = numpy.array(depth-otherDepth)
+        norm = numpy.dot(distance,distance)
+        return norm
+        
     def estimateKinetics(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -517,12 +606,21 @@ class KineticsRules(Database):
                 kineticsList.append([kinetics, t])
             
             if len(kineticsList) > 0:                 
-                                
+                
+                if len(kineticsList) > 1:
+                    # Filter the kinetics to use templates with the lowest minimum euclidean distance 
+                    # from the specified template
+                    norms = [self.calculateNormDistance(template, t) for kinetics,t in kineticsList]
+                    minNorm = min(norms) 
+                    kineticsList = [pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)]
+                    
                 if len(kineticsList) == 1:
                     kinetics, t = kineticsList[0]
                     # Check whether the exact rate rule for the original template (most specific
                     # leaves) were found or not.
                     matchedLeaves = getTemplateLabel(t)
+                    if kinetics.comment:
+                        kinetics.comment += '\n'
                     if matchedLeaves == originalLeaves:
                         if 'Average' in kinetics.comment:
                             kinetics.comment += 'Estimated using an average'
@@ -530,8 +628,6 @@ class KineticsRules(Database):
                             kinetics.comment += 'Exact match found' 
                     else:
                     # Using a more general node to estimate original template
-                        if kinetics.comment:
-                            kinetics.comment += '\n'
                         kinetics.comment +='Estimated using template ' + matchedLeaves
                             
                 else:
@@ -564,4 +660,4 @@ class KineticsRules(Database):
                             templateList.append(t)
                 
         # If we're here then we couldn't estimate any kinetics, which is an exception
-        raise KineticsError('Unable to determine kinetics for reaction with template {0}.'.format(template))
+        raise KineticsError('Unable to determine kinetics for reaction with template {0} in family {1}.'.format(template, self.label))

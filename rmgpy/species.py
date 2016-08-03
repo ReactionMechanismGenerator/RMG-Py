@@ -44,9 +44,14 @@ transition states (first-order saddle points on a potential energy surface).
 
 import numpy
 import cython
+import logging
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
+
+from rmgpy.pdep import SingleExponentialDown
+from rmgpy.statmech.conformer import Conformer
+from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
@@ -78,23 +83,20 @@ class Species(object):
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
     `transportData`          A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
-    `dipoleMoment`          The molecular dipole moment
-    `polarizability`        The polarizability alpha
-    `Zrot`                  The rotational relaxation collision number
     `energyTransferModel`   The collisional energy transfer model to use
-    `reactive`              ``True`` if the species participates in reactions, ``False`` if not
-    'props'                 A generic 'properties' dictionary to store user-defined flags
+    `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
+                                Reaction libraries and seed mechanisms that include the species are
+                                always considered regardless of this variable
+    `props`                 A generic 'properties' dictionary to store user-defined flags
+    `aug_inchi`             Unique augmented inchi
     ======================= ====================================================
 
-    note::
-    
-        :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
+    note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 dipoleMoment=None, polarizability=None, Zrot=None, 
-                 energyTransferModel=None, reactive=True, props=None):
+                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -103,11 +105,9 @@ class Species(object):
         self.transportData = transportData
         self.reactive = reactive
         self.molecularWeight = molecularWeight
-        self.dipoleMoment = dipoleMoment
-        self.polarizability = polarizability
-        self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
+        self.aug_inchi = aug_inchi
         
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
@@ -129,13 +129,10 @@ class Species(object):
         if self.label != -1: string += 'label="{0}", '.format(self.label)
         if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
         if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
-        if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
+        if len(self.molecule) > 0: string += 'molecule={0!r}, '.format(self.molecule)
         if self.transportData is not None: string += 'transportData={0!r}, '.format(self.transportData)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
-        if self.dipoleMoment is not None: string += 'dipoleMoment={0!r}, '.format(self.dipoleMoment)
-        if self.polarizability is not None: string += 'polarizability={0!r}, '.format(self.polarizability)
-        if self.Zrot is not None: string += 'Zrot={0!r}, '.format(self.Zrot)
         if self.energyTransferModel is not None: string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
         string = string[:-2] + ')'
         return string
@@ -157,31 +154,13 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.props))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
     def getMolecularWeight(self):
         return self._molecularWeight
     def setMolecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
-
-    def getDipoleMoment(self):
-        return self._dipoleMoment
-    def setDipoleMoment(self, value):
-        self._dipoleMoment = quantity.DipoleMoment(value)
-    dipoleMoment = property(getDipoleMoment, setDipoleMoment, """The molecular dipole moment.""")
-
-    def getPolarizability(self):
-        return self._polarizability
-    def setPolarizability(self, value):
-        self._polarizability = quantity.Volume(value)
-    polarizability = property(getPolarizability, setPolarizability, """The polarizability alpha.""")
-
-    def getZrot(self):
-        return self._Zrot
-    def setZrot(self, value):
-        self._Zrot = quantity.Dimensionless(value)
-    Zrot = property(getZrot, setZrot, """The rotational relaxation collision number.""")
 
     def generateResonanceIsomers(self):
         """
@@ -247,6 +226,43 @@ class Species(object):
         """
         output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
         return output
+    
+    def toChemkin(self):
+        """
+        Return the chemkin-formatted string for this species.
+        """
+        from rmgpy.chemkin import getSpeciesIdentifier
+        return getSpeciesIdentifier(self)
+        
+    def toCantera(self):
+        """
+        Converts the RMG Species object to a Cantera Species object
+        with the appropriate thermo data.
+        """
+        import cantera as ct
+        
+        # Determine the number of each type of element in the molecule
+        elementDict = {} # elementCounts = [0,0,0,0]
+        for atom in self.molecule[0].atoms:
+            # The atom itself
+            symbol = atom.element.symbol
+            if symbol not in elementDict:
+                elementDict[symbol] = 1
+            else:
+                elementDict[symbol] += 1
+        
+        ctSpecies = ct.Species(self.toChemkin(), elementDict)
+        if self.thermo:
+            try:
+                ctSpecies.thermo = self.thermo.toCantera()
+            except Exception, e:
+                print e
+                raise Exception('Could not convert thermo to create Cantera Species object. Check that thermo is a NASA polynomial.')
+        
+        if self.transportData:
+            ctSpecies.transport = self.transportData.toCantera()
+            
+        return ctSpecies
 
     def hasStatMech(self):
         """
@@ -282,7 +298,7 @@ class Species(object):
         cython.declare(Cp=cython.double)
         Cp = 0.0
         if self.hasThermo():
-            Cp = self.thermo.getHeatCapacity(T)
+            Cp = self.getThermoData().getHeatCapacity(T)
         elif self.hasStatMech():
             Cp = self.conformer.getHeatCapacity(T)
         else:
@@ -297,7 +313,7 @@ class Species(object):
         cython.declare(H=cython.double)
         H = 0.0
         if self.hasThermo():
-            H = self.thermo.getEnthalpy(T)
+            H = self.getThermoData().getEnthalpy(T)
         elif self.hasStatMech():
             H = self.conformer.getEnthalpy(T) + self.conformer.E0.value_si
         else:
@@ -312,7 +328,7 @@ class Species(object):
         cython.declare(S=cython.double)
         S = 0.0
         if self.hasThermo():
-            S = self.thermo.getEntropy(T)
+            S = self.getThermoData().getEntropy(T)
         elif self.hasStatMech():
             S = self.conformer.getEntropy(T)
         else:
@@ -327,7 +343,7 @@ class Species(object):
         cython.declare(G=cython.double)
         G = 0.0
         if self.hasThermo():
-            G = self.thermo.getFreeEnergy(T)
+            G = self.getThermoData().getFreeEnergy(T)
         elif self.hasStatMech():
             G = self.conformer.getFreeEnergy(T) + self.conformer.E0.value_si
         else:
@@ -376,6 +392,145 @@ class Species(object):
         """
         return self.molecule[0].calculateCpInf()
 
+    def copy(self, deep=False):
+        """
+        Create a copy of the current species. If the 
+        kw argument 'deep' is True, then a deep copy will be made of the 
+        Molecule objects in self.molecule.
+
+        For other complex attributes, a deep copy will always be made.
+        """
+        from copy import deepcopy
+
+        cython.declare(other=Species)
+
+        other = Species.__new__(Species)
+
+        other.index = self.index
+
+        other.label = self.label
+
+        other.thermo = deepcopy(self.thermo)
+
+        other.molecule = []
+        for mol in self.molecule:
+            other.molecule.append(mol.copy(deep=deep))
+
+        other.conformer = deepcopy(self.conformer)
+
+        other.transportData = deepcopy(self.transportData)
+
+        other.molecularWeight = deepcopy(self.molecularWeight)
+        other.energyTransferModel = deepcopy(self.energyTransferModel)
+        other.reactive = self.reactive        
+        other.props = deepcopy(self.props)
+
+        return other
+
+    def getAugmentedInChI(self):
+        if self.aug_inchi is None:
+            self.aug_inchi = self.generate_aug_inchi()
+            return self.aug_inchi
+        else:
+            return self.aug_inchi
+
+    def generate_aug_inchi(self):
+        candidates = []
+        self.generateResonanceIsomers()
+        for mol in self.molecule:
+            cand = mol.toAugmentedInChI()
+            candidates.append(cand)
+
+        candidates.sort()
+        return candidates[0] 
+
+    def getThermoData(self):
+        """
+        Returns a `thermoData` object of the current Species object.
+
+        If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
+        type, or it is a Future.
+
+        If the type of the thermo attribute is Wilhoit, or ThermoData,
+        then it is converted into a NASA format.
+
+        If it is a Future, then a blocking call is made to retrieve the NASA object.
+        If the thermo object did not exist yet, the thermo object is generated.        
+        """
+
+        from rmgpy.thermo.thermoengine import submit
+        
+        if self.thermo:
+            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                self.thermo = self.thermo.result()
+        else:
+            submit(self)
+            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                self.thermo = self.thermo.result()
+
+        return self.thermo       
+            
+    def generateTransportData(self):
+        """
+        Generate the transportData parameters for the species.
+        """
+        from rmgpy.data.rmg import getDB
+        try:
+            transportDB = getDB('transport')        
+            if not transportDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the transport database. Not generating transport...')
+            raise e
+
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
+        self.transportData = transportDB.getTransportProperties(self)[0]
+
+
+    def getTransportData(self):
+        """
+        Returns the transport data associated with this species, and
+        calculates it if it is not yet available.
+        """
+
+        if not self.transportData:
+            self.generateTransportData()
+
+        return self.transportData
+
+    def generateStatMech(self):
+        """
+        Generate molecular degree of freedom data for the species. You must
+        have already provided a thermodynamics model using e.g.
+        :meth:`generateThermoData()`.
+        """
+
+        from rmgpy.data.rmg import getDB
+        try:
+            statmechDB = getDB('statmech')        
+            if not statmechDB: raise Exception
+        except Exception, e:
+            logging.debug('Could not obtain the stat. mech database. Not generating stat. mech...')
+            raise e
+
+        molecule = self.molecule[0]
+        conformer = statmechDB.getStatmechData(molecule, self.getThermoData())
+
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = self.getThermoData().E0
+        self.conformer.modes = conformer.modes
+        self.conformer.spinMultiplicity = conformer.spinMultiplicity
+        
+    def generateEnergyTransferModel(self):
+        """
+        Generate the collisional energy transfer model parameters for the
+        species. This "algorithm" is *very* much in need of improvement.
+        """
+        self.energyTransferModel = SingleExponentialDown(
+            alpha0 = (300*0.011962,"kJ/mol"),
+            T0 = (300,"K"),
+            n = 0.85,
+        ) 
 ################################################################################
 
 class TransitionState():
@@ -446,8 +601,9 @@ class TransitionState():
         """
         cython.declare(Cp=cython.double)
         Cp = 0.0
-        if self.thermo is not None:
-            Cp = self.thermo.getHeatCapacity(T)
+
+        if self.getThermoData() is not None:
+            Cp = self.getThermoData().getHeatCapacity(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             Cp = self.conformer.getHeatCapacity(T)
         else:
@@ -461,8 +617,9 @@ class TransitionState():
         """
         cython.declare(H=cython.double)
         H = 0.0
-        if self.thermo is not None:
-            H = self.thermo.getEnthalpy(T)
+
+        if self.getThermoData() is not None:
+            H = self.getThermoData().getEnthalpy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             H = self.conformer.getEnthalpy(T)
         else:
@@ -476,8 +633,9 @@ class TransitionState():
         """
         cython.declare(S=cython.double)
         S = 0.0
-        if self.thermo is not None:
-            S = self.thermo.getEntropy(T)
+
+        if self.getThermoData() is not None:
+            S = self.getThermoData().getEntropy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             S = self.conformer.getEntropy(T)
         else:
@@ -491,8 +649,9 @@ class TransitionState():
         """
         cython.declare(G=cython.double)
         G = 0.0
-        if self.thermo is not None:
-            G = self.thermo.getFreeEnergy(T)
+
+        if self.getThermoData() is not None:
+            G = self.getThermoData().getFreeEnergy(T)
         elif self.conformer is not None and len(self.conformer.modes) > 0:
             G = self.conformer.getFreeEnergy(T)
         else:

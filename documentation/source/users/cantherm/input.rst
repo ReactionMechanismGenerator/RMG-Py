@@ -1,6 +1,6 @@
-********************
-Creating Input Files
-********************
+*************************************************************************************
+Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations
+*************************************************************************************
 
 Syntax
 ======
@@ -191,4 +191,23 @@ Troubleshooting and FAQs
 
 1) The network that CanTherm generated and the resulting pdf file show abnormally large
 absolute values. What's going on?
+
     This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).
+
+Cantherm User Checklist
+========================
+
+Using cantherm, or any rate theory package for that matter, requires careful consideration and management of a large amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was made to minimize such mistakes for users:
+
+- Do correct paths exist for pointing to the files containing the electronic energies, molecular geometries and vibrational frequencies?
+
+For calculations involving pressure dependence:
+
+- Does the network pdf look reasonable? That is, are the relative energies what you expect based on the input?
+
+For calculations using internal hindered rotors:
+
+- Did you check to make sure the rotor has a reasonable potential (e.g., visually inspect the automatically generated rotor pdf files)?
+- Within your input files, do all specified rotors point to the correct files?
+- Do all of the atom label indices correspond to those in the file that is read by the logger (GaussianLog, QchemLog, etc.)?
+- Why do the fourier fits look so much different than the results of the ab initio potential energy scan calculations? This is likely because the initial scan energy is not at a minimum. One solution is to simply shift the potential with respect to angle so that it starts at zero and, instead of having CanTherm read a Qchem or Gaussian output file, have CanTherm point to a 'ScanLog' file. Another problem can arise when the potential at 2*pi is also not [close] to zero.       

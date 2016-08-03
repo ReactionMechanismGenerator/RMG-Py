@@ -46,13 +46,14 @@ import logging
 import re
 import os.path
 from copy import copy, deepcopy
+import urllib
 
 import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.molecule.element import Element
 from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
-from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -114,7 +115,7 @@ class Reaction:
         self.pairs = pairs
         
         if diffusionLimiter.enabled:
-            self.__k_effective_cache = {}
+            self.k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -172,20 +173,101 @@ class Reaction:
             return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
         else:
             return rmgpy.chemkin.writeReactionString(self)
+    
+    def toCantera(self, speciesList=None):
+        """
+        Converts the RMG Reaction object to a Cantera Reaction object
+        with the appropriate reaction class.
+        """
+        from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
+                    
+        import cantera as ct
         
+        if speciesList is None:
+            speciesList = []
+        
+        # Create the dictionaries containing species strings and their stoichiometries
+        # for initializing the cantera reaction object
+        ctReactants = {}
+        for reactant in self.reactants:
+            reactantName = reactant.toChemkin()  # Use the chemkin name for the species
+            if reactantName in ctReactants:
+                ctReactants[reactantName] += 1
+            else:
+                ctReactants[reactantName] = 1
+        ctProducts = {}
+        for product in self.products:
+            productName = product.toChemkin()  # Use the chemkin name for the species
+            if productName in ctProducts:
+                ctProducts[productName] += 1
+            else:
+                ctProducts[productName] = 1
+                
+        if self.kinetics:
+            if isinstance(self.kinetics, Arrhenius):
+                # Create an Elementary Reaction
+                ctReaction = ct.ElementaryReaction(reactants=ctReactants, products=ctProducts)
+            elif isinstance(self.kinetics, MultiArrhenius):
+                # Return a list of elementary reactions which are duplicates
+                ctReaction = [ct.ElementaryReaction(reactants=ctReactants, products=ctProducts) for arr in self.kinetics.arrhenius]
+                
+            elif isinstance(self.kinetics, PDepArrhenius):
+                ctReaction = ct.PlogReaction(reactants=ctReactants, products=ctProducts)
+                
+            elif isinstance(self.kinetics, MultiPDepArrhenius):
+                ctReaction = [ct.PlogReaction(reactants=ctReactants, products=ctProducts) for arr in self.kinetics.arrhenius]
+                
+            
+            elif isinstance(self.kinetics, Chebyshev):
+                ctReaction = ct.ChebyshevReaction(reactants=ctReactants, products=ctProducts)
+            
+            elif isinstance(self.kinetics, ThirdBody):
+                ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
+                
+            elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
+                ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
+            else:
+                raise NotImplementedError('Not able to set cantera kinetics for {0}'.format(self.kinetics))
+            
+            
+            # Set reversibility, duplicate, and ID attributes
+            if isinstance(ctReaction,list):
+                for rxn in ctReaction:
+                    rxn.reversible = self.reversible
+                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius 
+                    rxn.duplicate = True
+                    # Set the ID flag to the original rmg index 
+                    rxn.ID = str(self.index) 
+            else:
+                ctReaction.reversible = self.reversible
+                ctReaction.duplicate = self.duplicate
+                ctReaction.ID = str(self.index)
+                
+            
+            self.kinetics.setCanteraKinetics(ctReaction, speciesList)
+            
+            return ctReaction
+                
+        else:
+            raise Exception('Cantera reaction cannot be created because there was no kinetics.')
+    
     def getURL(self):
         """
         Get a URL to search for this reaction in the rmg website.
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        base_url = "http://rmg.mit.edu/database/kinetics/reaction/"
+
+        rxn_string = ''
         for i,species in enumerate(self.reactants):
             adjlist = species.molecule[0].toAdjacencyList(removeH=False)
-            url += "reactant{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+            rxn_string += "reactant{0}={1}__".format(i+1, adjlist)
         for i,species in enumerate(self.products):
             adjlist = species.molecule[0].toAdjacencyList(removeH=False)
-            url += "product{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+            rxn_string += "product{0}={1}__".format(i+1, adjlist)
+
+        url = base_url + urllib.quote(rxn_string)
         return url.strip('_')
         
     def isIsomerization(self):
@@ -550,72 +632,38 @@ class Reaction:
         """
         if diffusionLimiter.enabled:
             try:
-                k = self.__k_effective_cache[T]
+                k = self.k_effective_cache[T]
             except KeyError:
                 k = diffusionLimiter.getEffectiveRate(self, T)
-                self.__k_effective_cache[T] = k
+                self.k_effective_cache[T] = k
             return k
         else:
             return  self.kinetics.getRateCoefficient(T, P)
-    
-    def getRate(self, T, P, conc, totalConc=-1.0):
-        """
-        Return the net rate of reaction at temperature `T` and pressure `P`. The
-        parameter `conc` is a map with species as keys and concentrations as
-        values. A reactant not found in the `conc` map is treated as having zero
-        concentration.
-
-        If passed a `totalConc`, it won't bother recalculating it.
-        """
-
-        cython.declare(rateConstant=cython.double, equilibriumConstant=cython.double)
-        cython.declare(forward=cython.double, reverse=cython.double, speciesConc=cython.double)
-
-        # Calculate total concentration
-        if totalConc == -1.0:
-            totalConc=sum( conc.values() )
-
-        # Evaluate rate constant
-        if isinstance(self.kinetics, (ThirdBody, Lindemann, Troe)):
-            P = self.kinetics.getEffectivePressure(P, conc)
-        rateConstant = self.getRateCoefficient(T, P)
-
-        # Evaluate equilibrium constant
-        equilibriumConstant = self.getEquilibriumConstant(T)
-
-        # Evaluate forward concentration product
-        forward = 1.0
-        for reactant in self.reactants:
-            if reactant in conc:
-                speciesConc = conc[reactant]
-                forward = forward * speciesConc
-            else:
-                forward = 0.0
-                break
-
-        # Evaluate reverse concentration product
-        reverse = 1.0
-        for product in self.products:
-            if product in conc:
-                speciesConc = conc[product]
-                reverse = reverse * speciesConc
-            else:
-                reverse = 0.0
-                break
-
-        # Return rate
-        return rateConstant * (forward - reverse / equilibriumConstant)
 
     def fixDiffusionLimitedA(self, T):
         """
-        Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
-        to account for the diffusion limit.
+        Decrease the pre-exponential factor (A) by the diffusion factor
+        to account for the diffusion limit at the specified temperature.
         """
-        # Decrease self.kinetics.A (if Arrhenius or ArrheniusEP)
-        self.kinetics.A = self.kinetics.A * self.getDiffusionFactor(T)
+        if not diffusionLimiter.enabled:
+            return
+        # Obtain effective rate
+        try:
+            k = self.k_effective_cache[T]
+        except KeyError:
+            k = diffusionLimiter.getEffectiveRate(self, T)
+            self.k_effective_cache[T] = k
+
+        # calculate diffusion factor
+        diffusionFactor = k / self.kinetics.getRateCoefficient(T, P=0)
+        # update preexponential factor
+        self.kinetics.A = self.kinetics.A * diffusionFactor
         # Add a comment to self.kinetics.comment
-        self.kinetics.comment.append("Pre-exponential factor A has been decreased by the diffusion factor.")
-    
+        self.kinetics.comment.append(
+            ("Pre-exponential factor A has been decreased by the "
+             "diffusion factor {0.2g} evaluated at {1} K.").format(
+                diffusionFactor, T))
+
     def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
@@ -626,8 +674,10 @@ class Reaction:
         are forced to have a non-negative barrier.
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+
         H298 = self.getEnthalpyOfReaction(298)
-        H0 = sum([spec.thermo.E0.value_si for spec in self.products]) - sum([spec.thermo.E0.value_si for spec in self.reactants])
+        H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
+            - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, ArrheniusEP):
             Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H298)
@@ -647,53 +697,61 @@ class Reaction:
             self.kinetics.Ea.value_si = 0
 
 
+    def reverseThisArrheniusRate(self, kForward, reverseUnits):
+        """
+        Reverses the given kForward, which must be an Arrhenius type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(kf=Arrhenius, kr=Arrhenius)
+        cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
+        kf = kForward
+        assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
+        Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
+        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+        klist = numpy.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+        kr = Arrhenius()
+        kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
+        return kr
+        
     def generateReverseRateCoefficient(self):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
-        Currently this only works if the `kinetics` attribute is an 
-        :class:`Arrhenius` or :class:`KineticsData` object.
+        Currently this only works if the `kinetics` attribute is one of several
+        (but not necessarily all) kinetics types.
         """
-        
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
-            
+
+        supported_types = (
+                            KineticsData.__name__,
+                            Arrhenius.__name__,
+                            MultiArrhenius.__name__,
+                            PDepArrhenius.__name__,
+                            MultiPDepArrhenius.__name__,
+                            Chebyshev.__name__,
+                            ThirdBody.__name__,
+                            Lindemann.__name__,
+                            Troe.__name__,
+                            )
+
         # Get the units for the reverse rate coefficient
-        if len(self.products) == 1:
-            kunits = 's^-1'
-        elif len(self.products) == 2:
-            kunits = 'm^3/(mol*s)'
-        elif len(self.products) == 3:
-            kunits = 'm^6/(mol^2*s)'
-        else:
-            kunits = ''
+        kunits = getRateCoefficientUnitsFromReactionOrder(len(self.products))
             
         kf = self.kinetics
         if isinstance(kf, KineticsData):
             
             Tlist = kf.Tdata.value_si
             klist = numpy.zeros_like(Tlist)
-            print Tlist
             for i in range(len(Tlist)):
-                print kf.getRateCoefficient(Tlist[i]), self.getEquilibriumConstant(Tlist[i])
                 klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
             
             kr = KineticsData(Tdata=(Tlist,"K"), kdata=(klist,kunits), Tmin=(numpy.min(Tlist),"K"), Tmax=(numpy.max(Tlist),"K"))
             return kr
             
         elif isinstance(kf, Arrhenius):
-            
-            if kf.Tmin is not None and kf.Tmax is not None:
-                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
-            else:
-                Tlist = 1.0/numpy.arange(0.0005, 0.0034, 0.0001)
-                
-            # Determine the values of the reverse rate coefficient k_r(T) at each temperature
-            klist = numpy.zeros_like(Tlist)
-            for i in range(len(Tlist)):
-                klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
-    
-            kr = Arrhenius()
-            kr.fitToData(Tlist, klist, kunits, kf.T0.value_si)
-            return kr
+            return self.reverseThisArrheniusRate(kf, kunits)
                     
         elif isinstance (kf, Chebyshev):
             Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
@@ -737,9 +795,31 @@ class Reaction:
                 rxn.kinetics = kinetics
                 kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
-        
+
+        elif isinstance(kf, ThirdBody):
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = ThirdBody(krLow, *parameters[1:])
+            return kr
+
+        elif isinstance(kf, Lindemann):
+            krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = Lindemann(krHigh, krLow, *parameters[2:])
+            return kr
+
+        elif isinstance(kf, Troe):
+            krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = Troe(krHigh, krLow, *parameters[2:])
+            return kr
         else:
-            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius, Chebyshev, PDepArrhenius, or KineticsData.".format(self.kinetics.__class__))
+            raise ReactionError(("Unexpected kinetics type {0}; should be one of {1}").format(self.kinetics.__class__, supported_types))
 
     def calculateTSTRateCoefficients(self, Tlist):
         return numpy.array([self.calculateTSTRateCoefficient(T) for T in Tlist], numpy.float64)
@@ -913,6 +993,17 @@ class Reaction:
         from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, format, path)
+        
+    def _repr_png_(self):
+        """
+        Return a png picture of the reaction, useful for ipython-qtconsole.
+        """
+        from rmgpy.molecule.draw import ReactionDrawer
+        tempFileName = 'temp_reaction.png'
+        ReactionDrawer().draw(self, 'png', tempFileName)
+        png = open(tempFileName,'rb').read()
+        os.unlink(tempFileName)
+        return png
             
     # Build the transition state geometry
     def generate3dTS(self, reactants, products):
@@ -1007,141 +1098,3 @@ class Reaction:
         
         return other
 
-                
-################################################################################
-
-class ReactionModel:
-    """
-    A chemical reaction model, composed of a list of species and a list of
-    reactions involving those species. The attributes are:
-
-    =============== =========== ================================================
-    Attribute       Type        Description
-    =============== =========== ================================================
-    `species`       ``list``    The species involved in the reaction model
-    `reactions`     ``list``    The reactions comprising the reaction model
-    =============== =========== ================================================
-
-    """
-
-    def __init__(self, species=None, reactions=None):
-        self.species = species or []
-        self.reactions = reactions or []
-    
-    def __reduce__(self):
-        """
-        A helper function used when pickling an object.
-        """
-        return (ReactionModel, (self.species, self.reactions))
-
-    def generateStoichiometryMatrix(self):
-        """
-        Generate the stoichiometry matrix corresponding to the current
-        reaction system. The stoichiometry matrix is defined such that the
-        rows correspond to the `index` attribute of each species object, while
-        the columns correspond to the `index` attribute of each reaction object.
-        """
-        cython.declare(rxn=Reaction, spec=Species, i=cython.int, j=cython.int, nu=cython.int)
-        from scipy import sparse
-
-        # Use dictionary-of-keys format to efficiently assemble stoichiometry matrix
-        stoichiometry = sparse.dok_matrix((len(self.species), len(self.reactions)), numpy.float64)
-        for rxn in self.reactions:
-            j = rxn.index - 1
-            # Only need to iterate over the species involved in the reaction,
-            # not all species in the reaction model
-            for spec in rxn.reactants:
-                i = spec.index - 1
-                nu = rxn.getStoichiometricCoefficient(spec)
-                if nu != 0: stoichiometry[i,j] = nu
-            for spec in rxn.products:
-                i = spec.index - 1
-                nu = rxn.getStoichiometricCoefficient(spec)
-                if nu != 0: stoichiometry[i,j] = nu
-
-        # Convert to compressed-sparse-row format for efficient use in matrix operations
-        stoichiometry.tocsr()
-
-        return stoichiometry
-
-    def getReactionRates(self, T, P, Ci):
-        """
-        Return an array of reaction rates for each reaction in the model core
-        and edge. The id of the reaction is the index into the vector.
-        """
-        cython.declare(rxnRates=numpy.ndarray, rxn=Reaction, j=cython.int)
-        rxnRates = numpy.zeros(len(self.reactions), numpy.float64)
-        for rxn in self.reactions:
-            j = rxn.index - 1
-            rxnRates[j] = rxn.getRate(T, P, Ci)
-        return rxnRates
-
-    def merge(self, other):
-        """
-        Return a new :class:`ReactionModel` object that is the union of this
-        model and `other`.
-        """
-        if not isinstance(other, ReactionModel):
-            raise ValueError('Expected type ReactionModel for other parameter, got {0}'.format(other.__class__))
-
-        # Initialize the merged model
-        finalModel = ReactionModel()
-        
-        # Put the current model into the merged model as-is
-        finalModel.species.extend(self.species)
-        finalModel.reactions.extend(self.reactions)
-        
-        # Determine which species in other are already in self
-        commonSpecies = {}; uniqueSpecies = []
-        for spec in other.species:
-            for spec0 in finalModel.species:
-                if spec.isIsomorphic(spec0):
-                    commonSpecies[spec] = spec0
-                    if spec0.label not in ['Ar','N2','Ne','He']:
-                        if not spec0.thermo.isIdenticalTo(spec.thermo):
-                            print 'Species {0} thermo from model 1 did not match that of model 2.'.format(spec.label)
-                        
-                    break
-            else:
-                uniqueSpecies.append(spec)
-        
-        # Determine which reactions in other are already in self
-        commonReactions = {}; uniqueReactions = []
-        for rxn in other.reactions:
-            for rxn0 in finalModel.reactions:
-                if rxn.isIsomorphic(rxn0, eitherDirection=True):
-                    commonReactions[rxn] = rxn0                    
-                    if not rxn0.kinetics.isIdenticalTo(rxn.kinetics):
-                        print 'Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0))
-                    break
-            else:
-                uniqueReactions.append(rxn)
-        
-        # Add the unique species from other to the final model
-        finalModel.species.extend(uniqueSpecies)
-    
-        # Renumber the unique species (to avoid name conflicts on save)
-        speciesIndex = 0
-        for spec in finalModel.species:
-            if spec.label not in ['Ar','N2','Ne','He']:
-                spec.index = speciesIndex + 1
-                speciesIndex += 1
-        
-        # Make sure unique reactions only refer to species in the final model
-        for rxn in uniqueReactions:
-            for i, reactant in enumerate(rxn.reactants):
-                try:
-                    rxn.reactants[i] = commonSpecies[reactant]
-                except KeyError:
-                    pass
-            for i, product in enumerate(rxn.products):
-                try:
-                    rxn.products[i] = commonSpecies[product]
-                except KeyError:
-                    pass
-        
-        # Add the unique reactions from other to the final model
-        finalModel.reactions.extend(uniqueReactions)
-    
-        # Return the merged model
-        return finalModel

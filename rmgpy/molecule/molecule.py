@@ -39,51 +39,24 @@ import cython
 import logging
 import os
 import re
+import numpy
+import urllib
+from collections import OrderedDict
+
 import element as elements
 try:
     import openbabel
 except:
     pass
 from rdkit import Chem
-from .graph import Vertex, Edge, Graph
+from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
-
-import numpy
-
-#: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
-_known_smiles_molecules = {
-                 'N2': 'N#N',
-                 'CH4': 'C',
-                 'H2O': 'O',
-                 'C2H6': 'CC',
-                 'H2': '[H][H]',
-                 'H2O2': 'OO',
-                 'C3H8': 'CCC',
-                 'Ar': '[Ar]',
-                 'He': '[He]',
-                 'CH4O': 'CO',
-                 'CO2': 'O=C=O',
-                 'CO': '[C-]#[O+]',
-                 'C2H4': 'C=C',
-                 'O2': 'O=O'
-             }
-
-_known_smiles_radicals = {
-                 'CH3': '[CH3]',
-                 'HO': '[OH]',
-                 'C2H5': 'C[CH2]',
-                 'O': '[O]',
-                 'HO2': '[O]O',
-                 'CH': '[CH]',
-                 'H': '[H]',
-                 'C': '[C]',
-                 #'CO2': it could be [O][C][O] or O=[C][O]
-                 #'CO': '[C]=O', could also be [C][O]
-                 #'C2H4': could  be [CH3][CH] or [CH2][CH2]
-                 'O2': '[O][O]',
-             }
+import rmgpy.molecule.parser as parser
+import rmgpy.molecule.generator as generator
+import rmgpy.molecule.resonance as resonance
+from rmgpy.molecule.group import GroupAtom, GroupBond, Group
 
 ################################################################################
 
@@ -220,6 +193,12 @@ class Atom(Vertex):
                 else:
                     return False
             return True
+    
+    def getDescriptor(self):
+        return (self.getAtomConnectivityValue(), self.number)
+
+    def getAtomConnectivityValue(self):
+        return -1*self.connectivity
 
     def isSpecificCaseOf(self, other):
         """
@@ -311,6 +290,20 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == 8
+
+    def isSilicon(self):
+        """
+        Return ``True`` if the atom represents an silicon atom or ``False`` if
+        not.
+        """
+        return self.element.number == 14
+
+    def isSulfur(self):
+        """
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if
+        not.
+        """
+        return self.element.number == 16
 
     def incrementRadical(self):
         """
@@ -430,7 +423,7 @@ class Bond(Edge):
 
     """
 
-    def __init__(self, atom1, atom2, order=1):
+    def __init__(self, atom1, atom2, order='S'):
         Edge.__init__(self, atom1, atom2)
         self.order = order
 
@@ -583,12 +576,6 @@ class Bond(Edge):
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 #################################################################################
-try:
-    SMILEwriter = openbabel.OBConversion()
-    SMILEwriter.SetOutFormat('smi')
-    SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
-except:
-    pass
     
 class Molecule(Graph):
     """
@@ -607,18 +594,37 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None ,SMILES='', InChI='', SMARTS=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None, SMILES=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
         self._fingerprint = None
+        self.InChI = ''
         if SMILES != '': self.fromSMILES(SMILES)
-        elif InChI != '': self.fromInChI(InChI)
-        elif SMARTS != '': self.fromSMARTS(SMARTS)
         self.props = props or {}
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
     
+    
+    def __hash__(self):
+        return hash((self.getFingerprint()))
+            
+    def __richcmp__(x, y, op):
+        if op == 2:#Py_EQ
+            return x.is_equal(y)
+        if op == 3:#Py_NE
+            return not x.is_equal(y)
+        else:
+            raise NotImplementedError("Can only check equality of molecules, not > or <")
+    
+    def is_equal(self,other):
+        """Method to test equality of two Molecule objects."""
+        if not isinstance(other, Molecule): return False #different type
+        elif self is other: return True #same reference in memory
+        elif self.getFingerprint() != other.getFingerprint(): return False
+        else:
+            return self.isIsomorphic(other)   
+
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -710,6 +716,16 @@ class Molecule(Graph):
         the isomorphism functions, much more efficient.
         """
         return self.sortVertices()
+
+    def update(self):
+        """
+        Update connectivity values, atom types of atoms.
+        Update multiplicity, and sort atoms using the new
+        connectivity values.
+        """
+        self.updateAtomTypes()
+        self.updateMultiplicity()
+        self.sortVertices()
 
     def getFormula(self):
         """
@@ -865,7 +881,7 @@ class Molecule(Graph):
         
         # Ensure there are coordinates to work with
         for atom in atoms:
-            assert atom.coords != None
+            assert len(atom.coords) != 0
         
         # If there are any bonds, remove them
         for atom1 in atoms:
@@ -948,8 +964,11 @@ class Molecule(Graph):
         for atom in self.vertices:
             if atom.label != '':
                 if atom.label in labeled:
-                    labeled[atom.label] = [labeled[atom.label]]
-                    labeled[atom.label].append(atom)
+                    if isinstance(labeled[atom.label],list):
+                        labeled[atom.label].append(atom)
+                    else:
+                        labeled[atom.label] = [labeled[atom.label]]
+                        labeled[atom.label].append(atom)
                 else:
                     labeled[atom.label] = atom
         return labeled
@@ -1151,47 +1170,26 @@ class Molecule(Graph):
         os.unlink(tempFileName)
         return png
 
-    def fromInChI(self, inchistr):
+    def fromInChI(self, inchistr, backend='try-all'):
         """
-        Convert an InChI string `inchistr` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        This Kekulizes everything, removing all aromatic atom types.
+        Convert an InChI string `inchistr` to a molecular structure.
         """
-        #RDkit was improperly handling the Hydrogen radical from InChI
-        if inchistr == 'InChI=1/H' or inchistr == 'InChI=1S/H':
-            self.fromSMILES('[H]')
-            return self          
-        elif inchistr == 'InChI=1/He' or inchistr == 'InChI=1S/He':
-            self.fromSMILES('[He]')
-            return self
-        else:
-            rdkitmol = Chem.inchi.MolFromInchi(inchistr)
-            self.fromRDKitMol(rdkitmol)
-            return self
+        parser.fromInChI(self, inchistr, backend)
+        return self
 
-    def fromSMILES(self, smilesstr):
+    def fromAugmentedInChI(self, aug_inchi):
         """
-        Convert a SMILES string `smilesstr` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        This Kekulizes everything, removing all aromatic atom types.
+        Convert an Augmented InChI string `aug_inchi` to a molecular structure.
         """
-        # Special handling of helium
-        if smilesstr == '[He]':
-            # RDKit improperly handles helium and returns it in a triplet state
-            self.fromAdjacencyList(
-            """
-            He
-            multiplicity 1
-            1 He u0 p1
-            """)
-            return self
-        
-        else:
-            rdkitmol = Chem.MolFromSmiles(smilesstr)
-            if rdkitmol is None:
-                raise ValueError("Could not interpret the SMILES string {0!r}".format(smilesstr))
-            self.fromRDKitMol(rdkitmol)
-            return self
+        parser.fromAugmentedInChI(self, aug_inchi)
+        return self
+
+    def fromSMILES(self, smilesstr, backend='try-all'):
+        """
+        Convert a SMILES string `smilesstr` to a molecular structure.
+        """
+        parser.fromSMILES(self, smilesstr, backend)
+        return self
         
     def fromSMARTS(self, smartsstr):
         """
@@ -1199,69 +1197,7 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         This Kekulizes everything, removing all aromatic atom types.
         """
-        rdkitmol = Chem.MolFromSmarts(smartsstr)
-        self.fromRDKitMol(rdkitmol)
-        return self
-        
-    def fromRDKitMol(self, rdkitmol):
-        """
-        Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        This Kekulizes everything, removing all aromatic atom types.
-        """
-        # Below are the declared variables for cythonizing the module
-        cython.declare(i=cython.int)
-        cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
-        
-        self.vertices = []
-        
-        # Add hydrogen atoms to complete molecule if needed
-        rdkitmol = Chem.AddHs(rdkitmol)
-        Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
-        
-        # iterate through atoms in rdkitmol
-        for i in range(rdkitmol.GetNumAtoms()):
-            rdkitatom = rdkitmol.GetAtomWithIdx(i)
-            
-            # Use atomic number as key for element
-            number = rdkitatom.GetAtomicNum()
-            element = elements.getElement(number)
-                
-            # Process charge
-            charge = rdkitatom.GetFormalCharge()
-            radicalElectrons = rdkitatom.GetNumRadicalElectrons()
-            
-            atom = Atom(element, radicalElectrons, charge, '', 0)
-            self.vertices.append(atom)
-            
-            # Add bonds by iterating again through atoms
-            for j in range(0, i):
-                rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
-                rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
-                if rdkitbond is not None:
-                    order = 0
-        
-                    # Process bond type
-                    rdbondtype = rdkitbond.GetBondType()
-                    if rdbondtype.name == 'SINGLE': order = 'S'
-                    elif rdbondtype.name == 'DOUBLE': order = 'D'
-                    elif rdbondtype.name == 'TRIPLE': order = 'T'
-                    elif rdbondtype.name == 'AROMATIC': order = 'B'
-        
-                    bond = Bond(self.vertices[i], self.vertices[j], order)
-                    self.addBond(bond)
-        
-        # Set atom types and connectivity values
-        self.updateConnectivityValues()
-        self.updateLonePairs()
-        self.updateAtomTypes()
-        
-        # Assume this is always true
-        # There are cases where 2 radicalElectrons is a singlet, but
-        # the triplet is often more stable, 
-        self.multiplicity = self.getRadicalCount() + 1
-        
+        parser.fromSMARTS(self, smartsstr)
         return self
 
     def fromAdjacencyList(self, adjlist, saturateH=False):
@@ -1273,7 +1209,6 @@ class Molecule(Graph):
         from .adjlist import fromAdjacencyList
         
         self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
-        self.updateConnectivityValues()
         self.updateAtomTypes()
         
         # Check if multiplicity is possible
@@ -1334,30 +1269,7 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        try:
-            if not Chem.inchi.INCHI_AVAILABLE:
-                return "RDKitInstalledWithoutInChI"
-            rdkitmol = self.toRDKitMol()
-            return Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
-        except:
-            pass
-
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()
-
-    def createMultiplicityLayer(self):
-        """
-        Creates the string with the multiplicity information
-        that is appended to the InChI to create an augmented InChI.
-        
-        """
-        
-        mult = self.multiplicity
-        return ''.join(['mult', str(mult)])
-            
+        return generator.toInChI(self)            
         
     def toAugmentedInChI(self):
         """
@@ -1366,8 +1278,7 @@ class Molecule(Graph):
         
         Separate layer with a forward slash character.
         """
-        inchi = self.toInChI()
-        return '/'.join([inchi , self.createMultiplicityLayer()])
+        return generator.toAugmentedInChI(self)
         
     
     def toInChIKey(self):
@@ -1383,24 +1294,7 @@ class Molecule(Graph):
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-        try:
-            if not Chem.inchi.INCHI_AVAILABLE:
-                return "RDKitInstalledWithoutInChI"
-            inchi = self.toInChI()
-            return Chem.inchi.InchiToInchiKey(inchi)[:-2]
-        except:
-            pass
-        
-        import openbabel
-
-#        for atom in self.vertices:
- #           if atom.isNitrogen():
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()[:-2]
+        return generator.toInChIKey(self)
     
     def toAugmentedInChIKey(self):
         """
@@ -1410,9 +1304,7 @@ class Molecule(Graph):
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
         """
-        key = self.toInChIKey()
-        
-        return '-'.join([key , self.createMultiplicityLayer()])
+        return generator.toAugmentedInChIKey(self)
     
 
     def toSMARTS(self):
@@ -1421,9 +1313,7 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity and removes Hydrogen atoms.
         """
-        rdkitmol = self.toRDKitMol()
-        
-        return Chem.MolToSmarts(rdkitmol)
+        return generator.toSMARTS(self)
     
     
     def toSMILES(self):
@@ -1440,100 +1330,13 @@ class Molecule(Graph):
         and removes Hydrogen atoms.
         """
         
-        # If we're going to have to check the formula anyway,
-        # we may as well shortcut a few small known molecules.
-        # Dictionary lookups are O(1) so this should be fast:
-        # The dictionary is defined at the top of this file.
-        try:
-            if self.isRadical():
-                return _known_smiles_radicals[self.getFormula()]
-            else:
-                return _known_smiles_molecules[self.getFormula()]
-        except KeyError:
-            # It wasn't in the above list.
-            pass
-        for atom in self.vertices:
-            if atom.isNitrogen():
-                mol = self.toOBMol()
-                return SMILEwriter.WriteString(mol).strip()
+        return generator.toSMILES(self)
 
-        rdkitmol = self.toRDKitMol()
-        return Chem.MolToSmiles(rdkitmol)
-
-    def toOBMol(self):
+    def toRDKitMol(self, *args, **kwargs):
         """
-        Convert a molecular structure to an OpenBabel OBMol object. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to a RDKit rdmol object.
         """
-        cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
-        cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
-
-        # Sort the atoms before converting to ensure output is consistent
-        # between different runs
-        self.sortAtoms()
-
-        atoms = self.vertices
-
-        obmol = openbabel.OBMol()
-        for atom in atoms:
-            a = obmol.NewAtom()
-            a.SetAtomicNum(atom.number)
-            a.SetFormalCharge(atom.charge)
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
-        for atom1 in self.vertices:
-            for atom2, bond in atom1.edges.iteritems():
-                index1 = atoms.index(atom1)
-                index2 = atoms.index(atom2)
-                if index1 < index2:
-                    order = orders[bond.order]
-                    obmol.AddBond(index1+1, index2+1, order)
-
-        obmol.AssignSpinMultiplicity(True)
-
-        return obmol
-    
-    def toRDKitMol(self, removeHs=True, returnMapping=False):
-        """
-        Convert a molecular structure to a RDKit rdmol object. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.
-        
-        If returnMapping==True then it also returns a dictionary mapping the 
-        atoms to RDKit's atom indices.
-        """
-        # Sort the atoms before converting to ensure output is consistent
-        # between different runs
-        self.sortAtoms()
-        atoms = self.vertices
-        rdAtomIndices = {} # dictionary of RDKit atom indices
-        rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
-        for index, atom in enumerate(self.vertices):
-            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
-            rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
-            if atom.element.symbol == 'C' and atom.lonePairs == 1 and self.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
-            rdkitmol.AddAtom(rdAtom)
-            rdAtomIndices[atom] = index
-        
-        rdBonds = Chem.rdchem.BondType
-        orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
-        # Add the bonds
-        for atom1 in self.vertices:
-            for atom2, bond in atom1.edges.iteritems():
-                index1 = atoms.index(atom1)
-                index2 = atoms.index(atom2)
-                if index1 < index2:
-                    order = orders[bond.order]
-                    rdkitmol.AddBond(index1, index2, order)
-        
-        # Make editable mol into a mol and rectify the molecule
-        rdkitmol = rdkitmol.GetMol()
-        Chem.SanitizeMol(rdkitmol)
-        if removeHs:
-            rdkitmol = Chem.RemoveHs(rdkitmol)
-        
-        if returnMapping:
-            return rdkitmol, rdAtomIndices
-        return rdkitmol
+        return generator.toRDKitMol(self, *args, **kwargs)
 
     def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False, oldStyle=False):
         """
@@ -1683,353 +1486,9 @@ class Molecule(Graph):
             if atom.radicalElectrons > 0:
                 return True
         return False
-    
+
     def generateResonanceIsomers(self):
-        """
-        Generate and return all of the resonance isomers of this molecule.
-        """
-        cython.declare(isomers=list, newIsomers=list, index=cython.int, atom=Atom)
-        cython.declare(isomer=Molecule, newIsomer=Molecule, isom=Molecule)
-        
-        isomers = [self]
-
-        # Iterate over resonance isomers
-        index = 0
-        while index < len(isomers):
-            isomer = isomers[index]
-                
-            newIsomers = isomer.getAdjacentResonanceIsomers()
-            newIsomers += isomer.getLonePairRadicalResonanceIsomers()
-            newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
-            
-            for newIsomer in newIsomers:
-                newIsomer.updateAtomTypes()
-                # Append to isomer list if unique
-                for isom in isomers:
-                    if isom.isIsomorphic(newIsomer):
-                        break
-                else:
-                    isomers.append(newIsomer)
-            
-            newIsomers = isomer.getAromaticResonanceIsomers()
-            # Perform extra check for aromatic isomers when updating atomtypes
-            for newIsomer in newIsomers:
-                try:
-                    newIsomer.updateAtomTypes()
-                except:
-                    # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
-                    # Do not add the new isomer since it is malformed
-                    continue 
-                # Append to isomer list if unique
-                for isom in isomers:
-                    if isom.isIsomorphic(newIsomer):
-                        break
-                else:
-                    isomers.append(newIsomer)
-            
-                        
-            # Move to next resonance isomer
-            index += 1
-        
-        return isomers
-
-    def getAdjacentResonanceIsomers(self):
-        """
-        Generate all of the resonance isomers formed by one allyl radical shift.
-        """
-        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
-        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-        cython.declare(v1=Vertex, v2=Vertex)
-        
-        isomers = []
-
-        # Radicals
-        if self.isRadical():
-            # Iterate over radicals in structure
-            for atom in self.vertices:
-                paths = self.findAllDelocalizationPaths(atom)
-                for atom1, atom2, atom3, bond12, bond23 in paths:
-                    # Adjust to (potentially) new resonance isomer
-                    atom1.decrementRadical()
-                    atom3.incrementRadical()
-                    bond12.incrementOrder()
-                    bond23.decrementOrder()
-                    # Make a copy of isomer
-                    isomer = self.copy(deep=True)
-                    # Also copy the connectivity values, since they are the same
-                    # for all resonance forms
-                    for index in range(len(self.vertices)):
-                        v1 = self.vertices[index]
-                        v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
-                        v2.sortingLabel = v1.sortingLabel
-                    # Restore current isomer
-                    atom1.incrementRadical()
-                    atom3.decrementRadical()
-                    bond12.decrementOrder()
-                    bond23.incrementOrder()
-                    # Append to isomer list if unique
-                    isomers.append(isomer)
-
-        return isomers
-    
-    def getLonePairRadicalResonanceIsomers(self):
-        """
-        Generate all of the resonance isomers formed by lone electron pair - radical shifts.
-        """
-        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
-        cython.declare(atom=Atom, atom1=Atom, atom2=Atom)
-        cython.declare(v1=Vertex, v2=Vertex)
-        
-        isomers = []
-
-        # Radicals
-        if self.isRadical():
-            # Iterate over radicals in structure
-            for atom in self.vertices:
-                paths = self.findAllDelocalizationPathsLonePairRadical(atom)
-                for atom1, atom2 in paths:
-                    # Adjust to (potentially) new resonance isomer
-                    atom1.decrementRadical()
-                    atom1.incrementLonePairs()
-                    atom1.updateCharge()
-                    atom2.incrementRadical()
-                    atom2.decrementLonePairs()
-                    atom2.updateCharge()
-                    # Make a copy of isomer
-                    isomer = self.copy(deep=True)
-                    # Also copy the connectivity values, since they are the same
-                    # for all resonance forms
-                    for index in range(len(self.vertices)):
-                        v1 = self.vertices[index]
-                        v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
-                        v2.sortingLabel = v1.sortingLabel
-                    # Restore current isomer
-                    atom1.incrementRadical()
-                    atom1.decrementLonePairs()
-                    atom1.updateCharge()
-                    atom2.decrementRadical()
-                    atom2.incrementLonePairs()
-                    atom2.updateCharge()
-                    # Append to isomer list if unique
-                    isomers.append(isomer)
-
-        return isomers
-    
-    def getN5dd_N5tsResonanceIsomers(self):
-        """
-        Generate all of the resonance isomers formed by shifts between N5dd and N5ts.
-        """
-        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
-        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom)
-        cython.declare(bond12=Bond, bond13=Bond)
-        cython.declare(v1=Vertex, v2=Vertex)
-        
-        isomers = []
-        
-        # Iterate over nitrogen atoms in structure
-        for atom in self.vertices:
-            paths = self.findAllDelocalizationPathsN5dd_N5ts(atom)
-            for atom1, atom2, atom3, bond12, bond13, direction in paths:
-                # from N5dd to N5ts
-                if direction == 1:
-                    # Adjust to (potentially) new resonance isomer
-                    bond12.decrementOrder()
-                    bond13.incrementOrder()
-                    atom2.incrementLonePairs()
-                    atom3.decrementLonePairs()
-                    atom1.updateCharge()
-                    atom2.updateCharge()
-                    atom3.updateCharge()
-                    # Make a copy of isomer
-                    isomer = self.copy(deep=True)
-                    # Also copy the connectivity values, since they are the same
-                    # for all resonance forms
-                    for index in range(len(self.vertices)):
-                        v1 = self.vertices[index]
-                        v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
-                        v2.sortingLabel = v1.sortingLabel
-                    # Restore current isomer
-                    bond12.incrementOrder()
-                    bond13.decrementOrder()
-                    atom2.decrementLonePairs()
-                    atom3.incrementLonePairs()
-                    atom1.updateCharge()
-                    atom2.updateCharge()
-                    atom3.updateCharge()
-                    # Append to isomer list if unique
-                    isomers.append(isomer)
-                
-                # from N5ts to N5dd
-                if direction == 2:
-                    # Adjust to (potentially) new resonance isomer
-                    bond12.decrementOrder()
-                    bond13.incrementOrder()
-                    atom2.incrementLonePairs()
-                    atom3.decrementLonePairs()
-                    atom1.updateCharge()
-                    atom2.updateCharge()
-                    atom3.updateCharge()
-                    # Make a copy of isomer
-                    isomer = self.copy(deep=True)
-                    # Also copy the connectivity values, since they are the same
-                    # for all resonance forms
-                    for index in range(len(self.vertices)):
-                        v1 = self.vertices[index]
-                        v2 = isomer.vertices[index]
-                        v2.connectivity1 = v1.connectivity1
-                        v2.connectivity2 = v1.connectivity2
-                        v2.connectivity3 = v1.connectivity3
-                        v2.sortingLabel = v1.sortingLabel
-                    # Restore current isomer
-                    bond12.incrementOrder()
-                    bond13.decrementOrder()
-                    atom2.decrementLonePairs()
-                    atom3.incrementLonePairs()
-                    atom1.updateCharge()
-                    atom2.updateCharge()
-                    atom3.updateCharge()
-                    # Append to isomer list if unique
-                    isomers.append(isomer)
-                    
-        return isomers
-    
-    def getAromaticResonanceIsomers(self):
-        """
-        Generate the aromatic form of the molecule.
-        """
-        cython.declare(isomers=list, molecule=Molecule, rdAtomIndices=dict, aromatic=cython.bint, aromaticBonds=list)
-        cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
-        
-        isomers = []
-
-        # Radicals
-        if self.isCyclic():
-            molecule = self.copy(deep=True)
-            try:
-                rdkitmol, rdAtomIndices = molecule.toRDKitMol(removeHs=True, returnMapping=True)
-            except:
-                return []
-            aromatic = False
-            rings = molecule.getSmallestSetOfSmallestRings()            
-            for ring0 in rings:
-                # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings                
-                aromaticBonds = []
-                if len(ring0) == 6:
-                    # Figure out which atoms and bonds are aromatic and reassign appropriately:
-                    for i, atom1 in enumerate(ring0):
-                        if not atom1.isCarbon():
-                            # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                            break
-                        for atom2 in ring0[i+1:]:
-                            if molecule.hasBond(atom1, atom2):
-                                if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
-                                    aromaticBonds.append(molecule.getBond(atom1, atom2))
-                if len(aromaticBonds) == 6:
-                    aromatic = True
-                    # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
-                    for bond in aromaticBonds:
-                        bond.order = 'B'
-                        
-            if aromatic:              
-                isomers.append(molecule)
-
-        return isomers
-
-    def findAllDelocalizationPaths(self, atom1):
-        """
-        Find all the delocalization paths allyl to the radical center indicated
-        by `atom1`. Used to generate resonance isomers.
-        """
-        cython.declare(paths=list)
-        cython.declare(atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-        
-        # No paths if atom1 is not a radical
-        if atom1.radicalElectrons <= 0:
-            return []
-
-        # Find all delocalization paths
-        paths = []
-        for atom2, bond12 in atom1.edges.items():
-            # Vinyl bond must be capable of gaining an order
-            if (bond12.isSingle() or bond12.isDouble()) and atom1.radicalElectrons == 1:
-                for atom3, bond23 in atom2.edges.items():
-                    # Allyl bond must be capable of losing an order without breaking
-                    if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
-                        paths.append([atom1, atom2, atom3, bond12, bond23])
-        return paths
-    
-    def findAllDelocalizationPathsLonePairRadical(self, atom1):
-        """
-        Find all the delocalization paths of lone electron pairs next to the radical center indicated
-        by `atom1`. Used to generate resonance isomers.
-        """
-        cython.declare(paths=list)
-        cython.declare(atom2=Atom, bond12=Bond)
-        
-        # No paths if atom1 is not a radical
-        if atom1.radicalElectrons <= 0:
-            return []
-        
-        # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
-        if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen())):
-            return []
-        
-        # Find all delocalization paths
-        paths = []
-        for atom2, bond12 in atom1.edges.items():
-            # Only single bonds are considered
-            if bond12.isSingle():
-                # Neighboring atom must posses a lone electron pair to loose it
-                if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen())) and (atom2.radicalElectrons == 0):
-                    paths.append([atom1, atom2])
-                    
-        return paths
-    
-    def findAllDelocalizationPathsN5dd_N5ts(self, atom1):
-        """
-        Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
-        and nitrogen atoms with one triple and one single bond (N5ts)
-        """
-        cython.declare(paths=list)
-        cython.declare(atom2=Atom, bond12=Bond)
-        
-        # No paths if atom1 is not nitrogen
-        if not (atom1.isNitrogen()):
-            return []
-        
-        # Find all delocalization paths
-        paths = []
-        index_atom_2 = 0
-        index_atom_3 = 0
-        
-        for atom2, bond12 in atom1.edges.items():
-            index_atom_2 = index_atom_2 + 1
-            # Only double bonds are considered
-            if bond12.isDouble():
-                for atom3, bond13 in atom1.edges.items():
-                    index_atom_3 = index_atom_3 + 1
-                    # Only double bonds are considered, at the moment we only consider non-radical nitrogen and oxygen atoms
-                    if (bond13.isDouble() and atom3.radicalElectrons == 0 and atom3.lonePairs > 0 and not atom3.isOxygen() and not atom3.isCarbon() and (index_atom_2 != index_atom_3)):
-                        paths.append([atom1, atom2, atom3, bond12, bond13, 1])
-        
-        for atom2, bond12 in atom1.edges.items():
-            # Only triple bonds are considered
-            if bond12.isTriple():
-                for atom3, bond13 in atom1.edges.items():
-                    # Only single bonds are considered, at the moment we only consider negatively charged nitrogen and oxygen
-                    if (bond13.isSingle() and ((atom3.isNitrogen() and atom3.lonePairs >= 2) or (atom3.isOxygen() and atom3.lonePairs >= 3))):
-                        paths.append([atom1, atom2, atom3, bond12, bond13, 2])
-        
-        return paths
+        return resonance.generateResonanceIsomers(self)
 
     def getURL(self):
         """
@@ -2037,9 +1496,9 @@ class Molecule(Graph):
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        url = "http://rmg.mit.edu/database/molecule/"
+        base_url = "http://rmg.mit.edu/database/molecule/"
         adjlist = self.toAdjacencyList(removeH=False)
-        url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
+        url = base_url + urllib.quote(adjlist)
         return url.strip('_')
                     
     def getRadicalAtoms(self):
@@ -2070,9 +1529,11 @@ class Molecule(Graph):
                         order = order + 3
                     if bond12.isBenzene():
                         order = order + 1.5
-                        
-                atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
-        
+
+                if atom1.isSilicon() or atom1.isCarbon():
+                    atom1.lonePairs = (4 - atom1.radicalElectrons - int(order)) / 2
+                else:     
+                    atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
             else:
                 atom1.lonePairs = 0
                 
@@ -2107,10 +1568,36 @@ class Molecule(Graph):
         # this is necessary, because saturating with H shouldn't be
         # changing atom types, but it doesn't hurt anything and is not
         # very expensive, so will do it anyway)
-        self.updateConnectivityValues()
         self.sortVertices()
         self.updateAtomTypes()
         self.updateLonePairs()
         self.multiplicity = 1
 
         return added
+
+    def toGroup(self):
+        """
+        This method converts a list of atoms in a Molecule to a Group object.
+        """
+        
+        # Create GroupAtom object for each atom in the molecule
+        groupAtoms = OrderedDict()# preserver order of atoms in original container
+        for atom in self.atoms:
+            groupAtoms[atom] = GroupAtom(atomType=[atom.atomType],
+                                         radicalElectrons=[atom.radicalElectrons],
+                                         charge=[atom.charge],
+                                         lonePairs=[atom.lonePairs]
+                                         )
+                    
+        group = Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])            
+        
+        # Create GroupBond for each bond between atoms in the molecule
+        for atom in self.atoms:
+            for bondedAtom, bond in atom.edges.iteritems():
+                group.addBond(GroupBond(groupAtoms[atom],groupAtoms[bondedAtom], order=[bond.order]))
+            
+        group.update()
+        
+        return group
+
+

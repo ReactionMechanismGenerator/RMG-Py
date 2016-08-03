@@ -32,7 +32,6 @@ cimport rmgpy.constants as constants
 cimport numpy
 
 ################################################################################
-cdef public dict _known_smiles
 
 cdef class Atom(Vertex):
 
@@ -57,6 +56,8 @@ cdef class Atom(Vertex):
     cpdef bint isCarbon(self)
 
     cpdef bint isOxygen(self)
+
+    cpdef bint isSulfur(self)
     
     cpdef incrementRadical(self)
 
@@ -73,8 +74,6 @@ cdef class Atom(Vertex):
     cpdef setSpinMultiplicity(self, int spinMultiplicity)
     
 ################################################################################
-
-cpdef object SMILEwriter
     
 cdef class Bond(Edge):
 
@@ -91,6 +90,8 @@ cdef class Bond(Edge):
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
+    
+    cpdef bint isBenzene(self) except -2
 
     cpdef incrementOrder(self)
 
@@ -106,6 +107,7 @@ cdef class Molecule(Graph):
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
+    cdef public str InChI
     cdef public dict props
     
     cpdef str getFingerprint(self)
@@ -127,7 +129,7 @@ cdef class Molecule(Graph):
     cpdef removeBond(self, Bond bond)
 
     cpdef sortAtoms(self)
-
+    
     cpdef str getFormula(self)
 
     cpdef short getRadicalCount(self)
@@ -164,15 +166,11 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef fromInChI(self, str inchistr)
+    cpdef fromInChI(self, str inchistr, backend=?)
 
-    cpdef fromSMILES(self, str smilesstr)
-
-    cpdef fromRDKitMol(self, rdkitmol)
+    cpdef fromSMILES(self, str smilesstr, backend=?)
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
-    
-    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
 
     cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
     
@@ -199,19 +197,7 @@ cdef class Molecule(Graph):
     cpdef updateAtomTypes(self)
     
     cpdef bint isRadical(self) except -2
-    
-    cpdef list generateResonanceIsomers(self)
-    
-    cpdef list getAdjacentResonanceIsomers(self)
-    
-    cpdef list getLonePairRadicalResonanceIsomers(self)
-    
-    cpdef list getN5dd_N5tsResonanceIsomers(self)
-
-    cpdef findAllDelocalizationPaths(self, Atom atom1)
-    
-    cpdef findAllDelocalizationPathsLonePairRadical(self, Atom atom1)
-    
-    cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1
+
+    cpdef list generateResonanceIsomers(self)

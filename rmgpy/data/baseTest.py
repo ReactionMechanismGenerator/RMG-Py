@@ -31,30 +31,30 @@ class TestBaseDatabase(unittest.TestCase):
         entry1 = Entry(
             item = Group().fromAdjacencyList(
         """
-        1 *3 C  1 {2,D} {3,S}
-        2    C  0 {1,D}
-        3 *5 Cd 0 {1,S} {4,D}
-        4    C  0 {3,D}
+        1 *3 C  u1 {2,D} {3,S}
+        2    C  u0 {1,D}
+        3 *5 Cd u0 {1,S} {4,D}
+        4    C  u0 {3,D}
         """)
         )        
         
         entry2 = Entry(
             item= Group().fromAdjacencyList(
         """
-        1 *3 C  1 {2,D} {3,S}
-        2 *5 C  0 {1,D}
-        3    Cd 0 {1,S} {4,D}
-        4    C  0 {3,D}
+        1 *3 C  u1 {2,D} {3,S}
+        2 *5 C  u0 {1,D}
+        3    Cd u0 {1,S} {4,D}
+        4    C  u0 {3,D}
         """)
         )
         
         entry3 = Entry(
             item = Group().fromAdjacencyList(
         """
-        1 *3 C  1 {2,D} {3,S}
-        2    C  0 {1,D}
-        3    Cd 0 {1,S} {4,D}
-        4    C  0 {3,D}
+        1 *3 C  u1 {2,D} {3,S}
+        2    C  u0 {1,D}
+        3    Cd u0 {1,S} {4,D}
+        4    C  u0 {3,D}
         """)
         )
         # The group should match to itself
@@ -76,18 +76,21 @@ class TestBaseDatabase(unittest.TestCase):
         entry1 = Entry(
             item = Group().fromAdjacencyList(
         """
-        1 *1 R!H 1
+        1 *1 R!H u1
         """)
         )        
         
         entry2 = Entry(
             item= Group().fromAdjacencyList(
         """
-        1 *1 Cb 1
+        1 *1 Cb u1
         """)
         )
         self.assertTrue(self.database.matchNodeToNode(entry1,entry1))
         self.assertFalse(self.database.matchNodeToNode(entry1,entry2))
+
+
+
 ################################################################################
 
 if __name__ == '__main__':

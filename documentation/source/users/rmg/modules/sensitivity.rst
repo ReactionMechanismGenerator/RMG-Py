@@ -5,21 +5,21 @@ Sensitivity Analysis
 ********************
 
 
-For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
-(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
+some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
 Sensitivity analysis can be conducted in a standalone system for an existing kinetics model in Chemkin format.
 
 To use the sensitivity analysis standalone module::
 
-    python $RMGPy/sensitivity.py input.py chem.inp species_dictionary.txt
+    python sensitivity.py input.py chem.inp species_dictionary.txt
     
 where ``chem.inp`` is the CHEMKIN file and the ``species_dictionary.txt`` contains the dictionary of
 species associated with the CHEMKIN file.  ``input.py`` is an input file similar to one used for an RMG job but
 does not generate a RMG job.  See the following ``input.py`` example file found under the
-``$RMGPy/examples/rmg/sensitivity/input.py`` folder
+``$RMGPy/examples/sensitivity/input.py`` folder
 
 
-.. literalinclude:: ../../../../examples/rmg/minimal/input.py
+.. literalinclude:: ../../../../../examples/rmg/minimal_sensitivity/input.py
 
 
 The names of species named in the input file must coincide with the name specified in the CHEMKIN file.  

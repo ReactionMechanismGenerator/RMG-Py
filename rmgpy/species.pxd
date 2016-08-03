@@ -38,17 +38,15 @@ cdef class Species:
     
     cdef public int index
     cdef public str label
-    cdef public HeatCapacityModel thermo
+    cdef public object thermo
     cdef public Conformer conformer
     cdef public object transportData
     cdef public list molecule
     cdef public ScalarQuantity _molecularWeight
-    cdef public ScalarQuantity _dipoleMoment
-    cdef public ScalarQuantity _polarizability
-    cdef public ScalarQuantity _Zrot
     cdef public bint reactive
     cdef public object energyTransferModel
     cdef public dict props
+    cdef public str aug_inchi
     
     cpdef generateResonanceIsomers(self)
     
@@ -80,6 +78,8 @@ cdef class Species:
     cpdef double calculateCp0(self) except -1
 
     cpdef double calculateCpInf(self) except -1
+
+    cpdef Species copy(self, bint deep=?)
     
 ################################################################################
 

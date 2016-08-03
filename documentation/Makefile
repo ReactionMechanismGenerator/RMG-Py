@@ -40,15 +40,15 @@ setup_github_pages:
 # Should only need to be run once.
 	rm -rf $(BUILDDIR)/html
 	mkdir -p $(BUILDDIR)/html
-	git clone --shared --branch gh-pages --config remote.greengroup.url=git@github.com:GreenGroup/RMG-Py.git --config remote.greengroup.fetch=+refs/heads/*:refs/remotes/greengroup/* --config branch.gh-pages.remote=greengroup --config branch.gh-pages.merge=refs/heads/gh-pages ../.git $(BUILDDIR)/html
+	git clone --shared --branch gh-pages --config remote.official.url=git@github.com:ReactionMechanismGenerator/RMG-Py.git --config remote.official.fetch=+refs/heads/*:refs/remotes/official/* --config branch.gh-pages.remote=official --config branch.gh-pages.merge=refs/heads/gh-pages ../.git $(BUILDDIR)/html
 
 publish: $(BUILDDIR)/html/.git
 # Commit changes to gh-pages and push to github, to publish the results!
 	touch $(BUILDDIR)/html/.nojekyll
 ifdef COMMITMESSAGE # Use the provided COMMITMESSAGE variable for noninteractive use.
-	cd $(BUILDDIR)/html; git add -A .; git commit -m "$(COMMITMESSAGE)"; git push greengroup gh-pages
+	cd $(BUILDDIR)/html; git add -A .; git commit -m "$(COMMITMESSAGE)"; git push official gh-pages
 else # Prompt for a commit message
-	cd $(BUILDDIR)/html; git add -A .; git commit; git push greengroup gh-pages
+	cd $(BUILDDIR)/html; git add -A .; git commit; git push official gh-pages
 endif
 
 clean:

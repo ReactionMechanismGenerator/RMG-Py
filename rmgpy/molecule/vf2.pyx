@@ -168,6 +168,8 @@ cdef class VF2:
             if self.findAll:
                 mapping = {}
                 for vertex2 in self.graph2.vertices:
+                    if vertex2.ignore:
+                        continue
                     assert vertex2.mapping is not None
                     assert vertex2.mapping.mapping is vertex2
                     mapping[vertex2.mapping] = vertex2
@@ -178,6 +180,8 @@ cdef class VF2:
         # Create list of pairs of candidates for inclusion in mapping
         hasTerminals = False
         for vertex2 in self.graph2.vertices:
+            if vertex2.ignore:
+                continue
             if vertex2.terminal:
                 # graph2 has terminals, so graph1 also must have terminals
                 hasTerminals = True
@@ -186,6 +190,8 @@ cdef class VF2:
             vertex2 = self.graph2.vertices[0]
             
         for vertex1 in self.graph1.vertices:
+            if vertex1.ignore:
+                continue
             # If terminals are available, then skip vertices in the first
             # graph that are not terminals
             if hasTerminals and not vertex1.terminal: continue

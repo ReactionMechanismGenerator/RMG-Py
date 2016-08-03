@@ -35,6 +35,7 @@ This is the rmg module.
 import os
 import os.path
 import logging
+from .version import __version__
 
 ################################################################################
 
@@ -116,6 +117,7 @@ class Settings(dict):
             elif os.path.exists(os.path.join(working_dir, 'rmgrc')):
                 self.filename = os.path.join(working_dir, 'rmgrc')
             else:
+                return # fail silently, instead of raising the following error:
                 raise SettingsError('Could not find an RMG settings file to load!')
         
         # From here on we assume that we have identified the appropriate
@@ -127,12 +129,11 @@ class Settings(dict):
                 index = line.find('#')
                 if index != -1: line = line[:index]
                 # Is there a key-value pair remaining?
-                if line.find(':') != -1:
-                    key, value = line.split(':')
-                    key = key.strip()
+                if line.find('database.directory') != -1:
+                    value = line.split()[-1]  # Get the last token from this line
                     value = value.strip()
-                    self[key] = value
-                    self.sources[key] = "from {0}".format(self.filename)
+                    self['database.directory'] = value
+                    self.sources['database.directory'] = "from {0}".format(self.filename)
     
     def reset(self):
         """

@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the "Software"),
@@ -63,7 +63,7 @@ cantherm.execute()
 try:
     import psutil
     process = psutil.Process(os.getpid())
-    rss, vms = process.get_memory_info()
-    logging.info('Memory used: %.2f MB' % (rss / 1024.0 / 1024.0))
+    memory_info = process.memory_info()
+    logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))
 except ImportError:
     logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')

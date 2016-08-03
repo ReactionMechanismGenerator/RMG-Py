@@ -1,7 +1,8 @@
 import os
 
-import re
+import distutils.spawn
 import external.cclib as cclib
+import itertools
 import logging
 import re
 import math
@@ -13,7 +14,7 @@ import re
 from rmgpy.molecule import Molecule, Atom, getElement
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from qmdata import CCLibData
+from qmdata import parseCCLibData
 from molecule import QMMolecule
 from reaction import QMReaction
 from rmgpy.data.base import Entry
@@ -30,18 +31,25 @@ class Gaussian:
     inputFileExtension = '.gjf'
     outputFileExtension = '.log'
 
-    gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
+    executablesToTry = ('g09', 'g03')
 
-    # GAUSS_EXEDIR may be a list like "path1:path2:path3"
-    for possibleDir in gaussEnv.split(':'):
-        if os.path.exists(os.path.join(possibleDir , 'g09')):
-            executablePath = os.path.join(possibleDir , 'g09')
+    for exe in executablesToTry:
+        try:
+            executablePath = distutils.spawn.find_executable(exe)
+        except:
+            executablePath = None
+        if executablePath is not None:
             break
-        elif os.path.exists(os.path.join(possibleDir , 'g03')):
-            executablePath = os.path.join(possibleDir , 'g03')
-            break
-    else:
-        executablePath = os.path.join(gaussEnv , '(g03 or g09)')
+    else:  # didn't break
+        logging.debug("Did not find Gaussian on path, checking if it exists in a declared GAUSS_EXEDIR, g09root or g03root...")
+        gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
+        possibleDirs = gaussEnv.split(':')# GAUSS_EXEDIR may be a list like "path1:path2:path3"
+        for exe, possibleDir in itertools.product(executablesToTry, possibleDirs):
+            executablePath = os.path.join(possibleDir, exe)
+            if os.path.exists(executablePath):
+                break
+        else:  # didn't break
+            executablePath = os.path.join(gaussEnv , '(Gaussian 2003 or 2009)')
 
     usePolar = False
 
@@ -160,13 +168,13 @@ class Gaussian:
 
     def parse(self):
         """
-        Parses the results of the Gaussian calculation, and returns a CCLibData object.
+        Parses the results of the Gaussian calculation, and returns a QMData object.
         """
         parser = cclib.parser.Gaussian(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
+        qmData = parseCCLibData(cclibData, radicalNumber+1)
         return qmData
 
     def writeInputFile(self, output, attempt=None, top_keys=None, numProcShared=None, memory=None, checkPoint=False, bottomKeys=None, inputFilePath=None, scf=False):
@@ -214,7 +222,7 @@ class GaussianMol(QMMolecule, Gaussian):
         """
         Return the top keywords for attempt number `attempt`.
 
-        NB. `attempt`s begin at 1, not 0.
+        NB. `attempt` begins at 1, not 0.
         """
         assert attempt <= self.maxAttempts
         if attempt > self.scriptAttempts:
@@ -224,7 +232,7 @@ class GaussianMol(QMMolecule, Gaussian):
     def createInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
-        for the `attmept`th attempt.
+        for the `attempt`.
         """
         molfile = self.getMolFilePathForCalculation(attempt)
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
@@ -254,7 +262,7 @@ class GaussianMol(QMMolecule, Gaussian):
 
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
-            source = "QM {0} result file found from previous run.".format(self.__class__.__name__)
+            source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
             self.createGeometry()
             success = False

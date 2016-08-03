@@ -43,7 +43,8 @@ try:
 except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
-from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
+from rmgpy.molecule import Molecule, Group
+from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 
 from reference import Reference, Article, Book, Thesis
 
@@ -58,7 +59,7 @@ class DatabaseError(Exception):
 
 ################################################################################
 
-class Entry:
+class Entry(object):
     """
     A class for representing individual records in an RMG database. Each entry
     in the database associates a chemical item (generally a species, functional
@@ -106,8 +107,8 @@ class Entry:
         self.data = data
         self.reference = reference
         self.referenceType = referenceType
-        self.shortDesc = shortDesc
-        self.longDesc = longDesc
+        self._shortDesc = unicode(shortDesc)
+        self._longDesc = unicode(longDesc)
         self.rank = rank
 
     def __str__(self):
@@ -116,6 +117,25 @@ class Entry:
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
     
+    @property
+    def longDesc(self):
+        return self._longDesc
+    @longDesc.setter
+    def longDesc(self, value):
+        if value is None:
+            self._longDesc = None
+        else:
+            self._longDesc = unicode(value)
+    @property
+    def shortDesc(self):
+        return self._shortDesc
+    @shortDesc.setter
+    def shortDesc(self, value):
+        if value is None:
+            self._shortDesc = None
+        else:
+            self._shortDesc = unicode(value)
+
     def copy(self, deep=False):
         from copy import copy, deepcopy
         if deep:
@@ -123,8 +143,6 @@ class Entry:
         else:
             other = copy(self)
         return other
-        
-        
 
 ################################################################################
 
@@ -441,7 +459,7 @@ class Database:
 
     def __loadTree(self, tree):
         """
-        Parse an old-style RMG tree located at `tree`. An RMG tree is an n-ary
+        Parse an group tree located at `tree`. An RMG tree is an n-ary
         tree representing the hierarchy of items in the dictionary.
         """
 
@@ -488,7 +506,10 @@ class Database:
                 else:
                     entry.parent = None
                     self.top.append(entry)
-
+                    
+                # Save the level of the tree into the entry
+                entry.level = level
+                
                 # Add node to list of parents for subsequent iteration
                 parents.append(label)
 
@@ -681,6 +702,9 @@ class Database:
             entries = self.entries.values()
             entries.sort(key=lambda x: (x.index, x.label))
 
+        def comment(s):
+            "Return the string, with each line prefixed with '// '"
+            return '\n'.join('// ' + line if line else '' for line in s.split('\n'))
         try:
             f = open(path, 'w')
             f.write('////////////////////////////////////////////////////////////////////////////////\n')
@@ -692,9 +716,13 @@ class Database:
             for entry in entries:
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
-                    f.write(entry.item.toAdjacencyList(removeH=False) + '\n')
+                    try:
+                        f.write(entry.item.toAdjacencyList(removeH=True, oldStyle=True) + '\n')
+                    except InvalidAdjacencyListError:
+                        f.write("// Couldn't save in old syntax adjacency list. Here it is in new syntax:\n")
+                        f.write(comment(entry.item.toAdjacencyList(removeH=False, oldStyle=False) + '\n'))
                 elif isinstance(entry.item, Group):
-                    f.write(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n')
+                    f.write(entry.item.toAdjacencyList(oldStyle=True).replace('{2S,2T}', '2') + '\n')
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':
@@ -703,9 +731,6 @@ class Database:
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
             
-            def comment(s):
-                "Return the string, with each line prefixed with '// '"
-                return '\n'.join('// '+line if line else '' for line in s.split('\n'))
             if entriesNotInTree:
                 f.write(comment("These entries do not appear in the tree:\n\n"))
             for entry in entriesNotInTree:
@@ -855,21 +880,21 @@ class Database:
         """
         
         if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
-            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
-                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms()) is False:
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms(), strict=True) is True:
+                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms(), strict=True) is False:
                     return True                
             return False
         
         #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
-        #so it gets an automatic pass. However, we do need to check that everything down this
+        #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return True
+            return childNode.parent is parentNode
         
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
 
-    def matchNodeToStructure(self, node, structure, atoms):
+    def matchNodeToStructure(self, node, structure, atoms, strict=False):
         """
         Return :data:`True` if the `structure` centered at `atom` matches the
         structure at `node` in the dictionary. The structure at `node` should
@@ -881,18 +906,21 @@ class Database:
         atom in `structure`.
         
         Matching to structure is more strict than to node.  All labels in structure must 
-        be found in node.  However the reverse is not true.
+        be found in node.  However the reverse is not true, unless `strict` is set to True.
         
-        Usage: node = either an Entry or a key in the self.entries dictionary which has
-                      a Group or LogicNode as its Entry.item
-               structure = a Group or a Molecule
-               atoms = dictionary of {label: atom} in the structure.  A possible dictionary
-                       is the one produced by structure.getLabeledAtoms()
+        =================== ========================================================
+        Attribute           Description
+        =================== ========================================================
+        `node`              Either an Entry or a key in the self.entries dictionary which has a Group or LogicNode as its Entry.item
+        `structure`         A Group or a Molecule
+        `atoms`             Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()
+        `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
+        =================== ========================================================
         """
         if isinstance(node, str): node = self.entries[node]
         group = node.item
         if isinstance(group, LogicNode):
-            return group.matchToStructure(self, structure, atoms)
+            return group.matchToStructure(self, structure, atoms, strict)
         else:
             # try to pair up labeled atoms
             centers = group.getLabeledAtoms()
@@ -901,17 +929,21 @@ class Database:
                 # Make sure the labels are in both group and structure.
                 if label not in atoms:
                     logging.log(0, "Label {0} is in group {1} but not in structure".format(label, node))
+                    if strict:
+                        # structure must match all labeled atoms in node if strict is set to True
+                        return False 
                     continue # with the next label - ring structures might not have all labeled atoms
-                    # return False # force it to have all the labeled atoms
                 center = centers[label]
                 atom = atoms[label]
                 # Make sure labels actually point to atoms.
                 if center is None or atom is None:
                     return False
                 if isinstance(center, list):
-                    center = center[0]
+                    # Currently, no node in the database should have duplicate labels
+                    # The capability to have duplicate labels in Group() exists but does not have any functionality.
+                    raise DatabaseError('Nodes in the database should not have duplicate labels. Node {0} does.'.format(node))
                 # Semantic check #1: atoms with same label are equivalent
-                elif not atom.isSpecificCaseOf(center):
+                if not atom.isSpecificCaseOf(center):
                     return False
                 # Semantic check #2: labeled atoms that share bond in the group (node)
                 # also share equivalent (or more specific) bond in the structure
@@ -930,21 +962,20 @@ class Database:
                 # Passed semantic checks, so add to maps of already-matched atoms
                 initialMap[atom] = center
             # Labeled atoms in the structure that are not in the group should
-            # not be considered in the isomorphism check, so remove them temporarily
+            # not be considered in the isomorphism check, so flag them temporarily
             # Without this we would hit a lot of nodes that are ambiguous
-            removedAtoms = []
-            for label, atom in structure.getLabeledAtoms().iteritems():
-                if label not in centers:
-                    removedAtoms.append(atom)
-                    structure.atoms.remove(atom)
+            flaggedAtoms = [atom for label, atom in structure.getLabeledAtoms().iteritems() if label not in centers]
+            for atom in flaggedAtoms: atom.ignore = True
+            
             # use mapped (labeled) atoms to try to match subgraph
             result = structure.isSubgraphIsomorphic(group, initialMap)
-            # Restore atoms removed in previous step
-            for atom in removedAtoms:
-                structure.atoms.append(atom)
+            
+            # Restore atoms flagged in previous step
+            for atom in flaggedAtoms: atom.ignore = False
+                
             return result
 
-    def descendTree(self, structure, atoms, root=None):
+    def descendTree(self, structure, atoms, root=None, strict=False):
         """
         Descend the tree in search of the functional group node that best
         matches the local structure around `atoms` in `structure`.
@@ -952,24 +983,28 @@ class Database:
         If root=None then uses the first matching top node.
 
         Returns None if there is no matching root.
+        
+        Set strict to ``True`` if all labels in final matched node must match that of the
+        structure.  This is used in kinetics groups to find the correct reaction template, but
+        not generally used in other GAVs due to species generally not being prelabeled.
         """
 
         if root is None:
             for root in self.top:
-                if self.matchNodeToStructure(root, structure, atoms):
+                if self.matchNodeToStructure(root, structure, atoms, strict):
                     break # We've found a matching root
             else: # didn't break - matched no top nodes
                 return None
-        elif not self.matchNodeToStructure(root, structure, atoms):
+        elif not self.matchNodeToStructure(root, structure, atoms, strict):
             return None
         
         next = []
         for child in root.children:
-            if self.matchNodeToStructure(child, structure, atoms):
+            if self.matchNodeToStructure(child, structure, atoms, strict):
                 next.append(child)
 
         if len(next) == 1:
-            return self.descendTree(structure, atoms, next[0])
+            return self.descendTree(structure, atoms, next[0], strict)
         elif len(next) == 0:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
                 return root.children[-1]
@@ -977,9 +1012,50 @@ class Database:
                 return root
         else:
             #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
-            return self.descendTree(structure, atoms, next[0])
+            return self.descendTree(structure, atoms, next[0], strict)
 
-################################################################################
+    def areSiblings(self, node, nodeOther):
+        """
+        Return `True` if `node` and `nodeOther` have the same parent node.  Otherwise, return `False`.
+        Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
+        """
+        if node.parent is nodeOther.parent: return True
+        else: return False
+
+    def removeGroup(self, groupToRemove):
+        """
+        Removes a group that is in a tree from the database. In addition to deleting from self.entries,
+        it must also update the parent/child relationships
+
+        Returns the removed group
+        """
+        #Don't remove top nodes or LogicOrs as this will cause lots of problems
+        if groupToRemove in self.top:
+            raise Exception("Cannot remove top node: {0} from {1} because it is a top node".format(groupToRemove, self))
+        elif isinstance(groupToRemove.item, LogicOr):
+            raise Exception ("Cannot remove top node: {0} from {1} because it is a LogicOr".format(groupToRemove, self))
+        #Remove from entryToRemove from entries
+        self.entries.pop(groupToRemove.label)
+
+        #If there is a parent, then the group exists in a tree and we should edit relatives
+        parentR=groupToRemove.parent
+        if not parentR is None:
+            #Remove from parent's children attribute
+            parentR.children.remove(groupToRemove)
+
+            #change children's parent attribute to former grandparent
+            for child in groupToRemove.children:
+                child.parent = parentR
+
+            #extend parent's children attribute with new children
+            parentR.children.extend(groupToRemove.children)
+
+            #A few additional changes needed if parentR is a LogicOr node
+            if isinstance(parentR.item, LogicOr):
+                parentR.item.components.remove(groupToRemove.label)
+                parentR.item.components.extend([child.label for child in groupToRemove.children])
+
+        return groupToRemove
 
 class LogicNode:
     """
@@ -1014,15 +1090,18 @@ class LogicOr(LogicNode):
 
     symbol = "OR"
 
-    def matchToStructure(self,database,structure,atoms):
+    def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
+        
+        Setting `strict` to True makes enforces matching of atomLabels in the structure to every
+        atomLabel in the node.
         """
         for node in self.components:
             if isinstance(node,LogicNode):
-                match = node.matchToStructure(database,structure,atoms)
+                match = node.matchToStructure(database, structure, atoms, strict)
             else:
-                match = database.matchNodeToStructure(node, structure, atoms)
+                match = database.matchNodeToStructure(node, structure, atoms, strict)
             if match:
                 return True != self.invert
         return False != self.invert
@@ -1060,15 +1139,18 @@ class LogicAnd(LogicNode):
 
     symbol = "AND"
 
-    def matchToStructure(self,database,structure,atoms):
+    def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
+        
+        Setting `strict` to True makes enforces matching of atomLabels in the structure to every
+        atomLabel in the node.
         """
         for node in self.components:
             if isinstance(node,LogicNode):
-                match = node.matchToStructure(database,structure,atoms)
+                match = node.matchToStructure(database, structure, atoms, strict)
             else:
-                match = database.matchNodeToStructure(node, structure, atoms)
+                match = database.matchNodeToStructure(node, structure, atoms, strict)
             if not match:
                 return False != self.invert
         return True != self.invert

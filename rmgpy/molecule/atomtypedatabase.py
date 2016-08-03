@@ -95,7 +95,7 @@ def create_atom_types():
     
     #pentavalent nitrogen:
     pentavalent_N = []
-    for type in [Xs, Xd, Xd, Xt, Xb]:
+    for type in [Xs, Xd, Xdd, Xt, Xb]:
         pentavalent_N.extend(create_types(type, ['N'], ['N5']))
     
     for at in pentavalent_N: at.lp = 0

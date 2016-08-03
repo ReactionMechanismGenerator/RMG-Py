@@ -30,30 +30,33 @@
 """
 This module contains functions for writing of Chemkin input files.
 """
-
+import shutil
 import math
 import re
 import logging
 import textwrap
 import os.path
 import numpy
-import kinetics as _kinetics
-from reaction import Reaction
+
+import rmgpy.kinetics as _kinetics
+from rmgpy.reaction import Reaction
 #from species import Species
-from rmg.model import Species
-from rmg.pdep import PDepReaction
-from thermo import NASAPolynomial, NASA
+from rmgpy.rmg.model import Species
+from rmgpy.rmg.pdep import PDepReaction
+from rmgpy.thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants
-from quantity import Quantity
-from data.base import Entry 
-from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
-from rmgpy.data.kinetics.family import TemplateReaction, KineticsFamily
+from rmgpy.quantity import Quantity
+from rmgpy.data.base import Entry 
+from rmgpy.data.kinetics.library import LibraryReaction
+from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.molecule import Molecule
 from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
     
+from rmgpy.util import makeOutputSubdirectory
+
 ################################################################################
 
 class ChemkinError(Exception):
@@ -67,9 +70,9 @@ class ChemkinError(Exception):
 
 def Ffloat(string):
     """
-    Parse a Fortran-ish string into a float, like "1.00D 03"
+    Parse a Fortran-ish string into a float, like "1.00D 03" or "1.00d+03"
     """
-    return float(string.replace("D", "E").replace("E ", "E+"))
+    return float(string.replace("e", "E").replace("d", "D").replace("D", "E").replace("E ", "E+"))
     
 def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
@@ -154,7 +157,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         Tmax = (Tmax,"K"),
     )
     if comment:
-        thermo.comment = comment
+        thermo.comment = comment.strip()
 
     return species, thermo, formula
 
@@ -306,9 +309,9 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         dEa = float(tokens[-1])
         reaction = ''.join(tokens[:-6])
     else:
-        A = float(tokens[-3])
-        n = float(tokens[-2])
-        Ea = float(tokens[-1])
+        A = Ffloat(tokens[-3])
+        n = Ffloat(tokens[-2])
+        Ea = Ffloat(tokens[-1])
         dA = 0.0
         dn = 0.0
         dEa = 0.0
@@ -540,12 +543,11 @@ def readReactionComments(reaction, comments, read = True):
             kinetics = reaction.kinetics,
             reversible = reaction.reversible,
             duplicate = reaction.duplicate,
-            library = KineticsLibrary(label='Unclassified'),
+            library = 'Unclassified',
         )        
         
         return reaction  
     
-    atKineticsComments = False
     lines = comments.strip().splitlines()
         
     for line in lines:
@@ -557,7 +559,7 @@ def readReactionComments(reaction, comments, read = True):
             pass
         
         elif 'Template reaction:' in line:
-            label = str(tokens[-2])
+            label = str(tokens[-1])
             template = tokens[-1][1:-1].split(',')
             reaction = TemplateReaction(
                 index = reaction.index,
@@ -566,7 +568,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                family = KineticsFamily(label=label),
+                family = label,
                 template = [Entry(label=g) for g in template],
             )
             
@@ -579,7 +581,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                library = KineticsLibrary(label=label),
+                library = label,
             )   
             
         elif 'PDep reaction:' in line:
@@ -614,10 +616,8 @@ def readReactionComments(reaction, comments, read = True):
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
-        elif 'Kinetics comments:' in line:
-            atKineticsComments = True
-
-        elif atKineticsComments:
+        elif line.strip() != '':
+            # Any lines which are commented out but don't have any specific flag are simply kinetics comments
             reaction.kinetics.comment += line.strip() + "\n"
 
 
@@ -644,11 +644,11 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                library = KineticsLibrary(label=label),
+                library = label,
             )
             reaction.kinetics.comment = line
             
-        elif 'exact' in line or 'estimate' in line:
+        elif 'exact:' in line or 'estimate:' in line:
             index1 = line.find('[')
             index2 = line.find(']')
             template = [s.strip() for s in line[index1:index2].split(',')]
@@ -660,7 +660,7 @@ def readReactionComments(reaction, comments, read = True):
                 kinetics = reaction.kinetics,
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
-                family = KineticsFamily(label=label),
+                family = label,
                 template = [Entry(label=g) for g in template],
             )
             reaction.kinetics.comment = line
@@ -673,9 +673,11 @@ def readReactionComments(reaction, comments, read = True):
             kinetics = reaction.kinetics,
             reversible = reaction.reversible,
             duplicate = reaction.duplicate,
-            library = KineticsLibrary(label='Unclassified'),
+            library = 'Unclassified',
         )  
-            
+    
+    # Clean up line endings on comments so that there aren't any blank commented lines
+    reaction.kinetics.comment = reaction.kinetics.comment.strip()
     return reaction
 
 ################################################################################
@@ -689,6 +691,7 @@ def loadSpeciesDictionary(path):
     """
     speciesDict = {}
     
+    inerts = [Species().fromSMILES(inert) for inert in ('[He]', '[Ne]', 'N#N', '[Ar]')]
     with open(path, 'r') as f:
         adjlist = ''
         for line in f:
@@ -697,6 +700,10 @@ def loadSpeciesDictionary(path):
                 species = Species().fromAdjacencyList(adjlist)
                 species.generateResonanceIsomers()
                 label = species.label
+                for inert in inerts:
+                    if inert.isIsomorphic(species):
+                        species.reactive = False
+                        break
                 speciesDict[label] = species
                 adjlist = ''
             else:
@@ -712,6 +719,9 @@ def loadSpeciesDictionary(path):
 def removeCommentFromLine(line):
     """
     Remove a comment from a line of a Chemkin file or species dictionary file.
+    
+    Returns the line and the comment.
+    If the comment is encoded with latin-1, it is converted to utf-8.
     """
     try:
         index1 = line.index('!')
@@ -726,6 +736,18 @@ def removeCommentFromLine(line):
     comment = line[index+1:-1]
     if index < len(line):
         line = line[0:index] + '\n'
+
+    try:
+        ucomment = comment.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            ucomment = comment.decode('latin-1')
+        except UnicodeDecodeError:
+            ucomment = comment.decode('windows-1252', errors='replace')
+    # Convert back to utf-8.
+    # Other parts of RMG-Py expect a string object not a unicode object,
+    # but at least this way we know what the encoding is.
+    comment = ucomment.encode('utf-8', 'replace')
     return line, comment
 
 def loadTransportFile(path, speciesDict):
@@ -735,7 +757,7 @@ def loadTransportFile(path, speciesDict):
     """
     with open(path, 'r') as f:
         for line0 in f:
-            line = removeCommentFromLine(line0)[0]
+            line, comment = removeCommentFromLine(line0)
             line = line.strip()
             if line != '':
                 # This line contains an entry, so parse it
@@ -743,14 +765,16 @@ def loadTransportFile(path, speciesDict):
                 data = line[16:].split()
                 species = speciesDict[label]
                 species.transportData = TransportData(
+                    shapeIndex = int(data[0]),
                     sigma = (float(data[2]),'angstrom'),
                     epsilon = (float(data[1]),'K'),
+                    dipoleMoment = (float(data[3]),'De'),
+                    polarizability = (float(data[4]),'angstrom^3'),
+                    rotrelaxcollnum = float(data[5]),
+                    comment = comment.strip(),
                 )
-                species.dipoleMoment = (float(data[3]),'De')
-                species.polarizability = (float(data[4]),'angstrom^3')
-                species.Zrot = (float(data[5]),'')
 
-def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None, useChemkinNames=False):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermoPath' point to a separate thermo file, or, if 'None' is 
@@ -780,21 +804,6 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                 # Unread the line (we'll re-read it in readReactionBlock())
                 f.seek(-len(line0), 1)
                 readSpeciesBlock(f, speciesDict, speciesAliases, speciesList)
-                
-                # Also always add in a few bath gases (since RMG-Java does)
-                for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
-                    molecule = Molecule().fromSMILES(smiles)
-                    for species in speciesList:
-                        if species.label == label:
-                            if len(species.molecule) == 0:
-                                species.molecule = [molecule]
-                            break
-                        if species.isIsomorphic(molecule):
-                            break
-                    else:
-                        species = Species(label=label, molecule=[molecule])
-                        speciesList.append(species)
-                        speciesDict[label.upper()] = species                            
                 
             elif 'THERM' in line.upper() and thermoPath is None:
                 # Skip this if a thermo file is specified
@@ -844,7 +853,7 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                 if reaction1.duplicate and reaction2.duplicate:
                     
                     if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
-                        assert reaction1.library.label == reaction2.library.label
+                        assert reaction1.library == reaction2.library
                         if reaction1 not in duplicateReactionsToRemove:
                             # already created duplicate reaction, move on to appending any additional duplicate kinetics
                             if isinstance(reaction1.kinetics,
@@ -901,12 +910,13 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
     if transportPath:
         loadTransportFile(transportPath, speciesDict)
     
-    # Apply species aliases if known
-    for spec in speciesList:
-        try:
-            spec.label = speciesAliases[spec.label]
-        except KeyError:
-            pass
+    if not useChemkinNames:
+        # Apply species aliases if known
+        for spec in speciesList:
+            try:
+                spec.label = speciesAliases[spec.label]
+            except KeyError:
+                pass
     
     # Attempt to extract index from species label
     indexPattern = re.compile(r'\(\d+\)$')
@@ -983,6 +993,8 @@ def readThermoBlock(f, speciesDict):
     
     Returns a dictionary of molecular formulae for each species, in the form
     `{'methane': {'C':1, 'H':4}}
+    
+    If duplicate entries are found, the FIRST is used, and a warning is printed.
     """
     # List of thermodynamics (hopefully one per species!)
     formulaDict = {}
@@ -1000,48 +1012,69 @@ def readThermoBlock(f, speciesDict):
         Tmin = float(meaningfulline[0:9].strip())
         Tint = float(meaningfulline[10:19].strip())
         Tmax = float(meaningfulline[20:29].strip())
+        if [Tmin, Tint, Tmax] != [float(i) for i in meaningfulline.split()[0:3]]:
+            logging.warning("Default temperature range line {0!r} may be badly formatted.".format(line))
+            logging.warning("It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30")
         logging.info("Thermo file has default temperature range {0} to {1} and {1} to {2}".format(Tmin, Tint, Tmax))
         line = f.readline()
     except:
         logging.info("Thermo file has no default temperature ranges")
-    
+        logging.info("(The line it would be on is {0!r} but that is not formatted as such)".format(line))
+        logging.info("(It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30)")
     thermoBlock = ''
     comments = ''
     while line != '' and not line.upper().strip().startswith('END'):
         line, comment = removeCommentFromLine(line)
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
-        if len(line) >= 80:
-            if line[79] in ['1', '2', '3', '4']:
-                thermoBlock += line
-                if line[79] == '4':
-                    label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
-                    if label not in speciesDict:
-                        logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
-                        thermoBlock = ''
-                        line = f.readline()
-                        continue
-                    else:
-                        if thermo is None:
-                            logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
-                            raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
-                    try:
-                        formulaDict[label] = formula
-                        speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
-                        if comments:
-                            speciesDict[label].thermo.comment += '\n{0}'.format(comments)
-                        comments = ''
-                    except KeyError:
-                        if label.upper() in ['AR', 'N2', 'HE', 'NE']:
-                            logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
-                        else:
-                            logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
-                    thermoBlock = ''
-                assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
+
+        if len(line) < 80:
+            if line.strip():
+                logging.info("Ignoring short but non-empty line: {0!r}".format(line))
+            line = f.readline()
+            continue
+
+        if line[79] not in ['1', '2', '3', '4']:
+            logging.warning("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+            line = f.readline()
+            continue
+
+        thermoBlock += line
+        if line[79] == '4':
+            try:
+                label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
+            except:
+                logging.error("Error reading thermo block:\n" + thermoBlock)
+                raise
+            if label not in speciesDict:
+                logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
+                thermoBlock = ''
+                line = f.readline()
+                continue
+            elif speciesDict[label].hasThermo():
+                logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
+                thermoBlock = ''
+                line = f.readline()
+                continue
             else:
-                logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
-        else:
-            logging.info("Ignoring short line: {0!r}".format(line))
+                if thermo is None:
+                    logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
+                    raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
+            try:
+                formulaDict[label] = formula
+                speciesDict[label].thermo = thermo
+                speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
+                if comments:
+                    speciesDict[label].thermo.comment += '\n{0}'.format(comments)
+                # Make sure to strip whitespace
+                speciesDict[label].thermo.comment = speciesDict[label].thermo.comment.strip()
+                comments = ''
+            except KeyError:
+                if label.upper() in ['AR', 'N2', 'HE', 'NE']:
+                    logging.warning('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
+                else:
+                    logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+            thermoBlock = ''
+        assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
         line = f.readline()
     return formulaDict
 
@@ -1069,11 +1102,14 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if len(tokens) > 0 and tokens[0].upper() == 'REACTIONS':
             # Regular Chemkin file
             found = True
-            try:
-                energyUnits = tokens[1].lower()
-                moleculeUnits = tokens[2].lower()
-            except IndexError:
-                pass
+            for token in tokens[1:]:
+                unit = token.lower()
+                if unit in ['molecules', 'moles', 'mole', 'mol', 'molecule']:
+                    moleculeUnits = unit
+                elif unit in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol', 'kelvins']:
+                    energyUnits = unit
+                else:
+                    raise ChemkinError('Unknown unit type "{0}"'.format(unit))
 
         elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
             # RMG-Java kinetics library file
@@ -1099,7 +1135,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
     assert moleculeUnits in ['molecules', 'moles', 'mole', 'mol', 'molecule']
     assert volumeUnits in ['cm3', 'm3']
     assert timeUnits in ['s']
-    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol']
+    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol', 'kelvins']
     
     # Homogenize units
     if moleculeUnits == 'molecules':
@@ -1115,6 +1151,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         energyUnits = 'kj/mol'
     elif energyUnits == 'j/mole':
         energyUnits = 'j/mol'
+    elif energyUnits == 'kelvins':
+        energyUnits = 'K'
     energyUnits = energyUnits.replace('j/mol', 'J/mol')
     
     # Set up kinetics units
@@ -1186,6 +1224,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if kineticsList[0] == '':
             kineticsList.pop(0)
         if len(kineticsList) != len(commentsList):
+            logging.warning("Discarding comments from Chemkin file because not sure which reaction they apply to")
             commentsList = ['' for kinetics in kineticsList]
         
     reactionList = []
@@ -1229,10 +1268,10 @@ def getSpeciesIdentifier(species):
     species identifier, this function uses a maximum of 10 to ensure that all
     reaction equations fit in the maximum limit of 52 characters.
     """
-
+    label = species.label
     # Special case for inert colliders - just use the label if possible
-    if not species.reactive and 0 < len(species.label) <= 10:
-        return species.label
+    if not species.reactive and 0 < len(label) <= 10:
+        return label
 
     # The algorithm is slightly different depending on whether or not the
     # species has an index
@@ -1240,15 +1279,15 @@ def getSpeciesIdentifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(species.label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*]+', species.label):
-            if len(species.label) <= 10:
-                return species.label
-            elif len(species.label) <= 15:
-                logging.warning('Species label is longer than 10 characters and may exceed chemkin string limit')
-                return species.label            
+        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+            if len(label) <= 10:
+                return label
+            elif len(label) <= 15:
+                #logging.warning('Species label {0} is longer than 10 characters and may exceed chemkin string limit'.format(label))
+                return label            
             else:
                 logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
-                return species.label
+                return label
         else:
             # try the chemical formula if the species label is not present
             if len(species.molecule) > 0:
@@ -1260,9 +1299,9 @@ def getSpeciesIdentifier(species):
         # (at the expense of the current label or formula if need be)
 
         # First try to use the label and index
-        # The label can only contain alphanumeric characters, hyphens, and underscores
-        if len(species.label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*]+', species.label):
-            name = '{0}({1:d})'.format(species.label, species.index)
+        # The label can only contain alphanumeric characters, and -()*#_,
+        if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+            name = '{0}({1:d})'.format(label, species.index)
             if len(name) <= 10:
                 return name
     
@@ -1292,7 +1331,8 @@ def writeThermoEntry(species, verbose = True):
     model, and you must use the seven-coefficient forms for each.
     """
 
-    thermo = species.thermo
+    thermo = species.getThermoData()
+
     if not isinstance(thermo, NASA):
         return ''
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": Thermodynamics data must be a NASA object.'.format(species))
@@ -1326,7 +1366,7 @@ def writeThermoEntry(species, verbose = True):
     # Write thermo comments
     if verbose:
         if thermo.comment:
-            for line in thermo.comment.split("\n"):
+            for line in thermo.comment.strip().split("\n"):
                 if len(line) > 150:
                     short_lines = textwrap.fill(line,150).split("\n")
                     for short_line in short_lines:
@@ -1414,15 +1454,10 @@ def writeReactionString(reaction, javaLibrary = False):
         reaction_string += '=>' if not reaction.reversible else '='
         reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
         reaction_string += thirdBody
-        
+
+    if len(reaction_string) > 52:
+        logging.warning("Chemkin reaction string {0!r} is too long for Chemkin 2!".format(reaction_string))
     return reaction_string
-
-################################################################################
-
-def writeTransportEntry(species, verbose = True):
-    """
-    Return a string representation of the reaction as used in a Chemkin file. Lists the 
-    """
     
 ################################################################################
 
@@ -1471,19 +1506,30 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         
         # Next line of comment contains information about the type of reaction
         if isinstance(reaction, TemplateReaction):
-            string += '! Template reaction: {0!s}\n'.format(reaction.family.label)
+            string += '! Template reaction: {0!s}\n'.format(reaction.family)
         elif isinstance(reaction, LibraryReaction):
-            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
+            string += '! Library reaction: {0!s}\n'.format(reaction.library)
         elif isinstance(reaction, PDepReaction):
             string += '! PDep reaction: {0!s}\n'.format(reaction.network)          
             if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
                 # Print additional information about the pdep network's high-P limit reactions if in debug mode.
                 for rxn in reaction.network.pathReactions:
                     if isinstance(rxn, LibraryReaction):
-                        string += '! High-P limit: {0} (Library reaction: {1!s})\n'.format(rxn, rxn.library.label)
+                        string += '! High-P limit: {0} (Library reaction: {1!s})\n'.format(rxn, rxn.library)
                     else:
-                        string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family.label)   
+                        string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family)   
     
+        # Next line of comment contains information about the pairs of reaction
+        pairs =[]
+        if reaction.pairs:
+            for pair in reaction.pairs:
+                pairs.append([getSpeciesIdentifier(spec) for spec in pair])
+            string += "! Flux pairs: "
+
+            for pair in pairs:
+                string += pair[0] + ", " + pair[1] + "; "
+            string += "\n"
+
         # Remaining lines of comments taken from reaction kinetics
         if reaction.kinetics.comment:
             for line in reaction.kinetics.comment.split("\n"):
@@ -1540,7 +1586,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     if isinstance(kinetics,
                   (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
-        for collider, efficiency in sorted(kinetics.efficiencies.items()):
+        for collider, efficiency in sorted(kinetics.efficiencies.items(), key=lambda item: id(item[0])):
             for species in speciesList:
                 if any([collider.isIsomorphic(molecule) for molecule in species.molecule]):
                     string += '{0!s}/{1:<4.2f}/ '.format(getSpeciesIdentifier(species), efficiency)
@@ -1648,71 +1694,76 @@ def markDuplicateReactions(reactions):
         markDuplicateReaction(reaction1, remainingList)
  
 
-def saveSpeciesDictionary(path, species):
+def saveSpeciesDictionary(path, species, oldStyle=False):
     """
     Save the given list of `species` as adjacency lists in a text file `path` 
     on disk.
+    
+    If `oldStyle==True` then it saves it in the old RMG-Java syntax.
     """
     with open(path, 'w') as f:
         for spec in species:
-            try:
-                f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
-                f.write('\n')
-            except:
-                raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
+            if oldStyle:
+                try:
+                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True, oldStyle=True))
+                except:
+                    newAdjList = spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False)
+                    f.write("// Couldn't save {0} in old RMG-Java syntax, but here it is in newer RMG-Py syntax:".format(getSpeciesIdentifier(spec)))
+                    f.write("\n// " + "\n// ".join(newAdjList.splitlines()) + '\n')
+            else:
+                try:
+                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                except:
+                    raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
+            f.write('\n')
 
 def saveTransportFile(path, species):
-    """
+    r"""
     Save a Chemkin transport properties file to `path` on disk containing the
     transport properties of the given list of `species`.
     
+    The syntax is from the Chemkin TRANSPORT manual.
     The first 16 columns in each line of the database are reserved for the species name
-     (Presently CHEMKIN is programmed to allow no more than 16-character names.) 
-     Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:
+    (Presently CHEMKIN is programmed to allow no more than 16-character names.) 
+    Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:
+    
     1. An index indicating whether the molecule has a monatomic, linear or nonlinear geometrical configuration.
        If the index is 0, the molecule is a single atom. 
        If the index is 1 the molecule is linear, and 
        if it is 2, the molecule is nonlinear.
-    2. The Lennard-Jones potential well depth  $\epsilon / k_B$ in Kelvins.
-    3. The Lennard-Jones collision diameter $\sigma$in Angstroms.
-    4. The dipole moment $\mu$ in Debye. Note: a Debye is $10^{-18} cm^{3/2}erg^{1/2}$.
-    5. The polarizability $\alpha$ in cubic Angstroms.
-    6. The rotational relaxation collision number $Z_rot$ at 298K.
+    2. The Lennard-Jones potential well depth  :math:`\epsilon / k_B` in Kelvins.
+    3. The Lennard-Jones collision diameter :math:`\sigma` in Angstroms.
+    4. The dipole moment :math:`\mu` in Debye. Note: a Debye is :math:`10^{-18} cm^{3/2}erg^{1/2}`.
+    5. The polarizability :math:`\alpha` in cubic Angstroms.
+    6. The rotational relaxation collision number :math:`Z_rot` at 298K.
     7. After the last number, a comment field can be enclosed in parenthesis.
-    (from the chemkin TRANSPORT manual)
+
     """
+
     with open(path, 'w') as f:
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
         f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
-        for spec in species:            
-            if (not spec.transportData or
-                len(spec.molecule) == 0):
+        for spec in species:
+            transportData = spec.getTransportData()
+            if (not transportData):
                 missingData = True
             else:
                 missingData = False
             
             label = getSpeciesIdentifier(spec)
             
-            molecule = spec.molecule[0]
-            if len(molecule.atoms) == 1:
-                shapeIndex = 0
-            elif molecule.isLinear():
-                shapeIndex = 1
-            else:
-                shapeIndex = 2
-            
             if missingData:
-                f.write('! {0:19s} {1!r}\n'.format(label, spec.transportData))
+                f.write('! {0:19s} {1!r}\n'.format(label, transportData))
             else:
                 f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
                     label,
-                    shapeIndex,
-                    spec.transportData.epsilon.value_si / constants.R,
-                    spec.transportData.sigma.value_si * 1e10,
-                    (spec.transportData.dipoleMoment.value_si * constants.c * 1e21 if spec.transportData.dipoleMoment else 0),
-                    (spec.transportData.polarizability.value_si * 1e30 if spec.transportData.polarizability else 0),
-                    (spec.Zrot.value_si if spec.Zrot else 0),
-                    spec.transportData.comment,
+                    transportData.shapeIndex,
+                    transportData.epsilon.value_si / constants.R,
+                    transportData.sigma.value_si * 1e10,
+                    (transportData.dipoleMoment.value_si * constants.c * 1e21 if transportData.dipoleMoment else 0),
+                    (transportData.polarizability.value_si * 1e30 if transportData.polarizability else 0),
+                    (transportData.rotrelaxcollnum if transportData.rotrelaxcollnum else 0),
+                    transportData.comment,
                 ))
 
 def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates=True):
@@ -1774,7 +1825,8 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
 def saveJavaKineticsLibrary(path, species, reactions):
     """
     Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
-    and reactions.txt given a list of reactions.
+    and reactions.txt given a list of reactions, with species.txt containing the
+    RMG-Java formatted dictionary.
     """
     # Check for duplicate
     markDuplicateReactions(reactions)
@@ -1808,4 +1860,93 @@ def saveJavaKineticsLibrary(path, species, reactions):
     f.close()
     f2.close()
     
-    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species)
+    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species, oldStyle=True)
+
+def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
+    """
+    Save a Chemkin file for the current model as well as any desired output
+    species and reactions to `path`. If `saveEdgeSpecies` is True, then 
+    a chemkin file and dictionary file for the core and edge species and reactions
+    will be saved.  
+    """
+    
+    if saveEdgeSpecies == False:
+        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
+        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
+        logging.info('Saving current model to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
+        
+    else:
+        speciesList = reactionModel.core.species + reactionModel.edge.species
+        rxnList = reactionModel.core.reactions + reactionModel.edge.reactions
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
+        logging.info('Saving current core and edge to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
+
+def saveChemkinFiles(rmg):
+    """
+    Save the current reaction model to a set of Chemkin files.
+    """        
+    logging.info('Saving current model core to Chemkin file...')
+    this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
+    latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem.inp')
+    latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
+    latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
+    latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
+    saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
+    if os.path.exists(latest_chemkin_path):
+        os.unlink(latest_chemkin_path)
+    shutil.copy2(this_chemkin_path,latest_chemkin_path)
+    
+    if rmg.saveEdgeSpecies == True:
+        logging.info('Saving current model core and edge to Chemkin file...')
+        this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(rmg.reactionModel.core.species)) # len() needs to be core to have unambiguous index
+        latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+        latest_transport_path = None
+        saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+class ChemkinWriter(object):
+    """
+    This class listens to a RMG subject
+    and writes a chemkin file with the current state of the RMG model,
+    to a chemkin subfolder.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = ChemkinWriter(outputDirectory)
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
+    def __init__(self, outputDirectory=''):
+        super(ChemkinWriter, self).__init__()
+        makeOutputSubdirectory(outputDirectory, 'chemkin')
+    
+    def update(self, rmg):
+        saveChemkinFiles(rmg)
+
+        
+    

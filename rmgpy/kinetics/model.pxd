@@ -67,6 +67,8 @@ cdef class PDepKineticsModel(KineticsModel):
     cpdef bint isPressureValid(self, double P) except -2
 
     cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1
+    
+    cpdef numpy.ndarray getEffectiveColliderEfficiencies(self, list species)
 
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 

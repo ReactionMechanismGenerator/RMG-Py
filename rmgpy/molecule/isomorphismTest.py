@@ -47,7 +47,7 @@ def get_group_string(element, unpaired_electrons, charge):
     return s+get_molecule_string(element, unpaired_electrons, charge)
 
 def createMolecule(element, u1, c1):
-    from rmgpy.molecule import InvalidAdjacencyListError
+    from rmgpy.molecule.adjlist import InvalidAdjacencyListError
     adjlist = get_molecule_string(element, u1, c1)
     logging.info('Creating molecule: {0}'.format(adjlist))
     mol = None
@@ -390,7 +390,6 @@ def test_isomorphism_group_group():
     assert_false(gp3.isSubgraphIsomorphic(gp2))    
     assert_false(len(gp3.findSubgraphIsomorphisms(gp2)) > 0)
 
-@work_in_progress
 def test_isomorphism_sulfurGroup_sulfurMolecule():
     """
     Test isormophism check of a CS group vs. a sulfur containing molecule

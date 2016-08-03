@@ -4,6 +4,12 @@
 Creating Input Files
 ********************
 
+
+The syntax and parameters within an RMG input file are explained below.  We recommend
+trying to build your first input file while referencing one of the
+:ref:`Example Input Files<examples>`.  Alternatively, you can use our web form found 
+at http://rmg.mit.edu/input to assist in creating an input file.
+
 Syntax
 ======
 
@@ -93,7 +99,7 @@ given in each mechanism, the different mechanisms can have different units.
 	RMG would only use the rate coefficient supplied by you in generating the mechanism.
 
 	RMG will not handle irreversible reactions correctly, if supplied in a Reaction
-	Library, see :ref:`irreversiblekinetics`.
+	Library.
 	
 
 .. _seedmechanism:
@@ -103,7 +109,7 @@ Seed Mechanisms
 The next section of the :file:`input.py` file specifies which, if any, 
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
-addition to the species that are listed in the :ref:`List of species` section.
+addition to the species that are listed in the :ref:`species` section.
 
 For details of the kinetics libraries included with RMG that can be used as a seed mechanism,
 see :ref:`reactionlibraries`.
@@ -169,10 +175,13 @@ List of species
 
 Species to be included in the core at the start of your RMG job are defined in the species block. 
 The label, reactive or inert, and structure of each reactant must be specified.
-The label field will be used throughout your mechanism to identify the species. Inert
-species in the model can be defined by setting reactive to be ``False``, for all
-other species the reactive status must be set as ``True``. The structure of the 
-species can be defined using either by using SMILES or :ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
+
+The label field will be used throughout your mechanism to identify the species. 
+Inert species in the model can be defined by setting reactive to be ``False``. Reaction 
+families will no longer be applied to these species, but reactions of the inert from libraries 
+and seed mechanisms  will still be considered. For all other species the reactive status must 
+be set as ``True``. The structure of the species can be defined using either by using SMILES or 
+:ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
 
 The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure::
 
@@ -220,13 +229,17 @@ The following is an example of a simple reactor system::
 			'CH4': 0.9,
 		},
 		terminationTime=(1e0,'s'),
-	    sensitivity=['CH4','H2'],
-	    sensitivityThreshold=0.001,
+		sensitivity=['CH4','H2'],
+		sensitivityThreshold=0.001,
 
 	)
+    
 
-For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
-(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+Troubleshooting tip: if you are using a goal conversion rather than time, the reaction systems may reach equilibrium below the goal conversion, leading
+to a job that cannot converge physically.  Therefore it is may be necessary to reduce the goal conversion or set a goal reaction time.
+
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
+some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
 The sensitivity and sensitivityThrehold are optional arguments for when the
 user would like to conduct sensitivity analysis with respect to the reaction rate
 coefficients for the list of species given for ``sensitivity``.  
@@ -257,30 +270,97 @@ The next two lines specify the absolute and relative tolerance for the ODE solve
 The ``sens_atol`` and ``sens_rtol`` are optional arguments for the sensitivity absolute tolerance and sensitivity relative tolerances, respectively.  They
 are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.
 
+
+
+.. _modeltolerances:
+
+Model Tolerances
+================
+Model tolerances dictate how species get included in the model. For more information, see the theory behind how RMG builds models using the :ref:`Flux-based Algorithm <ratebasedmodelenlarger>`. 
+For running an initial job, it is recommended to only change the ``toleranceMoveToCore`` and ``toleranceInterruptSimulation`` values to an equivalent desired value.  We find
+that typically a value between ``0.01`` and ``0.05`` is best.  If your model cannot converge within a few hours, more advanced settings such as :ref:`reaction filtering <filterReactions>`
+or :ref:`pruning <pruning>` can be turned on to speed up your simulation at a slight risk of omitting chemistry.  ::
+    
+    model(
+        toleranceMoveToCore=0.1,
+        toleranceInterruptSimulation=0.1,
+    )
+
+- ``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. This tolerance is designed for controlling the accuracy of final model. 
+- ``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or ``terminationTime``).  This value should be set to be equal to ``toleranceMoveToCore`` unless the advanced :ref:`pruning <pruning>` feature is desired.
+
+.. _filterReactions:
+
+Advanced Setting: Speed Up by Filtering Reactions
+-------------------------------------------------
+For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of 
+:math:`(n_{reaction\: sites})^{{n_{species}}}`.  Thus it can be further sped up by pre-filtering reactions that are 
+added to the model.  This modification to the algorithm does not react core species together
+until their concentrations are deemed high enough.  It is recommended to turn on this flag when
+the model does not converge with normal parameter settings.  See :ref:`Filtering Reactions within the Flux-based Algorithm <filterReactionsTheory>`. for more details. ::
+
+    model(
+        toleranceMoveToCore=0.1,
+        toleranceInterruptSimulation=0.1,
+        filterReactions=True,
+    )
+    
+**Additional parameters:**
+
+- ``filterReactions``: set to ``True`` if reaction filtering is turned on.  By default it is set to False.
+
 .. _pruning:
 
-Pruning
-=======
-When using automated time stepping, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage. 
-The example below shows how to set up pruning parameters::
-	
-	model(
-	    toleranceKeepInEdge=0.0,
-	    toleranceMoveToCore=0.5,
-	    toleranceInterruptSimulation=0.5,
-	    maximumEdgeSpecies=100000
+Advanced Setting: Speed Up by Pruning
+-------------------------------------
+For further speed-up, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage. 
+
+A typical set of parameters for pruning is::
+
+    model(
+        toleranceMoveToCore=0.5,
+        toleranceInterruptSimulation=1e8,
+        toleranceKeepInEdge=0.05,
+        maximumEdgeSpecies=200000
+        minCoreSizeForPrune=50,
+        minSpeciesExistIterationsForPrune=2,
 	)
 
-:ref:`toleranceKeepInEdge` indicates how low the edge flux ratio for a species must get before the species is pruned (removed) from the edge.
-:ref:`toleranceMoveToCore` indicates how high the edge flux ratio for a species must get to enter the core model.
-:ref:`toleranceInterruptSimulation` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the :ref:`terminationConversion` or 
-:ref:`terminationTime`). Pruning won’t occur if the simulation is interrupted before reaching the goal criteria, so set this high to increase pruning opportunities. 
-:ref:`maximumEdgeSpecies` indicates the upper limit for the size of the edge.
+**Additional parameters:**
 
-When using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without first exceeding the termination tolerance. Therefore, you may find that RMG is not pruning even though the model edge size exceeds :ref:`maximumEdgeSpecies`. In order to increase the likelihood of pruning in such cases, you can try increasing :ref:`toleranceInterruptSimulation` to an arbitrarily high value. Alternatively, if you are using a conversion goal, because reaction systems may reach equilibrium below the goal conversion, it may be helpful to reduce the goal conversion or switch to a goal reaction time.
+- ``toleranceKeepInEdge`` indicates how low the edge flux ratio for a species must be to keep on the edge.  This should be set to zero, which is its default.
+- ``maximumEdgeSpecies`` indicates the upper limit for the size of the edge. The default value is set to ``1000000`` species.  
+- ``minCoreSizeForPrune`` ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species. 
+- ``minSpeciesExistIterationsForPrune`` is set so that the edge species stays in the job for at least that many iterations before it can be pruned.  The default value is 2 iterations.  
+
+**Recommendations:**
+
+We recommend setting ``toleranceKeepInEdge`` to not be larger than 10% of ``toleranceMoveToCore``, based on a pruning case study.
+In order to always enable pruning, ``toleranceInterruptSimulation`` should be set as a high value, e.g. 1e8. 
+``maximumEdgeSpecies`` can be adjusted based on user's RAM size. Usually 200000 edge species would cause memory shortage of 8GB computer,
+setting ``maximumEdgeSpecies = 200000`` (or lower values) could effectively prevent memory crash.
 
 
-Please find more details about pruning at :ref:`Pruning Theory <prune>`.
+**Additional Notes:**
+
+Note that when using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without exceeding the ``toleranceInterruptSimulation``. 
+Therefore, you may find that RMG is not pruning even though the model edge size exceeds ``maximumEdgeSpecies``, or an edge species has flux below the ``toleranceKeepInEdge``. This is
+a safety check within RMG to ensure that species are not pruned too early, resulting in inaccurate chemistry. In order to increase the likelihood of pruning you can 
+try increasing ``toleranceInterruptSimulation`` to an arbitrarily high value. 
+
+As a contrast, a typical set of parameters for non-pruning is::
+
+    model(
+        toleranceKeepInEdge=0,
+        toleranceMoveToCore=0.5,
+        toleranceInterruptSimulation=0.5,
+    )
+
+where ``toleranceKeepInEdge`` is always 0, meaning all the edge species will be kept in edge since all the edge species have positive flux. 
+``toleranceInterruptSimulation`` equals to ``toleranceMoveToCore`` so that ODE simulation get interrupted once discovering a new core species. 
+Because the ODE simulation is always interrupted, no pruning is performed.
+
+Please find more details about the theory behind pruning at :ref:`Pruning Theory <prune>`.
 
 .. _ontheflyquantumcalculations:
 
@@ -330,7 +410,7 @@ and works reasonably well while running more rapidly. The latter
 utilizes the steady-state/reservoir-state approach of Green and Bhatti [Green2007]_, 
 and is more theoretically sound but more expensive.
 
-The pressure dependence block should specify the following ::
+The pressure dependence block should specify the following:
 
 
 Method used for estimating pressure dependent kinetics
@@ -374,15 +454,10 @@ For typical combustion model temperatures of the experiments range from 300 - 20
 Interpolation scheme
 --------------------
 
-To disregard all temperature and pressure dependence and simply output the rate at the provided
-temperature and pressure, use the line ::
-
-	interpolation=False
-
 To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line ::
 
-	interpolation=('PDepArrhenius')
+	interpolation=('PDepArrhenius',)
 	
 The auxillary information printed to the Chemkin chem.inp file will have the "PLOG"
 format.  Refer to Section 3.5.3 of the :file:`CHEMKIN_Input.pdf` document and/or 
@@ -433,7 +508,10 @@ The following is an example of pressure dependence options ::
 		maximumAtoms=16,
 	)
 
-Regarding the number of polynomial coeffients for Chebyshev interpolated rates, plese refer to the :ref:`documentation <rmgpy.kinetics.Chebyshev>`. The number of pressures and temperature coefficents should always be smaller than the respective number of user-specified temperatures and pressures. 
+Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
+plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
+The number of pressures and temperature coefficents should always be smaller 
+than the respective number of user-specified temperatures and pressures. 
 
 Miscellaneous Options
 ===================== 
@@ -443,7 +521,7 @@ Miscellaneous options::
     options(
         units='si',
         saveRestartPeriod=(1,'hour'),
-        drawMolecules=True,
+        generateOutputHTML=True,
         generatePlots=False,
         saveSimulationProfiles=True,
         verboseComments=False,
@@ -454,7 +532,8 @@ The ``units`` field is set to ``si``.  Currently there are no other unit options
 
 The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
-Setting ``drawMolecules=True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if ``drawMolecules=False``, but the user specifies a ``pressureDependence`` section of the input file, RMG will still generate species files in the ``species`` folder, but only those that pertain to pressure dependent networks that RMG discovers. 
+Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
+HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs. 
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 
@@ -482,6 +561,7 @@ all of RMG's reaction families. ::
         maximumSulfurAtoms=10,
         maximumHeavyAtoms=10,
         maximumRadicalElectrons=10,
+        allowSingletO2 = False,
     )
 
 An additional flag ``allowed`` can be set to allow species 
@@ -493,11 +573,6 @@ Note that under all circumstances all forbidden species will still be banned unl
 manually removed from the database.  See :ref:`kineticsDatabase` for more information on 
 forbidden groups.  
 
+By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.  
 
 
-Examples
-========
-
-Perhaps the best way to learn the input file syntax is by example. To that end,
-a number of example input files and their corresponding output have been given
-in the ``examples`` directory.

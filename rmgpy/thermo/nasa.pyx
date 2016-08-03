@@ -343,3 +343,26 @@ cdef class NASA(HeatCapacityModel):
         for poly in self.polynomials:
             poly.changeBaseEnthalpy(deltaH)
         return self
+    
+    def toCantera(self):
+        """
+        Return the cantera equivalent NasaPoly2 object from this NASA object.
+        """
+        
+        from cantera import NasaPoly2
+
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coeffs
+        
+        polys = self.polynomials
+        assert len(polys) == 2, "Cantera NasaPoly2 objects only accept 2 polynomials"
+        assert len(polys[0].coeffs) == 7 and len(polys[1].coeffs) == 7, "Cantera NasaPoly2 polynomials can only contain 7 coefficients."
+        
+        # In RMG's NASA object, the first polynoamial is low temperature, and the second is 
+        # high temperature
+        coeffs = numpy.zeros(15)
+        coeffs[0] = polys[0].Tmax.value_si # mid point temperature between two polynomials
+        coeffs[1:8] = polys[1].coeffs # 7 coefficients of the high temperature polynomial
+        coeffs[8:15] = polys[0].coeffs # 7 coefficients of the low temperature polynomial
+
+        # initialize cantera.NasaPoly2(T_low, T_high, P_ref, coeffs)
+        return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 10000.0, coeffs)

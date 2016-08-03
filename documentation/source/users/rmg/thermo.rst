@@ -148,6 +148,7 @@ applies the HBI correction to that same library value.
 RMG contains a database for with HBIs, named radical.py. More information on the nature on the available HBIs, and corresponding values 
 can be found here: :ref:`thermoDatabase`.
 
+.. _qm:
 
 On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)
 ===========================================================================

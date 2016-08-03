@@ -1,6 +1,6 @@
 ################################################################################
 #
-#   PyRate input file for acetyl + O2 pressure-dependent reaction network
+#   CanTherm input file for acetyl + O2 pressure-dependent reaction network
 #
 ################################################################################
 

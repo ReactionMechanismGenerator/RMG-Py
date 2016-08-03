@@ -181,6 +181,7 @@ class TestGetAtomType(unittest.TestCase):
                                                      9  H u0 p0 {3,S}
                                                      10 H u0 p0 {4,S}
                                                      11 H u0 p0 {5,S}''')
+        self.mol19 = Molecule().fromSMILES('C=S')
         
     
     def atomType(self, mol, atomID):
@@ -204,9 +205,10 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol1, 0), 'Cs')
         self.assertEqual(self.atomType(self.mol1, 5), 'Cd')
         self.assertEqual(self.atomType(self.mol1, 6), 'Cdd')
-        self.assertEqual(self.atomType(self.mol1, 8), 'Ct')
+        self.assertEqual(self.atomType(self.mol1, 9), 'Ct')
         self.assertEqual(self.atomType(self.mol1, 2), 'CO')
         self.assertEqual(self.atomType(self.mol2, 0), 'Cb')
+        self.assertEqual(self.atomType(self.mol19, 0), 'CS')
     
     def testNitrogenTypes(self):
         """
@@ -238,9 +240,9 @@ class TestGetAtomType(unittest.TestCase):
         Test that getAtomType() returns appropriate silicon atom types.
         """
         self.assertEqual(self.atomType(self.mol4, 2), 'Sis')
-        self.assertEqual(self.atomType(self.mol4, 3), 'Sid')
+        self.assertEqual(self.atomType(self.mol4, 5), 'Sid')
         self.assertEqual(self.atomType(self.mol4, 4), 'Sidd')
-        self.assertEqual(self.atomType(self.mol4, 6), 'Sit')
+        self.assertEqual(self.atomType(self.mol4, 7), 'Sit')
         self.assertEqual(self.atomType(self.mol4, 1), 'SiO')
     
     def testSulfurTypes(self):
@@ -248,7 +250,7 @@ class TestGetAtomType(unittest.TestCase):
         Test that getAtomType() returns appropriate sulfur atom types.
         """
         self.assertEqual(self.atomType(self.mol4, 8), 'Ss')
-        self.assertEqual(self.atomType(self.mol4, 9), 'Sd')
+        self.assertEqual(self.atomType(self.mol4, 10), 'Sd')
     
     def testOtherTypes(self):
         """

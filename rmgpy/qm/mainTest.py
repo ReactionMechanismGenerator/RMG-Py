@@ -2,70 +2,70 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
+import subprocess
 import os
+import shutil
 
 from rmgpy import getPath
 from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.molecule import Molecule
 
-class TestQMSettings(unittest.TestCase):
-	"""
-	Contains unit tests for the QMSettings class.
-	"""
-	
-	def setUp(self):
-		"""
-		A function run before each unit test in this class.
-		"""
-		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-		
-		self.settings1 = QMSettings(software = 'mopac',
-								   method = 'pm3',
-								   fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
-								   scratchDirectory = None,
-								   onlyCyclics = False,
-								   maxRadicalNumber = 0,
-								   )
-		
-		self.settings2 = QMSettings()
+from rmgpy.qm.gaussian import Gaussian
+from rmgpy.qm.mopac import Mopac
 
-	def testCheckAllSet(self):
-		"""
-		Test that checkAllSet() works correctly.
-		"""
-		try:
-			self.settings1.checkAllSet()
-		except AssertionError:
-			self.fail("checkAllSet() raised unexpected AssertionError.")
-		
-		with self.assertRaises(AssertionError):
-			self.settings2.checkAllSet()
+class TestQMSettings(unittest.TestCase):
+    """
+    Contains unit tests for the QMSettings class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+        
+        self.settings1 = QMSettings(software = 'mopac',
+                                   method = 'pm3',
+                                   fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+                                   scratchDirectory = None,
+                                   onlyCyclics = False,
+                                   maxRadicalNumber = 0,
+                                   )
+        
+        self.settings2 = QMSettings()
+
+    def testCheckAllSet(self):
+        """
+        Test that checkAllSet() works correctly.
+        """
+        try:
+            self.settings1.checkAllSet()
+        except AssertionError:
+            self.fail("checkAllSet() raised unexpected AssertionError.")
+        
+        with self.assertRaises(AssertionError):
+            self.settings2.checkAllSet()
 
 class TestQMCalculator(unittest.TestCase):
 	"""
 	Contains unit tests for the QMSettings class.
 	"""
 	
-	mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
-	if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
-		mopExecutablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
-	elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
-		mopExecutablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
+	mopExecutablePath = Mopac.executablePath
+	if not os.path.exists(mopExecutablePath):
+		NO_MOPAC = NO_LICENCE = True
 	else:
-		mopExecutablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
-	
-	gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-	# GAUSS_EXEDIR may be a list like "path1:path2:path3"
-	for possibleDir in gaussEnv.split(':'):
-		if os.path.exists(os.path.join(possibleDir , 'g09')):
-			gaussExecutablePath = os.path.join(possibleDir , 'g09')
-			break
-		elif os.path.exists(os.path.join(possibleDir , 'g03')):
-			gaussExecutablePath = os.path.join(possibleDir , 'g03')
-			break
-	else:
-		gaussExecutablePath = os.path.join(gaussEnv , '(g03 or g09)')
+		NO_MOPAC = False
+		process = subprocess.Popen(mopExecutablePath,
+	                               stdin=subprocess.PIPE,
+	                               stdout=subprocess.PIPE,
+	                               stderr=subprocess.PIPE)
+		stdut, stderr = process.communicate("\n")
+		NO_LICENCE = 'To install the MOPAC license' in stderr
+
+	gaussExecutablePath = Gaussian.executablePath
+	NO_GAUSSIAN = not os.path.exists(gaussExecutablePath)
+
 	
 	def setUp(self):
 		"""
@@ -114,10 +114,8 @@ class TestQMCalculator(unittest.TestCase):
 								   )
 		
 		self.qmmol1 = QMCalculator(fileStore=fileStore)
-		self.qmmol1.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'qm', 'bin')
 		
 		self.qmmol2 = QMCalculator(fileStore=fileStore)
-		self.qmmol2.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'hexadiene', 'input.py')
 
 	def testSetDefaultOutputDirectory(self):
 		"""
@@ -154,15 +152,6 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertIsNotNone(self.mop3.settings.scratchDirectory)
 		self.assertIsNotNone(self.gauss1.settings.scratchDirectory)
 		self.assertIsNotNone(self.gauss2.settings.scratchDirectory)
-
-	def testCheckPaths(self):
-		"""
-		Test that checkPaths() works correctly.
-		"""
-		
-		with self.assertRaises(Exception):
-			self.qmmol1.checkPaths()
-			self.qmmol2.checkPaths()
 	
 	def testInitialize(self):
 		"""
@@ -184,7 +173,7 @@ class TestQMCalculator(unittest.TestCase):
 			self.gauss1.initialize()
 			self.gauss2.initialize()
 		except AssertionError:
-			self.fail("checkAllSet() raised unexpected AssertionError.")
+			self.fail("initialize() raised unexpected AssertionError.")
 		except Exception:
 			self.fail("initialize() raised Exception. Output file paths not correctly set.")
 	
@@ -204,10 +193,11 @@ class TestQMCalculator(unittest.TestCase):
 			self.gauss3.getThermoData(mol)
 			self.molpro1.getThermoData(mol)
 		
-	@unittest.skipIf(os.path.exists(mopExecutablePath)==False, "If MOPAC installed, try checking your environment variables.")
+	@unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+	@unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
 	def testGetThermoDataMopac(self):
 		"""
-		Test that getThermoData() works correctly.
+		Test that Mocpac getThermoData() works correctly.
 		"""
 		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
@@ -216,26 +206,14 @@ class TestQMCalculator(unittest.TestCase):
 		
 		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
-		try:
-			fileList = os.listdir(self.mop1.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.mop1.settings.fileStore, fileName))
-		except OSError:
-			pass		
+		for directory in (self.mop1.settings.fileStore, self.mop1.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 		
-		try:
-			fileList = os.listdir(self.mop2.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.mop2.settings.fileStore, fileName))
-		except OSError:
-			pass
+		for directory in (self.mop2.settings.fileStore, self.mop2.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 		
-		try:
-			fileList = os.listdir(self.mop3.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.mop3.settings.fileStore, fileName))
-		except OSError:
-			pass
+		for directory in (self.mop3.settings.fileStore, self.mop3.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 			
 		thermo1 = self.mop1.getThermoData(mol)
 		thermo2 = self.mop2.getThermoData(mol)
@@ -252,10 +230,10 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertAlmostEqual(thermo3.H298.value_si, 166168.8571, 1) # to 1 decimal place
 		self.assertAlmostEqual(thermo3.S298.value_si, 336.3330406, 1) # to 1 decimal place
 		
-	@unittest.skipIf(os.path.exists(gaussExecutablePath)==False, "If GAUSSIAN installed, try checking your environment variables.")
+	@unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
 	def testGetThermoDataGaussian(self):
 		"""
-		Test that getThermoData() works correctly.
+		Test that Gaussian getThermoData() works correctly.
 		"""
 		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.gauss1.setDefaultOutputDirectory(outputDirectory)
@@ -263,19 +241,11 @@ class TestQMCalculator(unittest.TestCase):
 		
 		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
-		try:
-			fileList = os.listdir(self.gauss1.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.gauss1.settings.fileStore, fileName))
-		except OSError:
-			pass	
+		for directory in (self.gauss1.settings.fileStore, self.gauss1.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 		
-		try:
-			fileList = os.listdir(self.gauss2.settings.fileStore)
-			for fileName in fileList:
-				os.remove(os.path.join(self.gauss2.settings.fileStore, fileName))
-		except OSError:
-			pass	
+		for directory in (self.gauss1.settings.fileStore, self.gauss2.settings.scratchDirectory):
+			shutil.rmtree(directory, ignore_errors=True)
 					
 		thermo1 = self.gauss1.getThermoData(mol)
 		thermo2 = self.gauss2.getThermoData(mol)

@@ -1,1 +1,0 @@
-DEF DASPK = 1

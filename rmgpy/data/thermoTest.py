@@ -6,9 +6,12 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy import settings
-from rmgpy.species import Species
+from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import Species
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule.molecule import Molecule
+import rmgpy
 
 ################################################################################
 
@@ -148,6 +151,7 @@ class TestThermoDatabase(unittest.TestCase):
 #            for T, Cp in zip(self.Tlist, Cplist):
 #                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
 
+
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
     Test only Aromatic species.
@@ -164,6 +168,175 @@ class TestThermoDatabaseAromatics(TestThermoDatabase):
     def __init__(self, *args, **kwargs):
         super(TestThermoDatabaseAromatics, self).__init__(*args, **kwargs)
         self._testMethodDoc = self._testMethodDoc.strip().split('\n')[0] + " for Aromatics.\n"
+
+
+class TestCyclicThermo(unittest.TestCase):
+    """
+    Contains unit tests of the ThermoDatabase class.
+    """
+    database = ThermoDatabase()
+    database.load(os.path.join(settings['database.directory'], 'thermo'))
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        
+        self.database = self.__class__.database
+    
+    def testComputeGroupAdditivityThermoForTwoRingMolecule(self):
+        """
+        The molecule being tested has two rings, one is 13cyclohexadiene5methylene
+        the other is benzene ring. This method is to test thermo estimation will
+        give two different corrections accordingly. 
+        """
+        spec = Species().fromSMILES('CCCCCCCCCCCC(CC=C1C=CC=CC1)c1ccccc1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermo)
+        self.assertEqual(len(ringGroups),2)
+        self.assertEqual(len(polycyclicGroups),0)
+
+        expected_matchedRingsLabels = ['13cyclohexadiene5methylene', 'Benzene']
+        expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
+
+        self.assertEqual(set(ringGroups), set(expected_matchedRings))
+    
+    def testThermoForMonocyclicAndPolycyclicSameMolecule(self):
+        """
+        Test a molecule that has both a polycyclic and a monocyclic ring in the same molecule
+        """
+        spec = Species().fromSMILES('C(CCC1C2CCC1CC2)CC1CCC1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermo)
+        self.assertEqual(len(ringGroups),1)
+        self.assertEqual(len(polycyclicGroups),1)
+        
+        expected_matchedRingsLabels = ['Cyclobutane']
+        expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
+        self.assertEqual(set(ringGroups), set(expected_matchedRings))
+        
+        expected_matchedPolyringsLabels = ['norbornane']
+        expected_matchedPolyrings = [self.database.groups['polycyclic'].entries[label] for label in expected_matchedPolyringsLabels]
+
+        self.assertEqual(set(polycyclicGroups), set(expected_matchedPolyrings))
+    
+    def testPolycyclicPicksBestThermo(self):
+        """
+        Test that RMG prioritizes thermo correctly and chooses the thermo from the isomer which
+        has a non generic polycyclic ring correction
+        """
+        
+        spec = Species().fromSMILES('C1=C[C]2CCC=C2C1')
+        spec.generateResonanceIsomers()
+        
+        thermoDataList = []
+        for molecule in spec.molecule:
+            thermo = self.database.estimateRadicalThermoViaHBI(molecule, self.database.computeGroupAdditivityThermo)
+            thermoDataList.append(thermo)
+            
+        thermoDataList.sort(key=lambda x: x.getEnthalpy(298))
+        most_stable_thermo = thermoDataList[0]
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(most_stable_thermo)
+        
+        selected_thermo = self.database.getThermoDataFromGroups(spec)
+        
+        self.assertNotEqual(selected_thermo, thermoDataList)
+        
+        selected_ringGroups, selected_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo)
+        
+        # The group used to estimate the most stable thermo is the generic polycyclic group and
+        # therefore is not selected.  Note that this unit test will have to change if the correction is fixed later.
+        self.assertEqual(polycyclicGroups[0].label, 'PolycyclicRing')
+        self.assertEqual(selected_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
+        
+        
+        # Check that the same result occurs when we retrieve thermo from getThermoData
+        selected_thermo2 = self.database.getThermoData(spec)
+        
+        selected2_ringGroups, selected2_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo2)
+        self.assertEqual(selected2_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
+    
+
+    def testGetRingGroupsFromComments(self):
+        """
+        Test that getRingGroupsFromComments method works for fused polycyclics.
+        """
+        from rmgpy.thermo.thermoengine import generateThermoData
+        
+        # set-up RMG object
+        rmg = RMG()
+
+        # load kinetic database and forbidden structures
+        rmg.database = RMGDatabase()
+        path = os.path.join(settings['database.directory'])
+
+        # forbidden structure loading
+        rmg.database.loadThermo(os.path.join(path, 'thermo'))
+
+        smi = 'C12C(C3CCC2C3)C4CCC1C4'#two norbornane rings fused together
+        spc = Species().fromSMILES(smi)
+
+        spc.thermo = generateThermoData(spc)
+
+        thermodb = rmg.database.thermo
+        thermodb.getRingGroupsFromComments(spc.thermo)
+
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
+    def testRemoveGroup(self):
+        """
+        Test that removing groups using nodes near the root of radical.py
+        """
+        #load up test data designed for this test
+        database2 = ThermoDatabase()
+        path = os.path.join(os.path.dirname(rmgpy.__file__),'data/test_data/')
+        database2.load(os.path.join(path, 'thermo'), depository = False)
+
+        #load up the thermo radical database as a test
+        radGroup = database2.groups['radical']
+
+        #use root as removed groups parent, which should be an LogicOr node
+        root = radGroup.top[0]
+        #use group to remove as
+        groupToRemove = radGroup.entries['RJ']
+        children = groupToRemove.children
+
+        #remove the group
+        radGroup.removeGroup(groupToRemove)
+
+        #afterwards groupToRemove should not be in the database or root's children
+        self.assertFalse(groupToRemove in radGroup.entries.values())
+        self.assertFalse(groupToRemove in root.children)
+
+        for child in children:
+            #groupToRemove children should all be in roots item.component and children attribuetes
+            self.assertTrue(child.label in root.item.components)
+            self.assertTrue(child in root.children)
+            #the children should all have root a their parent now
+            self.assertTrue(child.parent is root)
+
+        #Specific to ThermoDatabase, (above test apply to all base class Database)
+        #we check that unicode entry.data pointers are correctly reassigned
+
+        #if groupToRemove is a pointer and another node pointed to it, we copy
+        #groupToRemove pointer
+        self.assertTrue(radGroup.entries['OJ'].data is groupToRemove.data)
+
+        #Remove an entry with a ThermoData object
+        groupToRemove2 = radGroup.entries['CsJ']
+        radGroup.removeGroup(groupToRemove2)
+        #If groupToRemove was a data object, we point toward parent instead
+        self.assertTrue(radGroup.entries['RJ2_triplet'].data == groupToRemove2.parent.label)
+        #If the parent pointed toward groupToRemove, we need should have copied data object
+        Tlist=[300, 400, 500, 600, 800, 1000, 1500]
+        self.assertFalse(isinstance(groupToRemove2.parent.data, basestring))
+        self.assertTrue(groupToRemove2.parent.data.getEnthalpy(298) == groupToRemove2.data.getEnthalpy(298))
+        self.assertTrue(groupToRemove2.parent.data.getEntropy(298) == groupToRemove2.data.getEntropy(298))
+        self.assertFalse(False in [groupToRemove2.parent.data.getHeatCapacity(x) == groupToRemove2.data.getHeatCapacity(x) for x in Tlist])
 
 ################################################################################
 

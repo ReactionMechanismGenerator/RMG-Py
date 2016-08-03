@@ -189,8 +189,8 @@ The rule must be added into rules.py in the form::
 * The label is the name of the rule.
 * The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.
 * The value and units of kinetic parameters must be given. 
-	* Multiplicative uncertainty is given as "'*\|/,' 5" meaning within a factor of 5 
-	* Additive uncertainty is given as "'+\|/-', 2" meaning plus or minus 2.
+	* Multiplicative uncertainty is given as ``'*\|/,' 5`` meaning within a factor of 5 
+	* Additive uncertainty is given as ``'+\|/-', 2`` meaning plus or minus 2.
 * Rank determines the priority of the rule when compared with other rules.
 * The short description will appear in the annotated chemkin file.
 * The long description only appears in the database.
@@ -250,9 +250,6 @@ you should try to be general so that you do not exclude reactions.
 Sibling nodes must be exclusive from one another so that there is no question
 which group a molecule qualifies as. However, you do not need to be exhaustive and
 list out every possibility.
-
-Make sure your nodes are actually children of their parents. Currently RMG does
-no atom-by-atom checking and assumes whatever is put into the tree is correct.
 
 Be sure to give errors whenever adding rules. If you don't know the uncertainty,
 why do you trust the kinetics?

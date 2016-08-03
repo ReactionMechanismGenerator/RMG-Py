@@ -174,25 +174,23 @@ class KineticsGroups(Database):
             # entry is a top-level node that should be matched
             group = entry.item
 
-            # To sort out "union" groups, descend to the first child that's not a logical node
-            # ...but this child may not match the structure.
-            # eg. an R3 ring node will not match an R4 ring structure.
-            # (but at least the first such child will contain fewest labels - we hope)
-            if isinstance(entry.item, LogicNode):
-                group = entry.item.getPossibleStructures(self.entries)[0]
-
-            atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
+            # Identify the atom labels in a group if it is not a logical node
+            atomList = []
+            if not isinstance(entry.item, LogicNode):
+                atomList = group.getLabeledAtoms()
 
             for reactant in reaction.reactants:
                 if isinstance(reactant, Species):
                     reactant = reactant.molecule[0]
                 # Match labeled atoms
-                # Check this reactant has each of the atom labels in this group
+                # Check that this reactant has each of the atom labels in this group.  If it is a LogicNode, the atomList is empty and 
+                # it will proceed directly to the descendTree step.
                 if not all([reactant.containsLabeledAtom(label) for label in atomList]):
                     continue # don't try to match this structure - the atoms aren't there!
                 # Match structures
                 atoms = reactant.getLabeledAtoms()
-                matched_node = self.descendTree(reactant, atoms, root=entry)
+                # Descend the tree, making sure to match atomlabels exactly using strict = True
+                matched_node = self.descendTree(reactant, atoms, root=entry, strict=True)
                 if matched_node is not None:
                     template.append(matched_node)
                 #else:

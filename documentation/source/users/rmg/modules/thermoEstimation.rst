@@ -44,9 +44,9 @@ For example, if you wish to use the GRI-Mech 3.0 mechanism [GRIMech3.0]_ as a Th
  
 
 This library is located in the 
-:file:`$RMG/RMG-database/input/thermo/libraries` directory.  All "Locations" for the
-ThermoLibrary field must be with respect to the :file:`$RMG/RMG-database/input/thermo/libraries`
-directory.
+:file:`RMG-database/input/thermo/libraries` directory.  All "Locations" for the
+ThermoLibrary field must be with respect to the :file:`RMG-database/input/thermo/libraries`
+directory. 
 
 
 The optional ``quantumMechanics`` block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
@@ -67,3 +67,5 @@ Submitting a job is easy::
 	python thermoEstimator.py input.py
 
 We recommend you make a job-specific directory for each thermoEstimator simulation.
+
+Note that the RMG website also provides thermo estimation through the `Molecule Search <http://rmg.mit.edu/molecule_search>`_.

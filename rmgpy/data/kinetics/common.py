@@ -40,57 +40,6 @@ from rmgpy.species import Species
 
 ################################################################################
 
-# The names of all of the RMG reaction families that are bimolecular
-BIMOLECULAR_KINETICS_FAMILIES = [
-    'H_Abstraction',
-    'R_Addition_MultipleBond',
-    'R_Recombination',
-    'Disproportionation',
-    '1+2_Cycloaddition',
-    '2+2_cycloaddition_Cd',
-    '2+2_cycloaddition_CO',
-    '2+2_cycloaddition_CCO',
-    'Diels_alder_addition',
-    '1,2_Insertion',
-    '1,3_Insertion_CO2',
-    '1,3_Insertion_ROR',
-    'R_Addition_COm',
-    'Oa_R_Recombination',
-    'Substitution_O',
-    'SubstitutionS',
-    'R_Addition_CSm',
-    '1,3_Insertion_RSR',
-    'lone_electron_pair_bond',
-]
-
-# The names of all of the RMG reaction families that are unimolecular
-UNIMOLECULAR_KINETICS_FAMILIES = [
-    'intra_H_migration',
-    'Birad_recombination',
-    'intra_OH_migration',
-    'HO2_Elimination_from_PeroxyRadical',
-    'H_shift_cyclopentadiene',
-    'Cyclic_Ether_Formation',
-    'Intra_R_Add_Exocyclic',
-    'Intra_R_Add_Endocyclic',
-    '1,2-Birad_to_alkene',
-    'Intra_Disproportionation',
-    'Korcek_step1',
-    'Korcek_step2',
-    '1,2_shiftS',
-    'intra_substitutionCS_cyclization',
-    'intra_substitutionCS_isomerization',
-    'intra_substitutionS_cyclization',
-    'intra_substitutionS_isomerization',
-    'intra_NO2_ONO_conversion',
-    '1,4_Cyclic_birad_scission',
-    '1,4_Linear_birad_scission',
-    'Intra_Diels_alder',
-    'ketoenol'
-]
-
-################################################################################
-
 class KineticsError(Exception):
     """
     An exception for problems with kinetics. Pass a string describing the problem.
@@ -134,36 +83,24 @@ def saveEntry(f, entry):
     if entry.label != '':
         f.write('    label = "{0}",\n'.format(entry.label))
 
+
+    #Entries for kinetic rules, libraries, training reactions
+    #and depositories will have an Reaction object for its item
     if isinstance(entry.item, Reaction):
-#        for i, reactant in enumerate(entry.item.reactants):
-#            if isinstance(reactant, Molecule):
-#                f.write('    reactant{0:d} = \n'.format(i+1))
-#                f.write('"""\n')
-#                f.write(reactant.toAdjacencyList(removeH=False))
-#                f.write('""",\n')
-#            elif isinstance(reactant, Species):
-#                f.write('    reactant{0:d} = \n'.format(i+1))
-#                f.write('"""\n')
-#                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
-#                f.write('""",\n')
-#        for i, product in enumerate(entry.item.products):
-#            if isinstance(product, Molecule):
-#                f.write('    product{0:d} = \n'.format(i+1))
-#                f.write('"""\n')
-#                f.write(product.toAdjacencyList(removeH=False))
-#                f.write('""",\n')
-#            elif isinstance(reactant, Species):
-#                f.write('    product{0:d} = \n'.format(i+1))
-#                f.write('"""\n')
-#                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
-#                f.write('""",\n')
-        if isinstance(entry.item.reactants[0], Species): 
+        #Write out additional data if depository or library
+        #kinetic rules would have a Group object for its reactants instead of Species
+        if isinstance(entry.item.reactants[0], Species):
+            if entry.label != str(entry.item):
+                raise KineticsError("Reactions are now defined solely by their labels, "
+                                                    "but reaction {0!s} has label {1!r}".format(
+                                                     entry.item, entry.label))
             # Add degeneracy if the reaction is coming from a depository or kinetics library
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
-        if entry.item.duplicate: 
-            f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
-        if not entry.item.reversible:
-            f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
+            if entry.item.duplicate:
+                f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
+            if not entry.item.reversible:
+                f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
+    #Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')

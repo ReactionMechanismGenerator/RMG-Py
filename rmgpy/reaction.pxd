@@ -47,6 +47,7 @@ cdef class Reaction:
     cdef public bint duplicate
     cdef public int degeneracy
     cdef public list pairs
+    cdef public dict k_effective_cache
     
     cpdef bint isIsomerization(self)
 
@@ -82,9 +83,9 @@ cdef class Reaction:
 
     cpdef double getRateCoefficient(self, double T, double P=?)
 
-    cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
-
     cpdef fixBarrierHeight(self, bint forcePositive=?)
+
+    cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits)
 
     cpdef generateReverseRateCoefficient(self)
 
@@ -102,15 +103,3 @@ cdef class Reaction:
     
     cpdef copy(self)
     
-################################################################################
-
-cdef class ReactionModel:
-
-    cdef public list species
-    cdef public list reactions
-
-    cpdef generateStoichiometryMatrix(self)
-
-    cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
-
-################################################################################

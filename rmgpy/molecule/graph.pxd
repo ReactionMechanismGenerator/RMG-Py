@@ -35,7 +35,8 @@ cdef class Vertex(object):
     cdef public short sortingLabel
     cdef public bint terminal
     cdef public Vertex mapping
-
+    cdef public bint ignore
+    
     cpdef Vertex copy(self)
 
     cpdef bint equivalent(self, Vertex other) except -2
@@ -84,6 +85,8 @@ cdef class Graph:
 
     cpdef removeEdge(self, Edge edge)
 
+    cpdef updateConnectivityValues(self)
+    
     cpdef Graph copy(self, bint deep=?)
 
     cpdef Graph merge(self, Graph other)
@@ -91,8 +94,6 @@ cdef class Graph:
     cpdef list split(self)
 
     cpdef resetConnectivityValues(self)
-
-    cpdef updateConnectivityValues(self)
 
     cpdef sortVertices(self)
 
@@ -115,6 +116,12 @@ cdef class Graph:
     cpdef list getAllCyclicVertices(self)
     
     cpdef list getAllPolycyclicVertices(self)
+    
+    cpdef list getPolycyclicRings(self)
+    
+    cpdef list getMonocyclicRings(self)
+    
+    cpdef tuple getDisparateRings(self)
 
     cpdef list getAllCycles(self, Vertex startingVertex)
 

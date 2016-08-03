@@ -136,11 +136,13 @@ class KineticsLibrary(Database):
                     r1.duplicate = True
                     r2.duplicate = True
                     
-    def checkForDuplicates(self):
+    def checkForDuplicates(self, markDuplicates=False):
         """
         Check that all duplicate reactions in the kinetics library are
         properly marked (i.e. with their ``duplicate`` attribute set to 
         ``True``).
+        If ``markDuplicates`` is set to ``True``, then ignore and
+        mark all duplicate reactions as duplicate.
         """
         for entry0 in self.entries.values():
             reaction0 = entry0.item
@@ -151,7 +153,13 @@ class KineticsLibrary(Database):
                     reaction = entry.item
                     if reaction0 is not reaction and reaction0.isIsomorphic(reaction): 
                         # We found a duplicate reaction that wasn't marked!
-                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))        
+                        # RMG requires all duplicate reactions to be marked, unlike CHEMKIN
+                        if markDuplicates:
+                            reaction0.duplicate = reaction.duplicate = True
+                            logging.warning('Reaction indices {0} and {1} were marked as duplicate.'.format(entry0.index, entry.index))
+                            continue
+                        
+                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}. Reaction index {2} matches index {3}.'.format(reaction0, self.label, entry.index, entry0.index))        
 
     def convertDuplicatesToMulti(self):
         """
@@ -219,7 +227,7 @@ class KineticsLibrary(Database):
     def load(self, path, local_context=None, global_context=None):
         Database.load(self, path, local_context, global_context)
         
-        # Generate a unique set of the species in the kinetics library
+        # Load a unique set of the species in the kinetics library
         speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'))
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
@@ -236,7 +244,7 @@ class KineticsLibrary(Database):
             elif '=>' in rxn_string:
                 products = products[1:]
                 reversible = False
-            assert reversible == rxn.reversible
+            assert reversible == rxn.reversible, "Reaction string reversibility (=>) and entry attribute `reversible` (set to `False`) must agree if reaction is irreversible."
             for reactant in reactants.split('+'):
                 reactant = reactant.strip()
                 if reactant not in speciesDict:
@@ -250,6 +258,13 @@ class KineticsLibrary(Database):
                 
             if not rxn.isBalanced():
                 raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
+
+            if len(rxn.reactants) > 3: 
+                raise DatabaseError('RMG does not accept reactions with more than 3 reactants in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.reactants)))
+            if len(rxn.products) > 3:
+                raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.products)))
+            
+
             
         self.checkForDuplicates()
         
@@ -290,14 +305,6 @@ class KineticsLibrary(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
         )
-        
-        # Convert SMILES to Molecule objects in collision efficiencies
-        if isinstance(kinetics, PDepKineticsModel):
-            efficiencies = {}
-            for smiles, eff in kinetics.efficiencies.items():
-                if isinstance(smiles, str):
-                    efficiencies[Molecule().fromSMILES(smiles)] = eff
-            kinetics.efficiencies = efficiencies
 
     def saveEntry(self, f, entry):
         """

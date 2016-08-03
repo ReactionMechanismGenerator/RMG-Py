@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -73,6 +73,12 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
+        Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.generator', ['rmgpy/molecule/generator.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.resonance', ['rmgpy/molecule/resonance.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.pathfinder', ['rmgpy/molecule/pathfinder.py'], include_dirs=['.']),
         # Pressure dependence
         Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
         Extension('rmgpy.pdep.configuration', ['rmgpy/pdep/configuration.pyx']),
@@ -99,19 +105,6 @@ def getMainExtensionModules():
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
-    ]
-
-def getMeasureExtensionModules():
-    return [
-        Extension('rmgpy.measure._network', ['rmgpy/measure/_network.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.collision', ['rmgpy/measure/collision.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.reaction', ['rmgpy/measure/reaction.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.msc', ['rmgpy/measure/msc.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.rs', ['rmgpy/measure/rs.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.cse', ['rmgpy/measure/cse.pyx'], include_dirs=['.']),
-        Extension('rmgpy.measure.me', ['rmgpy/measure/me.pyx'], include_dirs=['.']),
-        Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
-        Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():
@@ -162,48 +155,58 @@ ext_modules = []
 if 'install' in sys.argv:
     # This is so users can still do simply `python setup.py install`
     ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getMeasureExtensionModules())
     ext_modules.extend(getSolverExtensionModules())
-elif 'main' in sys.argv:
+if 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
     sys.argv.remove('main')
     ext_modules.extend(getMainExtensionModules())
-elif 'measure' in sys.argv:
-    # This is for `python setup.py build_ext measure`
-    sys.argv.remove('measure')
-    ext_modules.extend(getMeasureExtensionModules())
-elif 'solver' in sys.argv:
+if 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
     ext_modules.extend(getSolverExtensionModules())
-elif 'cantherm' in sys.argv:
+if 'cantherm' in sys.argv:
     # This is for `python setup.py build_ext cantherm`
     sys.argv.remove('cantherm')
     ext_modules.extend(getMainExtensionModules())
     ext_modules.extend(getCanthermExtensionModules())
-elif 'minimal' in sys.argv:
+if 'minimal' in sys.argv:
     # This starts with the full install list, but removes anything that has a pure python mode
     # i.e. in only includes things whose source is .pyx
     sys.argv.remove('minimal')
     temporary_list = []
     temporary_list.extend(getMainExtensionModules())
-    temporary_list.extend(getMeasureExtensionModules())
     temporary_list.extend(getSolverExtensionModules())
     for module in temporary_list:
         for source in module.sources:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
-    
-scripts=['cantherm.py', 'measure.py', 'rmg.py']
+
+scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
+         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
+         'testing/databaseTest.py']
+
+modules = []
+for root, dirs, files in os.walk('rmgpy'):
+    for file in files:
+        if file.endswith('.py') or file.endswith('.pyx'):
+            if 'Test' not in file and '__init__' not in file:
+                if not root.endswith('rmgpy/cantherm/files'):
+                    module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                    modules.append(module)       
 
 # Initiate the build and/or installation
-setup(name='RMG Py',
-    version='0.1.0',
+
+# Read the version number
+exec(open('rmgpy/version.py').read())
+
+setup(name='RMG-Py',
+    version= __version__,
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
-    url='http://rmg.mit.edu/',
+    url='http://reactionmechanismgenerator.github.io',
     packages=['rmgpy'],
+    py_modules = modules,
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,

@@ -537,12 +537,11 @@ class Group(Graph):
     Corresponding alias methods have also been provided.
     """
 
-    def __init__(self, atoms=None):
+    def __init__(self, atoms=None, multiplicity=None):
         Graph.__init__(self, atoms)
-        self.multiplicity = []
-        self.updateConnectivityValues()
-        self.updateFingerprint()
-    
+        self.multiplicity = multiplicity if multiplicity else []
+        self.update()
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -627,6 +626,12 @@ class Group(Graph):
         other = Group(g.vertices)
         return other
 
+    def update(self):
+
+        self.updateConnectivityValues()
+        self.updateFingerprint()
+
+
     def merge(self, other):
         """
         Merge two groups so as to store them in a single
@@ -684,8 +689,11 @@ class Group(Graph):
         for atom in self.vertices:
             if atom.label != '':
                 if atom.label in labeled:
-                    labeled[atom.label] = [labeled[atom.label]]
-                    labeled[atom.label].append(atom)
+                    if isinstance(labeled[atom.label],list):
+                        labeled[atom.label].append(atom)
+                    else:
+                        labeled[atom.label] = [labeled[atom.label]]
+                        labeled[atom.label].append(atom)
                 else:
                     labeled[atom.label] = atom
         return labeled
@@ -735,8 +743,7 @@ class Group(Graph):
         self.vertices, multiplicity = fromAdjacencyList(adjlist, group=True)
         if multiplicity is not None:
             self.multiplicity = multiplicity
-        self.updateConnectivityValues()
-        self.updateFingerprint()
+        self.update()
         return self
         
     def fromXYZ(self, atomicNums, coordinates):
@@ -768,6 +775,7 @@ class Group(Graph):
         """
         from .adjlist import toAdjacencyList
         return toAdjacencyList(self.vertices, multiplicity=self.multiplicity, label='', group=True)
+
 
     def updateFingerprint(self):
         """

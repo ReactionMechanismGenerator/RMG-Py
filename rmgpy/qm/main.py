@@ -76,9 +76,32 @@ class QMSettings():
         self.onlyCyclics = onlyCyclics
         self.maxRadicalNumber = maxRadicalNumber
         
-        RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
-        self.RMG_bin_path = os.path.join(RMGpy_path, 'bin')
-    
+        if os.sys.platform == 'win32':
+            symmetryPath = os.path.join(rmgpy.getPath(),'..', 'bin', 'symmetry.exe')
+            # If symmetry is not installed in the bin folder, assume it is available on the path somewhere
+            if not os.path.exists(symmetryPath):
+                symmetryPath = 'symmetry.exe' 
+        else:
+            symmetryPath = os.path.join(rmgpy.getPath(),'..', 'bin', 'symmetry')
+            if not os.path.exists(symmetryPath):
+                symmetryPath = 'symmetry'
+        self.symmetryPath = symmetryPath
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (QMSettings, (
+            self.software,
+            self.method,
+            self.fileStore,
+            self.scratchDirectory,
+            self.onlyCyclics,
+            self.maxRadicalNumber,
+            self.symmetryPath
+            )
+        )
+
     def checkAllSet(self):
         """
         Check that all the required settings are set.
@@ -126,7 +149,14 @@ class QMCalculator():
                                    )
             
         self.database = ThermoLibrary(name='QM Thermo Library')
-        
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (QMCalculator, (self.settings, self.database))
+
+
     def setDefaultOutputDirectory(self, outputDirectory):
         """
         IF the fileStore or scratchDirectory are not already set, put them in here.
@@ -161,7 +191,15 @@ class QMCalculator():
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
-                os.makedirs(path)
+                # This try/except should be redundant, but some networked file systems
+                # seem to be slow or buggy or respond strangely causing problems
+                # between checking the path exists and trying to create it.
+                try:
+                    os.makedirs(path)
+                except OSError as e:
+                    logging.warning("Error creating directory {0}: {1!r}".format(path, e))
+                    logging.warning("Checking it already exists...")
+                    assert os.path.exists(path), "Path {0} still doesn't exist?".format(path)
 
         if not os.path.exists(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
@@ -241,4 +279,40 @@ class QMCalculator():
         kinetics0 = qm_reaction_calculator.generateKineticData()
         return kinetics0
     
+
+def save(rmg):
+    # Save the QM thermo to a library if QM was turned on
+    if rmg.quantumMechanics:
+        logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
+        rmg.quantumMechanics.database.save(os.path.join(rmg.outputDirectory,'qmThermoLibrary.py'))    
+
+class QMDatabaseWriter(object):
+    """
+    This class listens to a RMG subject
+    and saves the thermochemistry of species computed via the 
+    QMTPmethods.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = QMDatabaseWriter()
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
+    def __init__(self):
+        super(QMDatabaseWriter, self).__init__()
+    
+    def update(self, rmg):
+        save(rmg)
+
         
+    

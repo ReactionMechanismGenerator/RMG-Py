@@ -38,7 +38,7 @@ import logging
 import numpy
 cimport numpy
 cimport cython
-from libc.math cimport abs, exp, sqrt, cosh
+from libc.math cimport abs, exp, sqrt, cosh, log
 
 cimport rmgpy.constants as constants
 from rmgpy.kinetics.arrhenius cimport Arrhenius
@@ -320,3 +320,69 @@ def applyInverseLaplaceTransformMethod(transitionState,
         raise Exception('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
     
     return k
+
+def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pmax, errorCheck=False):
+    """
+    For a set of phenomenological rate coefficients `K` computed at a grid of
+    temperatures `Tlist` in K and pressures `Plist` in Pa, fit a :math:`k(T,P)`
+    interpolation `model`, a tuple where the first item is a string describing
+    the type of model - either ``'chebyshev'`` or ``'pdeparrhenius'`` - and the
+    remaining elements contain parameters for that model. For Chebyshev
+    polynomials, the parameters are the number of terms to use in each of the
+    temperature and pressure dimensions. For pressure-dependent Arrhenius models
+    there are no additional parameters. `Tmin`, `Tmax`, `Pmin`, and `Pmax`
+    specify the temperature and pressure ranges in K and Pa, respectively,
+    over which the interpolation model is valid. If `errorCheck` is ``True``,
+    a check will be performed to ensure that the interpolation model does not
+    deviate too much from the data; as this is not necessarily a fast process,
+    it is optional.
+    """
+    
+    from rmgpy.quantity import Quantity
+    from rmgpy.kinetics import PDepArrhenius, Chebyshev
+
+    # Determine units for k(T,P)
+    if len(reaction.reactants) == 1:
+        kunits = 's^-1'
+    elif len(reaction.reactants) == 2:
+        kunits = 'm^3/(mol*s)'
+    elif len(reaction.reactants) == 3:
+        kunits = 'm^6/(mol^2*s)'
+    else:
+        kunits = ''
+
+    # Set/update the net reaction kinetics using interpolation model
+    if model[0].lower() == 'chebyshev':
+        modelType, degreeT, degreeP = model
+        chebyshev = Chebyshev()
+        chebyshev.fitToData(Tlist, Plist, K, kunits, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax)
+        kinetics = chebyshev
+    elif model[0].lower() == 'pdeparrhenius':
+        pDepArrhenius = PDepArrhenius()
+        pDepArrhenius.fitToData(Tlist, Plist, K, kunits=kunits, T0=298.0)
+        kinetics = pDepArrhenius
+    else:
+        return None
+
+    # Set temperature and pressure ranges explicitly (as they may be different
+    # from min(Tlist), max(Tlist), min(Plist), max(Plist))
+    kinetics.Tmin = Quantity(Tmin,"K")
+    kinetics.Tmax = Quantity(Tmax,"K")
+    kinetics.Pmin = Quantity(Pmin/1e5,"bar")
+    kinetics.Pmax = Quantity(Pmax/1e5,"bar")
+
+    # Compute log RMS error for fit
+    if errorCheck:
+        logRMS = 0.0
+        # Check that fit is within an order of magnitude at all points
+        for t, T in enumerate(Tlist):
+            for p, P in enumerate(Plist):
+                logkmodel = log(kinetics.getRateCoefficient(T, P))
+                logkdata = log(K[t,p])
+                logRMS += (logkmodel - logkdata) * (logkmodel - logkdata)
+        logRMS = sqrt(logRMS / len(Tlist) / len(Plist))
+        if logRMS > 0.5:
+            logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
+    
+    return kinetics
+

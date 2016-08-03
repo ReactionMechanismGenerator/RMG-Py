@@ -28,7 +28,13 @@ species: ::
 Replacing the structure with any of the following representations will also produce
 the same species: ::
 
-    structure=adjacencyList("1 C 0"),
+    structure=adjacencyList("
+    1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+    2 H u0 p0 c0 {1,S}
+    3 H u0 p0 c0 {1,S}
+    4 H u0 p0 c0 {1,S}
+    5 H u0 p0 c0 {1,S}
+    "),
    
     structure=SMARTS("[CH4]"),
    
@@ -41,6 +47,7 @@ To quickly generate any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
 species names, use the Molecule Search tool found here: http://rmg.mit.edu/molecule_search
 
+.. _representing_oxygen:
 
 Representing Oxygen
 ===================
@@ -80,3 +87,11 @@ Conversion between triplet and singlet forms is possible through the primary
 reaction library ``OxygenSingTrip``; the reactions involved are very slow, however,
 and are likely to be absent from any mechanisms generated. At this point, no other
 reactions of singlet oxygen have been included in RMG.
+
+In order to allow the singlet form of O2 to be used in RMG, please allow it explicitly by
+setting ``allowSingletO2`` to ``True`` in the ``generateSpeciesConstraints`` section of the
+RMG input file. ::
+
+    generatedSpeciesConstraints(
+        allowSingletO2 = True,
+    )

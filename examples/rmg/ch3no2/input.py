@@ -12,13 +12,13 @@ database(
 generatedSpeciesConstraints(
     allowed = ['seed mechanisms', 'reaction libraries'],
     #maximumCarbonAtoms = 7,
-    #maximumHydrogenAtoms = 8,
     #maximumOxygenAtoms = 5,
     maximumNitrogenAtoms = 2,
     #maximumSiliconAtoms = 0,
     #maximumSulfurAtoms = 0,
     #maximumHeavyAtoms = 3,
     maximumRadicalElectrons = 2,
+    allowSingletO2 = False,
 )
 
 # List of species
@@ -82,6 +82,6 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
-    drawMolecules=False,
+    generateOutputHTML=False,
     generatePlots=False,
 )

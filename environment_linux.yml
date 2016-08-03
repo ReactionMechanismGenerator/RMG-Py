@@ -1,0 +1,37 @@
+name: rmg_env
+channels:
+  - defaults
+  - rmg
+dependencies:
+  - libgcc # [unix]
+  - python
+  - numpy >=1.10.0
+  - cantera >=2.2
+  - coolprop
+  - cython ==0.21
+  - matplotlib >=1.5
+  - rdkit >=2015.09.2
+  - pydas >=1.0.1
+  - pydqed >=1.0.0
+  - quantities
+  - scipy
+  - xlwt
+  - markupsafe
+  - jinja2
+  #- argparse # [py26]
+  - pyparsing
+  - pydot ==1.2.2
+  - nose
+  - coverage
+  - guppy
+  - gprof2dot
+  - cairo
+  - cairocffi
+  - openbabel
+  - psutil
+  - symmetry
+  - mopac
+  - graphviz
+  - scoop
+  - libgfortran ==1.0 # You may need to comment this out for mac osx
+  - ffmpeg
