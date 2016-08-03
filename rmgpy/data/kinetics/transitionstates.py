@@ -615,7 +615,7 @@ class TSGroups(Database):
         return tsDistances
 
 
-    def generateGroupAdditivityValues(self, trainingSet, user="Anonymous User"):
+    def generateGroupAdditivityValues(self, trainingSet):
         """
         Generate the group additivity values using the given `trainingSet`,
         a list of 2-tuples of the form ``(template, kinetics)``. You must also
@@ -756,9 +756,6 @@ class TSGroups(Database):
                 else:
                     entry.data = DistanceData()
         
-        # Add a note to the history of each changed item indicating that we've generated new group values
-        import time
-        event = [time.asctime(), user, 'action', 'Generated new group additivity values for this entry.']
         changed = False
         for label, entry in self.entries.items():
             if entry.data is not None:
