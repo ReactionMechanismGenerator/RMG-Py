@@ -636,6 +636,13 @@ class KineticsRules(Database):
                 else:
                     # We found one or more results! Let's average them together
                     kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                    # Unlike in the case of a single rule, the verbose comments for averaging are lost unless they are 
+                    # appended in the following lines.  Verbose comments are filtered out in 
+                    # rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics
+                    kinetics.comment = 'Average of ({0})'.format(
+                         ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                    kinetics.comment +='\n'
+                    # Append standard portion of kinetics comments that appear in non-verbose mode.
                     kinetics.comment += 'Estimated using average of templates {0}'.format(
                         ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
                     )
