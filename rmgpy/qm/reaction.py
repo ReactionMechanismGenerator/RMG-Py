@@ -608,7 +608,7 @@ class QMReaction:
             for row in rows:
                 print row
 
-    def tsSearch(self, notes, labels, fromDoubleEnded=False):
+    def tsSearch(self, labels, fromDoubleEnded=False):
         """
         Once the transition state estimate is made, this runs the optimization and the
         path analysis calculation. The ts estimate can be from the group additive or
@@ -619,17 +619,13 @@ class QMReaction:
 
         successfulTS = self.optimizeTS(labels, fromDoubleEnded=fromDoubleEnded)
         if not successfulTS:
-            notes = 'TS not converged\n'
-            return successfulTS, notes
+            return successfulTS
 
         validTS = self.validateTS()
-        if not validTS:
-            notes = 'IRC failed\n'
-        else:
+        if validTS:
             self.writeRxnOutputFile(labels)
-            notes = 'Success\n'
 
-        return validTS, notes
+        return validTS
             
     def generateTSGeometryDirectGuess(self):
         """
@@ -645,14 +641,6 @@ class QMReaction:
             diff = (coordinates1.coords - coordinates2.coords)
             return math.sqrt(sum(diff * diff))
             
-        self.settings.fileStore = self.fileStore
-        self.settings.scratchDirectory = self.scratchDirectory
-        split_fileStore = self.fileStore.split(self.uniqueID)
-        rev_fileStore = self.revID.join(split_fileStore)
-        split_scratch = self.scratchDirectory.split(self.uniqueID)
-        rev_scratch = self.revID.join(split_scratch)
-        notes = ''
-
         reactant, product = self.setupMolecules()
 
         tsRDMol, tsBM, self.reactantGeom = self.generateBoundsMatrix(reactant)
@@ -674,8 +662,7 @@ class QMReaction:
         setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
 
         if not setBM:
-            notes = 'Bounds matrix editing failed\n'
-            return False, notes
+            return False
 
         for i in range(len(tsBM)):
             for j in range(i,len(tsBM)):
@@ -961,21 +948,13 @@ class QMReaction:
 
     def generateKineticData(self):
         self.initialize()
-        # provides transitionstate geometry
-        fileStore = self.settings.fileStore #  To ensure all files are found in the same base directory
-        scratchDirectory = self.settings.scratchDirectory #  To ensure all files are found in the same base directory
-        tsFound, notes = self.generateTSGeometryDirectGuess()
-
-        self.settings.fileStore = fileStore
-        with open(os.path.join(self.fileStore, 'error.txt'), 'w') as errorFile:
-            errorFile.write(notes)
+        
+        tsFound = self.generateTSGeometryDirectGuess()
 
         if not tsFound:
             # Return the reaction without the kinetics included. Fall back on group additivity.
             return self.reaction
-
-        # cantopt = ['CC(C)C([O])(OO)C(C)C', 'C[C](CC(=O)C(C)(C)OO)OO', 'C[C](OO)C(=O)C(C)(C)OO', 'CC(C)(C)[CH]OO', 'OO[C]1CCCCC1', '[CH2]OO', '[O]Cc1ccccc1'] # A local minimum for the following geometries has not been found at B3LYP/6-31+G(d,p)
-        cantopt = [] # They have been found at m062x
+            
         for mol in self.reaction.reactants:
             if isinstance(mol, Species):
                 mol = mol.molecule[0]
