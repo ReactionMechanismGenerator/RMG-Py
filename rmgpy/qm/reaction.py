@@ -89,16 +89,19 @@ class QMReaction:
             logging.info("Creating scratch directory %s for qm files."%os.path.abspath(self.scratchDirectory))
             os.makedirs(self.scratchDirectory)
 
-    def getFilePath(self, extension):
+    def getFilePath(self, extension, scratch=True):
         """
-        Should return the path to the file with the given extension.
+        Returns the path to the file with the given extension.
 
         The provided extension should include the leading dot.
 
-        Need to define some reaction line notation.
-        Possibly '<Reaction_Family>/<reactant1SMILES>+<reactant2SMILES>--<product1SMILES>+<product2SMILES>' ???
+        If called with `scratch=False` then it will be in the `fileStore` directory,
+        else `scratch=True` is assumed and it will be in the `scratchDirectory` directory.
         """
-        return os.path.join(self.fileStore, self.uniqueID  + extension)
+        return os.path.join(
+            self.settings.scratchDirectory if scratch else self.settings.fileStore,
+            self.uniqueID + extension
+            )
 
     @property
     def outputFilePath(self):
