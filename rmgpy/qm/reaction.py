@@ -61,12 +61,6 @@ class QMReaction:
         self.reaction = reaction
         self.settings = settings
         self.tsDatabase = tsDatabase
-        # self.tsDatabase = TransitionStates()
-        # self.tsDatabase.load(
-        #         path=os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input', 'kinetics', 'families', self.reaction.family.label)),
-        #         local_context={},
-        #         global_context={},
-        #         )
 
         if isinstance(self.reaction.reactants[0], Molecule):
             reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
@@ -80,7 +74,6 @@ class QMReaction:
         self.uniqueID = stringID
         self.revID = revID
 
-        # self.geometry = None
         self.reactantGeom = None # Geometry(settings, molecule.toAugmentedInChIKey(), molecule)
         self.productGeom = None
         self.tsGeom = None
@@ -295,10 +288,6 @@ class QMReaction:
             listDist.append(dist)
 
         return listDist
-            # maxLij = Uik + Ukj - 0.1
-            # if bm[i,j] >  maxLij:
-            #     print "CHANGING Lower limit {0} to {1}".format(bm[i,j], maxLij)
-            #     bm[i,j] = maxLij
 
     def getLabels(self, reactant):
         """
@@ -502,18 +491,6 @@ class QMReaction:
         """
         Conduct the optimization step of the transition state search.
         """
-        # if os.path.exists(self.outputFilePath):
-        #     os.remove(checkpointFile)
-            # complete = self.checkComplete(self.outputFilePath)
-            # 
-            # if complete:
-            #     converged, internalCoord = self.verifyOutputFile()
-            # else:
-            #     # Delete the output and checkpoint files so we redo the calc
-            #     os.remove(self.outputFilePath)
-            #     checkpointFile = os.path.join(self.settings.fileStore, self.uniqueID + ".chk")
-            #     assert os.path.exists(checkpointFile)
-            #     os.remove(checkpointFile) # Checkpoint file path
         if os.path.exists(self.outputFilePath):
             converged, internalCoord = self.verifyOutputFile()
         else:
@@ -534,27 +511,6 @@ class QMReaction:
             converged = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
             
-        # if not os.path.exists(self.outputFilePath):
-        #     optEst = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-        #     optRC = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
-        #     if os.path.exists(optEst):
-        #         optEst = self.optEstimate(labels)
-        #     if os.path.exists(optRC):
-        #         optRC = self.optRxnCenter(labels)
-        #     print "Optimizing TS once"
-        #     self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optRC)
-        #     converged, internalCoord = self.run()
-        #     shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-        # 
-        #     if internalCoord and not converged:
-        #         notes = 'Internal coordinate error, trying cartesian\n'
-        #         print "Optimizing TS in cartesian"
-        #         self.createInputFile(2)
-        #         converged = self.run()
-        #         shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
-        # else:
-        #     converged = self.verifyOutputFile()
-        
         if not converged:
             # Check for convergence failures
             complete, convergenceFailure = self.checkComplete(self.outputFilePath)
@@ -614,9 +570,6 @@ class QMReaction:
         path analysis calculation. The ts estimate can be from the group additive or
         double-ended search methods.
         """
-        # Check SQL database for transition state
-        # self.checkSQL('/scratch/westgroup')
-
         successfulTS = self.optimizeTS(labels, fromDoubleEnded=fromDoubleEnded)
         if not successfulTS:
             return successfulTS
@@ -939,9 +892,6 @@ class QMReaction:
                 bondDict = self.getBonds(qmMolecule)
                 self.writeCanThermStatMech(allAtoms, bondDict, qmMolecule.molecule.multiplicity, qmMolecule.outputFilePath, symmetry=1)#qmMolecule.pointGroup.symmetryNumber)
                 molecules.append(qmMolecule)
-                # log = GaussianLog(qmMolecule.outputFilePath)
-                # species = Species(label=qmMolecule.molecule.toSMILES(), conformer=log.loadConformer(), molecule=[molecule])
-                # molecules.append(species)
             else:
                 raise Exception('The reactant or product geometry did not optimize. Cannot calculate the kinetics.')
         return molecules
@@ -999,27 +949,6 @@ class QMReaction:
 
     	logging.info(jobResult)
         return self.reaction
-        #
-        # if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
-        #     #self.determinePointGroup()
-        #     tsLog = GaussianLog(self.outputFilePath)
-        #     self.reaction.transitionState = TransitionState(label=self.uniqueID + 'TS', conformer=tsLog.loadConformer(), frequency=(tsLog.loadNegativeFrequency(), 'cm^-1'), tunneling=Wigner(frequency=None))
-        #
-        #     self.reaction.reactants = reactants
-        #     self.reaction.products = products
-        #
-        #
-        #     kineticsJob = KineticsJob(self.reaction)
-        #     kineticsJob.generateKinetics()
-        #
-        #     """
-        #     What do I do with it? For now just save it.
-        #     Various parameters are not considered in the calculations so far e.g. symmetry.
-        #     This is just a crude calculation, calculating the partition functions
-        #     from the molecular properties and plugging them through the equation.
-        #     """
-        #     kineticsJob.save(self.getFilePath('.kinetics'))
-        #     # return self.reaction.kinetics
 
     def determinePointGroup(self):
         """
