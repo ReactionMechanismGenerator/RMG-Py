@@ -307,11 +307,11 @@ class QMReaction:
         RDKit to place greater importance in maintaining these distance limits when
         generating conformers.
         """
-        if self.reaction.family.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
+        if self.reaction.family.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
             lbl3 = reactant.getLabeledAtom('*3').sortingLabel
-        elif self.reaction.family.label.lower() in ['disproportionation']:
+        elif self.reaction.family.lower() in ['disproportionation']:
             lbl1 = reactant.getLabeledAtom('*2').sortingLabel
             lbl2 = reactant.getLabeledAtom('*4').sortingLabel
             lbl3 = reactant.getLabeledAtom('*1').sortingLabel
