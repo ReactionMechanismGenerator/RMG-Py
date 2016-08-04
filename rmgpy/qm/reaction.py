@@ -662,59 +662,7 @@ class QMReaction:
         labels, atomMatch = self.getLabels(reactant)
         
         if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
-            estFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-            rcFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
-            if os.path.exists(estFilePath):
-                parser = cclib.parser.Gaussian(estFilePath)
-                parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-                cclib_data = parser.parse()
-                atomNums = cclib_data.atomnos
-                atomCoords = cclib_data.atomcoords[-1]
-                
-                atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
-                atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
-                atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-
-                at12 = getDistance(atom1, atom2)
-                at23 = getDistance(atom2, atom3)
-                at13 = getDistance(atom1, atom3)
-                
-                with open(os.path.join(self.fileStore, 'fzEstDists.txt'), 'w') as distFile:
-                    distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(at12, at13, at23))
-            if os.path.exists(rcFilePath):
-                parser = cclib.parser.Gaussian(rcFilePath)
-                parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-                cclib_data = parser.parse()
-                atomNums = cclib_data.atomnos
-                atomCoords = cclib_data.atomcoords[-1]
-                
-                atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
-                atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
-                atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-
-                at12 = getDistance(atom1, atom2)
-                at23 = getDistance(atom2, atom3)
-                at13 = getDistance(atom1, atom3)
-                
-                with open(os.path.join(self.fileStore, 'rcDists.txt'), 'w') as distFile:
-                    distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(at12, at13, at23))
-            parser = cclib.parser.Gaussian(self.outputFilePath)
-            parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-            cclib_data = parser.parse()
-            atomNums = cclib_data.atomnos
-            atomCoords = cclib_data.atomcoords[-1]
-            
-            atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
-            atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
-            atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-
-            at12 = getDistance(atom1, atom2)
-            at23 = getDistance(atom2, atom3)
-            at13 = getDistance(atom1, atom3)
-            
-            with open(os.path.join(self.fileStore, 'optDists.txt'), 'w') as distFile:
-                distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(at12, at13, at23))
-            return True, "Already done!"
+            return True
         
         tsBM = self.editMatrix(reactant, tsBM, labels)
         atoms = len(reactant.atoms)
@@ -737,73 +685,9 @@ class QMReaction:
         self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
         atomSymbols, atomCoords = self.reactantGeom.parseMOL(self.reactantGeom.getRefinedMolFilePath())
 
-        d12sq = (atomCoords[labels[0]]-atomCoords[labels[1]])**2
-        d23sq = (atomCoords[labels[1]]-atomCoords[labels[2]])**2
-        d13sq = (atomCoords[labels[0]]-atomCoords[labels[2]])**2
-        d12 = math.sqrt(d12sq.sum())
-        d23 = math.sqrt(d23sq.sum())
-        d13 = math.sqrt(d13sq.sum())
-
-        with open(os.path.join(self.fileStore, 'rdkitDists.txt'), 'w') as distFile:
-            distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(d12, d13, d23))
-
-        check, notes =  self.tsSearch(notes, labels)
+        check =  self.tsSearch(labels)
         
-        if check:
-            estFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-            rcFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
-            if os.path.exists(estFilePath):
-                parser = cclib.parser.Gaussian(estFilePath)
-                parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-                cclib_data = parser.parse()
-                atomNums = cclib_data.atomnos
-                atomCoords = cclib_data.atomcoords[-1]
-                
-                atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
-                atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
-                atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-
-                at12 = getDistance(atom1, atom2)
-                at23 = getDistance(atom2, atom3)
-                at13 = getDistance(atom1, atom3)
-                
-                with open(os.path.join(self.fileStore, 'fzEstDists.txt'), 'w') as distFile:
-                    distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(at12, at13, at23))
-            if os.path.exists(rcFilePath):
-                parser = cclib.parser.Gaussian(rcFilePath)
-                parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-                cclib_data = parser.parse()
-                atomNums = cclib_data.atomnos
-                atomCoords = cclib_data.atomcoords[-1]
-                
-                atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
-                atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
-                atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-
-                at12 = getDistance(atom1, atom2)
-                at23 = getDistance(atom2, atom3)
-                at13 = getDistance(atom1, atom3)
-                
-                with open(os.path.join(self.fileStore, 'rcDists.txt'), 'w') as distFile:
-                    distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(at12, at13, at23))
-            parser = cclib.parser.Gaussian(self.outputFilePath)
-            parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-            cclib_data = parser.parse()
-            atomNums = cclib_data.atomnos
-            atomCoords = cclib_data.atomcoords[-1]
-            
-            atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
-            atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
-            atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
-
-            at12 = getDistance(atom1, atom2)
-            at23 = getDistance(atom2, atom3)
-            at13 = getDistance(atom1, atom3)
-            
-            with open(os.path.join(self.fileStore, 'optDists.txt'), 'w') as distFile:
-                distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(at12, at13, at23))
-
-        return check, notes
+        return check
 
     def generateTSGeometryDoubleEnded(self, neb=False):
         """
