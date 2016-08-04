@@ -120,32 +120,10 @@ class QMReaction:
         """Get the irc input file name."""
         return self.getFilePath('IRC' + self.inputFileExtension)
 
-    def setOutputDirectory(self):
-        """
-        Set up the fileStore and scratchDirectory if not already done.
-        """
-        subPath = os.path.join('Reactions', self.reaction.family.label, self.uniqueID, self.settings.method)
-
-        setFileStore = True
-        setScratch = True
-        if self.fileStore:
-            if not self.fileStore.endswith(subPath):
-                self.fileStore = os.path.join(self.settings.fileStore, subPath)
-                logging.info("Setting the qm kinetics fileStore to {0}".format(self.settings.fileStore))
-            setFileStore = False
-
-        if self.scratchDirectory:
-            if not self.scratchDirectory.endswith(subPath):
-                self.scratchDirectory = os.path.join(self.settings.scratchDirectory, subPath)
-                logging.info("Setting the qm kinetics scratchDirectory fileStore to {0}".format(self.settings.scratchDirectory))
-            setScratch = False
-
-        if setFileStore:
-            self.fileStore = os.path.join('QMfiles', subPath)
-            logging.info("Set the qm kinetics fileStore to {0}".format(self.fileStore))
-        if setScratch:
-            self.scratchDirectory = os.path.join('QMscratch', subPath)
-            logging.info("Set the qm kinetics scratchDirectory to {0}".format(self.scratchDirectory))
+    @property
+    def getKineticsFilePath(self):
+        "Returns the path the kinetics data file."
+        return self.getFilePath('.kinetics', scratch=False)
 
     def initialize(self):
         """
@@ -164,12 +142,6 @@ class QMReaction:
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-
-        self.setOutputDirectory()
         self.fileStore = os.path.expandvars(self.fileStore) # to allow things like $HOME or $RMGpy
         self.scratchDirectory = os.path.expandvars(self.scratchDirectory)
         for path in [self.fileStore, self.scratchDirectory]:
@@ -505,8 +477,6 @@ class QMReaction:
                 os.remove(self.ircOutputFilePath)
 
         if internalCoord and not converged:
-            notes = 'Internal coordinate error, trying cartesian\n'
-            print "Optimizing TS in cartesian"
             self.createInputFile(2)
             converged = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
