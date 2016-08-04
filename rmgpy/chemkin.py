@@ -1250,12 +1250,12 @@ def saveHTMLFile(path, readComments = True):
     """
     from rmgpy.rmg.model import CoreEdgeReactionModel
     from rmgpy.rmg.output import saveOutputHTML
-    chemkinPath= path + '/chemkin/chem.inp'
-    dictionaryPath = path + 'RMG_Dictionary.txt'
+    chemkinPath= os.path.join(path, 'chemkin', 'chem.inp')
+    dictionaryPath = os.path.join(path, 'RMG_Dictionary.txt')
     model = CoreEdgeReactionModel()
     model.core.species, model.core.reactions = loadChemkinFile(chemkinPath,dictionaryPath, readComments = readComments)
-    outputPath = path + 'output.html'
-    speciesPath = path + '/species/'
+    outputPath = os.path.join(path, 'output.html')
+    speciesPath = os.path.join(path, 'species')
     if not os.path.isdir(speciesPath):
         os.makedirs(speciesPath)
     saveOutputHTML(outputPath, model)
@@ -1831,8 +1831,8 @@ def saveJavaKineticsLibrary(path, species, reactions):
     # Check for duplicate
     markDuplicateReactions(reactions)
     
-    f = open(os.path.join(os.path.dirname(path), 'reactions.txt'), 'w')
-    f2 = open(os.path.join(os.path.dirname(path), 'pdepreactions.txt'), 'w')
+    f = open(os.path.join(path, 'reactions.txt'), 'w')
+    f2 = open(os.path.join(path, 'pdepreactions.txt'), 'w')
 
     # Headers
     f.write('Unit:\n')
@@ -1860,7 +1860,7 @@ def saveJavaKineticsLibrary(path, species, reactions):
     f.close()
     f2.close()
     
-    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species, oldStyle=True)
+    saveSpeciesDictionary(os.path.join(path, 'species.txt'), species, oldStyle=True)
 
 def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
     """
