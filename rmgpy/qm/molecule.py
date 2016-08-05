@@ -454,8 +454,11 @@ class QMMolecule:
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         if cclibData.natom==1:
-            # Can't have any vibration frequencies
-            cclibData.vibfreqs = numpy.array([])
+            # Can't have any vibration frequencies or rotantional constants
+            if not hasattr(cclibData, 'vibfreqs'):
+                cclibData.vibfreqs = numpy.array([])
+            if not hasattr(cclibData, 'rotcons'):
+                cclibData.rotcons = numpy.array([[0]])
         radicalNumber = self.molecule.getRadicalCount()
         qmData = parseCCLibData(cclibData, radicalNumber+1) # Should `radicalNumber+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qmData
