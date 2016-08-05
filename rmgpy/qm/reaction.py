@@ -161,7 +161,17 @@ class QMReaction:
     def ircInputFilePath(self):
         """Get the irc input file name."""
         return self.getFilePath('IRC' + self.inputFileExtension)
-
+    
+    @property
+    def getTSFilePath(self):
+        "Returns the path the transition state data file."
+        return self.getFilePath('.ts', scratch=False)
+    
+    @property
+    def getCanThermFilePath(self):
+        "Returns the path the cantherm file."
+        return self.getFilePath('.canth.py')
+        
     @property
     def getKineticsFilePath(self):
         "Returns the path the kinetics data file."
@@ -853,7 +863,7 @@ class QMReaction:
         with open(path.rsplit('.',1)[0]+'.py', 'w') as statMechFile:
             statMechFile.write(input_string)
 
-    def writeCanThermInput(self, reactants, products, filePath, fileStore, scratchDirectory):
+    def writeCanThermInput(self, reactants, products):
         """
         Write the CanTherm input file
         """
@@ -868,22 +878,16 @@ class QMReaction:
         output.append('useHinderedRotors = False')
         output.append('useBondCorrections = False\n')
 
-        if not fileStore.startswith('/'):
-            fileStore = os.path.abspath(fileStore)
+        if not self.fileStore.startswith('/'):
+            fileStore = os.path.abspath(self.fileStore)
             
         speciesList = [] # Check if species path already specified. If so, DON'T put it again.
         for reactant in reactants:
             if reactant.uniqueID not in speciesList:
-                reactant.settings.fileStore = fileStore
-                reactant.settings.scratchDirectory = scratchDirectory
-                reactant.checkPaths()
                 output.append("species('{0}', '{1}')".format(reactant.uniqueID, reactant.getFilePath('.py')))
                 speciesList.append(reactant.uniqueID)
         for product in products:
             if product.uniqueID not in speciesList:
-                product.settings.fileStore = fileStore
-                product.settings.scratchDirectory = scratchDirectory
-                product.checkPaths()
                 output.append("species('{0}', '{1}')".format(product.uniqueID, product.getFilePath('.py')))
                 speciesList.append(product.uniqueID)
 
@@ -905,10 +909,10 @@ class QMReaction:
         output.append("statmech('TS')\nkinetics('{0}')\n".format(self.uniqueID))
 
         input_string = '\n'.join(output)
-        with open(filePath, 'w') as canThermInp:
+        with open(self.filePath, 'w') as canThermInp:
             canThermInp.write(input_string)
 
-    def calculateQMData(self, moleculeList, fileStore, scratchDirectory):
+    def calculateQMData(self, moleculeList):
         """
         If the transition state is found, optimize reactant and product geometries for use in
         TST calculations.
@@ -918,9 +922,6 @@ class QMReaction:
             if isinstance(molecule, Species):
                 molecule = molecule.molecule[0]
             qmMolecule = self.getQMMolecule(molecule)
-            qmMolecule.settings.fileStore = fileStore
-            qmMolecule.settings.scratchDirectory = scratchDirectory
-            qmMolecule.checkPaths()
             qmMolecule.qmData = qmMolecule.generateQMData()
             if qmMolecule.qmData:
                 qmMolecule.determinePointGroup()
@@ -942,22 +943,9 @@ class QMReaction:
         if not tsFound:
             # Return the reaction without the kinetics included. Fall back on group additivity.
             return self.reaction
-            
-        for mol in self.reaction.reactants:
-            if isinstance(mol, Species):
-                mol = mol.molecule[0]
-            if mol.toSMILES() in cantopt:
-                print 'Cannot optimize geometry for {0}'.format(mol.toSMILES())
-                return self.reaction
-        for mol in self.reaction.products:
-            if isinstance(mol, Species):
-                mol = mol.molecule[0]
-            if mol.toSMILES() in cantopt:
-                print 'Cannot optimize geometry for {0}'.format(mol.toSMILES())
-                return self.reaction
 
-        reactants = self.calculateQMData(self.reaction.reactants, fileStore, scratchDirectory)
-        products = self.calculateQMData(self.reaction.products, fileStore, scratchDirectory)
+        reactants = self.calculateQMData(self.reaction.reactants)
+        products = self.calculateQMData(self.reaction.products)
 
         allAtoms = []
         multiplicity=1
@@ -969,11 +957,10 @@ class QMReaction:
                 allAtoms.append(atom.symbol)
 
         self.writeCanThermStatMech(allAtoms, {}, multiplicity, self.outputFilePath)
-        canThermFilePath = os.path.join(self.fileStore, 'input.py')
-        self.writeCanThermInput(reactants, products, canThermFilePath, fileStore, scratchDirectory)
+        self.writeCanThermInput(reactants, products)
         canThermJob = CanTherm()
-        canThermJob.outputDirectory = self.fileStore
-        canThermJob.inputFile = canThermFilePath
+        canThermJob.outputDirectory = self.getFilePath('')
+        canThermJob.inputFile = self.getCanThermFilePath
         canThermJob.plot = False
         try:
             canThermJob.execute()
