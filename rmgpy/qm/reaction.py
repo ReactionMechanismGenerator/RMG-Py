@@ -16,7 +16,9 @@ import sqlite3 as lite
 from rmgpy.data.kinetics.transitionstates import TransitionStates
 from rmgpy.molecule import Molecule, Atom, getElement
 from rmgpy.species import Species, TransitionState
-from rmgpy.kinetics import Wigner
+from rmgpy.reaction import Reaction
+from rmgpy.kinetics import Arrhenius, Eckart
+from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator, LinearRotor
 from molecule import QMMolecule, Geometry
 from rmgpy.cantherm.main import CanTherm
 from rmgpy.cantherm.kinetics import KineticsJob
@@ -37,18 +39,18 @@ def matrixToString(matrix):
 
 def loadTSDataFile(filePath):
     """
-    Load the specified thermo data file and return the dictionary of its contents.
+    Load the specified transition state data file and return the dictionary of its contents.
 
     Returns `None` if the file is invalid or missing.
 
-    Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
+    Checks that the returned dictionary contains at least rxnLabel, method, qmData.
     """
     
     if not os.path.exists(filePath):
         return None
     try:
         with open(filePath) as resultFile:
-            logging.info('Reading existing thermo file {0}'.format(filePath))
+            logging.info('Reading existing ts file {0}'.format(filePath))
             global_context = { '__builtins__': None }
             local_context = {
                 '__builtins__': None,
@@ -69,8 +71,59 @@ def loadTSDataFile(filePath):
     if not 'rxnLabel' in local_context:
         logging.error('The ts file "{0}" did not contain a rxnLabel.'.format(filePath))
         return None
+    if not 'method' in local_context:
+        logging.error('The ts file "{0}" did not contain a method.'.format(filePath))
+        return None
     if not 'qmData' in local_context:
         logging.error('The ts file "{0}" did not contain thermoData.'.format(filePath))
+        return None
+    return local_context
+
+def loadKineticsDataFile(filePath):
+    """
+    Load the specified kinetic data file and return the dictionary of its contents.
+
+    Returns `None` if the file is invalid or missing.
+
+    Checks that the returned dictionary contains at least method, Reaction.
+    """
+    
+    if not os.path.exists(filePath):
+        return None
+    try:
+        with open(filePath) as resultFile:
+            logging.info('Reading existing kinetics file {0}'.format(filePath))
+            global_context = { '__builtins__': None }
+            local_context = {
+                '__builtins__': None,
+                'True': True,
+                'False': False,
+                'Reaction': Reaction,
+                'Species': Species,
+                'TransitionState': TransitionState,
+                'Arrhenius': Arrhenius,
+                'Eckart': Eckart,
+                'Conformer': Conformer,
+                'IdealGasTranslation': IdealGasTranslation,
+                'NonlinearRotor': NonlinearRotor,
+                'HarmonicOscillator': HarmonicOscillator,
+                'LinearRotor': LinearRotor,
+                'array': numpy.array,
+                'int32': numpy.int32,
+            }
+            exec resultFile in global_context, local_context
+    except IOError, e:
+        logging.info("Couldn't read kinetics file {0}".format(filePath))
+        return None
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The kinetics file "{0}" was invalid:'.format(filePath))
+        logging.exception(e)
+        return None
+    if not 'method' in local_context:
+        logging.error('The kinetics file "{0}" did not contain a method.'.format(filePath))
+        return None
+    if not 'Reaction' in local_context:
+        logging.error('The kinetics file "{0}" did not contain a reaction.'.format(filePath))
         return None
     return local_context
 
@@ -655,6 +708,7 @@ class QMReaction:
         """
         with open(self.getTSFilePath, 'w') as resultFile:
             resultFile.write('rxnLabel = "{0!s}"\n'.format(self.uniqueID))
+            resultFile.write('method = "{0!s}"\n'.format(self.method))
             resultFile.write("qmData = {0!r}\n".format(self.parse()))
     
     def loadTSData(self):
@@ -672,10 +726,46 @@ class QMReaction:
             if local_context['rxnLabel'] != self.revID:
                 logging.error('The rxnLabel in the ts file {0} did not match the current reaction {1}'.format(filePath,self.uniqueID))
                 return None
+        if local_context['method'] != self.method:
+            logging.error('The method in the ts file {0} did not match the current method {1}'.format(filePath,self.method))
+            return None
 
         self.qmData = local_context['qmData']
         
         return self.qmData
+    
+    def saveKineticsData(self, reaction):
+        """
+        Save the calculated kinetics. `reaction` is a CanTherm reaction object that
+        should include the molecular parameters.
+        """
+        with open(self.getKineticsFilePath, 'w') as resultFile:
+            resultFile.write('method = "{0!s}"\n'.format(self.method))
+            resultFile.write('reaction = {0!r}\n'.format(reaction))
+    
+    def loadKineticsData(self):
+        """
+        Try loading kinetics from a previous run.
+        """
+        filePath = self.getKineticsFilePath
+        
+        local_context = loadKineticsDataFile(filePath)
+        if local_context is None:
+            # file does not exist or is invalid
+            return None
+        
+        if local_context['method'] != self.method:
+            logging.error('The method in the ts file {0} did not match the current method {1}'.format(filePath,self.method))
+            return None
+        
+        if local_context['reaction'].label != self.uniqueID:
+            if local_context['reaction'].label != self.revID:
+                logging.error('The reaction in the ts file {0} did not match the current reaction {1}'.format(filePath,self.uniqueID))
+                return None
+
+        self.reaction = local_context['reaction']
+        
+        return self.reaction
         
     def generateTSGeometryDoubleEnded(self, neb=False):
         """
@@ -909,7 +999,7 @@ class QMReaction:
         output.append("statmech('TS')\nkinetics('{0}')\n".format(self.uniqueID))
 
         input_string = '\n'.join(output)
-        with open(self.filePath, 'w') as canThermInp:
+        with open(self.getCanThermFilePath, 'w') as canThermInp:
             canThermInp.write(input_string)
 
     def calculateQMData(self, moleculeList):
@@ -936,6 +1026,11 @@ class QMReaction:
         return molecules
 
     def generateKineticData(self):
+        """
+        """
+        if self.loadKineticsData():
+            return self.reaction
+        
         self.initialize()
         
         tsFound = self.generateTSGeometryDirectGuess()
@@ -962,12 +1057,14 @@ class QMReaction:
         canThermJob.outputDirectory = self.getFilePath('')
         canThermJob.inputFile = self.getCanThermFilePath
         canThermJob.plot = False
+        
         try:
             canThermJob.execute()
     	    jobResult = "Successful kinetics calculation in CanTherm."
     	    for job in canThermJob.jobList:
     	        if isinstance(job, KineticsJob):
-    		    # Return the reaction with the kinetics.
+                    # Return the reaction with the kinetics.
+                    self.saveKineticsData(job.reaction)
     	            return job.reaction
     	except ValueError, e:
     	    jobResult = e
