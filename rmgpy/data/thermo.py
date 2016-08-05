@@ -1648,8 +1648,99 @@ class ThermoDatabase(object):
                 splitTokens = re.split(regex, token)
                 assert len(splitTokens) == 3, 'token: {}'.format(token)
                 groupLabel = splitTokens[1]
-                polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])
+                polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])    
+        
         return ringGroups, polycyclicGroups
+    
+    def extractSourceFromComments(self, species):
+        """
+        `species`: A species object containing thermo data and thermo data comments
+        
+        Parses the verbose string of comments from the thermo data of the species object,
+        and extracts the thermo sources.
+
+        Returns a dictionary with keys of either 'Library', 'QM', and/or 'GAV'.
+        Commonly, species thermo are estimated using only one of these sources.
+        However, a radical can be estimated with more than one type of source, for 
+        instance a saturated library value and a GAV HBI correction, or a QM saturated value
+        and a GAV HBI correction.  
+        
+        source = {'Library': String_Name_of_Library_Used,
+                  'QM': String_of_Method_Used,
+                  'GAV': Dictionary_of_Groups_Used 
+                  }
+                  
+        The Dictionary_of_Groups_Used looks like 
+        {'groupType':[List of tuples containing (Entry, Weight)]
+        """
+        comment = species.thermo.comment
+        tokens = comment.split()
+        
+        
+        source = {}
+        
+        if comment.startswith('Thermo library'):
+            # Store name of the library source, which is the 3rd token in the comments
+            source['Library'] = tokens[2]
+            
+        elif comment.startswith('QM'):
+            # Store the level of the calculation, which is the 2nd token in the comments
+            source['QM'] = tokens[1]
+        
+        
+        # Check for group additivity contributions to the thermo in this species            
+        
+        # The contribution of the groups can be either additive or substracting
+        # after changes to the polycyclic algorithm
+        
+        comment = comment.replace(' + ',' +')
+        comment = comment.replace(' - ', ' -')
+        tokens = comment.split()
+        
+        groups = {}
+        groupTypes = self.groups.keys()
+        
+        
+        regex = "\((.*)\)" #only hit outermost parentheses
+        for token in tokens:
+            weight = 1  # default contribution is additive
+            if token.startswith('+'):
+                token = token[1:]
+            elif token.startswith('-'):
+                weight = -1
+                token = token[1:]
+            for groupType in groupTypes:
+                if token.startswith(groupType+'(') and token.endswith(')'):
+                    splitTokens = re.split(regex, token)
+                    groupLabel = splitTokens[1]
+                    groupEntry = self.groups[groupType].entries[groupLabel]
+                    # Use dictionary to combine into weights when necessary
+                    if not groupType in groups:
+                        groups[groupType] = {groupEntry:weight}
+                    else:
+                        if groupEntry in groups[groupType]:
+                            groups[groupType][groupEntry] += weight
+                        else:
+                            groups[groupType][groupEntry] = weight
+                    break
+            
+
+        if groups:
+            # Indicate that group additivity is used when it is either an HBI correction
+            # onto a  thermo library or QM value, or if the entire molecule is estimated using group additivity
+            # Save the groups into the source dictionary
+            
+            # Convert groups back into tuples 
+            for groupType, groupDict in groups.iteritems():
+                groups[groupType] = groupDict.items()
+            
+            source['GAV'] = groups
+            
+        # Perform a sanity check that this molecule is estimated by at least one method
+        if not source.keys():
+            raise Exception('Species {0} thermo appears to not be estimated using any methods.'.format(species))
+        
+        return source
 
 def findCp0andCpInf(species, heatCap):
     """
