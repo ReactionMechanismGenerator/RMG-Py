@@ -588,7 +588,7 @@ class QMReaction:
 
         validTS = self.validateTS()
         if validTS:
-            self.writeRxnOutputFile(labels)
+            self.saveTSData()
 
         return validTS
             
@@ -614,7 +614,8 @@ class QMReaction:
 
         labels, atomMatch = self.getLabels(reactant)
         
-        if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
+        if os.path.exists(self.getTSFilePath):
+            self.loadTSData()
             return True
         
         tsBM = self.editMatrix(reactant, tsBM, labels)
