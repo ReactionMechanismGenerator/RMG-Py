@@ -397,9 +397,6 @@ class QMReaction:
         bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
         bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
 
-        with open(os.path.join(self.fileStore, 'estDists.txt'), 'w') as distFile:
-            distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(distanceData.distances['d12'], distanceData.distances['d13'], distanceData.distances['d23']))
-
         bm = self.bmPreEdit(bm, sect)
 
         return bm
