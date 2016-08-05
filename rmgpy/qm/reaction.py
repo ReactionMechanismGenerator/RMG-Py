@@ -20,6 +20,7 @@ from rmgpy.kinetics import Wigner
 from molecule import QMMolecule, Geometry
 from rmgpy.cantherm.main import CanTherm
 from rmgpy.cantherm.kinetics import KineticsJob
+import qmdata
 import symmetry
 
 try:
@@ -34,6 +35,44 @@ def matrixToString(matrix):
     text = '\n'.join([ ' '.join([str(round(item, 1)) for item in line]) for line in matrix ])
     return text.replace('1000.0', '1e3')
 
+def loadTSDataFile(filePath):
+    """
+    Load the specified thermo data file and return the dictionary of its contents.
+
+    Returns `None` if the file is invalid or missing.
+
+    Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
+    """
+    
+    if not os.path.exists(filePath):
+        return None
+    try:
+        with open(filePath) as resultFile:
+            logging.info('Reading existing thermo file {0}'.format(filePath))
+            global_context = { '__builtins__': None }
+            local_context = {
+                '__builtins__': None,
+                'True': True,
+                'False': False,
+                'QMData': qmdata.QMData,
+                'array': numpy.array,
+                'int32': numpy.int32,
+            }
+            exec resultFile in global_context, local_context
+    except IOError, e:
+        logging.info("Couldn't read ts file {0}".format(filePath))
+        return None
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The ts file "{0}" was invalid:'.format(filePath))
+        logging.exception(e)
+        return None
+    if not 'rxnLabel' in local_context:
+        logging.error('The ts file "{0}" did not contain a rxnLabel.'.format(filePath))
+        return None
+    if not 'qmData' in local_context:
+        logging.error('The ts file "{0}" did not contain thermoData.'.format(filePath))
+        return None
+    return local_context
 
 class QMReaction:
     """
@@ -601,7 +640,35 @@ class QMReaction:
         check =  self.tsSearch(labels)
         
         return check
+    
+    def saveTSData(self):
+        """
+        Save the generated TS data.
+        """
+        with open(self.getTSFilePath, 'w') as resultFile:
+            resultFile.write('rxnLabel = "{0!s}"\n'.format(self.uniqueID))
+            resultFile.write("qmData = {0!r}\n".format(self.parse()))
+    
+    def loadTSData(self):
+        """
+        Try loading TS data from a previous run.
+        """
+        filePath = self.getTSFilePath
+        
+        local_context = loadTSDataFile(filePath)
+        if local_context is None:
+            # file does not exist or is invalid
+            return None
+        
+        if local_context['rxnLabel'] != self.uniqueID:
+            if local_context['rxnLabel'] != self.revID:
+                logging.error('The rxnLabel in the ts file {0} did not match the current reaction {1}'.format(filePath,self.uniqueID))
+                return None
 
+        self.qmData = local_context['qmData']
+        
+        return self.qmData
+        
     def generateTSGeometryDoubleEnded(self, neb=False):
         """
         Generate a Transition State geometry using the double-ended search method
