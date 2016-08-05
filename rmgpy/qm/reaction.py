@@ -1027,6 +1027,9 @@ class QMReaction:
 
     def generateKineticData(self):
         """
+        Generate Kinetic Data via a QM calc.
+
+        Returns :class:`Reaction`. :class:`Reaction` has a kinetics attribute, which is None if the calculation fails.
         """
         if self.loadKineticsData():
             return self.reaction
