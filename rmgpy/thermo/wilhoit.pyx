@@ -481,6 +481,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
+            comment = self.comment
         )
     
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):

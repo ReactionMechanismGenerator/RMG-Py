@@ -304,6 +304,7 @@ cdef class NASA(HeatCapacityModel):
             Cp0 = (Cp0,"J/(mol*K)"),
             CpInf = (CpInf,"J/(mol*K)"),
             E0 = self.E0,
+            comment = self.comment
         )
 
     @cython.boundscheck(False)
