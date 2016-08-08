@@ -21,6 +21,7 @@ matplotlib.use('Agg')
 ##import (library) as (give the library a nickname/alias)
 import matplotlib.pyplot as plt
 
+from rmgpy.rmg.main import initializeLog
 from rmgpy.tools.isotopes import run
 
 ################################################################################
@@ -127,6 +128,7 @@ def main():
     original = os.path.abspath(args.original) if args.original else None
     isotopeLoc = os.path.abspath(args.isotopes) if args.isotopes else None
 
+    initializeLog(logging.INFO, os.path.join(os.getcwd(), 'RMG.log'))
     probs, spcs, spcdata = run(inputFile, inputIsoFile, outputdir, original=original, isotopeLoc=isotopeLoc)
 
     to_csv(probs, spcs, spcdata, outputdir)
