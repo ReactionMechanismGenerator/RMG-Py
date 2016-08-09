@@ -317,7 +317,8 @@ class CoreEdgeReactionModel:
         spec.generate_resonance_structures()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
-        submit(spec,self.solventName)
+        if not spec.thermo:
+            submit(spec,self.solventName)
         
         if spec.label == '':
             if spec.thermo and spec.thermo.label != '': #check if thermo libraries have a name for it
