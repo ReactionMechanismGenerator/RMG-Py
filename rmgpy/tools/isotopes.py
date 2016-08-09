@@ -51,6 +51,7 @@ from rmgpy.rmg.input import getInput
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.rmg.model import Species
 from rmgpy.rmg.listener import SimulationProfileWriter
+from rmgpy.data.thermo import findCp0andCpInf
 
 def initializeIsotopeModel(rmg, isotopes):
     """
@@ -369,9 +370,8 @@ def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
             raise e
 
         for spc in rmg.reactionModel.core.species:
-            isotopes.append(generateIsotopomers(spc, maxIsotopes))
-
-        isotopes = list(itertools.chain(*isotopes))
+            findCp0andCpInf(spc, spc.thermo)
+            isotopes.extend(generateIsotopomers(spc, maxIsotopes))
 
         # add the original unlabeled species:
         isotopes.extend(rmg.reactionModel.core.species)
