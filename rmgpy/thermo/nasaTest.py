@@ -34,6 +34,8 @@ This script contains unit tests of the :mod:`rmgpy.thermo.nasa` module.
 
 import unittest
 import numpy
+import os.path
+import logging
 
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 import rmgpy.constants as constants
@@ -231,3 +233,37 @@ class TestNASA(unittest.TestCase):
         # NasaPoly2 units use J/kmol rather than J/mol
         self.assertAlmostEqual(self.nasa.getEnthalpy(900), nasapoly2.h(900)/1000, 1)
         self.assertAlmostEqual(self.nasa.getEntropy(700), nasapoly2.s(700)/1000, 1)
+
+    def testToNASA(self):
+        """
+        Test if the entropy computed from other thermo implementations is close to what NASA computes.
+        """
+
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase, database
+        from rmgpy.species import Species
+
+        # Load databases
+        database = RMGDatabase()
+        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'))
+        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+
+        spc = Species().fromSMILES('CC')
+        spc.getThermoData()
+
+        T = 1350.# not 298K!
+
+        # nasa to thermodata
+        nasa = spc.thermo
+        Snasa = nasa.getEntropy(T)
+
+        td = nasa.toThermoData()
+        Std = td.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, Std, -1)
+
+        # thermodata to nasa
+        nasa = td.toNASA(500., 1500., 1000.)
+        Snasa = nasa.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, Std, -1)

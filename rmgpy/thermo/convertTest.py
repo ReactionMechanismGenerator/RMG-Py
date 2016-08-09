@@ -72,6 +72,8 @@ class TestConverter(unittest.TestCase):
             Tmin = (10,"K"),
             Tmax = (3000,"K"),
             E0 = (-93.6077,'kJ/mol'),
+            Cp0 = (4.0*constants.R,"J/(mol*K)"),
+            CpInf = (21.5*constants.R,"J/(mol*K)"),
             comment = 'C2H6',
         )
         self.thermodata = ThermoData(
@@ -131,7 +133,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a NASA model to a Wilhoit model.
         """
         nasa = self.nasa
-        wilhoit = nasa.toWilhoit(Cp0=self.wilhoit.Cp0.value_si, CpInf=self.wilhoit.CpInf.value_si)
+        wilhoit = nasa.toWilhoit()
         Tlist = numpy.arange(10, 3000, 10)
         for T in Tlist:
             Cp_wilhoit = wilhoit.getHeatCapacity(T)
@@ -211,7 +213,7 @@ class TestConverter(unittest.TestCase):
         """
         wilhoit1 = self.wilhoit
         nasa = wilhoit1.toNASA(Tmin=10, Tmax=3000, Tint=1000)
-        wilhoit2 = nasa.toWilhoit(Cp0=self.wilhoit.Cp0.value_si, CpInf=self.wilhoit.CpInf.value_si)
+        wilhoit2 = nasa.toWilhoit()
         Tlist = numpy.arange(10, 3000, 10)
         for T in Tlist:
             Cp_1 = wilhoit1.getHeatCapacity(T)
