@@ -333,7 +333,7 @@ cdef class NASA(HeatCapacityModel):
         H298 = self.getEnthalpy(298)
         S298 = self.getEntropy(298)
         
-        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        return Wilhoit(comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
     
     cpdef NASA changeBaseEnthalpy(self, double deltaH):
         """
