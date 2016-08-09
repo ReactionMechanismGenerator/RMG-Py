@@ -48,8 +48,6 @@ cdef class ThermoData(HeatCapacityModel):
     `Cpdata`        An array of heat capacities at the given temperatures
     `H298`          The standard enthalpy of formation at 298 K
     `S298`          The standard entropy at 298 K
-    `Cp0`           The heat capacity at zero temperature
-    `CpInf`         The heat capacity at infinite temperature
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `E0`            The energy at zero Kelvin (including zero point energy)
@@ -59,13 +57,11 @@ cdef class ThermoData(HeatCapacityModel):
     """
 
     def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, comment=comment)
         self.H298 = H298
         self.S298 = S298
         self.Tdata = Tdata
         self.Cpdata = Cpdata
-        self.Cp0 = Cp0
-        self.CpInf = CpInf
     
     def __repr__(self):
         """
@@ -115,20 +111,6 @@ cdef class ThermoData(HeatCapacityModel):
             return self._S298
         def __set__(self, value):
             self._S298 = quantity.Entropy(value)
-
-    property Cp0:
-        """The heat capacity at zero temperature."""
-        def __get__(self):
-            return self._Cp0
-        def __set__(self, value):
-            self._Cp0 = quantity.HeatCapacity(value)
-
-    property CpInf:
-        """The heat capacity at infinite temperature."""
-        def __get__(self):
-            return self._CpInf
-        def __set__(self, value):
-            self._CpInf = quantity.HeatCapacity(value)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)

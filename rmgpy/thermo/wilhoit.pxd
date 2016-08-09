@@ -36,7 +36,7 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 cdef class Wilhoit(HeatCapacityModel):
     
-    cdef public ScalarQuantity _Cp0, _CpInf, _B, _H0, _S0
+    cdef public ScalarQuantity _B, _H0, _S0
     cdef public double a0, a1, a2, a3
     
     cpdef double getHeatCapacity(self, double T) except -1000000000

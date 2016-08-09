@@ -38,7 +38,6 @@ cdef class ThermoData(HeatCapacityModel):
     
     cdef public ScalarQuantity _H298, _S298
     cdef public ArrayQuantity _Tdata, _Cpdata
-    cdef public ScalarQuantity _Cp0, _CpInf
     
     cpdef double getHeatCapacity(self, double T) except -1000000000
 
