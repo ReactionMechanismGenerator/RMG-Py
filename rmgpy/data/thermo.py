@@ -1340,18 +1340,13 @@ class ThermoDatabase(object):
                 polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])
         return ringGroups, polycyclicGroups
 
-def findCp0andCpInf(species, thermoData):
+def findCp0andCpInf(species, heatCap):
     """
-    Calculate the Cp0 and CpInf values, and add them to the thermoData object.
-    
-    Modifies thermoData in place and doesn't return anything
+    Calculate the Cp0 and CpInf values, and add them to the HeatCapacityModel object.
     """
-    if not isinstance(thermoData,ThermoData):
-        return # Just skip it
-        raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
-    if thermoData.Cp0 is None:
+    if heatCap.Cp0 is None:
         Cp0 = species.calculateCp0()
-        thermoData.Cp0 = (Cp0,"J/(mol*K)")
-    if thermoData.CpInf is None:
+        heatCap.Cp0 = (Cp0,"J/(mol*K)")
+    if heatCap.CpInf is None:
         CpInf = species.calculateCpInf()  
-        thermoData.CpInf = (CpInf,"J/(mol*K)")
+        heatCap.CpInf = (CpInf,"J/(mol*K)")

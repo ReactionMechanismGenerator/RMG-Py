@@ -28,9 +28,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     elif isinstance(thermo0, ThermoData):
         wilhoit = thermo0.toWilhoit(B=1000.)
     else:
-        Cp0 = spc.calculateCp0()
-        CpInf = spc.calculateCpInf()
-        wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+        wilhoit = thermo0.toWilhoit()
     wilhoit.comment = thermo0.comment
 
     # Add on solvation correction
