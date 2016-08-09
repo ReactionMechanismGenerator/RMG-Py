@@ -51,6 +51,7 @@ from rmgpy.rmg.input import getInput
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.rmg.model import Species
 from rmgpy.rmg.listener import SimulationProfileWriter
+from rmgpy.thermo.thermoengine import processThermoData
 from rmgpy.data.thermo import findCp0andCpInf
 
 def initializeIsotopeModel(rmg, isotopes):
@@ -70,13 +71,13 @@ def initializeIsotopeModel(rmg, isotopes):
 
     for spc in isotopes:
         spec, isNew = rmg.reactionModel.makeNewSpecies(spc)
+        spec.thermo = spc.thermo        
         if isNew:
             rmg.reactionModel.addSpeciesToEdge(spec)
             rmg.initialSpecies.append(spec)
 
-    # Add nonreactive species (e.g. bath gases) to core first
-    # This is necessary so that the PDep algorithm can identify the bath gas            
     for spec in rmg.initialSpecies:
+        spec.thermo = processThermoData(spec, spec.thermo)
         if not spec.reactive:
             rmg.reactionModel.enlarge(spec)
     for spec in rmg.initialSpecies:
