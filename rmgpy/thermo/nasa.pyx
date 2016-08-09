@@ -289,7 +289,7 @@ cdef class NASA(HeatCapacityModel):
         """
         return self.selectPolynomial(T).getFreeEnergy(T)
 
-    cpdef ThermoData toThermoData(self, double Cp0=0.0, double CpInf=0.0):
+    cpdef ThermoData toThermoData(self):
         """
         Convert the Wilhoit model to a :class:`ThermoData` object.
         """
@@ -303,8 +303,8 @@ cdef class NASA(HeatCapacityModel):
             Cpdata = (Cpdata,"J/(mol*K)"),
             H298 = (self.getEnthalpy(298)*0.001,"kJ/mol"),
             S298 = (self.getEntropy(298),"J/(mol*K)"),
-            Cp0 = (Cp0,"J/(mol*K)"),
-            CpInf = (CpInf,"J/(mol*K)"),
+            Cp0 = self.Cp0,
+            CpInf = self.CpInf,
             E0 = self.E0,
             comment = self.comment
         )

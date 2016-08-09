@@ -150,7 +150,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a NASA model to a ThermoData model.
         """
         nasa = self.nasa
-        thermodata = nasa.toThermoData(Cp0=self.thermodata.Cp0.value_si, CpInf=self.thermodata.CpInf.value_si)
+        thermodata = nasa.toThermoData()
         Tlist = numpy.array([300,400,500,600,800,1000,1500])
         for T in Tlist:
             Cp_thermodata = thermodata.getHeatCapacity(T)
