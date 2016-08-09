@@ -26,13 +26,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     if isinstance(thermo0, Wilhoit):
         wilhoit = thermo0
     elif isinstance(thermo0, ThermoData):
-        Tdata = thermo0._Tdata.value_si
-        Cpdata = thermo0._Cpdata.value_si
-        H298 = thermo0._H298.value_si
-        S298 = thermo0._S298.value_si
-        Cp0 = thermo0._Cp0.value_si
-        CpInf = thermo0._CpInf.value_si
-        wilhoit = Wilhoit().fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=1000.0)
+        wilhoit = thermo0.toWilhoit(B=1000.)
     else:
         Cp0 = spc.calculateCp0()
         CpInf = spc.calculateCpInf()

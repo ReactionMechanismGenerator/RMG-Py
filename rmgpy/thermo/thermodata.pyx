@@ -353,11 +353,13 @@ cdef class ThermoData(HeatCapacityModel):
 
         return self.getEnthalpy(T) - T * self.getEntropy(T)
 
-    cpdef Wilhoit toWilhoit(self):
+    cpdef Wilhoit toWilhoit(self, B=None):
         """
         Convert the Benson model to a Wilhoit model. For the conversion to
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
         Benson model.
+
+        B: the characteristic temperature in Kelvin.
         """
         if 0.0 in [self.Cp0.value_si, self.CpInf.value_si]:
             raise Exception('Cannot convert Benson model to Wilhoit model; first specify Cp0 and CpInf.')
@@ -370,7 +372,10 @@ cdef class ThermoData(HeatCapacityModel):
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
         
-        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        if B:
+            return Wilhoit(comment=self.comment).fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
+        else:
+            return Wilhoit(comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """
