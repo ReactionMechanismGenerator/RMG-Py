@@ -869,7 +869,7 @@ class ThermoDatabase(object):
                 thermo0 = self.getThermoDataFromGroups(species)
                 
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
-        self.findCp0andCpInf(species, thermo0)
+        findCp0andCpInf(species, thermo0)
 
         # Return the resulting thermo parameters
         return thermo0
@@ -926,24 +926,7 @@ class ThermoDatabase(object):
                     thermoData[0].comment += 'Thermo library: ' + label
                 return thermoData
 
-        return None
-    
-    def findCp0andCpInf(self, species, thermoData):
-        """
-        Calculate the Cp0 and CpInf values, and add them to the thermoData object.
-        
-        Modifies thermoData in place and doesn't return anything
-        """
-        if not isinstance(thermoData,ThermoData):
-            return # Just skip it
-            raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
-        if thermoData.Cp0 is None:
-            Cp0 = species.calculateCp0()
-            thermoData.Cp0 = (Cp0,"J/(mol*K)")
-        if thermoData.CpInf is None:
-            CpInf = species.calculateCpInf()  
-            thermoData.CpInf = (CpInf,"J/(mol*K)")
-                
+        return None                
                 
     def getAllThermoData(self, species):
         """
@@ -1009,7 +992,7 @@ class ThermoDatabase(object):
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)
-                    self.findCp0andCpInf(species, thermoData)
+                    findCp0andCpInf(species, thermoData)
                     return (thermoData, library, entry)
         return None
 
@@ -1037,7 +1020,7 @@ class ThermoDatabase(object):
         species.molecule = [species.molecule[ind] for ind in indices]
         
         thermoData = thermo[indices[0]]
-        self.findCp0andCpInf(species, thermoData)
+        findCp0andCpInf(species, thermoData)
         return thermoData
 
     def prioritizeThermo(self, species, thermoDataList):
@@ -1356,3 +1339,19 @@ class ThermoDatabase(object):
                 groupLabel = splitTokens[1]
                 polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])
         return ringGroups, polycyclicGroups
+
+def findCp0andCpInf(species, thermoData):
+    """
+    Calculate the Cp0 and CpInf values, and add them to the thermoData object.
+    
+    Modifies thermoData in place and doesn't return anything
+    """
+    if not isinstance(thermoData,ThermoData):
+        return # Just skip it
+        raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
+    if thermoData.Cp0 is None:
+        Cp0 = species.calculateCp0()
+        thermoData.Cp0 = (Cp0,"J/(mol*K)")
+    if thermoData.CpInf is None:
+        CpInf = species.calculateCpInf()  
+        thermoData.CpInf = (CpInf,"J/(mol*K)")
