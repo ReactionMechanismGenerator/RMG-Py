@@ -359,7 +359,7 @@ cdef class ThermoData(HeatCapacityModel):
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
         Benson model.
         """
-        if self.Cp0 == 0.0 or self.CpInf == 0.0:
+        if 0.0 in [self.Cp0.value_si, self.CpInf.value_si]:
             raise Exception('Cannot convert Benson model to Wilhoit model; first specify Cp0 and CpInf.')
         from rmgpy.thermo.wilhoit import Wilhoit
         
