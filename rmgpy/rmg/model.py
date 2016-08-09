@@ -327,7 +327,8 @@ class CoreEdgeReactionModel:
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
-        submit(spec)
+        if not spec.thermo:
+            submit(spec)
 
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
