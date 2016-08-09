@@ -67,6 +67,6 @@ cdef class NASA(HeatCapacityModel):
 
     cpdef ThermoData toThermoData(self)
 
-    cpdef Wilhoit toWilhoit(self, double Cp0, double CpInf)
+    cpdef Wilhoit toWilhoit(self)
     
     cpdef NASA changeBaseEnthalpy(self, double deltaH)

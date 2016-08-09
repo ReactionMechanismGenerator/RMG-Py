@@ -310,7 +310,7 @@ cdef class NASA(HeatCapacityModel):
         )
 
     @cython.boundscheck(False)
-    cpdef Wilhoit toWilhoit(self, double Cp0, double CpInf):
+    cpdef Wilhoit toWilhoit(self):
         """
         Convert a :class:`MultiNASA` object `multiNASA` to a :class:`Wilhoit` 
         object. You must specify the linearity of the molecule `linear`, the number
@@ -318,7 +318,7 @@ cdef class NASA(HeatCapacityModel):
         `Nrotors` so the algorithm can determine the appropriate heat capacity
         limits at zero and infinite temperature.
         """
-        cdef double Tmin, Tmax, dT, H298, S298
+        cdef double Tmin, Tmax, dT, H298, S298, Cp0, CpInf
         cdef numpy.ndarray[numpy.float64_t, ndim=1] Tdata, Cpdata
         cdef int i
         
@@ -326,6 +326,8 @@ cdef class NASA(HeatCapacityModel):
         
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
+        Cp0 = self.Cp0.value_si
+        CpInf = self.CpInf.value_si
         dT = min(50.0, (Tmax - Tmin) / 100.)
         
         Tdata = numpy.arange(Tmin, Tmax, dT)
