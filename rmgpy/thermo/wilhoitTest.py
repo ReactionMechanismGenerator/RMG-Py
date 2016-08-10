@@ -317,7 +317,8 @@ class TestWilhoit(unittest.TestCase):
 
         # Load databases
         database = RMGDatabase()
-        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'))
+        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
+        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
 
         spc = Species().fromSMILES('CC')
         spc.getThermoData()
@@ -332,6 +333,9 @@ class TestWilhoit(unittest.TestCase):
         SnasaToWh = nasaToWh.getEntropy(T)
 
         self.assertAlmostEqual(Snasa, SnasaToWh, -1)
+        self.assertEqual(nasa.comment,nasaToWh.comment)
+
+        # wilhoit to nasa conversion done in nasaTest.py
 
         # thermo data to wilhoit:
         td = nasa.toThermoData()
@@ -341,3 +345,11 @@ class TestWilhoit(unittest.TestCase):
         Swh = wilhoit.getEntropy(T)
 
         self.assertAlmostEqual(Std, Swh, -1)
+        self.assertEqual(td.comment,wilhoit.comment)
+
+        # wilhoit back to thermodata
+        td = wilhoit.toThermoData()
+        Std = td.getEntropy(T)
+
+        self.assertAlmostEqual(Std, Swh, -1)
+        self.assertEqual(td.comment,wilhoit.comment)
