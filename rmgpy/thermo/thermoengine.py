@@ -29,7 +29,6 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
         wilhoit = thermo0.toWilhoit(B=1000.)
     else:
         wilhoit = thermo0.toWilhoit()
-    wilhoit.comment = thermo0.comment
 
     # Add on solvation correction
     if Species.solventData and not "Liquid thermo library" in thermo0.comment:
