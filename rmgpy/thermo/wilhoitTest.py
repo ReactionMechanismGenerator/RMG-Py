@@ -34,6 +34,8 @@ This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 
 import unittest
 import numpy
+import os.path
+import logging
 
 from rmgpy.thermo.wilhoit import Wilhoit
 import rmgpy.constants as constants
@@ -303,3 +305,51 @@ class TestWilhoit(unittest.TestCase):
         self.assertAlmostEqual(wilhoit.B.value_si, self.wilhoit.B.value_si, 2)
         self.assertAlmostEqual(wilhoit.H0.value_si, self.wilhoit.H0.value_si, 0)
         self.assertAlmostEqual(wilhoit.S0.value_si, self.wilhoit.S0.value_si, 2)
+
+    def testToWilhoit(self):
+        """
+        Test if the entropy computed from other thermo implementations is close to what Wilhoit computes.
+        """
+
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase, database
+        from rmgpy.species import Species
+
+        # Load databases
+        database = RMGDatabase()
+        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
+        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+
+        spc = Species().fromSMILES('CC')
+        spc.getThermoData()
+
+        T = 1350.# not 298K!
+
+        # nasa to wilhoit
+        nasa = spc.thermo
+        Snasa = nasa.getEntropy(T)
+
+        nasaToWh = nasa.toWilhoit()
+        SnasaToWh = nasaToWh.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, SnasaToWh, -1)
+        self.assertEqual(nasa.comment,nasaToWh.comment)
+
+        # wilhoit to nasa conversion done in nasaTest.py
+
+        # thermo data to wilhoit:
+        td = nasa.toThermoData()
+        Std = td.getEntropy(T)
+
+        wilhoit = td.toWilhoit(B=1000.)        
+        Swh = wilhoit.getEntropy(T)
+
+        self.assertAlmostEqual(Std, Swh, -1)
+        self.assertEqual(td.comment,wilhoit.comment)
+
+        # wilhoit back to thermodata
+        td = wilhoit.toThermoData()
+        Std = td.getEntropy(T)
+
+        self.assertAlmostEqual(Std, Swh, -1)
+        self.assertEqual(td.comment,wilhoit.comment)
