@@ -338,6 +338,19 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertTrue(groupToRemove2.parent.data.getEntropy(298) == groupToRemove2.data.getEntropy(298))
         self.assertFalse(False in [groupToRemove2.parent.data.getHeatCapacity(x) == groupToRemove2.data.getHeatCapacity(x) for x in Tlist])
 
+    def testIsPolyringPartialMatched(self):
+        
+        # create testing molecule
+        smiles = 'C1CC2CCCC3CCCC(C1)C23'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = [atom for atom in mol.atoms if atom.isNonHydrogen()]
+
+        # create matched group
+        matched_group = self.database.groups['polycyclic'].entries['PolycyclicRing'].item
+        
+        # test
+        self.assertTrue(isPolyringPartialMatched(polyring, matched_group))
+
 class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
     """
     Contains unit tests for methods of molecular manipulations for thermo estimation
