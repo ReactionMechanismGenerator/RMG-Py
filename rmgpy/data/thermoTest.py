@@ -351,6 +351,125 @@ class TestCyclicThermo(unittest.TestCase):
         # test
         self.assertTrue(isPolyringPartialMatched(polyring, matched_group))
 
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingPyrene(self):
+
+        # create testing molecule: Pyrene with two ring of aromatic version
+        # the other two ring of kekulized version
+        #
+        # creating it seems not natural in RMG, that's because
+        # RMG cannot parse the adjacencyList of that isomer correctly
+        # so here we start with pyrene radical and get the two aromatic ring isomer
+        # then saturate it.
+        smiles = '[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        for mol in spe.molecule:
+            sssr0 = mol.getSmallestSetOfSmallestRings()
+            aromaticRingNum = 0
+            for sr0 in sssr0:
+                sr0mol = Molecule(atoms=sr0)
+                if isAromaticRing(sr0mol):
+                    aromaticRingNum += 1
+            if aromaticRingNum == 2:
+                break
+        mol.saturate()
+
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Benzene', ringGroupLabels)
+        self.assertIn('six-inringtwodouble-12', ringGroupLabels)
+        self.assertIn('Cyclohexene', ringGroupLabels)
+        self.assertIn('s2_6_6_ben_ene_2', polycyclicGroupLabels)
+        self.assertIn('s2_6_6_naphthalene', polycyclicGroupLabels)
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAromaticTricyclic(self):
+
+        # create testing molecule
+        #
+        # creating it seems not natural in RMG, that's because
+        # RMG cannot parse the adjacencyList of that isomer correctly
+        # so here we start with kekulized version and generateResonanceIsomers
+        # and pick the one with two aromatic rings
+        smiles = 'C1=CC2C=CC=C3C=CC(=C1)C=23'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        for mol in spe.molecule:
+            sssr0 = mol.getSmallestSetOfSmallestRings()
+            aromaticRingNum = 0
+            for sr0 in sssr0:
+                sr0mol = Molecule(atoms=sr0)
+                if isAromaticRing(sr0mol):
+                    aromaticRingNum += 1
+            if aromaticRingNum == 2:
+                break
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Benzene', ringGroupLabels)
+        self.assertIn('Cyclopentene', ringGroupLabels)
+        self.assertIn('s2_5_6_indene', polycyclicGroupLabels)
+        self.assertIn('s2_6_6_naphthalene', polycyclicGroupLabels)
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAlkaneTricyclic(self):
+
+        # create testing molecule
+        smiles = 'C1CC2CCCC3C(C1)C23'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Cyclohexane', ringGroupLabels)
+        self.assertIn('Cyclopropane', ringGroupLabels)
+        self.assertIn('s2_6_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_3_6_ane', polycyclicGroupLabels)
+
 class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
     """
     Contains unit tests for methods of molecular manipulations for thermo estimation
