@@ -867,7 +867,7 @@ class ThermoDatabase(object):
                 thermo0 = self.getThermoDataFromGroups(species)
 
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
-        self.findCp0andCpInf(species, thermo0)
+        findCp0andCpInf(species, thermo0)
 
         # Return the resulting thermo parameters
         return thermo0
@@ -1007,7 +1007,7 @@ class ThermoDatabase(object):
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)
-                    self.findCp0andCpInf(species, thermoData)
+                    findCp0andCpInf(species, thermoData)
                     return (thermoData, library, entry)
         return None
 
@@ -1035,7 +1035,7 @@ class ThermoDatabase(object):
         species.molecule = [species.molecule[ind] for ind in indices]
 
         thermoData = thermo[indices[0]]
-        self.findCp0andCpInf(species, thermoData)
+        findCp0andCpInf(species, thermoData)
         return thermoData
 
     def prioritizeThermo(self, species, thermoDataList):
@@ -1341,16 +1341,27 @@ class ThermoDatabase(object):
         tokens = thermoData.comment.split()
         ringGroups = []
         polycyclicGroups = []
+        regex = "\((.*)\)" #only hit outermost parentheses
         for token in tokens:
-            regex = "\((.*)\)" #only hit outermost parentheses
-            if 'ring' in token:
+            if token.startswith('ring'):
                 splitTokens = re.split(regex, token)
                 assert len(splitTokens) == 3, 'token: {}'.format(token)
                 groupLabel = splitTokens[1]
                 ringGroups.append(self.groups['ring'].entries[groupLabel])
-            if 'polycyclic' in token:
+            if token.startswith('polycyclic'):
                 splitTokens = re.split(regex, token)
                 assert len(splitTokens) == 3, 'token: {}'.format(token)
                 groupLabel = splitTokens[1]
                 polycyclicGroups.append(self.groups['polycyclic'].entries[groupLabel])
         return ringGroups, polycyclicGroups
+
+def findCp0andCpInf(species, heatCap):
+    """
+    Calculate the Cp0 and CpInf values, and add them to the HeatCapacityModel object.
+    """
+    if heatCap.Cp0 is None:
+        Cp0 = species.calculateCp0()
+        heatCap.Cp0 = (Cp0,"J/(mol*K)")
+    if heatCap.CpInf is None:
+        CpInf = species.calculateCpInf()  
+        heatCap.CpInf = (CpInf,"J/(mol*K)")

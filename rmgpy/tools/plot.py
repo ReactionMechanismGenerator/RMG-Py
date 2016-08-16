@@ -470,7 +470,8 @@ class ThermoSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[-1]), reverse = True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        self.ylabel = 'dln(c)/dln(G_i)'
+        if not self.ylabel:
+            self.ylabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.plot(self, filename=filename)
     
     def barplot(self, filename='', t=None):
