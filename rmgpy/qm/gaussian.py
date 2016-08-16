@@ -448,11 +448,9 @@ class GaussianTS(QMReaction, Gaussian):
 
     otherKeywords = [
                      "irc=(calcall,report=read) geom=allcheck guess=check nosymm",
-                     "opt=(modredundant,MaxCycles=",
-                     "opt=(qst2,calcall,noeigentest,MaxCycles=",
                      ]
 
-    def inputFileKeywords(self, attempt, irc=False, modRed=None, qst2=None):
+    def inputFileKeywords(self, attempt, irc=False):
         """
         Return the top keywords for attempt number `attempt`.
 
@@ -460,12 +458,6 @@ class GaussianTS(QMReaction, Gaussian):
         """
         if irc:
             optionsKeys = self.otherKeywords[0]
-        elif modRed:
-            optionsKeys = self.otherKeywords[1]
-            optionsKeys = optionsKeys + "{N}) nosymm".format(N=max(100,modRed*10))
-        elif qst2:
-            optionsKeys = self.otherKeywords[2]
-            optionsKeys = optionsKeys + "{N}) nosymm".format(N=max(100,qst2*10))
         else:
             optionsKeys = self.keywords[attempt-1]
 
@@ -483,23 +475,16 @@ class GaussianTS(QMReaction, Gaussian):
 
         return top_keys
 
-    def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False, optEst=False, scf=False):
+    def createInputFile(self, attempt, fromInt=False, optEst=False, scf=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         fromInt are files written after an internal coordinate error (switch to cartesian).
-        fromDoubleEneded are files written after any double-ended search has concluded. A cartesian
-        coordinate file with extension `.xyz` should have been written with the geometry from the
-        double-ended calculation, and is used to start the TS search.
         """
         output = ['', self.uniqueID, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
 
-        if fromDoubleEnded:
-            xyzFile = self.getFilePath('.xyz')
-            assert os.path.exists(xyzFile)
-            atomsymbols, atomcoords = self.reactantGeom.parseXYZ(xyzFile)
-        elif fromInt or attempt > 2:
+        if fromInt or attempt > 2:
             # Until checkpointing is fixed, rewrite the whole output
             assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
@@ -538,68 +523,6 @@ class GaussianTS(QMReaction, Gaussian):
             assert atomCount == len(self.reactantGeom.molecule.atoms)
 
         self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='5GB', checkPoint=True, inputFilePath=self.ircInputFilePath, scf=scf)
-
-    def createGeomInputFile(self, freezeAtoms, otherGeom=False):
-
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-
-        if otherGeom:
-            output = [ '', self.productGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.productGeom.molecule.multiplicity ) ]
-            molfile = self.productGeom.getRefinedMolFilePath() # Now get the product geometry
-
-            atomCount = 0
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                        atomCount += 1
-            inputFilePath = self.productGeom.getFilePath(self.inputFileExtension)
-            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-        else:
-            output = [ '', self.reactantGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ) ]
-            molfile = self.reactantGeom.getRefinedMolFilePath() # Get the reactant geometry
-
-            atomCount = 0
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                        atomCount += 1
-            inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
-            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-
-        assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-        output.append('')
-        top_keys = self.inputFileKeywords(0, modRed=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottom_keys)
-
-    def createQST2InputFile(self):
-        # For now we don't do this, until seg faults are fixed on Discovery.
-        # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
-        output = ['', self.reactantGeom.uniqueID, '' ]
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-
-        atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.reactantGeom.getFilePath(self.outputFileExtension))
-        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-        assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-        output.append('')
-        output.append(self.productGeom.uniqueIDlong)
-        output.append('')
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.productGeom.molecule.getRadicalCount() + 1) ))
-
-        atomsymbols, atomcoords = self.productGeom.parseLOG(self.productGeom.getFilePath(self.outputFileExtension))
-        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-        assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-        output.append('')
-        top_keys = self.inputFileKeywords(0, qst2=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='5GB')
 
     def optEstimate(self, labels):
         """
@@ -641,7 +564,7 @@ class GaussianTS(QMReaction, Gaussian):
 
             self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
 
-            outputFilePath = self.runDouble(inputFilePath)
+            outputFilePath = self.runAlt(inputFilePath)
 
         return outputFilePath
     
@@ -693,7 +616,7 @@ class GaussianTS(QMReaction, Gaussian):
 
             self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
 
-            outputFilePath = self.runDouble(inputFilePath)
+            outputFilePath = self.runAlt(inputFilePath)
 
         return outputFilePath
 
@@ -753,7 +676,7 @@ class GaussianTS(QMReaction, Gaussian):
         result = self.parse() # parsed in cclib
         return result
 
-    def runDouble(self, inputFilePath):
+    def runAlt(self, inputFilePath):
         self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
@@ -763,19 +686,6 @@ class GaussianTS(QMReaction, Gaussian):
 
         return logFilePath
 
-    def runQST2(self):
-        self.testReady()
-
-        # submits the input file to Gaussian
-        process = Popen([self.executablePath, self.inputFilePath])
-        process.communicate()# necessary to wait for executable termination!
-
-        logFilePath = self.outputFilePath
-
-        return self.verifyQST2OutputFile(), logFilePath
-
-
-
     def runIRC(self):
         self.testReady()
         # submits the input file to Gaussian
@@ -783,59 +693,6 @@ class GaussianTS(QMReaction, Gaussian):
         process.communicate()# necessary to wait for executable termination!
 
         return self.verifyIRCOutputFile()
-
-    def prepDoubleEnded(self, labels, notes):
-        """
-        Optimize the reactant and product geometries while freeezing the distances between
-        the reactive atoms.
-        """
-        if os.path.exists(self.getFilePath('.log.reactant.log')):
-            rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.reactantGeom.molecule)
-        else:
-            self.writeGeomInputFile(freezeAtoms=labels)
-            logFilePath = self.runDouble(self.inputFilePath)
-            rightReactant = self.checkGeometry(logFilePath, self.reactantGeom.molecule)
-            shutil.copy(logFilePath, logFilePath+'.reactant.log')
-
-        if os.path.exists(self.productGeom.getFilePath('.log.product.log')):
-            rightProduct = self.checkGeometry(self.productGeom.getFilePath('.log.product.log'), self.productGeom.molecule)
-        else:
-            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=True)
-            logFilePath = self.runDouble(self.productGeom.getFilePath(self.inputFileExtension))
-            rightProduct = self.checkGeometry(logFilePath, self.productGeom.molecule)
-            shutil.copy(logFilePath, logFilePath+'.product.log')
-
-        if not (rightReactant and rightProduct):
-            """
-            Despite freezing the reacting atom distances, the reactant and product can still
-            optimize to some other species. If it does, the algorithm will follow this path
-            and return a failure.
-            """
-            if not rightReactant:
-                notes = notes + 'Reactant geometry failure\n'
-
-            if not rightProduct:
-                notes = notes + 'Product geometry failure\n'
-
-            return False, notes
-
-        return True, notes
-
-    def conductDoubleEnded(self, notes, NEB=False, labels=None):
-        check, notes = self.prepDoubleEnded(labels, notes)
-
-        if NEB:
-            self.runNEB()
-        else:
-            # Gaussian QST2 Calculation
-
-            self.createQST2InputFile()
-            qst2, logFilePath = self.runQST2()
-            shutil.copy(logFilePath, logFilePath+'.QST2.log')
-
-            if not qst2:
-                notes = notes + 'QST3 needed, see {0}\n'.format(self.settings.fileStore)
-                return False, notes
             
     def checkComplete(self, filePath):
         """
@@ -971,44 +828,6 @@ class GaussianTS(QMReaction, Gaussian):
             return False
 
         return True
-
-    def verifyQST2OutputFile(self):
-        """
-        Check's that a qst2 output file exists and was successful.
-
-        Returns a boolean flag that states whether a QST2 GAUSSIAN simulation that hasn't failed already exists for the molecule with the
-        given file name.
-
-        This checks that the calculation was attempted, only checking that a QST3 calculation is not required.
-
-        If QST3 is required, False will be returned and the double-ended procedure has failed for the reaction.
-        """
-
-        failureKeys = [
-                       '***** Convergence failure in GTrans *****',
-                       'Try using 3 structures as input for',
-                       ]
-
-        if not os.path.exists(self.outputFilePath):
-            logging.info("Output file {0} does not exist.".format(self.outputFilePath))
-            return False
-
-        # Initialize dictionary with "False"s
-        failureKeysFound = dict([(key, False) for key in failureKeys])
-
-        with open(self.outputFilePath) as outputFile:
-            for line in outputFile:
-                line = line.strip()
-
-                for element in failureKeys: #search for failure keywords
-                    if element in line:
-                        logging.error("Gaussian output file contains the following error: {0}".format(element) )
-                        failureKeysFound[element] = True
-
-        if any(failureKeysFound.values()):
-            return False
-        else:
-            return True
 
     def verifyIRCOutputFile(self):
         """
@@ -1385,16 +1204,13 @@ class GaussianTS(QMReaction, Gaussian):
         
         return True
 
-    def writeRxnOutputFile(self, labels, doubleEnd=False):
+    def writeRxnOutputFile(self, labels):
         
         atomDist = self.parseTS(labels)
 
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
         user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
-        if doubleEnd:
-            description = "Found via double-ended search by the automatic transition state generator"
-        else:
-            description = "Found via group additive estimation by the automatic transition state generator"
+        description = "Found via group additive estimation by the automatic transition state generator"
         
         label = ''
         entry = Entry(

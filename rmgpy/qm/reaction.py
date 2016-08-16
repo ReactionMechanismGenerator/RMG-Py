@@ -339,45 +339,6 @@ class QMReaction:
 
         return bm
 
-    def bmTest(self, bm):
-        """
-        Test to show why a bounds matrix is not valid
-        """
-        for k in range(len(bm)):
-            for i in range(len(bm)-1):
-                if i==k: continue
-                Uik = bm[i,k] if k>i else bm[k,i]
-                Lik = bm[i,k] if i>k else bm[k,i]
-                for j in range(i+1, len(bm)):
-                    if j==k: continue
-                    Ujk = bm[j,k] if k>j else bm[k,j]
-                    Ljk = bm[j,k] if j>k else bm[j,k]
-                    Uij = bm[i,j] if j>i else bm[j,i]
-                    Lij = bm[i,j] if i>j else bm[j,i]
-                    sumUikUjk = Uik + Ujk
-                    if Uij > sumUikUjk:
-                        print "Upper limit for {i} and {j} is too high".format(i=i, j=j)
-
-                    diffLikUjk = Lik - Ujk
-                    diffLjkUik = Ljk - Uik
-                    if Uij < diffLikUjk or Uik < diffLjkUik:
-                        print "Lower limit for {i} and {j} is too low".format(i=i, j=j)
-
-    def bmLenComp(self, bm, i, j):
-
-        listDist = []
-        for k in range(len(bm)):
-            if k==i or k==j or i==j: continue
-            Uik = bm[i,k] if k>i else bm[k,i]
-            Ukj = bm[j,k] if k>j else bm[k,j]
-            if i>j:
-                dist = Uik + Ukj - bm[i,j]
-            else:
-                dist = Uik + Ukj - bm[j,i]
-            listDist.append(dist)
-
-        return listDist
-
     def getLabels(self, reactant):
         """
         Creates the list of sorting labels for the reacting atoms. These labels are
@@ -398,61 +359,6 @@ class QMReaction:
         atomMatch = ((lbl1,),(lbl2,),(lbl3,))
 
         return labels, atomMatch
-
-    def editDoubMatrix(self, reactant, product, bm1, bm2, labels):
-        """
-        For bimolecular reactions, reduce the minimum distance between atoms
-        of the two reactanting species, in preparation for a double-ended search.
-        `bm1` is typically the bounds matrix for the reactant side, and `bm2` for
-        the products.
-        """
-        def fixMatrix(bm, lbl1, lbl2, lbl3, num, diff):
-            if lbl2 > lbl1:
-                dnDiff = bm[lbl1][lbl2]
-                upDiff = bm[lbl2][lbl1]
-            else:
-                dnDiff = bm[lbl2][lbl1]
-                upDiff = bm[lbl1][lbl2]
-
-            if lbl1 > lbl3:
-                bm[lbl3][lbl1] = num + diff/2.
-                bm[lbl1][lbl3] = num - diff/2.
-                if lbl2 > lbl3:
-                    bm[lbl3][lbl2] = bm[lbl3][lbl1] - upDiff
-                    bm[lbl2][lbl3] = bm[lbl1][lbl3] - dnDiff
-                else:
-                    bm[lbl2][lbl3] = bm[lbl3][lbl1] - upDiff
-                    bm[lbl3][lbl2] = bm[lbl1][lbl3] - dnDiff
-            else:
-                bm[lbl1][lbl3] = num + diff/2.
-                bm[lbl3][lbl1] = num - diff/2.
-                if lbl2 > lbl3:
-                    bm[lbl3][lbl2] = bm[lbl1][lbl3] - upDiff
-                    bm[lbl2][lbl3] = bm[lbl3][lbl1] - dnDiff
-                else:
-                    bm[lbl2][lbl3] = bm[lbl1][lbl3] - upDiff
-                    bm[lbl3][lbl2] = bm[lbl3][lbl1] - dnDiff
-            return bm
-
-        lbl1, lbl2, lbl3 = labels
-
-        if reactant.atoms[lbl1].symbol == 'H' or reactant.atoms[lbl3].symbol == 'H':
-            bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.3, 0.1)
-            bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.3, 0.1)
-        else:
-            bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.7, 0.1)
-            bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.7, 0.1)
-
-        rSect = []
-        for atom in reactant.split()[0].atoms: rSect.append(atom.sortingLabel)
-
-        pSect = []
-        for atom in product.split()[0].atoms: pSect.append(atom.sortingLabel)
-
-        bm1 = self.bmPreEdit(bm1, rSect)
-        bm2 = self.bmPreEdit(bm2, pSect)
-
-        return bm1, bm2
 
     def editMatrix(self, reactant, bm, labels):
 
@@ -476,94 +382,33 @@ class QMReaction:
 
         return bm
 
-    def runNEB(self):
-        """
-        Takes the reactant and product geometries and does an interpolation. This
-        can run nudged-elastic band calculations using the Atomic Simulation
-        Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
-        """
-        import ase
-        from ase.neb import NEB
-        from ase.optimize import BFGS, FIRE
-
-        initial, final = self.setImages()
-
-        # Now make a band of x + 2 images (x plus the initial and final geometries)
-        x = 11
-        images = [initial]
-        images += [initial.copy() for i in range(x)]
-        images += [final]
-
-        # We use the linear NEB, but we can use the 'climbing image' variation by adding `climb=True`
-        # Options recommended in Gonzalez-Garcia et al., doi: 10.1021/ct060032y (They do recommend climbing image, but I'll test without if first)
-        neb = ase.neb.NEB(images, k=0.01, climb=False)
-
-        # Interpolate the positions of the middle images linearly, then set calculators
-        neb.interpolate()
-
-        self.setCalculator(images)
-
-        nebLog = os.path.join(self.settings.fileStore, 'NEB.log')
-        if os.path.exists(nebLog): os.unlink(nebLog)
-        optimizer = BFGS(neb, logfile=nebLog)
-        optimized = True
-        try:
-            optimizer.run(steps=200)
-        except Exception, e:
-            print str(e)
-            optimized = False
-            pass
-
-        if optimized:
-            energies = numpy.empty(neb.nimages - 2)
-            for i in range(1, neb.nimages - 1):
-                energies[i - 1] = neb.images[i].get_potential_energy()
-            imax = 1 + numpy.argsort(energies)[-1]
-            image = neb.images[imax]
-            image.write(self.getFilePath('peak.xyz'), format='xyz')
-        else:
-            print "Not optimized"
-
-    def setupMolecules(self, doubleEnded=False):
+    def setupMolecules(self):
         """
         Setup the reactant and product molecules for the transition state calculations.
         If there are 2 reactants and/or products, they are merged. This also handles
         species as well as molecules, but returns the reactant and product as merged molecules.
         """
-        if doubleEnded:
-            kineticsFamily = self.reaction.family
-            if isinstance(self.reaction.reactants[0], Species):
-                reactants = []
-                for reactant in self.reaction.reactants:
-                    reactants.append(reactant.molecule[0])
-            else:
-                reactants = self.reaction.reactants
-            prodStruct, tsStructures = kineticsFamily.applyRecipe(reactants, getTS=True)
-
-            reactant = tsStructures[0]
-            product = tsStructures[1]
+        if len(self.reaction.reactants)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
         else:
-            if len(self.reaction.reactants)==2:
-                if isinstance(self.reaction.reactants[0], Molecule):
-                    reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-                elif isinstance(self.reaction.reactants[0], Species):
-                    reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
-            else:
-                if isinstance(self.reaction.reactants[0], Molecule):
-                    reactant = self.reaction.reactants[0]
-                elif isinstance(self.reaction.reactants[0], Species):
-                    reactant = self.reaction.reactants[0].molecule[0]
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0]
 
-            if len(self.reaction.products)==2:
-                if isinstance(self.reaction.reactants[0], Molecule):
-                    product = self.reaction.products[0].merge(self.reaction.products[1])
-                elif isinstance(self.reaction.reactants[0], Species):
-                    product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
-            else:
-                if isinstance(self.reaction.reactants[0], Molecule):
-                    product = self.reaction.products[0]
-                elif isinstance(self.reaction.reactants[0], Species):
-                    product = self.reaction.products[0].molecule[0]
+        if len(self.reaction.products)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0].merge(self.reaction.products[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
+        else:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0]
 
         reactant.multiplicity = reactant.getRadicalCount() + 1
         product.multiplicity = product.getRadicalCount() + 1
@@ -573,7 +418,7 @@ class QMReaction:
 
         return reactant, product
 
-    def optimizeTS(self, labels, fromDoubleEnded=False):
+    def optimizeTS(self, labels):
         """
         Conduct the optimization step of the transition state search.
         """
@@ -583,7 +428,7 @@ class QMReaction:
             optEst = self.optEstimate(labels)
             optRC = self.optRxnCenter(labels)
             print "Optimizing TS once"
-            self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optRC)
+            self.createInputFile(1, optEst=optRC)
             converged, internalCoord = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
         
@@ -600,7 +445,7 @@ class QMReaction:
             complete, convergenceFailure = self.checkComplete(self.outputFilePath)
             if convergenceFailure:
                 # Rerun the calculation with `scf=qc`
-                self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optRC, scf=True)
+                self.createInputFile(1, optEst=optRC, scf=True)
                 converged, internalCoord = self.run()
                 if internalCoord:
                     self.createInputFile(2, scf=True)
@@ -632,29 +477,13 @@ class QMReaction:
                 rightTS = self.runIRC()
         
         return rightTS
-    
-    def checkSQL(self, path_to_db):
-        """
-        Check the SQL database for a transition state. This should be run before
-        the automated TS geometry search.
-        """
-        con = lite.connect(os.path.join(path_to_db, 'ts_data.db'))
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * FROM TSData")
-            
-            rows = cur.fetchall()
-            
-            for row in rows:
-                print row
 
-    def tsSearch(self, labels, fromDoubleEnded=False):
+    def tsSearch(self, labels):
         """
         Once the transition state estimate is made, this runs the optimization and the
-        path analysis calculation. The ts estimate can be from the group additive or
-        double-ended search methods.
+        path analysis calculation. The ts estimate is derived from the group additive prediction.
         """
-        successfulTS = self.optimizeTS(labels, fromDoubleEnded=fromDoubleEnded)
+        successfulTS = self.optimizeTS(labels)
         if not successfulTS:
             return successfulTS
 
@@ -780,72 +609,6 @@ class QMReaction:
         
         return self.reaction
         
-    def generateTSGeometryDoubleEnded(self, neb=False):
-        """
-        Generate a Transition State geometry using the double-ended search method
-
-        Returns (mopac, fromDbl, labels, notes) where mopac and fromDbl are
-        booleans (fromDbl is always True), and notes is a string of comments on what happened.
-        """
-
-        notes = ''
-        if os.path.exists(os.path.join(self.settings.fileStore, self.uniqueID + '.data')):
-            logging.info("Not generating TS geometry because it's already done.")
-            return True, "Output used from a previous run."
-
-        reactant, product = self.setupMolecules(doubleEnded=True)
-
-        rRDMol, rBM, self.reactantGeom = self.generateBoundsMatrix(reactant)
-        pRDMol, pBM, self.productGeom = self.generateBoundsMatrix(product)
-
-        self.reactantGeom.uniqueID = 'reactant'
-        self.productGeom.uniqueID = 'product'
-
-        labels, atomMatch = self.getLabels(reactant)
-        rBM, pBM = self.editDoubMatrix(reactant, product, rBM, pBM, labels)
-
-        reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
-        productSmoothingSuccessful  = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
-
-        if not (reactantSmoothingSuccessful and productSmoothingSuccessful):
-            notes = 'Bounds matrix editing failed\n'
-            return False, None, None, notes
-
-        atoms = len(reactant.atoms)
-        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-
-        rdmol, minEid = self.reactantGeom.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
-        if not rdmol:
-            notes = notes + "RDKit failed all attempts to embed"
-            return False, None, None, notes
-        rRDMol = rdkit.Chem.MolFromMolFile(self.reactantGeom.getCrudeMolFilePath(), removeHs=False)
-        # Make product pRDMol a copy of the reactant rRDMol geometry
-        for atom in reactant.atoms:
-            i = atom.sortingLabel
-            pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-
-        # don't re-embed the product, just optimize at UFF, constrained with the correct bounds matrix
-        pRDMol, minEid = self.productGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
-        self.productGeom.writeMolFile(pRDMol, self.productGeom.getRefinedMolFilePath(), minEid)
-
-        if os.path.exists(self.outputFilePath):
-            logging.info("File {0} already exists.".format(self.outputFilePath))
-            # I'm not sure why that should be a problem, but we used to do nothin in this case
-            notes = notes + 'Already have an output, checking the IRC\n'
-            rightTS = self.verifyIRCOutputFile()
-            if rightTS:
-                self.writeRxnOutputFile(labels)
-                return True, notes#True, self.geometry, labels, notes
-            else:
-                return False, notes#False, None, None, notes
-
-        check, notes = self.conductDoubleEnded(notes, NEB=neb, labels=labels)
-        if check:
-            # Optimize the TS
-            check, notes =  self.tsSearch(notes, labels, fromDoubleEnded=True)
-
-        return check, notes
-
     def writeXYZ(self, atomSymbols, atomCoords):
         """
         Takes a list of atom symbols stings, and an array of coordiantes and
