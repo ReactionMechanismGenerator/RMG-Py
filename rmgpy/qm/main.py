@@ -245,7 +245,7 @@ class QMCalculator():
         if self.settings.software == 'mopac':
             raise Exception("Unknown QM kinetics method '{0}' for mopac".format(self.settings.method))
         elif self.settings.software == 'gaussian':
-            elif self.settings.method == 'b3lyp':
+            if self.settings.method == 'b3lyp':
                 qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSB3LYP(reaction, self.settings, tsDatabase)
             elif self.settings.method == 'm062x':
                 qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSM062X(reaction, self.settings, tsDatabase)
