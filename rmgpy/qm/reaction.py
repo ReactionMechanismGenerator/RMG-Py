@@ -489,7 +489,7 @@ class QMReaction:
 
         validTS = self.validateTS()
         if validTS:
-			self.writeRxnOutputFile(labels)
+            self.writeRxnOutputFile(labels)
             self.saveTSData()
 
         return validTS
