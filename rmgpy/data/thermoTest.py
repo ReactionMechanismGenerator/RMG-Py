@@ -218,47 +218,10 @@ class TestCyclicThermo(unittest.TestCase):
         expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
         self.assertEqual(set(ringGroups), set(expected_matchedRings))
         
-        expected_matchedPolyringsLabels = ['norbornane']
+        expected_matchedPolyringsLabels = ['s3_5_5_ane']
         expected_matchedPolyrings = [self.database.groups['polycyclic'].entries[label] for label in expected_matchedPolyringsLabels]
 
         self.assertEqual(set(polycyclicGroups), set(expected_matchedPolyrings))
-    
-    def testPolycyclicPicksBestThermo(self):
-        """
-        Test that RMG prioritizes thermo correctly and chooses the thermo from the isomer which
-        has a non generic polycyclic ring correction
-        """
-        
-        spec = Species().fromSMILES('C1=C[C]2CCC=C2C1')
-        spec.generateResonanceIsomers()
-        
-        thermoDataList = []
-        for molecule in spec.molecule:
-            thermo = self.database.estimateRadicalThermoViaHBI(molecule, self.database.computeGroupAdditivityThermo)
-            thermoDataList.append(thermo)
-            
-        thermoDataList.sort(key=lambda x: x.getEnthalpy(298))
-        most_stable_thermo = thermoDataList[0]
-        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(most_stable_thermo)
-        
-        selected_thermo = self.database.getThermoDataFromGroups(spec)
-        
-        self.assertNotEqual(selected_thermo, thermoDataList)
-        
-        selected_ringGroups, selected_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo)
-        
-        # The group used to estimate the most stable thermo is the generic polycyclic group and
-        # therefore is not selected.  Note that this unit test will have to change if the correction is fixed later.
-        self.assertEqual(polycyclicGroups[0].label, 'PolycyclicRing')
-        self.assertEqual(selected_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
-        
-        
-        # Check that the same result occurs when we retrieve thermo from getThermoData
-        selected_thermo2 = self.database.getThermoData(spec)
-        
-        selected2_ringGroups, selected2_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo2)
-        self.assertEqual(selected2_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
-    
 
     def testGetRingGroupsFromComments(self):
         """
