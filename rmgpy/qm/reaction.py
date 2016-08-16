@@ -834,6 +834,8 @@ class QMReaction:
         self.writeCanThermInput(reactants, products)
         canThermJob = CanTherm()
         canThermJob.outputDirectory = self.getFilePath('')
+        if not os.path.exists(canThermJob.outputDirectory):
+            os.makedirs(canThermJob.outputDirectory)
         canThermJob.inputFile = self.getCanThermFilePath
         canThermJob.plot = False
         
