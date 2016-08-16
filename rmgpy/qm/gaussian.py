@@ -620,40 +620,6 @@ class GaussianTS(QMReaction, Gaussian):
 
         return outputFilePath
 
-    def setImages(self):
-        """
-        Set and return the initial and final ase images for the NEB calculation
-        """
-        import ase
-        from ase import io, Atoms
-
-        # Give ase the atom positions for each side of the reaction path
-        atomsymbols, atomcoords = self.reactantGeometry.parseLOG(self.outputFilePath)
-
-        newImage = Atoms([getElement(i).number for i in atomsymbols])
-        newImage.set_positions(atomcoords)
-        initial = newImage.copy()
-
-        atomsymbols, atomcoords = self.productGeom.parseLOG(self.outputFilePath)
-
-        newImage = Atoms([getElement(i).number for i in atomsymbols])
-        newImage.set_positions(atomcoords)
-        final = newImage.copy()
-
-        return initial, final
-
-    def setCalculator(self, images):
-        """
-        Set up the Gaussian calculator for the Atomic Simulation Environment
-        """
-        import ase
-        from ase.calculators.gaussian import Gaussian
-
-        label=os.path.join(os.path.abspath(self.settings.fileStore), 'g09')
-        for image in images[1:len(images)-1]:
-            image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< ' + label + '.com' + ' > ' + label + '.log', label=label))
-            image.get_calculator().set(multiplicity=self.reactantGeom.molecule.getRadicalCount() + 1, method=self.method, basis=self.basisSet)
-
     def generateQMKinetics(self):
         """
         Calculate the QM data and return a QMData object.
