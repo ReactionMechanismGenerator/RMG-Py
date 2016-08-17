@@ -1469,8 +1469,8 @@ class CoreEdgeReactionModel:
                     index = self.core.reactions.index(reaction)
                 except ValueError:
                     continue
-                if network not in updatedNetworks:
-                    assert reaction.reversible, "Core reactions in stale networks should be reversible!"
+                if network not in updatedNetworks and not reaction.reversible:
+                    logging.warning("{!s} not updated, but has irreversible core reaction {!s}".format(network, reaction))
                 for index2, reaction2 in enumerate(self.core.reactions):
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
@@ -1502,6 +1502,15 @@ class CoreEdgeReactionModel:
                         break
                 else:
                     reaction.reversible = True
+
+
+        for network in self.networkList:
+            for reaction in network.netReactions:
+                try:
+                    index = self.core.reactions.index(reaction)
+                except ValueError:
+                    continue  # Reaction is not in core
+                assert reaction.reversible, "Core pdep reactions should be reversible at this point!"
 
 
     def markChemkinDuplicates(self):
