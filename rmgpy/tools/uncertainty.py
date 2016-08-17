@@ -19,6 +19,121 @@ def retrieveSaturatedSpeciesFromList(species, speciesList):
 
 
 
+class ThermoParameterUncertainty:
+    """
+    This class is an engine that generates the species uncertainty based on its thermo sources.
+    """
+    def __init__(self, dG_library=2.0, dG_QM=3.0, dG_GAV=1.5, dG_group=0.25):
+        """
+        Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
+        in units of kcal/mol.
+        
+        We expect a uniform distribution for some species free energy G in [Gmin, Gmax].
+        dG = (Gmax-Gmin)/2
+        """
+        self.dG_library = dG_library
+        self.dG_QM = dG_QM
+        self.dG_GAV = dG_GAV
+        self.dG_group = dG_group
+        
+    def getUncertaintyValue(self, source):
+        """
+        Retrieve the uncertainty value in kcal/mol when the source of the thermo of a species is given.
+        """
+        dG2 = 0.0
+        if 'Library' in source:
+            dG2 += self.dG_library**2
+        if 'QM' in source:
+            dG2 += self.dG_QM**2
+        if 'GAV' in source:
+            dG2 += self.dG_GAV**2  # Add a fixed uncertainty for the GAV method
+            for groupType, groupEntries in source['GAV'].iteritems():
+                groupWeights = [groupTuple[-1] for groupTuple in groupEntries]
+                dG2 += numpy.sum([(weight*self.dG_group)**2 for weight in groupWeights])
+        
+        dG = numpy.sqrt(dG2)        
+        return dG
+    
+    def getUncertaintyFactor(self, source):
+        """
+        Retrieve the uncertainty factor f in kcal/mol when the source of the thermo of a species is given.
+        
+        This is equivalent to sqrt(3)*dG in a uniform uncertainty interval
+        """
+        dG = self.getUncertaintyValue(source)
+        f = numpy.sqrt(3)*dG
+        
+    
+    
+class KineticParameterUncertainty:
+    """
+    This class is an engine that generates the reaction uncertainty based on its kinetic sources.
+    """
+    def __init__(self, dlnk_library=0.5, dlnk_training=0.5, dlnk_pdep=2.0, dlnk_family=1.0, dlnk_nonexact=4.0, dlnk_rule=1.0):
+        """
+        Initialize the different uncertainties dlnk
+        
+        We expect a uniform distribution for some reaction kinetics  about ln(k0) in [ln(kmin), ln(kmax)].
+        dlnk = (ln(kmax)-ln(kmin))/2
+        """
+        self.dlnk_library = dlnk_library
+        self.dlnk_training = dlnk_training
+        self.dlnk_pdep = dlnk_pdep
+        self.dlnk_family = dlnk_family
+        self.dlnk_nonexact = dlnk_nonexact
+        self.dlnk_rule = dlnk_rule
+
+    def getUncertaintyValue(self, source):
+        """
+        Retrieve the dlnk uncertainty when the source of the reaction kinetics are given
+        """
+        dlnk2 = 0.0
+        if 'Library' in source:
+            # Should be a single library reaction source
+            dlnk2 +=self.dlnk_library**2
+        elif 'PDep' in source:
+            # Should be a single pdep reaction source
+            dlnk2 +=self.dlnk_pdep**2
+        elif 'Training' in source:
+            # Should be a single training reaction
+            # Although some training entries may be used in reverse,
+            # We still consider the kinetics to be directly dependent 
+            dlnk2 +=self.dlnk_training**2
+        elif 'Rate Rules' in source:
+            familyLabel = source['Rate Rules'][0]
+            sourceDict = source['Rate Rules'][1]
+            exact = sourceDict['exact']
+            ruleWeights = [ruleTuple[-1] for ruleTuple in sourceDict['rules']]
+            trainingWeights = [trainingTuple[-1] for trainingTuple in sourceDict['training']]
+                
+            dlnk2 += self.dlnk_family**2
+            N = len(ruleWeights) + len(trainingWeights)
+            if not exact:
+                # nonexactness contribution increases as N increases
+                dlnk2 += (numpy.log10(N+1)*self.dlnk_nonexact)**2
+                
+            # Add the contributions from rules
+            dlnk2 += numpy.sum([(weight*self.dlnk_rule)**2 for weight in ruleWeights])
+            # Add the contributions from training
+            # Even though these source from training reactions, we actually
+            # use the uncertainty for rate rules, since these are now approximations
+            # of the original reaction.  We consider these to be independent of original the training
+            # parameters because the rate rules may be reversing the training reactions,
+            # which leads to more complicated dependence
+            dlnk2 += numpy.sum([(weight*self.dlnk_rule)**2 for weight in trainingWeights])
+            
+        dlnk = numpy.sqrt(dlnk2)
+        return dlnk
+    
+    def getUncertaintyFactor(self, source):
+        """
+        Retrieve the uncertainty factor f when the source of the reaction kinetics are given.
+        
+        This is equivalent to sqrt(3)/ln(10) * dlnk  in a uniform uncertainty interval
+        """
+        dlnk = self.getUncertaintyValue(source)
+        f = numpy.sqrt(3)/numpy.log(10)*dlnk
+
 class Uncertainty:
     """
     This class contains functions associated with running uncertainty analyses
