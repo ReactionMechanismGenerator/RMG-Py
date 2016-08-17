@@ -590,6 +590,7 @@ class CoreEdgeReactionModel:
                     isomers = [isomer.species[0] for isomer in network.isomers]
                     if species in isomers and species not in network.explored:
                         network.explored.append(species)
+                        network.invalidate()
                         continue
                     for products in network.products:
                         products = products.species
@@ -1404,6 +1405,7 @@ class CoreEdgeReactionModel:
 
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
+        network.invalidate()
 
     def updateUnimolecularReactionNetworks(self):
         """
