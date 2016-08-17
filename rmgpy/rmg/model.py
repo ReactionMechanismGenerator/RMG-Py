@@ -1444,7 +1444,7 @@ class CoreEdgeReactionModel:
                         index += 1
 
         count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
-        logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
+        logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(self.networkList)))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
