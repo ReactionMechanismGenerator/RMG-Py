@@ -116,11 +116,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
 
-            test = lambda x: self.general_checkSiblingsForParents(group_name, group)
-            test_name = "Thermo groups {0}: sibling relationships are correct?".format(group_name)
-            test.description = test_name
-            self.compat_func_name = test_name
-            yield test, group_name
+            if group_name != 'polycyclic':
+                test = lambda x: self.general_checkSiblingsForParents(group_name, group)
+                test_name = "Thermo groups {0}: sibling relationships are correct?".format(group_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, group_name
 
             test = lambda x: self.general_checkCdAtomType(group_name, group)
             test_name = "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
