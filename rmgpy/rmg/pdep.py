@@ -295,7 +295,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # reactants or products with other core species (e.g. A + B <---> products)
 
         newReactions = react((isomer,))
-        
+        self.invalidate()
         return newReactions
 
     def addPathReaction(self, newReaction):
