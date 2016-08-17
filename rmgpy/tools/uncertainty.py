@@ -336,5 +336,20 @@ class Uncertainty:
         self.allKineticSources['Training'] = {}
         for familyLabel in allKineticSources['Training'].keys():
             self.allKineticSources['Training'][familyLabel] = list(allKineticSources['Training'][familyLabel])
-            
+    
+    def assignParameterUncertainties(self, gParamEngine = ThermoParameterUncertainty(), kParamEngine = KineticParameterUncertainty()):
+        """
+        Assign uncertainties based on the sources of the species thermo and reaction kinetics.
+        """
+        
+        self.thermoInputUncertainties = []
+        self.kineticInputUncertainties = []
+        
+        for species in self.speciesList:
+            dG = gParamEngine.getUncertaintyValue(self.speciesSourcesDict[species])
+            self.thermoInputUncertainties.append(dG)
+        for reaction in self.reactionList:
+            dlnk = kParamEngine.getUncertaintyValue(self.reactionSourcesDict[reaction])
+            self.kineticInputUncertainties.append(dlnk)
+
  
