@@ -372,6 +372,25 @@ def combineTwoRingsIntoSubMolecule(ring1, ring2):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
     
     return mol0, atomsMapping
+
+def getCopyForOneRing(ring):
+
+    _, atomsMapping = convertRingToSubMolecule(ring)
+
+    ringCopy = [atomsMapping[atom] for atom in ring]
+    
+    return ringCopy
+
+
+def getCopyFromTwoRingsWithCommonAtoms(ring1, ring2):
+
+    mergedRing, atomsMapping = combineTwoRingsIntoSubMolecule(ring1, ring2)
+
+    ring1Copy = [atomsMapping[atom] for atom in ring1]
+    ring2Copy = [atomsMapping[atom] for atom in ring2]
+    
+    return ring1Copy, ring2Copy, mergedRing
+
 ################################################################################
 
 class ThermoDepository(Database):
