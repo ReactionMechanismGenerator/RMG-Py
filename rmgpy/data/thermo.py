@@ -272,6 +272,106 @@ def averageThermoData(thermoDataList=None):
             averagedThermoData.S298.uncertainty_si = 2*numpy.std(SData, ddof=1)
             return averagedThermoData
 
+def commonAtoms(cycle1, cycle2):
+    """
+    INPUT: two cycles with type: list of atoms
+    OUTPUT: a set of common atoms
+    """
+    set1 = set(cycle1)
+    set2 = set(cycle2)
+    return set1.intersection(set2)
+
+def combineCycles(cycle1, cycle2):
+    """
+    INPUT: two cycles with type: list of atoms
+    OUTPUT: a combined cycle with type: list of atoms
+    """
+    set1 = set(cycle1)
+    set2 = set(cycle2)
+    return list(set1.union(set2))
+
+def isAromaticRing(submol):
+    """
+    This method takes a monoring submol (Molecule initialized with a list of atoms containing just 
+    the ring), and check if it is a aromatic ring.
+    """
+    ring_size = len(submol.atoms)
+    if ring_size not in [5, 6]:
+        return False
+    for ringAtom in submol.atoms:
+        for bondedAtom, bond in ringAtom.edges.iteritems():
+            if bondedAtom in submol.atoms:
+                if not bond.isBenzene():
+                    return False
+    return True
+
+def findAromaticBondsFromSubMolecule(submol):
+    """
+    This method finds all the aromatic bonds within a input submolecule and 
+    returns a set of unique aromatic bonds
+    """
+
+    aromaticBonds = []
+    for atom in submol.atoms:
+        bonds = submol.getBonds(atom)
+        for atom_j in bonds:
+            if atom_j in submol.atoms:
+                bond = bonds[atom_j]
+                if bond.isBenzene():
+                    aromaticBonds.append(bond)
+    return set(aromaticBonds)
+
+def convertRingToSubMolecule(ring):
+    """
+    This function takes a ring structure (can either be monoring or polyring) to create a new 
+    submolecule with newly deep copied atoms
+    """
+    from rmgpy.molecule.molecule import Molecule, Bond
+    
+    atomsMapping = {}
+    for atom in ring:
+        atomsMapping[atom] = atom.copy() # this copy is deep copy of origin atom with empty edges
+
+    mol0 = Molecule(atoms=atomsMapping.values())
+
+    for atom in ring:
+        for bondedAtom, bond in atom.edges.iteritems():
+            if bondedAtom in ring:
+                if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
+                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
+    
+    return mol0, atomsMapping
+
+def combineTwoRingsIntoSubMolecule(ring1, ring2):
+    """
+    This function combines 2 rings (with common atoms) to create a new 
+    submolecule with newly deep copied atoms
+    """
+
+    from rmgpy.molecule.molecule import Molecule, Bond
+
+    assert len(commonAtoms(ring1, ring2))>0, "The two input rings don't have common atoms."
+
+    atomsMapping = {}
+    for atom in ring1 + ring2:
+        if atom not in atomsMapping:
+            atomsMapping[atom] = atom.copy()
+
+    mol0 = Molecule(atoms=atomsMapping.values())
+
+    for atom in ring1:
+        for bondedAtom, bond in atom.edges.iteritems():
+            if bondedAtom in ring1:
+                if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
+                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
+    
+    for atom in ring2:
+        for bondedAtom, bond in atom.edges.iteritems():
+            if bondedAtom in ring2:
+                if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
+                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
+    
+    return mol0, atomsMapping
 ################################################################################
 
 class ThermoDepository(Database):
