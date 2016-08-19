@@ -408,6 +408,77 @@ def isPolyringPartialMatched(polyring, matched_group):
             return False
         else:
             return True
+
+def bicyclicDecompositionForPolyring(polyring):
+    """
+    Decompose a polycyclic ring into all possible bicyclic combinations: `bicyclicsMergedFromRingPair`
+    and return a `ringOccurancesDict` that contains all single ring tuples as keys and the number of times
+    they appear each bicyclic submolecule.  These bicyclic and single rings are used 
+    later in the heuristic polycyclic thermo algorithm.
+    """
+
+    submol, _ = convertRingToSubMolecule(polyring)
+    SSSR = submol.getSmallestSetOfSmallestRings()
+    
+    ringPairWithCommonAtomsList = []
+    ringOccurancesDict = {}
+    
+    # Initialize ringOccuranceDict
+    for ring in SSSR:
+        ringOccurancesDict[tuple(ring)] = 0
+
+    ringNum = len(SSSR)
+    for i in range(ringNum):
+        for j in range(i+1,ringNum):
+            if commonAtoms(SSSR[i], SSSR[j]):
+                # Copy the SSSR's again because these ones are going to be merged into bicyclics
+                # and manipulated (aromatic bonds have to be screened and changed to single if needed)
+                SSSRi, SSSRj, mergedRing = getCopyFromTwoRingsWithCommonAtoms(SSSR[i], SSSR[j])
+                ringPairWithCommonAtomsList.append([SSSRi, SSSRj, mergedRing])
+                # Save the single ring SSSRs that appear in bicyclics using the original copy
+                # because they will be manipulated (differently) in __addPolyRingCorrectionThermoDataFromHeuristic
+                ringOccurancesDict[tuple(SSSR[i])] += 1
+                ringOccurancesDict[tuple(SSSR[j])] += 1
+
+    bicyclicsMergedFromRingPair = []
+    # pre-process 2-ring cores
+    for ringA, ringB, mergedRing in ringPairWithCommonAtomsList:
+        submolA = Molecule(atoms=ringA)
+        submolB = Molecule(atoms=ringB)
+        isA_aromatic = isAromaticRing(submolA)
+        isB_aromatic = isAromaticRing(submolB)
+        # if ringA and ringB are both aromatic or not aromatic
+        # don't need to do anything extra
+        if (isA_aromatic and isB_aromatic):
+            pass
+        elif (not isA_aromatic and not isB_aromatic):
+            aromaticBonds_inA = findAromaticBondsFromSubMolecule(submolA)
+            for aromaticBond_inA in aromaticBonds_inA:
+                aromaticBond_inA.order = 'S'
+
+            aromaticBonds_inB = findAromaticBondsFromSubMolecule(submolB)
+            for aromaticBond_inB in aromaticBonds_inB:
+                aromaticBond_inB.order = 'S'
+        elif isA_aromatic:
+            aromaticBonds_inB = findAromaticBondsFromSubMolecule(submolB)
+            for aromaticBond_inB in aromaticBonds_inB:
+                # Make sure the aromatic bond in ringB is in ringA, and both ringB atoms are in ringA 
+                # If so, preserve the B bond status, otherwise change to single bond order
+                if (aromaticBond_inB.atom1 in submolA.atoms) and (aromaticBond_inB.atom2 in submolA.atoms) and (submolA.hasBond(aromaticBond_inB.atom1, aromaticBond_inB.atom2)):
+                    pass
+                else:
+                    aromaticBond_inB.order = 'S'
+        else:
+            aromaticBonds_inA = findAromaticBondsFromSubMolecule(submolA)
+            for aromaticBond_inA in aromaticBonds_inA:
+                if (aromaticBond_inA.atom1 in submolB.atoms) and (aromaticBond_inA.atom2 in submolB.atoms) and (submolB.hasBond(aromaticBond_inA.atom1, aromaticBond_inA.atom2)):
+                    pass
+                else:
+                    aromaticBond_inA.order = 'S'
+        mergedRing.update()#
+        bicyclicsMergedFromRingPair.append(mergedRing)
+
+    return bicyclicsMergedFromRingPair, ringOccurancesDict
 ################################################################################
 
 class ThermoDepository(Database):
