@@ -1422,17 +1422,17 @@ class ThermoDatabase(object):
                 # Make a temporary structure containing only the atoms in the ring
                 # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 try:
-                    self.__addRingCorrectionThermoData(thermoData, self.groups['ring'], molecule, ring)
+                    self.__addRingCorrectionThermoDataFromTree(thermoData, self.groups['ring'], molecule, ring)
                 except KeyError:
                     logging.error("Couldn't find a match in the monocyclic ring database even though monocyclic rings were found.")
                     logging.error(molecule)
                     logging.error(molecule.toAdjacencyList())
                     raise
-            for ring in polyrings:
+            for polyring in polyrings:
                 # Make a temporary structure containing only the atoms in the ring
                 # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 try:
-                    self.__addRingCorrectionThermoData(thermoData, self.groups['polycyclic'], molecule, ring)
+                    self.__addRingCorrectionThermoDataFromTree(thermoData, self.groups['polycyclic'], molecule, polyring)
                 except KeyError:
                     logging.error("Couldn't find a match in the polycyclic ring database even though polycyclic rings were found.")
                     logging.error(molecule)
@@ -1442,10 +1442,12 @@ class ThermoDatabase(object):
         return thermoData
 
     def __addRingCorrectionThermoData(self, thermoData, ring_database, molecule, ring):
+    def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """
         Determine the ring correction group additivity thermodynamic data for the given
          `ring` in the `molecule`, and add it to the existing thermo data
         `thermoData`.
+        Also returns the matched ring group from the database from which the data originated.
         """
         matchedRingEntries = []
         # label each atom in the ring individually to try to match the group
@@ -1489,13 +1491,14 @@ class ThermoDatabase(object):
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
+                    node = entry
                     break
         data.comment = '{0}({1})'.format(ring_database.label, comment)
         
         if thermoData is None:
-            return data
+            return data, node
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True)
+            return addThermoData(thermoData, data, groupAdditivity=True), node
 
     def __averageChildrenThermo(self, node):
         """
