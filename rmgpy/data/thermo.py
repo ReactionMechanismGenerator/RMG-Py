@@ -1432,7 +1432,7 @@ class ThermoDatabase(object):
                 # Make a temporary structure containing only the atoms in the ring
                 # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 try:
-                    self.__addRingCorrectionThermoDataFromTree(thermoData, self.groups['polycyclic'], molecule, polyring)
+                    self.__addPolycyclicCorrectionThermoData(thermoData, molecule, polyring)
                 except KeyError:
                     logging.error("Couldn't find a match in the polycyclic ring database even though polycyclic rings were found.")
                     logging.error(molecule)
@@ -1441,7 +1441,68 @@ class ThermoDatabase(object):
 
         return thermoData
 
-    def __addRingCorrectionThermoData(self, thermoData, ring_database, molecule, ring):
+    def __addPolycyclicCorrectionThermoData(self, thermoData, molecule, polyring):
+        """
+        INPUT: `polyring` as a list of `Atom` forming a polycyclic ring
+        OUTPUT: if the input `polyring` can be fully matched in polycyclic database, the correction
+        will be directly added to `thermoData`; otherwise, a heuristic approach will 
+        be applied.
+        """
+        # look up polycylic tree directly
+        matched_group_thermodata, matched_entry = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
+        matched_group = matched_entry.item
+        
+        # if partial match (non-H atoms number same between 
+        # polycylic ring in molecule and match group)
+        # otherwise, apply heuristic algorithm
+        if not isPolyringPartialMatched(polyring, matched_group):
+            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
+        else:
+            self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
+            
+
+    def __addPolyRingCorrectionThermoDataFromHeuristic(self, thermoData, polyring):
+        """
+        INPUT: `polyring` as a list of `Atom` forming a polycyclic ring, which can 
+        only be partially matched.
+        OUTPUT: `polyring` will be decomposed into a combination of 2-ring polycyclics
+        and each one will be looked up from polycyclic database. The heuristic formula 
+        is "polyring thermo correction = sum of correction of all 2-ring sub-polycyclics - 
+        overlapped single-ring correction"; the calculated polyring thermo correction 
+        will be finally added to input `thermoData`.
+        """
+
+        # pring decomposition
+        bicyclicsMergedFromRingPair, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        
+        # loop over 2-ring cores
+        for bicyclic in bicyclicsMergedFromRingPair:
+            self.__addRingCorrectionThermoDataFromTree(thermoData, 
+                self.groups['polycyclic'], bicyclic, bicyclic.atoms)
+
+        # loop over 1-ring 
+        for singleRingTuple, occurance in ringOccurancesDict.iteritems():
+            singleRing = list(singleRingTuple)
+
+            if occurance >= 2:
+                submol, _ = convertRingToSubMolecule(singleRing)
+                
+                if not isAromaticRing(submol):
+                    aromaticBonds = findAromaticBondsFromSubMolecule(submol)
+                    for aromaticBond in aromaticBonds:
+                        aromaticBond.order = 'S'
+                    
+                    submol.update()
+                    singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
+                                                self.groups['ring'], submol, submol.atoms)[0]
+                    
+                else:
+                    submol.update()
+                    singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
+                                                    self.groups['ring'], submol, submol.atoms)[0]
+            for _ in range(occurance-1):
+                thermoData = removeThermoData(thermoData, singleRingThermodata, True)
+
     def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """
         Determine the ring correction group additivity thermodynamic data for the given
