@@ -395,8 +395,8 @@ class CoreEdgeReactionModel:
                 else:
                     if areIdenticalSpeciesReferences(rxn, rxn0):
                         return True, rxn0
-            
-            if isinstance(familyObj, KineticsFamily) and familyObj.ownReverse:
+            if isinstance(familyObj, KineticsFamily):
+                
                 if (rxn_id == rxn_id0[::-1]):
                     if areIdenticalSpeciesReferences(rxn, rxn0):
                         return True, rxn0
@@ -1573,7 +1573,7 @@ class CoreEdgeReactionModel:
             
         family = getFamilyLibraryObject(family_label)       
         # if the family is its own reverse (H-Abstraction) then check the other direction
-        if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
+        if isinstance(family,KineticsFamily): 
 
             # Get the short-list of reactions with the same family, product1 and product2
             family_label, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)
