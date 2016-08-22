@@ -22,9 +22,7 @@ class TestThermoDatabase(unittest.TestCase):
     # Only load these once to save time
     database = ThermoDatabase()
     database.load(os.path.join(settings['database.directory'], 'thermo'))
-#    oldDatabase = ThermoDatabase()
-#    oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
-    
+
     
     def setUp(self):
         """
@@ -152,6 +150,82 @@ class TestThermoDatabase(unittest.TestCase):
 #                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
 
 
+
+    def testParseThermoComments(self):
+        """
+        Test that the ThermoDatabase.extractSourceFromComments function works properly
+        on various thermo comments.
+        """
+        from rmgpy.thermo import NASA, NASAPolynomial
+        # Pure group additivity thermo
+        propane = Species(index=3, label="Propane", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.05257,0.0125099,3.79386e-05,-5.12022e-08,1.87065e-11,-14454.2,10.0672], Tmin=(100,'K'), Tmax=(986.57,'K')),
+         NASAPolynomial(coeffs=[5.91316,0.0218763,-8.17661e-06,1.49855e-09,-1.05991e-13,-16038.9,-8.86555], Tmin=(986.57,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)"""), molecule=[Molecule(SMILES="CCC")])
+        
+        source = self.database.extractSourceFromComments(propane)
+        self.assertTrue('GAV' in source, 'Should have found that propane thermo source is GAV.')
+        self.assertEqual(len(source['GAV']['group']), 2)
+        self.assertEqual(len(source['GAV']['other']), 1)
+        self.assertEqual(len(source['GAV']['gauche']), 2)
+
+        # Pure library thermo
+        dipk = Species(index=1, label="DIPK", thermo=
+        NASA(polynomials=[NASAPolynomial(coeffs=[3.35002,0.017618,-2.46235e-05,1.7684e-08,-4.87962e-12,35555.7,5.75335], Tmin=(100,'K'), Tmax=(888.28,'K')), 
+        NASAPolynomial(coeffs=[6.36001,0.00406378,-1.73509e-06,5.05949e-10,-4.49975e-14,35021,-8.41155], Tmin=(888.28,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo library: DIPK"""), molecule=[Molecule(SMILES="CC(C)C(=O)C(C)C")])
+        
+        source = self.database.extractSourceFromComments(dipk)
+        self.assertTrue('Library' in source)
+        
+        # Mixed library and HBI thermo
+        dipk_rad = Species(index=4, label="R_tert", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[2.90061,0.0298018,-7.06268e-05,6.9636e-08,-2.42414e-11,54431,5.44492], Tmin=(100,'K'), Tmax=(882.19,'K')), 
+        NASAPolynomial(coeffs=[6.70999,0.000201027,6.65617e-07,-7.99543e-11,4.08721e-15,54238.6,-9.73662], Tmin=(882.19,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo library: DIPK + radical(C2CJCHO)"""), molecule=[Molecule(SMILES="C[C](C)C(=O)C(C)C"), Molecule(SMILES="CC(C)=C([O])C(C)C")])
+        
+        source = self.database.extractSourceFromComments(dipk_rad)
+        self.assertTrue('Library' in source)
+        self.assertTrue('GAV' in source)
+        self.assertEqual(len(source['GAV']['radical']),1)
+
+        # Pure QM thermo
+        cineole = Species(index=6, label="Cineole", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.324129,0.0619667,9.71008e-05,-1.60598e-07,6.28285e-11,-38699.9,29.3686], Tmin=(100,'K'), Tmax=(985.52,'K')),
+         NASAPolynomial(coeffs=[20.6043,0.0586913,-2.22152e-05,4.19949e-09,-3.06046e-13,-46791,-91.4152], Tmin=(985.52,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""QM MopacMolPM3 calculation attempt 1"""), molecule=[Molecule(SMILES="CC12CCC(CC1)C(C)(C)O2")])
+        
+        source = self.database.extractSourceFromComments(cineole)
+        self.assertTrue('QM' in source)
+        
+        # Mixed QM and HBI thermo
+        cineole_rad = Species(index=7, label="CineoleRad", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.2897,0.0627717,8.63299e-05,-1.47868e-07,5.81665e-11,-14017.6,31.0266], Tmin=(100,'K'), Tmax=(988.76,'K')),
+         NASAPolynomial(coeffs=[20.4836,0.0562555,-2.13903e-05,4.05725e-09,-2.96023e-13,-21915,-88.1205], Tmin=(988.76,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""QM MopacMolPM3 calculation attempt 1 + radical(Cs_P)"""), molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")])
+        
+        
+        source = self.database.extractSourceFromComments(cineole_rad)
+        self.assertTrue('QM' in source)
+        self.assertTrue('GAV' in source)
+        self.assertEqual(len(source['GAV']['radical']),1)
+        
+        
+        # No thermo comments
+        other = Species(index=7, label="CineoleRad", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.2897,0.0627717,8.63299e-05,-1.47868e-07,5.81665e-11,-14017.6,31.0266], Tmin=(100,'K'), Tmax=(988.76,'K')),
+         NASAPolynomial(coeffs=[20.4836,0.0562555,-2.13903e-05,4.05725e-09,-2.96023e-13,-21915,-88.1205], Tmin=(988.76,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), ), molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")])
+        
+        # Function should complain if there's no thermo comments
+        self.assertRaises(self.database.extractSourceFromComments(cineole_rad)) 
+        
+        
+        # Check a dummy species that has plus and minus thermo group contributions
+        polycyclic = Species(index=7, label="dummy", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.2897,0.0627717,8.63299e-05,-1.47868e-07,5.81665e-11,-14017.6,31.0266], Tmin=(100,'K'), Tmax=(988.76,'K')),
+         NASAPolynomial(coeffs=[20.4836,0.0562555,-2.13903e-05,4.05725e-09,-2.96023e-13,-21915,-88.1205], Tmin=(988.76,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'),  comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + group(Cs-CsCsHH) - ring(Benzene)"""), molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")])
+   
+        source = self.database.extractSourceFromComments(polycyclic)
+        self.assertTrue('GAV' in source)
+        self.assertEqual(source['GAV']['ring'][0][1],-1)  # the weight of benzene contribution should be -1
+        self.assertEqual(source['GAV']['group'][0][1],2)  # weight of the group(Cs-CsCsHH) conbtribution should be 2
+        
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
     Test only Aromatic species.

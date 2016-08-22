@@ -1940,3 +1940,189 @@ class KineticsFamily(Database):
                 return depository
         else:
             raise Exception('Could not find training depository in family {0}.'.format(self.label))
+        
+    def retrieveOriginalEntry(self, templateLabel):
+        """
+        Retrieves the original entry, be it a rule or training reaction, given
+        the template label in the form 'group1;group2' or 'group1;group2;group3'
+        
+        Returns tuple in the form
+        (RateRuleEntry, TrainingReactionEntry)
+        
+        Where the TrainingReactionEntry is only present if it comes from a training reaction
+        """
+        
+        templateLabels = templateLabel.split()[0].split(';')
+        template = self.retrieveTemplate(templateLabels)
+        rule = self.getRateRule(template)
+        if 'from training reaction' in rule.data.comment:
+            trainingIndex = int(rule.data.comment.split()[-1])
+            trainingDepository = self.getTrainingDepository()
+            return rule, trainingDepository.entries[trainingIndex]
+        else:
+            return rule, None
+        
+    def getSourcesForTemplate(self, template):
+        """
+        Returns the set of rate rules and training reactions used to average this `template`.  Note that the tree must be
+        averaged with verbose=True for this to work.
+        
+        Returns a tuple of
+        rules, training
+        
+        where rules are a list of tuples containing 
+        the [(original_entry, weight_used_in_average), ... ]
+        
+        and training is a list of tuples containing
+        the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),...]
+        """
+        import re
+
+        def assignWeightsToEntries(entryNestedList, weightedEntries, N = 1):
+            """
+            Assign weights to an average of average nested list. Where N is the 
+            number of values being averaged recursively.  
+            """
+            N = len(entryNestedList)*N
+            for entry in entryNestedList:
+                if isinstance(entry, list):
+                    assignWeightsToEntries(entry, weightedEntries, N)
+                else:
+                    weightedEntries.append((entry,1/float(N)))
+            return weightedEntries
+        
+        
+        kinetics, entry = self.estimateKineticsUsingRateRules(template)
+        if entry:
+            return [(entry,1)], []   # Must be a rate rule 
+        else:
+            # The template was estimated using an average or another node
+            rules = []
+            training = []
+            
+            lines = kinetics.comment.split('\n')
+            # Discard the last line, unless it's the only line!
+            # The last line is 'Estimated using ... for rate rule (originalTemplate)'
+            if len(lines) == 1:
+                comment = lines[0]
+                if comment.startswith('Estimated using template'):
+                    tokenTemplateLabel = comment.split()[3][1:-1]
+                    ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel) 
+                    if trainingEntry:
+                        training.append((ruleEntry,trainingEntry,1))   # Weight is 1
+                    else:
+                        rules.append((ruleEntry,1))
+                else:
+                    raise Exception('Could not parse unexpected line found in kinetics comment: {}'.format(comment))
+            else:
+                comment = ' '.join(lines[:-1])
+                # Clean up line for exec
+                evalCommentString = re.sub(r" \+ ", ",",                        # any remaining + signs
+                                    re.sub(r"Average of ", "",                  # average of averages
+                                    re.sub(r"Average of \[(?!Average)", "['",   # average of groups
+                                    re.sub(r"(\b|\))]", r"\1']",                # initial closing bracket
+                                    re.sub(r"(?<=\b) \+ (?=Average)", "',",     # + sign between non-average and average
+                                    re.sub(r"(?<=]) \+ (?!Average)", ",'",      # + sign between average and non-average
+                                    re.sub(r"(?<!]) \+ (?!Average)", "','",     # + sign between non-averages
+                                    comment)))))))
+
+                entryNestedList = eval(evalCommentString)
+                
+                weightedEntries = assignWeightsToEntries(entryNestedList, [])
+                
+                
+                rules = {}
+                training = {}
+                
+                for tokenTemplateLabel, weight in weightedEntries:
+                    ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel)
+                    if trainingEntry:
+                        if (ruleEntry, trainingEntry) in training:
+                            training[(ruleEntry, trainingEntry)] += weight
+                        else:
+                            training[(ruleEntry, trainingEntry)] = weight
+                    else:
+                        if ruleEntry in rules:
+                            rules[ruleEntry] += weight
+                        else:
+                            rules[ruleEntry] = weight
+                # Each entry should now only appear once    
+                training = [(k[0],k[1],v) for k,v in training.items()]
+                rules = rules.items()
+                
+            return rules, training
+
+    def extractSourceFromComments(self, reaction):
+        """
+        Returns the rate rule associated with the kinetics of a reaction by parsing the comments.
+        Will return the template associated with the matched rate rule.
+        Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)
+        
+        For a training reaction, the Source_Data returns 
+        [Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
+        
+        For a reaction from rate rules, the Source_Data is a tuple containing
+        [Family_Label, {'template': originalTemplate,
+            'degeneracy': degeneracy, 
+            'exact': boolean_exact?, 
+            'rules': a list of (original rate rule entry, weight in average)
+            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average)
+            }]
+        where TrainingReactions are ones that have created rules used in the estimate.
+        
+        where Exact is a boolean of whether the rate is an exact match, 
+        Template is the reaction template used,
+        and RateRules is a list of the rate rule entries containing the kinetics used
+        """
+        import re
+        lines = reaction.kinetics.comment.split('\n')
+
+        exact = False
+        template = None
+        rules = None
+        trainingEntries = None
+        degeneracy = 1
+
+        regex = "\((.*)\)" # only hit outermost parentheses
+        for line in lines:
+            if line.startswith('Matched'):
+                # Source of the kinetics is from training reaction
+                trainingReactionIndex = int(line.split()[2])
+                depository  = self.getTrainingDepository()
+                trainingEntry = depository.entries[trainingReactionIndex]
+                # Perform sanity check that the training reaction's label matches that of the comments
+                if trainingEntry.label not in line:
+                    raise Exception('Reaction {0} uses kinetics from training reaction {1} but does not match the training reaction {1} from the {2} family.'.format(reaction,trainingReactionIndex,self.label))
+                
+                # Sometimes the matched kinetics could be in the reverse direction..... 
+                if reaction.isIsomorphic(trainingEntry.item, eitherDirection=False):
+                    reverse=False
+                else:
+                    reverse=True
+                return True, [self.label, trainingEntry, reverse]
+
+            elif line.startswith('Exact match'):
+                exact = True
+            elif line.startswith('Estimated'):
+                pass
+            elif line.startswith('Multiplied by'):
+                degeneracy = int(line.split()[-1])
+
+        # Extract the rate rule information 
+        fullCommentString = reaction.kinetics.comment.replace('\n', ' ')
+        
+        # The rate rule string is right after the phrase 'for rate rule'
+        rateRuleString = fullCommentString.split("for rate rule",1)[1].split()[0]
+        templateLabel = re.split(regex, rateRuleString)[1]
+        template = self.retrieveTemplate(templateLabel.split(';'))
+        rules, trainingEntries = self.getSourcesForTemplate(template)
+        
+
+        if not template:
+            raise Exception('Could not extract kinetics source from comments for reaction {}.'.format(reaction))
+        
+        sourceDict = {'template':template, 'degeneracy':degeneracy, 'exact':exact, 
+                       'rules':rules,'training':trainingEntries }
+
+        # Source of the kinetics is from rate rules
+        return False, [self.label, sourceDict]
