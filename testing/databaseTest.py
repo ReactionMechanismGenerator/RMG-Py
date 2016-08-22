@@ -265,6 +265,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         """
         family = self.database.kinetics.families[family_name]
         for nodeName, nodeGroup in family.groups.entries.iteritems():
+            nose.tools.assert_false('[' in nodeName or ']' in nodeName, "Group {group} in {family} family contains square brackets [ ] in the label, which are not allowed.".format(group=nodeName, family=family_name))
             ascendParent = nodeGroup
             # Check whether the node has proper parents unless it is the top reactant or product node
             while ascendParent not in family.groups.top and ascendParent not in family.forwardTemplate.products:
