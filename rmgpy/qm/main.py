@@ -36,7 +36,6 @@ from rmgpy.qm.molecule import QMMolecule
 from rmgpy.qm.reaction import QMReaction
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
-import rmgpy.qm.nwchem
 from rmgpy.data.thermo import ThermoLibrary
 
 class QMSettings():
@@ -228,11 +227,6 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolB3LYP(molecule, settings)
             else:
                 raise Exception("Unknown QM method '{0}' for gaussian".format(settings.method))
-        elif self.settings.software == 'nwchem':
-            if self.settings.method =='hf':
-                qm_molecule_calculator = rmgpy.qm.nwchem.NWChemMolHF(molecule, settings)
-            else:
-                raise Exception("Unknown QM method '{0}' for nwchem".format(settings.method))
         else:
             raise Exception("Unknown QM software '{0}'".format(settings.software))
         thermo0 = qm_molecule_calculator.generateThermoData()
@@ -251,8 +245,6 @@ class QMCalculator():
                 qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSM062X(reaction, self.settings, tsDatabase)
             else:
                 raise Exception("Unknown QM kinetics method '{0}' for gaussian".format(self.settings.method, tsDatabase))
-        elif self.settings.software == 'nwchem':
-            raise Exception("Unknown QM kinetics method '{0}' for nwchem".format(self.settings.method))
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
         
