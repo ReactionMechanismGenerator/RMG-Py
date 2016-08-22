@@ -233,7 +233,7 @@ class TransitionStates(Database):
         # Get the indicated reaction family
         if groups == None:
             raise ValueError('Invalid value "{0}" for family parameter.'.format(family))
-            
+        
         if all([(isinstance(reactant, Group) or isinstance(reactant, LogicNode)) for reactant in entry.item.reactants]):
             # The entry is a rate rule, containing functional groups only
             # By convention, these are always given in the forward direction and
@@ -269,7 +269,7 @@ class TransitionStates(Database):
                 reaction.products.append(product)
             
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family], families=rxnFamily)
+            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule[0] for reactant in reaction.reactants], [], only_families=[family], families=rxnFamily)
             
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
@@ -640,6 +640,7 @@ class TSGroups(Database):
         groupList = []
         for template, distances in trainingSet:
             for group in template:
+                if isinstance(group, str): group = self.entries[group]
                 if group not in self.top:
                     groupList.append(group)
                     groupList.extend(self.ancestors(group)[:-1])
@@ -653,7 +654,7 @@ class TSGroups(Database):
                 groupValues[entry] = []
                 groupUncertainties[entry] = []
                 groupCounts[entry] = []
-                groupComments[entry.label] = set()
+                groupComments[entry] = set()
             
             # Generate least-squares matrix and vector
             A = []; b = []
@@ -678,7 +679,8 @@ class TSGroups(Database):
                     A.append(Arow); b.append(brow)
                     
                     for group in groups:
-                        groupComments[group.label].add("{0!s}".format(template))
+                        if isinstance(group, str): group = self.entries[group]
+                        groupComments[group].add("{0!s}".format(template))
             
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
