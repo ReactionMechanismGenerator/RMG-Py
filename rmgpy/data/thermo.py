@@ -246,7 +246,7 @@ def averageThermoData(thermoDataList=None):
     if numValues == 0:
         raise Exception('No thermo data values were inputted to be averaged.')
     else:
-        print 'Averaging thermo data over {0} value(s).'.format(numValues)
+        logging.debug('Averaging thermo data over {0} value(s).'.format(numValues))
         
         if numValues == 1:
             return copy.deepcopy(thermoDataList[0])
@@ -997,7 +997,7 @@ class ThermoDatabase(object):
             quantumMechanics = None
 
         if thermo0 is not None:
-            logging.info("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
+            logging.debug("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
             
@@ -1036,7 +1036,7 @@ class ThermoDatabase(object):
                         # Sort thermo first by the priority, then by the most stable H298 value
                         thermo = sorted(thermo, key=lambda x: (x[0], x[1])) 
                         for i in range(len(thermo)): 
-                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
+                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
                         # Save resonance isomers reordered by their thermo
                         species.molecule = [item[2] for item in thermo]
                         original_molecule = species.molecule[0]
@@ -1063,7 +1063,7 @@ class ThermoDatabase(object):
                     # Sort thermo by the most stable H298 value when choosing between thermoLibrary values
                     thermo = sorted(thermo, key=lambda x: x[0])
                     for i in range(len(thermo)): 
-                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][1].toSMILES(), thermo[i][0]))
+                        logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][1].toSMILES(), thermo[i][0]))
                     # Save resonance isomers reordered by their thermo
                     species.molecule = [item[1] for item in thermo]
                     thermo0 = thermo[0][2]
@@ -1526,9 +1526,9 @@ class ThermoDatabase(object):
         
         mostSpecificMatchedEntries = [matchedRingEntries[idx] for idx in mostSpecificMatchIndices]
         if len(set(mostSpecificMatchedEntries)) != 1:
-            logging.warning('More than one type of node was found to be most specific for this ring.')
-            logging.warning('This is either due to a database error in the ring or polycyclic groups, or a partial match between the group and the full ring.')
-            logging.warning(mostSpecificMatchedEntries)
+            logging.debug('More than one type of node was found to be most specific for this ring.')
+            logging.debug('This is either due to a database error in the ring or polycyclic groups, or a partial match between the group and the full ring.')
+            logging.debug(mostSpecificMatchedEntries)
             
         # Condense the number of most specific groups down to one
         mostSpecificMatchedEntry = matchedRingEntries[mostSpecificMatchIndices[0]]
