@@ -21,7 +21,7 @@ class Mopac:
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     
-    executablesToTry = ('MOPAC2012.exe', 'MOPAC2009.exe', 'mopac')
+    executablesToTry = ('MOPAC2016.exe', 'MOPAC2012.exe', 'MOPAC2009.exe', 'mopac')
 
     for exe in executablesToTry:
         try:
@@ -38,7 +38,7 @@ class Mopac:
             if os.path.exists(executablePath):
                 break
         else:  # didn't break
-            executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+            executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012 or 2016)')
 
     usePolar = False #use polar keyword in MOPAC
     
