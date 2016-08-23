@@ -1,5 +1,7 @@
 # <img align="top" src="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/documentation/source/_static/rmg-logo-small.png"> Reaction Mechanism Generator (RMG)
 
+[![Join the chat at https://gitter.im/ReactionMechanismGenerator/RMG-Py](https://badges.gitter.im/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Description
 This repository contains the Python version of **Reaction Mechanism Generator (RMG)**,
 a tool for automatically generating chemical reaction
