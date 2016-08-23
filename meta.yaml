@@ -51,6 +51,7 @@ requirements:
     - coolprop
     - coverage
     - cython ==0.21
+    - ffmpeg
     - gprof2dot
     - graphviz
     - guppy
