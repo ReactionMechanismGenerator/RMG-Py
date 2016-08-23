@@ -157,4 +157,6 @@ cdef class Group(Graph):
 
     cpdef bint standardizeGroup(self)
 
+    cpdef Group addImplicitAtomsFromAtomType(self)
+
     cpdef mol.Molecule makeSampleMolecule(self)

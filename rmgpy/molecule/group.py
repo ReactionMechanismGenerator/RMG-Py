@@ -38,6 +38,7 @@ import cython
 from .graph import Vertex, Edge, Graph
 from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
 import rmgpy.molecule.molecule as mol
+from copy import deepcopy
 
 ################################################################################
 
@@ -480,7 +481,7 @@ class GroupAtom(Vertex):
         #Instead we will set it to 0 here
 
         if newAtom.lonePairs == -100:
-            if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b']]:
+            if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
                 newAtom.lonePairs = 0
                 newAtom.charge = 1
             elif atomtype is atomTypes['N1d']:
@@ -1156,6 +1157,81 @@ class Group(Graph):
         return any(checkList)
 
 
+    def addImplicitAtomsFromAtomType(self):
+        """
+
+        Returns: a modified group with implicit atoms added
+        #Add implicit double/triple bonded atoms O, S or R, for which we will use a C
+
+        Not designed to work with wildcards
+        """
+
+        #dictionary of implicit atoms and their bonds
+        implicitAtoms = {}
+        lonePairsRequired = {}
+
+        copyGroup = deepcopy(self)
+
+        for atom1 in copyGroup.atoms:
+            atomtypeFeatureList = atom1.atomType[0].getFeatures()
+            lonePairsRequired[atom1]=atomtypeFeatureList[7]
+
+            #set to 0 required if empty list
+            atomtypeFeatureList = [featureList if featureList else [0] for featureList in atomtypeFeatureList]
+            allDoubleRequired = atomtypeFeatureList[1]
+            rDoubleRequired = atomtypeFeatureList[2]
+            oDoubleRequired = atomtypeFeatureList[3]
+            sDoubleRequired = atomtypeFeatureList[4]
+            tripleRequired = atomtypeFeatureList[5]
+
+            #count up number of bonds
+            single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+            for atom2, bond12 in atom1.bonds.iteritems():
+                # Count numbers of each higher-order bond type
+                if bond12.isSingle():
+                    single += 1
+                elif bond12.isDouble():
+                    if atom2.isOxygen():
+                        oDouble += 1
+                    elif atom2.isSulfur():
+                        sDouble += 1
+                    else:
+                        # rDouble is for double bonds NOT to oxygen or Sulfur
+                        rDouble += 1
+                elif bond12.isTriple(): triple += 1
+                elif bond12.isBenzene(): benzene += 1
+
+
+            while oDouble < oDoubleRequired[0]:
+                oDouble +=1
+                newAtom = GroupAtom(atomType=[atomTypes['O']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                newBond = GroupBond(atom1, newAtom, order=['D'])
+                implicitAtoms[newAtom] = newBond
+            while sDouble < sDoubleRequired[0]:
+                sDouble +=1
+                newAtom = GroupAtom(atomType=[atomTypes['S']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                newBond = GroupBond(atom1, newAtom, order=['D'])
+                implicitAtoms[newAtom] = newBond
+            while rDouble < rDoubleRequired[0] or rDouble + oDouble + sDouble < allDoubleRequired[0]:
+                rDouble +=1
+                newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                newBond = GroupBond(atom1, newAtom, order=['D'])
+                implicitAtoms[newAtom] = newBond
+            while triple < tripleRequired[0]:
+                triple +=1
+                newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                newBond = GroupBond(atom1, newAtom, order=['T'])
+                implicitAtoms[newAtom] = newBond
+
+        for atom, bond in implicitAtoms.iteritems():
+            copyGroup.addAtom(atom)
+            copyGroup.addBond(bond)
+
+        for atom, lonePair in lonePairsRequired.iteritems():
+            if lonePair: atom.lonePairs = lonePair
+
+        return copyGroup
+
     def makeSampleMolecule(self):
         """
         Returns: A sample class :Molecule: from the group
@@ -1170,14 +1246,17 @@ class Group(Graph):
         print self
         print self.atoms
 
+        #Add implicit atoms
+        modifiedGroup = self.addImplicitAtomsFromAtomType()
         #Make dictionary of :GroupAtoms: to :Atoms:
         atomDict = {}
-        for atom in self.atoms:
+        for atom in modifiedGroup.atoms:
             atomDict[atom] = atom.makeSampleAtom()
+
         #create the molecule
         newMolecule = mol.Molecule(atoms = atomDict.values())
         #Add explicit bonds to :Atoms:
-        for atom1 in self.atoms:
+        for atom1 in modifiedGroup.atoms:
             for atom2, bond12 in atom1.bonds.iteritems():
                 bond12.makeBond(newMolecule, atomDict[atom1], atomDict[atom2])
 

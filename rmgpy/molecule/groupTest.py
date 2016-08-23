@@ -546,17 +546,103 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.isIsomorphic(group))
         self.assertTrue(group.isIsomorphic(self.group))
 
+    def testAddImplicitAtomsFromAtomType(self):
+        """
+        test Group.addImplicitAtomsFromAtomType() method
+        """
+        #basic test adding oDouble
+        adjlist1 = """
+1  *1 CO u0
+            """
+
+        adjlist2 = """
+1  *1 CO u0 {2,D}
+2     O  u0 {1,D}
+            """
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        group2 = Group().fromAdjacencyList(adjlist2)
+
+        newGroup = group1.addImplicitAtomsFromAtomType()
+        self.assertTrue(group2.isIsomorphic(newGroup))
+        #testing the allDouble match (more complicated
+        adjlist3 = """
+1  *1 Cdd u0
+            """
+
+        adjlist4 = """
+1  *1 Cdd u0 {2,D} {3,D}
+2     C   u0 {1,D}
+3     C   u0 {1,D}
+            """
+        group3 = Group().fromAdjacencyList(adjlist3)
+        group4 = Group().fromAdjacencyList(adjlist4)
+
+        newGroup =group3.addImplicitAtomsFromAtomType()
+        self.assertTrue(group4.isIsomorphic(newGroup))
+        #test adding a triple bond
+        adjlist5 = """
+1  *1 Ct u0
+            """
+
+        adjlist6 = """
+1  *1 Ct u0 {2,T}
+2     C   u0 {1,T}
+            """
+        group5 = Group().fromAdjacencyList(adjlist5)
+        group6 = Group().fromAdjacencyList(adjlist6)
+
+        newGroup =group5.addImplicitAtomsFromAtomType()
+        self.assertTrue(group6.isIsomorphic(newGroup))
+        #test addition of lone pairs
+        adjlist7 = """
+1  *1 N1d u0
+            """
+
+        adjlist8 = """
+1  *1 N1d u0 p2 {2,D}
+2     C   u0 {1,D}
+            """
+        group7 = Group().fromAdjacencyList(adjlist7)
+        group8 = Group().fromAdjacencyList(adjlist8)
+
+        newGroup = group7.addImplicitAtomsFromAtomType()
+        self.assertTrue(group8.isIsomorphic(newGroup))
+
+        #test multiple implicit atoms at a time
+        adjlist9 = """
+1  *1 Cd u0 {2,S}
+2     Ct u0 {1,S}
+            """
+
+        adjlist10 = """
+1  *1 Cd u0 {2,S} {3,D}
+2     Ct u0 {1,S} {4,T}
+3     C  u0 {1,D}
+4     C  u0 {2,T}
+            """
+        group9 = Group().fromAdjacencyList(adjlist9)
+        group10 = Group().fromAdjacencyList(adjlist10)
+
+        newGroup =group9.addImplicitAtomsFromAtomType()
+        self.assertTrue(group10.isIsomorphic(newGroup))
+
     def testMakeSampleMolecule(self):
         """
         Test the Group.makeSampleMolecule method
         """
-        adjlist = """
-1  *1 [Cs,Cd] u0
+
+        # result = self.group.makeSampleMolecule()
+        # print result.multiplicity
+        # self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
+
+        adjlist1 = """
+1  *1 CO u0
             """
-        group = Group().fromAdjacencyList(adjlist)
-        result = self.group.makeSampleMolecule()
-        print result.multiplicity
-        self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        result1 = group1.makeSampleMolecule()
+        self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=O')))
 ################################################################################
 
 if __name__ == '__main__':
