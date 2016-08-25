@@ -590,6 +590,7 @@ class CoreEdgeReactionModel:
                     isomers = [isomer.species[0] for isomer in network.isomers]
                     if species in isomers and species not in network.explored:
                         network.explored.append(species)
+                        network.invalidate()
                         continue
                     for products in network.products:
                         products = products.species
@@ -1404,6 +1405,7 @@ class CoreEdgeReactionModel:
 
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
+        network.invalidate()
 
     def updateUnimolecularReactionNetworks(self):
         """
@@ -1444,13 +1446,14 @@ class CoreEdgeReactionModel:
                         index += 1
 
         count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
-        logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
+        logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(self.networkList)))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
         updatedNetworks = []
         for network in self.networkList:
             if not network.valid:
+                logging.info("Updating {0:s}".format(network))
                 network.update(self, self.pressureDependence)
                 updatedNetworks.append(network)
             
@@ -1460,12 +1463,14 @@ class CoreEdgeReactionModel:
         # direction from the list of core reactions
         # Note that well-skipping reactions may not have a reverse if the well
         # that they skip over is not itself in the core
-        for network in updatedNetworks:
+        for network in self.networkList:
             for reaction in network.netReactions:
                 try:
                     index = self.core.reactions.index(reaction)
                 except ValueError:
                     continue
+                if network not in updatedNetworks and not reaction.reversible:
+                    logging.warning("{!s} not updated, but has irreversible core reaction {!s}".format(network, reaction))
                 for index2, reaction2 in enumerate(self.core.reactions):
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
@@ -1497,6 +1502,15 @@ class CoreEdgeReactionModel:
                         break
                 else:
                     reaction.reversible = True
+
+
+        for network in self.networkList:
+            for reaction in network.netReactions:
+                try:
+                    index = self.core.reactions.index(reaction)
+                except ValueError:
+                    continue  # Reaction is not in core
+                assert reaction.reversible, "Core pdep reactions should be reversible at this point!"
 
 
     def markChemkinDuplicates(self):
