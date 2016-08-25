@@ -1618,4 +1618,48 @@ class Molecule(Graph):
         
         return group
 
-
+    def getFirstNeighbor(self, atom):
+        """Return a list of the nonHydrogen atoms that has distance = 1 with the 'atom'."""
+        firstNeighborDict = self.getBonds(atom)
+        firstNeighborList = []
+        for atoms in firstNeighborDict:
+            if atoms.isNonHydrogen():
+                firstNeighborList.append(atoms)
+        return firstNeighborList
+    
+    def getSecondNeighbor(self, atom):
+        """Return a list of the nonHydrogen atoms that has distance = 2 with the 'atom'."""
+        atom.label = '*'
+        firstNeighborList = self.getFirstNeighbor(atom)
+        for atoms in firstNeighborList:
+            atoms.label = '*'
+        secondNeighborList = []
+        
+        for atoms in firstNeighborList:
+            secondNeighborDict = self.getBonds(atoms)
+            for atom_1 in secondNeighborDict:
+                if atom_1.isNonHydrogen() and atom_1.label == '':
+                    atom_1.label = '*'
+                    secondNeighborList.append(atom_1)
+        self.clearLabeledAtoms()
+        return secondNeighborList
+    
+    def getThirdNeighbor(self, atom):
+        """Return a list of the nonHydrogen atoms that has distance = 3 with the 'atom'."""
+        atom.label = '*'
+        firstNeighborList = self.getFirstNeighbor(atom)
+        secondNeighborList = self.getSecondNeighbor(atom)
+        for atoms in firstNeighborList:
+            atoms.label = '*'
+        for atoms in secondNeighborList:
+            atoms.label = '*'
+        thirdNeighborList = []
+        
+        for atoms in secondNeighborList:
+            thirdNeighborDict = self.getBonds(atoms)
+            for atom_1 in thirdNeighborDict:
+                if atom_1.isNonHydrogen() and atom_1.label == '':
+                    atom_1.label = '*'
+                    thirdNeighborList.append(atom_1)
+        self.clearLabeledAtoms()
+        return thirdNeighborList

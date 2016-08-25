@@ -790,6 +790,8 @@ class ThermoDatabase(object):
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
         self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
+        self.groups['interactionDistance1']   =   ThermoGroups(label='interactionDistance1').load(os.path.join(path, 'interactionDistance1.py'  ), self.local_context, self.global_context)
+        self.groups['interactionDistance2']   =   ThermoGroups(label='interactionDistance2').load(os.path.join(path, 'interactionDistance2.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -1415,12 +1417,14 @@ class ThermoDatabase(object):
                     raise
                 # Correct for gauche and 1,5- interactions
                 if not cyclic:
+                    for atom_1 in molecule.getFirstNeighbor(atom):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
+                        except KeyError: pass
+                for atom_2 in molecule.getSecondNeighbor(atom):
                     try:
-                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
+                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
                     except KeyError: pass
-                try:
-                    self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
-                except KeyError: pass
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
