@@ -491,6 +491,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if self.valid: return
         # Do nothing if there are no explored wells
         if len(self.explored) == 0 and len(self.source) > 1: return
+        # Log the network being updated
+        logging.info("Updating {0:s}".format(self))
 
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
