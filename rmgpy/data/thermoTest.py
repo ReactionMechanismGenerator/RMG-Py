@@ -400,6 +400,7 @@ class TestCyclicThermo(unittest.TestCase):
         smiles = '[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
         spe = Species().fromSMILES(smiles)
         spe.generateResonanceIsomers()
+        mols = []
         for mol in spe.molecule:
             sssr0 = mol.getSmallestSetOfSmallestRings()
             aromaticRingNum = 0
@@ -408,29 +409,34 @@ class TestCyclicThermo(unittest.TestCase):
                 if isAromaticRing(sr0mol):
                     aromaticRingNum += 1
             if aromaticRingNum == 2:
-                break
-        mol.saturate()
+                mol.saturate()
+                mols.append(mol)
+        
+        ringGroupLabels = []
+        polycyclicGroupLabels = []
+        for mol in mols:
+            polyring = mol.getDisparateRings()[1][0]
 
-        polyring = mol.getDisparateRings()[1][0]
+            thermoData = ThermoData(
+                Tdata = ([300,400,500,600,800,1000,1500],"K"),
+                Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+                H298 = (0.0,"kJ/mol"),
+                S298 = (0.0,"J/(mol*K)"),
+            )
 
-        thermoData = ThermoData(
-            Tdata = ([300,400,500,600,800,1000,1500],"K"),
-            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
-            H298 = (0.0,"kJ/mol"),
-            S298 = (0.0,"J/(mol*K)"),
-        )
+            self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+                thermoData, polyring)
 
-        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
-            thermoData, polyring)
+            ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
 
-        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
-
-        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
-        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+            ringGroupLabels += [ringGroup.label for ringGroup in ringGroups]
+            polycyclicGroupLabels += [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
 
         self.assertIn('Benzene', ringGroupLabels)
         self.assertIn('six-inringtwodouble-12', ringGroupLabels)
         self.assertIn('Cyclohexene', ringGroupLabels)
+        self.assertIn('1,3-Cyclohexadiene', ringGroupLabels)
+        self.assertIn('s2_6_6_ben_ene_1', polycyclicGroupLabels)
         self.assertIn('s2_6_6_ben_ene_2', polycyclicGroupLabels)
         self.assertIn('s2_6_6_naphthalene', polycyclicGroupLabels)
 
