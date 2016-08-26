@@ -690,8 +690,123 @@ cdef class Graph:
         """
         Given a starting vertex, returns a list of all the cycles containing
         that vertex.
+
+        This function returns a duplicate of each cycle because [0,1,2,3]
+        is counted as separate from [0,3,2,1]
         """
         return self.__exploreCyclesRecursively([startingVertex], [])
+
+    cpdef list getAllCyclesOfSize(self, int size):
+        """
+        Return a list of the all non-duplicate rings with length 'size'. The
+        algorithm implements was adapted from a description by Fan, Panaye,
+        Doucet, and Barbu (doi: 10.1021/ci00015a002)
+
+        B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. "Ring Perception: A
+        New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+        from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
+        p. 657-662 (1993).
+        """
+        cdef Graph graph
+        cdef bint done, found
+        cdef list cycleList, cycles, cycle, graphs, neighbors, verticesToRemove, vertices, cycleSetList
+        cdef Vertex vertex, rootVertex
+        cdef set set1, set2
+
+        # Make a copy of the graph so we don't modify the original
+        graph = self.copy(deep=True)
+        vertices = graph.vertices[:]
+
+        # Step 1: Remove all terminal vertices
+        done = False
+        while not done:
+            verticesToRemove = []
+            for vertex in graph.vertices:
+                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
+            done = len(verticesToRemove) == 0
+            # Remove identified vertices from graph
+            for vertex in verticesToRemove:
+                graph.removeVertex(vertex)
+
+        # Step 2: Remove all other vertices that are not part of cycles
+        verticesToRemove = []
+        for vertex in graph.vertices:
+            found = graph.isVertexInCycle(vertex)
+            if not found:
+                verticesToRemove.append(vertex)
+        # Remove identified vertices from graph
+        for vertex in verticesToRemove:
+            graph.removeVertex(vertex)
+
+        # Step 3: Split graph into remaining subgraphs
+        graphs = graph.split()
+
+        # Step 4: Find ring sets in each subgraph
+        cycleList = []
+
+        for graph in graphs:
+
+            while len(graph.vertices) > 0:
+
+                # Choose root vertex as vertex with smallest number of edges
+                rootVertex = None
+                graph.updateConnectivityValues()
+                for vertex in graph.vertices:
+                    if rootVertex is None:
+                        rootVertex = vertex
+                    elif getVertexConnectivityValue(vertex) > getVertexConnectivityValue(rootVertex):
+                        rootVertex = vertex
+
+                # Get all cycles involving the root vertex
+                cycles = graph.getAllCycles(rootVertex)
+                if len(cycles) == 0:
+                    # This vertex is no longer in a ring, so remove it
+                    graph.removeVertex(rootVertex)
+                    continue
+
+                # Keep the smallest of the cycles found above
+                cycle = cycles[0]
+                for c in cycles:
+                    if len(c) == size: cycleList.append(c)
+
+                # Remove the root vertex to create single edges, note this will not
+                # function properly if there is no vertex with 2 edges (i.e. cubane)
+                graph.removeVertex(rootVertex)
+
+                # Remove from the graph all vertices in the cycle that have only one edge
+                loneCarbon = True
+                while loneCarbon:
+                    loneCarbon = False
+                    verticesToRemove = []
+
+                    for vertex in cycle:
+                        if len(vertex.edges) == 1:
+                            loneCarbon = True
+                            verticesToRemove.append(vertex)
+                    else:
+                        for vertex in verticesToRemove:
+                            graph.removeVertex(vertex)
+
+        # Map atoms in cycles back to atoms in original graph
+        for i in range(len(cycleList)):
+            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
+
+        #remove duplicates if there are more than 2 cycles:
+        if len(cycleList) <2 : return cycleList
+        cycleSetList = [set(cycleList[0])]
+        for cycle1 in cycleList[1:]:
+            set1 = set(cycle1)
+            for set2 in cycleSetList:
+                if set1 == set2:
+                    break
+            #not a duplicate so add it to cycleSetList
+            else: cycleSetList.append(set1)
+
+        #transform back to list of lists:
+        cycleSetList = [list(set1) for set1 in cycleSetList]
+
+        return cycleSetList
+
 
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles):
         """
@@ -699,6 +814,9 @@ cdef class Graph:
         (list) of connected atoms and a list of `cycles` found so far, find any
         cycles involving the chain of atoms and append them to the list of
         cycles. This function recursively calls itself.
+
+        This function returns a duplicate of each cycle because [0,1,2,3]
+        is counted as separate from [0,3,2,1]
         """
         cdef Vertex vertex1, vertex2
         
