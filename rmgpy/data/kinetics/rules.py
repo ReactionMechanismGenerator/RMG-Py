@@ -498,11 +498,11 @@ class KineticsRules(Database):
                 kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
                 
                 if verbose:
-                    kinetics.comment = 'Average of ({0})'.format(
+                    kinetics.comment = 'Average of [{0}]'.format(
                          ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
                 
                 else:
-                    kinetics.comment = 'Average of ({0})'.format(
+                    kinetics.comment = 'Average of [{0}]'.format(
                      ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
 
             else:
@@ -512,9 +512,9 @@ class KineticsRules(Database):
                 # an average.  It just happens that the other distance 1 children had no data.
                 
                 if verbose:
-                    kinetics.comment = 'Average of ({0})'.format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
+                    kinetics.comment = 'Average of [{0}]'.format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
                 else:
-                    kinetics.comment = 'Average of ({0})'.format(';'.join(g.label for g in t))
+                    kinetics.comment = 'Average of [{0}]'.format(';'.join(g.label for g in t))
                 
 
             
@@ -594,7 +594,7 @@ class KineticsRules(Database):
         """
         def getTemplateLabel(template):
             # Get string format of the template in the form "(leaf1,leaf2)"
-            return '({0})'.format(';'.join([g.label for g in template]))
+            return '[{0}]'.format(';'.join([g.label for g in template]))
     
         
         originalLeaves = getTemplateLabel(template)
@@ -639,7 +639,7 @@ class KineticsRules(Database):
                     # Unlike in the case of a single rule, the verbose comments for averaging are lost unless they are 
                     # appended in the following lines.  Verbose comments are filtered out in 
                     # rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics
-                    kinetics.comment = 'Average of ({0})'.format(
+                    kinetics.comment = 'Average of [{0}]'.format(
                          ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
                     kinetics.comment +='\n'
                     # Append standard portion of kinetics comments that appear in non-verbose mode.

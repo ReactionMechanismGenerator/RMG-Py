@@ -264,6 +264,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         """
         family = self.database.kinetics.families[family_name]
         for nodeName, nodeGroup in family.groups.entries.iteritems():
+            nose.tools.assert_false('[' in nodeName or ']' in nodeName, "Group {group} in {family} family contains square brackets [ ] in the label, which are not allowed.".format(group=nodeName, family=family_name))
             ascendParent = nodeGroup
             # Check whether the node has proper parents unless it is the top reactant or product node
             while ascendParent not in family.groups.top and ascendParent not in family.forwardTemplate.products:
@@ -321,6 +322,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
     def kinetics_checkSiblingsForParents(self, family_name):
         """
         This test checks that siblings in a tree are not actually parent/child
+
+        See general_checkSiblingsForParents comments for more detailed description
+        of the test.
         """
         from rmgpy.data.base import Database
         originalFamily = self.database.kinetics.families[family_name]
@@ -333,12 +337,8 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             if node in originalFamily.forwardTemplate.products: continue
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index+1:]:
-                    #Don't check a node against itself
-                    if child1 is child2: continue
                     nose.tools.assert_false(family.matchNodeToChild(child1, child2),
                                             "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child1, child2))
-                    nose.tools.assert_false(family.matchNodeToChild(child2, child1),
-                                            "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child2, child1))
 
     def kinetics_checkAdjlistsNonidentical(self, database):
         """
@@ -493,17 +493,27 @@ The following adjList may have atoms in a different ordering than the input file
 
     def general_checkSiblingsForParents(self, group_name, group):
         """
-        This test checks that siblings in a tree are not actually parent/child
+        This test checks that siblings in a tree are not actually parent/child.
+
+        For example in a tree:
+
+        L1. A
+            L2. B
+            L2. C
+
+        This tests that C is not a child of B, which would make C inaccessible because
+        we always match B first.
+
+        We do not check that B is not a child of C becausethat does not cause accessibility
+        problems and may actually be necessary in some trees. For example, in the polycyclic
+        thermo groups B might be a tricyclic and C a bicyclic parent. Currently there is no
+        way to writes a bicyclic group that excludes an analogous tricyclic.
         """
         for nodeName, node in group.entries.iteritems():
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index+1:]:
-                    #Don't check a node against itself
-                    if child1 is child2: continue
                     nose.tools.assert_false(group.matchNodeToChild(child1, child2),
                                             "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child1, child2))
-                    nose.tools.assert_false(group.matchNodeToChild(child2, child1),
-                                            "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child2, child1))
 
     def general_checkCdAtomType(self, group_name, group):
         """
