@@ -792,6 +792,7 @@ class ThermoDatabase(object):
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
         self.groups['interactionDistance1']   =   ThermoGroups(label='interactionDistance1').load(os.path.join(path, 'interactionDistance1.py'  ), self.local_context, self.global_context)
         self.groups['interactionDistance2']   =   ThermoGroups(label='interactionDistance2').load(os.path.join(path, 'interactionDistance2.py'  ), self.local_context, self.global_context)
+        self.groups['interactionDistance3']   =   ThermoGroups(label='interactionDistance3').load(os.path.join(path, 'interactionDistance3.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -1416,7 +1417,7 @@ class ThermoDatabase(object):
                     logging.error(molecule.toAdjacencyList())
                     raise
                 # Correct for gauche and 1,5- interactions
-                if not cyclic:
+                if molecule.isAtomInCycle(atom) and (atom.atomType.label!='Cb'):
                     for atom_1 in molecule.getFirstNeighbor(atom):
                         try:
                             self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
@@ -1424,6 +1425,10 @@ class ThermoDatabase(object):
                 for atom_2 in molecule.getSecondNeighbor(atom):
                     try:
                         self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
+                    except KeyError: pass
+                for atom_3 in molecule.getThirdNeighbor(atom):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], molecule, {'*1':atom, '*2':atom_3})
                     except KeyError: pass
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
