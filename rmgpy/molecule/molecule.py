@@ -1663,3 +1663,21 @@ class Molecule(Graph):
                     thirdNeighborList.append(atom_1)
         self.clearLabeledAtoms()
         return thirdNeighborList
+
+    def getBaseCb(self, atom):
+        """
+        For an alkyl aromatic molecule/radical, recursivly look for the aromatic carbon corresponding to the 'atom'.
+        It's used for the interaction correction in the thermo calculation of aromatic radical.
+        Currently works good for normal/branched side chain.
+        """
+        atomList = []
+        atom.label = '*'
+        if atom.atomType.label == 'Cb':
+            atomList.append(atom)
+            self.clearLabeledAtoms()
+            return atomList
+        for atoms in self.getFirstNeighbor(atom):
+            if atoms.label != '*':
+                atomList = self.getBaseCb(atoms)
+                if atomList is not None:
+                    return atomList
