@@ -1381,15 +1381,21 @@ class ThermoDatabase(object):
                 baseAtom = saturatedStruct.getBaseCb(atom)[0]
                 for atom_1 in saturatedStruct.getFirstNeighbor(baseAtom):
                     try:
+                        # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':baseAtom, '*2':atom_1})
+                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*2':baseAtom, '*1':atom_1})
                     except KeyError: pass
                 for atom_2 in saturatedStruct.getSecondNeighbor(baseAtom):
                     try:
+                        # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':baseAtom, '*2':atom_2})
+                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*2':baseAtom, '*1':atom_2})
                     except KeyError: pass
                 for atom_3 in saturatedStruct.getThirdNeighbor(baseAtom):
                     try:
+                        # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':baseAtom, '*2':atom_3})
+                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*2':baseAtom, '*1':atom_3})
                     except KeyError: pass
 
         return thermoData
