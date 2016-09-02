@@ -34,7 +34,7 @@ else:
 """
 #####
 
-rxnFamilies = ['H_abstraction'] # Only looking at H_abstraction via OOH
+rxnFamilies = ['H_Abstraction'] # Only looking at H_abstraction via OOH
 
 
 
@@ -76,11 +76,13 @@ for root, dirs, files in os.walk("../RMG-models", topdown=False):
 	if kinetics_file and smiles_file:
 		importer_files.append((smiles_file, kinetics_file))
 	else:
+		"""
 		print root
 		if smiles_file is None:
 			print "Missing SMILES file"
 		if kinetics_file is None:
 			print "Missing kinetics file"
+		"""
 
 
 ############
@@ -88,6 +90,7 @@ for root, dirs, files in os.walk("../RMG-models", topdown=False):
 for entry in importer_files:
 	smiles_file = entry[0]
 	kinetics_file = entry[1]
+	print smiles_file
 
 	known_smiles = {}
 	known_names = []
@@ -158,6 +161,9 @@ for entry in importer_files:
 	reactants = []
 
 	### This is one of the specific things that I changed from Pierre's script. ###
+	### I need to move this part of the script to later... I'm unsure about
+	# where this needs to be moved, but I'll figure it out later. Just at little
+	# too tired at the moment. (9/2)
 	for r in react:
 		if "OOH" in r:
 			reactants.append(r) # Although, I think reactants is a dictionary? Or it's a list of lists? If it's a list of lists, I think this should work.
