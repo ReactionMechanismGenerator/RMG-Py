@@ -8,6 +8,7 @@ import logging
 import re
 import imp
 
+
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
@@ -18,9 +19,9 @@ from rmgpy.data.kinetics import KineticsDepository, KineticsRules
 from rmgpy.qm.main import QMCalculator
 
 
-
 #####
 # /gss_gpfs_scratch/harms.n
+
 
 # This wasn't really specified, but I think this is something required for Discovery
 """
@@ -34,7 +35,9 @@ else:
 #####
 
 rxnFamilies = ['H_abstraction'] # Only looking at H_abstraction via OOH
-"""
+
+
+
 print 'Loading RMG Database ...'
 rmgDatabase = RMGDatabase()
 rmgDatabase.load(os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input')), kineticsFamilies=rxnFamilies) # unsure if this is the right environment
@@ -48,13 +51,18 @@ def calculate(reaction):
 		if files.startswith('core'):
 			os.remove(files)
 	return reaction
-"""
+
+
+
+
+
 #######################
 """
 This section of code is designed to go through each file listed as a SMILES.txt
 and create a dictionary that has the location of the smiles file an identifying
 name to go along with it.
 """
+
 
 importer_files = []
 for root, dirs, files in os.walk("../RMG-models", topdown=False):
@@ -301,9 +309,6 @@ for entry in importer_files:
 		input_string = ','.join(row)
 		with open(os.path.join(folderPath, smiles_dict[entry] + '_kinetics.txt'), 'w') as kinTxt:
 	            kinTxt.write(input_string)
-
-
-
 
 
 """
