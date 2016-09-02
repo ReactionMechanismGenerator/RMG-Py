@@ -6,6 +6,7 @@ import os
 import sys
 import logging
 import re
+import imp
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
@@ -17,9 +18,9 @@ from rmgpy.data.kinetics import KineticsDepository, KineticsRules
 from rmgpy.qm.main import QMCalculator
 
 
-from model_kinetics import info
 
 #####
+# /gss_gpfs_scratch/harms.n
 
 # This wasn't really specified, but I think this is something required for Discovery
 """
@@ -33,7 +34,7 @@ else:
 #####
 
 rxnFamilies = ['H_abstraction'] # Only looking at H_abstraction via OOH
-
+"""
 print 'Loading RMG Database ...'
 rmgDatabase = RMGDatabase()
 rmgDatabase.load(os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input')), kineticsFamilies=rxnFamilies) # unsure if this is the right environment
@@ -47,7 +48,7 @@ def calculate(reaction):
 		if files.startswith('core'):
 			os.remove(files)
 	return reaction
-
+"""
 #######################
 """
 This section of code is designed to go through each file listed as a SMILES.txt
@@ -55,29 +56,30 @@ and create a dictionary that has the location of the smiles file an identifying
 name to go along with it.
 """
 
-SMILES_files = []
+importer_files = []
 for root, dirs, files in os.walk("../RMG-models", topdown=False):
+	smiles_file = None
+	kinetics_file = None
 	for name in files:
 		if str(os.path.join(root,name)).endswith('SMILES.txt'):
-			SMILES_files.append(os.path.join(root,name))
+			smiles_file = os.path.join(root,name)
+		if str(os.path.join(root,name)).endswith('model_kinetics.py'):
+			kinetics_file = os.path.join(root,name)
+	if kinetics_file and smiles_file:
+		importer_files.append((smiles_file, kinetics_file))
+	else:
+		print root
+		if smiles_file is None:
+			print "Missing SMILES file"
+		if kinetics_file is None:
+			print "Missing kinetics file"
 
-smiles_dict = {}
-for name in SMILES_files:
-	try:
-		e,d,c,b,a = name.split('/')
-		smiles_entry = c + "_" + b
-	except ValueError:
-		d,c,b,a = name.split('/')
-		smiles_entry = b
-	smiles_dict[name] = smiles_entry
-
-# print smiles_dict
 
 ############
 
-for entry in SMILES_files:
-	smiles_file = str(entry)
-
+for entry in importer_files:
+	smiles_file = entry[0]
+	kinetics_file = entry[1]
 
 	known_smiles = {}
 	known_names = []
@@ -112,6 +114,13 @@ for entry in SMILES_files:
 	break
 	#####
 	allRxns = []
+
+	#####
+	# This section obtains the info from the appropriate kinetics file. Currently labled "model_kinetics.py".
+	load = imp.load_source('info', kinetics_file)
+	info = load.info
+	#####
+
 	for chemkinRxn in info:
 	    for rFam in chemkinRxn['possibleReactionFamilies']:
 	        if rFam in rxnFamilies:
