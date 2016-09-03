@@ -29,80 +29,6 @@ def nameFromPath(library):
         return os.path.split(library)[0]
 
 
-def readThermoLibs(libraries, root=''):
-
-    # Define local context to allow for loading of the library
-    local_context = {
-            'ThermoData': ThermoData,
-            'Wilhoit': Wilhoit,
-            'NASAPolynomial': NASAPolynomial,
-            'NASA': NASA,
-        }
-      
-    compareDict = {}
-    namesDict = {}
-    for fileName in libraries:
-        # Load the library
-        library = ThermoLibrary(label=nameFromPath(fileName))
-        library.SKIP_DUPLICATES = True
-        library.load(fileName, local_context = local_context)
-        
-        # Iterate through the species in the loaded thermo library to find matches
-        # in the comparison data structure
-        speciesToAdd = []
-        for entry in library.entries:
-            thermo = library.entries[entry].data
-            chemkinMolecule = library.entries[entry].item
-            ##todo: temporary skip!
-            #if 'C' in chemkinMolecule.getFormula():
-            #    continue
-
-            name = library.entries[entry].label
-            
-            # Iterate through the species currently in the comparison dictionary
-            # to find matches of the current chemkinMolecule
-            for species in compareDict:
-                if chemkinMolecule.isIsomorphic(species):
-                    logging.debug('Found isomorphic species {0} in thermo library {1}'.format(species.toSMILES(), library.label))
-                    if library.label in compareDict[species]:
-                        # If the matched species is already in the comparison dictionary, skip it and generate a warning
-                        old_name = namesDict[species][library.label]
-                        logging.warning('Duplicate "{1}" of species "{old}" {0} in library {2}, likely a mismatch or different energy state'.format(species.toSMILES(), entry, library.label, old=old_name))
-                        previous_thermo = compareDict[species][library.label]
-                        if previous_thermo.getEnthalpy(300) < thermo.getEnthalpy(300) :
-                            logging.warning('Using thermo of lower energy version {old} and ignoring subsequent {new}'.format(new=name, old=old_name))
-                            break
-                        else:
-                            logging.warning('Using thermo of lower energy version {new} and dropping initial {old}'.format(new=name, old=old_name))
-                    # Add the matched species to the comparison dictionary
-                    compareDict[species][library.label] = thermo
-                    namesDict[species][library.label] = name
-                    break
-            else:
-                # If the chemkinMolecule did not match any of the species already in the dict,
-                # we will add it later
-                logging.debug('Found NEW species {0} in thermo library {1}'.format(chemkinMolecule.toSMILES(), library.label))
-                speciesToAdd.append((chemkinMolecule, thermo, name))
-        
-        # Add the species which did not match any of the species in the comparison file
-        for species, thermo, name in speciesToAdd:
-            for species2 in compareDict:
-                if species.isIsomorphic(species2):
-                    old_name = namesDict[species2][library.label]
-                    logging.warning('Duplicate "{1}" of species "{old}" {0} in library {2}, likely a mismatch or different energy state'.format(species.toSMILES(), name, library.label, old=old_name))
-                    previous_thermo = compareDict[species2][library.label]
-                    if previous_thermo.getEnthalpy(300) < thermo.getEnthalpy(300) :
-                        logging.warning('Using thermo of lower energy version {old} and ignoring subsequent {new}'.format(new=name, old=old_name))
-                        break
-                    else:
-                        logging.warning('Using thermo of lower energy version {new} and dropping initial {old}'.format(new=name, old=old_name))
-
-            else:
-                compareDict[species] = {library.label: thermo}
-                namesDict[species] = {library.label: name}
-
-    return compareDict, namesDict
-
     
 def readKineticsLibs(libraries, root=''):
     
@@ -231,7 +157,6 @@ def main(args):
             logging.warning('Putting {0} first so its names get used '.format(path))
 
 
-    thermoDict, namesDict = readThermoLibs(thermoLibs)
     kineticsDict = readKineticsLibs(kineticsLibs)
 
     
