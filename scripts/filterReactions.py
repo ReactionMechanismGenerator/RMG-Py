@@ -1,24 +1,13 @@
-# This tool converts all thermo and kinetics library files in the 
-# toCompare folder to the data structures:
-#
-# Kinetics:
-# {reaction1:{model1:rate, model2:rate, ...}, 
-#  reaction2:{model1:rate, model2:rate, ...}, ...}
-#
-# Thermo:
-# {species1:{model1:thermo, model2:thermo, ...}, 
-#  species2:{model1:thermo, model2:thermo, ...}, ...}
-# 
-# These dictionaries are then used to perform statistical analysis on 
-# the group of models.
+"""
+This tool converts all thermo and kinetics library files in the 
+toCompare folder.
+"""
 import re
 import os
 import argparse
 import logging
 import numpy
-from math import log10
-from xlwt import Workbook, Formula
-from xlwt.Utils import rowcol_to_cell
+
 
 import rmgpy
 from rmgpy.thermo import NASA, ThermoData, Wilhoit, NASAPolynomial
@@ -114,29 +103,6 @@ def readThermoLibs(libraries, root=''):
 
     return compareDict, namesDict
 
-def fixKineticsLibrary(fileName):
-    """
-    Fix malformed kinetics files from previous version of the importer script.
-    Should now be deprecated.
-    """
-    stem,ext = os.path.splitext(fileName)
-    fixedFileName = stem+'.fixed'+ext
-    line=''
-    with open(fileName) as incoming:
-        with open(fixedFileName, 'w') as outgoing:
-            entry = []
-            line = ''
-            opening = True
-            for line in incoming:
-                if line.startswith('entry('):
-                    if entry[-2]==')\n' or opening:
-                        outgoing.write(''.join(entry))
-                        opening = False
-                    else:
-                        outgoing.write("#"+"#".join(entry))
-                    entry = []
-                entry.append(line)
-    return fixedFileName
     
 def readKineticsLibs(libraries, root=''):
     
@@ -222,233 +188,7 @@ def readKineticsLibs(libraries, root=''):
         
     return compareDict
 
-def statsThermo(compareDict, namesDict, book, libraries):
-    """
-    Outputs a text file with basic statistics on the thermodynamic data collected
-    """
-    
-    # Adjust this to determine the minimum number of species a model must have to be
-    # in the output file
-    compareLimit = 2
-    temp = 298.15 # Temperature in K
-    
-    def numberModels(species):
-        """
-        Returns the number of models with data for the given species
-        """
-        return len(compareDict[species])
-    
-    # Create a list of all the species sorted by the number of models they are in
-    speciesList = list(compareDict)
-    speciesList.sort(key = numberModels, reverse = True)
-    
-    
-    # Output to the statistics file
-    f = open('thermo.txt', 'w+')
-    f.write('Reaction Model Species Comparison File\n')
-    f.write('The total number of models is {0}\n'.format(len(libraries)))
-    f.write('The temperature is {0} K\n\n'.format(temp))
-    f2 = open('thermo_ranges.txt', 'w')
-    f3 = open('entropy_ranges.txt', 'w')
-    
-    
-    sheet = book.add_sheet('enthalpy')
-    sheet.write(0, 0, 'Reaction Model Comparison File. enthalpy')
-    sheet.write(1, 0, 'The total number of models is {0}'.format(len(libraries)))
-    sheet.write(2, 0, 'The temperature is {0} K'.format(temp))
-    sheet.write(4, 0, 'N')
-    sheet.write(4, 1, 'Species')
-    sheet.write(4, 2, 'Formula')
-    
-    Stemp = 1000
-    entropy_sheet = book.add_sheet('entropy')
-    entropy_sheet.write(0, 0, 'Reaction Model Comparison File. entropy')
-    entropy_sheet.write(1, 0, 'The total number of models is {0}'.format(len(libraries)))
-    entropy_sheet.write(2, 0, 'The temperature is {0} K'.format(Stemp))
-    entropy_sheet.write(4, 0, 'N')
-    entropy_sheet.write(4, 1, 'Species')
-    entropy_sheet.write(4, 2, 'Formula')
 
-    names_sheet = book.add_sheet('names')
-    names_sheet.write(0, 0, 'Reaction Model Comparison File. names')
-    names_sheet.write(1, 0, 'The total number of models is {0}'.format(len(libraries)))
-    names_sheet.write(4, 0, 'N')
-    names_sheet.write(4, 1, 'Species')
-    names_sheet.write(4, 2, 'Formula')
-
-
-    models = {}
-    prefix_columns = 3
-    stats_columns = len(libraries) + prefix_columns + 1
-    for i, library in enumerate(libraries, prefix_columns):
-        model = nameFromPath(library)
-        models[model] = i
-        for s in [sheet, entropy_sheet, names_sheet]:
-            s.write(4, i, model)
-
-    for s in [sheet, entropy_sheet]:
-        s.write(4, stats_columns, 'Mean')
-        s.write(4, stats_columns+1, 'Stdev')
-        s.write(4, stats_columns+2, 'Range')
-        s.write(4, stats_columns+3, 'Median')
-
-    for i, species in enumerate(speciesList, 5):
-        
-        if len(compareDict[species]) < compareLimit: 
-            break
-        
-        f.write(str(species.toSMILES())+'\n')
-        for s in [sheet, names_sheet, entropy_sheet]:
-            s.write(i, 0, numberModels(species))
-            s.write(i, 1, species.toSMILES())
-            s.write(i, 2, species.getFormula())
-        
-        stats = []
-        entropy_stats = []
-        for model in compareDict[species]:
-            f.write(model.ljust(35))
-            thermo = compareDict[species][model].getEnthalpy(temp)
-            entropy = compareDict[species][model].getEntropy(Stemp)
-            f.write(str(round(thermo/1000,3)).rjust(15)+'\n')
-            entropy_sheet.write(i, models[model], entropy)
-            sheet.write(i, models[model], thermo/1000)
-            stats.append(thermo/1000)
-            entropy_stats.append(entropy)
-            names_sheet.write(i, models[model], namesDict[species][model])
-
-        f.write('N{0} | Mean | Std  | Max  | Min\n'.format(' ' if len(compareDict[species])>9 else ''))
-        f.write('{0} | {1:.2f} | {2:.2f} | {3:.2f} | {4:.2f}\n\n\n'.format(len(compareDict[species]),
-                                                                           numpy.mean(stats), numpy.std(stats), 
-                                                                           max(stats), min(stats)))
-                
-        # rowcol_to_cell(row, col, row_abs=False, col_abs=False):
-        first =  rowcol_to_cell(i, 3) # the cell for the first model
-        last =  rowcol_to_cell(i, stats_columns-2, col_abs=False) # the cell for the last model
-        for s in [sheet, entropy_sheet]:
-            s.write(i, stats_columns, Formula('AVERAGE({first}:{last})'.format(first=first, last=last)))
-            s.write(i, stats_columns + 1, Formula('STDEV({first}:{last})'.format(first=first, last=last)))
-            s.write(i, stats_columns + 2, Formula('MAX({first}:{last}) - MIN({first}:{last})'.format(first=first, last=last)))
-            s.write(i, stats_columns + 3, Formula('MEDIAN({first}:{last})'.format(first=first, last=last)))
-                
-        f2.write("{0:.4f}\t{1}\n".format(max(stats)-min(stats),species.toSMILES()))
-        f3.write("{0:.4f}\t{1}\n".format(max(entropy_stats)-min(entropy_stats),species.toSMILES()))
-
-    f.close()
-    f2.close()
-    f3.close()
-
-def statsKinetics(compareDict, book, libraries):
-    """
-    Outputs a text file with basic statistics on the kinetics data collected
-    """
-    
-    # Adjust this to determine the minimum number of species a model must have to be
-    # in the output file
-    compareLimit = 2
-    
-    
-    def numberModels(reaction):
-        """
-        Returns the number of models with data for the given species
-        """
-        return len(compareDict[reaction])
-    
-    # Create a list of all the species sorted by the number of models they are in
-    reactionsList = list(compareDict)
-    reactionsList.sort(key = numberModels, reverse = True)
-    for press in [0.01, 100]:  # Pressure in bar
-      for temp in [500, 1000, 1500, 'AnE']:  # Temperature in K
-        filename = 'kinetics-{0}K-{1}bar.txt'.format(temp, press)
-        sheetname = 'k-{0}K-{1}bar'.format(temp, press)
-        if temp == 'AnE':
-            if press == 100:
-                filename = 'kinetics-expressions.txt'
-                sheetname = 'k-expressions'
-            else:
-                continue
-        rangefilename = filename[:-4]+'-range.txt'
-        f2 = open(rangefilename,'w')
-        # Output to the statistics file
-        f = open(filename, 'w+')
-        f.write('Reaction Model Comparison File\n')
-        f.write('The total number of models is {0}\n'.format(len(libraries)))
-        f.write('The temperature is {0} K'.format(temp))
-        f.write('The pressure is {0} bar'.format(press))
-        f.write('\n\n')
-        
-        sheet = book.add_sheet(sheetname)
-        sheet.write(0, 0, 'Reaction Model Comparison File. {0}'.format(sheetname))
-        sheet.write(1, 0, 'The total number of models is {0}'.format(len(libraries)))
-        sheet.write(2, 0, 'The temperature is {0} K'.format(temp))
-        sheet.write(3, 0, 'The pressure is {0} bar'.format(press))
-        sheet.write(4, 0, 'N')
-        sheet.write(4, 1, 'Reaction')
-        
-        models = {}
-        for i, library in enumerate(libraries, 2):
-            model = nameFromPath(library)
-            sheet.write(4, i, model)
-            models[model] = i
-        stats_columns = len(models) + 3
-        
-        if temp != 'AnE':
-            sheet.write(4, stats_columns, 'Mean')
-            sheet.write(4, stats_columns + 1, 'Stdev')
-            sheet.write(4, stats_columns + 2, 'Range')
-            sheet.write(4, stats_columns + 3, 'Median')
-
-        for i, reaction in enumerate(reactionsList, 5):
-
-            if len(compareDict[reaction]) < compareLimit:
-                break
-
-            sheet.write(i, 0, numberModels(reaction))
-            sheet.write(i, 1, str(reaction))
-            f.write(str(reaction) + '\n')
-
-            stats = []
-            for model in compareDict[reaction]:
-                f.write(model.ljust(35))
-                
-                if temp=='AnE':
-                    rate = repr(compareDict[reaction][model])
-                    rate = rate.decode(errors='replace').encode('ascii', errors='replace')
-                    sheet.write(i, models[model], "'{0}".format(rate))
-                    f.write(rate +'\n')
-                else:
-                    try:
-                        rate = compareDict[reaction][model].getRateCoefficient(temp, press * 1e5)
-                    except:
-                        f.write(" Error evaluating rate\n")
-                        sheet.write(i, models[model], '#ERROR')
-                        continue
-                    if rate <= 0:
-                        f.write(" k={0:g} so can't take log\n".format(rate))
-                        sheet.write(i, models[model], 'LOG10({0:g})'.format(rate))
-                        continue
-                    f.write(str(round(log10(rate), 3)).rjust(15) + '\n')
-                    sheet.write(i, models[model], log10(rate))
-                    stats.append(log10(rate))
-                    
-            if temp=="AnE":
-                f.write('\n\n')
-            else:
-                f.write('N{0} | Mean | Std  | Max  | Min\n'.format(' ' if len(compareDict[reaction])>9 else ''))
-                f.write('{0} | {1:.2f} | {2:.2f} | {3:.2f} | {4:.2f}\n\n\n'.format(len(compareDict[reaction]),
-                                                                                   numpy.mean(stats), numpy.std(stats),
-                                                                                   max(stats), min(stats)))
-                # rowcol_to_cell(row, col, row_abs=False, col_abs=False):
-                first =  rowcol_to_cell(i, 2) # the cell for the first model
-                last =  rowcol_to_cell(i, stats_columns-2, col_abs=False) # the cell for the last model
-                sheet.write(i, stats_columns, Formula('AVERAGE({first}:{last})'.format(first=first, last=last)))
-                sheet.write(i, stats_columns + 1, Formula('STDEV({first}:{last})'.format(first=first, last=last)))
-                sheet.write(i, stats_columns + 2, Formula('MAX({first}:{last}) - MIN({first}:{last})'.format(first=first, last=last)))
-                sheet.write(i, stats_columns + 3, Formula('MEDIAN({first}:{last})'.format(first=first, last=last)))
-            
-            if temp!="AnE":
-                f2.write("{0:.4f}\t{1}\n".format(max(stats)-min(stats),str(reaction)))
-        f.close()
-        f2.close()
 
 def findLibraryFiles(path):
     thermoLibs = []
@@ -491,13 +231,9 @@ def main(args):
             logging.warning('Putting {0} first so its names get used '.format(path))
 
 
-    book = Workbook()
     thermoDict, namesDict = readThermoLibs(thermoLibs)
     kineticsDict = readKineticsLibs(kineticsLibs)
-    statsThermo(thermoDict, namesDict, book, thermoLibs)
-    statsKinetics(kineticsDict, book, kineticsLibs)
-    
-    book.save('output.xls')
+
     
     print 'Finished'
 
