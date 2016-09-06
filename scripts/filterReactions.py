@@ -1,13 +1,15 @@
 """
-This tool converts all thermo and kinetics library files in the 
-toCompare folder.
+This tool loads all the kinetics library files that can be 
+found in the path given in the command line argument.
+It finds reactions that are XH + .OOH <=> X. + H2O2
+and saves them in a big dictionary of dictionaries
+in a pickle file and python file both called kineticsDict.
 """
 import re
 import os
 import argparse
 import logging
 import numpy
-
 
 import rmgpy
 from rmgpy.thermo import NASA, ThermoData, Wilhoit, NASAPolynomial
@@ -18,6 +20,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.thermo import ThermoLibrary
 from __builtin__ import True
+from copy import deepcopy
 
 
 name_path_re = re.compile('\.*\/?(.+?)\/RMG-Py-.*-library.*')
@@ -52,7 +55,7 @@ def readKineticsLibs(libraries, root=''):
         # Load the library
         logging.info("Loading reaction library {0}".format(fileName))
         library = KineticsLibrary(label=nameFromPath(fileName))
-        library.ALLOW_UNMARKED_DUPLICATES = True
+        library.ALLOW_UNMARKED_DUPLICATES = True  # not sure this does anything yet
         try:
             # fileName = fixKineticsLibrary(fileName)
             library.load(fileName, local_context=local_context)
@@ -69,14 +72,40 @@ def readKineticsLibs(libraries, root=''):
         for entry in library.entries:
             kinetics = library.entries[entry].data
             chemkinReaction = library.entries[entry].item
-            
-            #containsCarbon = False
-            #for species in chemkinReaction.reactants:
-            #    if 'C' in species.molecule[0].getFormula():
-            #        containsCarbon = True
-            #        break
-            #if containsCarbon:
-            #    continue  # to next library entry
+
+            for direction, reactants, products in (('forward', chemkinReaction.reactants, chemkinReaction.products),
+                                        ('reverse', chemkinReaction.products, chemkinReaction.reactants)):
+                for species in reactants:
+                    if species.molecule[0].getFormula() == 'HO2':
+                        break
+                else:  # didn't break out of the 'for species in reactants' loop, because no HO2 found
+                    continue  # to the other direction or finish
+                # didn't continue, so did find an HO2
+                for species in products:
+                    if species.molecule[0].getFormula() == 'H2O2':
+                        break
+                else:  # didn't break out of the 'for species in products' loop, because no H2O2 found
+                    continue  # to the other direction or finish
+                # didn't continue, so did find an H2O2
+                # At this point OOH should be in the reactants and H2O2 should be in the products.
+                if direction == 'reverse':
+                    originalKinetics = deepcopy(kinetics)
+                    originalKinetics.comment = ""
+                    chemkinReaction.kinetics = kinetics  # we'll remove it soon
+                    # We need to read in the thermo library in order to do this:
+                    # kinetics = chemkinReaction.generateReverseRateCoefficient()
+                    # so instead we'll do this:
+                    kinetics.comment += "KINETICS IN REVERSE DIRECTION"
+                    logging.warning("Kinetics in reverse direction: {}".format(chemkinReaction))
+                    #
+                    chemkinReaction.reactants = products
+                    chemkinReaction.products = reactants
+                    kinetics.comment += "\nRate was originally provided in reverse direction:\n {0!r}".format(originalKinetics)
+                    chemkinReaction.kinetics = None
+                break
+            else:  # didn't break, thus not a desired reaction
+                continue  # to next reaction
+
             
             # If the comparison dictionary is empty, add the reaction and skip the rest of the loop
             if not compareDict:
@@ -90,7 +119,7 @@ def readKineticsLibs(libraries, root=''):
                         # If the matched reaction from this library is already in the comparison dictionary, skip it and generate a warning
                         logging.warning("Skipping duplicate of reaction {0}, {1} in library {2}".format(reaction, 
                                                                                                         entry, library.label))
-                        compareDict[reaction][library.label].comment = "WARNING: ignored a duplicate reaction! " + compareDict[reaction][library.label].comment
+                        compareDict[reaction][library.label].comment += "WARNING: ignored a duplicate reaction! " + compareDict[reaction][library.label].comment
                         break
                     # Add the matched reaction to the comparison dictionary
                     logging.debug('Found matching reaction {0} in kinetics library {1}'.format(reaction, library.label))
@@ -158,8 +187,19 @@ def main(args):
 
 
     kineticsDict = readKineticsLibs(kineticsLibs)
-
     
+    # Save the results. The pickle file is most useful for other scripts.
+    import cPickle as pickle
+    with open('kineticsDict.pkl', 'wb') as f:
+        pickle.dump(kineticsDict, f)
+
+    # The .py text-file is more human readable to help debugging etc.
+    s = "kineticsDict = {0!r}".format(kineticsDict)
+    from rmgpy.cantherm.output import prettify
+    s = prettify(s)  # this just makes nice linebreaks, indentation etc
+    with open('kineticsDict.py', 'w') as f:
+        f.write(s)
+
     print 'Finished'
 
 
