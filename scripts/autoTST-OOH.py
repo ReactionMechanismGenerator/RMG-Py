@@ -8,6 +8,7 @@ import logging
 import re
 import imp
 import itertools
+import cPickle as pickle
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
@@ -19,21 +20,15 @@ from rmgpy.data.kinetics import KineticsDepository, KineticsRules
 from rmgpy.qm.main import QMCalculator
 
 
-#####
-# /gss_gpfs_scratch/harms.n
-
-
-# This wasn't really specified, but I think this is something required for Discovery
-"""
 if len(sys.argv)>1:
     i = int(sys.argv[-1])
-elif os.getenv('LSB_JOBINDEX'):
+elif os.getenv('LSB_JOBINDEX'):  # this needs updating for SLURM
     i = int(os.getenv('LSB_JOBINDEX'))
 else:
-    raise Exception("Specify a TS number!")
-"""
-i = 1
-#####
+    #raise Exception("Specify a TS number!")
+    print("Number not specified as script argument or via environment variable, so using default")
+    i = 1
+print "RUNNING WITH JOB NUMBER i = {}".format(i)
 
 rxnFamilies = ['H_Abstraction']  # Only looking at H_abstraction via OOH
 
@@ -54,17 +49,8 @@ def calculate(reaction):
     return reaction
 
 
-import cPickle as pickle
-with open('kineticsDict.pkl', 'rb') as f:
-    kineticsDict = pickle.load(f)
-print "Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict))
 
-allRxns = sorted(kineticsDict.keys(), key=repr)  # somewhat arbitrary sort order, but should at least be consistent across runs.
-
-for i in [1]:
-    chemkinRxn = allRxns[i - 1]
-
-##################################################################
+def makeComparison(chemkinRxn):
 
     print "chemkinRxn: {!r}".format(chemkinRxn)
     # Ensure all resonance isomers have been generated
@@ -222,6 +208,19 @@ for i in [1]:
         input_string = ','.join(row)
         with open(os.path.join(folderPath, smiles_dict[entry] + '_kinetics.txt'), 'w') as kinTxt:
                 kinTxt.write(input_string)
+
+
+
+
+with open('kineticsDict.pkl', 'rb') as f:
+    kineticsDict = pickle.load(f)
+print "Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict))
+
+allRxns = sorted(kineticsDict.keys(), key=repr)  # somewhat arbitrary sort order, but should at least be consistent across runs.
+chemkinRxn = allRxns[i - 1]
+makeComparison(chemkinRxn)
+
+
 
 
 """
