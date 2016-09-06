@@ -380,7 +380,12 @@ class RMG(util.Subject):
             logging.info("Setting solvent data for {0}".format(self.solvent.solventName))
             # Check whether the solvent's molecular structure matches the one found in the solvent database
             self.database.solvation.checkSolventStructure(self.solvent)
-
+            # For the solvents that are available in CoolProp, check the reaction temperature(s)
+            # does not exceed the critical temperature of the solvent. Otherwise, CoolProp will crash
+            if self.solvent.solventData.inCoolProp:
+                Tc = self.database.solvation.getSolventTc(self.solvent.solventData.nameinCoolProp) # critical temp. in K
+                for reactionSystem in self.reactionSystems:
+                    assert (reactionSystem.T.value_si < Tc), "The reaction temperature ({0} K) is above the critical temperature ({1} K) of the solvent {2}.".format(reactionSystem.T.value_si, Tc, self.solvent.solventName)
 
         data = self.wallTime.split(':')
         self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
