@@ -143,18 +143,18 @@ block:</p>
 </tbody>
 </table>
 <p>The <code class="docutils literal"><span class="pre">label</span></code> parameter should be set to a string with the desired user name for the species.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;nButanol&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;nButanol&#39;</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">structure</span></code> parameter is defined by either SMILES or InChI.  For instance, either representation is
 acceptable for the acetone molecule:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC(C)=O&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC(C)=O&#39;</span><span class="p">)</span>
 
 <span class="n">structure</span> <span class="o">=</span> <span class="n">InChI</span><span class="p">(</span><span class="s1">&#39;InChI=1S/C3H6O/c1-3(2)4/h1-2H3&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">E0</span></code> ground state energy should be given in the quantity format <code class="docutils literal"><span class="pre">(value,</span> <span class="pre">'units')</span></code>, using units of either <code class="docutils literal"><span class="pre">kJ/mol</span></code>, <code class="docutils literal"><span class="pre">kcal/mol</span></code>, <code class="docutils literal"><span class="pre">J/mol</span></code>, or <code class="docutils literal"><span class="pre">cal/mol</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <cite>modes</cite> parameter is required for all unimolecular isomers and all
@@ -240,24 +240,24 @@ degrees of freedom, please click on the links below:</p>
 </table>
 <p>The <code class="docutils literal"><span class="pre">spinMultiplicity</span></code> is defined using an integer, and is set to 1 if not indicated
 in the <code class="docutils literal"><span class="pre">species</span></code> block.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">2</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">2</span>
 </pre></div>
 </div>
 <p>Similarly, the <code class="docutils literal"><span class="pre">opticalIsomers</span></code> is also defined using an integer, and is set to 1
 if not used in the <code class="docutils literal"><span class="pre">species</span></code> block.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">6</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">6</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">molecularWeight</span></code> parameter should be defined in the quantity format <code class="docutils literal"><span class="pre">(value,</span> <span class="pre">'units')</span></code>
 , for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">44.04</span><span class="p">,</span> <span class="s1">&#39;g/mol&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">44.04</span><span class="p">,</span> <span class="s1">&#39;g/mol&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If the <code class="docutils literal"><span class="pre">molecularWeight</span></code> parameter is not given, it is calculated by CanTherm based
 off the chemical structure.</p>
 <p>The <code class="docutils literal"><span class="pre">collisionModel</span></code> is defined with the transport data, if available, using a
 <code class="docutils literal"><span class="pre">TransportData</span></code> object:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">3.70</span><span class="p">,</span><span class="s1">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mf">94.9</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">3.70</span><span class="p">,</span><span class="s1">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mf">94.9</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">energyTransferModel</span></code> model available is a <code class="docutils literal"><span class="pre">SingleExponentialDown</span></code>.</p>
@@ -269,7 +269,7 @@ average energy transferred in a deactiving collision</p>
 </li>
 </ul>
 <p>An example of a typical <code class="docutils literal"><span class="pre">energyTransferModel</span></code> block is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">energyTransferModel</span> <span class="o">=</span> <span class="n">SingleExponentialDown</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">energyTransferModel</span> <span class="o">=</span> <span class="n">SingleExponentialDown</span><span class="p">(</span>
         <span class="n">alpha0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5718</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
         <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
         <span class="n">n</span> <span class="o">=</span> <span class="mf">0.85</span><span class="p">,</span>
@@ -278,7 +278,7 @@ average energy transferred in a deactiving collision</p>
 </div>
 <p>The following is an example of a typical species item, based on the acetylperoxy
 radical <span class="math">\(\ce{CH3C(=O)OO.}\)</span>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;acetylperoxy&#39;</span><span class="p">,</span>
     <span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC(=O)O[O]&#39;</span><span class="p">),</span>
     <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
@@ -338,7 +338,7 @@ using a <code class="docutils literal"><span class="pre">transitionState</span><
 </tbody>
 </table>
 <p>An example of a <code class="docutils literal"><span class="pre">transitionState</span></code> block is shown below.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">transitionState</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">transitionState</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;isom1&#39;</span><span class="p">,</span>
     <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5.8</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
     <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span>
@@ -398,7 +398,7 @@ parameters are available:</p>
 </tbody>
 </table>
 <p>A typical reaction block might look like this.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">reaction</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">reaction</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;isom1&#39;</span><span class="p">,</span>
     <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acetylperoxy&#39;</span><span class="p">],</span>
     <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hydroperoxylvinoxy&#39;</span><span class="p">],</span>
@@ -452,7 +452,7 @@ input file.</p>
 <p>You do not need to specify the product channels (infinite sinks) in this
 manner, as any configuration not marked as an isomer or reactant channel will
 be treated as a product channel. An example of the <code class="docutils literal"><span class="pre">network</span></code> block is shown below.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">network</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">network</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;acetyl + O2&#39;</span><span class="p">,</span>
     <span class="n">isomers</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;acetylperoxy&#39;</span><span class="p">,</span>
@@ -511,7 +511,7 @@ interpolation model you wish to fit. This is the recommended approach.</p>
 Determine the fineness of the energy grains to be used in the master equation calculations.  Dictate
 the <code class="docutils literal"><span class="pre">maximumGrainSize</span></code>, and the <code class="docutils literal"><span class="pre">minimumGrainCount</span></code>.</p>
 <p>An example of the algorithm parameters block for the acetyl + O2 network is shown below.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">pressureDependence</span><span class="p">(</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;acetyl + O2&#39;</span><span class="p">,</span>
     <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">300.0</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
     <span class="n">Pmin</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pmax</span><span class="o">=</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pcount</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
@@ -590,23 +590,15 @@ and <cite>n-butanol</cite> example.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -614,15 +606,15 @@ and <cite>n-butanol</cite> example.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -630,7 +622,7 @@ and <cite>n-butanol</cite> example.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -639,14 +631,14 @@ and <cite>n-butanol</cite> example.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -659,7 +651,7 @@ and <cite>n-butanol</cite> example.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

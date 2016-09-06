@@ -72,13 +72,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="running-cantherm">
 <h1>5. Running CanTherm<a class="headerlink" href="#running-cantherm" title="Permalink to this headline">¶</a></h1>
 <p>To execute a CanTherm job, invoke the command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python cantherm.py FILE
+<div class="highlight-default"><div class="highlight"><pre>$ python cantherm.py FILE
 </pre></div>
 </div>
 <p>The job will run and the results will be saved to <code class="docutils literal"><span class="pre">output.py</span></code> in the same
 directory as the input file. If you wish to save the output elsewhere, use
 the <code class="docutils literal"><span class="pre">-o</span></code>/<code class="docutils literal"><span class="pre">--output</span></code> option, e.g.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python cantherm.py INPUTFILE -o OUTPUTFILE
+<div class="highlight-default"><div class="highlight"><pre>$ python cantherm.py INPUTFILE -o OUTPUTFILE
 </pre></div>
 </div>
 <div class="section" id="drawing-potential-energy-surface">
@@ -98,7 +98,7 @@ to decrease; the latter causes it to increase.</p>
 <h2>5.3. Help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
 <p>To view help information and all available options, use the <code class="docutils literal"><span class="pre">-h</span></code>/<code class="docutils literal"><span class="pre">--help</span></code>
 flag, e.g.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python cantherm.py -h
+<div class="highlight-default"><div class="highlight"><pre>$ python cantherm.py -h
 </pre></div>
 </div>
 </div>
@@ -153,23 +153,15 @@ flag, e.g.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -177,15 +169,15 @@ flag, e.g.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -193,7 +185,7 @@ flag, e.g.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -202,14 +194,14 @@ flag, e.g.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -222,7 +214,7 @@ flag, e.g.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

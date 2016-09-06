@@ -136,6 +136,14 @@ are:</p>
 abstraction and intramolecular hydrogen migration); for these
 <cite>reverseTemplate</cite> and <cite>reverseRecipe</cite> will both be <code class="docutils literal"><span class="pre">None</span></code>.</p>
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.addAtomLabelsForReaction">
+<code class="descname">addAtomLabelsForReaction</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addAtomLabelsForReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply atom labels on a reaction using the appropriate atom labels from this this reaction family.  
+The reaction&#8217;s reactants and products must be lists of Molecule objects.
+The reaction is modified to use Species objects containing the labeled molecules after this function.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet">
 <code class="descname">addKineticsRulesFromTrainingSet</code><span class="sig-paren">(</span><em>thermoDatabase=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each reaction involving real reactants and products in the training
@@ -205,9 +213,38 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments">
+<code class="descname">extractSourceFromComments</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the rate rule associated with the kinetics of a reaction by parsing the comments.
+Will return the template associated with the matched rate rule.
+Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)</p>
+<p>For a training reaction, the Source_Data returns 
+[Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]</p>
+<p>For a reaction from rate rules, the Source_Data is a tuple containing
+[Family_Label, {&#8216;template&#8217;: originalTemplate,</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/Nate/code/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 10)</p>
+Unexpected indentation.</div>
+<blockquote>
+<div>&#8216;degeneracy&#8217;: degeneracy, 
+&#8216;exact&#8217;: boolean_exact?, 
+&#8216;rules&#8217;: a list of (original rate rule entry, weight in average)
+&#8216;training&#8217;: a list of (original rate rule entry associated with training entry, original training entry, weight in average)
+}]</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/Nate/code/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 15)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<p>where TrainingReactions are ones that have created rules used in the estimate.</p>
+<p>where Exact is a boolean of whether the rate is an exact match, 
+Template is the reaction template used,
+and RateRules is a list of the rate rule entries containing the kinetics used</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.fillKineticsRulesByAveragingUp">
-<code class="descname">fillKineticsRulesByAveragingUp</code><span class="sig-paren">(</span><em>rootTemplate=None</em>, <em>alreadyDone=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.fillKineticsRulesByAveragingUp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fill in gaps in the kinetics rate rules by averaging child nodes.</p>
+<code class="descname">fillKineticsRulesByAveragingUp</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.fillKineticsRulesByAveragingUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill in gaps in the kinetics rate rules by averaging child nodes
+recursively starting from the top level root template.</p>
 </dd></dl>
 
 <dl class="method">
@@ -327,9 +364,28 @@ R_Recombination).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getSourcesForTemplate">
+<code class="descname">getSourcesForTemplate</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getSourcesForTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the set of rate rules and training reactions used to average this <cite>template</cite>.  Note that the tree must be
+averaged with verbose=True for this to work.</p>
+<p>Returns a tuple of
+rules, training</p>
+<p>where rules are a list of tuples containing 
+the [(original_entry, weight_used_in_average), ... ]</p>
+<p>and training is a list of tuples containing
+the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),...]</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getSpecies">
 <code class="descname">getSpecies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getTrainingDepository">
+<code class="descname">getTrainingDepository</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getTrainingDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <cite>training</cite> depository from self.depositories</p>
 </dd></dl>
 
 <dl class="method">
@@ -485,6 +541,16 @@ it must also update the parent/child relationships</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.retrieveOriginalEntry">
+<code class="descname">retrieveOriginalEntry</code><span class="sig-paren">(</span><em>templateLabel</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieveOriginalEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the original entry, be it a rule or training reaction, given
+the template label in the form &#8216;group1;group2&#8217; or &#8216;group1;group2;group3&#8217;</p>
+<p>Returns tuple in the form
+(RateRuleEntry, TrainingReactionEntry)</p>
+<p>Where the TrainingReactionEntry is only present if it comes from a training reaction</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.retrieveTemplate">
 <code class="descname">retrieveTemplate</code><span class="sig-paren">(</span><em>templateLabels</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieveTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reconstruct the groups associated with the 
@@ -610,23 +676,15 @@ for those reactions.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -634,15 +692,15 @@ for those reactions.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -650,7 +708,7 @@ for those reactions.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -659,14 +717,14 @@ for those reactions.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -679,7 +737,7 @@ for those reactions.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

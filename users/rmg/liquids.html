@@ -72,13 +72,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="liquid-phase-systems">
 <span id="liquids"></span><h1>14. Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
 <p>To simulate liquids in RMG requires a module in your input file for liquid-phase:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">solvation</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">solvation</span><span class="p">(</span>
     <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Your reaction system will also be different (liquidReactor rather than simpleReactor):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">liquidReactor</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">liquidReactor</span><span class="p">(</span>
     <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
         <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
@@ -245,15 +245,15 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <div class="section" id="example-liquid-phase-input-file-no-constant-species">
 <span id="exampleliquidphase"></span><h2>14.4. Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 217)</p>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/Nate/code/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 217)</p>
 <p>Title underline too short.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="n">no</span> <span class="n">constant</span> <span class="n">species</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="n">no</span> <span class="n">constant</span> <span class="n">species</span>
 <span class="o">===============================</span>
 </pre></div>
 </div>
 </div>
 <p>This is an example of an input file for a liquid-phase system:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
     <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
@@ -315,15 +315,15 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <div class="section" id="example-liquid-phase-input-file-with-constant-species">
 <h2>14.5. Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/rwest/Code/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 278)</p>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/Nate/code/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 278)</p>
 <p>Title underline too short.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="k">with</span> <span class="n">constant</span> <span class="n">species</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="k">with</span> <span class="n">constant</span> <span class="n">species</span>
 <span class="o">===============================</span>
 </pre></div>
 </div>
 </div>
 <p>This is an example of an input file for a liquid-phase system with constant species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
     <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
@@ -526,23 +526,15 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -550,15 +542,15 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -566,7 +558,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -575,14 +567,14 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -595,7 +587,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

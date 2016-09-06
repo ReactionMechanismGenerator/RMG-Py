@@ -131,28 +131,15 @@ resonance isomers have already been generated.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateStatMech">
-<code class="descname">generateStatMech</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateStatMech" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateStatMech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateStatMech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate molecular degree of freedom data for the species. You must
 have already provided a thermodynamics model using e.g.
 <code class="xref py py-meth docutils literal"><span class="pre">generateThermoData()</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.Species.generateThermoData">
-<code class="descname">generateThermoData</code><span class="sig-paren">(</span><em>database</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em>, <em>quantumMechanics=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates thermo data, first checking Libraries, then using either QM or Database.</p>
-<p>If quantumMechanics is not None, it is asked to calculate the thermo.
-Failing that, the database is used.</p>
-<p>The database generates the thermo data for each structure (resonance isomer),
-picks that with lowest H298 value.</p>
-<p>It then calls <code class="xref py py-meth docutils literal"><span class="pre">processThermoData()</span></code>, to convert (via Wilhoit) to NASA
-and set the E0.</p>
-<p>Result stored in <cite>self.thermo</cite> and returned.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateTransportData">
-<code class="descname">generateTransportData</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateTransportData" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateTransportData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateTransportData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the transportData parameters for the species.</p>
 </dd></dl>
 
@@ -215,10 +202,21 @@ requires additional calculateSymmetryNumber calls.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getThermoData">
-<code class="descname">getThermoData</code><span class="sig-paren">(</span><em>database</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em>, <em>quantumMechanics=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <cite>thermoData</cite> object of the current Species object.</p>
-<p>Returns the stored <cite>thermoData</cite> object if it is found,
-generates a new <cite>thermoData</cite> object if it not found.</p>
+<p>If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
+type, or it is a Future.</p>
+<p>If the type of the thermo attribute is Wilhoit, or ThermoData,
+then it is converted into a NASA format.</p>
+<p>If it is a Future, then a blocking call is made to retrieve the NASA object.
+If the thermo object did not exist yet, the thermo object is generated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.getTransportData">
+<code class="descname">getTransportData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getTransportData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the transport data associated with this species, and
+calculates it if it is not yet available.</p>
 </dd></dl>
 
 <dl class="method">
@@ -240,13 +238,6 @@ or <code class="docutils literal"><span class="pre">False</span></code> otherwis
 <code class="descname">isIsomorphic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the species is isomorphic to <cite>other</cite>, which can be
 either a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object or a <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.Species.processThermoData">
-<code class="descname">processThermoData</code><span class="sig-paren">(</span><em>database</em>, <em>thermo0</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.processThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts via Wilhoit into required <cite>thermoClass</cite> and sets <cite>E0</cite>.</p>
-<p>Resulting thermo is stored (<cite>self.thermo</cite>) and returned.</p>
 </dd></dl>
 
 <dl class="method">
@@ -311,23 +302,15 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -335,15 +318,15 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -351,7 +334,7 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -360,14 +343,14 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -380,7 +363,7 @@ with the appropriate thermo data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

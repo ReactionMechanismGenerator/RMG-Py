@@ -344,6 +344,14 @@ of decreasing reliability are:
 #. Node template exact match using either training set or rules
 #. Node template estimate averaged from children nodes
 
+Both training sets and reaction libraries use the observed rate, but rules must
+first be divided by the degeneracy of the reaction. For example, the reaction
+CH4 + OH --> H2O + CH3 has a reaction degeneracy of 4. If one performed an
+experiment or obtained this reaction rate using Cantherm (applying the correct 
+symmetry), the resultant rate parameters would be entered into libraries and
+training sets unmodified. However a kinetic rule created for this reaction must
+have its A-factor divided by 4 before being entered into the database. 
+
 The reaction match from training set is accurate within the documented uncertainty for that
 reaction. A template exact match is usually accurate within about one order
 of magnitude. When there is no kinetics available for for the template in

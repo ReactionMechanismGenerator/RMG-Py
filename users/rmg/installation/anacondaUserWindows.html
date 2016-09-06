@@ -78,17 +78,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <img alt="../../../_images/AnacondaInstallWindows.png" class="align-center" src="../../../_images/AnacondaInstallWindows.png" />
 <ul>
 <li><p class="first">Now we want to install both RMG and the RMG-database binaries via the command prompt.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for <code class="docutils literal"><span class="pre">cmd.exe</span></code>) and type the following to create the new environment named &#8216;rmg_env&#8217; containing the latest stable version of the RMG program and its database.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_env</span> <span class="n">rmg</span> <span class="n">rmgdatabase</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_env</span> <span class="n">rmg</span> <span class="n">rmgdatabase</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Whenever you wish to use it you must first activate the environment in the command prompt by typing:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">activate</span> <span class="n">rmg_env</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">activate</span> <span class="n">rmg_env</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Optional: If you wish to use the <a class="reference internal" href="../thermo.html#qm"><span class="std std-ref">QMTP interface</span></a> with <a class="reference external" href="http://openmopac.net/">MOPAC</a> to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the <a class="reference external" href="http://openmopac.net/form.php">MOPAC License Request Form</a>.Once you have it, type the following into your command prompt (while the environment is activated)</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mopac</span> <span class="n">password_string_here</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">mopac</span> <span class="n">password_string_here</span>
 </pre></div>
 </div>
 </li>
@@ -97,7 +97,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <li><p class="first">If you set any new environment variables, you must now close and reopen the command prompt so that those environment variables can be refreshed and used.</p>
 </li>
 <li><p class="first">You may now run an RMG test job. Save the <a class="reference external" href="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py">Minimal Example Input File</a> to a local directory.  Use the command prompt to run your RMG job inside that folder by using the following command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">activate</span> <span class="n">rmg_env</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">activate</span> <span class="n">rmg_env</span>
 <span class="n">python</span> <span class="o">%</span><span class="n">RMGPy</span><span class="o">%</span>\<span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -108,7 +108,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>4.1.2.1. Updating your binary installation of RMG for Windows<a class="headerlink" href="#updating-your-binary-installation-of-rmg-for-windows" title="Permalink to this headline">¶</a></h2>
 <p>If you had previously installed a binary version of the RMG package, you may
 check and update your installation to the latest stable version available on Anaconda by typing the following command in a Command Prompt</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">rmg_env</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">source</span> <span class="n">activate</span> <span class="n">rmg_env</span>
 <span class="n">conda</span> <span class="n">update</span> <span class="n">rmg</span> <span class="n">rmgdatabase</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span>
 </pre></div>
 </div>
@@ -162,23 +162,15 @@ check and update your installation to the latest stable version available on Ana
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -186,15 +178,15 @@ check and update your installation to the latest stable version available on Ana
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -202,7 +194,7 @@ check and update your installation to the latest stable version available on Ana
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -211,14 +203,14 @@ check and update your installation to the latest stable version available on Ana
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -231,7 +223,7 @@ check and update your installation to the latest stable version available on Ana
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

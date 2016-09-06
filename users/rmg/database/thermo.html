@@ -87,7 +87,7 @@ extrapolation of the heat capacity data as a function of temperature.</p>
 <span id="thermolibrarytype"></span><h3>11.2.1.1. Library types<a class="headerlink" href="#library-types" title="Permalink to this headline">¶</a></h3>
 <p>Two types of thermo libraries are available in RMG: &#8220;gas phase&#8221; and &#8220;liquid thermo&#8221; libraries respectively identified thanks to the absence or presence of the keyword
 <cite>solvent = &#8220;solvent_name&#8221;</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;example_liquid_thermo_library&quot;</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;example_liquid_thermo_library&quot;</span>
 <span class="n">solvent</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span>
 <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;test&quot;</span>
 <span class="n">longDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;</span>
@@ -109,7 +109,7 @@ RMG will also raise an error if user try to use liquid phase thermo library in g
 species thermochemistry libraries. Each particularly library is stored in a file
 with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 <p>An example of a species thermochemistry entry is shown here below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H2&quot;</span><span class="p">,</span>
     <span class="n">molecule</span> <span class="o">=</span>
@@ -180,7 +180,7 @@ with the extension .py, e.g. &#8216;groups.py&#8217;:</p>
 </table>
 <p>Like many other entities in RMG, the database of each type of group contribution
 is organized in a hierarchical tree, and is defined at the bottom of the database file. E.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">tree</span><span class="p">(</span>
 <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">L1: R</span>
 <span class="s2">    L2: C</span>
@@ -204,7 +204,7 @@ is organized in a hierarchical tree, and is defined at the bottom of the databas
 <div class="section" id="group-additive-values-gav">
 <h3>11.2.2.1. Group additive values (GAV)<a class="headerlink" href="#group-additive-values-gav" title="Permalink to this headline">¶</a></h3>
 <p>An example of a GAV entry in group.py is shown here below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cbf-CbCbCbf&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
@@ -238,7 +238,7 @@ specification. A short description &#8216;shortDesc&#8217; specifies the origin 
 <p>RMG distinguishes between monocyclic and polycyclic ring correction databases.</p>
 <p>Monocyclic RSCs are used for molecules that contain one single ring.
 An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cyclopropane&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
@@ -265,7 +265,7 @@ An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
 strain correction may be more adequate. RMG identifies molecules with fused ring systems and subsequently
 searches through polycyclic.py to identify an adequate RSC.</p>
 <p>An example of a  polycyclic RSC entry in polycyclic.py is shown here below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;norbornane&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
@@ -296,7 +296,7 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <div class="section" id="hydrogen-bond-increments-hbi">
 <h3>11.2.2.3. Hydrogen Bond Increments (HBI)<a class="headerlink" href="#hydrogen-bond-increments-hbi" title="Permalink to this headline">¶</a></h3>
 <p>An example of a HBI entry in radical.py is shown here below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CH3&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
@@ -327,7 +327,7 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 number include entropy or heat capacity corrections. The database other.py contains
 cis-, ortho- and ketene-corrections.</p>
 <p>An example of a NNI entry in gauche.py is shown here below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cs(Cs(CsCsR)Cs(CsCsR)RR)&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
@@ -420,23 +420,15 @@ cis-, ortho- and ketene-corrections.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -444,15 +436,15 @@ cis-, ortho- and ketene-corrections.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -460,7 +452,7 @@ cis-, ortho- and ketene-corrections.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -469,14 +461,14 @@ cis-, ortho- and ketene-corrections.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -489,7 +481,7 @@ cis-, ortho- and ketene-corrections.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

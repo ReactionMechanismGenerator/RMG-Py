@@ -83,7 +83,7 @@ more information on adjacency lists, see the <a class="reference internal" href=
 <p>Species objects in the input file can also be constructed using other common representations
 such as SMILES, SMARTS, and InChIs.  The following can all be used to represent the methane
 species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
@@ -92,7 +92,7 @@ species:</p>
 </div>
 <p>Replacing the structure with any of the following representations will also produce
 the same species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;</span>
 <span class="mi">1</span> <span class="n">C</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
@@ -117,7 +117,7 @@ molecular oxygen. The ground electronic state of molecular oxygen,
 <span class="math">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
 bond and two lone electrons. In RMG&#8217;s adjaceny list notation the ground state
 of oxygen is represented as</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="mi">1</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -125,7 +125,7 @@ of oxygen is represented as</p>
 your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
 more stable than the first singlet excited state, <span class="math">\(^1\Delta_g\)</span>, which
 does contain a double bond. The adjacency list for singlet oxygen is</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="mi">1</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -147,7 +147,7 @@ reactions of singlet oxygen have been included in RMG.</p>
 <p>In order to allow the singlet form of O2 to be used in RMG, please allow it explicitly by
 setting <code class="docutils literal"><span class="pre">allowSingletO2</span></code> to <code class="docutils literal"><span class="pre">True</span></code> in the <code class="docutils literal"><span class="pre">generateSpeciesConstraints</span></code> section of the
 RMG input file.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
     <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -202,23 +202,15 @@ RMG input file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -226,15 +218,15 @@ RMG input file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -242,7 +234,7 @@ RMG input file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -251,14 +243,14 @@ RMG input file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -271,7 +263,7 @@ RMG input file.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

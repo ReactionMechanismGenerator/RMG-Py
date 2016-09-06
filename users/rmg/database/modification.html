@@ -125,7 +125,7 @@ of thumb is to see if the all neighbours of the reacting atoms are as specified
 as possible. For example, assume your species is ethanol</p>
 <a class="reference internal image-reference" href="../../../_images/ethanol.png"><img alt="../../../_images/ethanol.png" class="align-center" src="../../../_images/ethanol.png" style="width: 100.5px; height: 121.5px;" /></a>
 <p>and RMG suggests the group:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S}</span>
@@ -137,7 +137,7 @@ as possible. For example, assume your species is ethanol</p>
 </div>
 <p>If you use the suggested groups you will not capture the effect of the alcohol
 group. Therefore it is better to make a new group.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -155,7 +155,7 @@ next section for instructions on creating the new group.</p>
 <div class="section" id="creating-a-new-group">
 <h3>11.4.2.4. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
 <p>In the family&#8217;s groups.py, you will need to add an entry of the format:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
         <span class="n">group</span> <span class="o">=</span>
@@ -183,7 +183,7 @@ next section for instructions on creating the new group.</p>
 <p>Next, you must enter your new group into the tree. At the bottom of groups.py
 you will find the trees. Place your group in the appropriate position. In the
 example given in the previous section, the new group would be added under the C_sec.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">L1</span><span class="p">:</span> <span class="n">X_H</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">L1</span><span class="p">:</span> <span class="n">X_H</span>
         <span class="n">L2</span><span class="p">:</span> <span class="n">H2</span>
         <span class="n">L2</span><span class="p">:</span> <span class="n">Cs_H</span>
                 <span class="n">L3</span><span class="p">:</span> <span class="n">C_pri</span>
@@ -199,7 +199,7 @@ example given in the previous section, the new group would be added under the C_
 cases, your kinetic parameters describe a specific reaction in which case you
 will want to add your reaction to the training set.</p>
 <p>The rule must be added into rules.py in the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
         <span class="n">group1</span> <span class="o">=</span>
@@ -272,7 +272,7 @@ are formed by matching the reaction to the most most specific template nodes wit
 the reaction&#8217;s respective family. If you do not want the
 training depository reactions to create new rate rules in the database, set the option for
 <code class="docutils literal"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal"><span class="pre">database</span></code> field in your input file to</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
 </pre></div>
 </div>
 <p>Currently, RMG&#8217;s rate rule estimates overrides all kinetics depository kinetics, including training
@@ -387,23 +387,15 @@ activation energy truly does reflect the reaction barrier height.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -411,15 +403,15 @@ activation energy truly does reflect the reaction barrier height.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -427,7 +419,7 @@ activation energy truly does reflect the reaction barrier height.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -436,14 +428,14 @@ activation energy truly does reflect the reaction barrier height.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -456,7 +448,7 @@ activation energy truly does reflect the reaction barrier height.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

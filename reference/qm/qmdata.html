@@ -73,7 +73,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.qmdata<a class="headerlink" href="#rmgpy-qm-qmdata" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.qm.qmdata.QMData">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">QMData</code><span class="sig-paren">(</span><em>groundStateDegeneracy=None</em>, <em>numberOfAtoms=None</em>, <em>stericEnergy=None</em>, <em>molecularMass=None</em>, <em>energy=0</em>, <em>atomicNumbers=[]</em>, <em>rotationalConstants=[]</em>, <em>atomCoords=[]</em>, <em>frequencies=[]</em>, <em>source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">QMData</code><span class="sig-paren">(</span><em>groundStateDegeneracy=-1</em>, <em>numberOfAtoms=None</em>, <em>stericEnergy=None</em>, <em>molecularMass=None</em>, <em>energy=0</em>, <em>atomicNumbers=None</em>, <em>rotationalConstants=None</em>, <em>atomCoords=None</em>, <em>frequencies=None</em>, <em>source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
 <dd><p>General class for data extracted from a QM calculation</p>
 <dl class="attribute">
 <dt id="rmgpy.qm.qmdata.QMData.groundStateDegeneracy">
@@ -87,34 +87,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>Number of atoms.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.QMData.rotationalConstants">
-<code class="descname">rotationalConstants</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.rotationalConstants" title="Permalink to this definition">¶</a></dt>
-<dd><p>Rotational constants, in Hz.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.QMData.stericEnergy">
-<code class="descname">stericEnergy</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.stericEnergy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Steric energy.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="rmgpy.qm.qmdata.CCLibData">
-<em class="property">class </em><code class="descclassname">rmgpy.qm.qmdata.</code><code class="descname">CCLibData</code><span class="sig-paren">(</span><em>cclib_data</em>, <em>groundStateDegeneracy</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData" title="Permalink to this definition">¶</a></dt>
-<dd><p>QM Data extracted from a cclib data object</p>
-<p>This data objects collects information that CCLib was able to
-retrieve from a quantum chemistry output file.</p>
-<dl class="attribute">
-<dt id="rmgpy.qm.qmdata.CCLibData.cclib_data">
-<code class="descname">cclib_data</code><em class="property"> = None</em><a class="headerlink" href="#rmgpy.qm.qmdata.CCLibData.cclib_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>data object returned by a parsing tool like CCLib.parse()</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/Nate/code/RMG-Py/documentation/source/reference/qm/qmdata.rst</tt>, line 6)</p>
+autodoc: failed to import class u&#8217;CCLibData&#8217; from module u&#8217;rmgpy.qm.qmdata&#8217;; the following exception was raised:
+Traceback (most recent call last):
+  File &#8220;/Users/Nate/anaconda/envs/rmg/lib/python2.7/site-packages/sphinx/ext/autodoc.py&#8221;, line 514, in import_object
+    obj = self.get_attr(obj, part)
+  File &#8220;/Users/Nate/anaconda/envs/rmg/lib/python2.7/site-packages/sphinx/ext/autodoc.py&#8221;, line 410, in get_attr
+    return safe_getattr(obj, name, *defargs)
+  File &#8220;/Users/Nate/anaconda/envs/rmg/lib/python2.7/site-packages/sphinx/util/inspect.py&#8221;, line 115, in safe_getattr
+    raise AttributeError(name)
+AttributeError: CCLibData
+</div>
 </div>
 
 
@@ -156,23 +142,15 @@ retrieve from a quantum chemistry output file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -180,15 +158,15 @@ retrieve from a quantum chemistry output file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -196,7 +174,7 @@ retrieve from a quantum chemistry output file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -205,14 +183,14 @@ retrieve from a quantum chemistry output file.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -225,7 +203,7 @@ retrieve from a quantum chemistry output file.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

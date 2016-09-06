@@ -73,7 +73,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.thermo.NASA<a class="headerlink" href="#rmgpy-thermo-nasa" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermonasa"></span><dl class="class">
 <dt id="rmgpy.thermo.NASA">
-<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">NASA</code><span class="sig-paren">(</span><em>polynomials=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASA" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">NASA</code><span class="sig-paren">(</span><em>polynomials=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>Cp0=None</em>, <em>CpInf=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASA" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on a set of one, two, or three 
 <a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><code class="xref py py-class docutils literal"><span class="pre">NASAPolynomial</span></code></a> objects. The attributes are:</p>
 <table border="1" class="docutils">
@@ -120,6 +120,18 @@ when compared to the Wilhoit model; however, it does not have the nice
 physical behavior of the Wilhoit representation. Often multiple NASA polynomials
 are used to accurately represent the thermodynamics of a system over a wide
 temperature range.</p>
+<dl class="attribute">
+<dt id="rmgpy.thermo.NASA.Cp0">
+<code class="descname">Cp0</code><a class="headerlink" href="#rmgpy.thermo.NASA.Cp0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The heat capacity at zero temperature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.NASA.CpInf">
+<code class="descname">CpInf</code><a class="headerlink" href="#rmgpy.thermo.NASA.CpInf" title="Permalink to this definition">¶</a></dt>
+<dd><p>The heat capacity at infinite temperature.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASA.E0">
 <code class="descname">E0</code><a class="headerlink" href="#rmgpy.thermo.NASA.E0" title="Permalink to this definition">¶</a></dt>
@@ -249,13 +261,13 @@ returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASA.toThermoData">
-<code class="descname">toThermoData</code><span class="sig-paren">(</span><em>self</em>, <em>double Cp0=0.0</em>, <em>double CpInf=0.0</em><span class="sig-paren">)</span> &rarr; ThermoData<a class="headerlink" href="#rmgpy.thermo.NASA.toThermoData" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toThermoData</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &rarr; ThermoData<a class="headerlink" href="#rmgpy.thermo.NASA.toThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Wilhoit model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal"><span class="pre">ThermoData</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASA.toWilhoit">
-<code class="descname">toWilhoit</code><span class="sig-paren">(</span><em>self</em>, <em>double Cp0</em>, <em>double CpInf</em><span class="sig-paren">)</span> &rarr; Wilhoit<a class="headerlink" href="#rmgpy.thermo.NASA.toWilhoit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toWilhoit</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &rarr; Wilhoit<a class="headerlink" href="#rmgpy.thermo.NASA.toWilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a <code class="xref py py-class docutils literal"><span class="pre">MultiNASA</span></code> object <cite>multiNASA</cite> to a <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><code class="xref py py-class docutils literal"><span class="pre">Wilhoit</span></code></a> 
 object. You must specify the linearity of the molecule <cite>linear</cite>, the number
 of vibrational modes <cite>Nfreq</cite>, and the number of hindered rotor modes
@@ -266,7 +278,7 @@ limits at zero and infinite temperature.</p>
 </dd></dl>
 
 <p>Here is an example of a NASA entry:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre>    <span class="n">entry</span><span class="p">(</span>
 <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span><span class="p">,</span>
 <span class="n">molecule</span> <span class="o">=</span>
@@ -339,23 +351,15 @@ limits at zero and infinite temperature.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -363,15 +367,15 @@ limits at zero and infinite temperature.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -379,7 +383,7 @@ limits at zero and infinite temperature.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -388,14 +392,14 @@ limits at zero and infinite temperature.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -408,7 +412,7 @@ limits at zero and infinite temperature.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

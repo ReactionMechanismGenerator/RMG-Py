@@ -78,8 +78,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 surface. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="24%" />
-<col width="76%" />
+<col width="23%" />
+<col width="77%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -112,7 +112,12 @@ surface. The attributes are:</p>
 <td>The collisional energy transfer model to use</td>
 </tr>
 <tr class="row-even"><td><cite>reactive</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> if the species participates in reactions, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
+<td><dl class="first last docutils">
+<dt><code class="docutils literal"><span class="pre">True</span></code> if the species participates in reaction families, <code class="docutils literal"><span class="pre">False</span></code> if not</dt>
+<dd>Reaction libraries and seed mechanisms that include the species are
+always considered regardless of this variable</dd>
+</dl>
+</td>
 </tr>
 <tr class="row-odd"><td><cite>props</cite></td>
 <td>A generic &#8216;properties&#8217; dictionary to store user-defined flags</td>
@@ -163,12 +168,33 @@ of the loaded molecule.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.species.Species.generateEnergyTransferModel">
+<code class="descname">generateEnergyTransferModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generateEnergyTransferModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the collisional energy transfer model parameters for the
+species. This &#8220;algorithm&#8221; is <em>very</em> much in need of improvement.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.species.Species.generateResonanceIsomers">
 <code class="descname">generateResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generateResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance isomers of this species. The isomers are
 stored as a list in the <cite>molecule</cite> attribute. If the length of
 <cite>molecule</cite> is already greater than one, it is assumed that all of the
 resonance isomers have already been generated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.generateStatMech">
+<code class="descname">generateStatMech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generateStatMech" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate molecular degree of freedom data for the species. You must
+have already provided a thermodynamics model using e.g.
+<code class="xref py py-meth docutils literal"><span class="pre">generateThermoData()</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.generateTransportData">
+<code class="descname">generateTransportData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generateTransportData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the transportData parameters for the species.</p>
 </dd></dl>
 
 <dl class="method">
@@ -226,6 +252,25 @@ in J/mol.</p>
 <dd><p>Get the symmetry number for the species, which is the highest symmetry number amongst
 its resonance isomers.  This function is currently used for website purposes and testing only as it
 requires additional calculateSymmetryNumber calls.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getThermoData">
+<code class="descname">getThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <cite>thermoData</cite> object of the current Species object.</p>
+<p>If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
+type, or it is a Future.</p>
+<p>If the type of the thermo attribute is Wilhoit, or ThermoData,
+then it is converted into a NASA format.</p>
+<p>If it is a Future, then a blocking call is made to retrieve the NASA object.
+If the thermo object did not exist yet, the thermo object is generated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getTransportData">
+<code class="descname">getTransportData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.getTransportData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the transport data associated with this species, and
+calculates it if it is not yet available.</p>
 </dd></dl>
 
 <dl class="method">
@@ -311,23 +356,15 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -335,15 +372,15 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -351,7 +388,7 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -360,14 +397,14 @@ with the appropriate thermo data.</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -380,7 +417,7 @@ with the appropriate thermo data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>

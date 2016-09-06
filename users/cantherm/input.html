@@ -97,7 +97,7 @@ allowed model chemistries are:
 <p>CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for <code class="docutils literal"><span class="pre">thermo()</span></code> calculations (see below). The example below
 demonstrates how to specify CBS-QB3 as a model chemistry:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">modelChemistry</span><span class="p">(</span><span class="s2">&quot;CBS-QB3&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">modelChemistry</span><span class="p">(</span><span class="s2">&quot;CBS-QB3&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -179,7 +179,7 @@ species, and their counts will be automatically set to zero.</p>
 </tbody>
 </table>
 <p>The following is an example of a typical species item, based on ethane:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;ethane&#39;</span><span class="p">,</span>
     <span class="n">geomLog</span> <span class="o">=</span> <span class="s1">&#39;ethane_cbs.log&#39;</span><span class="p">,</span>
     <span class="n">statesLog</span> <span class="o">=</span> <span class="s1">&#39;ethane_cbs.log&#39;</span><span class="p">,</span>
@@ -204,7 +204,7 @@ species, and their counts will be automatically set to zero.</p>
 the <code class="docutils literal"><span class="pre">species()</span></code> function described above. This is only required if you wish
 to perform a kinetics computation.</p>
 <p>The following is an example of a typical transition state item:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">transitionState</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">transitionState</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;TS&#39;</span><span class="p">,</span>
     <span class="n">geomLog</span> <span class="o">=</span> <span class="s1">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
     <span class="n">statesLog</span> <span class="o">=</span> <span class="s1">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
@@ -249,7 +249,7 @@ which accepts the following parameters:</p>
 </table>
 <p>This is only required if you wish to perform a kinetics computation. The
 following is an example of a typical reaction item:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">reaction</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">reaction</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
     <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H4&#39;</span><span class="p">],</span>
     <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C2H5&#39;</span><span class="p">],</span>
@@ -270,7 +270,7 @@ generate (either <code class="docutils literal"><span class="pre">'Wilhoit'</spa
 model or NASA polynomial model). A table of thermodynamic parameters will
 also be displayed in the output file.</p>
 <p>Below is a typical <code class="docutils literal"><span class="pre">thermo()</span></code> function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">thermo</span><span class="p">(</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;Wilhoit&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;Wilhoit&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -282,7 +282,7 @@ at which the high-pressure rate coefficient will be tabulated and saved to
 the outupt file. 3-parameter modified Arrhenius coefficients will automatically be fit
 to the computed rate coefficients. The quantum tunneling factor will also be displayed</p>
 <p>Below is a typical <code class="docutils literal"><span class="pre">kinetics()</span></code> function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
 <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
 <span class="n">Tlist</span> <span class="o">=</span> <span class="p">([</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">700</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1200</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
@@ -290,7 +290,7 @@ to the computed rate coefficients. The quantum tunneling factor will also be dis
 </pre></div>
 </div>
 <p>This is also acceptable:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span><span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span><span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -383,23 +383,15 @@ absolute values. What&#8217;s going on?</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical parameters</div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/input">Create Input File</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
         <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/group_draw"><img src="../../_static/groupdraw-logo-small.png" class="icon_sidebar" width="32px" alt="Draw Group"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/group_draw">Draw Group</a></div>
-        <div class="linkdesc">Draw a group structure from its adjlist</div>
 </td></tr>
 
 <tr><td>
@@ -407,15 +399,15 @@ absolute values. What&#8217;s going on?</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search its properties</div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search for the kinetics of a chemical reaction</div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
 </td></tr>
 
 <tr><td>
@@ -423,7 +415,7 @@ absolute values. What&#8217;s going on?</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search for the solvation properties of a reaction between a solvent and a solute</div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
 </td></tr>
 
 
@@ -432,14 +424,14 @@ absolute values. What&#8217;s going on?</p>
 </td>
 <td>
         <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep calculations</div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
 </td></tr>
 
 <tr><td>
-        <a href="http://rmg.mit.edu/simulate/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
 </td>
 <td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/simulate/">Simulation & Tools</a></div>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
         <div class="linkdesc">Additional tools to supplement RMG</div>
 </td></tr>
 
@@ -452,7 +444,7 @@ absolute values. What&#8217;s going on?</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
     </div>
   </body>
 </html>
