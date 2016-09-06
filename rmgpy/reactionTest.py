@@ -405,6 +405,25 @@ class TestReaction(unittest.TestCase):
             kr = reverseKinetics.getRateCoefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
 
+    def testGenerateReverseRateCoefficientArrheniusNoThermo(self):
+        """
+        Test that Reaction.generateReverseRateCoefficient() method raises exception if missing thermo data.
+        """
+        original_kinetics = Arrhenius(
+                    A=(2.65e12, 'cm^3/(mol*s)'),
+                    n=0.0,
+                    Ea=(0.0, 'kJ/mol'),
+                    T0=(1, 'K'),
+                    Tmin=(300, 'K'),
+                    Tmax=(2000, 'K'),
+                )
+        self.reaction2.kinetics = original_kinetics
+        self.reaction2.reactants[0].thermo = None
+        with self.assertRaises(Exception):
+            reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+
+
     def testGenerateReverseRateCoefficientArrhenius(self):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the Arrhenius format.
