@@ -7,7 +7,7 @@ import sys
 import logging
 import re
 import imp
-
+import itertools
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
@@ -32,169 +32,70 @@ elif os.getenv('LSB_JOBINDEX'):
 else:
     raise Exception("Specify a TS number!")
 """
+i = 1
 #####
 
 rxnFamilies = ['H_Abstraction']  # Only looking at H_abstraction via OOH
 
-
-
 print 'Loading RMG Database ...'
 rmgDatabase = RMGDatabase()
-rmgDatabase.load(os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input')), kineticsFamilies=rxnFamilies)  # unsure if this is the right environment
+databasePath = os.path.abspath(os.path.join(os.getenv('RMGpy', '..'), '..', 'RMG-database', 'input'))
+print databasePath
+rmgDatabase.load(databasePath, kineticsFamilies=rxnFamilies)  # unsure if this is the right environment
 print 'RMG Database Loaded'
 
 def calculate(reaction):
     rxnFamily = reaction.family
     tsDatabase = rmgDatabase.kinetics.families[rxnFamily].transitionStates
     reaction = qmCalc.getKineticData(reaction, tsDatabase)
-    for files in os.listdir('./'):  # TBH, I don't know what this part does.
+    for files in os.listdir('./'):  # This deletes any files with names starting 'core' which fill up your disk space on discovery.
         if files.startswith('core'):
             os.remove(files)
     return reaction
 
 
-#######################
-"""
-This section of code is designed to go through each file listed as a SMILES.txt
-and create a dictionary that has the location of the smiles file an identifying
-name to go along with it.
-"""
+import cPickle as pickle
+with open('kineticsDict.pkl', 'rb') as f:
+    kineticsDict = pickle.load(f)
+print "Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict))
 
+allRxns = sorted(kineticsDict.keys(), key=repr)  # somewhat arbitrary sort order, but should at least be consistent across runs.
 
-importer_files = []
-for root, dirs, files in os.walk("../RMG-models", topdown=False):
-    smiles_file = None
-    kinetics_file = None
-    for name in files:
-        if str(os.path.join(root, name)).endswith('SMILES.txt'):
-            smiles_file = os.path.join(root, name)
-        if str(os.path.join(root, name)).endswith('model_kinetics.py'):
-            kinetics_file = os.path.join(root, name)
-    if kinetics_file and smiles_file:
-        importer_files.append((smiles_file, kinetics_file))
-    else:
-        """
-        print root
-        if smiles_file is None:
-            print "Missing SMILES file"
-        if kinetics_file is None:
-            print "Missing kinetics file"
-        """
-
-
-############
-
-for entry in importer_files:
-    smiles_file = entry[0]
-    kinetics_file = entry[1]
-    print smiles_file
-
-    known_smiles = {}
-    known_names = []
-    identified_labels = []
-    line = None
-
-    ################################################
-
-    with open(smiles_file) as f:
-        for line in f:
-            if not line.strip():
-                continue
-            try:
-                user = None
-                if '!' in line:
-                    line, comments = line.split("!", 1)
-                    if comments:
-                        usermatch = re.match("\s+Confirmed by (.*)", comments)
-                        if usermatch:
-                            user = usermatch.group(1)
-                tokens = line.split()
-                assert len(tokens) == 2, "Not two tokens on line (was expecting NAME    SMILES)"
-                name, smiles = tokens
-                if name in known_smiles:
-                    assert smiles == known_smiles[name], "{0} defined twice, as {1} and {2}".format(name, known_smiles[name], smiles)
-                known_smiles[name] = smiles
-                if name not in known_names:
-                    known_names.append(name)
-            except Exception as e:
-                logging.warning("Error reading line '{0}'".format(line))
-                raise e
-    break
-    #####
-    allRxns = []
-
-    #####
-    # This section obtains the info from the appropriate kinetics file. Currently labled "model_kinetics.py".
-    load = imp.load_source('info', kinetics_file)
-    info = load.info
-    #####
-
-    for chemkinRxn in info:
-        for rFam in chemkinRxn['possibleReactionFamilies']:
-            if rFam in rxnFamilies:
-                if len(chemkinRxn['possibleReactionFamilies']) > 1:
-                    chemkinRxn['possibleReactionFamilies'] = [rFam]
-            chemkin_rxn_name = chemkinRxn['chemkinKinetics'].split()[0]
-            new_rxn = True
-            for chem_rxn in allRxns:
-                if chem_rxn['chemkinKinetics'].strip().startswith(chemkin_rxn_name):
-                    new_rxn = False
-                    break
-            if new_rxn:
-                allRxns.append(chemkinRxn)
-
-
+for i in [1]:
     chemkinRxn = allRxns[i - 1]
-    reaction = chemkinRxn['reaction']
 
-    chemkinRxn = allRxns[i - 1]
-    reaction = chemkinRxn['reaction']
-    try:
-        rcts, prdts = reaction.split('<=>')
-    except ValueError:
-        rcts, prdts = reaction.split('=>')
-    react = rcts.split('+')
-    products = prdts.split('+')
-    reactants = []
+##################################################################
 
-    ### This is one of the specific things that I changed from Pierre's script. ###
-    ### I need to move this part of the script to later... I'm unsure about
-    # where this needs to be moved, but I'll figure it out later. Just at little
-    # too tired at the moment. (9/2)
-    for r in react:
-        if "OOH" in r:
-            reactants.append(r)  # Although, I think reactants is a dictionary? Or it's a list of lists? If it's a list of lists, I think this should work.
-    ################################################################################
+    print "chemkinRxn: {!r}".format(chemkinRxn)
+    # Ensure all resonance isomers have been generated
+    for species in itertools.chain(chemkinRxn.reactants, chemkinRxn.products):
+        species.molecule = species.molecule[0].generateResonanceIsomers()
 
-    reactant_molecules = [Molecule().fromSMILES(known_smiles[key.strip()]) for key in reactants]
-    product_molecules = [Molecule().fromSMILES(known_smiles[key.strip()]) for key in products]
+    testReaction = Reaction(reactants=chemkinRxn.reactants, products=chemkinRxn.products, reversible=True)
 
-    reactants_species = [Species(molecule=mol.generateResonanceIsomers()) for mol in reactant_molecules]
-    product_species = [Species(molecule=mol.generateResonanceIsomers()) for mol in product_molecules]
+    reactant_molecules = [species.molecule for species in chemkinRxn.reactants]
+    # reactant_molecules is a list of lists of resonance isomers,
+    # eg. a bimolecular reaction where the second reactant has 2 isomers is: [[r1],[r2i1,r2i2]]
 
-    testReaction = Reaction(reactants=reactant_species, products=product_species, reversible=True)
-
-    checkRxn = rmgDatabase.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules, only_families=chemkinRxn['possibleReactionFamilies'])
-    if checkRxn == []:
-        reactIsoms = [mol.generateResonanceIsomers() for mol in reactant_molecules]
-        if len(reactIsoms) == 2:
-            r1, r2 = reactIsoms
-            while checkRxn == []:
-                for moleculeA in r1:
-                    for moleculeB in r2:
-                        reactant_molecules = [moleculeA, moleculeB]
-                        checkRxn = rmgDatabase.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules, only_families=chemkinRxn['possibleReactionFamilies'])
-
+    products = [species.molecule[0] for species in chemkinRxn.products]
+    # products is a list of molecule objects (only one resonance form of each product), eg [p1, p2]
+    for reactants in itertools.product(*reactant_molecules):
+        # reactants is now a tuple of molecules, one for each reactant,  eg. (r1, r2i1)
+        checkRxn = rmgDatabase.kinetics.generateReactionsFromFamilies(reactants, products, only_families=rxnFamilies)
+        if len(checkRxn) == 1:
+            break
+    else:  # didn't break from for loop
+        raise Exception("Couldn't generate one reaction matching {} in family {}".format(chemkinRxn, rknFamilies))
     reaction = checkRxn[0]
 
     assert testReaction.isIsomorphic(reaction)
+    print "reaction: {!r}".format(reaction)
 
     atLblsR = dict([(lbl[0], False) for lbl in reaction.labeledAtoms])
     atLblsP = dict([(lbl[0], False) for lbl in reaction.labeledAtoms])
 
     gotOne = False
     for reactant in reaction.reactants:
-        reactant = reactant.molecule[0]
         reactant.clearLabeledAtoms()
         for atom in reactant.atoms:
             for atomLabel in reaction.labeledAtoms:
@@ -203,7 +104,6 @@ for entry in importer_files:
                     atLblsR[atomLabel[0]] = True
 
     for product in reaction.products:
-        product = product.molecule[0]
         product.clearLabeledAtoms()
         for atom in product.atoms:
             for atomLabel in reaction.labeledAtoms:
@@ -213,17 +113,27 @@ for entry in importer_files:
 
     if all(atLblsR.values()) and all(atLblsP.values()):
         gotOne = True
-    rxnFamily = reaction.family.label
+    rxnFamily = reaction.family
     assert gotOne
     qmCalc = QMCalculator(
                             software='gaussian',
                             method='m062x',
-                            fileStore='/scratch/bhoorasingh.p/QMfiles',
-                            scratchDirectory='/scratch/bhoorasingh.p/QMscratch',
+                            fileStore=os.path.expandvars('/gss_gpfs_scratch/$USER/QMfiles'),
+                            scratchDirectory=os.path.expandvars('/gss_gpfs_scratch/$USER/QMscratch'),
                             )
     reaction = calculate(reaction)
 
+    print "For reaction {0!r}".format(reaction)
     if reaction.kinetics:
+        print "We have calculated kinetics {0!r}".format(reaction.kinetics)
+        kineticsDict[chemkinRxn]['AutoTST'] = reaction.kinetics
+        with open('kineticsDictTST.pkl', 'wb') as f:
+            pickle.dump(kineticsDict, f)
+    else:
+        print "Couldn't calculate kinetics."
+
+
+    if reaction.kinetics and False:
         """
         REWRITE SARATHYKIN STUFF FOR VARYING IMPORTED MECHANISMS # Fixed?
         """
