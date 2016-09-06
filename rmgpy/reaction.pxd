@@ -63,13 +63,13 @@ cdef class Reaction:
 
     cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?)
 
-    cpdef double getEnthalpyOfReaction(self, double T)
+    cpdef double getEnthalpyOfReaction(self, double T) except? -1
 
-    cpdef double getEntropyOfReaction(self, double T)
+    cpdef double getEntropyOfReaction(self, double T) except? -1
 
-    cpdef double getFreeEnergyOfReaction(self, double T)
+    cpdef double getFreeEnergyOfReaction(self, double T) except? -1
 
-    cpdef double getEquilibriumConstant(self, double T, str type=?)
+    cpdef double getEquilibriumConstant(self, double T, str type=?) except? -1
 
     cpdef numpy.ndarray getEnthalpiesOfReaction(self, numpy.ndarray Tlist)
 
