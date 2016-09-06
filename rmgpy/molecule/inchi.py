@@ -1,5 +1,6 @@
 import cython
 import re
+import logging
 
 # search for (*) PARENTHESES
 PARENTHESES = re.compile( r'\((.[^\(\)]*)\)')
@@ -268,8 +269,11 @@ def parse_N_layer(auxinfo):
     else:
         raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
 
-    indices = map(int, atom_numbers.split(','))
-
+    try:
+        indices = map(int, atom_numbers.split(','))
+    except Exception:
+        logging.error("Problematic auxinfo: {!r}".format(auxinfo))
+        raise
     return indices
         
 class InchiException(Exception):
