@@ -22,7 +22,9 @@ from rmgpy.qm.main import QMCalculator
 
 if len(sys.argv)>1:
     i = int(sys.argv[-1])
-elif os.getenv('LSB_JOBINDEX'):  # this needs updating for SLURM
+elif os.getenv('SLURM_ARRAY_TASK_ID'):
+    i = int(os.getenv('SLURM_ARRAY_TASK_ID'))
+elif os.getenv('LSB_JOBINDEX'):
     i = int(os.getenv('LSB_JOBINDEX'))
 else:
     #raise Exception("Specify a TS number!")
