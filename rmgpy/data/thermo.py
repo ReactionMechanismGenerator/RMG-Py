@@ -751,18 +751,30 @@ class ThermoDatabase(object):
         points to the top-level folder of the thermo database.
         """
         self.libraries = {}; self.libraryOrder = []
-        for (root, dirs, files) in os.walk(os.path.join(path)):
-            for f in files:
-                name, ext = os.path.splitext(f)
-                if ext.lower() == '.py' and (libraries is None or name in libraries):
-                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, root))
+        if libraries is None:
+            for (root, dirs, files) in os.walk(os.path.join(path)):
+                for f in files:
+                    name, ext = os.path.splitext(f)
+                    if ext.lower() == '.py':
+                        logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, root))
+                        library = ThermoLibrary()
+                        library.load(os.path.join(root, f), self.local_context, self.global_context)
+                        library.label = os.path.splitext(f)[0]
+                        self.libraries[library.label] = library
+                        self.libraryOrder.append(library.label)
+
+        else:
+            for libraryName in libraries:
+                f = libraryName + '.py'
+                if os.path.exists(os.path.join(path, f)):
+                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, path))
                     library = ThermoLibrary()
-                    library.load(os.path.join(root, f), self.local_context, self.global_context)
+                    library.load(os.path.join(path, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
                     self.libraryOrder.append(library.label)
-        if libraries is not None:
-            self.libraryOrder = libraries
+                else:
+                    logging.warning('Library {} not found in {}...'.format(libraryName, path))
 
     def loadGroups(self, path):
         """
