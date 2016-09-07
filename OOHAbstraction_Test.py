@@ -43,6 +43,13 @@ rmgDatabase = RMGDatabase()
 rmgDatabase.load(os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input')), kineticsFamilies=rxnFamilies) # unsure if this is the right environment
 print 'RMG Database Loaded'
 
+qmCalc = QMCalculator(
+						software='gaussian',
+						method='m062x',
+						fileStore='/scratch/harms.n/QMfiles',
+						scratchDirectory='/scratch/harms.n/QMscratch',
+						)
+
 def calculate(reaction):
 	rxnFamily = reaction.family
 	tsDatabase = rmgDatabase.kinetics.families[rxnFamily].transitionStates
@@ -51,15 +58,6 @@ def calculate(reaction):
 		if files.startswith('core'):
 			os.remove(files)
 	return reaction
-
-qmCalc = QMCalculator(
-						software='gaussian',
-						method='m062x',
-						fileStore='/scratch/bhoorasingh.p/QMfiles',
-						scratchDirectory='/scratch/bhoorasingh.p/QMscratch',
-						)
-
-
 
 
 
@@ -95,7 +93,15 @@ for root, dirs, files in os.walk("../RMG-models", topdown=False):
 
 for item in importer_files:
 	smiles_file, kinetics_file = item
+	try:
+		a,b,c,d,e = smiles_file.split('/')
+		txt_file = c + '_' + d
+	except ValueError:
+		a,b,c,d = smiles_file.split('/')
+		txt_file = c
+	print txt_file
 
+	break
 
 	known_smiles = {}
 	known_names = []
@@ -239,7 +245,7 @@ for item in importer_files:
 				gotOne=True
 			rxnFamily = reaction.family
 			assert gotOne
-			
+
 			######### NO GUARENTEES IF ANYTHING AFTER THIS LINE WORKS
 
 			reaction = calculate(reaction)
@@ -270,9 +276,9 @@ for item in importer_files:
 						row.extend(['AutoTST_rev', 'not reverse'])
 				"""
 				if isinstance(importKin, PDepArrhenius) or isinstance(importKin, PDepKineticsModel):
-					row.extend([smiles_dict[entry], str(importKin.getRateCoefficient(Temp, 1000000))]) #1000000 Pa = 10 bar
+					row.extend([txt_file, str(importKin.getRateCoefficient(Temp, 1000000))]) #1000000 Pa = 10 bar
 				else:
-					row.extend([smiles_dict[entry], str(importKin.getRateCoefficient(Temp))])
+					row.extend([txt_file, str(importKin.getRateCoefficient(Temp))])
 
 				famDatabase = rmgDatabase.kinetics.families[rxnFamily]
 				famDatabase.addKineticsRulesFromTrainingSet(thermoDatabase=rmgDatabase.thermo)
@@ -318,7 +324,7 @@ for item in importer_files:
 							row.append(str(val))
 
 				# Store line containing reaction from corresponding chemkin file
-				row.append(smiles_dict[entry])
+				row.append(txt_file)
 				row.append(chemkinRxn['chemkinKinetics'].strip())
 
 				# Store rmgpy kinetics group comments
@@ -330,5 +336,5 @@ for item in importer_files:
 					os.makedirs(folderPath)
 
 				input_string = ','.join(row)
-				with open(os.path.join(folderPath, smiles_dict[entry] + '_kinetics.txt'), 'w') as kinTxt:
+				with open(os.path.join(folderPath, txt_file + '_kinetics.txt'), 'a') as kinTxt:
 			            kinTxt.write(input_string)
