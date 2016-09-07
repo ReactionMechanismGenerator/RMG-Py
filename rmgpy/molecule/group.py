@@ -1679,6 +1679,8 @@ class Group(Graph):
 
         #Add implicit atoms
         modifiedGroup = self.addImplicitAtomsFromAtomType()
+        #Add implicit benzene rings
+        modifiedGroup = modifiedGroup.addImplicitBenzene()
         #Make dictionary of :GroupAtoms: to :Atoms:
         atomDict = {}
         for atom in modifiedGroup.atoms:
