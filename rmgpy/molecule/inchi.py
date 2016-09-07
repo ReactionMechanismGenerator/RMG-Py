@@ -270,7 +270,7 @@ def parse_N_layer(auxinfo):
         raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
 
     try:
-        indices = map(int, atom_numbers.split(','))
+        indices = map(int, atom_numbers.replace(';', ',').split(','))
     except Exception:
         logging.error("Problematic auxinfo: {!r}".format(auxinfo))
         raise
