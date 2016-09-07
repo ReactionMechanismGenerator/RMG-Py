@@ -635,24 +635,25 @@ class TestGroup(unittest.TestCase):
         #tests it can make a benzene molecule
         adjlist1 = """
 1  *1 Cb u0 {2,B}
-2     Cb u0 {1,B}
+2  *2 Cb u0 {1,B}
             """
         #tests it can make a bi-phenyl
         adjlist2 = """
 1  *1 Cb u0 {2,S}
-2     Cb u0 {1,S}
+2  *2 Cb u0 {1,S}
             """
         #tests it can make a napthalene
         adjlist3 = """
 1  *1 Cbf u0
             """
 
-        #tests that it can make a napthalene like structure from general atoms
+        #Test handling of Cbf2 atoms
         adjlist4 = """
 1  *1 Cbf u0 p2 c0 {2,B}
 2  *2 Cbf u0 p0 c0 {1,B} {3,B}
 3  *3 Cbf u0 p0 c0 {2,B}
     """
+
         #test handling of heteroatoms and wildcards
         adjlist5 = """
 1 *1 Cbf u0 {2,B} {3,B} {4,B}
@@ -668,27 +669,27 @@ class TestGroup(unittest.TestCase):
     """
 
         benzene ="""
-1  *1 C u0 {2,B} {6,B}
-2     C u0 {1,B} {3,B}
-3     C u0 {2,B} {4,B}
-4     C u0 {3,B} {5,B}
-5     C u0 {4,B} {6,B}
-6     C u0 {5,B} {1,B}
+1 C u0 {2,B} {6,B}
+2 C u0 {1,B} {3,B}
+3 C u0 {2,B} {4,B}
+4 C u0 {3,B} {5,B}
+5 C u0 {4,B} {6,B}
+6 C u0 {5,B} {1,B}
         """
 
         biphenyl ="""
-1  *1 C u0 {2,B} {6,B} {7,S}
-2     C u0 {1,B} {3,B}
-3     C u0 {2,B} {4,B}
-4     C u0 {3,B} {5,B}
-5     C u0 {4,B} {6,B}
-6     C u0 {5,B} {1,B}
-7     C u0 {8,B} {12,B} {1,S}
-8     C u0 {7,B} {9,B}
-9     C u0 {8,B} {10,B}
-10    C u0 {9,B} {11,B}
-11    C u0 {10,B} {12,B}
-12    C u0 {11,B} {7,B}
+1  C u0 {2,B} {6,B} {7,S}
+2  C u0 {1,B} {3,B}
+3  C u0 {2,B} {4,B}
+4  C u0 {3,B} {5,B}
+5  C u0 {4,B} {6,B}
+6  C u0 {5,B} {1,B}
+7  C u0 {8,B} {12,B} {1,S}
+8  C u0 {7,B} {9,B}
+9  C u0 {8,B} {10,B}
+10 C u0 {9,B} {11,B}
+11 C u0 {10,B} {12,B}
+12  C u0 {11,B} {7,B}
         """
 
         naphthalene ="""
@@ -704,35 +705,21 @@ class TestGroup(unittest.TestCase):
 10 C u0 {1,B} {9,B}
         """
 
-        subnaphthalene = """
-1  C u0 {2,B} {10,B}
-2  C u0 {1,B} {3,B}
-3  C u0 {2,B} {4,B} {11,S}
-4  C u0 {3,B} {5,B} {9,B}
-5  C u0 {4,B} {6,B}
-6  C u0 {5,B} {7,B}
-7  C u0 {6,B} {8,B}
-8  C u0 {7,B} {9,B}
-9  C u0 {4,B} {8,B} {10,B}
-10 C u0 {1,B} {9,B}
-11 O u0 {3,S}
-        """
-
         phenanthrene = """
-1  *1 Cbf u0 p2 c0 {2,B} {7,B} {11,B}
-2     Cbf u0 p0 c0 {1,B} {3,B} {5,B}
-3     Cbf u0 p0 c0 {2,B} {4,B} {6,B}
-4     C   u0 {3,B} {8,B} {14,B}
-5     C   u0 {2,B} {9,B}
-6     C   u0 {3,B} {12,B}
-7     C   u0 {1,B} {8,B}
-8     C   u0 {4,B} {7,B}
-9     C   u0 {5,B} {10,B}
-10    C   u0 {9,B} {11,B}
-11    C   u0 {1,B} {10,B}
-12    C   u0 {6,B} {13,B}
-13    C   u0 {12,B} {14,B}
-14    C   u0 {4,B} {13,B}
+1  Cbf u0 p2 c0 {2,B} {7,B} {11,B}
+2  Cbf u0 p0 c0 {1,B} {3,B} {5,B}
+3  Cbf u0 p0 c0 {2,B} {4,B} {6,B}
+4  C   u0 {3,B} {8,B} {14,B}
+5  C   u0 {2,B} {9,B}
+6  C   u0 {3,B} {12,B}
+7  C   u0 {1,B} {8,B}
+8  C   u0 {4,B} {7,B}
+9  C   u0 {5,B} {10,B}
+10 C   u0 {9,B} {11,B}
+11 C   u0 {1,B} {10,B}
+12 C   u0 {6,B} {13,B}
+13 C   u0 {12,B} {14,B}
+14 C   u0 {4,B} {13,B}
     """
 
         answer5 = """
@@ -771,7 +758,6 @@ class TestGroup(unittest.TestCase):
         benzeneGroup = Group().fromAdjacencyList(benzene)
         biphenylGroup = Group().fromAdjacencyList(biphenyl)
         naphthaleneGroup = Group().fromAdjacencyList(naphthalene)
-        subnaphthaleneGroup = Group().fromAdjacencyList(subnaphthalene)
         phenanthreneGroup = Group().fromAdjacencyList(phenanthrene)
         answer5 = Group().fromAdjacencyList(answer5)
         answer6 = Group().fromAdjacencyList(answer6)
