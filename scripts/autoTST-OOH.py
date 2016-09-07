@@ -80,7 +80,7 @@ def makeComparison(chemkinRxn):
         if len(checkRxn) == 1:
             break
     else:  # didn't break from for loop
-        raise Exception("Couldn't generate one reaction matching {} in family {}".format(chemkinRxn, rknFamilies))
+        raise Exception("Couldn't generate one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
     reaction = checkRxn[0]
 
     assert testReaction.isIsomorphic(reaction)
