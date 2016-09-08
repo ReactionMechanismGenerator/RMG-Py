@@ -111,14 +111,14 @@ class AtomType:
         self.decrementRadical = []
         self.incrementLonePair = []
         self.decrementLonePair = []
-        self.single = [] if single is None else single
-        self.allDouble = [] if allDouble is None else allDouble
-        self.rDouble = [] if rDouble is None else rDouble
-        self.oDouble = [] if oDouble is None else oDouble
-        self.sDouble = [] if sDouble is None else sDouble
-        self.triple = [] if triple is None else triple
-        self.benzene = [] if benzene is None else benzene
-        self.lonePairs = [] if lonePairs is None else lonePairs
+        self.single = single or []
+        self.allDouble = allDouble or []
+        self.rDouble = rDouble or []
+        self.oDouble = oDouble or []
+        self.sDouble = sDouble or []
+        self.triple = triple or []
+        self.benzene = benzene or []
+        self.lonePairs = lonePairs or []
 
     def __repr__(self):
         return '<AtomType "%s">' % self.label
@@ -475,7 +475,7 @@ def getAtomType(atom, bonds):
         for molFeature, atomtypeFeature in zip(molFeatureList, atomtypeFeatureList):
             if atomtypeFeature == []:
                 continue
-            elif not molFeature in atomtypeFeature:
+            elif molFeature not in atomtypeFeature:
                 break
         else: return specificAtomType
     else:

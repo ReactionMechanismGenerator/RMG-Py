@@ -395,7 +395,7 @@ class GroupAtom(Vertex):
         allOxygens = [atomTypes['O']] + atomTypes['O'].specific
         checkList=[x in allOxygens for x in self.atomType]
 
-        return not False in checkList
+        return all(checkList)
 
     def isSulfur(self):
         """
@@ -405,7 +405,7 @@ class GroupAtom(Vertex):
         allSulfur = [atomTypes['S']] + atomTypes['S'].specific
         checkList=[x in allSulfur for x in self.atomType]
 
-        return not False in checkList
+        return all(checkList)
 ################################################################################
 
 class GroupBond(Edge):
@@ -942,12 +942,12 @@ class Group(Graph):
         #dictionary of element to expected valency
         valency = {atomTypes['C'] : 4,
                    atomTypes['O'] : 2,
-                   atomTypes ['S']: 2,
+                   atomTypes['S']: 2,
                    atomTypes['Si']:4
                    }
 
         #list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
-        specifics= [elementLabel for elementLabel in allElements if not elementLabel in nonSpecifics]
+        specifics= [elementLabel for elementLabel in allElements if elementLabel not in nonSpecifics]
         for index, atom in enumerate(self.atoms):
             claimedAtomType = atom.atomType[0]
             newAtomType = None
@@ -963,10 +963,9 @@ class Group(Graph):
             if not element: continue
             #Don't standardize atomtypes for nitrogen for now. My feeling is that
             # the work on the nitrogen atomtypes is still incomplete
-            elif element == atomTypes['N']: continue
+            elif element is atomTypes['N']: continue
 
             groupFeatures = getFeatures(atom, atom.bonds)
-            # print groupFeatures
 
             single = groupFeatures[0]
             allDouble = groupFeatures[1]
@@ -977,7 +976,6 @@ class Group(Graph):
             else:
                 bondValency =  single + 2 * allDouble + 3 * triple + 3.0/2.0 * benzene
             filledValency =  atom.radicalElectrons[0] + bondValency
-            # print index, atom, filledValency
 
             #For an atomtype to be known for certain, the valency must be filled
             #within 1 of the total valency available
@@ -987,7 +985,7 @@ class Group(Graph):
                     for molFeature, atomtypeFeature in zip(groupFeatures, atomtypeFeatureList):
                         if atomtypeFeature == []:
                             continue
-                        elif not molFeature in atomtypeFeature:
+                        elif molFeature not in atomtypeFeature:
                             break
                     else:
                         if specificAtomType is atomTypes['Oa'] or specificAtomType is atomTypes['Sa']:
@@ -999,7 +997,7 @@ class Group(Graph):
                             break
 
             #set the new atom type if the algorithm found one
-            if newAtomType and not newAtomType is claimedAtomType:
+            if newAtomType and newAtomType is not claimedAtomType:
                 atom.atomType[0] = newAtomType
                 modified = True
 
@@ -1076,4 +1074,4 @@ class Group(Graph):
         checkList.append(self.standardizeAtomType())
         checkList.append(self.addExplicitLigands())
 
-        return True in checkList
+        return any(checkList)
