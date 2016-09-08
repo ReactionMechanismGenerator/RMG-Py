@@ -9,7 +9,7 @@ from rmgpy.data.rmg import RMGDatabase
 from copy import copy, deepcopy
 from rmgpy.data.base import LogicOr
 from rmgpy.molecule import Group
-from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule.atomtype import atomTypes, AtomTypeError
 
 import nose
 import nose.tools
@@ -73,28 +73,35 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
-            
+
             test = lambda x: self.kinetics_checkReactantAndProductTemplate(family_name)
             test_name = "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
-            
+
+            # test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
+            # test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
+            # test.description = test_name
+            # self.compat_func_name = test_name
+            # yield test, family_name
+
             for depository in family.depositories:
-                
+
                 test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
                 test_name = "Kinetics {1} Depository: check adjacency lists are nonidentical?".format(family_name, depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
-        
+
         for library_name, library in self.database.kinetics.libraries.iteritems():
-            
+
             test = lambda x: self.kinetics_checkAdjlistsNonidentical(library)
             test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
+
         
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.iteritems():
@@ -124,6 +131,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             test = lambda x: self.general_checkCdAtomType(group_name, group)
             test_name = "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
+            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test_name = "Thermo groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -160,6 +173,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
 
+            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test_name = "Solvation groups {0}: Entry is accessible?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
     def test_statmech(self):
         for group_name, group in self.database.statmech.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -188,6 +207,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             test = lambda x: self.general_checkCdAtomType(group_name, group)
             test_name = "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
+            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test_name = "Statmech groups {0}: Entry is accessible?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -223,6 +248,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
+
+            test = lambda x: self.general_checkSampleDescendsToGroup(group_name, group)
+            test_name = "Transport groups {0}: Entry is accessible?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+
             
     # These are the actual tests, that don't start with a "test_" name:
     def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
@@ -440,6 +472,40 @@ The following adjList may have atoms in a different ordering than the input file
 {4}
                                             """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
 
+    def kinetics_checkSampleDescendsToGroup(self, family_name):
+        """
+        This test first creates a sample :class:Molecule from a :class:Group. Then it checks
+        that this molecule hits the original group or a child when it descends down the tree.
+        """
+        family = self.database.kinetics.families[family_name]
+
+        ignore=[]
+        if not family.ownReverse:
+            for product in family.forwardTemplate.products:
+                ignore.append(product)
+                ignore.extend(product.children)
+        else: ignore=[]
+
+        for entryName, entry in family.groups.entries.iteritems():
+            print entryName
+            if entry in ignore: continue
+            elif isinstance(entry.item, Group):
+                # print entryName
+                sampleMolecule = entry.item.makeSampleMolecule()
+                atoms = sampleMolecule.getLabeledAtoms()
+                match = family.groups.descendTree(sampleMolecule, atoms, strict=True)
+
+                assert entry in [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+Sample molecule AdjList:
+{3}
+
+Origin Group AdjList:
+{4}
+
+Matched group AdjList:
+{5}
+                                           """.format(family_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
+
 
     def general_checkNodesFoundInTree(self, group_name, group):
         """
@@ -555,6 +621,31 @@ The following adjList may have atoms in a different ordering than the input file
 The following adjList may have atoms in a different ordering than the input file:
 {4}
                                             """.format(group_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
+
+    def general_checkSampleDescendsToGroup(self, group_name, group):
+        """
+        This test first creates a sample :class:Molecule from a :class:Group. Then it checks
+        that this molecule hits the original group or a child when it descends down the tree.
+        """
+        print group_name
+        for entryName, entry in group.entries.iteritems():
+            print entryName
+            if isinstance(entry.item, Group):
+                # print entryName
+                sampleMolecule = entry.item.makeSampleMolecule()
+                atoms = sampleMolecule.getLabeledAtoms()
+                match = group.descendTree(sampleMolecule, atoms, strict=True)
+
+                assert entry in [match]+group.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+Sample molecule AdjList:
+{3}
+
+Origin Group AdjList:
+{4}
+
+Matched group AdjList:
+{5}
+                                           """.format(group_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
 
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
