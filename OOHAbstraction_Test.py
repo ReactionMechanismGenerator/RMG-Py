@@ -249,6 +249,7 @@ for item in importer_files:
             print type(reaction)
             reaction = calculate(reaction)
             print type(reaction)
+
             if reaction.kinetics:
                 """
                 Return the rate coefficient in the appropriate combination of cm^3,
