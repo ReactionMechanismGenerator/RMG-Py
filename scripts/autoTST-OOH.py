@@ -10,6 +10,9 @@ import imp
 import itertools
 import cPickle as pickle
 
+# do this before we have a chance to import openbabel!
+import rdkit, rdkit.Chem, rdkit.Chem.rdDistGeom
+
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
