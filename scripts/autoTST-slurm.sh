@@ -25,7 +25,6 @@
 #an array job
 #SBATCH --array=1-20
 
-work=/gss_gpfs_scratch/slakman.b/
 
 #####################################################
 
@@ -34,6 +33,7 @@ export PYTHONPATH=$RMGpy:$PYTHONPATH
 cd $RMGpy/scripts
 #python filterReactions.py /scratch/westgroup/Importer/RMG-models/
 ## that creates the kineticsDict files, and doesn't need repeating until the imported models change significantly
-
+echo $SLURM_ARRAY_TASK_ID
 python autoTST-OOH.py
+
 
