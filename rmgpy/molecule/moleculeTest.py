@@ -7,6 +7,7 @@ from external.wip import work_in_progress
 from .molecule import Atom, Bond, Molecule, ActionError
 from .group import Group
 from .element import getElement, elementList
+from .resonance import generateAromaticResonanceIsomers
 
 
 ################################################################################
@@ -1314,7 +1315,7 @@ multiplicity 2
 32 H u0 p0 c0 {16,S}
 """)
         perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
-        for isomer in perylene2.getAromaticResonanceIsomers():
+        for isomer in generateAromaticResonanceIsomers(perylene2):
             if perylene.isIsomorphic(isomer):
                 break
         else:  # didn't break
