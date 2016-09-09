@@ -93,7 +93,6 @@ class Saturator(object):
                         - 2* atom.lonePairs - order - atom.charge
             
             '''
-            global bond_orders
             newAtoms = []
             for atom in atoms:
                 try:
@@ -101,9 +100,7 @@ class Saturator(object):
                 except KeyError:
                     raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
                 
-                order = 0
-                for _, bond in atom.bonds.items():
-                    order += bond_orders[bond.order]
+                order = getBondOrdersForAtom(atom)
                     
                 number_of_H_to_be_added = max_number_of_valence_electrons - atom.radicalElectrons - 2* atom.lonePairs - int(order) - atom.charge
                 
