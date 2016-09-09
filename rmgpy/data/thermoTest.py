@@ -15,6 +15,17 @@ import rmgpy
 
 ################################################################################
 
+class TestThermoDatabaseLoading(unittest.TestCase):
+
+    def testFailingLoadsThermoLibraries(self):
+
+        database = ThermoDatabase()
+        libraries = ['primaryThermoLibrary', 'GRI-Mech3.0', 'I am a library not existing in official RMG']
+        path = os.path.join(settings['database.directory'], 'thermo')
+        
+        with self.assertRaises(Exception):
+            database.loadLibraries(os.path.join(path, 'libraries'), libraries)
+
 class TestThermoDatabase(unittest.TestCase):
     """
     Contains unit tests of the ThermoDatabase class.
