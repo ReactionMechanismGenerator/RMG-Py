@@ -774,7 +774,7 @@ class ThermoDatabase(object):
                     self.libraries[library.label] = library
                     self.libraryOrder.append(library.label)
                 else:
-                    logging.warning('Library {} not found in {}...'.format(libraryName, path))
+                    raise Exception('Library {} not found in {}...Please check if your library is correctly placed'.format(libraryName, path))
 
     def loadGroups(self, path):
         """
