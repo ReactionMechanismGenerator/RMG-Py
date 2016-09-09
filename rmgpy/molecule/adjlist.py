@@ -38,34 +38,6 @@ from .group import GroupAtom, GroupBond
 from .element import getElement
 #import chempy.molecule.atomtype as atomtypes
 
-bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-
-def getBondOrdersForAtom(atom):
-    """
-    This helper function is to help calculate total bond orders for an
-    input atom.
-
-    Some special consideration for the order `B` bond. For atoms having 
-    three `B` bonds, the order for each is 4/3.0, while for atoms having other
-    than three `B` bonds, the order for  each is 3/2.0
-    """
-    global bond_orders
-
-    num_B_bond = 0
-    order = 0
-    for _, bond in atom.bonds.items():
-        if bond.order == 'B':
-            num_B_bond += 1
-        else:
-            order += bond_orders[bond.order]
-
-    if num_B_bond == 3:
-        order += num_B_bond * 4/3.0
-    else:
-        order += num_B_bond * 3/2.0
-
-    return order
-
 class PeriodicSystem(object):
     valence_electrons_first_period_elements  = {'H':1, 'He':2}
         
@@ -100,7 +72,7 @@ class Saturator(object):
                 except KeyError:
                     raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
                 
-                order = getBondOrdersForAtom(atom)
+                order = atom.getBondOrdersForAtom()
                     
                 number_of_H_to_be_added = max_number_of_valence_electrons - atom.radicalElectrons - 2* atom.lonePairs - int(order) - atom.charge
                 
@@ -125,7 +97,7 @@ class ConsistencyChecker(object):
             
             '''
             valence = PeriodicSystem.valence_electrons[atom.symbol]
-            order = getBondOrdersForAtom(atom)
+            order = atom.getBondOrdersForAtom()
                 
             theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
@@ -418,7 +390,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     except KeyError:
                         raise InvalidAdjacencyListError('Error in adjacency list:\n{1}\nCannot add hydrogens: Unknown valence for atom "{0}".'.format(atom.symbol, adjlist))
                     radical = atom.radicalElectrons
-                    order = getBondOrdersForAtom(atom)
+                    order = atom.getBondOrdersForAtom()
                     count = valence - radical - int(order) - 2*(atom.lonePairs-standardLonePairs[atom.symbol])
                     for i in range(count):
                         a = Atom(element='H', radicalElectrons=0, charge=0, label='', lonePairs=0)

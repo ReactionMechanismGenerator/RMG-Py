@@ -60,6 +60,12 @@ from rmgpy.molecule.group import GroupAtom, GroupBond, Group
 
 ################################################################################
 
+bond_orders = {'S': 1, 'D': 2, 'T': 3}
+
+globals().update({
+    'bond_orders': bond_orders,
+})
+
 class Atom(Vertex):
     """
     An atom. The attributes are:
@@ -356,9 +362,9 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the 
         number and types of bonds, radicals, and lone pairs.
         """
-        from .adjlist import getBondOrdersForAtom, PeriodicSystem
+        from .adjlist import PeriodicSystem
         valence = PeriodicSystem.valence_electrons[self.symbol]
-        order = getBondOrdersForAtom(atom)
+        order = self.getBondOrdersForAtom()
         self.charge = valence - order - self.radicalElectrons - 2*self.lonePairs
         
     def applyAction(self, action):
@@ -396,6 +402,30 @@ class Atom(Vertex):
         if self.spinMultiplicity < 0:
             raise ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
         self.updateCharge()
+
+    def getBondOrdersForAtom(self):
+        """
+        This helper function is to help calculate total bond orders for an
+        input atom.
+
+        Some special consideration for the order `B` bond. For atoms having 
+        three `B` bonds, the order for each is 4/3.0, while for atoms having other
+        than three `B` bonds, the order for  each is 3/2.0
+        """
+        num_B_bond = 0
+        order = 0
+        for _, bond in self.bonds.iteritems():
+            if bond.order == 'B':
+                num_B_bond += 1
+            else:
+                order += bond_orders[bond.order]
+
+        if num_B_bond == 3:
+            order += num_B_bond * 4/3.0
+        else:
+            order += num_B_bond * 3/2.0
+
+        return order
         
 
 ################################################################################

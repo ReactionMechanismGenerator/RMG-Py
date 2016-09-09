@@ -32,6 +32,7 @@ cimport rmgpy.constants as constants
 cimport numpy
 
 ################################################################################
+cdef dict bond_orders 
 
 cdef class Atom(Vertex):
 
@@ -73,6 +74,8 @@ cdef class Atom(Vertex):
     cpdef updateCharge(self)
     
     cpdef setSpinMultiplicity(self, int spinMultiplicity)
+
+    cpdef getBondOrdersForAtom(self)
     
 ################################################################################
     
