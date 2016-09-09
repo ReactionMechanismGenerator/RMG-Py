@@ -356,16 +356,10 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the 
         number and types of bonds, radicals, and lone pairs.
         """
-        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-        valence = valences[self.symbol]
-        order = 0
-        for atom2, bond in self.bonds.items():
-            order += orders[bond.order]
-        if self.symbol == 'H' or self.symbol == 'He':
-            self.charge = 2 - valence - order - self.radicalElectrons - 2*self.lonePairs
-        else:
-            self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
+        from .adjlist import getBondOrdersForAtom, PeriodicSystem
+        valence = PeriodicSystem.valence_electrons[self.symbol]
+        order = getBondOrdersForAtom(atom)
+        self.charge = valence - order - self.radicalElectrons - 2*self.lonePairs
         
     def applyAction(self, action):
         """
