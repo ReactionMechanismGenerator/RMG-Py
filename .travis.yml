@@ -24,6 +24,7 @@ before_install:
   - conda update --yes conda
   - cd ..
   - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+  - git checkout longDistanceInteraction
   - cd RMG-Py
 
 install:
