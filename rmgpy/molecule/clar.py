@@ -35,6 +35,38 @@ import numpy as np
 from scipy.optimize import linprog
 
 
+def generateClarStructures(molecule):
+
+    output = clarOptimization(molecule)
+
+    newmol = output[0]
+    SSSR = output[1]
+    bonds = output[2]
+    result = output[3]
+
+    # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using nomenclature
+    # from the paper. In y, 1 means the ring as a sextet, 0 means it does not. In x, 1 corresponds to a double bond,
+    # 0 either means a single bond or the bond is part of a sextet.
+    y = result.x[0:len(SSSR)]
+    x = result.x[len(SSSR):]
+
+    # Apply results to molecule - double bond locations first
+    for index, bond in enumerate(bonds):
+        if x[index] == 0:
+            bond.order = 'S'
+        elif x[index] == 1:
+            bond.order = 'D'
+        else:
+            raise ValueError('Unaccepted bond value obtained from optimization.')
+
+    # Then apply locations of aromatic sextets by converting to benzene bonds
+    for index, ring in enumerate(SSSR):
+        if y[index] == 1:
+            clarTransformation(newmol, ring)
+
+    return newmol
+
+
 def clarOptimization(molecule, constraints=None):
     """
     Generates Clar structures for a given molecule using linear programming. This algorithm maximizes the number
@@ -48,14 +80,12 @@ def clarOptimization(molecule, constraints=None):
     # Make a copy of the molecule so we don't destroy the original
     mol = molecule.copy(deep=True)
 
-    SSSR = mol.getSmallestSetOfSmallestRings()
+    SSSR = getAromaticSSSR(mol)
 
     # Get list of atoms that are in rings
     atoms = set()
     for ring in SSSR:
-        # Only include 6 member rings
-        if len(ring) == 6:
-            atoms.update(ring)
+        atoms.update(ring)
     atoms = list(atoms)
 
     # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
@@ -80,36 +110,53 @@ def clarOptimization(molecule, constraints=None):
     # Bounds on variables
     bounds = ((0, 1))
 
-    # Add additional constraints
-    if constraints:
-        constraint = np.zeros((1, np.size(c)))
-        constraint[0][0] = 1
-        a = np.concatenate((a, constraint))
-        b = np.concatenate((b, [1]))
-
     # Solve linear program.
     result = linprog(c, A_eq=a, b_eq=b, bounds=bounds)
-    # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using nomenclature
-    # from the paper. In y, 1 means the ring as a sextet, 0 means it does not. In x, 1 corresponds to a double bond,
-    # 0 either means a single bond or the bond is part of a sextet.
-    y = result.x[0:len(SSSR)]
-    x = result.x[len(SSSR):]
 
-    # Apply results to molecule - double bond locations first
-    for index, bond in enumerate(bonds):
-        if x[index] == 0:
-            bond.order = 'S'
-        elif x[index] == 1:
-            bond.order = 'D'
-        else:
-            raise ValueError('Unaccepted bond value obtained from optimization.')
+    # Check that optimization was successful
+    if result.status != 0:
+        raise Exception('Optimization exited with message: {0}'.format(result.message))
+    if np.any(np.logical_and(np.not_equal(result.x, 1), np.not_equal(result.x, 0))):
+        raise ValueError('Non-integer solution obtained from optimization.')
 
-    # Then apply locations of aromatic sextets by converting to benzene bonds
-    for index, ring in enumerate(SSSR):
-        if y[index] == 1:
-            clarTransformation(mol, ring)
+    return (mol, SSSR, bonds, result)
 
-    return mol
+
+def getAromaticSSSR(molecule):
+    """
+    Returns the smallest set of smallest aromatic rings
+    """
+    import rmgpy.molecule.generator as generator
+    from rdkit.Chem.rdchem import BondType
+    AROMATIC = BondType.AROMATIC
+
+    rings = [ring0 for ring0 in molecule.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+    if not rings:
+        return []
+
+    try:
+        rdkitmol, rdAtomIndices = generator.toRDKitMol(molecule, removeHs=False, returnMapping=True)
+    except ValueError:
+        return []
+
+    aromaticRings = []
+    for ring0 in rings:
+        aromaticBonds = []
+        # Figure out which atoms and bonds are aromatic and reassign appropriately:
+        for i, atom1 in enumerate(ring0):
+            if not atom1.isCarbon():
+                # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                break
+            for atom2 in ring0[i + 1:]:
+                if molecule.hasBond(atom1, atom2):
+                    if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
+                                                    rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                        aromaticBonds.append(molecule.getBond(atom1, atom2))
+        else:  # didn't break so all atoms are carbon
+            if len(aromaticBonds) == 6:
+                aromaticRings.append(ring0)
+
+    return aromaticRings
 
 
 def clarTransformation(molecule, ring):

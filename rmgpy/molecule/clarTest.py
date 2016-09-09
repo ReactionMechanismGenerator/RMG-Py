@@ -36,7 +36,6 @@ class TestClar(unittest.TestCase):
 
         self.assertTrue(newmol.isAromatic())
 
-    @work_in_progress
     def testPhenalene(self):
         """
         Test phenalene, which currently does not have feasible starting point.
