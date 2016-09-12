@@ -36,7 +36,7 @@ reaction sites).
 import cython
 
 from .graph import Vertex, Edge, Graph
-from .atomtype import atomTypes
+from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
 
 ################################################################################
 
@@ -386,6 +386,26 @@ class GroupAtom(Vertex):
             if group.charge: return False
         # Otherwise self is in fact a specific case of other
         return True
+
+    def isOxygen(self):
+        """
+        Return ``True`` if the atom represents an oxygen atom or ``False`` if
+        not.
+        """
+        allOxygens = [atomTypes['O']] + atomTypes['O'].specific
+        checkList=[x in allOxygens for x in self.atomType]
+
+        return all(checkList)
+
+    def isSulfur(self):
+        """
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if
+        not.
+        """
+        allSulfur = [atomTypes['S']] + atomTypes['S'].specific
+        checkList=[x in allSulfur for x in self.atomType]
+
+        return all(checkList)
 ################################################################################
 
 class GroupBond(Edge):
@@ -432,6 +452,34 @@ class GroupBond(Edge):
         attributes of the copy will not affect the original.
         """
         return GroupBond(self.vertex1, self.vertex2, self.order[:])
+
+    def isSingle(self):
+        """
+        Return ``True`` if the bond represents a single bond or ``False`` if
+        not. Bonds with any wildcards will return  ``False``.
+        """
+        return self.order[0] == 'S' and len(self.order) == 1
+
+    def isDouble(self):
+        """
+        Return ``True`` if the bond represents a double bond or ``False`` if
+        not. Bonds with any wildcards will return  ``False``.
+        """
+        return self.order[0] == 'D' and len(self.order) == 1
+
+    def isTriple(self):
+        """
+        Return ``True`` if the bond represents a triple bond or ``False`` if
+        not. Bonds with any wildcards will return  ``False``.
+        """
+        return self.order[0] == 'T' and len(self.order) == 1
+
+    def isBenzene(self):
+        """
+        Return ``True`` if the bond represents a benzene bond or ``False`` if
+        not. Bonds with any wildcards will return  ``False``.
+        """
+        return self.order[0] == 'B' and len(self.order) == 1
 
     def __changeBond(self, order):
         """
@@ -870,3 +918,160 @@ class Group(Graph):
             return False
         else:
             return True
+
+    def standardizeAtomType(self):
+        """
+        This function changes the atomTypes in a group if the atom must
+        be a specific atomType based on its bonds and valency.
+
+        Currently only standardizes oxygen, carbon and sulfur atomTypes
+
+        We also only check when there is exactly one atomType,
+        one bondType, one radical setting.
+        For any group where there are wildcards or multiple attributes,
+        we cannot apply this check.
+
+        In the case where the atomType is ambigious based on bonds
+        and valency, this function will not change the type.
+
+        Returns a 'True' if the group was modified otherwise returns 'False'
+        """
+
+        modified = False
+
+        #dictionary of element to expected valency
+        valency = {atomTypes['C'] : 4,
+                   atomTypes['O'] : 2,
+                   atomTypes['S']: 2,
+                   atomTypes['Si']:4
+                   }
+
+        #list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
+        specifics= [elementLabel for elementLabel in allElements if elementLabel not in nonSpecifics]
+        for index, atom in enumerate(self.atoms):
+            claimedAtomType = atom.atomType[0]
+            newAtomType = None
+            element = None
+            #Ignore elements that do not have more than one atomtype
+            if claimedAtomType.label in nonSpecifics: continue
+            for elementLabel in specifics:
+                if claimedAtomType.label == elementLabel or atomTypes[claimedAtomType.label] in atomTypes[elementLabel].specific:
+                    element = atomTypes[elementLabel]
+                    break
+
+            #claimedAtomType is not in one of the specified elements
+            if not element: continue
+            #Don't standardize atomtypes for nitrogen for now. My feeling is that
+            # the work on the nitrogen atomtypes is still incomplete
+            elif element is atomTypes['N']: continue
+
+            groupFeatures = getFeatures(atom, atom.bonds)
+
+            single = groupFeatures[0]
+            allDouble = groupFeatures[1]
+            triple = groupFeatures[5]
+            benzene = groupFeatures[6]
+            if benzene == 3:
+                bondValency = single + 2 * allDouble + 3 * triple + 4.0/3.0 * benzene
+            else:
+                bondValency =  single + 2 * allDouble + 3 * triple + 3.0/2.0 * benzene
+            filledValency =  atom.radicalElectrons[0] + bondValency
+
+            #For an atomtype to be known for certain, the valency must be filled
+            #within 1 of the total valency available
+            if filledValency >= valency[element] - 1:
+                for specificAtomType in element.specific:
+                    atomtypeFeatureList = specificAtomType.getFeatures()
+                    for molFeature, atomtypeFeature in zip(groupFeatures, atomtypeFeatureList):
+                        if atomtypeFeature == []:
+                            continue
+                        elif molFeature not in atomtypeFeature:
+                            break
+                    else:
+                        if specificAtomType is atomTypes['Oa'] or specificAtomType is atomTypes['Sa']:
+                            if atom.lonePairs == 3 or atom.radicalElectrons == 2:
+                                newAtomType = specificAtomType
+                                break
+                        else:
+                            newAtomType = specificAtomType
+                            break
+
+            #set the new atom type if the algorithm found one
+            if newAtomType and newAtomType is not claimedAtomType:
+                atom.atomType[0] = newAtomType
+                modified = True
+
+        return modified
+
+    def addExplicitLigands(self):
+        """
+        This function Od/Sd ligand to CO or CS atomtypes if they are not already there.
+
+        Returns a 'True' if the group was modified otherwise returns 'False'
+        """
+
+        modified = False
+
+        atomsToAddTo=[]
+
+        for index, atom in enumerate(self.atoms):
+            claimedAtomType = atom.atomType[0]
+            if claimedAtomType is atomTypes['CO'] or claimedAtomType is atomTypes['CS']:
+                for atom2, bond12 in atom.bonds.iteritems():
+                    if bond12.isDouble():
+                        break
+                else: atomsToAddTo.append(index)
+
+        for atomIndex in atomsToAddTo:
+            modified = True
+            if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
+                newAtom = GroupAtom(atomType=[atomTypes['Od']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+            elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
+                newAtom = GroupAtom(atomType=[atomTypes['Sd']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+            self.addAtom(newAtom)
+            newBond = GroupBond(self.atoms[atomIndex], newAtom, order=['D'])
+            self.addBond(newBond)
+
+        return modified
+
+    def standardizeGroup(self):
+        """
+        This function modifies groups to make them have a standard AdjList form.
+
+        Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
+        have explicit Od/Sd ligands. Other functions can be added as necessary
+
+        We also only check when there is exactly one atomType, one bondType, one
+        radical setting. For any group where there are wildcards or multiple
+        attributes, we do not apply this check.
+
+        Returns a 'True' if the group was modified otherwise returns 'False'
+        """
+
+        modified = False
+
+        #see if this is a group we can check, must not have any OR groups in
+        #its bonds or atomtypes
+        viableToCheck = True
+        for atom in self.atoms:
+            if len(atom.atomType) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.radicalElectrons) > 1:
+                viableToCheck = False
+                break
+            elif len(atom.lonePairs) > 1:
+                viableToCheck = False
+                break
+            for bond in atom.bonds.values():
+                if len(bond.order) > 1:
+                    viableToCheck = False
+                    break
+        if not viableToCheck: return modified
+
+        #If viable then we apply current conventions:
+        checkList=[]
+        checkList.append(self.standardizeAtomType())
+        checkList.append(self.addExplicitLigands())
+
+        return any(checkList)

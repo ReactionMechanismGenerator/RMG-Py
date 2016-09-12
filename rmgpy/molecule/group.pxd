@@ -59,6 +59,9 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
+    cpdef bint isOxygen(self)
+
+    cpdef bint isSulfur(self)
 ################################################################################
 
 cdef class GroupBond(Edge):
@@ -68,6 +71,14 @@ cdef class GroupBond(Edge):
     cpdef Edge copy(self)
 
     cpdef __changeBond(self, short order)
+
+    cpdef bint isSingle(self) except -2
+
+    cpdef bint isDouble(self) except -2
+
+    cpdef bint isTriple(self) except -2
+
+    cpdef bint isBenzene(self) except -2
 
     cpdef applyAction(self, list action)
 
@@ -132,3 +143,9 @@ cdef class Group(Graph):
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
     
     cpdef bint isIdentical(self, Graph other)
+
+    cpdef bint standardizeAtomType(self)
+
+    cpdef bint addExplicitLigands(self)
+
+    cpdef bint standardizeGroup(self)

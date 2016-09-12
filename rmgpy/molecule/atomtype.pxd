@@ -39,8 +39,21 @@ cdef class AtomType:
     cdef public list incrementLonePair
     cdef public list decrementLonePair
 
+    cdef public list single
+    cdef public list allDouble
+    cdef public list rDouble
+    cdef public list oDouble
+    cdef public list sDouble
+    cdef public list triple
+    cdef public list benzene
+    cdef public list lonePairs
+
     cpdef bint isSpecificCaseOf(self, AtomType other)
 
     cpdef bint equivalent(self, AtomType other)
+
+    cpdef list getFeatures(self)
+
+cpdef list getFeatures(atom, dict bonds)
 
 cpdef AtomType getAtomType(atom, dict bonds)
