@@ -1314,3 +1314,39 @@ class Group(Graph):
 
 
         return newMolecule
+
+    def isBenzeneExplicit(self):
+        """
+
+        Returns: 'True' if all Cb, Cbf atoms are in completely explicitly stated benzene rings.
+
+        Otherwise return 'False'
+
+        """
+
+        #classify atoms
+        cbAtomList = []
+
+        #only want to work with carbon atoms
+        labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C']
+
+        for atom in self.atoms:
+            if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
+            elif atom.atomType[0].label in ['Cb', 'Cbf']: #Make Cb and N3b into normal cb atoms
+                cbAtomList.append(atom)
+            else:
+                benzeneBonds = 0
+                for atom2, bond12 in atom.bonds.iteritems():
+                    if bond12.isBenzene(): benzeneBonds+=1
+                if benzeneBonds >0: cbAtomList.append(atom)
+
+        #get all explicit benzene rings
+        rings=[cycle for cycle in self.getAllCyclesOfSize(6) if Group(atoms = cycle).isAromaticRing()]
+
+        #test that all benzene atoms are in benzene rings
+        for atom in cbAtomList:
+            inRing = False
+            for ring in rings:
+                if atom in ring: inRing = True
+            if not inRing: return False
+        else: return True

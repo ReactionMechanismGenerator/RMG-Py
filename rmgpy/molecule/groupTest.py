@@ -643,6 +643,30 @@ class TestGroup(unittest.TestCase):
         group1 = Group().fromAdjacencyList(adjlist1)
         result1 = group1.makeSampleMolecule()
         self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=O')))
+
+    def testIsBenzeneExplicit(self):
+        """
+        Test the Group.isBenzeneExplicit method
+        """
+        adjlist1 = """
+1  *1 Cb u0 {2,B}
+2  *2 Cb u0 {1,B}
+        """
+        group1 = Group().fromAdjacencyList(adjlist1)
+        self.assertFalse(group1.isBenzeneExplicit())
+
+        benzene ="""
+1 C u0 {2,B} {6,B}
+2 C u0 {1,B} {3,B}
+3 C u0 {2,B} {4,B}
+4 C u0 {3,B} {5,B}
+5 C u0 {4,B} {6,B}
+6 C u0 {5,B} {1,B}
+        """
+        benzene = Group().fromAdjacencyList(benzene)
+        self.assertTrue(benzene.isBenzeneExplicit())
+
+
 ################################################################################
 
 if __name__ == '__main__':
