@@ -193,15 +193,16 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
         
-        testZero = abs(thermoData2.H298.value_si)+abs(thermoData2.S298.value_si) # Used to check if all of the entries in thermoData1 are zero
         for i in range(thermoData1.Tdata.value_si.shape[0]):
             thermoData1.Cpdata.value_si[i] += thermoData2.Cpdata.value_si[i]
-            testZero += abs(thermoData2.Cpdata.value_si[i]) # Used to check if all of the entries in thermoData1 are zero
         thermoData1.H298.value_si += thermoData2.H298.value_si
         thermoData1.S298.value_si += thermoData2.S298.value_si
 
+        testZero = sum(abs(value) for value in [thermoData2.H298.value_si, thermoData2.S298.value_si]+thermoData2.Cpdata.value_si.tolist())
+        # Used to check if all of the entries in thermoData2 are zero
+
         if groupAdditivity:
-            if testZero !=0: # Used to check if all of the entries in thermoData1 are zero
+            if testZero !=0: # Used to check if all of the entries in thermoData2 are zero
                 if thermoData1.comment:
                     thermoData1.comment += ' + {0}'.format(thermoData2.comment)
                 else:
@@ -217,19 +218,17 @@ def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
     if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
         raise Exception('Cannot take the difference between these ThermoData objects due to their having different temperature points.')
 
-    testZero = abs(thermoData2.H298.value_si)+abs(thermoData2.S298.value_si) # Used to check if all of the entries in thermoData1 are zero
     for i in range(thermoData1.Tdata.value_si.shape[0]):
         thermoData1.Cpdata.value_si[i] -= thermoData2.Cpdata.value_si[i]
-        testZero += abs(thermoData2.Cpdata.value_si[i]) # Used to check if all of the entries in thermoData1 are zero
     thermoData1.H298.value_si -= thermoData2.H298.value_si
     thermoData1.S298.value_si -= thermoData2.S298.value_si
 
+    testZero = sum(abs(value) for value in [thermoData2.H298.value_si, thermoData2.S298.value_si]+thermoData2.Cpdata.value_si.tolist())
+    # Used to check if all of the entries in thermoData2 are zero
+
     if groupAdditivity:
-        if testZero !=0: # Used to check if all of the entries in thermoData1 are zero
-            if thermoData1.comment:
-                thermoData1.comment += ' - {0}'.format(thermoData2.comment)
-            else:
-                thermoData1.comment = 'Thermo group additivity estimation: ' + ' - {0}'.format(thermoData2.comment)
+        if testZero !=0: # Used to check if all of the entries in thermoData2 are zero
+            thermoData1.comment = re.sub(re.escape(' + '+thermoData2.comment),'',thermoData1.comment, 1)
     return thermoData1
 
 def averageThermoData(thermoDataList=None):
@@ -790,8 +789,8 @@ class ThermoDatabase(object):
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
         self.groups = {}
         self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
-        # self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
-        # self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
+        self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
+        self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
         self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
         self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
@@ -1349,19 +1348,18 @@ class ThermoDatabase(object):
                 logging.error(molecule.toAdjacencyList())
                 raise
             
-            # Remove the redundant interactions introduced by saturating the radical.
-            # Then add the radical interactions which are ignored in the thermo calculation of molecule.
+            # Add the radical interactions which are ignored in the thermo calculation of molecule.
             if saturatedStruct.isAromatic() and (not saturatedStruct.isAtomInCycle(atom)):
                 baseAtom = saturatedStruct.getBaseCb(atom)[0]
-                for atom_1 in saturatedStruct.getFirstNeighbor(baseAtom):
+                for atom_1 in saturatedStruct.getNthNeighbor([baseAtom],1,[]):
                     try:
                         self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':baseAtom, '*2':atom_1})
                     except KeyError: pass
-                for atom_2 in saturatedStruct.getSecondNeighbor(baseAtom):
+                for atom_2 in saturatedStruct.getNthNeighbor([baseAtom],2,[]):
                     try:
                         self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':baseAtom, '*2':atom_2})
                     except KeyError: pass
-                for atom_3 in saturatedStruct.getThirdNeighbor(baseAtom):
+                for atom_3 in saturatedStruct.getNthNeighbor([baseAtom],3,[]):
                     try:
                         self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':baseAtom, '*2':atom_3})
                     except KeyError: pass
@@ -1376,22 +1374,21 @@ class ThermoDatabase(object):
                 thermoData.H298.value_si -= 52.103 * 4184
 
             # Remove the redundant interactions introduced by saturating the radical.
-            # Then add the radical interactions which are ignored in the thermo calculation of molecule.
             if saturatedStruct.isAromatic() and (not saturatedStruct.isAtomInCycle(atom)):
                 baseAtom = saturatedStruct.getBaseCb(atom)[0]
-                for atom_1 in saturatedStruct.getFirstNeighbor(baseAtom):
+                for atom_1 in saturatedStruct.getNthNeighbor([baseAtom],1,[]):
                     try:
                         # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':baseAtom, '*2':atom_1})
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*2':baseAtom, '*1':atom_1})
                     except KeyError: pass
-                for atom_2 in saturatedStruct.getSecondNeighbor(baseAtom):
+                for atom_2 in saturatedStruct.getNthNeighbor([baseAtom],2,[]):
                     try:
                         # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':baseAtom, '*2':atom_2})
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*2':baseAtom, '*1':atom_2})
                     except KeyError: pass
-                for atom_3 in saturatedStruct.getThirdNeighbor(baseAtom):
+                for atom_3 in saturatedStruct.getNthNeighbor([baseAtom],3,[]):
                     try:
                         # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
                         self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':baseAtom, '*2':atom_3})
@@ -1464,22 +1461,30 @@ class ThermoDatabase(object):
                     logging.error(molecule.toAdjacencyList())
                     raise
                 # Correct for gauche and 1,5- interactions
-                if (not molecule.isAtomInCycle(atom)) or (atom.atomType.label=='Cb'):
-                    for atom_1 in molecule.getFirstNeighbor(atom):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
-                        except KeyError: pass
-                for atom_2 in molecule.getSecondNeighbor(atom):
+                if not cyclic:
                     try:
-                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
+                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
                     except KeyError: pass
-                for atom_3 in molecule.getThirdNeighbor(atom):
-                    try:
-                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], molecule, {'*1':atom, '*2':atom_3})
-                    except KeyError: pass
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
+                except KeyError: pass
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
+
+                if atom.atomType.label=='Cb':
+                    for atom_1 in molecule.getNthNeighbor([atom], 1, []):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
+                        except KeyError: pass
+                    for atom_2 in molecule.getNthNeighbor([atom], 2, []):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
+                        except KeyError: pass
+                    for atom_3 in molecule.getNthNeighbor([atom], 3, []):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], molecule, {'*1':atom, '*2':atom_3})
+                        except KeyError: pass
 
         # Do ring corrections separately because we only want to match
         # each ring one time
