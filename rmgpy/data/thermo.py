@@ -183,7 +183,7 @@ def processOldLibraryEntry(data):
     )
 
 
-def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
+def addThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False):
         """
         Add the thermodynamic data `thermoData2` to the data `thermoData1`,
         and return `thermoData1`.
@@ -202,7 +202,7 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
         # Used to check if all of the entries in thermoData2 are zero
 
         if groupAdditivity:
-            if testZero !=0: # Used to check if all of the entries in thermoData2 are zero
+            if verbose or testZero !=0: # Used to check if all of the entries in thermoData2 are zero
                 if thermoData1.comment:
                     thermoData1.comment += ' + {0}'.format(thermoData2.comment)
                 else:
@@ -210,7 +210,7 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
             
         return thermoData1
     
-def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
+def removeThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False):
     """
     Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
     and return `thermoData1`.
@@ -227,7 +227,7 @@ def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
     # Used to check if all of the entries in thermoData2 are zero
 
     if groupAdditivity:
-        if testZero !=0: # Used to check if all of the entries in thermoData2 are zero
+        if verbose or testZero !=0: # Used to check if all of the entries in thermoData2 are zero
             thermoData1.comment = re.sub(re.escape(' + '+thermoData2.comment),'',thermoData1.comment, 1)
     return thermoData1
 
@@ -1529,7 +1529,7 @@ class ThermoDatabase(object):
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
         if not isPolyringPartialMatched(polyring, matched_group):
-            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
+            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
             
@@ -1632,7 +1632,7 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data, node
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True), node
+            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node
 
     def __averageChildrenThermo(self, node):
         """
