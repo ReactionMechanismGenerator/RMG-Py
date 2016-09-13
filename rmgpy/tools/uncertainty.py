@@ -352,4 +352,52 @@ class Uncertainty:
             dlnk = kParamEngine.getUncertaintyValue(self.reactionSourcesDict[reaction])
             self.kineticInputUncertainties.append(dlnk)
 
- 
+    def sensitivityAnalysis(self, initialMoleFractions, sensitiveSpecies, T, P, terminationTime, sensitivityThreshold=1e-3, number=10, fileformat='.png'):
+        """
+        Run sensitivity analysis using the RMG solver in a single ReactionSystem object
+        
+        initialMoleFractions is a dictionary with Species objects as keys and mole fraction initial conditions
+        sensitiveSpecies is a list of sensitive Species objects
+        number is the number of top species thermo or reaction kinetics desired to be plotted
+        """
+        
+        
+        from rmgpy.solver import SimpleReactor, TerminationTime
+        from rmgpy.quantity import Quantity
+        from rmgpy.tools.sensitivity import plotSensitivity
+        from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+
+        T = Quantity(T)
+        P = Quantity(P)
+        termination=[TerminationTime(Quantity(terminationTime))]
+                                     
+        reactionSystem = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
+        
+        # Create the csv worksheets for logging sensitivity
+        util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+        sensWorksheet = []
+        reactionSystemIndex = 0
+        for spec in reactionSystem.sensitiveSpecies:
+            csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(reactionSystemIndex+1, spec.index))
+            sensWorksheet.append(csvfilePath)
+
+        reactionSystem.attach(SimulationProfileWriter(
+            self.outputDirectory, reactionSystemIndex, self.speciesList))  
+        reactionSystem.attach(SimulationProfilePlotter(
+            self.outputDirectory, reactionSystemIndex, self.speciesList))
+        
+        reactionSystem.simulate(
+            coreSpecies = self.speciesList,
+            coreReactions = self.reactionList,
+            edgeSpecies = [],
+            edgeReactions = [],
+            toleranceKeepInEdge = 0,
+            toleranceMoveToCore = 1,
+            toleranceInterruptSimulation = 1,
+            sensitivity = True,
+            sensWorksheet = sensWorksheet,
+        )
+        
+        
+        plotSensitivity(self.outputDirectory, reactionSystemIndex, reactionSystem.sensitiveSpecies, number=number, fileformat=fileformat)
+    
