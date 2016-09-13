@@ -401,3 +401,51 @@ class Uncertainty:
         
         plotSensitivity(self.outputDirectory, reactionSystemIndex, reactionSystem.sensitiveSpecies, number=number, fileformat=fileformat)
     
+    def localAnalysis(self, sensitiveSpecies, correlated=False, number=10, fileformat='.png'):
+        """
+        Conduct local uncertainty analysis on the reaction model.
+        sensitiveSpecies is a list of sensitive Species objects
+        number is the number of highest contributing uncertain parameters desired to be plotted
+        fileformat can be either .png, .pdf, or .svg
+        """
+        for sensSpecies in sensitiveSpecies:
+            csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(1, sensSpecies.index))
+            time, dataList = parseCSVData(csvfilePath)
+            # Assign uncertainties
+            thermoDataList = []
+            reactionDataList = []
+            for data in dataList:
+                if data.species:
+                    for species in self.speciesList:
+                        if species.toChemkin() == data.species:
+                            index = self.speciesList.index(species)
+                            break
+                    else:
+                        raise Exception('Chemkin name {} of species in the CSV file does not match anything in the species list.'.format(data.species))
+                    
+                    data.uncertainty = self.thermoInputUncertainties[index]
+                    thermoDataList.append(data)
+
+
+                if data.reaction:
+                    rxnIndex = int(data.index) - 1
+                    data.uncertainty = self.kineticInputUncertainties[rxnIndex]
+                    reactionDataList.append(data)
+
+            # Compute total variance
+            totalVariance = 0.0
+            for data in thermoDataList:
+                totalVariance += (data.data[-1]*data.uncertainty)**2
+            for data in reactionDataList:
+                totalVariance += (data.data[-1]*data.uncertainty)**2
+            
+            # Add the reaction index to the data label of the reaction uncertainties
+            for data in reactionDataList:
+                data.label = 'k'+str(data.index) + ': ' + data.label.split()[-1]
+            
+            thermoUncertaintyPlotPath = os.path.join(self.outputDirectory, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            reactionUncertaintyPlotPath = os.path.join(self.outputDirectory, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            ReactionSensitivityPlot(xVar=time,yVar=reactionDataList,numReactions=number).uncertaintyPlot(totalVariance, filename=reactionUncertaintyPlotPath)
+            ThermoSensitivityPlot(xVar=time,yVar=thermoDataList,numSpecies=number).uncertaintyPlot(totalVariance, filename=thermoUncertaintyPlotPath)
+
+
