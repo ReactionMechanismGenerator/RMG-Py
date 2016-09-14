@@ -571,14 +571,13 @@ def convert_3_atom_2_bond_path(start, mol):
     electrons that the molecule should undergo.
     """
     from rmgpy.data.kinetics.family import ReactionRecipe
-    from .molecule import bond_orders
 
     def is_valid(mol):
         """Check if total bond order of oxygen atoms is smaller than 4."""
 
         for at in mol.atoms:
             if at.number == 8:
-                order = sum([bond_orders[b.order] for _, b in at.bonds.iteritems()])
+                order = at.getBondOrdersForAtom()
                 not_correct = order >= 4
                 if not_correct:
                     return False
@@ -769,14 +768,13 @@ def reset_lone_pairs(mol, p_indices):
     or to the default value.
 
     """
-    from .molecule import bond_orders
     for at in mol.atoms:
         index = mol.atoms.index(at) + 1 #1-based index
         count = p_indices.count(index)
         if count != 0:
             at.lonePairs = count
         else:    
-            order = sum([bond_orders[b.order] for _,b in mol.getBonds(at).iteritems()])
+            order = at.getBondOrdersForAtom()
             at.lonePairs = (elements.PeriodicSystem.valence_electrons[at.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
