@@ -272,6 +272,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 ascendParent = ascendParent.parent
                 nose.tools.assert_true(ascendParent is not None, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=child, family=family_name))
                 nose.tools.assert_true(child in ascendParent.children, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=nodeName, family=family_name))
+                nose.tools.assert_false(child is ascendParent, "Group {group} in {family} family is a parent to itself".format(group=nodeName, family=family_name))
 
     def kinetics_checkGroupsNonidentical(self, family_name):
         """
@@ -304,6 +305,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 # This is a mistake in the database, but it should be caught by kinetics_checkGroupsFoundInTree
                 # so rather than report it twice or crash, we'll just silently carry on to the next node.
                 continue
+            elif parentNode in originalFamily.forwardTemplate.products:
+                #This is a product node made by training reactions which we do not need to heck
+                continue
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
             nose.tools.assert_true(family.matchNodeToChild(parentNode, childNode),
@@ -311,11 +315,11 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             #check that parentNodes which are LogicOr do not have an ancestor that is a Group
             #If it does, then the childNode must also be a child of the ancestor
-            if isinstance(parentNode, LogicOr):
-                ancestorNode = childNode
-                while ancestorNode not in originalFamily.groups.top and isinstance(ancestorNode, LogicOr):
+            if isinstance(parentNode.item, LogicOr):
+                ancestorNode = parentNode
+                while ancestorNode not in originalFamily.groups.top and isinstance(ancestorNode.item, LogicOr):
                     ancestorNode = ancestorNode.parent
-                if isinstance(ancestorNode, Group):
+                if isinstance(ancestorNode.item, Group):
                     nose.tools.assert_true(family.matchNodeToChild(ancestorNode, childNode),
                                     "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName))
 
@@ -449,6 +453,7 @@ The following adjList may have atoms in a different ordering than the input file
                 ascendParent = ascendParent.parent
                 nose.tools.assert_true(ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name))
                 nose.tools.assert_true(child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name))
+                nose.tools.assert_false(child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name))
     
     def general_checkGroupsNonidentical(self, group_name, group):
         """
@@ -481,11 +486,11 @@ The following adjList may have atoms in a different ordering than the input file
 
             #check that parentNodes which are LogicOr do not have an ancestor that is a Group
             #If it does, then the childNode must also be a child of the ancestor
-            if isinstance(parentNode, LogicOr):
-                ancestorNode = childNode
-                while ancestorNode not in group.top and isinstance(ancestorNode, LogicOr):
+            if isinstance(parentNode.item, LogicOr):
+                ancestorNode = parentNode
+                while ancestorNode not in group.top and isinstance(ancestorNode.item, LogicOr):
                     ancestorNode = ancestorNode.parent
-                if isinstance(ancestorNode, Group):
+                if isinstance(ancestorNode.item, Group):
                     nose.tools.assert_true(group.matchNodeToChild(ancestorNode, childNode),
                                     "In {group} group, node {ancestor} is not a proper ancestor of its child {child}.".format(group=group_name, ancestor=ancestorNode, child=nodeName))
 
