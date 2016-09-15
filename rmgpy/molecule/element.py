@@ -104,6 +104,23 @@ class Element:
         A helper function used when pickling an object.
         """
         return (Element, (self.number, self.symbol, self.name, self.mass, self.isotope))
+
+class PeriodicSystem(object):
+    """
+    Collects hard-coded information of elements in periodic table. 
+
+    Currently it has static attributes:
+    `valences`: the number of bonds an element is able to form around it. 
+    `valence_electrons`: the number of electrons in  the outermost shell of the element that can
+    participate in bond formation. for instance, `S` has 6 outermost electrons (valence_electrons)
+    but 4 of them form lone pairs, the remaining 2 electrons can form bonds so the normal valence 
+    for `S` is 2.
+    `lone_pairs`: the number of lone pairs an element has
+    """
+
+    valences           = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0}
+    valence_electrons  = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8}
+    lone_pairs         = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4}
     
 ################################################################################
 
