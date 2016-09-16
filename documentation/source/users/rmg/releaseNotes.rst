@@ -4,6 +4,51 @@
 Release Notes
 *************
 
+RMG-Py Version 2.0.0
+====================
+Date: September 16, 2016
+
+This release includes several milestones of RMG project:
+
+- Parallelization finally introduced in RMG:
+    - Generates reactions during ``enlarge`` step in parallel fashion (``rmgpy.rmg.react``)
+    - Enables concurrent computing for QMTP thermochemistry calculations (``rmgpy.thermo.thermoengine``)
+    - Instructions of running RMG parallel mode can be found `here for SLURM scheduler <https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SLURM-scheduler>`_ and `here for SGE scheduler <https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SGE-scheduler>`_.
+
+- Polycyclic thermochemistry estimation improved:
+    - Extends group additivity method for polycyclics and estimates polycyclics of any large sizes by a heuristic method (bicyclics decomposition)
+
+- New tree averaging for kinetics:
+    - Fixes previous issue of imcomplete generation of cross-level rate rules
+    - Implements Euclidean distance algorithm for the selection of the best rate rules to use in ``estimateKinetics``
+    - Streamlines storage of kinetics comments for averaged rules, which can be analyzed by ``extractSourceFromComments``
+
+- Database entry accessibility tests: 
+    - Adds entry accessibility tests for future entries (``testing.databaseTest``)
+
+- Fixes bugs
+    - fluxdiagram generation is now fixed, one can use it to generate short video of fluxdigram evolution
+    - mac environment yml file is introduced to make sure smooth RMG-Py installation and jobs on mac
+    - fixes failure of ``checkForExistingSpecies`` for polyaromatics species
+    - fixes execution failure when both pruning and pDep are turned on
+    - fixes pDep irreversible reactions
+    - fixes issue of valency of ``Cbf`` atom by dynamic benzene bond order assignment
+
+
+RMG-database Version 2.0.0
+==========================
+Date: September 16, 2016
+
+In conjunction with the release of RMG-Py v2.0.0, an updated package for the RMG-database has also been released.
+This release brings some new additions and fixes:
+
+- Polycyclic thermochemistry estimation improved:
+    - polycyclic database reorganized and more entries added in systematic way (``input.thermo.groups.polycyclic``)
+
+- Database entry accessibility tests:
+    - Fixes existing inaccessible entries in solvation/statmech/thermo of RMG-database 
+
+
 RMG-Py Version 1.0.4
 ====================
 Date: March 28, 2016
