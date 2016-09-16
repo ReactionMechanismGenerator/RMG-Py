@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>14. Liquid Phase Systems &mdash; RMG Py 1.0.4 documentation</title>
+    <title>14. Liquid Phase Systems &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="RMG User’s Guide" href="index.html" />
     <link rel="next" title="15. Guidelines for Building a Model" href="guidelines.html" />
     <link rel="prev" title="13. Kinetics Estimation" href="kinetics.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="kinetics.html" title="13. Kinetics Estimation"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
@@ -73,20 +73,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="liquids"></span><h1>14. Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
 <p>To simulate liquids in RMG requires a module in your input file for liquid-phase:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">solvation</span><span class="p">(</span>
-    <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Your reaction system will also be different (liquidReactor rather than simpleReactor):</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">liquidReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
-        <span class="s2">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;oxygen&#39;</span><span class="p">],</span>
-    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;octane&#39;</span><span class="p">,</span><span class="s1">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;octane&#39;</span><span class="p">,</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
     <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 
 <span class="p">)</span>
@@ -245,7 +245,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <div class="section" id="example-liquid-phase-input-file-no-constant-species">
 <span id="exampleliquidphase"></span><h2>14.4. Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/Nate/code/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 217)</p>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/Code/rmgmaster/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 217)</p>
 <p>Title underline too short.</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="n">no</span> <span class="n">constant</span> <span class="n">species</span>
 <span class="o">===============================</span>
@@ -253,41 +253,41 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </div>
 </div>
 <p>This is an example of an input file for a liquid-phase system:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c1"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="c"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># List of species</span>
+<span class="c"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;octane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;oxygen&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[O][O]&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;oxygen&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[O][O]&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c1"># Reaction systems</span>
+<span class="c"># Reaction systems</span>
 <span class="n">liquidReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
-        <span class="s2">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">solvation</span><span class="p">(</span>
-    <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
 <span class="p">)</span>
 
 <span class="n">simulator</span><span class="p">(</span>
@@ -303,11 +303,11 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -315,7 +315,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <div class="section" id="example-liquid-phase-input-file-with-constant-species">
 <h2>14.5. Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/Nate/code/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 278)</p>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/Code/rmgmaster/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 278)</p>
 <p>Title underline too short.</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="k">with</span> <span class="n">constant</span> <span class="n">species</span>
 <span class="o">===============================</span>
@@ -323,42 +323,42 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </div>
 </div>
 <p>This is an example of an input file for a liquid-phase system with constant species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c1"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="c"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># List of species</span>
+<span class="c"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;octane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;oxygen&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[O][O]&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;oxygen&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[O][O]&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c1"># Reaction systems</span>
+<span class="c"># Reaction systems</span>
 <span class="n">liquidReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
-        <span class="s2">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
 <span class="p">)</span>
 
 <span class="n">solvation</span><span class="p">(</span>
-    <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
 <span class="p">)</span>
 
 <span class="n">simulator</span><span class="p">(</span>
@@ -374,11 +374,11 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -587,7 +587,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.4. Sensitivity Analysis &mdash; RMG Py 1.0.4 documentation</title>
+    <title>16.4. Sensitivity Analysis &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="16. Standalone Modules" href="index.html" />
     <link rel="next" title="16.5. Generating Flux Diagrams" href="generateFluxDiagram.html" />
     <link rel="prev" title="16.3. Generate Reactions" href="generateReactions.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="generateReactions.html" title="16.3. Generate Reactions"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -83,40 +83,40 @@ Sensitivity analysis can be conducted in a standalone system for an existing kin
 species associated with the CHEMKIN file.  <code class="docutils literal"><span class="pre">input.py</span></code> is an input file similar to one used for an RMG job but
 does not generate a RMG job.  See the following <code class="docutils literal"><span class="pre">input.py</span></code> example file found under the
 <code class="docutils literal"><span class="pre">$RMGPy/examples/sensitivity/input.py</span></code> folder</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c1"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="c"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!Intra_Disproportionation&#39;</span><span class="p">,</span><span class="s1">&#39;!Substitution_O&#39;</span><span class="p">],</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!Intra_Disproportionation&#39;</span><span class="p">,</span><span class="s">&#39;!Substitution_O&#39;</span><span class="p">],</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># Constraints on generated species</span>
+<span class="c"># Constraints on generated species</span>
 <span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
     <span class="n">maximumRadicalElectrons</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># List of species</span>
+<span class="c"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CC&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;CC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c1"># Reaction systems</span>
+<span class="c"># Reaction systems</span>
 <span class="n">simpleReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span>
     <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;ethane&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s">&quot;ethane&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;ethane&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+        <span class="s">&#39;ethane&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="n">e6</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ethane&#39;</span><span class="p">],</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="n">e6</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ethane&#39;</span><span class="p">],</span>
     <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -135,11 +135,11 @@ does not generate a RMG job.  See the following <code class="docutils literal"><
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -252,7 +252,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

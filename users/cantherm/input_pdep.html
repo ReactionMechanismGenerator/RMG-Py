@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. Creating Input Files for Pressure Dependent Calculations &mdash; RMG Py 1.0.4 documentation</title>
+    <title>4. Creating Input Files for Pressure Dependent Calculations &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="CanTherm User’s Guide" href="index.html" />
     <link rel="next" title="5. Running CanTherm" href="running.html" />
     <link rel="prev" title="3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations" href="input.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="input.html" title="3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
@@ -143,18 +143,18 @@ block:</p>
 </tbody>
 </table>
 <p>The <code class="docutils literal"><span class="pre">label</span></code> parameter should be set to a string with the desired user name for the species.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;nButanol&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s">&#39;nButanol&#39;</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">structure</span></code> parameter is defined by either SMILES or InChI.  For instance, either representation is
 acceptable for the acetone molecule:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC(C)=O&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s">&#39;CC(C)=O&#39;</span><span class="p">)</span>
 
-<span class="n">structure</span> <span class="o">=</span> <span class="n">InChI</span><span class="p">(</span><span class="s1">&#39;InChI=1S/C3H6O/c1-3(2)4/h1-2H3&#39;</span><span class="p">)</span>
+<span class="n">structure</span> <span class="o">=</span> <span class="n">InChI</span><span class="p">(</span><span class="s">&#39;InChI=1S/C3H6O/c1-3(2)4/h1-2H3&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">E0</span></code> ground state energy should be given in the quantity format <code class="docutils literal"><span class="pre">(value,</span> <span class="pre">'units')</span></code>, using units of either <code class="docutils literal"><span class="pre">kJ/mol</span></code>, <code class="docutils literal"><span class="pre">kcal/mol</span></code>, <code class="docutils literal"><span class="pre">J/mol</span></code>, or <code class="docutils literal"><span class="pre">cal/mol</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <cite>modes</cite> parameter is required for all unimolecular isomers and all
@@ -250,14 +250,14 @@ if not used in the <code class="docutils literal"><span class="pre">species</spa
 </div>
 <p>The <code class="docutils literal"><span class="pre">molecularWeight</span></code> parameter should be defined in the quantity format <code class="docutils literal"><span class="pre">(value,</span> <span class="pre">'units')</span></code>
 , for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">44.04</span><span class="p">,</span> <span class="s1">&#39;g/mol&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">44.04</span><span class="p">,</span> <span class="s">&#39;g/mol&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If the <code class="docutils literal"><span class="pre">molecularWeight</span></code> parameter is not given, it is calculated by CanTherm based
 off the chemical structure.</p>
 <p>The <code class="docutils literal"><span class="pre">collisionModel</span></code> is defined with the transport data, if available, using a
 <code class="docutils literal"><span class="pre">TransportData</span></code> object:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">3.70</span><span class="p">,</span><span class="s1">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mf">94.9</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">3.70</span><span class="p">,</span><span class="s">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mf">94.9</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">energyTransferModel</span></code> model available is a <code class="docutils literal"><span class="pre">SingleExponentialDown</span></code>.</p>
@@ -270,8 +270,8 @@ average energy transferred in a deactiving collision</p>
 </ul>
 <p>An example of a typical <code class="docutils literal"><span class="pre">energyTransferModel</span></code> block is:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">energyTransferModel</span> <span class="o">=</span> <span class="n">SingleExponentialDown</span><span class="p">(</span>
-        <span class="n">alpha0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5718</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">alpha0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5718</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
         <span class="n">n</span> <span class="o">=</span> <span class="mf">0.85</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
@@ -279,23 +279,23 @@ average energy transferred in a deactiving collision</p>
 <p>The following is an example of a typical species item, based on the acetylperoxy
 radical <span class="math">\(\ce{CH3C(=O)OO.}\)</span>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;acetylperoxy&#39;</span><span class="p">,</span>
-    <span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC(=O)O[O]&#39;</span><span class="p">),</span>
-    <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;acetylperoxy&#39;</span><span class="p">,</span>
+    <span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s">&#39;CC(=O)O[O]&#39;</span><span class="p">),</span>
+    <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">34.6</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
     <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">IdealGasTranslation</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="p">(</span><span class="mf">75.04</span><span class="p">,</span><span class="s2">&quot;g/mol&quot;</span><span class="p">)),</span>
-        <span class="n">NonlinearRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">([</span><span class="mf">54.2977</span><span class="p">,</span><span class="mf">104.836</span><span class="p">,</span><span class="mf">156.05</span><span class="p">],</span><span class="s2">&quot;amu*angstrom^2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-        <span class="n">HarmonicOscillator</span><span class="p">(</span><span class="n">frequencies</span><span class="o">=</span><span class="p">([</span><span class="mf">319.695</span><span class="p">,</span><span class="mf">500.474</span><span class="p">,</span><span class="mf">536.674</span><span class="p">,</span><span class="mf">543.894</span><span class="p">,</span><span class="mf">727.156</span><span class="p">,</span><span class="mf">973.365</span><span class="p">,</span><span class="mf">1037.77</span><span class="p">,</span><span class="mf">1119.72</span><span class="p">,</span><span class="mf">1181.55</span><span class="p">,</span><span class="mf">1391.11</span><span class="p">,</span><span class="mf">1449.53</span><span class="p">,</span><span class="mf">1454.72</span><span class="p">,</span><span class="mf">1870.51</span><span class="p">,</span><span class="mf">3037.12</span><span class="p">,</span><span class="mf">3096.93</span><span class="p">,</span><span class="mf">3136.39</span><span class="p">],</span><span class="s2">&quot;cm^-1&quot;</span><span class="p">)),</span>
-        <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">(</span><span class="mf">7.38359</span><span class="p">,</span><span class="s2">&quot;amu*angstrom^2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.95191</span><span class="p">,</span><span class="o">-</span><span class="mf">11.8215</span><span class="p">,</span><span class="mf">0.740041</span><span class="p">,</span><span class="o">-</span><span class="mf">0.049118</span><span class="p">,</span><span class="o">-</span><span class="mf">0.464522</span><span class="p">],[</span><span class="mf">0.000227764</span><span class="p">,</span><span class="mf">0.00410782</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000805364</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000548218</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000266277</span><span class="p">]],</span><span class="s2">&quot;kJ/mol&quot;</span><span class="p">)),</span>
-        <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">(</span><span class="mf">2.94723</span><span class="p">,</span><span class="s2">&quot;amu*angstrom^2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="p">([[</span><span class="mf">0.130647</span><span class="p">,</span><span class="mf">0.0401507</span><span class="p">,</span><span class="o">-</span><span class="mf">2.54582</span><span class="p">,</span><span class="o">-</span><span class="mf">0.0436065</span><span class="p">,</span><span class="o">-</span><span class="mf">0.120982</span><span class="p">],[</span><span class="o">-</span><span class="mf">0.000701659</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000989654</span><span class="p">,</span><span class="mf">0.00783349</span><span class="p">,</span><span class="o">-</span><span class="mf">0.00140978</span><span class="p">,</span><span class="o">-</span><span class="mf">0.00145843</span><span class="p">]],</span><span class="s2">&quot;kJ/mol&quot;</span><span class="p">)),</span>
+        <span class="n">IdealGasTranslation</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="p">(</span><span class="mf">75.04</span><span class="p">,</span><span class="s">&quot;g/mol&quot;</span><span class="p">)),</span>
+        <span class="n">NonlinearRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">([</span><span class="mf">54.2977</span><span class="p">,</span><span class="mf">104.836</span><span class="p">,</span><span class="mf">156.05</span><span class="p">],</span><span class="s">&quot;amu*angstrom^2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">HarmonicOscillator</span><span class="p">(</span><span class="n">frequencies</span><span class="o">=</span><span class="p">([</span><span class="mf">319.695</span><span class="p">,</span><span class="mf">500.474</span><span class="p">,</span><span class="mf">536.674</span><span class="p">,</span><span class="mf">543.894</span><span class="p">,</span><span class="mf">727.156</span><span class="p">,</span><span class="mf">973.365</span><span class="p">,</span><span class="mf">1037.77</span><span class="p">,</span><span class="mf">1119.72</span><span class="p">,</span><span class="mf">1181.55</span><span class="p">,</span><span class="mf">1391.11</span><span class="p">,</span><span class="mf">1449.53</span><span class="p">,</span><span class="mf">1454.72</span><span class="p">,</span><span class="mf">1870.51</span><span class="p">,</span><span class="mf">3037.12</span><span class="p">,</span><span class="mf">3096.93</span><span class="p">,</span><span class="mf">3136.39</span><span class="p">],</span><span class="s">&quot;cm^-1&quot;</span><span class="p">)),</span>
+        <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">(</span><span class="mf">7.38359</span><span class="p">,</span><span class="s">&quot;amu*angstrom^2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.95191</span><span class="p">,</span><span class="o">-</span><span class="mf">11.8215</span><span class="p">,</span><span class="mf">0.740041</span><span class="p">,</span><span class="o">-</span><span class="mf">0.049118</span><span class="p">,</span><span class="o">-</span><span class="mf">0.464522</span><span class="p">],[</span><span class="mf">0.000227764</span><span class="p">,</span><span class="mf">0.00410782</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000805364</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000548218</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000266277</span><span class="p">]],</span><span class="s">&quot;kJ/mol&quot;</span><span class="p">)),</span>
+        <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">(</span><span class="mf">2.94723</span><span class="p">,</span><span class="s">&quot;amu*angstrom^2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fourier</span><span class="o">=</span><span class="p">([[</span><span class="mf">0.130647</span><span class="p">,</span><span class="mf">0.0401507</span><span class="p">,</span><span class="o">-</span><span class="mf">2.54582</span><span class="p">,</span><span class="o">-</span><span class="mf">0.0436065</span><span class="p">,</span><span class="o">-</span><span class="mf">0.120982</span><span class="p">],[</span><span class="o">-</span><span class="mf">0.000701659</span><span class="p">,</span><span class="o">-</span><span class="mf">0.000989654</span><span class="p">,</span><span class="mf">0.00783349</span><span class="p">,</span><span class="o">-</span><span class="mf">0.00140978</span><span class="p">,</span><span class="o">-</span><span class="mf">0.00145843</span><span class="p">]],</span><span class="s">&quot;kJ/mol&quot;</span><span class="p">)),</span>
     <span class="p">],</span>
     <span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">75.04</span><span class="p">,</span><span class="s2">&quot;g/mol&quot;</span><span class="p">),</span>
-    <span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">5.09</span><span class="p">,</span><span class="s1">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mi">473</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+    <span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">75.04</span><span class="p">,</span><span class="s">&quot;g/mol&quot;</span><span class="p">),</span>
+    <span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">5.09</span><span class="p">,</span><span class="s">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mi">473</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">)),</span>
     <span class="n">energyTransferModel</span> <span class="o">=</span> <span class="n">SingleExponentialDown</span><span class="p">(</span>
-        <span class="n">alpha0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5718</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">alpha0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5718</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
         <span class="n">n</span> <span class="o">=</span> <span class="mf">0.85</span><span class="p">,</span>
     <span class="p">),</span>
 <span class="p">)</span>
@@ -339,16 +339,16 @@ using a <code class="docutils literal"><span class="pre">transitionState</span><
 </table>
 <p>An example of a <code class="docutils literal"><span class="pre">transitionState</span></code> block is shown below.</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">transitionState</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;isom1&#39;</span><span class="p">,</span>
-    <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5.8</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;isom1&#39;</span><span class="p">,</span>
+    <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">5.8</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
     <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">IdealGasTranslation</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="p">(</span><span class="mf">75.04</span><span class="p">,</span><span class="s2">&quot;g/mol&quot;</span><span class="p">)),</span>
-        <span class="n">NonlinearRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">([</span><span class="mf">49.3418</span><span class="p">,</span><span class="mf">103.697</span><span class="p">,</span><span class="mf">149.682</span><span class="p">],</span><span class="s2">&quot;u*angstrom**2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">quantum</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">HarmonicOscillator</span><span class="p">(</span><span class="n">frequencies</span><span class="o">=</span><span class="p">([</span><span class="mf">148.551</span><span class="p">,</span><span class="mf">306.791</span><span class="p">,</span><span class="mf">484.573</span><span class="p">,</span><span class="mf">536.709</span><span class="p">,</span><span class="mf">599.366</span><span class="p">,</span><span class="mf">675.538</span><span class="p">,</span><span class="mf">832.594</span><span class="p">,</span><span class="mf">918.413</span><span class="p">,</span><span class="mf">1022.28</span><span class="p">,</span><span class="mf">1031.45</span><span class="p">,</span><span class="mf">1101.01</span><span class="p">,</span><span class="mf">1130.05</span><span class="p">,</span><span class="mf">1401.51</span><span class="p">,</span><span class="mf">1701.26</span><span class="p">,</span><span class="mf">1844.17</span><span class="p">,</span><span class="mf">3078.6</span><span class="p">,</span><span class="mf">3163.07</span><span class="p">],</span><span class="s2">&quot;cm^-1&quot;</span><span class="p">),</span> <span class="n">quantum</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">IdealGasTranslation</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="p">(</span><span class="mf">75.04</span><span class="p">,</span><span class="s">&quot;g/mol&quot;</span><span class="p">)),</span>
+        <span class="n">NonlinearRotor</span><span class="p">(</span><span class="n">inertia</span><span class="o">=</span><span class="p">([</span><span class="mf">49.3418</span><span class="p">,</span><span class="mf">103.697</span><span class="p">,</span><span class="mf">149.682</span><span class="p">],</span><span class="s">&quot;u*angstrom**2&quot;</span><span class="p">),</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">quantum</span><span class="o">=</span><span class="k">False</span><span class="p">),</span>
+        <span class="n">HarmonicOscillator</span><span class="p">(</span><span class="n">frequencies</span><span class="o">=</span><span class="p">([</span><span class="mf">148.551</span><span class="p">,</span><span class="mf">306.791</span><span class="p">,</span><span class="mf">484.573</span><span class="p">,</span><span class="mf">536.709</span><span class="p">,</span><span class="mf">599.366</span><span class="p">,</span><span class="mf">675.538</span><span class="p">,</span><span class="mf">832.594</span><span class="p">,</span><span class="mf">918.413</span><span class="p">,</span><span class="mf">1022.28</span><span class="p">,</span><span class="mf">1031.45</span><span class="p">,</span><span class="mf">1101.01</span><span class="p">,</span><span class="mf">1130.05</span><span class="p">,</span><span class="mf">1401.51</span><span class="p">,</span><span class="mf">1701.26</span><span class="p">,</span><span class="mf">1844.17</span><span class="p">,</span><span class="mf">3078.6</span><span class="p">,</span><span class="mf">3163.07</span><span class="p">],</span><span class="s">&quot;cm^-1&quot;</span><span class="p">),</span> <span class="n">quantum</span><span class="o">=</span><span class="k">True</span><span class="p">),</span>
     <span class="p">],</span>
     <span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">frequency</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1679.04</span><span class="p">,</span><span class="s1">&#39;cm^-1&#39;</span><span class="p">),</span>
+    <span class="n">frequency</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1679.04</span><span class="p">,</span><span class="s">&#39;cm^-1&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -399,12 +399,12 @@ parameters are available:</p>
 </table>
 <p>A typical reaction block might look like this.</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">reaction</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;isom1&#39;</span><span class="p">,</span>
-    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acetylperoxy&#39;</span><span class="p">],</span>
-    <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hydroperoxylvinoxy&#39;</span><span class="p">],</span>
-    <span class="n">transitionState</span> <span class="o">=</span> <span class="s1">&#39;isom1&#39;</span><span class="p">,</span>
-    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.65e6</span><span class="p">,</span><span class="s1">&#39;m^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;K&quot;</span><span class="p">)),</span>
-    <span class="n">tunneling</span> <span class="o">=</span> <span class="s1">&#39;Eckart&#39;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;isom1&#39;</span><span class="p">,</span>
+    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;acetylperoxy&#39;</span><span class="p">],</span>
+    <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;hydroperoxylvinoxy&#39;</span><span class="p">],</span>
+    <span class="n">transitionState</span> <span class="o">=</span> <span class="s">&#39;isom1&#39;</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.65e6</span><span class="p">,</span><span class="s">&#39;m^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&quot;K&quot;</span><span class="p">)),</span>
+    <span class="n">tunneling</span> <span class="o">=</span> <span class="s">&#39;Eckart&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -453,17 +453,17 @@ input file.</p>
 manner, as any configuration not marked as an isomer or reactant channel will
 be treated as a product channel. An example of the <code class="docutils literal"><span class="pre">network</span></code> block is shown below.</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">network</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;acetyl + O2&#39;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;acetyl + O2&#39;</span><span class="p">,</span>
     <span class="n">isomers</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">&#39;acetylperoxy&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;hydroperoxylvinoxy&#39;</span><span class="p">,</span>
+        <span class="s">&#39;acetylperoxy&#39;</span><span class="p">,</span>
+        <span class="s">&#39;hydroperoxylvinoxy&#39;</span><span class="p">,</span>
     <span class="p">],</span>
     <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">(</span><span class="s1">&#39;acetyl&#39;</span><span class="p">,</span> <span class="s1">&#39;oxygen&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;acetyl&#39;</span><span class="p">,</span> <span class="s">&#39;oxygen&#39;</span><span class="p">),</span>
     <span class="p">],</span>
     <span class="n">bathGas</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;nitrogen&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
-        <span class="s1">&#39;argon&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
+        <span class="s">&#39;nitrogen&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="s">&#39;argon&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
@@ -512,18 +512,18 @@ Determine the fineness of the energy grains to be used in the master equation ca
 the <code class="docutils literal"><span class="pre">maximumGrainSize</span></code>, and the <code class="docutils literal"><span class="pre">minimumGrainCount</span></code>.</p>
 <p>An example of the algorithm parameters block for the acetyl + O2 network is shown below.</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">pressureDependence</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;acetyl + O2&#39;</span><span class="p">,</span>
-    <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">300.0</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">Pmin</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pmax</span><span class="o">=</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pcount</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-    <span class="n">maximumGrainSize</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;acetyl + O2&#39;</span><span class="p">,</span>
+    <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">300.0</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">Pmin</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pmax</span><span class="o">=</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pcount</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">maximumGrainSize</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
     <span class="n">minimumGrainCount</span> <span class="o">=</span> <span class="mi">250</span><span class="p">,</span>
-    <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
-    <span class="c1">#method = &#39;reservoir state&#39;,</span>
-    <span class="c1">#method = &#39;chemically-significant eigenvalues&#39;,</span>
-    <span class="n">interpolationModel</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
-    <span class="c1">#interpolationModel = (&#39;pdeparrhenius&#39;),</span>
-    <span class="c1">#activeKRotor = True,</span>
-    <span class="n">activeJRotor</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;modified strong collision&#39;</span><span class="p">,</span>
+    <span class="c">#method = &#39;reservoir state&#39;,</span>
+    <span class="c">#method = &#39;chemically-significant eigenvalues&#39;,</span>
+    <span class="n">interpolationModel</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="c">#interpolationModel = (&#39;pdeparrhenius&#39;),</span>
+    <span class="c">#activeKRotor = True,</span>
+    <span class="n">activeJRotor</span> <span class="o">=</span> <span class="k">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -651,7 +651,7 @@ and <cite>n-butanol</cite> example.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

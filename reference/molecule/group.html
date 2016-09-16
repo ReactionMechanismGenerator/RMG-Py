@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.Group &mdash; RMG Py 1.0.4 documentation</title>
+    <title>rmgpy.molecule.Group &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="Adjacency Lists" href="adjlist.html" />
     <link rel="prev" title="rmgpy.molecule.GroupBond" href="groupbond.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="groupbond.html" title="rmgpy.molecule.GroupBond"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
@@ -97,6 +97,13 @@ and <cite>atom2</cite>.</p>
 <code class="descname">addEdge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.addEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>edge</cite> to the graph. The two vertices in the edge must already
 exist in the graph, or a <code class="xref py py-class docutils literal"><span class="pre">ValueError</span></code> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.addExplicitLigands">
+<code class="descname">addExplicitLigands</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.addExplicitLigands" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function Od/Sd ligand to CO or CS atomtypes if they are not already there.</p>
+<p>Returns a &#8216;True&#8217; if the group was modified otherwise returns &#8216;False&#8217;</p>
 </dd></dl>
 
 <dl class="method">
@@ -411,6 +418,33 @@ unconnected groups into separate class:<cite>Group</cite> objects.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.standardizeAtomType">
+<code class="descname">standardizeAtomType</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.standardizeAtomType" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function changes the atomTypes in a group if the atom must
+be a specific atomType based on its bonds and valency.</p>
+<p>Currently only standardizes oxygen, carbon and sulfur atomTypes</p>
+<p>We also only check when there is exactly one atomType,
+one bondType, one radical setting.
+For any group where there are wildcards or multiple attributes,
+we cannot apply this check.</p>
+<p>In the case where the atomType is ambigious based on bonds
+and valency, this function will not change the type.</p>
+<p>Returns a &#8216;True&#8217; if the group was modified otherwise returns &#8216;False&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.standardizeGroup">
+<code class="descname">standardizeGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.standardizeGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function modifies groups to make them have a standard AdjList form.</p>
+<p>Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
+have explicit Od/Sd ligands. Other functions can be added as necessary</p>
+<p>We also only check when there is exactly one atomType, one bondType, one
+radical setting. For any group where there are wildcards or multiple
+attributes, we do not apply this check.</p>
+<p>Returns a &#8216;True&#8217; if the group was modified otherwise returns &#8216;False&#8217;</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.toAdjacencyList">
 <code class="descname">toAdjacencyList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the molecular structure to a string adjacency list.</p>
@@ -534,7 +568,7 @@ isomorphism checks.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations &mdash; RMG Py 1.0.4 documentation</title>
+    <title>3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="CanTherm User’s Guide" href="index.html" />
     <link rel="next" title="4. Creating Input Files for Pressure Dependent Calculations" href="input_pdep.html" />
     <link rel="prev" title="2. Installation" href="installation.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="installation.html" title="2. Installation"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
@@ -97,7 +97,7 @@ allowed model chemistries are:
 <p>CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for <code class="docutils literal"><span class="pre">thermo()</span></code> calculations (see below). The example below
 demonstrates how to specify CBS-QB3 as a model chemistry:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">modelChemistry</span><span class="p">(</span><span class="s2">&quot;CBS-QB3&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">modelChemistry</span><span class="p">(</span><span class="s">&quot;CBS-QB3&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -180,17 +180,17 @@ species, and their counts will be automatically set to zero.</p>
 </table>
 <p>The following is an example of a typical species item, based on ethane:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;ethane&#39;</span><span class="p">,</span>
-    <span class="n">geomLog</span> <span class="o">=</span> <span class="s1">&#39;ethane_cbs.log&#39;</span><span class="p">,</span>
-    <span class="n">statesLog</span> <span class="o">=</span> <span class="s1">&#39;ethane_cbs.log&#39;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;ethane&#39;</span><span class="p">,</span>
+    <span class="n">geomLog</span> <span class="o">=</span> <span class="s">&#39;ethane_cbs.log&#39;</span><span class="p">,</span>
+    <span class="n">statesLog</span> <span class="o">=</span> <span class="s">&#39;ethane_cbs.log&#39;</span><span class="p">,</span>
     <span class="n">extSymmetry</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">freqScaleFactor</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
-    <span class="n">linear</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">linear</span> <span class="o">=</span> <span class="k">False</span><span class="p">,</span>
     <span class="n">rotors</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">scanLog</span><span class="o">=</span><span class="s1">&#39;ethane_scan_1.log&#39;</span><span class="p">,</span> <span class="n">pivots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">top</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">scanLog</span><span class="o">=</span><span class="s">&#39;ethane_scan_1.log&#39;</span><span class="p">,</span> <span class="n">pivots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">top</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
     <span class="p">]</span>
-    <span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
-    <span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
+    <span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -205,15 +205,15 @@ the <code class="docutils literal"><span class="pre">species()</span></code> fun
 to perform a kinetics computation.</p>
 <p>The following is an example of a typical transition state item:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">transitionState</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;TS&#39;</span><span class="p">,</span>
-    <span class="n">geomLog</span> <span class="o">=</span> <span class="s1">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
-    <span class="n">statesLog</span> <span class="o">=</span> <span class="s1">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;TS&#39;</span><span class="p">,</span>
+    <span class="n">geomLog</span> <span class="o">=</span> <span class="s">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
+    <span class="n">statesLog</span> <span class="o">=</span> <span class="s">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
     <span class="n">extSymmetry</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">freqScaleFactor</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
-    <span class="n">linear</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">linear</span> <span class="o">=</span> <span class="k">False</span><span class="p">,</span>
     <span class="n">rotors</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
-    <span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -250,11 +250,11 @@ which accepts the following parameters:</p>
 <p>This is only required if you wish to perform a kinetics computation. The
 following is an example of a typical reaction item:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">reaction</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
-    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H4&#39;</span><span class="p">],</span>
-    <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C2H5&#39;</span><span class="p">],</span>
-    <span class="n">transitionState</span> <span class="o">=</span> <span class="s1">&#39;TS&#39;</span><span class="p">,</span>
-    <span class="n">tunneling</span><span class="o">=</span><span class="s1">&#39;Eckart&#39;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;C2H4&#39;</span><span class="p">],</span>
+    <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C2H5&#39;</span><span class="p">],</span>
+    <span class="n">transitionState</span> <span class="o">=</span> <span class="s">&#39;TS&#39;</span><span class="p">,</span>
+    <span class="n">tunneling</span><span class="o">=</span><span class="s">&#39;Eckart&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -270,7 +270,7 @@ generate (either <code class="docutils literal"><span class="pre">'Wilhoit'</spa
 model or NASA polynomial model). A table of thermodynamic parameters will
 also be displayed in the output file.</p>
 <p>Below is a typical <code class="docutils literal"><span class="pre">thermo()</span></code> function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;Wilhoit&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s">&#39;Wilhoit&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -283,14 +283,14 @@ the outupt file. 3-parameter modified Arrhenius coefficients will automatically 
 to the computed rate coefficients. The quantum tunneling factor will also be displayed</p>
 <p>Below is a typical <code class="docutils literal"><span class="pre">kinetics()</span></code> function:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span>
-<span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
-<span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
-<span class="n">Tlist</span> <span class="o">=</span> <span class="p">([</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">700</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1200</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+<span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+<span class="n">Tlist</span> <span class="o">=</span> <span class="p">([</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">700</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1200</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>This is also acceptable:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span><span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span><span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -444,7 +444,7 @@ absolute values. What&#8217;s going on?</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

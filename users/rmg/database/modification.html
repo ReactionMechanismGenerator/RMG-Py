@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.4. Database Modification &mdash; RMG Py 1.0.4 documentation</title>
+    <title>11.4. Database Modification &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="11. Databases" href="index.html" />
     <link rel="next" title="12. Thermochemistry Estimation" href="../thermo.html" />
     <link rel="prev" title="11.3. Kinetics Database" href="kinetics.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="kinetics.html" title="11.3. Kinetics Database"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
@@ -125,7 +125,7 @@ of thumb is to see if the all neighbours of the reacting atoms are as specified
 as possible. For example, assume your species is ethanol</p>
 <a class="reference internal image-reference" href="../../../_images/ethanol.png"><img alt="../../../_images/ethanol.png" class="align-center" src="../../../_images/ethanol.png" style="width: 100.5px; height: 121.5px;" /></a>
 <p>and RMG suggests the group:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C_sec&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S}</span>
@@ -137,7 +137,7 @@ as possible. For example, assume your species is ethanol</p>
 </div>
 <p>If you use the suggested groups you will not capture the effect of the alcohol
 group. Therefore it is better to make a new group.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -157,7 +157,7 @@ next section for instructions on creating the new group.</p>
 <p>In the family&#8217;s groups.py, you will need to add an entry of the format:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C_sec&quot;</span><span class="p">,</span>
         <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs   0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -166,11 +166,11 @@ next section for instructions on creating the new group.</p>
 <span class="sd">4    H   0 {1,S}</span>
 <span class="sd">5    R!H 0 {1,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
-        <span class="n">kinetics</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">reference</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">referenceType</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
-        <span class="n">longDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">kinetics</span> <span class="o">=</span> <span class="k">None</span><span class="p">,</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="k">None</span><span class="p">,</span>
+        <span class="n">referenceType</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">longDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -201,7 +201,7 @@ will want to add your reaction to the training set.</p>
 <p>The rule must be added into rules.py in the form:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
         <span class="n">group1</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -216,17 +216,17 @@ will want to add your reaction to the training set.</p>
 <span class="sd">2    O 0 {1,S}</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
         <span class="n">kinetics</span> <span class="o">=</span> <span class="n">ArrheniusEP</span><span class="p">(</span>
-                <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2800000000000.0</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="s1">&#39;*|/&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2800000000000.0</span><span class="p">,</span> <span class="s">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="s">&#39;*|/&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.013</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span> <span class="s1">&#39;+|-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
-                <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
+                <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.013</span><span class="p">,</span> <span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span> <span class="s">&#39;+|-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">),</span>
+                <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">),</span>
         <span class="p">),</span>
-        <span class="n">reference</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">referenceType</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="k">None</span><span class="p">,</span>
+        <span class="n">referenceType</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
         <span class="n">rank</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;Curran et al. [8] Rate expressions for H atom abstraction from fuels.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Curran et al. [8] Rate expressions for H atom abstraction from fuels.&quot;&quot;&quot;</span><span class="p">,</span>
         <span class="n">longDesc</span> <span class="o">=</span>
 <span class="sd">u&quot;&quot;&quot;</span>
 <span class="sd">[8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.</span>
@@ -272,7 +272,7 @@ are formed by matching the reaction to the most most specific template nodes wit
 the reaction&#8217;s respective family. If you do not want the
 training depository reactions to create new rate rules in the database, set the option for
 <code class="docutils literal"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal"><span class="pre">database</span></code> field in your input file to</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!training&#39;</span><span class="p">],</span>
 </pre></div>
 </div>
 <p>Currently, RMG&#8217;s rate rule estimates overrides all kinetics depository kinetics, including training
@@ -448,7 +448,7 @@ activation energy truly does reflect the reaction barrier height.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.GroupBond &mdash; RMG Py 1.0.4 documentation</title>
+    <title>rmgpy.molecule.GroupBond &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.0.4',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 1.0.4 documentation" href="../../contents.html" />
+    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
     <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
     <link rel="next" title="rmgpy.molecule.Group" href="group.html" />
     <link rel="prev" title="rmgpy.molecule.GroupAtom" href="groupatom.html" />
@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="groupatom.html" title="rmgpy.molecule.GroupAtom"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 1.0.4</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
@@ -131,11 +131,39 @@ edge.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.GroupBond.isBenzene">
+<code class="descname">isBenzene</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isBenzene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a benzene bond or <code class="docutils literal"><span class="pre">False</span></code> if
+not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupBond.isDouble">
+<code class="descname">isDouble</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isDouble" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a double bond or <code class="docutils literal"><span class="pre">False</span></code> if
+not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupBond.isSingle">
+<code class="descname">isSingle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isSingle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal"><span class="pre">False</span></code> if
+not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is the same as <cite>self</cite> or is a more
 specific case of <cite>self</cite>. Returns <code class="docutils literal"><span class="pre">False</span></code> if some of <cite>self</cite> is not
 included in <cite>other</cite> or they are mutually exclusive.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupBond.isTriple">
+<code class="descname">isTriple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isTriple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal"><span class="pre">False</span></code> if
+not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -242,7 +270,7 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>
