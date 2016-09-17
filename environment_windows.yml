@@ -1,7 +1,7 @@
 name: rmg_env
 channels:
-  - defaults
   - rmg
+  - defaults
 dependencies:
   - mingwpy
   - python
