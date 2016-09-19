@@ -223,11 +223,10 @@ def removeThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=Fa
     thermoData1.H298.value_si -= thermoData2.H298.value_si
     thermoData1.S298.value_si -= thermoData2.S298.value_si
 
-    testZero = sum(abs(value) for value in [thermoData2.H298.value_si, thermoData2.S298.value_si]+thermoData2.Cpdata.value_si.tolist())
-    # Used to check if all of the entries in thermoData2 are zero
-
     if groupAdditivity:
-        if verbose or testZero !=0: # Used to check if all of the entries in thermoData2 are zero
+        if verbose:
+            thermoData1.comment += ' - {0}'.format(thermoData2.comment)
+        else:
             thermoData1.comment = re.sub(re.escape(' + '+thermoData2.comment),'',thermoData1.comment, 1)
     return thermoData1
 
@@ -1574,7 +1573,7 @@ class ThermoDatabase(object):
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                     self.groups['ring'], submol, submol.atoms)[0]
             for _ in range(occurance-1):
-                thermoData = removeThermoData(thermoData, singleRingThermodata, True)
+                thermoData = removeThermoData(thermoData, singleRingThermodata, True, True)
 
     def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """
@@ -1700,7 +1699,7 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True)
+            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True)
 
     def __removeGroupThermoData(self, thermoData, database, molecule, atom):
         """
