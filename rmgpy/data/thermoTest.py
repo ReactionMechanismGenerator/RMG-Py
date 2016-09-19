@@ -254,6 +254,52 @@ class TestThermoDatabaseAromatics(TestThermoDatabase):
         super(TestThermoDatabaseAromatics, self).__init__(*args, **kwargs)
         self._testMethodDoc = self._testMethodDoc.strip().split('\n')[0] + " for Aromatics.\n"
 
+    def testLongDistanceInteractionInAromaticMolecule(self):
+        """
+        Test long distance interaction is properly caculated for aromatic molecule.
+        """
+        spec = Species().fromSMILES('c(O)1c(O)c(C=O)c(C=O)c(O)c(C=O)1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        self.assertIn('o_OH_OH', thermo.comment)
+        self.assertIn('o_OH_CHO', thermo.comment)
+        self.assertIn('o_CHO_CHO', thermo.comment)
+        self.assertIn('m_CHO_CHO', thermo.comment)
+        self.assertIn('p_OH_OH', thermo.comment)
+        self.assertIn('p_OH_CHO', thermo.comment)
+        self.assertIn('p_CHO_CHO', thermo.comment)
+
+    def testLongDistanceInteractionInAromaticRadical(self):
+        """
+        Test long distance interaction is properly caculated for aromatic radical.
+        """
+        spec = Species().fromSMILES('c([O])1c(C=O)c(C=O)c(OC)cc1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        self.assertNotIn('o_OH_CHO', thermo.comment)
+        self.assertNotIn('p_OH_MeO', thermo.comment)
+        self.assertIn('o_Oj_CHO', thermo.comment)
+        self.assertIn('m_Oj_CHO', thermo.comment)
+        self.assertIn('p_Oj_OCH3', thermo.comment)
+        self.assertIn('o_CHO_CHO', thermo.comment)
+        self.assertIn('o_CHO_MeO', thermo.comment)
+
+    def testLongDistanceInteractionInAromaticBiradical(self):
+        """
+        Test long distance interaction is properly caculated for aromatic biradical.
+        """
+        spec = Species().fromSMILES('c([O])1c([C]=O)cc(C=O)cc1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        thermo = self.database.getThermoDataFromGroups(spec)
+        self.assertNotIn('o_OH_CHO', thermo.comment)
+        self.assertNotIn('m_CHO_CHO', thermo.comment)
+        self.assertNotIn('p_OH_CHO', thermo.comment)
+        self.assertNotIn('o_Oj_CHO', thermo.comment)
+        self.assertIn('m_Cj=O_CHO', thermo.comment)
 
 class TestCyclicThermo(unittest.TestCase):
     """

@@ -1618,38 +1618,21 @@ class Molecule(Graph):
         
         return group
 
-    def getNthNeighbor(self, startingAtoms, n, blacklist):
+    def getNthNeighbor(self, startingAtoms, n, ignoreList = []):
         '''
-        Recursively get the Nth nonHydrogen neighbors of the startingAtoms.
-        StartingAtoms should be a list.
-        Return a list.
+        Recursively get the Nth nonHydrogen neighbors of the startingAtoms, and return them in a list.
+        `startingAtoms` is a list of :class:Atom for which we will get the nth neighbor.
+        `n` is an interger.
+        `ignoreList` is a list of :class:Atom that have been counted in (n-1)th neighbor, and will not be returned.
         '''
         neighbors = []
         for atom in startingAtoms:
-            for neighbor in self.getBonds(atom):
-                if neighbor.isNonHydrogen():
-                    neighbors.append(neighbor)
-        neighbors = list(set(neighbors)-set(blacklist))
-        for atom in startingAtoms:
-            blacklist.append(atom)
-        if n>1:
-            neighbors = self.getNthNeighbor(neighbors, n-1, blacklist)
-        return neighbors
+            newNeighbors = [neighbor for neighbor in self.getBonds(atom) if neighbor.isNonHydrogen()]
+            neighbors.extend(newNeighbors)
 
-    def getBaseCb(self, atom):
-        """
-        For an alkyl aromatic molecule/radical, recursivly look for the aromatic carbon corresponding to the 'atom'.
-        It's used for the interaction correction in the thermo calculation of aromatic radical.
-        Currently works good for normal/branched side chain.
-        """
-        atomList = []
-        atom.label = '*'
-        if atom.atomType.label == 'Cb':
-            atomList.append(atom)
-            self.clearLabeledAtoms()
-            return atomList
-        for atoms in self.getNthNeighbor([atom], 1, []):
-            if atoms.label != '*':
-                atomList = self.getBaseCb(atoms)
-                if atomList is not None:
-                    return atomList
+        neighbors = list(set(neighbors)-set(ignoreList))
+        for atom in startingAtoms:
+            ignoreList.append(atom)
+        if n>1:
+            neighbors = self.getNthNeighbor(neighbors, n-1, ignoreList)
+        return neighbors

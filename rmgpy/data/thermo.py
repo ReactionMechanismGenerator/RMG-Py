@@ -189,6 +189,7 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False
         and return `thermoData1`.
         
         If `groupAdditivity` is True, append comments related to group additivity estimation
+        If `verbose` is False, omit the comments from the groups that have all zero entries. 
         """
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
@@ -214,6 +215,8 @@ def removeThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=Fa
     """
     Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
     and return `thermoData1`.
+    If `verbose` is True, append ' - thermoData2.comment' to the thermoData1.comment.
+    If `verbose` is False, remove the thermoData2.comment from the thermoData1.comment.
     """
     if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
         raise Exception('Cannot take the difference between these ThermoData objects due to their having different temperature points.')
@@ -1347,22 +1350,6 @@ class ThermoDatabase(object):
                 logging.error(molecule.toAdjacencyList())
                 raise
             
-            # Add the radical interactions which are ignored in the thermo calculation of molecule.
-            if saturatedStruct.isAromatic() and (not saturatedStruct.isAtomInCycle(atom)):
-                baseAtom = saturatedStruct.getBaseCb(atom)[0]
-                for atom_1 in saturatedStruct.getNthNeighbor([baseAtom],1,[]):
-                    try:
-                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':baseAtom, '*2':atom_1})
-                    except KeyError: pass
-                for atom_2 in saturatedStruct.getNthNeighbor([baseAtom],2,[]):
-                    try:
-                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':baseAtom, '*2':atom_2})
-                    except KeyError: pass
-                for atom_3 in saturatedStruct.getNthNeighbor([baseAtom],3,[]):
-                    try:
-                        self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':baseAtom, '*2':atom_3})
-                    except KeyError: pass
-
             # Re-saturate
             for H, bond in added[atom]:
                 saturatedStruct.addAtom(H)
@@ -1372,27 +1359,39 @@ class ThermoDatabase(object):
             for H, bond in added[atom]:
                 thermoData.H298.value_si -= 52.103 * 4184
 
-            # Remove the redundant interactions introduced by saturating the radical.
-            if saturatedStruct.isAromatic() and (not saturatedStruct.isAtomInCycle(atom)):
-                baseAtom = saturatedStruct.getBaseCb(atom)[0]
-                for atom_1 in saturatedStruct.getNthNeighbor([baseAtom],1,[]):
-                    try:
-                        # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
-                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':baseAtom, '*2':atom_1})
-                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*2':baseAtom, '*1':atom_1})
-                    except KeyError: pass
-                for atom_2 in saturatedStruct.getNthNeighbor([baseAtom],2,[]):
-                    try:
-                        # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
-                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':baseAtom, '*2':atom_2})
-                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*2':baseAtom, '*1':atom_2})
-                    except KeyError: pass
-                for atom_3 in saturatedStruct.getNthNeighbor([baseAtom],3,[]):
-                    try:
-                        # Try to match twice. As 'baseAtom' could be labeled as '*1' or '*2'.
-                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':baseAtom, '*2':atom_3})
-                        self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*2':baseAtom, '*1':atom_3})
-                    except KeyError: pass
+        # Remove all of the interactions of the saturated structure.
+        # Then add the interactions of the radical.
+        # For example, in the thermo estimation of C1=CC=C([O])C(O)=C1, we need to remove the
+        # interation of OH-OH, then add the interaction of Oj-OH.
+        if saturatedStruct.isAromatic():
+            for atom in saturatedStruct.atoms:
+                if atom.atomType.label=='Cb':
+                    for atom_1 in saturatedStruct.getNthNeighbor([atom], 1, []):
+                        try:
+                            self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':atom, '*2':atom_1})
+                        except KeyError: pass
+                    for atom_2 in saturatedStruct.getNthNeighbor([atom], 2, []):
+                        try:
+                            self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':atom, '*2':atom_2})
+                        except KeyError: pass
+                    for atom_3 in saturatedStruct.getNthNeighbor([atom], 3, []):
+                        try:
+                            self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':atom, '*2':atom_3})
+                        except KeyError: pass
+            for atom in molecule.atoms:
+                if atom.atomType.label=='Cb':
+                    for atom_1 in molecule.getNthNeighbor([atom], 1, []):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
+                        except KeyError: pass
+                    for atom_2 in molecule.getNthNeighbor([atom], 2, []):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
+                        except KeyError: pass
+                    for atom_3 in molecule.getNthNeighbor([atom], 3, []):
+                        try:
+                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], molecule, {'*1':atom, '*2':atom_3})
+                        except KeyError: pass
 
         return thermoData
         
@@ -1699,7 +1698,7 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True)
+            return addThermoData(thermoData, data, groupAdditivity=True)
 
     def __removeGroupThermoData(self, thermoData, database, molecule, atom):
         """
