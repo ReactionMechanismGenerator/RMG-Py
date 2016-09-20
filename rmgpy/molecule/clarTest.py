@@ -45,7 +45,6 @@ class TestClar(unittest.TestCase):
 
         self.assertTrue(newmol.isAromatic())
 
-    @work_in_progress
     def testCorannulene(self):
         """
         Test corannulene, which does not give integer results after initial optimization.

@@ -31,9 +31,7 @@
 Clar structure generation
 """
 
-import numpy as np
-from scipy.optimize import linprog
-
+import glpk
 
 def generateClarStructures(molecule):
 
@@ -42,13 +40,13 @@ def generateClarStructures(molecule):
     newmol = output[0]
     SSSR = output[1]
     bonds = output[2]
-    result = output[3]
+    solution = output[3]
 
     # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using nomenclature
     # from the paper. In y, 1 means the ring as a sextet, 0 means it does not. In x, 1 corresponds to a double bond,
     # 0 either means a single bond or the bond is part of a sextet.
-    y = result.x[0:len(SSSR)]
-    x = result.x[len(SSSR):]
+    y = solution[0:len(SSSR)]
+    x = solution[len(SSSR):]
 
     # Apply results to molecule - double bond locations first
     for index, bond in enumerate(bonds):
@@ -57,7 +55,7 @@ def generateClarStructures(molecule):
         elif x[index] == 1:
             bond.order = 'D'
         else:
-            raise ValueError('Unaccepted bond value obtained from optimization.')
+            raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
     # Then apply locations of aromatic sextets by converting to benzene bonds
     for index, ring in enumerate(SSSR):
@@ -100,26 +98,38 @@ def clarOptimization(molecule, constraints=None):
     for atom in atoms:
         inRing = [1 if atom in ring else 0 for ring in SSSR]
         inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
-        a.append(inRing + inBond)
-    a = np.array(a)
-    # Each atom can only be a part of one double bond or one sextet
-    # Other part of equality constraint
-    b = np.ones(len(atoms))
-    # Weighting vector for optimization: sextets have a weight of -1, double bonds have a weight of 0
-    c = np.concatenate((-np.ones(len(SSSR)), np.zeros(len(bonds))))
-    # Bounds on variables
-    bounds = ((0, 1))
+        a += (inRing + inBond) # Intentionally created as 1D list
+    # Weighting vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
+    objective = [1] * len(SSSR) + [0] * len(bonds)
 
-    # Solve linear program.
-    result = linprog(c, A_eq=a, b_eq=b, bounds=bounds)
+    # Initialize LP problem using pyglpk
+    lp = glpk.LPX()
+    lp.obj.maximize = True
+
+    # Each row is a constraint, so we have one constraint for each atom
+    lp.rows.add(len(atoms))
+    for r in lp.rows:
+        r.bounds = (1, 1)  # Constraint must be 1 since each atom can only be part of one sextet or double bond
+
+    # Each column is a variable, corresponding to each ring and bond (that is part of a ring) in the molecule
+    lp.cols.add(len(SSSR) + len(bonds))
+    for c in lp.cols:
+        c.kind = bool
+
+    lp.obj[:] = objective  # Set objective coefficients
+    lp.matrix = a  # Set constraint coefficients, coefficients ordered left to right, top to bottom
+    msg = lp.intopt()  # Solve the linear program
 
     # Check that optimization was successful
-    if result.status != 0:
-        raise Exception('Optimization exited with message: {0}'.format(result.message))
-    if np.any(np.logical_and(np.not_equal(result.x, 1), np.not_equal(result.x, 0))):
+    if lp.status != 'opt':
+        raise RuntimeError('Optimization exited with status {0} and message {1}'.format(lp.status, msg))
+
+    solution = [c.value for c in lp.cols]
+
+    if any([x != 1 and x != 0 for x in solution]):
         raise ValueError('Non-integer solution obtained from optimization.')
 
-    return (mol, SSSR, bonds, result)
+    return (mol, SSSR, bonds, solution)
 
 
 def getAromaticSSSR(molecule):
