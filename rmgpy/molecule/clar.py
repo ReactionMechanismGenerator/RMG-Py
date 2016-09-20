@@ -37,35 +37,40 @@ def generateClarStructures(molecule):
 
     output = clarOptimization(molecule)
 
-    newmol = output[0]
-    SSSR = output[1]
-    bonds = output[2]
-    solution = output[3]
+    molList = []
 
-    # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using nomenclature
-    # from the paper. In y, 1 means the ring as a sextet, 0 means it does not. In x, 1 corresponds to a double bond,
-    # 0 either means a single bond or the bond is part of a sextet.
-    y = solution[0:len(SSSR)]
-    x = solution[len(SSSR):]
+    for o in output:
+        newmol = o[0]
+        SSSR = o[1]
+        bonds = o[2]
+        solution = o[3]
 
-    # Apply results to molecule - double bond locations first
-    for index, bond in enumerate(bonds):
-        if x[index] == 0:
-            bond.order = 'S'
-        elif x[index] == 1:
-            bond.order = 'D'
-        else:
-            raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
+        # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
+        # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
+        # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
+        y = solution[0:len(SSSR)]
+        x = solution[len(SSSR):]
 
-    # Then apply locations of aromatic sextets by converting to benzene bonds
-    for index, ring in enumerate(SSSR):
-        if y[index] == 1:
-            clarTransformation(newmol, ring)
+        # Apply results to molecule - double bond locations first
+        for index, bond in enumerate(bonds):
+            if x[index] == 0:
+                bond.order = 'S'
+            elif x[index] == 1:
+                bond.order = 'D'
+            else:
+                raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
-    return newmol
+        # Then apply locations of aromatic sextets by converting to benzene bonds
+        for index, ring in enumerate(SSSR):
+            if y[index] == 1:
+                clarTransformation(newmol, ring)
+
+        molList.append(newmol)
+
+    return molList
 
 
-def clarOptimization(molecule, constraints=None):
+def clarOptimization(molecule, constraints=None, maxNum=None):
     """
     Generates Clar structures for a given molecule using linear programming. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
@@ -109,12 +114,19 @@ def clarOptimization(molecule, constraints=None):
     # Each row is a constraint, so we have one constraint for each atom
     lp.rows.add(len(atoms))
     for r in lp.rows:
-        r.bounds = (1, 1)  # Constraint must be 1 since each atom can only be part of one sextet or double bond
+        r.bounds = 1  # Constraint must be 1 since each atom can only be part of one sextet or double bond
 
     # Each column is a variable, corresponding to each ring and bond (that is part of a ring) in the molecule
     lp.cols.add(len(SSSR) + len(bonds))
     for c in lp.cols:
         c.kind = bool
+
+    # Add constraints to problem if provided
+    if constraints:
+        first = lp.rows.add(len(constraints))
+        for index, constraint in enumerate(constraints):
+            a += constraint[0]
+            lp.rows[first + index].bounds = constraint[1]
 
     lp.obj[:] = objective  # Set objective coefficients
     lp.matrix = a  # Set constraint coefficients, coefficients ordered left to right, top to bottom
@@ -124,12 +136,32 @@ def clarOptimization(molecule, constraints=None):
     if lp.status != 'opt':
         raise RuntimeError('Optimization exited with status {0} and message {1}'.format(lp.status, msg))
 
+    if maxNum is None:
+        maxNum = lp.obj.value  # This is the first solution, without constraints, so the result should be an upper limit
+    elif lp.obj.value < maxNum:
+        raise ValueError('Sub-optimal solution obtained.')  # We don't want solutions with fewer sextets
+
     solution = [c.value for c in lp.cols]
 
     if any([x != 1 and x != 0 for x in solution]):
         raise ValueError('Non-integer solution obtained from optimization.')
 
-    return (mol, SSSR, bonds, solution)
+    # Generate constraints based on the solution obtained
+    y = solution[0:len(SSSR)]
+    new_a = y + [0] * len(bonds)
+    new_b = (0, sum(y) - 1)
+    if constraints:
+        constraints.append((new_a, new_b))
+    else:
+        constraints = [(new_a, new_b)]
+
+    # Run optimization with additional constraints
+    try:
+        innerSolutions = clarOptimization(molecule, constraints=constraints, maxNum=maxNum)
+    except (ValueError, RuntimeError):
+        innerSolutions = []
+
+    return innerSolutions + [(mol, SSSR, bonds, solution)]
 
 
 def getAromaticSSSR(molecule):

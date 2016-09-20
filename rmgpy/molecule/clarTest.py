@@ -34,7 +34,8 @@ class TestClar(unittest.TestCase):
         mol = Molecule().fromSMILES('C1=CC=C2C(C=CC3=CC=CC=C32)=C1')
         newmol = clar.generateClarStructures(mol)
 
-        self.assertTrue(newmol.isAromatic())
+        self.assertEqual(len(newmol), 1)
+        self.assertTrue(newmol[0].isAromatic())
 
     def testPhenalene(self):
         """
@@ -43,7 +44,9 @@ class TestClar(unittest.TestCase):
         mol = Molecule().fromSMILES('C1=CC2=CC=CC3CC=CC(=C1)C=32')
         newmol = clar.generateClarStructures(mol)
 
-        self.assertTrue(newmol.isAromatic())
+        self.assertEqual(len(newmol), 2)
+        self.assertTrue(newmol[0].isAromatic())
+        self.assertTrue(newmol[1].isAromatic())
 
     def testCorannulene(self):
         """
@@ -52,5 +55,10 @@ class TestClar(unittest.TestCase):
         mol = Molecule().fromSMILES('C1=CC2=CC=C3C=CC4=C5C6=C(C2=C35)C1=CC=C6C=C4')
         newmol = clar.generateClarStructures(mol)
 
-        self.assertTrue(newmol.isAromatic())
+        self.assertEqual(len(newmol), 5)
+        self.assertTrue(newmol[0].isAromatic())
+        self.assertTrue(newmol[1].isAromatic())
+        self.assertTrue(newmol[2].isAromatic())
+        self.assertTrue(newmol[3].isAromatic())
+        self.assertTrue(newmol[4].isAromatic())
 
