@@ -388,9 +388,15 @@ def generate_isomorphic_isomers(mol):
 
     return isomorphic_isomers
 
-def generateClarStructures(molecule):
+def generateClarStructures(mol):
+    """
+    Generate Clar structures for a given molecule.
 
-    output = clarOptimization(molecule)
+    Returns all Clar structures as a list.
+    """
+    cython.declare(output=list, molList=list, o=tuple, y=list, x=list, index=cython.int, bond=Bond, ring=list)
+
+    output = clarOptimization(mol)
 
     molList = []
 
@@ -425,22 +431,23 @@ def generateClarStructures(molecule):
     return molList
 
 
-def clarOptimization(molecule, constraints=None, maxNum=None):
+def clarOptimization(mol, constraints=None, maxNum=None):
     """
-    Generates Clar structures for a given molecule using linear programming. This algorithm maximizes the number
+    Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
 
     Method from:
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
+    cython.declare(molecule=Molecule, SSSR=list, a=list, objective=list, solution=list, innerSolutions=list)
 
     import glpk
 
     # Make a copy of the molecule so we don't destroy the original
-    mol = molecule.copy(deep=True)
+    molecule = mol.copy(deep=True)
 
-    SSSR = getAromaticSSSR(mol)
+    SSSR = getAromaticSSSR(molecule)
 
     # Get list of atoms that are in rings
     atoms = set()
@@ -514,27 +521,30 @@ def clarOptimization(molecule, constraints=None, maxNum=None):
 
     # Run optimization with additional constraints
     try:
-        innerSolutions = clarOptimization(molecule, constraints=constraints, maxNum=maxNum)
+        innerSolutions = clarOptimization(mol, constraints=constraints, maxNum=maxNum)
     except (ValueError, RuntimeError):
         innerSolutions = []
 
-    return innerSolutions + [(mol, SSSR, bonds, solution)]
+    return innerSolutions + [(molecule, SSSR, bonds, solution)]
 
 
-def getAromaticSSSR(molecule):
+def getAromaticSSSR(mol):
     """
     Returns the smallest set of smallest aromatic rings
     """
-    import rmgpy.molecule.generator as generator
+    cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
+    cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
+
     from rdkit.Chem.rdchem import BondType
+
     AROMATIC = BondType.AROMATIC
 
-    rings = [ring0 for ring0 in molecule.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+    rings = [ring0 for ring0 in mol.getSmallestSetOfSmallestRings() if len(ring0) == 6]
     if not rings:
         return []
 
     try:
-        rdkitmol, rdAtomIndices = generator.toRDKitMol(molecule, removeHs=False, returnMapping=True)
+        rdkitmol, rdAtomIndices = generator.toRDKitMol(mol, removeHs=False, returnMapping=True)
     except ValueError:
         return []
 
@@ -547,10 +557,10 @@ def getAromaticSSSR(molecule):
                 # all atoms in the ring must be carbon in RMG for our definition of aromatic
                 break
             for atom2 in ring0[i + 1:]:
-                if molecule.hasBond(atom1, atom2):
+                if mol.hasBond(atom1, atom2):
                     if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
                                                     rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                        aromaticBonds.append(molecule.getBond(atom1, atom2))
+                        aromaticBonds.append(mol.getBond(atom1, atom2))
         else:  # didn't break so all atoms are carbon
             if len(aromaticBonds) == 6:
                 aromaticRings.append(ring0)
@@ -558,16 +568,18 @@ def getAromaticSSSR(molecule):
     return aromaticRings
 
 
-def clarTransformation(molecule, ring):
+def clarTransformation(mol, ring):
     """
     Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
     """
+    cython.declare(indexList=list, bondList=list, index1=cython.int, index2=cython.int, bond=Bond)
+
     indexList = zip(range(len(ring)), range(1, len(ring)) + [0])
 
     bondList = []
     for index1, index2 in indexList:
         try:
-            bondList.append(molecule.getBond(ring[index1], ring[index2]))
+            bondList.append(mol.getBond(ring[index1], ring[index2]))
         except ValueError:
             raise Exception('Atoms in ring not in connected order.')
 
@@ -575,8 +587,8 @@ def clarTransformation(molecule, ring):
         bond.order = 'B'
 
     try:
-        molecule.updateAtomTypes()
+        mol.updateAtomTypes()
     except:
         return []
 
-    return molecule
+    return [mol]
