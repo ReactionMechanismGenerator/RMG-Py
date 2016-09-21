@@ -442,6 +442,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     """
     cython.declare(molecule=Molecule, SSSR=list, a=list, objective=list, solution=list, innerSolutions=list)
 
+    import os, sys
     import glpk
 
     # Make a copy of the molecule so we don't destroy the original
@@ -494,7 +495,19 @@ def clarOptimization(mol, constraints=None, maxNum=None):
 
     lp.obj[:] = objective  # Set objective coefficients
     lp.matrix = a  # Set constraint coefficients, coefficients ordered left to right, top to bottom
-    msg = lp.intopt()  # Solve the linear program
+
+    # Hack to suppress glpk output, as an alternative to modifying glpk
+    with open(os.devnull, 'w') as dn:
+        try:
+            fd = sys.stdout.fileno()
+        except IOError:  # Most likely stdout does not have a file descriptor (eg. running IPython notebook)
+            msg = lp.intopt()  # Solve the linear program
+        else:
+            original = os.dup(fd)  # Save a copy of original file descriptor
+            os.dup2(dn.fileno(), fd)  # Set stdout to devnull
+            msg = lp.intopt()  # Solve the linear program
+            os.dup2(original, fd)  # Restore stdout
+            os.close(original)
 
     # Check that optimization was successful
     if lp.status != 'opt':
