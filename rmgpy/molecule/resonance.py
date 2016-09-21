@@ -396,6 +396,9 @@ def generateClarStructures(mol):
     """
     cython.declare(output=list, molList=list, o=tuple, y=list, x=list, index=cython.int, bond=Bond, ring=list)
 
+    if not mol.isCyclic():
+        return []
+
     output = clarOptimization(mol)
 
     molList = []
@@ -449,6 +452,9 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     molecule = mol.copy(deep=True)
 
     SSSR = getAromaticSSSR(molecule)
+
+    if not SSSR:
+        return []
 
     # Get list of atoms that are in rings
     atoms = set()
