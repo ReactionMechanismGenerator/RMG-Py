@@ -451,7 +451,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    SSSR = getAromaticSSSR(molecule)
+    SSSR = molecule.getAromaticSSSR()
 
     if not SSSR:
         return []
@@ -545,46 +545,6 @@ def clarOptimization(mol, constraints=None, maxNum=None):
         innerSolutions = []
 
     return innerSolutions + [(molecule, SSSR, bonds, solution)]
-
-
-def getAromaticSSSR(mol):
-    """
-    Returns the smallest set of smallest aromatic rings
-    """
-    cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
-    cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
-
-    from rdkit.Chem.rdchem import BondType
-
-    AROMATIC = BondType.AROMATIC
-
-    rings = [ring0 for ring0 in mol.getSmallestSetOfSmallestRings() if len(ring0) == 6]
-    if not rings:
-        return []
-
-    try:
-        rdkitmol, rdAtomIndices = generator.toRDKitMol(mol, removeHs=False, returnMapping=True)
-    except ValueError:
-        return []
-
-    aromaticRings = []
-    for ring0 in rings:
-        aromaticBonds = []
-        # Figure out which atoms and bonds are aromatic and reassign appropriately:
-        for i, atom1 in enumerate(ring0):
-            if not atom1.isCarbon():
-                # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                break
-            for atom2 in ring0[i + 1:]:
-                if mol.hasBond(atom1, atom2):
-                    if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
-                                                    rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                        aromaticBonds.append(mol.getBond(atom1, atom2))
-        else:  # didn't break so all atoms are carbon
-            if len(aromaticBonds) == 6:
-                aromaticRings.append(ring0)
-
-    return aromaticRings
 
 
 def clarTransformation(mol, ring):

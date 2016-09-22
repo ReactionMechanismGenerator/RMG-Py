@@ -19,6 +19,4 @@ cpdef list generateClarStructures(Molecule mol)
 
 cpdef list clarOptimization(Molecule mol, list constraints=?, maxNum=?)
 
-cpdef list getAromaticSSSR(Molecule mol)
-
 cpdef list clarTransformation(Molecule mol, list ring)
