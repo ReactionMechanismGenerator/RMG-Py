@@ -189,7 +189,8 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False
         and return `thermoData1`.
         
         If `groupAdditivity` is True, append comments related to group additivity estimation
-        If `verbose` is False, omit the comments from the groups that have all zero entries. 
+        If `verbose` is False, omit the comments from a "zero entry", whose H298, S298, and Cp are all 0.
+        If `verbose` is True, or thermoData2 is not a zero entry, add thermoData2.comment to thermoData1.comment.
         """
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
@@ -203,7 +204,8 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False
         # Used to check if all of the entries in thermoData2 are zero
 
         if groupAdditivity:
-            if verbose or testZero !=0: # Used to check if all of the entries in thermoData2 are zero
+            if verbose or testZero !=0:
+            # If verbose==True or testZero!=0, add thermoData2.comment to thermoData1.comment.
                 if thermoData1.comment:
                     thermoData1.comment += ' + {0}'.format(thermoData2.comment)
                 else:
@@ -1349,7 +1351,6 @@ class ThermoDatabase(object):
                 logging.error(molecule)
                 logging.error(molecule.toAdjacencyList())
                 raise
-            
             # Re-saturate
             for H, bond in added[atom]:
                 saturatedStruct.addAtom(H)
@@ -1359,10 +1360,9 @@ class ThermoDatabase(object):
             for H, bond in added[atom]:
                 thermoData.H298.value_si -= 52.103 * 4184
 
-        # Remove all of the interactions of the saturated structure.
-        # Then add the interactions of the radical.
-        # For example, in the thermo estimation of C1=CC=C([O])C(O)=C1, we need to remove the
-        # interation of OH-OH, then add the interaction of Oj-OH.
+        # Remove all of the interactions of the saturated structure. Then add the interactions of the radical.
+        # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
+        # Currently we only apply this correction to the aromatics, due to the lack of data of other molecule types.
         if saturatedStruct.isAromatic():
             for atom in saturatedStruct.atoms:
                 if atom.atomType.label=='Cb':
@@ -1470,6 +1470,7 @@ class ThermoDatabase(object):
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
 
+                # Correct long distance interaction for aromatics.
                 if atom.atomType.label=='Cb':
                     for atom_1 in molecule.getNthNeighbor([atom], 1, []):
                         try:
@@ -1528,6 +1529,8 @@ class ThermoDatabase(object):
         # otherwise, apply heuristic algorithm
         if not isPolyringPartialMatched(polyring, matched_group):
             thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
+            # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
             
@@ -1573,6 +1576,9 @@ class ThermoDatabase(object):
                                                     self.groups['ring'], submol, submol.atoms)[0]
             for _ in range(occurance-1):
                 thermoData = removeThermoData(thermoData, singleRingThermodata, True, True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+
 
     def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """
@@ -1631,6 +1637,8 @@ class ThermoDatabase(object):
             return data, node
         else:
             return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node
+            # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
     def __averageChildrenThermo(self, node):
         """
@@ -1703,9 +1711,8 @@ class ThermoDatabase(object):
     def __removeGroupThermoData(self, thermoData, database, molecule, atom):
         """
         Based on the __addGroupThermoData method. Just replace the last line with 'return removeThermoData()'.
-        Determine the group additivity thermodynamic data for the atom `atom`
-        in the structure `structure`, and REMOVE it to the existing thermo data
-        `thermoData`.
+        Determine the group additivity thermodynamic data for the atom `atom` in the structure `structure`,
+        and REMOVE it from the existing thermo data `thermoData`.
         """
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
