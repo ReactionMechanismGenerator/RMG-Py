@@ -55,6 +55,42 @@ def populate_resonance_generation_algorithm():
 
     return algorithms
 
+def analyzeMolecule(mol):
+    """
+    Identify key features of molecule important for resonance structure generation.
+
+    Returns a dictionary of features.
+    """
+    cython.declare(features=dict)
+
+    features = {'isRadical': mol.isRadical(),
+                'isCyclic': mol.isCyclic(),
+                'isAromatic': False,
+                'isPolycyclicAromatic': False,
+                'isArylRadical': False,
+                'hasNitrogen': False,
+                'hasOxygen': False,
+                'hasLonePairs': False,
+                }
+
+    if features['isCyclic']:
+        ASSSR = mol.getAromaticSSSR()
+        if len(ASSSR) > 0:
+            features['isAromatic'] = True
+        if len(ASSSR) > 1:
+            features['isPolycyclicAromatic'] = True
+        if features['isRadical'] and features['isAromatic']:
+            features['isArylRadical'] = mol.isArylRadical(ASSSR)
+    for atom in mol.vertices:
+        if atom.isNitrogen():
+            features['hasNitrogen'] = True
+        if atom.isOxygen():
+            features['hasOxygen'] = True
+        if atom.lonePairs > 0:
+            features['hasLonePairs'] = True
+
+    return features
+
 def generateResonanceIsomers(mol):
     """
     Generate and return all of the resonance isomers of this molecule.
