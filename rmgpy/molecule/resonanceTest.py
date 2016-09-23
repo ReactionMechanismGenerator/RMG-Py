@@ -7,6 +7,42 @@ from .resonance import *
 
 class ResonanceTest(unittest.TestCase):
 
+    def testAllylShift(self):
+        """Test allyl shift for hexadienyl radical"""
+        molList = generateResonanceIsomers(Molecule(SMILES="C=C[CH]C=CC"))
+        self.assertEqual(len(molList), 3)
+
+    def testOxime(self):
+        """Test resonance structure generation for CC=N[O] radical
+
+        Simple case for lone pair <=> radical resonance"""
+        molList = generateResonanceIsomers(Molecule(SMILES="CC=N[O]"))
+        self.assertEqual(len(molList), 3)
+        self.assertTrue(any([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
+
+    def testAzide(self):
+        """Test resonance structure generation for ethyl azide
+
+        Simple case for N5dd <=> N5t resonance"""
+        molList = generateResonanceIsomers(Molecule(SMILES="CCN=N=[N-]"))
+        self.assertEqual(len(molList), 3)
+        self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
+
+    def testStyryl(self):
+        """Test resonance structure generation for styryl radical
+
+        In this case, the radical can be delocalized into the aromatic ring"""
+        molList = generateResonanceIsomers(Molecule(SMILES="c1ccccc1[C]=C"))
+        self.assertEqual(len(molList), 4)
+
+    @work_in_progress
+    def testNaphthyl(self):
+        """Test resonance structure generation for naphthyl radical
+
+        In this case, the radical is orthogonal to the pi-orbital plane and cannot delocalize"""
+        molList = generateResonanceIsomers(Molecule(SMILES="c12ccccc1cccc2"))
+        self.assertEqual(len(molList), 1)
+
     def test_C9H9_aro(self):
         """Test cyclopropyl benzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH]1CC1c1ccccc1")
