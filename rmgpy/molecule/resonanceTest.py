@@ -8,47 +8,58 @@ from .resonance import *
 class ResonanceTest(unittest.TestCase):
 
     def test_C9H9_aro(self):
-        """CyclopropylBenzene-radical, aromatic bonds"""
+        """Test cyclopropyl benzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH]1CC1c1ccccc1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
     
     def test_C9H9_kek(self):
-        """CyclopropylBenzene-radical, kekulized bonds"""
+        """Test cyclopropyl benzene radical, kekulized SMILES"""
         mol = Molecule(SMILES="[CH]1CC1C1C=CC=CC=1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
 
     def test_Benzene_aro(self):
+        """Test benzene, aromatic SMILES"""
         mol = Molecule(SMILES="c1ccccc1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
     
     def test_Benzene_kek(self):
+        """Test benzene, kekulized SMILES"""
         mol = Molecule(SMILES="C1C=CC=CC=1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
 
     def test_C9H11_aro(self):
-        """PropylBenzene-radical"""
+        """Test propylbenzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH2]CCc1ccccc1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
 
     def test_C10H11_aro(self):
-        """CyclobutylBenzene-radical"""
+        """Test cyclobutylbenzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH]1CCC1c1ccccc1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
 
     def test_C9H10_aro(self):
-        """CyclopropylBenzene, aromatic bonds"""
+        """Test cyclopropylbenzene, aromatic SMILES"""
         mol = Molecule(SMILES="C1CC1c1ccccc1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
 
     def test_C10H12_aro(self):
-        """CyclopropylMethylBenzene"""
+        """Test cyclopropylmethyl benzene, aromatic SMILES"""
         mol = Molecule(SMILES="C1CC1c1c(C)cccc1")
-        generateResonanceIsomers(mol)
+        molList = generateResonanceIsomers(mol)
+        self.assertEqual(len(molList), 2)
 
-    def test_C9H10_aro(self):
-        """CyclopropylBenzene, generate aro resonance isomers"""
+    def test_C9H10_aro_2(self):
+        """Test cyclopropyl benzene, generate aromatic resonance isomers"""
         mol = Molecule(SMILES="C1CC1c1ccccc1")
-        generateAromaticResonanceIsomers(mol)
+        molList = generateAromaticResonanceIsomers(mol)
+        self.assertEqual(len(molList), 1)
 
     def testFusedAromatic1(self):
         """Test we can make aromatic perylene from both adjlist and SMILES"""
@@ -440,9 +451,7 @@ class ClarTest(unittest.TestCase):
     """
 
     def testClarTransformation(self):
-        """
-        Basic test that aromatic ring is generated.
-        """
+        """Test that clarTransformation generates an aromatic ring."""
         mol = Molecule().fromSMILES('c1ccccc1')
         sssr = mol.getSmallestSetOfSmallestRings()
         clarTransformation(mol, sssr[0])
@@ -476,9 +485,7 @@ class ClarTest(unittest.TestCase):
             self.assertEqual(sum(y), 1)
 
     def testPhenanthrene(self):
-        """
-        Test phenanthrene, which is a basic case that should work.
-        """
+        """Test that we generate 1 Clar structure for phenanthrene."""
         mol = Molecule().fromSMILES('C1=CC=C2C(C=CC3=CC=CC=C32)=C1')
         newmol = generateClarStructures(mol)
 
@@ -512,9 +519,9 @@ class ClarTest(unittest.TestCase):
         self.assertTrue(newmol[0].isIsomorphic(struct))
 
     def testPhenalene(self):
-        """
-        Test phenalene, which currently does not have feasible starting point.
-        """
+        """Test that we generate 2 Clar structures for phenalene.
+
+        Case where there is one non-aromatic ring."""
         mol = Molecule().fromSMILES('C1=CC2=CC=CC3CC=CC(=C1)C=32')
         newmol = generateClarStructures(mol)
 
@@ -573,9 +580,9 @@ class ClarTest(unittest.TestCase):
         self.assertFalse(newmol[0].isIsomorphic(newmol[1]))
 
     def testCorannulene(self):
-        """
-        Test corannulene, which does not give integer results after initial optimization.
-        """
+        """Test that we generate 5 Clar structures for corannulene
+
+        Case where linear relaxation does not give an integer solution"""
         mol = Molecule().fromSMILES('C1=CC2=CC=C3C=CC4=C5C6=C(C2=C35)C1=CC=C6C=C4')
         newmol = generateClarStructures(mol)
 
