@@ -1508,6 +1508,23 @@ class Molecule(Graph):
                 return True
         return False
 
+    def isArylRadical(self, ASSSR=None):
+        """
+        Return ``True`` if the molecule only contains aryl radicals,
+        ie. radical on an aromatic ring, or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom, radList=list)
+        if ASSSR is None:
+            ASSSR = self.getAromaticSSSR()
+        radList = []
+        for atom in self.vertices:
+            if atom.radicalElectrons > 0:
+                if any([atom in ring for ring in ASSSR]):
+                    radList.append(True)
+                else:
+                    radList.append(False)
+        return all(radList)
+
     def generateResonanceIsomers(self):
         return resonance.generateResonanceIsomers(self)
 

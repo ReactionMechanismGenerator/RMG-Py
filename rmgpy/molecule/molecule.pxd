@@ -202,6 +202,8 @@ cdef class Molecule(Graph):
     
     cpdef bint isRadical(self) except -2
 
+    cpdef bint isArylRadical(self, list ASSSR=?) except -2
+
     cpdef int calculateSymmetryNumber(self) except -1
 
     cpdef list generateResonanceIsomers(self)
