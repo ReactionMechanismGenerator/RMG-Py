@@ -128,9 +128,6 @@ def makeComparison(chemkinRxn):
 
     if reaction.kinetics and False:
         """
-        REWRITE SARATHYKIN STUFF FOR VARYING IMPORTED MECHANISMS # Fixed?
-        """
-        """
         Return the rate coefficient in the appropriate combination of cm^3,
         mol, and s at temperature `T` in K and pressure `P` in Pa.
         """
