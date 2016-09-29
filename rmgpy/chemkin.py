@@ -349,8 +349,11 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
         else:
+            reactantSpecies = speciesDict[reactant]
+            if not reactantSpecies.reactive:
+                reactantSpecies.reactive = True
             for i in range(stoichiometry):
-                reaction.reactants.append(speciesDict[reactant])
+                reaction.reactants.append(reactantSpecies)
     for product in products.split('+'):
         product = product.strip()
         stoichiometry = 1
@@ -367,8 +370,11 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
                 raise ChemkinError('Skip reaction!')
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
+            productSpecies = speciesDict[product]
+            if not productSpecies.reactive:
+                productSpecies.reactive = True
             for i in range(stoichiometry):
-                reaction.products.append(speciesDict[product])
+                reaction.products.append(productSpecies)
     
     # Determine the appropriate units for k(T) and k(T,P) based on the number of reactants
     # This assumes elementary kinetics for all reactions

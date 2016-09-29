@@ -96,3 +96,27 @@ class ChemkinTest(unittest.TestCase):
 
 		for spc, label in zip(species, expected):
 			self.assertEqual(spc.label, label)
+
+	def testReactantN2IsReactiveAndGetsRightSpeciesIdentifier(self):
+		"""
+		Test that after loading chemkin files, species such as N2, which is in the default 
+		inert list of RMG, should be treated as reactive species and given right species
+		Identifier when it's reacting in reactions.
+		"""
+		folder = os.path.join(os.path.dirname(rmgpy.__file__),'test_data/chemkin/chemkin_py')
+		
+		chemkinPath = os.path.join(folder, 'NC', 'chem.inp')
+		dictionaryPath = os.path.join(folder,'NC', 'species_dictionary.txt')
+
+		# loadChemkinFile
+		species, reactions = loadChemkinFile(chemkinPath, dictionaryPath, useChemkinNames=True) 
+
+		for n2 in species:
+		    if n2.label == 'N2':
+		        break
+		self.assertTrue(n2.reactive)
+
+		self.assertEqual(getSpeciesIdentifier(n2), 'N2(35)') 
+
+	
+
