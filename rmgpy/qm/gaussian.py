@@ -1064,8 +1064,7 @@ class GaussianTS(QMReaction, Gaussian):
         for k, reactant in enumerate(entry.item.reactants):
             if k>0:
                 rxnLabel += ' + '
-            print type(reactant)
-            break    
+
             label = reactant.getFingerprint() #removed .molecule[0]. According to this, we are assuming that reactant is a molecule and not a species.
             labeledAtoms[label] = reactant.getLabeledAtoms() #same
             if label not in speciesDict.keys():
