@@ -8,6 +8,7 @@ import itertools
 import logging
 import numpy as np
 import os
+import shutil
 
 from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
