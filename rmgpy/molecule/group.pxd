@@ -67,6 +67,8 @@ cdef class GroupAtom(Vertex):
     cpdef bint hasWildcards(self)
 
     cpdef mol.Atom makeSampleAtom(self)
+
+    cpdef getBondOrdersForAtom(self)
 ################################################################################
 
 cdef class GroupBond(Edge):

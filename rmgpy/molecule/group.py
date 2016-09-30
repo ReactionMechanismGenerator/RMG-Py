@@ -37,6 +37,7 @@ import cython
 
 from .graph import Vertex, Edge, Graph
 from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
+from .element import PeriodicSystem
 import rmgpy.molecule.molecule as mol
 from copy import deepcopy, copy
 
@@ -498,6 +499,30 @@ class GroupAtom(Vertex):
                 newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
         return newAtom
+
+    def getBondOrdersForAtom(self):
+        """
+        This helper function is to help calculate total bond orders for an
+        input atom.
+
+        Some special consideration for the order `B` bond. For atoms having
+        three `B` bonds, the order for each is 4/3.0, while for atoms having other
+        than three `B` bonds, the order for  each is 3/2.0
+        """
+        num_B_bond = 0
+        order = 0
+        for _, bond in self.bonds.iteritems():
+            if bond.order == 'B':
+                num_B_bond += 1
+            else:
+                order += mol.bond_orders[bond.order]
+
+        if num_B_bond == 3:
+            order += num_B_bond * 4/3.0
+        else:
+            order += num_B_bond * 3/2.0
+
+        return order
 
 ################################################################################
 
@@ -1057,20 +1082,12 @@ class Group(Graph):
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
-
         modified = False
 
         #If this atom or any of its ligands has wild cards, then don't try to standardize
         if self.hasWildCards: return modified
         for bond12, atom2 in self.bonds.iteritems():
             if atom2.hasWildCards: return modified
-
-        #dictionary of element to expected valency
-        valency = {atomTypes['C'] : 4,
-                   atomTypes['O'] : 2,
-                   atomTypes['S']: 2,
-                   atomTypes['Si']:4
-                   }
 
         #list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
         specifics= [elementLabel for elementLabel in allElements if elementLabel not in nonSpecifics]
@@ -1087,25 +1104,18 @@ class Group(Graph):
 
             #claimedAtomType is not in one of the specified elements
             if not element: continue
-            #Don't standardize atomtypes for nitrogen for now. My feeling is that
-            # the work on the nitrogen atomtypes is still incomplete
+            #Don't standardize atomtypes for nitrogen for now
+            #The work on the nitrogen atomtypes is still incomplete
             elif element is atomTypes['N']: continue
 
             groupFeatures = getFeatures(atom, atom.bonds)
 
-            single = groupFeatures[0]
-            allDouble = groupFeatures[1]
-            triple = groupFeatures[5]
-            benzene = groupFeatures[6]
-            if benzene == 3:
-                bondValency = single + 2 * allDouble + 3 * triple + 4.0/3.0 * benzene
-            else:
-                bondValency =  single + 2 * allDouble + 3 * triple + 3.0/2.0 * benzene
-            filledValency =  atom.radicalElectrons[0] + bondValency
+            bondOrder = atom.getBondOrdersForAtom()
+            filledValency =  atom.radicalElectrons[0] + bondOrder
 
             #For an atomtype to be known for certain, the valency must be filled
             #within 1 of the total valency available
-            if filledValency >= valency[element] - 1:
+            if filledValency >= PeriodicSystem.valence_electrons[self.symbol][element] - 1:
                 for specificAtomType in element.specific:
                     atomtypeFeatureList = specificAtomType.getFeatures()
                     for molFeature, atomtypeFeature in zip(groupFeatures, atomtypeFeatureList):
