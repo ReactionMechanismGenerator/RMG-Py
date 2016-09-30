@@ -784,13 +784,35 @@ class TestGroup(unittest.TestCase):
         # print result.multiplicity
         # self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
 
+        #tests adding implicit atoms
         adjlist1 = """
-1  *1 CO u0
+1  *1 Cd u0
             """
 
         group1 = Group().fromAdjacencyList(adjlist1)
         result1 = group1.makeSampleMolecule()
-        self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=O')))
+        self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=C')))
+
+        #test creating implicit benzene atoms
+        adjlist2 = """
+1  *1 Cbf u0 {2,B}
+2     Cbf u0 {1,B}
+            """
+
+        group2 = Group().fromAdjacencyList(adjlist2)
+        result2 = group2.makeSampleMolecule()
+        naphthaleneMolecule = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+        resonanceList2=naphthaleneMolecule.generateResonanceIsomers()
+        self.assertTrue(any([result2.isIsomorphic(x) for x in resonanceList2]))
+
+        #test the creation of a charged species
+        adjlist3 = """
+1  *1 N5s u0
+        """
+
+        group3 = Group().fromAdjacencyList(adjlist3)
+        result3 = group3.makeSampleMolecule()
+        self.assertTrue(result3.isIsomorphic(Molecule().fromSMILES('[NH4+]')))
 
     def testIsBenzeneExplicit(self):
         """
