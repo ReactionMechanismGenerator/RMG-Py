@@ -794,13 +794,12 @@ class ThermoDatabase(object):
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
         self.groups = {}
         self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
-        self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
-        self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
         self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
         self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
         self.groups['longDistanceInteraction_cyclic']   =   ThermoGroups(label='longDistanceInteraction_cyclic').load(os.path.join(path, 'longDistanceInteraction_cyclic.py'  ), self.local_context, self.global_context)
+        self.groups['longDistanceInteraction_noncyclic']   =   ThermoGroups(label='longDistanceInteraction_noncyclic').load(os.path.join(path, 'longDistanceInteraction_noncyclic.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -1442,13 +1441,16 @@ class ThermoDatabase(object):
                     logging.error(molecule.toAdjacencyList())
                     raise
                 # Correct for gauche and 1,5- interactions
+                # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
+                # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
+                # Currently we only have gauche(1,4) and 1,5 interactions in that file. 
+                # If you want to add more corrections for longer distance, please call getNthNeighbor() method accordingly.
+                # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
                 if not cyclic:
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
-                    except KeyError: pass
-                try:
-                    self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
-                except KeyError: pass
+                    for atom_2 in molecule.getNthNeighbor([atom],1,[])+molecule.getNthNeighbor([atom],2,[]):
+                        try:
+                            self.__addGroupThermoData(thermoData, self.groups['longDistanceInteraction_noncyclic'], molecule, {'*1':atom, '*2': atom_2})
+                        except KeyError: pass
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
