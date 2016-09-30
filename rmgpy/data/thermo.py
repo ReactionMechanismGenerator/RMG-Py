@@ -1446,11 +1446,14 @@ class ThermoDatabase(object):
                 # Currently we only have gauche(1,4) and 1,5 interactions in that file. 
                 # If you want to add more corrections for longer distance, please call getNthNeighbor() method accordingly.
                 # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
-                if not cyclic:
+                if not molecule.isAtomInCycle(atom):
                     for atom_2 in molecule.getNthNeighbor([atom],1,[])+molecule.getNthNeighbor([atom],2,[]):
-                        try:
-                            self.__addGroupThermoData(thermoData, self.groups['longDistanceInteraction_noncyclic'], molecule, {'*1':atom, '*2': atom_2})
-                        except KeyError: pass
+                        if not molecule.isAtomInCycle(atom_2):
+                        # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
+                        # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
+                            try:
+                                self.__addGroupThermoData(thermoData, self.groups['longDistanceInteraction_noncyclic'], molecule, {'*1':atom, '*2': atom_2})
+                            except KeyError: pass
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
