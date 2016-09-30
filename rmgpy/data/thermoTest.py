@@ -171,13 +171,11 @@ class TestThermoDatabase(unittest.TestCase):
         # Pure group additivity thermo
         propane = Species(index=3, label="Propane", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.05257,0.0125099,3.79386e-05,-5.12022e-08,1.87065e-11,-14454.2,10.0672], Tmin=(100,'K'), Tmax=(986.57,'K')),
          NASAPolynomial(coeffs=[5.91316,0.0218763,-8.17661e-06,1.49855e-09,-1.05991e-13,-16038.9,-8.86555], Tmin=(986.57,'K'), Tmax=(5000,'K'))],
-         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)"""), molecule=[Molecule(SMILES="CCC")])
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH)"""), molecule=[Molecule(SMILES="CCC")])
         
         source = self.database.extractSourceFromComments(propane)
         self.assertTrue('GAV' in source, 'Should have found that propane thermo source is GAV.')
         self.assertEqual(len(source['GAV']['group']), 2)
-        self.assertEqual(len(source['GAV']['other']), 1)
-        self.assertEqual(len(source['GAV']['gauche']), 2)
 
         # Pure library thermo
         dipk = Species(index=1, label="DIPK", thermo=
