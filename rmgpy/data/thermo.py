@@ -37,6 +37,7 @@ import re
 import math
 import logging
 import numpy
+import itertools
 from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
@@ -799,9 +800,7 @@ class ThermoDatabase(object):
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
         self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
-        self.groups['interactionDistance1']   =   ThermoGroups(label='interactionDistance1').load(os.path.join(path, 'interactionDistance1.py'  ), self.local_context, self.global_context)
-        self.groups['interactionDistance2']   =   ThermoGroups(label='interactionDistance2').load(os.path.join(path, 'interactionDistance2.py'  ), self.local_context, self.global_context)
-        self.groups['interactionDistance3']   =   ThermoGroups(label='interactionDistance3').load(os.path.join(path, 'interactionDistance3.py'  ), self.local_context, self.global_context)
+        self.groups['longDistanceInteraction_cyclic']   =   ThermoGroups(label='longDistanceInteraction_cyclic').load(os.path.join(path, 'longDistanceInteraction_cyclic.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -1362,36 +1361,20 @@ class ThermoDatabase(object):
 
         # Remove all of the interactions of the saturated structure. Then add the interactions of the radical.
         # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
-        # Currently we only apply this correction to the aromatics, due to the lack of data of other molecule types.
-        if saturatedStruct.isAromatic():
-            for atom in saturatedStruct.atoms:
-                if atom.atomType.label=='Cb':
-                    for atom_1 in saturatedStruct.getNthNeighbor([atom], 1, []):
-                        try:
-                            self.__removeGroupThermoData(thermoData,self.groups['interactionDistance1'], saturatedStruct, {'*1':atom, '*2':atom_1})
-                        except KeyError: pass
-                    for atom_2 in saturatedStruct.getNthNeighbor([atom], 2, []):
-                        try:
-                            self.__removeGroupThermoData(thermoData,self.groups['interactionDistance2'], saturatedStruct, {'*1':atom, '*2':atom_2})
-                        except KeyError: pass
-                    for atom_3 in saturatedStruct.getNthNeighbor([atom], 3, []):
-                        try:
-                            self.__removeGroupThermoData(thermoData,self.groups['interactionDistance3'], saturatedStruct, {'*1':atom, '*2':atom_3})
-                        except KeyError: pass
-            for atom in molecule.atoms:
-                if atom.atomType.label=='Cb':
-                    for atom_1 in molecule.getNthNeighbor([atom], 1, []):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
-                        except KeyError: pass
-                    for atom_2 in molecule.getNthNeighbor([atom], 2, []):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
-                        except KeyError: pass
-                    for atom_3 in molecule.getNthNeighbor([atom], 3, []):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], molecule, {'*1':atom, '*2':atom_3})
-                        except KeyError: pass
+        # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
+        if saturatedStruct.isCyclic():
+            SSSR = saturatedStruct.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__removeGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], saturatedStruct, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
+            SSSR = molecule.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
 
         return thermoData
         
@@ -1469,21 +1452,26 @@ class ThermoDatabase(object):
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
-
-                # Correct long distance interaction for aromatics.
-                if atom.atomType.label=='Cb':
-                    for atom_1 in molecule.getNthNeighbor([atom], 1, []):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance1'], molecule, {'*1':atom, '*2':atom_1})
-                        except KeyError: pass
-                    for atom_2 in molecule.getNthNeighbor([atom], 2, []):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance2'], molecule, {'*1':atom, '*2':atom_2})
-                        except KeyError: pass
-                    for atom_3 in molecule.getNthNeighbor([atom], 3, []):
-                        try:
-                            self.__addGroupThermoData(thermoData,self.groups['interactionDistance3'], molecule, {'*1':atom, '*2':atom_3})
-                        except KeyError: pass
+        
+        # Do long distance interaction correction for cyclic molecule. 
+        # First get smallest set of smallest rings. 
+        # Then for every single ring, generate the atom pairs by itertools.permutation.
+        # Finally match the atom pair with the database.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        # WIP: For now, in the database, if an entry describes the interaction between same groups, 
+        # it will be halved because it will be counted twice here. 
+        # Alternatively we could keep all the entries as their full values by using combinations instead of permutations here.
+        # In that case, we need to add more lines to match from reverse side when we didn't hit the most specific level from the forward side.
+        # PS: by saying 'forward side', I mean {'*1':atomPair[0], '*2':atomPair[1]}. So the following is the reverse side '{'*1':atomPair[1], '*2':atomPair[0]}'
+        # In my opinion, it's cleaner to do it in the current way.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        if cyclic:
+            SSSR = molecule.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
 
         # Do ring corrections separately because we only want to match
         # each ring one time
