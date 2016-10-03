@@ -175,6 +175,7 @@ class ResonanceTest(unittest.TestCase):
                 naphthalene2.toSMILES()
             ))
 
+    @work_in_progress
     def testFusedAromatic3(self):
         """Test we can make aromatic pyrene_rad from both adjlist and SMILES"""
         pyrene_rad = Molecule().fromAdjacencyList("""
