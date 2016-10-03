@@ -1618,7 +1618,7 @@ class Molecule(Graph):
         
         return group
 
-    def getNthNeighbor(self, startingAtoms, distanceList, ignoreList = [], n=1):
+    def getNthNeighbor(self, startingAtoms, distanceList, ignoreList = None, n=1):
         '''
         Recursively get the Nth nonHydrogen neighbors of the startingAtoms, and return them in a list.
         `startingAtoms` is a list of :class:Atom for which we will get the nth neighbor.
@@ -1626,6 +1626,9 @@ class Molecule(Graph):
         `ignoreList` is a list of :class:Atom that have been counted in (n-1)th neighbor, and will not be returned.
         `n` is an interger, corresponding to the distance to be calculated in the current iteration.
         '''
+        if ignoreList is None:
+            ignoreList = []
+
         neighbors = []
         for atom in startingAtoms:
             newNeighbors = [neighbor for neighbor in self.getBonds(atom) if neighbor.isNonHydrogen()]
