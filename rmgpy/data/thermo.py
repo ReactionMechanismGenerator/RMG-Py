@@ -1447,7 +1447,7 @@ class ThermoDatabase(object):
                 # If you want to add more corrections for longer distance, please call getNthNeighbor() method accordingly.
                 # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
                 if not molecule.isAtomInCycle(atom):
-                    for atom_2 in molecule.getNthNeighbor([atom],1,[])+molecule.getNthNeighbor([atom],2,[]):
+                    for atom_2 in molecule.getNthNeighbor([atom],[1,2],[]):
                         if not molecule.isAtomInCycle(atom_2):
                         # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
                         # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
