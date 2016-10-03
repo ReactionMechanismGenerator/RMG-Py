@@ -130,10 +130,15 @@ def generateResonanceIsomers(mol):
     """
     Generate and return all of the resonance isomers of this molecule.
     """
-    cython.declare(isomers=list, newIsomers=list, index=cython.int, atom=Atom)
+    cython.declare(isomers=list, newIsomers=list, index=cython.int, features=dict, methodList=list)
     cython.declare(isomer=Molecule, newIsomer=Molecule, isom=Molecule)
         
     isomers = [mol]
+
+    # Analyze molecule
+    features = analyzeMolecule(mol)
+    # Get applicable resonance methods
+    methodList = populateResonanceAlgorithms(features)
 
     # Iterate over resonance isomers
     index = 0
@@ -141,8 +146,8 @@ def generateResonanceIsomers(mol):
         isomer = isomers[index]
         
         newIsomers = []
-        for algo in populate_resonance_generation_algorithm():
-            newIsomers.extend(algo(isomer))
+        for method in methodList:
+            newIsomers.extend(method(isomer))
 
         for newIsomer in newIsomers:
             # Append to isomer list if unique
