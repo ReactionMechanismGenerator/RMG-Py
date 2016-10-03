@@ -1,8 +1,6 @@
 from .graph cimport Vertex, Edge, Graph
 from .molecule cimport Atom, Bond, Molecule
 
-cpdef tuple populate_resonance_generation_algorithm()
-
 cpdef list populateResonanceAlgorithms(dict features=?)
 
 cpdef dict analyzeMolecule(Molecule mol)
