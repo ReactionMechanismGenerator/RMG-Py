@@ -1921,14 +1921,16 @@ def saveChemkinFiles(rmg):
 
 def writeElementsSection(f):
     """
-    Write the ELEMENTS section of the chemkin file.    
+    Write the ELEMENTS section of the chemkin file.  This file currently lists
+    all elements and isotopes available in RMG. It may become useful in the future
+    to only include elements/isotopes present in the current RMG run. 
     """
 
     s = 'ELEMENTS\n'
 
     # map of isotope elements with chemkin-compatible element representation:
 
-    elements = ('H', 'C', ('C', 13), 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'Cl')
+    elements = ('H', ('H', 2), ('H',3), 'C', ('C', 13), 'O', ('O',18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'Cl')
     for el in elements:
         if isinstance(el, tuple):
             symbol, isotope = el
