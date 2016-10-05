@@ -1631,11 +1631,10 @@ class Molecule(Graph):
 
         neighbors = []
         for atom in startingAtoms:
-            neighbors.extend(self.getBonds(atom).keys())
+            newNeighbors = [neighbor for neighbor in self.getBonds(atom) if neighbor.isNonHydrogen()]
+            neighbors.extend(newNeighbors)
 
         neighbors = list(set(neighbors)-set(ignoreList))
-        neighbors = [neighbor for neighbor in neighbors if neighbor.isNonHydrogen()]
-
         for atom in startingAtoms:
             ignoreList.append(atom)
         if n < max(distanceList):
