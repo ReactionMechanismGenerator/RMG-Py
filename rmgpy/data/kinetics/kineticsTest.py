@@ -1,31 +1,86 @@
 import os
 import unittest 
 from external.wip import work_in_progress
-
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import DatabaseError
 import numpy
+from rmgpy.molecule.molecule import Molecule
 ###################################################
 
 class TestKineticsDatabase(unittest.TestCase):
     
-    def testLoadFamilies(self):
+        
+    def setUp(self):
+        self.path = os.path.join(settings['database.directory'],'kinetics','families')
+        self.database = KineticsDatabase()
+    
+    
+    def test_load_families_throws_proper_exceptions(self):
         """
         Test that the loadFamilies function raises the correct exceptions
         """
-        path = os.path.join(settings['database.directory'],'kinetics','families')
-        database = KineticsDatabase()
+        
         
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families='random')
+            self.database.loadFamilies(self.path, families='random')
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
+            self.database.loadFamilies(self.path, families=['!H_Abstraction','Disproportionation'])
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families=['fake_family'])
+            self.database.loadFamilies(self.path, families=['fake_family'])
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families=[])
+            self.database.loadFamilies(self.path, families=[])
             
+    def test_proper_degeneracy_calculated_for_methyl_methyl_recombindation(self):
+        ''
+        """
+        for this reaction, the symmetry number should be 12. The each reactant
+        has 6 degrees of rotational symmetry. Since the reactants are identical,
+        they both can interchange for a doubling of symmetry. This leaves the
+        total reactant symmetry to 72.
+        
+        The transition state is similar to an ethane compound with a stretched
+        C-C bond. This would give it 6 possible rotations. 
+        
+        72/6 would give 12 degeneracies for the reaction
+        """
+        correct_degeneracy = 12
+        rxn_family_str = 'R_Recombination'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """
+        ]
+
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
+        
+    def compare_degeneracy_of_reaction(self, reactants_adj_list, rxn_family_str, correct_degeneracy_value):
+        """
+        input a list of adjacency lists (of reactants), 
+        the reaction family name,
+        and the correct degeneracy value
+        """
+        
+        self.database.loadFamilies(self.path, families=[rxn_family_str])
+        family = self.database.families[rxn_family_str]
+        reactants = [Molecule().fromAdjacencyList(reactants_adj_list[0]),
+                     Molecule().fromAdjacencyList(reactants_adj_list[1])] 
+        reactions = family.generateReactions(reactants)
+        self.assertEqual(len(reactions), 1,'only one reaction should be produced. Produced reactions {0}'.format(reactions))
+        reaction = reactions[0]
+        degeneracy = family.calculateDegeneracy(reaction)
+        self.assertEqual(degeneracy, correct_degeneracy_value,'degeneracy returned ({0}) is not the correct value ({1}) for reaction {2}'.format(degeneracy, correct_degeneracy_value,reaction)) 
 
 class TestKineticsCommentsParsing(unittest.TestCase):
     from rmgpy.data.rmg import RMGDatabase 
