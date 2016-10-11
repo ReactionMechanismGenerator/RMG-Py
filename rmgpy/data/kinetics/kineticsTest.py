@@ -32,19 +32,8 @@ class TestKineticsDatabase(unittest.TestCase):
             self.database.loadFamilies(self.path, families=[])
             
     def test_proper_degeneracy_calculated_for_methyl_methyl_recombindation(self):
-        ''
-        """
-        for this reaction, the symmetry number should be 12. The each reactant
-        has 6 degrees of rotational symmetry. Since the reactants are identical,
-        they both can interchange for a doubling of symmetry. This leaves the
-        total reactant symmetry to 72.
-        
-        The transition state is similar to an ethane compound with a stretched
-        C-C bond. This would give it 6 possible rotations. 
-        
-        72/6 would give 12 degeneracies for the reaction
-        """
-        correct_degeneracy = 12
+
+        correct_degeneracy = 2
         rxn_family_str = 'R_Recombination'
         adj_lists = [
             """
@@ -64,6 +53,32 @@ class TestKineticsDatabase(unittest.TestCase):
         ]
 
         self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
+        
+        
+        
+    def test_proper_degeneracy_calculated_for_methyl_enriched_methyl_recombindation(self):
+
+        correct_degeneracy = 1
+        rxn_family_str = 'R_Recombination'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """
+        ]
+
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
+        
         
     def compare_degeneracy_of_reaction(self, reactants_adj_list, rxn_family_str, correct_degeneracy_value):
         """
