@@ -79,8 +79,68 @@ class TestKineticsDatabase(unittest.TestCase):
 
         self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
         
+    def test_proper_degeneracy_calculated_for_ethyl_ethyl_disproportionation(self):
+
+        correct_degeneracy = 3
+        rxn_family_str = 'Disproportionation'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """
+        ]
+
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
         
-    def compare_degeneracy_of_reaction(self, reactants_adj_list, rxn_family_str, correct_degeneracy_value):
+    def test_proper_degeneracy_calculated_for_ethyl_labeled_ethyl_disproportionation(self):
+
+        correct_degeneracy = 6
+        rxn_family_str = 'Disproportionation'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u0 p0 c0 i13 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """
+        ]
+        expected_products = 2
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy,expected_products)
+        
+    def compare_degeneracy_of_reaction(self, reactants_adj_list, 
+                                       rxn_family_str, 
+                                       correct_degeneracy_value,
+                                       num_products = 1):
         """
         input a list of adjacency lists (of reactants), 
         the reaction family name,
@@ -91,10 +151,11 @@ class TestKineticsDatabase(unittest.TestCase):
         family = self.database.families[rxn_family_str]
         reactants = [Molecule().fromAdjacencyList(reactants_adj_list[0]),
                      Molecule().fromAdjacencyList(reactants_adj_list[1])] 
+
         reactions = family.generateReactions(reactants)
-        self.assertEqual(len(reactions), 1,'only one reaction should be produced. Produced reactions {0}'.format(reactions))
-        reaction = reactions[0]
-        degeneracy = family.calculateDegeneracy(reaction)
+        self.assertEqual(len(reactions), num_products,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_products))
+
+        degeneracy = sum([family.calculateDegeneracy(reaction) for reaction in reactions])
         self.assertEqual(degeneracy, correct_degeneracy_value,'degeneracy returned ({0}) is not the correct value ({1}) for reaction {2}'.format(degeneracy, correct_degeneracy_value,reaction)) 
 
 class TestKineticsCommentsParsing(unittest.TestCase):
