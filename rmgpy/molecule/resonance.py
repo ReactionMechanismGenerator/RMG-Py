@@ -529,6 +529,10 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     if lp.status != 'opt':
         raise RuntimeError('Optimization exited with status {0} and message {1}'.format(lp.status, msg))
 
+    # Check that we the result contains at least one aromatic sextet
+    if lp.obj.value == 0:
+        return []
+
     if maxNum is None:
         maxNum = lp.obj.value  # This is the first solution, without constraints, so the result should be an upper limit
     elif lp.obj.value < maxNum:
