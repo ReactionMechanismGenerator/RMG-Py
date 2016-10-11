@@ -6,6 +6,8 @@ from external.wip import work_in_progress
 
 from rmgpy.molecule.group import ActionError, GroupAtom, GroupBond, Group
 from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule import Molecule
+import element as elements
 
 ################################################################################
 
@@ -203,6 +205,31 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
 
+    def testHasWildcards(self):
+        """
+        Tests the GroupAtom.hasWildcards() method
+        """
+        self.assertFalse(self.atom.hasWildcards())
+        adjlist = """
+1 *2 C     u0     {2,[D,T]} {3,S}
+2 *3 C     u0     {1,[D,T]} {4,S}
+3    C     ux     {1,S} {5,S}
+4    C     u[0,1] {2,S}
+5    [C,O] u0     {3,S}
+"""
+        group = Group().fromAdjacencyList(adjlist)
+        for index, atom in enumerate(group.atoms):
+            self.assertTrue(atom.hasWildcards(), 'GroupAtom with index {0} should have wildcards, but does not'.format(index))
+
+    def testMakeSampleAtom(self):
+        """
+        Tests the GroupAtom.makeSampleAtom() method
+        """
+        newAtom = self.atom.makeSampleAtom()
+
+        self.assertEquals(newAtom.element, elements.__dict__['C'])
+        self.assertEquals(newAtom.radicalElectrons, 1)
+        self.assertEquals(newAtom.charge, 0)
 ################################################################################
 
 class TestGroupBond(unittest.TestCase):
@@ -518,7 +545,298 @@ class TestGroup(unittest.TestCase):
 
         self.assertTrue(self.group.isIsomorphic(group))
         self.assertTrue(group.isIsomorphic(self.group))
-        
+
+    def testAddImplicitAtomsFromAtomType(self):
+        """
+        test Group.addImplicitAtomsFromAtomType() method
+        """
+        #basic test adding oDouble
+        adjlist1 = """
+1  *1 CO u0
+            """
+
+        adjlist2 = """
+1  *1 CO u0 {2,D}
+2     O  u0 {1,D}
+            """
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        group2 = Group().fromAdjacencyList(adjlist2)
+
+        newGroup = group1.addImplicitAtomsFromAtomType()
+        self.assertTrue(group2.isIsomorphic(newGroup))
+        #testing the allDouble match (more complicated
+        adjlist3 = """
+1  *1 Cdd u0
+            """
+
+        adjlist4 = """
+1  *1 Cdd u0 {2,D} {3,D}
+2     C   u0 {1,D}
+3     C   u0 {1,D}
+            """
+        group3 = Group().fromAdjacencyList(adjlist3)
+        group4 = Group().fromAdjacencyList(adjlist4)
+
+        newGroup =group3.addImplicitAtomsFromAtomType()
+        self.assertTrue(group4.isIsomorphic(newGroup))
+        #test adding a triple bond
+        adjlist5 = """
+1  *1 Ct u0
+            """
+
+        adjlist6 = """
+1  *1 Ct u0 {2,T}
+2     C   u0 {1,T}
+            """
+        group5 = Group().fromAdjacencyList(adjlist5)
+        group6 = Group().fromAdjacencyList(adjlist6)
+
+        newGroup =group5.addImplicitAtomsFromAtomType()
+        self.assertTrue(group6.isIsomorphic(newGroup))
+        #test addition of lone pairs
+        adjlist7 = """
+1  *1 N1d u0
+            """
+
+        adjlist8 = """
+1  *1 N1d u0 p2 {2,D}
+2     C   u0 {1,D}
+            """
+        group7 = Group().fromAdjacencyList(adjlist7)
+        group8 = Group().fromAdjacencyList(adjlist8)
+
+        newGroup = group7.addImplicitAtomsFromAtomType()
+        self.assertTrue(group8.isIsomorphic(newGroup))
+
+        #test multiple implicit atoms at a time
+        adjlist9 = """
+1  *1 Cd u0 {2,S}
+2     Ct u0 {1,S}
+            """
+
+        adjlist10 = """
+1  *1 C u0 {2,S} {3,D}
+2     Ct u0 {1,S} {4,T}
+3     C  u0 {1,D}
+4     C  u0 {2,T}
+            """
+        group9 = Group().fromAdjacencyList(adjlist9)
+        group10 = Group().fromAdjacencyList(adjlist10)
+
+        newGroup =group9.addImplicitAtomsFromAtomType()
+        self.assertTrue(group10.isIsomorphic(newGroup))
+
+    def testAddImplicitBenzene(self):
+        """
+        Test the Group.addImplicitBenzene method
+        """
+
+        #tests it can make a benzene molecule
+        adjlist1 = """
+1  *1 Cb u0 {2,B}
+2  *2 Cb u0 {1,B}
+            """
+        #tests it can make a bi-phenyl
+        adjlist2 = """
+1  *1 Cb u0 {2,S}
+2  *2 Cb u0 {1,S}
+            """
+        #tests it can make a napthalene
+        adjlist3 = """
+1  *1 Cbf u0
+            """
+
+        #Test handling of Cbf2 atoms
+        adjlist4 = """
+1  *1 Cbf u0 p2 c0 {2,B}
+2  *2 Cbf u0 p0 c0 {1,B} {3,B}
+3  *3 Cbf u0 p0 c0 {2,B}
+    """
+
+        #test handling of heteroatoms and wildcards
+        adjlist5 = """
+1 *1 Cbf u0 {2,B} {3,B} {4,B}
+2    R!H u0 {1,B}
+3    R!H u0 {1,B}
+4    R!H u0 {1,B}
+    """
+        adjlist6 = """
+1  *1 Cbf u0 p2 c0 {2,B}
+2  *2 Cb u0 p0 c0 {1,B} {3,B}
+3  *3 Cb u0 p0 c0 {2,B} {4,S}
+4  *4 O u0 p0 c0 {3,S}
+    """
+
+        benzene ="""
+1 C u0 {2,B} {6,B}
+2 C u0 {1,B} {3,B}
+3 C u0 {2,B} {4,B}
+4 C u0 {3,B} {5,B}
+5 C u0 {4,B} {6,B}
+6 C u0 {5,B} {1,B}
+        """
+
+        biphenyl ="""
+1  C u0 {2,B} {6,B} {7,S}
+2  C u0 {1,B} {3,B}
+3  C u0 {2,B} {4,B}
+4  C u0 {3,B} {5,B}
+5  C u0 {4,B} {6,B}
+6  C u0 {5,B} {1,B}
+7  C u0 {8,B} {12,B} {1,S}
+8  C u0 {7,B} {9,B}
+9  C u0 {8,B} {10,B}
+10 C u0 {9,B} {11,B}
+11 C u0 {10,B} {12,B}
+12  C u0 {11,B} {7,B}
+        """
+
+        naphthalene ="""
+1  C u0 {2,B} {10,B}
+2  C u0 {1,B} {3,B}
+3  C u0 {2,B} {4,B}
+4  C u0 {3,B} {5,B} {9,B}
+5  C u0 {4,B} {6,B}
+6  C u0 {5,B} {7,B}
+7  C u0 {6,B} {8,B}
+8  C u0 {7,B} {9,B}
+9  C u0 {4,B} {8,B} {10,B}
+10 C u0 {1,B} {9,B}
+        """
+
+        phenanthrene = """
+1  Cbf u0 p2 c0 {2,B} {7,B} {11,B}
+2  Cbf u0 p0 c0 {1,B} {3,B} {5,B}
+3  Cbf u0 p0 c0 {2,B} {4,B} {6,B}
+4  C   u0 {3,B} {8,B} {14,B}
+5  C   u0 {2,B} {9,B}
+6  C   u0 {3,B} {12,B}
+7  C   u0 {1,B} {8,B}
+8  C   u0 {4,B} {7,B}
+9  C   u0 {5,B} {10,B}
+10 C   u0 {9,B} {11,B}
+11 C   u0 {1,B} {10,B}
+12 C   u0 {6,B} {13,B}
+13 C   u0 {12,B} {14,B}
+14 C   u0 {4,B} {13,B}
+    """
+
+        answer5 = """
+1  *1 Cbf u0 {2,B} {3,B} {4,B}
+2     R!H u0 {1,B} {5,B}
+3     R!H u0 {1,B} {7,B} {10,B}
+4     R!H u0 {1,B} {8,B}
+5     Cb  u0 {2,B} {6,B}
+6     Cb  u0 {5,B} {7,B}
+7     Cb  u0 {3,B} {6,B}
+8     Cb  u0 {4,B} {9,B}
+9     Cb  u0 {8,B} {10,B}
+10    Cb  u0 {3,B} {9,B}
+"""
+        answer6="""
+1  *1 Cbf u0 p2 c0 {2,B} {5,B} {8,B}
+2  *2 Cb  u0 p0 c0 {1,B} {3,B} {11,B}
+3  *3 Cb  u0 p0 c0 {2,B} {4,S} {7,B}
+4  *4 O   u0 p0 c0 {3,S}
+5     Cb  u0 {1,B} {6,B}
+6     Cb  u0 {5,B} {7,B}
+7     Cb  u0 {3,B} {6,B}
+8     Cb  u0 {1,B} {9,B}
+9     Cb  u0 {8,B} {10,B}
+10    Cb  u0 {9,B} {11,B}
+11    Cb  u0 {2,B} {10,B}
+"""
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        group2 = Group().fromAdjacencyList(adjlist2)
+        group3 = Group().fromAdjacencyList(adjlist3)
+        group4 = Group().fromAdjacencyList(adjlist4)
+        group5 = Group().fromAdjacencyList(adjlist5)
+        group6 = Group().fromAdjacencyList(adjlist6)
+
+        benzeneGroup = Group().fromAdjacencyList(benzene)
+        biphenylGroup = Group().fromAdjacencyList(biphenyl)
+        naphthaleneGroup = Group().fromAdjacencyList(naphthalene)
+        phenanthreneGroup = Group().fromAdjacencyList(phenanthrene)
+        answer5 = Group().fromAdjacencyList(answer5)
+        answer6 = Group().fromAdjacencyList(answer6)
+
+        group1 = group1.addImplicitBenzene()
+        self.assertTrue(benzeneGroup.isIsomorphic(group1))
+        group2 = group2.addImplicitBenzene()
+        self.assertTrue(biphenylGroup.isIsomorphic(group2))
+        group3 = group3.addImplicitBenzene()
+        self.assertTrue(naphthaleneGroup.isIsomorphic(group3))
+        group4 = group4.addImplicitBenzene()
+        self.assertTrue(phenanthreneGroup.isIsomorphic(group4))
+        group5 = group5.addImplicitBenzene()
+        self.assertTrue(answer5.isIsomorphic(group5))
+        group6 = group6.addImplicitBenzene()
+        self.assertTrue(answer6.isIsomorphic(group6))
+
+    def testMakeSampleMolecule(self):
+        """
+        Test the Group.makeSampleMolecule method
+        """
+
+        # result = self.group.makeSampleMolecule()
+        # print result.multiplicity
+        # self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
+
+        #tests adding implicit atoms
+        adjlist1 = """
+1  *1 Cd u0
+            """
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        result1 = group1.makeSampleMolecule()
+        self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=C')))
+
+        #test creating implicit benzene atoms
+        adjlist2 = """
+1  *1 Cbf u0 {2,B}
+2     Cbf u0 {1,B}
+            """
+
+        group2 = Group().fromAdjacencyList(adjlist2)
+        result2 = group2.makeSampleMolecule()
+        naphthaleneMolecule = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+        resonanceList2=naphthaleneMolecule.generateResonanceIsomers()
+        self.assertTrue(any([result2.isIsomorphic(x) for x in resonanceList2]))
+
+        #test the creation of a charged species
+        adjlist3 = """
+1  *1 N5s u0
+        """
+
+        group3 = Group().fromAdjacencyList(adjlist3)
+        result3 = group3.makeSampleMolecule()
+        self.assertTrue(result3.isIsomorphic(Molecule().fromSMILES('[NH4+]')))
+
+    def testIsBenzeneExplicit(self):
+        """
+        Test the Group.isBenzeneExplicit method
+        """
+        adjlist1 = """
+1  *1 Cb u0 {2,B}
+2  *2 Cb u0 {1,B}
+        """
+        group1 = Group().fromAdjacencyList(adjlist1)
+        self.assertFalse(group1.isBenzeneExplicit())
+
+        benzene ="""
+1 C u0 {2,B} {6,B}
+2 C u0 {1,B} {3,B}
+3 C u0 {2,B} {4,B}
+4 C u0 {3,B} {5,B}
+5 C u0 {4,B} {6,B}
+6 C u0 {5,B} {1,B}
+        """
+        benzene = Group().fromAdjacencyList(benzene)
+        self.assertTrue(benzene.isBenzeneExplicit())
+
+
 ################################################################################
 
 if __name__ == '__main__':
