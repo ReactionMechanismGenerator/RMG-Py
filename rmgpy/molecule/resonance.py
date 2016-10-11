@@ -468,6 +468,12 @@ def clarOptimization(mol, constraints=None, maxNum=None):
         bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.isNonHydrogen()])
     bonds = list(bonds)
 
+    # Identify exocyclic bonds
+    exocyclic = []
+    for index, bond in enumerate(bonds):
+        if bond.atom1 not in atoms or bond.atom2 not in atoms:
+            exocyclic.append(index)
+
     # Connectivity matrix which indicates which rings and bonds each atom is in
     # Part of equality constraint Ax=b
     a = []
@@ -491,6 +497,10 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     lp.cols.add(len(SSSR) + len(bonds))
     for c in lp.cols:
         c.kind = bool
+
+    # Constrain values of exocyclic bonds, since we don't want to modify them
+    for index in exocyclic:
+        lp.cols[index + len(SSSR)].bounds = 1 if bonds[index].order == 'D' else 0
 
     # Add constraints to problem if provided
     if constraints:
