@@ -368,3 +368,14 @@ class ClarTest(unittest.TestCase):
         self.assertTrue(newmol[2].isAromatic())
         self.assertTrue(newmol[3].isAromatic())
         self.assertTrue(newmol[4].isAromatic())
+
+    def testExocyclicDB(self):
+        """Test that Clar structure generation doesn't modify exocyclic double bonds
+
+        Important for cases where RDKit considers rings to be aromatic by counting pi-electron contributions
+        from exocyclic double bonds, while they don't actually contribute to aromaticity"""
+
+        mol = Molecule(SMILES="C=C1C=CC=CC1=C")
+        newmol = generateClarStructures(mol)
+
+        self.assertEquals(len(newmol), 0)
