@@ -80,6 +80,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, family_name
 
+            # this patch of code is commented out till the kinetics database is ready for proper testing
             # test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
             # test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
             # test.description = test_name
@@ -476,6 +477,9 @@ The following adjList may have atoms in a different ordering than the input file
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
+        
+        this test is not currently called. It will be used when the kinetics database is fixed
+        to allow for biomolecular reaction finding effectively.
         """
         family = self.database.kinetics.families[family_name]
 
