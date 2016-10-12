@@ -7,6 +7,8 @@ cpdef dict analyzeMolecule(Molecule mol)
 
 cpdef list generateResonanceIsomers(Molecule mol)
 
+cpdef __generateResonanceStructures(list molList, list methodList)
+
 cpdef list generateAdjacentResonanceIsomers(Molecule mol)
 
 cpdef list generateLonePairRadicalResonanceIsomers(Molecule mol)
