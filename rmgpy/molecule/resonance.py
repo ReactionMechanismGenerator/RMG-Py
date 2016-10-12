@@ -38,6 +38,7 @@ import rmgpy.molecule.parser as parser
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
+from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
 
 def populate_resonance_generation_algorithm():
@@ -429,7 +430,12 @@ def generateClarStructures(mol):
             if y[index] == 1:
                 clarTransformation(newmol, ring)
 
-        molList.append(newmol)
+        try:
+            newmol.updateAtomTypes()
+        except AtomTypeError:
+            pass
+        else:
+            molList.append(newmol)
 
     return molList
 
@@ -578,10 +584,3 @@ def clarTransformation(mol, ring):
 
     for bond in bondList:
         bond.order = 'B'
-
-    try:
-        mol.updateAtomTypes()
-    except:
-        return []
-
-    return [mol]

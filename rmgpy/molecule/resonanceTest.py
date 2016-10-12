@@ -331,6 +331,7 @@ class ClarTest(unittest.TestCase):
         mol = Molecule().fromSMILES('c1ccccc1')
         sssr = mol.getSmallestSetOfSmallestRings()
         clarTransformation(mol, sssr[0])
+        mol.updateAtomTypes()
 
         self.assertTrue(mol.isAromatic())
 
