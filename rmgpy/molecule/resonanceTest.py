@@ -35,13 +35,12 @@ class ResonanceTest(unittest.TestCase):
         molList = generateResonanceIsomers(Molecule(SMILES="c1ccccc1[C]=C"))
         self.assertEqual(len(molList), 4)
 
-    @work_in_progress
     def testNaphthyl(self):
         """Test resonance structure generation for naphthyl radical
 
         In this case, the radical is orthogonal to the pi-orbital plane and cannot delocalize"""
-        molList = generateResonanceIsomers(Molecule(SMILES="c12ccccc1cccc2"))
-        self.assertEqual(len(molList), 1)
+        molList = generateResonanceIsomers(Molecule(SMILES="c12[c]cccc1cccc2"))
+        self.assertEqual(len(molList), 4)
 
     def test_C9H9_aro(self):
         """Test cyclopropyl benzene radical, aromatic SMILES"""
@@ -173,47 +172,6 @@ class ResonanceTest(unittest.TestCase):
             self.fail("{} isn't isomorphic with any aromatic forms of {}".format(
                 naphthalene.toSMILES(),
                 naphthalene2.toSMILES()
-            ))
-
-    @work_in_progress
-    def testFusedAromatic3(self):
-        """Test we can make aromatic pyrene_rad from both adjlist and SMILES"""
-        pyrene_rad = Molecule().fromAdjacencyList("""
-multiplicity 2
-1  C u0 p0 c0 {2,B} {3,B} {5,B}
-2  C u0 p0 c0 {1,B} {4,B} {6,S}
-3  C u0 p0 c0 {1,B} {8,B} {9,B}
-4  C u0 p0 c0 {2,B} {10,B} {11,S}
-5  C u0 p0 c0 {1,B} {7,B} {15,S}
-6  C u0 p0 c0 {2,S} {12,S} {16,D}
-7  C u0 p0 c0 {5,B} {13,B} {17,S}
-8  C u0 p0 c0 {3,B} {13,B} {19,S}
-9  C u0 p0 c0 {3,B} {10,B} {20,S}
-10 C u0 p0 c0 {4,B} {9,B} {21,S}
-11 C u1 p0 c0 {4,S} {14,S} {22,S}
-12 C u0 p0 c0 {6,S} {14,D} {24,S}
-13 C u0 p0 c0 {7,B} {8,B} {18,S}
-14 C u0 p0 c0 {11,S} {12,D} {23,S}
-15 C u0 p0 c0 {5,S} {16,D} {25,S}
-16 C u0 p0 c0 {6,D} {15,D}
-17 H u0 p0 c0 {7,S}
-18 H u0 p0 c0 {13,S}
-19 H u0 p0 c0 {8,S}
-20 H u0 p0 c0 {9,S}
-21 H u0 p0 c0 {10,S}
-22 H u0 p0 c0 {11,S}
-23 H u0 p0 c0 {14,S}
-24 H u0 p0 c0 {12,S}
-25 H u0 p0 c0 {15,S}
-""")
-        pyrene_rad2 = Molecule().fromSMILES('[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23')
-        for isomer in pyrene_rad2.generateResonanceIsomers():
-            if pyrene_rad.isIsomorphic(isomer):
-                break
-        else:  # didn't break
-            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(
-                pyrene_rad.toSMILES(),
-                pyrene_rad2.toSMILES()
             ))
 
     @work_in_progress
