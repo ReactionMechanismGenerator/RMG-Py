@@ -366,57 +366,32 @@ def generateAromaticResonanceIsomers(mol):
     Returns it as a single element of a list.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, rdAtomIndices=dict, aromatic=cython.bint, aromaticBonds=list)
-    cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
-    from rdkit.Chem.rdchem import BondType
-    AROMATIC = BondType.AROMATIC
+    cython.declare(molecule=Molecule, aromaticBonds=list, ring=list, bond=Bond)
 
-    # Radicals
     if not mol.isCyclic():
         return []
 
     molecule = mol.copy(deep=True)
 
-    # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings
-    rings = [ring0 for ring0 in molecule.getSmallestSetOfSmallestRings() if len(ring0) == 6]
-    if not rings:
+    aromaticBonds = molecule.getAromaticSSSR()[1]
+
+    if not aromaticBonds:
         return []
+
+    # Convert all aromatic bonds to benzene bond type
+    for ring in aromaticBonds:
+        for bond in ring:
+            bond.order = 'B'
 
     try:
-        rdkitmol, rdAtomIndices = generator.toRDKitMol(molecule, removeHs=False, returnMapping=True)
-    except ValueError:
+        molecule.updateAtomTypes(logSpecies=False)
+    except AtomTypeError:
+        # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
+        # Do not add the new isomer since it is malformed
         return []
-    aromatic = False
-    for ring0 in rings:
-        aromaticBonds = []
-        # Figure out which atoms and bonds are aromatic and reassign appropriately:
-        for i, atom1 in enumerate(ring0):
-            if not atom1.isCarbon():
-                # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                break
-            for atom2 in ring0[i + 1:]:
-                if molecule.hasBond(atom1, atom2):
-                    if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1], rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                        aromaticBonds.append(molecule.getBond(atom1, atom2))
-        else:  # didn't break so all atoms are carbon
-            if len(aromaticBonds) == 6:
-                aromatic = True
-                # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
-                for bond in aromaticBonds:
-                    bond.order = 'B'
-
-    if aromatic:
-        try:
-            molecule.updateAtomTypes(logSpecies=False)
-        except:
-            # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
-            # Do not add the new isomer since it is malformed
-            return []
-        else:
-            # nothing bad happened
-            return [molecule]
     else:
-        return []
+        # nothing bad happened
+        return [molecule]
 
 def generateKekulizedResonanceIsomers(mol):
     """
