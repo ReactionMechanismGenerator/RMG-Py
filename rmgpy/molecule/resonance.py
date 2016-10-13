@@ -96,7 +96,7 @@ def analyzeMolecule(mol):
                 }
 
     if features['isCyclic']:
-        ASSSR = mol.getAromaticSSSR()
+        ASSSR = mol.getAromaticSSSR()[0]
         if len(ASSSR) > 0:
             features['isAromatic'] = True
         if len(ASSSR) > 1:
@@ -563,7 +563,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    asssr = molecule.getAromaticSSSR()
+    asssr = molecule.getAromaticSSSR()[0]
 
     if not asssr:
         return []
