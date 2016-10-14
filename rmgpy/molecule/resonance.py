@@ -127,33 +127,37 @@ def generateResonanceIsomers(mol):
     methodList = populateResonanceAlgorithms(features)
 
     if features['isAromatic']:
+        # Try to generate aromatic resonance structure
+        # If this returns [], then RMG does not accept the molecule as being aromatic
         newMolList = generateAromaticResonanceIsomers(mol)
-        if features['isRadical'] and not features['isArylRadical']:
-            kekuleList = generateKekulizedResonanceIsomers(newMolList[0])
-            __generateResonanceStructures(kekuleList, [generateAdjacentResonanceIsomers])
-            if features['isPolycyclicAromatic']:
-                kekuleNum = len(kekuleList)  # save length of list in order to remove later
-                __generateResonanceStructures(kekuleList, [generateClarStructures])
-                newMolList.extend(kekuleList[kekuleNum:])  # only keep the Clar structures
+
+        if newMolList:
+            if features['isRadical'] and not features['isArylRadical']:
+                kekuleList = generateKekulizedResonanceIsomers(newMolList[0])
+                __generateResonanceStructures(kekuleList, [generateAdjacentResonanceIsomers])
+                if features['isPolycyclicAromatic']:
+                    kekuleNum = len(kekuleList)  # save length of list in order to remove later
+                    __generateResonanceStructures(kekuleList, [generateClarStructures])
+                    newMolList.extend(kekuleList[kekuleNum:])  # only keep the Clar structures
+                else:
+                    newMolList.extend(kekuleList[1:])  # discard initial kekulized molecule
+            elif features['isPolycyclicAromatic']:
+                __generateResonanceStructures(newMolList, [generateClarStructures])
             else:
-                newMolList.extend(kekuleList[1:])  # discard initial kekulized molecule
-        elif features['isPolycyclicAromatic']:
-            __generateResonanceStructures(newMolList, [generateClarStructures])
-        else:
-            # The molecule is an aryl radical or stable mono-ring aromatic
-            # In this case, generate the kekulized form
-            __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers])
+                # The molecule is an aryl radical or stable mono-ring aromatic
+                # In this case, generate the kekulized form
+                __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers])
 
-        # Because the original molecule was not included in calls to __generateResonanceStructures,
-        # we need to check for isomorphism against the new molecules
-        for newMol in newMolList:
-            if mol.isIsomorphic(newMol):
-                # There will be at most one isomorphic molecule, since the new molecules have
-                # already been checked against each other, so we can break after removing it
-                newMolList.remove(newMol)
-                break
+            # Because the original molecule was not included in calls to __generateResonanceStructures,
+            # we need to check for isomorphism against the new molecules
+            for newMol in newMolList:
+                if mol.isIsomorphic(newMol):
+                    # There will be at most one isomorphic molecule, since the new molecules have
+                    # already been checked against each other, so we can break after removing it
+                    newMolList.remove(newMol)
+                    break
 
-        molList.extend(newMolList)
+            molList.extend(newMolList)
     else:
         __generateResonanceStructures(molList, methodList)
 

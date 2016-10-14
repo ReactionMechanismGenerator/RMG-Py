@@ -42,6 +42,27 @@ class ResonanceTest(unittest.TestCase):
         molList = generateResonanceIsomers(Molecule(SMILES="c12[c]cccc1cccc2"))
         self.assertEqual(len(molList), 4)
 
+    def testC8H8(self):
+        """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene
+
+        Example of molecule that RDKit considers aromatic, but RMG does not"""
+        molList = generateResonanceIsomers(Molecule(SMILES="C=C1C=CC=CC1=C"))
+        self.assertEqual(len(molList), 1)
+
+    def testC8H7J(self):
+        """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene radical
+
+        Example of molecule that RDKit considers aromatic, but RMG does not"""
+        molList = generateResonanceIsomers(Molecule(SMILES="C=C1C=CC=CC1=[CH]"))
+        self.assertEqual(len(molList), 1)
+
+    def testC8H7J2(self):
+        """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene radical
+
+        Example of molecule that RDKit considers aromatic, but RMG does not"""
+        molList = generateResonanceIsomers(Molecule(SMILES="C=C1C=[C]C=CC1=C"))
+        self.assertEqual(len(molList), 1)
+
     def test_C9H9_aro(self):
         """Test cyclopropyl benzene radical, aromatic SMILES"""
         mol = Molecule(SMILES="[CH]1CC1c1ccccc1")
