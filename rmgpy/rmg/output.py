@@ -85,17 +85,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
         
     if not os.path.isdir(os.path.join(dirname,'species')):
         os.makedirs(os.path.join(dirname,'species'))
-
-    re_index_search = re.compile(r'\((\d+)\)$').search
     
     for spec in species:
-        # if the species dictionary came from an RMG-Java job, make them prettier
-        # We use the presence of a trailing index on the label to discern this
-        # (A single open parenthesis is not enough (e.g. when using SMILES strings as labels!)
-        match = re_index_search(spec.label)
-        if match:
-            spec.index = int(match.group(0)[1:-1])
-            spec.label = spec.label[0:match.start()]
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
