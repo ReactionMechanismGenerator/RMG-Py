@@ -167,8 +167,73 @@ class TestKineticsDatabase(unittest.TestCase):
 
         return sum([family.calculateDegeneracy(reaction) for reaction in reactions]), reaction
 
+    def test_propyl_propyl_reaction_is_faster_than_propyl_butyl(self):
+        rxn_family_str = 'R_Recombination'
+        propyl_adj_list = """
+            multiplicity 2
+            1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+            2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
+            3  C u1 p0 c0 {2,S} {4,S} {5,S}
+            4  H u0 p0 c0 {3,S}
+            5  H u0 p0 c0 {3,S}
+            6  H u0 p0 c0 {1,S}
+            7  H u0 p0 c0 {1,S}
+            8  H u0 p0 c0 {1,S}
+            9  H u0 p0 c0 {2,S}
+            10 H u0 p0 c0 {2,S}
 
-
+            """
+        butyl_adj_list = """
+            multiplicity 2
+            1  C u0 p0 c0 {2,S} {7,S} {8,S} {9,S}
+            2  C u0 p0 c0 {1,S} {3,S} {10,S} {11,S}
+            3  C u0 p0 c0 {2,S} {4,S} {12,S} {13,S}
+            4  C u1 p0 c0 {3,S} {5,S} {6,S}
+            5  H u0 p0 c0 {4,S}
+            6  H u0 p0 c0 {4,S}
+            7  H u0 p0 c0 {1,S}
+            8  H u0 p0 c0 {1,S}
+            9  H u0 p0 c0 {1,S}
+            10 H u0 p0 c0 {2,S}
+            11 H u0 p0 c0 {2,S}
+            12 H u0 p0 c0 {3,S}
+            13 H u0 p0 c0 {3,S}        
+            """
+        
+        self.database.loadFamilies(self.path, families=[rxn_family_str])
+        family = self.database.families[rxn_family_str]
+        
+        # get reaction objects and their degeneracy
+        pp_degeneracy, pp_reaction = self.find_reaction_degeneracy([propyl_adj_list,propyl_adj_list],rxn_family_str)
+        pb_degeneracy, pb_reaction = self.find_reaction_degeneracy([propyl_adj_list,butyl_adj_list],rxn_family_str)
+        
+        #label reaction objects
+        family.addAtomLabelsForReaction(pp_reaction)
+        family.addAtomLabelsForReaction(pb_reaction)
+        
+        # get kinetics for each reaction
+        template = family.getReactionTemplateLabels(pp_reaction)
+        pp_kinetics_list = family.getKinetics(pp_reaction, template,
+                                              degeneracy=pp_degeneracy,
+                                              estimator = 'rate rules')
+        self.assertEqual(len(pp_kinetics_list), 1, pp_kinetics_list)
+        
+        template = family.getReactionTemplateLabels(pb_reaction)
+        pb_kinetics_list = family.getKinetics(pb_reaction, template,
+                                              degeneracy=pb_degeneracy,
+                                              estimator = 'rate rules')
+        self.assertEqual(len(pb_kinetics_list), 1, pb_kinetics_list)
+        
+        # the same reaction group must be found or this test will not work
+        self.assertEqual(pp_kinetics_list[0][0].comment,pb_kinetics_list[0][0].comment,
+                         'this test found different kinetics for the two groups, so it will not function as expected')
+        
+        # test that the kinetics are correct
+        self.assertNotEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertEqual(pp_kinetics_list[0][0].getRateCoefficient(300) * 2, pb_kinetics_list[0][0].getRateCoefficient(300))
+        
+        
+        
 class TestKineticsCommentsParsing(unittest.TestCase):
     from rmgpy.data.rmg import RMGDatabase 
 
