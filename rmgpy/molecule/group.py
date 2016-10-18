@@ -534,8 +534,10 @@ class GroupAtom(Vertex):
         if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
             newAtom.lonePairs = 0
             newAtom.charge = 1
-        elif atomtype in [atomTypes[x] for x in ['N1d']]:
+        elif atomtype in [atomTypes[x] for x in ['N1d', 'N2s']]:
             newAtom.charge = -1
+        elif atomtype is atomTypes['N1sc']:
+            newAtom.charge = -2
         elif newAtom.lonePairs == -100:
             newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
