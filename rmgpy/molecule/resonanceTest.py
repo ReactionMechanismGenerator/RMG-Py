@@ -109,7 +109,7 @@ class ResonanceTest(unittest.TestCase):
         """Test cyclopropylmethyl benzene, aromatic SMILES"""
         mol = Molecule(SMILES="C1CC1c1c(C)cccc1")
         molList = generateResonanceIsomers(mol)
-        self.assertEqual(len(molList), 2)
+        self.assertEqual(len(molList), 3)
 
     def test_C9H10_aro_2(self):
         """Test cyclopropyl benzene, generate aromatic resonance isomers"""
@@ -195,30 +195,6 @@ class ResonanceTest(unittest.TestCase):
                 naphthalene2.toSMILES()
             ))
 
-    @work_in_progress
-    def testMultipleKekulizedResonanceIsomers(self):
-        "Test we can make both Kekulized resonance isomers of 2-Hydroxy-1-methylbenzene"
-
-        adjlist_aromatic = """multiplicity 1
-1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
-2 C u0 p0 c0 {1,S} {3,B} {4,B}
-3 C u0 p0 c0 {2,B} {5,B} {8,S}
-4 C u0 p0 c0 {2,B} {7,B} {15,S}
-5 C u0 p0 c0 {3,B} {6,B} {12,S}
-6 C u0 p0 c0 {5,B} {7,B} {13,S}
-7 C u0 p0 c0 {4,B} {6,B} {14,S}
-8 O u0 p2 c0 {3,S} {16,S}
-9 H u0 p0 c0 {1,S}
-10 H u0 p0 c0 {1,S}
-11 H u0 p0 c0 {1,S}
-12 H u0 p0 c0 {5,S}
-13 H u0 p0 c0 {6,S}
-14 H u0 p0 c0 {7,S}
-15 H u0 p0 c0 {4,S}
-16 H u0 p0 c0 {8,S}
-"""
-
-
     def testKekulizeResonanceIsomer(self):
         """
         Tests that an aromatic molecule returns at least one Kekulized resonance isomer.
@@ -269,11 +245,10 @@ class ResonanceTest(unittest.TestCase):
         else:  # didn't brake
             self.assertTrue(False, "Didn't find the Kekulized toulene in the result of getResonanceIsomers()")
 
-    @work_in_progress
     def testMultipleKekulizedResonanceIsomers(self):
-        "Test we can make both Kekulized resonance isomers of 2-Hydroxy-1-methylbenzene"
+        """Test we can make both Kekule structures of o-cresol"""
 
-        adjlist_aromatic = """multiplicity 1
+        adjlist_aromatic = """
 1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
 2 C u0 p0 c0 {1,S} {3,B} {4,B}
 3 C u0 p0 c0 {2,B} {5,B} {8,S}
