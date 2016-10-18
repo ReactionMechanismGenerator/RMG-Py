@@ -1736,11 +1736,11 @@ class KineticsFamily(Database):
         kineticsList.sort(key=lambda x: (x[1].rank, x[1].index))
         return kineticsList[0]
         
-    def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
+    def getKinetics(self, reaction, templateLabels, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a result using the user-specified `estimator`
-        of either 'group additivity' or 'rate rules.'  Unlike
+        of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
         results, with each result comprising the kinetics, the source, and
         the entry. If it came from a template estimate, the source and entry
@@ -1751,7 +1751,7 @@ class KineticsFamily(Database):
         
         depositories = self.depositories[:]
 
-        template = self.retrieveTemplate(template)
+        template = self.retrieveTemplate(templateLabels)
         
         # Check the various depositories for kinetics
         for depository in depositories:
