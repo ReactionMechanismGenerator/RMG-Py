@@ -147,6 +147,16 @@ class TestKineticsDatabase(unittest.TestCase):
         and the correct degeneracy value
         """
         
+        degeneracy, reaction = self.find_reaction_degeneracy(reactants_adj_list,rxn_family_str,
+                                 num_products)
+        self.assertEqual(degeneracy, correct_degeneracy_value,'degeneracy returned ({0}) is not the correct value ({1}) for reaction {2}'.format(degeneracy, correct_degeneracy_value,reaction)) 
+
+    def find_reaction_degeneracy(self, reactants_adj_list,rxn_family_str,
+                                 num_products = 1):
+        """
+        given the adjacency list of reactants and the reaction family, returns
+        a tuple with the degeneracy and the reaction object.
+        """
         self.database.loadFamilies(self.path, families=[rxn_family_str])
         family = self.database.families[rxn_family_str]
         reactants = [Molecule().fromAdjacencyList(reactants_adj_list[0]),
@@ -155,8 +165,9 @@ class TestKineticsDatabase(unittest.TestCase):
         reactions = family.generateReactions(reactants)
         self.assertEqual(len(reactions), num_products,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_products))
 
-        degeneracy = sum([family.calculateDegeneracy(reaction) for reaction in reactions])
-        self.assertEqual(degeneracy, correct_degeneracy_value,'degeneracy returned ({0}) is not the correct value ({1}) for reaction {2}'.format(degeneracy, correct_degeneracy_value,reaction)) 
+        return sum([family.calculateDegeneracy(reaction) for reaction in reactions]), reaction
+
+
 
 class TestKineticsCommentsParsing(unittest.TestCase):
     from rmgpy.data.rmg import RMGDatabase 
