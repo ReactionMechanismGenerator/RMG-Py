@@ -57,17 +57,19 @@ def populateResonanceAlgorithms(features=None):
             generateAdjacentResonanceIsomers,
             generateLonePairRadicalResonanceIsomers,
             generateN5dd_N5tsResonanceIsomers,
-            generateKekulizedResonanceIsomers,
             generateAromaticResonanceIsomers,
+            generateKekulizedResonanceIsomers,
+            generateOppositeKekuleStructure,
             generateClarStructures,
         ]
     else:
         if features['isAromatic']:
             methodList.append(generateAromaticResonanceIsomers)
-        if features['isPolycyclicAromatic']:
-            methodList.append(generateClarStructures)
-        if not features['isArylRadical']:
             methodList.append(generateKekulizedResonanceIsomers)
+            if features['isPolycyclicAromatic']:
+                methodList.append(generateClarStructures)
+            else:
+                methodList.append(generateOppositeKekuleStructure)
         if features['isRadical'] and not features['isArylRadical']:
             methodList.append(generateAdjacentResonanceIsomers)
         if features['hasNitrogen']:
@@ -146,7 +148,8 @@ def generateResonanceIsomers(mol):
             else:
                 # The molecule is an aryl radical or stable mono-ring aromatic
                 # In this case, generate the kekulized form
-                __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers])
+                __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers,
+                                                           generateOppositeKekuleStructure])
 
             # Because the original molecule was not included in calls to __generateResonanceStructures,
             # we need to check for isomorphism against the new molecules
@@ -418,6 +421,49 @@ def generateKekulizedResonanceIsomers(mol):
         return []
     isomer.updateAtomTypes(logSpecies=False)
     return [isomer]
+
+def generateOppositeKekuleStructure(mol):
+    """
+    Generate the Kekule structure with opposite single/double bond arrangement
+    for single ring aromatics.
+
+    Returns a single Kekule structure as a list.
+    """
+
+    # This won't work with the aromatic form of the molecule
+    if mol.isAromatic():
+        return []
+
+    molecule = mol.copy(deep=True)
+
+    aromaticBonds = molecule.getAromaticSSSR()[1]
+
+    # We can only do this for single ring aromatics for now
+    if len(aromaticBonds) != 1:
+        return []
+
+    numS = 0
+    numD = 0
+    for bond in aromaticBonds[0]:
+        if bond.order == 'S':
+            numS += 1
+            bond.order = 'D'
+        elif bond.order == 'D':
+            numD += 1
+            bond.order = 'S'
+        else:
+            # Something is wrong: there is a bond that is not single or double
+            return []
+
+    if numS != 3 or numD != 3:
+        return []
+
+    try:
+        molecule.updateAtomTypes()
+    except AtomTypeError:
+        return []
+    else:
+        return [molecule]
 
 def generate_isomorphic_isomers(mol):
     """
