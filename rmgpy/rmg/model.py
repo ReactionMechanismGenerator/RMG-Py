@@ -789,7 +789,7 @@ class CoreEdgeReactionModel:
         family = getFamilyLibraryObject(reaction.family)
 
         # Get the kinetics for the reaction
-        kinetics, source, entry, isForward = family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+        kinetics, source, entry, isForward = family.getKinetics(reaction, templateLabels=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
         # Get the enthalpy of reaction at 298 K
         H298 = reaction.getEnthalpyOfReaction(298)
         G298 = reaction.getFreeEnergyOfReaction(298)
@@ -800,7 +800,7 @@ class CoreEdgeReactionModel:
                 # The kinetics family is its own reverse, so we could estimate kinetics in either direction
                 
                 # First get the kinetics for the other direction
-                rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+                rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, templateLabels=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
                 # Now decide which direction's kinetics to keep
                 keepReverse = False
                 if (entry is not None and rev_entry is None):
