@@ -571,16 +571,14 @@ def clarTransformation(mol, ring):
     """
     Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
     """
-    cython.declare(indexList=list, bondList=list, index1=cython.int, index2=cython.int, bond=Bond)
-
-    indexList = zip(range(len(ring)), range(1, len(ring)) + [0])
+    cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
 
     bondList = []
-    for index1, index2 in indexList:
-        try:
-            bondList.append(mol.getBond(ring[index1], ring[index2]))
-        except ValueError:
-            raise Exception('Atoms in ring not in connected order.')
+
+    for i, atom1 in enumerate(ring):
+        for atom2 in ring[i + 1:]:
+            if mol.hasBond(atom1, atom2):
+                bondList.append(mol.getBond(atom1, atom2))
 
     for bond in bondList:
         bond.order = 'B'
