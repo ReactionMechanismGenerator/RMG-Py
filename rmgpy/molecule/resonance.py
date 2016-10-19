@@ -161,6 +161,12 @@ def generateResonanceIsomers(mol):
                     break
 
             molList.extend(newMolList)
+        else:
+            # We cannot make an aromatic resonance structure, so treat this as not being aromatic
+            features['isAromatic'] = False
+            features['isPolycyclicAromatic'] = False
+            methodList = populateResonanceAlgorithms(features)
+            __generateResonanceStructures(molList, methodList)
     else:
         __generateResonanceStructures(molList, methodList)
 
