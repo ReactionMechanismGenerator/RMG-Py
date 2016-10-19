@@ -23,7 +23,6 @@ dependencies:
   - pydot ==1.2.2
   - nose
   - coverage
-  - guppy
   - gprof2dot
   - cairo
   - cairocffi

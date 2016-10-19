@@ -9,7 +9,6 @@ scipy
 matplotlib
 cython>=0.19
 quantities
-guppy
 psutil
 xlwt
 MarkupSafe # this makes Jinja2 faster
