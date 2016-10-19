@@ -33,7 +33,7 @@ class TestKineticsDatabase(unittest.TestCase):
             
     def test_proper_degeneracy_calculated_for_methyl_methyl_recombindation(self):
 
-        correct_degeneracy = 2
+        correct_degeneracy = 1
         rxn_family_str = 'R_Recombination'
         adj_lists = [
             """
@@ -58,7 +58,7 @@ class TestKineticsDatabase(unittest.TestCase):
         
     def test_proper_degeneracy_calculated_for_methyl_enriched_methyl_recombindation(self):
 
-        correct_degeneracy = 1
+        correct_degeneracy = 2
         rxn_family_str = 'R_Recombination'
         adj_lists = [
             """
@@ -218,15 +218,16 @@ class TestKineticsDatabase(unittest.TestCase):
                                               estimator = 'rate rules')
         self.assertEqual(len(pp_kinetics_list), 1, pp_kinetics_list)
         
-        template = family.getReactionTemplateLabels(pb_reaction)
-        pb_kinetics_list = family.getKinetics(pb_reaction, template,
+        templateLabels = family.getReactionTemplateLabels(pb_reaction)
+        pb_kinetics_list = family.getKinetics(pb_reaction, templateLabels,
                                               degeneracy=pb_degeneracy,
                                               estimator = 'rate rules')
         self.assertEqual(len(pb_kinetics_list), 1, pb_kinetics_list)
         
         # the same reaction group must be found or this test will not work
-        self.assertEqual(pp_kinetics_list[0][0].comment,pb_kinetics_list[0][0].comment,
-                         'this test found different kinetics for the two groups, so it will not function as expected')
+        self.assertIn(pp_kinetics_list[0][0].comment,pb_kinetics_list[0][0].comment,
+                         'this test found different kinetics for the two groups, so it will not function as expected\n' + 
+                         str(pp_kinetics_list)+str(pb_kinetics_list))
         
         # test that the kinetics are correct
         self.assertNotEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
