@@ -28,11 +28,18 @@ class ResonanceTest(unittest.TestCase):
         self.assertEqual(len(molList), 3)
         self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
 
-    def testStyryl(self):
-        """Test resonance structure generation for styryl radical
+    def testStyryl1(self):
+        """Test resonance structure generation for styryl, with radical on branch
 
         In this case, the radical can be delocalized into the aromatic ring"""
         molList = generateResonanceIsomers(Molecule(SMILES="c1ccccc1[C]=C"))
+        self.assertEqual(len(molList), 4)
+
+    def testStyryl2(self):
+        """Test resonance structure generation for styryl, with radical on ring
+
+        In this case, the radical can be delocalized into the aromatic ring"""
+        molList = generateResonanceIsomers(Molecule(SMILES="C=C=C1C=C[CH]C=C1"))
         self.assertEqual(len(molList), 4)
 
     def testNaphthyl(self):
@@ -41,6 +48,13 @@ class ResonanceTest(unittest.TestCase):
         In this case, the radical is orthogonal to the pi-orbital plane and cannot delocalize"""
         molList = generateResonanceIsomers(Molecule(SMILES="c12[c]cccc1cccc2"))
         self.assertEqual(len(molList), 4)
+
+    def testC13H11Rad(self):
+        """Test resonance structure generation for p-methylbenzylbenzene radical
+
+        Has multiple resonance structures that break aromaticity of a ring"""
+        molList = generateResonanceIsomers(Molecule(SMILES="[CH](c1ccccc1)c1ccc(C)cc1"))
+        self.assertEqual(len(molList), 6)
 
     def testC8H8(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene
@@ -273,6 +287,36 @@ class ResonanceTest(unittest.TestCase):
         self.assertFalse(isomers[1].isAromatic(), "Second resonance isomer shouldn't be aromatic")
         self.assertFalse(isomers[2].isAromatic(), "Third resonance isomer shouldn't be aromatic")
         self.assertFalse(isomers[1].isIsomorphic(isomers[2]), "Second and third resonance isomers should be different")
+
+    def testMultipleKekulizedResonanceIsomersRad(self):
+        """Test we can make all resonance structures of o-cresol radical"""
+
+        adjlist_aromatic = """
+1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+2 C u0 p0 c0 {1,S} {3,B} {4,B}
+3 C u0 p0 c0 {2,B} {5,B} {8,S}
+4 C u0 p0 c0 {2,B} {7,B} {15,S}
+5 C u0 p0 c0 {3,B} {6,B} {12,S}
+6 C u0 p0 c0 {5,B} {7,B} {13,S}
+7 C u0 p0 c0 {4,B} {6,B} {14,S}
+8 O u1 p2 c0 {3,S}
+9 H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {1,S}
+12 H u0 p0 c0 {5,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {4,S}
+"""
+        molecule = Molecule().fromAdjacencyList(adjlist_aromatic)
+        self.assertTrue(molecule.isAromatic(), "Starting molecule should be aromatic")
+        molList = generateResonanceIsomers(molecule)
+        self.assertEqual(len(molList), 6, "Expected 6 resonance structures, but generated {0}.".format(len(molList)))
+        aromatic = 0
+        for mol in molList:
+            if mol.isAromatic():
+                aromatic += 1
+        self.assertEqual(aromatic, 1, "Should only have 1 aromatic resonance structure")
 
     @work_in_progress
     def testKekulizedResonanceIsomersFused(self):
