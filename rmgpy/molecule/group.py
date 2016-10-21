@@ -1774,8 +1774,17 @@ class Group(Graph):
         Returns: A sample class :Molecule: from the group
         """
 
+        #Remove all wildcards
+        modifiedGroup = self.copy(deep = True)
+        for atom in modifiedGroup.atoms:
+            atom.atomType=[atom.atomType[0]]
+            for atom2, bond12 in atom.bonds.iteritems():
+                bond12.order=[bond12.order[0]]
+
         #Add implicit atoms
-        modifiedGroup = self.addImplicitAtomsFromAtomType()
+        modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()
+
+
         #Add implicit benzene rings
         modifiedGroup = modifiedGroup.addImplicitBenzene()
         #Make dictionary of :GroupAtoms: to :Atoms: and vice versa
@@ -1794,6 +1803,7 @@ class Group(Graph):
             for atom2, bond12 in atom1.bonds.iteritems():
                 bond12.makeBond(newMolecule, groupToMol[atom1], groupToMol[atom2])
 
+
         #Saturate up to expected valency
         for molAtom in newMolecule.atoms:
             statedCharge = molAtom.charge
@@ -1802,7 +1812,9 @@ class Group(Graph):
                 hydrogenNeeded = molAtom.charge - statedCharge
                 if molAtom in molToGroup and molToGroup[molAtom].atomType[0].single:
                     maxSingle = max(molToGroup[molAtom].atomType[0].single)
-                    if hydrogenNeeded > maxSingle: hydrogenNeeded = maxSingle
+                    singlePresent = sum([1 for atom in molAtom.bonds if molAtom.bonds[atom].isSingle()])
+                    maxHydrogen = maxSingle - singlePresent
+                    if hydrogenNeeded > maxHydrogen: hydrogenNeeded = maxHydrogen
                 for x in range(hydrogenNeeded):
                     newH = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
                     newBond = mol.Bond(molAtom, newH, 1)
@@ -1811,7 +1823,6 @@ class Group(Graph):
                 molAtom.updateCharge()
 
         newMolecule.update()
-
         return newMolecule
 
     def isBenzeneExplicit(self):
