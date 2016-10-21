@@ -1713,7 +1713,9 @@ class Group(Graph):
                 hydrogenNeeded = molAtom.charge - statedCharge
                 if molAtom in molToGroup and molToGroup[molAtom].atomType[0].single:
                     maxSingle = max(molToGroup[molAtom].atomType[0].single)
-                    if hydrogenNeeded > maxSingle: hydrogenNeeded = maxSingle
+                    singlePresent = sum([1 for atom in molAtom.bonds if molAtom.bonds[atom].isSingle()])
+                    maxHydrogen = maxSingle - singlePresent
+                    if hydrogenNeeded > maxHydrogen: hydrogenNeeded = maxHydrogen
                 for x in range(hydrogenNeeded):
                     newH = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
                     newBond = mol.Bond(molAtom, newH, 'S')
