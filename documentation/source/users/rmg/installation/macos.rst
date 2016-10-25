@@ -5,7 +5,8 @@ MacOS X Installation
 ********************
 
 There are a number of dependencies for RMG-Py. This page will guide you through installing them.
-You will need the Command Line Tools for XCode. We highly recommend the `Homebrew <http://brew.sh>`_ package manager.
+You will need the Command Line Tools for XCode. If you are not using Anaconda to install RMG-Py,
+we highly recommend the `Homebrew <http://brew.sh>`_ package manager.
 The following instructions assume that you have `installed Homebrew and its requirements <http://brew.sh>`_.
 We recommend using a `Virtual Environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_ for your Python packages,
 but this is optional (without it you may need to add `sudo` before some commands to solve permission errors).
