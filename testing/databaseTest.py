@@ -1,14 +1,14 @@
 """
-This scripts runs tests on the database 
+This scripts runs tests on the database
 """
 import os.path
 import logging
 from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
-from copy import copy, deepcopy
+from copy import copy
 from rmgpy.data.base import LogicOr
-from rmgpy.molecule import Group
+from rmgpy.molecule import Group, ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule.atomtype import atomTypes
 from rmgpy.molecule.pathfinder import find_shortest_path
 
@@ -28,7 +28,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         databaseDirectory = settings['database.directory']
         cls.database = RMGDatabase()
         cls.database.load(databaseDirectory, kineticsFamilies='all')
-    
+
     # These are generators, that call the methods below.
     def test_kinetics(self):
         for family_name, family in self.database.kinetics.families.iteritems():
@@ -91,12 +91,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 self.compat_func_name = test_name
                 yield test, family_name
 
-            # this patch of code is commented out till the kinetics database is ready for proper testing
-            # test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
-            # test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
-            # test.description = test_name
-            # self.compat_func_name = test_name
-            # yield test, family_name
+            if family_name not in difficultFamilies:
+                test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
+                test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
 
             for depository in family.depositories:
 
@@ -114,7 +114,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, library_name
 
-        
+
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -267,7 +267,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
 
-            
+
     # These are the actual tests, that don't start with a "test_" name:
     def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
         """
@@ -285,23 +285,23 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         This test ensures that each rate rule contains nodes that exist in the groups and that they match the order of the forwardTemplate.
         """
         family = self.database.kinetics.families[family_name]
-        
+
         # List of the each top node's descendants (including the top node)
         topDescendants = []
         for topNode in family.getRootTemplate():
             nodes = [topNode]
             nodes.extend(family.groups.descendants(topNode))
             topDescendants.append(nodes)
-            
+
         topGroupOrder = ';'.join(topNode.label for topNode in family.getRootTemplate())
-        
+
         for label, entries in family.rules.entries.iteritems():
             for entry in entries:
                 nodes = label.split(';')
                 for i, node in enumerate(nodes):
                     nose.tools.assert_true(node in family.groups.entries, "In {family} family, no group definition found for label {label} in rule {entry}".format(family=family_name, label=node, entry=entry))
                     nose.tools.assert_true(family.groups.entries[node] in topDescendants[i], "In {family} family, rule {entry} was found with groups out of order.  The correct order for a rule should be subgroups of {top}.".format(family=family_name, entry=entry, top=topGroupOrder))
-                                        
+
     def kinetics_checkGroupsFoundInTree(self, family_name):
         """
         This test checks whether groups are found in the tree, with proper parents.
@@ -344,7 +344,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if childNode in originalFamily.groups.top or childNode in originalFamily.forwardTemplate.products: continue
             parentNode = childNode.parent
-            
+
             if parentNode is None:
                 # This is a mistake in the database, but it should be caught by kinetics_checkGroupsFoundInTree
                 # so rather than report it twice or crash, we'll just silently carry on to the next node.
@@ -398,11 +398,11 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for reactant in entry.item.reactants:
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                
+
             for product in entry.item.products:
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-                    
+
         # Go through all species to make sure they are nonidentical
         speciesList = speciesDict.values()
         labeledAtoms = [species.molecule[0].getLabeledAtoms() for species in speciesList]
@@ -415,10 +415,10 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     except KeyError:
                         # atom labels did not match, therefore not a match
                         continue
-                    
+
                     nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
 
-    def kinetics_checkReactantAndProductTemplate(self, family_name):        
+    def kinetics_checkReactantAndProductTemplate(self, family_name):
         """
         This test checks whether the reactant and product templates within a family are correctly defined.
         For a reversible family, the reactant and product templates must have matching labels.
@@ -433,7 +433,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for reactant_label in reactant_labels:
                 for product_label in product_labels:
                     nose.tools.assert_false(reactant_label==product_label, "Reactant label {0} matches that of product label {1} in a non-reversible family template.  Please rename product label.".format(reactant_label,product_label))
-        
+
     def kinetics_checkCdAtomType(self, family_name):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
@@ -638,16 +638,15 @@ The following adjList may have atoms in a different ordering than the input file
             for x in E:
                 s += '\n'+str(x)
             nose.tools.assert_true(False,s)
+
     def kinetics_checkSampleDescendsToGroup(self, family_name):
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
-        
-        this test is not currently called. It will be used when the kinetics database is fixed
-        to allow for biomolecular reaction finding effectively.
         """
         family = self.database.kinetics.families[family_name]
 
+        #ignore any products
         ignore=[]
         if not family.ownReverse:
             for product in family.forwardTemplate.products:
@@ -655,25 +654,82 @@ The following adjList may have atoms in a different ordering than the input file
                 ignore.extend(product.children)
         else: ignore=[]
 
+        #If family is backbone archetype, then we need to merge groups before descending
+        roots = family.groups.top
+        if len(roots) > len(family.forwardTemplate.reactants):
+            backbone = family.getBackboneRoots()[0]
+            backboneSample = family.getTopLevelGroups(backbone)[0] #pick smallest backbone
+            mergesNecessary = True
+        else: mergesNecessary = False
+
+        #If atom has too many benzene rings, we currently have trouble making sample atoms
+        skipped = []
+
         for entryName, entry in family.groups.entries.iteritems():
-            print entryName
             if entry in ignore: continue
             elif isinstance(entry.item, Group):
-                # print entryName
-                sampleMolecule = entry.item.makeSampleMolecule()
-                atoms = sampleMolecule.getLabeledAtoms()
-                match = family.groups.descendTree(sampleMolecule, atoms, strict=True)
+                print entryName
+                ancestors=family.ancestors(entry)
+                if ancestors: root = ancestors[-1] #top level root will be last one in ancestors
+                else: root = entry
+                try:
+                    if mergesNecessary and root is not backbone: #we may need to merge
+                        mergedGroup = family.mergeGroups(backboneSample.item, entry.item)
+                        sampleMolecule = mergedGroup.makeSampleMolecule()
+                    else:
+                        sampleMolecule = entry.item.makeSampleMolecule()
 
-                assert entry in [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+                    #for now ignore sample atoms that use nitrogen types
+                    nitrogen = False
+                    for atom in sampleMolecule.atoms:
+                        if atom.isNitrogen(): nitrogen = True
+                    if nitrogen:
+                        skipped.append(entryName)
+                        continue
+
+                    #test accessibility here
+                    atoms = sampleMolecule.getLabeledAtoms()
+                    match = family.groups.descendTree(sampleMolecule, atoms, strict=True, root = root)
+                    nose.tools.assert_in(entry, [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}
 
 Origin Group AdjList:
-{4}
+{4}{5}{6}
 
 Matched group AdjList:
-{5}
-                                           """.format(family_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
+{7}
+        """.format(family_name,
+                   entry.label,
+                   match.label,
+                   sampleMolecule.toAdjacencyList(),
+                   entry.item.toAdjacencyList(),
+                   "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root is not backbone else '',
+                   backboneSample.item.toAdjacencyList() if mergesNecessary and root is not backbone else '',
+                   match.item.toAdjacencyList()))
+
+                except UnexpectedChargeError, e:
+                     nose.tools.assert_true(False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
+Sample molecule AdjList:
+{2}
+
+Origin Group AdjList:
+{3}{4}{5}""".format(family_name,
+                    entry.label,
+                    e.graph.toAdjacencyList(),
+                    entry.item.toAdjacencyList(),
+                    "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root is not backbone else '',
+                    backboneSample.item.toAdjacencyList() if mergesNecessary and root is not backbone else '')
+                    )
+
+                except ImplicitBenzeneError:
+                    skipped.append(entryName)
+
+        #print out entries skipped from exception we can't currently handle
+        if skipped:
+            print "These entries were skipped because too big benzene rings or has nitrogen sample atom:"
+            for entryName in skipped:
+                print entryName
 
     def general_checkNodesFoundInTree(self, group_name, group):
         """
@@ -688,7 +744,7 @@ Matched group AdjList:
                 nose.tools.assert_true(ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name))
                 nose.tools.assert_true(child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name))
                 nose.tools.assert_false(child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name))
-    
+
     def general_checkGroupsNonidentical(self, group_name, group):
         """
         This test checks whether nodes found in the group are nonidentical.
@@ -697,14 +753,14 @@ Matched group AdjList:
         for nodeName, nodeGroup in group.entries.iteritems():
             del entriesCopy[nodeName]
             for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
-                try: 
+                try:
                     group.matchNodeToNode(nodeGroup,nodeGroupOther)
                 except:
                     print nodeName
                     print nodeNameOther
                     pass
                 nose.tools.assert_false(group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther))
-    
+
     def general_checkChildParentRelationships(self, group_name, group):
         """
         This test checks that nodes' parent-child relationships are correct in the database.
@@ -813,7 +869,7 @@ Origin Group AdjList:
 
 Matched group AdjList:
 {5}
-                                           """.format(group_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
+""".format(group_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
 
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
