@@ -75,12 +75,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <ul>
 <li><p class="first">Got an error of <code class="docutils literal"><span class="pre">Segmentation</span> <span class="pre">fault:11</span></code> after installing RMG on my machine?</p>
 <blockquote>
-<div><p><strong>Segmentation fault</strong> is a typical error in C code. RMG has some dependencies which are written in C++, e.g. rdkit, openbabel. Chances are those packages are not up to date or maybe environmental variable <code class="docutils literal"><span class="pre">PATH</span></code> is messed up, please see one example from a user having same <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-website/issues/125">Segmentation fault issue</a>.</p>
+<div><p><strong>Segmentation fault</strong> is a typical error in C code, caused by a program trying to read or write an illegal memory location, i.e. one it is not allowed to access. The most common cause in RMG is a conflict between two different versions of a shared library.  RMG has some dependencies which are written in C++, e.g. rdkit, openbabel. If you compile one of these with a different version of some compiler library, or you compile RMG using one version and run it with another, you will often get a Segmentation fault. Chances are those packages are not up to date, or maybe your environmental variable <code class="docutils literal"><span class="pre">PATH</span></code> is messed up so that the wrong version of something is being found. Please see one example from a user having same <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-website/issues/125">Segmentation fault issue</a>.</p>
 </div></blockquote>
 </li>
 <li><p class="first">How can I install RMG-Py without Anaconda?</p>
 <blockquote>
-<div><p>Usually we don&#8217;t recommend installing RMG-Py without Anaconda because it&#8217;s taking longer and easier to get trouble in package management and RMG team is not maintaining this install approach any more. But one still can try direct installation on Linux or MacOS by following <a class="reference internal" href="linux.html#linux"><span class="std std-ref">Linux instruction</span></a> or <a class="reference internal" href="macos.html#macos"><span class="std std-ref">MacOS instruction</span></a>.</p>
+<div><p>Usually we don&#8217;t recommend installing RMG-Py without Anaconda because it takes longer and is easier to get trouble with package management. But one still can try direct installation on Linux or MacOS by following <a class="reference internal" href="linux.html#linux"><span class="std std-ref">Linux instruction</span></a> or <a class="reference internal" href="macos.html#macos"><span class="std std-ref">MacOS instruction</span></a>. The RMG team does not use this install approach internally any more, so these instructions are not actively maintained.</p>
 </div></blockquote>
 </li>
 <li><p class="first">Windows binary installation gives <code class="docutils literal"><span class="pre">WindowsError:</span> <span class="pre">[Error</span> <span class="pre">5]</span></code>?</p>
@@ -89,6 +89,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </div></blockquote>
 </li>
 </ul>
+<p>If you have any other errors please report them by opening an <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues?q=is%3Aissue">issue</a>, and for general questions ask in the <a class="reference external" href="https://gitter.im/ReactionMechanismGenerator/RMG-Py">RMG-Py chat room</a>.</p>
 </div>
 
 
