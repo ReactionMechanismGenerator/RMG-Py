@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.4.1. Dependencies &mdash; RMG Py 2.0.0 documentation</title>
+    <title>4.5.1. FAQ collection &mdash; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,7 +27,7 @@
     <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
     <link rel="up" title="4. Installation" href="index.html" />
     <link rel="next" title="5. Creating Input Files" href="../input.html" />
-    <link rel="prev" title="4.3.2. MacOS X Installation" href="macos.html" />
+    <link rel="prev" title="4.4.1. Dependencies" href="dependencies.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../input.html" title="5. Creating Input Files"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="macos.html" title="4.3.2. MacOS X Installation"
+          <a href="dependencies.html" title="4.4.1. Dependencies"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
@@ -70,59 +70,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul>
     </div>
             
-  <div class="section" id="dependencies">
-<span id="id1"></span><h1>4.4.1. Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="list-of-dependencies">
-<h2>4.4.1.1. List of Dependencies<a class="headerlink" href="#list-of-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Briefly, RMG depends on the following packages, almost all of which can be found in the <a class="reference external" href="https://anaconda.org/rmg">RMG anaconda channel</a> as binary packages.</p>
-<ul class="simple">
-<li><strong>boost:</strong> portable C++ source libraries</li>
-<li><strong>cairo:</strong> a 2D vector graphics library with support for multiple backends including image buffers, PNG, PostScript, PDF, and SVG file output.  Used for molecular diagram generation</li>
-<li><strong>cairocffi:</strong> a set of Python bindings and object-oriented API for cairo</li>
-<li><strong>coverage:</strong> code coverage measurement for Python</li>
-<li><strong>cython:</strong> compiling Python modules to C for speed up</li>
-<li><strong>gaussian:</strong> (optional) commerical software program for quantum mechanical calculations.  Must be installed separately.</li>
-<li><strong>gcc:</strong> GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)</li>
-<li><strong>gprof2dot:</strong> converts Python profiling output to a dot graph</li>
-<li><strong>graphviz:</strong> generating flux diagrams</li>
-<li><strong>guppy:</strong> memory profiling tools</li>
-<li><strong>jinja2:</strong> Python templating language for html rendering</li>
-<li><strong>markupsafe:</strong> implements XML/HTML/XHTML markup safe strings for Python</li>
-<li><strong>matplotlib:</strong> library for making plots</li>
-<li><strong>mencoder:</strong> (optional) used to encode videos, necessary for generating video flux diagrams.  Must be installed separately.</li>
-<li><strong>mopac:</strong> semi-empirical software package for QM calculations</li>
-<li><strong>nose:</strong> advanced unit test controls</li>
-<li><strong>numpy:</strong> fast matrix operations</li>
-<li><strong>openbabel:</strong> chemical toolbox for speaking the many languages of chemical data</li>
-<li><strong>psutil:</strong> system utilization diagnostic tool</li>
-<li><strong>pydas:</strong> differential algebraic system solver</li>
-<li><strong>pydot:</strong> interface to Dot graph language</li>
-<li><strong>pydqed:</strong> constrained nonlinear optimization</li>
-<li><strong>pyparsing:</strong> a general parsing module for python</li>
-<li><strong>pyzmq:</strong> Python bindings for zeroMQ</li>
-<li><strong>quantities:</strong> unit conversion</li>
-<li><strong>rdkit:</strong> open-source cheminformatics toolkit</li>
-<li><strong>scipy:</strong> fast mathematical toolkit</li>
-<li><strong>scoop:</strong> parallelization of Python code</li>
-<li><strong>setuptools:</strong> for packaging Python projects</li>
-<li><strong>sphinx:</strong> documentation generation</li>
-<li><strong>symmetry:</strong> calculating symmetry numbers of chemical point groups</li>
-<li><strong>xlwt:</strong> generating Excel output files</li>
+  <div class="section" id="faq-collection">
+<span id="faq"></span><h1>4.5.1. FAQ collection<a class="headerlink" href="#faq-collection" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">Got an error of <code class="docutils literal"><span class="pre">Segmentation</span> <span class="pre">fault:11</span></code> after installing RMG on my machine?</p>
+<blockquote>
+<div><p><strong>Segmentation fault</strong> is a typical error in C code. RMG has some dependencies which are written in C++, e.g. rdkit, openbabel. Chances are those packages are not up to date or maybe environmental variable <code class="docutils literal"><span class="pre">PATH</span></code> is messed up, please see one example from a user having same <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-website/issues/125">Segmentation fault issue</a>.</p>
+</div></blockquote>
+</li>
+<li><p class="first">How can I install RMG-Py without Anaconda?</p>
+<blockquote>
+<div><p>Usually we don&#8217;t recommend installing RMG-Py without Anaconda because it&#8217;s taking longer and easier to get trouble in package management and RMG team is not maintaining this install approach any more. But one still can try direct installation on Linux or MacOS by following <a class="reference internal" href="linux.html#linux"><span class="std std-ref">Linux instruction</span></a> or <a class="reference internal" href="macos.html#macos"><span class="std std-ref">MacOS instruction</span></a>.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Windows binary installation gives <code class="docutils literal"><span class="pre">WindowsError:</span> <span class="pre">[Error</span> <span class="pre">5]</span></code>?</p>
+<blockquote>
+<div><p>Error 5 is access is denied, so this is either a permissions error, or an issue with the Windows file lock. <a class="reference external" href="https://github.com/conda/conda/issues/708">These posts</a> suggest rebooting the computer (in case it&#8217;s a file lock), and running the anaconda prompt, from which you run <code class="docutils literal"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-c</span> <span class="pre">rmg</span> <span class="pre">--name</span> <span class="pre">rmg_env</span> <span class="pre">rmg</span> <span class="pre">rmgdatabase</span></code>, as an administrator (in case it&#8217;s a permissions error). Please checkout one example from a user having <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues/779">Windows binary installation issue</a>.</p>
+</div></blockquote>
+</li>
 </ul>
-</div>
-<div class="section" id="license-restrictions-on-dependencies">
-<span id="dependenciesrestrictions"></span><h2>4.4.1.2. License Restrictions on Dependencies<a class="headerlink" href="#license-restrictions-on-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>All of RMG&#8217;s dependencies except the ones listed below are freely available and compatible with RMG&#8217;s open source MIT license (though the specific nature of their licenses vary).</p>
-<ul class="simple">
-<li><strong>pydas</strong>: The DAE solvers used in the simulations come from <a class="reference external" href="http://www.engineering.ucsb.edu/~cse/software.html">Linda Petzold’s research group</a> at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which &#8220;is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is &#8220;available in the public domain.”</li>
-</ul>
-<p>If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (advisable for fused cyclic species in particular, where the ring corrections to group additive estimates are lacking),
-the then you will need the third-party software for the QM calculations:</p>
-<ul class="simple">
-<li><strong>gaussian</strong>: Gaussian03 and Gaussian09 are currently supported and commercially available.  See <a class="reference external" href="http://www.gaussian.com">http://www.gaussian.com</a> for more details.</li>
-<li><strong>mopac</strong> MOPAC can be found at <a class="reference external" href="http://openmopac.net/">http://openmopac.net/</a>. Though it is not free for industrial use, it is free for non-profit and academic research use.</li>
-</ul>
-</div>
 </div>
 
 
@@ -134,15 +100,6 @@ the then you will need the third-party software for the QM calculations:</p>
 <div class="sidebarlogo">
 <a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
-  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">4.4.1. Dependencies</a><ul>
-<li><a class="reference internal" href="#list-of-dependencies">4.4.1.1. List of Dependencies</a></li>
-<li><a class="reference internal" href="#license-restrictions-on-dependencies">4.4.1.2. License Restrictions on Dependencies</a></li>
-</ul>
-</li>
-</ul>
-
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
@@ -154,7 +111,7 @@ the then you will need the third-party software for the QM calculations:</p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/dependencies.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/faq.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>

@@ -124,6 +124,20 @@ otherwise. Also returns the lists all of valid mappings.</p>
 <code class="descname">getAllCycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllCycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a starting vertex, returns a list of all the cycles containing
 that vertex.</p>
+<p>This function returns a duplicate of each cycle because [0,1,2,3]
+is counted as separate from [0,3,2,1]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getAllCyclesOfSize">
+<code class="descname">getAllCyclesOfSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllCyclesOfSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the all non-duplicate rings with length &#8216;size&#8217;. The
+algorithm implements was adapted from a description by Fan, Panaye,
+Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
+<p>B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. &#8220;Ring Perception: A
+New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+from a Connection Table.&#8221; <em>J. Chem. Inf. Comput. Sci.</em> <strong>33</strong>,
+p. 657-662 (1993).</p>
 </dd></dl>
 
 <dl class="method">
