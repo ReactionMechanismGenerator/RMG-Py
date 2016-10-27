@@ -1340,7 +1340,7 @@ def getSpeciesIdentifier(species):
 
 ################################################################################
 
-def writeThermoEntry(species, verbose = True):
+def writeThermoEntry(species, elementCounts=None, verbose=True):
     """
     Return a string representation of the NASA model readable by Chemkin.
     To use this method you must have exactly two NASA polynomials in your
@@ -1360,7 +1360,8 @@ def writeThermoEntry(species, verbose = True):
     assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
 
     # Determine the number of each type of element in the molecule
-    elementCounts = retrieveElementCount(species.molecule[0])
+    if elementCounts is None:
+        elementCounts = retrieveElementCount(species.molecule[0])
     
     string = ''
     # Write thermo comments
