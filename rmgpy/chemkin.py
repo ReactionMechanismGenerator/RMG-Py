@@ -1384,11 +1384,11 @@ def writeThermoEntry(species, verbose = True):
                 chemkinName = getElement(symbol, isotope=isotope).chemkinName
             else:
                 chemkinName = key
-            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
+            string += '{0!s:<2}{1:>3d}'.format(chemkinName, count)
         string += '     ' * (4 - len(elementCounts))
     else:
         string += '     ' * 4
-    string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
+    string += 'G{0:>10.3f}{1:>10.3f}{2:>8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
     if len(elementCounts) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
@@ -1399,7 +1399,7 @@ def writeThermoEntry(species, verbose = True):
                 chemkinName = getElement(symbol, isotope=isotope).chemkinName
             else:
                 chemkinName = key
-            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
+            string += '{0!s:<2}{1:>3d}'.format(chemkinName, count)
     string += '\n'
 
     # Line 2
