@@ -719,6 +719,16 @@ def loadSpeciesDictionary(path):
                     index = line.index('//')
                     line = line[0:index]
                 adjlist += line
+        else: #reach end of file
+            if adjlist.strip() != '':
+                species = Species().fromAdjacencyList(adjlist)
+                species.generateResonanceIsomers()
+                label = species.label
+                for inert in inerts:
+                    if inert.isIsomorphic(species):
+                        species.reactive = False
+                        break
+                speciesDict[label] = species
 
     return speciesDict
 

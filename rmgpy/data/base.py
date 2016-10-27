@@ -290,6 +290,16 @@ class Database:
                     adjlist = ''
                 else:
                     adjlist += line
+            else: #reached end of file
+                if adjlist.strip() != '':
+                    # Finish this adjacency list
+                    species = Species().fromAdjacencyList(adjlist)
+                    species.generateResonanceIsomers()
+                    label = species.label
+                    if label in speciesDict:
+                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
+                    speciesDict[label] = species
+
         
         return speciesDict
     
