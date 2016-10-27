@@ -222,6 +222,8 @@ class StatMechJob:
             atoms = local_context['atoms']
         except KeyError:
             raise InputError('Required attribute "atoms" not found in species file {0!r}.'.format(path))
+        else:
+            self.species.props['elementCounts'] = atoms
         
         try:
             bonds = local_context['bonds']
