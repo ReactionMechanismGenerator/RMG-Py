@@ -10,10 +10,10 @@ class Test_Predictor(unittest.TestCase):
 	def setUp(self):
 
 		self.predictor = Predictor()
-		self.predictor.build_model()
 
 	def test_model(self):
 
+		self.predictor.build_model()
 		predictor_model = self.predictor.model
 		self.assertEqual(len(predictor_model.layers), 2)
 		self.assertTrue(isinstance(predictor_model.layers[0], GraphFP))
