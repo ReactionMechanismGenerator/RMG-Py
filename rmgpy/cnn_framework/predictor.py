@@ -20,10 +20,16 @@ class Predictor(object):
 										)
 
 	def build_model(self):
+		"""
+		This method is intended to provide a way to build default model 
+		"""
 
 		self.model = build_model()
 
 	def load_input(self, path=None):
+		"""
+		This method is intended to provide a way to build model from an input file
+		"""
 		
 		if path is None: 
 			path = self.input_file
