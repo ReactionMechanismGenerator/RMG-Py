@@ -1311,8 +1311,8 @@ class KineticsFamily(Database):
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
                 reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                if len(reactions) != 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                if len(reactions) == 0:
+                    logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                     logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
                     for reactant in rxn.reactants:
                         logging.info("Reactant")
@@ -1339,6 +1339,18 @@ class KineticsFamily(Database):
                         # Delete this reaction, since it should probably also be forbidden in the initial direction
                         # Hack fix for now
                         del rxn
+                elif len(reactions) > 1:
+                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    logging.info("Found the following reverse reactions")
+                    for rxn0 in reactions:
+                        logging.info(str(rxn0))
+                        for reactant in rxn0.reactants:
+                            logging.info("Reactant")
+                            logging.info(reactant.toAdjacencyList())
+                        for product in rxn0.products:
+                            logging.info("Product")
+                            logging.info(product.toAdjacencyList())
+                    raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
                 else:
                     rxn.reverse = reactions[0]
 
