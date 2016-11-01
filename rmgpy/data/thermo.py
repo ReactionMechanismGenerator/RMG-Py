@@ -1363,15 +1363,19 @@ class ThermoDatabase(object):
         # will probably not visit the right atoms, and so will get the thermo wrong
         molecule.sortAtoms()
 
-        if molecule.isRadical(): # radical species
-            thermoData = self.estimateRadicalThermoViaHBI(molecule, self.computeGroupAdditivityThermo)
+        # Convert lone pairs to radicals before determining if molecule is a radical
+        transformed_mol = molecule.copy(deep=True)
+        transformed_mol, addedToPairs = transformed_mol.transformLonePairs()
+
+        if transformed_mol.isRadical(): # radical species
+            thermoData = self.estimateRadicalThermoViaHBI(transformed_mol, self.computeGroupAdditivityThermo)
             return thermoData
 
         else: # non-radical species
-            thermoData = self.computeGroupAdditivityThermo(molecule)
+            thermoData = self.computeGroupAdditivityThermo(transformed_mol)
             # Correct entropy for symmetry number
-            if not 'saturated' in molecule.props: 
-                thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
+            if not 'saturated' in molecule.props:
+                thermoData.S298.value_si -= constants.R * math.log(transformed_mol.getSymmetryNumber())
             return thermoData
 
 
