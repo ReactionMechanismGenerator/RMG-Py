@@ -237,6 +237,41 @@ class TestThermoDatabase(unittest.TestCase):
         self.assertEqual(source['GAV']['ring'][0][1],-1)  # the weight of benzene contribution should be -1
         self.assertEqual(source['GAV']['group'][0][1],2)  # weight of the group(Cs-CsCsHH) conbtribution should be 2
         
+    def testLonePairThermoGeneration(self):
+        """
+        Test that for the biradical and lone pair form of the same molecule, we
+        are getting the same thermo data by transforming the lone pair into a biradical.
+        """
+        spc1 = Species(molecule=[Molecule().fromAdjacencyList("""
+        multiplicity 3
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {3,S} {6,S} {7,S}
+        3 C u2 p0 c0 {1,S} {2,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        """
+        )])
+
+        spc2 = Species(molecule=[Molecule().fromAdjacencyList("""
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {3,S} {6,S} {7,S}
+        3 C u0 p1 c0 {1,S} {2,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        """
+        )])
+
+        spc1.generateResonanceIsomers()
+        spc2.generateResonanceIsomers()
+        thermo1 = self.database.getThermoDataFromGroups(spc1)
+        thermo2 = self.database.getThermoDataFromGroups(spc2)
+
+        self.assertEqual(thermo1.getEnthalpy(298), thermo2.getEnthalpy(298))
+
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
     Test only Aromatic species.
