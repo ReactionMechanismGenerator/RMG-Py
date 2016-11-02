@@ -395,7 +395,8 @@ def generateClarStructures(mol):
 
     Returns all Clar structures as a list.
     """
-    cython.declare(output=list, molList=list, o=tuple, y=list, x=list, index=cython.int, bond=Bond, ring=list)
+    cython.declare(output=list, molList=list, o=tuple, newmol=Molecule, SSSR=list, bonds=list, solution=list,
+                   y=list, x=list, index=cython.int, bond=Bond, ring=list)
 
     if not mol.isCyclic():
         return []
@@ -449,22 +450,22 @@ def clarOptimization(mol, constraints=None, maxNum=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Molecule, SSSR=list, a=list, objective=list, solution=list, innerSolutions=list)
+    cython.declare(molecule=Molecule, ASSSR=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+                   a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
-    import os, sys
-    import glpk
+    from lpsolve55 import lpsolve
 
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    SSSR = molecule.getAromaticSSSR()
+    ASSSR = molecule.getAromaticSSSR()
 
-    if not SSSR:
+    if not ASSSR:
         return []
 
     # Get list of atoms that are in rings
     atoms = set()
-    for ring in SSSR:
+    for ring in ASSSR:
         atoms.update(ring)
     atoms = list(atoms)
 
@@ -474,86 +475,80 @@ def clarOptimization(mol, constraints=None, maxNum=None):
         bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.isNonHydrogen()])
     bonds = list(bonds)
 
-    # Identify exocyclic bonds
-    exocyclic = []
-    for index, bond in enumerate(bonds):
+    # Identify exocyclic bonds, and save their bond orders
+    exo = []
+    for bond in bonds:
         if bond.atom1 not in atoms or bond.atom2 not in atoms:
-            exocyclic.append(index)
+            if bond.order == 'D':
+                exo.append(1)
+            else:
+                exo.append(0)
+        else:
+            exo.append(None)
+
+    # Dimensions
+    l = len(ASSSR)
+    m = len(atoms)
+    n = l + len(bonds)
 
     # Connectivity matrix which indicates which rings and bonds each atom is in
     # Part of equality constraint Ax=b
     a = []
     for atom in atoms:
-        inRing = [1 if atom in ring else 0 for ring in SSSR]
+        inRing = [1 if atom in ring else 0 for ring in ASSSR]
         inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
-        a += (inRing + inBond) # Intentionally created as 1D list
-    # Weighting vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
-    objective = [1] * len(SSSR) + [0] * len(bonds)
+        a.append(inRing + inBond)
 
-    # Initialize LP problem using pyglpk
-    lp = glpk.LPX()
-    lp.obj.maximize = True
+    # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
+    objective = [1] * l + [0] * len(bonds)
 
-    # Each row is a constraint, so we have one constraint for each atom
-    lp.rows.add(len(atoms))
-    for r in lp.rows:
-        r.bounds = 1  # Constraint must be 1 since each atom can only be part of one sextet or double bond
-
-    # Each column is a variable, corresponding to each ring and bond (that is part of a ring) in the molecule
-    lp.cols.add(len(SSSR) + len(bonds))
-    for c in lp.cols:
-        c.kind = bool
+    # Solve LP problem using lpsolve
+    lp = lpsolve('make_lp', m, n)               # initialize lp with constraint matrix with m rows and n columns
+    lpsolve('set_verbose', lp, 2)               # reduce messages from lpsolve
+    lpsolve('set_obj_fn', lp, objective)        # set objective function
+    lpsolve('set_maxim', lp)                    # set solver to maximize objective
+    lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
+    lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
+    lpsolve('set_constr_type', lp, ['='] * m)   # set all constraints as equality constraints
+    lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
 
     # Constrain values of exocyclic bonds, since we don't want to modify them
-    for index in exocyclic:
-        lp.cols[index + len(SSSR)].bounds = 1 if bonds[index].order == 'D' else 0
+    for i in range(l, n):
+        if exo[i - l] is not None:
+            # NOTE: lpsolve indexes from 1, so the variable we're changing should be i + 1
+            lpsolve('set_bounds', lp, i + 1, exo[i - l], exo[i - l])
 
     # Add constraints to problem if provided
-    if constraints:
-        first = lp.rows.add(len(constraints))
-        for index, constraint in enumerate(constraints):
-            a += constraint[0]
-            lp.rows[first + index].bounds = constraint[1]
+    if constraints is not None:
+        for constraint in constraints:
+            lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
 
-    lp.obj[:] = objective  # Set objective coefficients
-    lp.matrix = a  # Set constraint coefficients, coefficients ordered left to right, top to bottom
-
-    # Hack to suppress glpk output, as an alternative to modifying glpk
-    with open(os.devnull, 'w') as dn:
-        try:
-            fd = sys.stdout.fileno()
-        except IOError:  # Most likely stdout does not have a file descriptor (eg. running IPython notebook)
-            msg = lp.intopt()  # Solve the linear program
-        else:
-            original = os.dup(fd)  # Save a copy of original file descriptor
-            os.dup2(dn.fileno(), fd)  # Set stdout to devnull
-            msg = lp.intopt()  # Solve the linear program
-            os.dup2(original, fd)  # Restore stdout
-            os.close(original)
+    status = lpsolve('solve', lp)
+    objVal, solution = lpsolve('get_solution', lp)[0:2]
+    lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
 
     # Check that optimization was successful
-    if lp.status != 'opt':
-        raise RuntimeError('Optimization exited with status {0} and message {1}'.format(lp.status, msg))
+    if status != 0:
+        raise RuntimeError('Optimization did not obtain optimal solution')
 
     # Check that we the result contains at least one aromatic sextet
-    if lp.obj.value == 0:
+    if objVal == 0:
         return []
 
+    # Check that the solution contains the maximum number of sextets possible
     if maxNum is None:
-        maxNum = lp.obj.value  # This is the first solution, without constraints, so the result should be an upper limit
-    elif lp.obj.value < maxNum:
-        raise ValueError('Sub-optimal solution obtained.')  # We don't want solutions with fewer sextets
-
-    solution = [c.value for c in lp.cols]
+        maxNum = objVal  # This is the first solution, so the result should be an upper limit
+    elif objVal < maxNum:
+        raise ValueError('Sub-optimal solution obtained.')
 
     if any([x != 1 and x != 0 for x in solution]):
         raise ValueError('Non-integer solution obtained from optimization.')
 
     # Generate constraints based on the solution obtained
-    y = solution[0:len(SSSR)]
+    y = solution[0:l]
     new_a = y + [0] * len(bonds)
-    new_b = (0, sum(y) - 1)
-    if constraints:
+    new_b = sum(y) - 1
+    if constraints is not None:
         constraints.append((new_a, new_b))
     else:
         constraints = [(new_a, new_b)]
@@ -564,7 +559,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     except (ValueError, RuntimeError):
         innerSolutions = []
 
-    return innerSolutions + [(molecule, SSSR, bonds, solution)]
+    return innerSolutions + [(molecule, ASSSR, bonds, solution)]
 
 
 def clarTransformation(mol, ring):
