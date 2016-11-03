@@ -335,6 +335,29 @@ class ClarTest(unittest.TestCase):
 
         self.assertTrue(mol.isAromatic())
 
+    def testClarOptimization(self):
+        """Test to ensure pi electrons are conserved during optimization"""
+        mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')  # Naphthalene
+        output = clarOptimization(mol)
+
+        for o in output:
+            SSSR = o[1]
+            bonds = o[2]
+            solution = o[3]
+
+            # Count pi electrons in molecule
+            pi = 0
+            for bond in bonds:
+                if bond.order == 'D':
+                    pi += 2
+
+            # Count pi electrons in solution
+            y = solution[0:len(SSSR)]
+            x = solution[len(SSSR):]
+            pi_solution = 6 * sum(y) + 2 * sum(x)
+
+            self.assertEqual(pi, pi_solution)
+
     def testPhenanthrene(self):
         """
         Test phenanthrene, which is a basic case that should work.
