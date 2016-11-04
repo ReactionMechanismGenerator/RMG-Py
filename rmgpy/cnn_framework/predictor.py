@@ -40,9 +40,9 @@ class Predictor(object):
 
 		pass
 
-	def load_parameters(self):
+	def load_parameters(self, param_path):
 
-		pass
+		self.model.load_weights(param_path)
 
 	def save_parameters(self):
 
