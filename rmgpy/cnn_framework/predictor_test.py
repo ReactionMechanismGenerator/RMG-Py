@@ -15,11 +15,11 @@ class Test_Predictor(unittest.TestCase):
 
 		self.predictor.build_model()
 		predictor_model = self.predictor.model
-		self.assertEqual(len(predictor_model.layers), 2)
+		self.assertEqual(len(predictor_model.layers), 3)
 		self.assertTrue(isinstance(predictor_model.layers[0], GraphFP))
 		self.assertTrue(isinstance(predictor_model.layers[1], Dense))
 
-		self.assertEqual(predictor_model.layers[0].inner_dim, 8)
+		self.assertEqual(predictor_model.layers[0].inner_dim, 32)
 		self.assertEqual(predictor_model.layers[0].output_dim, 512)
 
 	def test_load_input(self):
@@ -33,9 +33,9 @@ class Test_Predictor(unittest.TestCase):
 		self.predictor.load_input(test_predictor_input)
 
 		predictor_model = self.predictor.model
-		self.assertEqual(len(predictor_model.layers), 2)
+		self.assertEqual(len(predictor_model.layers), 3)
 		self.assertTrue(isinstance(predictor_model.layers[0], GraphFP))
 		self.assertTrue(isinstance(predictor_model.layers[1], Dense))
 
-		self.assertEqual(predictor_model.layers[0].inner_dim, 8)
+		self.assertEqual(predictor_model.layers[0].inner_dim, 32)
 		self.assertEqual(predictor_model.layers[0].output_dim, 512)
