@@ -10,8 +10,10 @@ class Test_CNN_Model(unittest.TestCase):
 
 		embedding_size = 300
 		attribute_vector_size = 10
+		hidden = 0
 		test_model = build_model(embedding_size=embedding_size, 
-								attribute_vector_size=attribute_vector_size
+								attribute_vector_size=attribute_vector_size,
+								hidden=hidden
 								)
 		self.assertEqual(len(test_model.layers), 2)
 		self.assertTrue(isinstance(test_model.layers[0], GraphFP))
