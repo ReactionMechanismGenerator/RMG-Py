@@ -939,7 +939,7 @@ class Molecule(Graph):
                 atom.atomType = getAtomType(atom, atom.edges)
             except:
                 logging.error("Problematic species: {}".format(self))
-                atom.atomType = getAtomType(atom, atom.edges)
+                raise
             
     def updateMultiplicity(self):
         """
