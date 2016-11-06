@@ -928,7 +928,7 @@ class Molecule(Graph):
                     self.addBond(bond)
         self.updateAtomTypes()
         
-    def updateAtomTypes(self):
+    def updateAtomTypes(self,printFlag=1):
         """
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
@@ -938,7 +938,8 @@ class Molecule(Graph):
             try:
                 atom.atomType = getAtomType(atom, atom.edges)
             except:
-                logging.error("Problematic species: {}".format(self))
+                if printFlag == 1:
+                    logging.error("Problematic species: {}".format(self))
                 raise
             
     def updateMultiplicity(self):
