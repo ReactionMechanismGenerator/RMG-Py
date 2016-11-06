@@ -935,7 +935,11 @@ class Molecule(Graph):
         environment) and complete (i.e. are as detailed as possible).
         """
         for atom in self.vertices:
-            atom.atomType = getAtomType(atom, atom.edges)
+            try:
+                atom.atomType = getAtomType(atom, atom.edges)
+            except:
+                logging.error("Problematic species: {}".format(self))
+                atom.atomType = getAtomType(atom, atom.edges)
             
     def updateMultiplicity(self):
         """
