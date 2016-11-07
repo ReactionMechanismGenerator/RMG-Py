@@ -76,7 +76,7 @@ def generateAdjacentResonanceIsomers(mol):
                 bond12.decrementOrder()
                 bond23.incrementOrder()
                 # Append to isomer list if unique
-                isomer.updateAtomTypes()
+                isomer.updateAtomTypes(logSpecies=False)
                 isomers.append(isomer)
 
     return isomers
@@ -123,7 +123,7 @@ def generateLonePairRadicalResonanceIsomers(mol):
                 atom2.incrementLonePairs()
                 atom2.updateCharge()
                 # Append to isomer list if unique
-                isomer.updateAtomTypes()
+                isomer.updateAtomTypes(logSpecies=False)
                 isomers.append(isomer)
 
     return isomers
@@ -173,7 +173,7 @@ def generateN5dd_N5tsResonanceIsomers(mol):
                 atom2.updateCharge()
                 atom3.updateCharge()
                 # Append to isomer list if unique
-                isomer.updateAtomTypes()
+                isomer.updateAtomTypes(logSpecies=False)
                 isomers.append(isomer)
             
             # from N5ts to N5dd
@@ -206,7 +206,7 @@ def generateN5dd_N5tsResonanceIsomers(mol):
                 atom2.updateCharge()
                 atom3.updateCharge()
                 # Append to isomer list if unique
-                isomer.updateAtomTypes()
+                isomer.updateAtomTypes(logSpecies=False)
                 isomers.append(isomer)
                 
     return isomers
@@ -259,7 +259,7 @@ def generateAromaticResonanceIsomers(mol):
 
     if aromatic:
         try:
-            molecule.updateAtomTypes()
+            molecule.updateAtomTypes(logSpecies=False)
         except:
             # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
             # Do not add the new isomer since it is malformed
@@ -289,7 +289,7 @@ def generateKekulizedResonanceIsomers(mol):
         isomer = parser.fromRDKitMol(Molecule(), rdkitmol)  # This step Kekulizes the molecule
     except ValueError:
         return []
-    isomer.updateAtomTypes()
+    isomer.updateAtomTypes(logSpecies=False)
     return [isomer]
 
 def generate_isomorphic_isomers(mol):
