@@ -51,7 +51,7 @@ except:
 from rdkit import Chem
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 import rmgpy.molecule.group as gr
-from .atomtype import AtomType, atomTypes, getAtomType
+from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
 import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
@@ -928,7 +928,7 @@ class Molecule(Graph):
                     self.addBond(bond)
         self.updateAtomTypes()
         
-    def updateAtomTypes(self,printFlag=1):
+    def updateAtomTypes(self, logSpecies=True):
         """
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
@@ -937,9 +937,9 @@ class Molecule(Graph):
         for atom in self.vertices:
             try:
                 atom.atomType = getAtomType(atom, atom.edges)
-            except:
-                if printFlag == 1:
-                    logging.error("Problematic species: {}".format(self))
+            except AtomTypeError:
+                if logSpecies:
+                    logging.error("Could not update atomtypes for {0}.\n{1}".format(self, self.toAdjacencyList()))
                 raise
             
     def updateMultiplicity(self):
