@@ -1407,6 +1407,23 @@ class ThermoDatabase(object):
             for H, bond in added[atom]:
                 thermoData.H298.value_si -= 52.103 * 4184
 
+        # Remove all of the interactions of the saturated structure. Then add the interactions of the radical.
+        # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
+        # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
+        if saturatedStruct.isCyclic():
+            SSSR = saturatedStruct.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__removeGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], saturatedStruct, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
+            SSSR = molecule.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
+
         return thermoData
         
         
@@ -1665,13 +1682,10 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data, node, isPartialMatch
         else:
-<<<<<<< HEAD
-            return addThermoData(thermoData, data, groupAdditivity=True), node, isPartialMatch
-=======
+            return addThermoData(thermoData, data, groupAdditivity=True, verbose = True), node, isPartialMatch
             return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node
             # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
             # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
->>>>>>> dd19d86... Add a verbosity switch to the method addThermoData and removeThermoData. And set it True for the methods involving polycyclic molecule.
 
     def __averageChildrenThermo(self, node):
         """
