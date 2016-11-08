@@ -1742,6 +1742,46 @@ class ThermoDatabase(object):
         else:
             return addThermoData(thermoData, data, groupAdditivity=True)
 
+    def __removeGroupThermoData(self, thermoData, database, molecule, atom):
+        """
+        Based on the __addGroupThermoData method. Just replace the last line with 'return removeThermoData()'.
+        Determine the group additivity thermodynamic data for the atom `atom` in the structure `structure`,
+        and REMOVE it from the existing thermo data `thermoData`.
+        """
+        node0 = database.descendTree(molecule, atom, None)
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        while node.data is None and node is not None:
+            node = node.parent
+        if node is None:
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
+
+        data = node.data; comment = node.label
+        while isinstance(data, basestring) and data is not None:
+            for entry in database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        data.comment = '{0}({1})'.format(database.label, comment)
+
+        # This code prints the hierarchy of the found node; useful for debugging
+#        result = ''
+#        while node is not None:
+#           result = ' -> ' + node.label + result
+#           node = node.parent
+#        print result[4:]
+        
+        if thermoData is None:
+            return data
+        else:
+            return removeThermoData(thermoData, data, True)
+
     def getRingGroupsFromComments(self, thermoData):
         """
         Takes a string of comments from group additivity estimation, and extracts the ring and polycyclic ring groups
