@@ -38,6 +38,7 @@ import math
 import logging
 import numpy
 import time
+import itertools
 from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
@@ -1471,6 +1472,26 @@ class ThermoDatabase(object):
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
+        
+        # Do long distance interaction correction for cyclic molecule. 
+        # First get smallest set of smallest rings. 
+        # Then for every single ring, generate the atom pairs by itertools.permutation.
+        # Finally match the atom pair with the database.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        # WIP: For now, in the database, if an entry describes the interaction between same groups, 
+        # it will be halved because it will be counted twice here. 
+        # Alternatively we could keep all the entries as their full values by using combinations instead of permutations here.
+        # In that case, we need to add more lines to match from reverse side when we didn't hit the most specific level from the forward side.
+        # PS: by saying 'forward side', I mean {'*1':atomPair[0], '*2':atomPair[1]}. So the following is the reverse side '{'*1':atomPair[1], '*2':atomPair[0]}'
+        # In my opinion, it's cleaner to do it in the current way.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        if cyclic:
+            SSSR = molecule.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
 
         # Do ring corrections separately because we only want to match
         # each ring one time
