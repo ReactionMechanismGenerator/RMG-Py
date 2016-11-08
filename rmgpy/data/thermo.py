@@ -185,12 +185,14 @@ def processOldLibraryEntry(data):
     )
 
 
-def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
+def addThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False):
         """
         Add the thermodynamic data `thermoData2` to the data `thermoData1`,
         and return `thermoData1`.
         
         If `groupAdditivity` is True, append comments related to group additivity estimation
+        If `verbose` is False, omit the comments from a "zero entry", whose H298, S298, and Cp are all 0.
+        If `verbose` is True, or thermoData2 is not a zero entry, add thermoData2.comment to thermoData1.comment.
         """
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
@@ -200,18 +202,25 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
         thermoData1.H298.value_si += thermoData2.H298.value_si
         thermoData1.S298.value_si += thermoData2.S298.value_si
 
+        testZero = sum(abs(value) for value in [thermoData2.H298.value_si, thermoData2.S298.value_si]+thermoData2.Cpdata.value_si.tolist())
+        # Used to check if all of the entries in thermoData2 are zero
+
         if groupAdditivity:
-            if thermoData1.comment:
-                thermoData1.comment += ' + {0}'.format(thermoData2.comment)
-            else:
-                thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
+            if verbose or testZero !=0:
+            # If verbose==True or testZero!=0, add thermoData2.comment to thermoData1.comment.
+                if thermoData1.comment:
+                    thermoData1.comment += ' + {0}'.format(thermoData2.comment)
+                else:
+                    thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
             
         return thermoData1
     
-def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
+def removeThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False):
     """
     Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
     and return `thermoData1`.
+    If `verbose` is True, append ' - thermoData2.comment' to the thermoData1.comment.
+    If `verbose` is False, remove the thermoData2.comment from the thermoData1.comment.
     """
     if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
         raise Exception('Cannot take the difference between these ThermoData objects due to their having different temperature points.')
@@ -222,10 +231,10 @@ def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
     thermoData1.S298.value_si -= thermoData2.S298.value_si
 
     if groupAdditivity:
-        if thermoData1.comment:
+        if verbose:
             thermoData1.comment += ' - {0}'.format(thermoData2.comment)
         else:
-            thermoData1.comment = 'Thermo group additivity estimation: ' + ' - {0}'.format(thermoData2.comment)
+            thermoData1.comment = re.sub(re.escape(' + '+thermoData2.comment),'',thermoData1.comment, 1)
     return thermoData1
 
 def averageThermoData(thermoDataList=None):
@@ -1541,7 +1550,9 @@ class ThermoDatabase(object):
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
         if not isPartialMatch:
-            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
+            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
+            # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
             
@@ -1586,7 +1597,10 @@ class ThermoDatabase(object):
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                     self.groups['ring'], submol, submol.atoms)[0]
             for _ in range(occurance-1):
-                thermoData = removeThermoData(thermoData, singleRingThermodata, True)
+                thermoData = removeThermoData(thermoData, singleRingThermodata, True, True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+
 
     def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """
@@ -1651,7 +1665,13 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data, node, isPartialMatch
         else:
+<<<<<<< HEAD
             return addThermoData(thermoData, data, groupAdditivity=True), node, isPartialMatch
+=======
+            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node
+            # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+>>>>>>> dd19d86... Add a verbosity switch to the method addThermoData and removeThermoData. And set it True for the methods involving polycyclic molecule.
 
     def __averageChildrenThermo(self, node):
         """
