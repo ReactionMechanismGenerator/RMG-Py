@@ -97,3 +97,6 @@ class Test_Predictor(unittest.TestCase):
 		self.assertAlmostEqual(dense2.W.eval()[0][0], 3.284, 3)
 		self.assertAlmostEqual(dense2.b.eval()[0], 3.074, 3)
 		
+	def test_predict_on_batch(self):
+		
+		pass
