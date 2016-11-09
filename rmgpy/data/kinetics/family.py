@@ -42,7 +42,7 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
                             ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
-from rmgpy.molecule import Bond, GroupBond, Group, Molecule
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
 from rmgpy.species import Species
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
@@ -1207,6 +1207,14 @@ class KineticsFamily(Database):
 #                logging.error(struct.toAdjacencyList())
             # If unable to apply the reaction recipe, then return no product structures
             return None
+        except ActionError:
+            logging.error(
+                'Could not generate product structures for reaction family {0} in {1} direction'.format(
+                    self.label, 'forward' if forward else 'reverse'))
+            logging.info('Reactant structures:')
+            for struct in reactantStructures:
+                logging.info('{0}\n{1}\n'.format(struct, struct.toAdjacencyList()))
+            raise
 
         # If there are two product structures, place the one containing '*1' first
         if len(productStructures) == 2:
