@@ -395,7 +395,7 @@ def generateClarStructures(mol):
 
     Returns all Clar structures as a list.
     """
-    cython.declare(output=list, molList=list, o=tuple, newmol=Molecule, SSSR=list, bonds=list, solution=list,
+    cython.declare(output=list, molList=list, newmol=Molecule, SSSR=list, bonds=list, solution=list,
                    y=list, x=list, index=cython.int, bond=Bond, ring=list)
 
     if not mol.isCyclic():
@@ -405,11 +405,7 @@ def generateClarStructures(mol):
 
     molList = []
 
-    for o in output:
-        newmol = o[0]
-        SSSR = o[1]
-        bonds = o[2]
-        solution = o[3]
+    for newmol, SSSR, bonds, solution in output:
 
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
