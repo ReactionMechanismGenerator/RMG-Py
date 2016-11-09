@@ -125,7 +125,7 @@ class GroupAtom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return '[{0}]'.format(','.join([repr(a.label) for a in self.atomType]))
+        return '[{0} {1}]'.format(self.label, ','.join([repr(a.label) for a in self.atomType]))
 
     def __repr__(self):
         """
@@ -1368,20 +1368,22 @@ class Group(Graph):
             Returns: a sorted list of atoms where each atom is connected to a previous
             atom in the list if possible
             """
+            # if no input given just return
+            if not atomList: return atomList
+
             sortedAtomList=[]
+            sortedAtomList.append(atomList.pop(0))
             while atomList:
-                sortedAtomList.append(atomList.pop(0))
-                previousLength = len(sortedAtomList)
-                for atom1 in atomList:
+                for atom1 in sortedAtomList:
                     added = False
                     for atom2, bond12 in atom1.bonds.iteritems():
-                        if atom2 in sortedAtomList:
-                            sortedAtomList.append(atom1)
+                        if bond12.isBenzene() and atom2 in atomList:
+                            sortedAtomList.append(atom2)
+                            atomList.remove(atom2)
                             added = True
-                            break
-                    if added : continue
-                for atom1 in sortedAtomList[previousLength:]:
-                    atomList.remove(atom1)
+                    if added: break
+                else:
+                    sortedAtomList.append(atomList.pop(0))
 
             return sortedAtomList
 

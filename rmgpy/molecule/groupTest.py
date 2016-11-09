@@ -668,6 +668,13 @@ class TestGroup(unittest.TestCase):
 4  *4 O u0 p0 c0 {3,S}
     """
 
+        adjlist7="""
+1 *1 Cb u0 {4,B}
+2 *2 Cb u0 {3,B}
+3 *3 Cb u0 {4,B} {2,B}
+4 *4 Cb u0 {1,B} {3,B}
+"""
+
         benzene ="""
 1 C u0 {2,B} {6,B}
 2 C u0 {1,B} {3,B}
@@ -754,6 +761,7 @@ class TestGroup(unittest.TestCase):
         group4 = Group().fromAdjacencyList(adjlist4)
         group5 = Group().fromAdjacencyList(adjlist5)
         group6 = Group().fromAdjacencyList(adjlist6)
+        group7 = Group().fromAdjacencyList(adjlist7)
 
         benzeneGroup = Group().fromAdjacencyList(benzene)
         biphenylGroup = Group().fromAdjacencyList(biphenyl)
@@ -774,6 +782,8 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(answer5.isIsomorphic(group5))
         group6 = group6.addImplicitBenzene()
         self.assertTrue(answer6.isIsomorphic(group6))
+        group7 = group7.addImplicitBenzene()
+        self.assertTrue(benzeneGroup.isIsomorphic(group7))
 
     def testMakeSampleMolecule(self):
         """
@@ -813,6 +823,16 @@ class TestGroup(unittest.TestCase):
         group3 = Group().fromAdjacencyList(adjlist3)
         result3 = group3.makeSampleMolecule()
         self.assertTrue(result3.isIsomorphic(Molecule().fromSMILES('[NH4+]')))
+
+        #test creation of charged species when some single bonds present
+        adjlist4 = """
+1 *2 [N5s,N5d] u0 {2,S} {3,S}
+2 *3 R!H       u1 {1,S}
+3 *4 H         u0 {1,S}
+"""
+        group4 = Group().fromAdjacencyList(adjlist4)
+        result4 = group4.makeSampleMolecule()
+        self.assertTrue(result4.isIsomorphic(Molecule().fromSMILES('[NH3+][CH2]')))
 
     def testIsBenzeneExplicit(self):
         """
