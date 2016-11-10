@@ -4,6 +4,7 @@ from .input import read_input_file
 from .molecule_tensor import get_molecule_tensor
 import os
 import rmgpy
+import numpy as np
 
 class Predictor(object):
 
@@ -56,13 +57,10 @@ class Predictor(object):
 
 		pass
 
-	def predict_on_batch(self, molecules):
+	def predict(self, molecule):
 
-		molecule_tensors = []
-		for molecule in molecules:
-			molecule_tensor = get_molecule_tensor(molecule)
-			molecule_tensors.append(molecule_tensor)
+		molecule_tensor = get_molecule_tensor(molecule)
 
-		molecule_tensor_array = np.array(molecule_tensors)
-		return self.model.predict_on_batch(molecule_tensor_array)
+		molecule_tensor_array = np.array([molecule_tensor])
+		return self.model.predict(molecule_tensor_array)[0][0]
     
