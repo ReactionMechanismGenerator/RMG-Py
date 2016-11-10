@@ -4,6 +4,7 @@ from keras.layers.core import Dense
 import unittest
 import os
 import rmgpy
+from rmgpy.molecule.molecule import Molecule
 
 class Test_Predictor(unittest.TestCase):
 
@@ -97,6 +98,26 @@ class Test_Predictor(unittest.TestCase):
 		self.assertAlmostEqual(dense2.W.eval()[0][0], 3.284, 3)
 		self.assertAlmostEqual(dense2.b.eval()[0], 3.074, 3)
 		
-	def test_predict_on_batch(self):
+	def test_predict(self):
 		
-		pass
+		test_predictor_input = os.path.join(os.path.dirname(rmgpy.__file__),
+											'cnn_framework',
+											'test_data', 
+											'minimal_predictor', 
+											'predictor_input.py'
+											)
+		self.predictor.load_input(test_predictor_input)
+
+		param_path = os.path.join(os.path.dirname(rmgpy.__file__),
+											'cnn_framework',
+											'test_data', 
+											'minimal_predictor', 
+											'weights.h5'
+											)
+		self.predictor.load_parameters(param_path)
+
+		mol_test = Molecule().fromSMILES('C1[C@H]2C[C@@H]1C2')
+
+		h298_predicted = self.predictor.predict(mol_test)
+
+		self.assertAlmostEqual(h298_predicted, 30.16, 1)
