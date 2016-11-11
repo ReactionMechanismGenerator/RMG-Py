@@ -42,7 +42,7 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
                             ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
-from rmgpy.molecule import Bond, GroupBond, Group, Molecule
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
 from rmgpy.species import Species
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
@@ -1207,6 +1207,14 @@ class KineticsFamily(Database):
 #                logging.error(struct.toAdjacencyList())
             # If unable to apply the reaction recipe, then return no product structures
             return None
+        except ActionError:
+            logging.error(
+                'Could not generate product structures for reaction family {0} in {1} direction'.format(
+                    self.label, 'forward' if forward else 'reverse'))
+            logging.info('Reactant structures:')
+            for struct in reactantStructures:
+                logging.info('{0}\n{1}\n'.format(struct, struct.toAdjacencyList()))
+            raise
 
         # If there are two product structures, place the one containing '*1' first
         if len(productStructures) == 2:
@@ -1311,8 +1319,8 @@ class KineticsFamily(Database):
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
                 reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                if len(reactions) != 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                if len(reactions) == 0:
+                    logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                     logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
                     for reactant in rxn.reactants:
                         logging.info("Reactant")
@@ -1339,6 +1347,18 @@ class KineticsFamily(Database):
                         # Delete this reaction, since it should probably also be forbidden in the initial direction
                         # Hack fix for now
                         del rxn
+                elif len(reactions) > 1:
+                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    logging.info("Found the following reverse reactions")
+                    for rxn0 in reactions:
+                        logging.info(str(rxn0))
+                        for reactant in rxn0.reactants:
+                            logging.info("Reactant")
+                            logging.info(reactant.toAdjacencyList())
+                        for product in rxn0.products:
+                            logging.info("Product")
+                            logging.info(product.toAdjacencyList())
+                    raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
                 else:
                     rxn.reverse = reactions[0]
 
