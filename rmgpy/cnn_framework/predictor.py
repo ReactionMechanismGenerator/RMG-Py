@@ -79,7 +79,7 @@ class Predictor(object):
 
 		self.model.load_weights(param_path)
 
-	def save_parameters(self):
+	def save_model(self):
 
 		pass
 
