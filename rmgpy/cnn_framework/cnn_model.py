@@ -10,6 +10,11 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5, scale_out
 				hidden=50, hidden_activation='tanh',
 				output_activation='linear', output_size=1, 
 				lr=0.01, optimizer='adam', loss='mse'):
+
+	"""
+	build generic cnn model that takes molecule tensor and predict output 
+	with size of output_size.
+	"""
 	
 	model = Sequential()
 
