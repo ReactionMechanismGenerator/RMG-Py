@@ -55,6 +55,7 @@ speciesDict = {}
 
 def database(
              thermoLibraries = None,
+             transportLibraries = None,
              reactionLibraries = None,
              frequenciesLibraries = None,
              seedMechanisms = None,
@@ -66,11 +67,13 @@ def database(
     # We don't actually load the database until after we're finished reading
     # the input file
     if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
+    if isinstance(transportLibraries, str): transportLibraries = [transportLibraries]
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
     rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
+    rmg.transportLibraries = transportLibraries
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
