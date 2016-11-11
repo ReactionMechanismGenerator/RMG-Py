@@ -170,8 +170,8 @@ class RMG(util.Subject):
         self.minCoreSizeForPrune = 50
         self.minSpeciesExistIterationsForPrune = 2
         self.filterReactions=False
-        self.unimoelcularReact = None
-        self.bimoleculaReact = None
+        self.unimolecularReact = None
+        self.bimolecularReact = None
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
         self.termination = []

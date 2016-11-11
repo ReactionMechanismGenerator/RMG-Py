@@ -20,7 +20,6 @@ requirements:
     - gcc # [unix]
     - gcc ==4.8.2 # [linux32]
     - gprof2dot
-    - guppy
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx

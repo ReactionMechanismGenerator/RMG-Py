@@ -219,13 +219,17 @@ class AtomType:
 """
 Note: function to read adjacency lists assumes that all atom types begin
 with a capital letter [A-Z]
+
+For making sample atoms, we use the first atomtype under specific,
+therefore the first one in the list should always be an element.
 """
 
 atomTypes = {}
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
+    'H',
     'R!H',
     'Val4','Val5','Val6','Val7',    
-    'H','He',
+    'He',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
@@ -235,9 +239,10 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'Cl','Ar']
 )
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
+    'C',
     'He',
     'Val4','Val5','Val6','Val7',
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
+    'Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
     'Ne',

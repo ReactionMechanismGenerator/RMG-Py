@@ -22,7 +22,6 @@ dependencies:
   - pydqed
   - nose
   - coverage
-  - guppy
   - gprof2dot
   #- cairo
   #- cairocffi

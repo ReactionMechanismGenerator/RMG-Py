@@ -23,12 +23,14 @@ def retrieveElementCount(obj):
     
     elif isinstance(obj, Molecule):
         for atom in obj.atoms:
-            element = atom.element.symbol
-            if element in element_count:
-                updated_count = element_count[element] + 1
-                element_count[element] = updated_count 
+            symbol = atom.element.symbol
+            isotope = atom.element.isotope
+            key = symbol if isotope == -1 else (symbol, isotope)
+            if key in element_count:
+                updated_count = element_count[key] + 1
+                element_count[key] = updated_count 
             else:
-                element_count[element] = 1
+                element_count[key] = 1
         return element_count
 
     else:

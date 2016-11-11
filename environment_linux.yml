@@ -23,7 +23,6 @@ dependencies:
   - pydot ==1.2.2
   - nose
   - coverage
-  - guppy
   - gprof2dot
   - cairo
   - cairocffi
@@ -33,5 +32,5 @@ dependencies:
   - mopac
   - graphviz
   - scoop
-  - libgfortran ==1.0 # You may need to comment this out for mac osx
+  - libgfortran >=1.0 # You may need to comment this out for mac osx
   - ffmpeg
