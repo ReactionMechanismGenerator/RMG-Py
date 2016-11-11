@@ -39,7 +39,7 @@ class Predictor(object):
 			print path
 		read_input_file(path, self)
 
-	def kfcv_train(self, folds):
+	def kfcv_train(self, folds, lr_func):
 
 		# prepare data for training
 		(X, y) = get_HC_polycyclics_data_from_db('sdata134k', 'sdata134k_table')
@@ -52,7 +52,7 @@ class Predictor(object):
 
 			# execute train_model
 			(model, loss, val_loss) = train_model(self.model, data, 
-												nb_epoch=150, lr_func='0.01', 
+												nb_epoch=150, lr_func=lr_func, 
 												patience=10)
 
 			losses.append(loss)
