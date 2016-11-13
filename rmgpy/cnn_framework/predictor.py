@@ -55,8 +55,11 @@ class Predictor(object):
 												nb_epoch=150, lr_func=lr_func, 
 												patience=10)
 
+			# loss and val_loss each is a list
+			# containing loss for each epoch
 			losses.append(loss)
 			val_losses.append(val_loss)
+			
 			# save model
 			# self.save_model()
 
@@ -65,8 +68,8 @@ class Predictor(object):
 
 		# mean loss and val_loss used for selecting parameters, 
 		# e.g., lr, epoch, attributes, etc
-		mean_loss = mean(losses)
-		mean_val_loss = mean(val_losses)
+		mean_loss = np.mean([l[-1] for l in losses if len(l) > 0 ])
+		mean_val_loss = np.mean([l[-1] for v_l in val_losses if len(l) > 0 ])
 
 		self.report_training_results(mean_loss, mean_val_loss)
 
