@@ -19,4 +19,5 @@ predictor_input = os.path.join(os.path.dirname(rmgpy.__file__),
 
 h298_predictor.load_input(predictor_input)
 
-h298_predictor.kfcv_train(folds=5)
+lr_func = "float(0.0007 * np.exp(- epoch / 30.0))"
+h298_predictor.kfcv_train(folds=5, lr_func=lr_func)
