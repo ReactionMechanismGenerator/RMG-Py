@@ -102,8 +102,8 @@ class Predictor(object):
 	def report_training_results(self, mean_loss, mean_val_loss):
 
 		logging.info("##################################")
-		logging.info("# Training Completed!          ###".format(mean_loss))
+		logging.info("# Training Completed!          ###")
 		logging.info("# Training Mean Loss: {0:2.2f}   ###".format(mean_loss))
-		logging.info("# Validation Mean Loss: {0:2.2f} ###".format(mean_loss))
+		logging.info("# Validation Mean Loss: {0:2.2f} ###".format(mean_val_loss))
 		logging.info("##################################")
     
