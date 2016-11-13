@@ -1,5 +1,5 @@
 
-from cnn_model import build_model, train_model
+from cnn_model import build_model, train_model, reset_model
 from .input import read_input_file
 from .molecule_tensor import get_molecule_tensor
 import os
@@ -60,6 +60,9 @@ class Predictor(object):
 			# save model
 			# self.save_model()
 
+			# once finish training one fold, reset the model
+			self.reset_model()
+
 		# mean loss and val_loss used for selecting parameters, 
 		# e.g., lr, epoch, attributes, etc
 		mean_loss = mean(losses)
@@ -78,6 +81,10 @@ class Predictor(object):
 									)
 
 		self.model.load_weights(param_path)
+
+	def reset_model(self):
+
+		self.model = reset_model(self.model)
 
 	def save_model(self):
 
