@@ -42,7 +42,7 @@ Alternatively, PDF versions of all the documentation can also be found in the `d
 ## How to Give Feedback
 
 Please post any issues you may have to the [issues page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/)
-or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
+or drop in to the [chat room](https://gitter.im/ReactionMechanismGenerator/RMG-Py) or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
 
 ## Useful Links
 
