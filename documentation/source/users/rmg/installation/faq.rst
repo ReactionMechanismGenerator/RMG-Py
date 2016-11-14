@@ -17,5 +17,8 @@ FAQ collection
 	
 	Error 5 is access is denied, so this is either a permissions error, or an issue with the Windows file lock. `These posts <https://github.com/conda/conda/issues/708>`_ suggest rebooting the computer (in case it's a file lock), and running the anaconda prompt, from which you run ``conda create -c rmg --name rmg_env rmg rmgdatabase``, as an administrator (in case it's a permissions error). Please checkout one example from a user having `Windows binary installation issue <https://github.com/ReactionMechanismGenerator/RMG-Py/issues/779>`_.
 	
+* I get something like ``IOError: [Errno 13] Permission denied: 'C:\\RMG.log'`` 
+
+	You do not have permission to write to the log file. Try running the RMG from a different folder that you do have write permission to, such as within your user's documents directory, or else try running the command prompt as an Administrator (so that you have write permission everywhere). See for example `issue #817 <https://github.com/ReactionMechanismGenerator/RMG-Py/issues/817>`_.
 
 If you have any other errors please report them by opening an `issue <https://github.com/ReactionMechanismGenerator/RMG-Py/issues?q=is%3Aissue>`_, and for general questions ask in the `RMG-Py chat room <https://gitter.im/ReactionMechanismGenerator/RMG-Py>`_.
