@@ -10,12 +10,7 @@ initializeLog(level, os.path.join('train_cnn_results', 'train0.log'))
 
 h298_predictor = Predictor()
 
-predictor_input = os.path.join(os.path.dirname(rmgpy.__file__),
-											'cnn_framework',
-											'test_data', 
-											'minimal_predictor', 
-											'predictor_input.py'
-											)
+predictor_input = os.path.join('train_cnn_inputs', 'predictor_input.py')
 
 h298_predictor.load_input(predictor_input)
 
