@@ -382,39 +382,80 @@ def generateN5dd_N5tsResonanceIsomers(mol):
                 
     return isomers
 
-def generateAromaticResonanceIsomers(mol):
+def generateAromaticResonanceIsomers(mol, features=None):
     """
-    Generate the aromatic form of the molecule.
+    Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
     
-    Returns it as a single element of a list.
+    Returns result as a list.
+    In most cases, only one structure will be returned.
+    In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, aromaticBonds=list, ring=list, bond=Bond)
+    cython.declare(molecule=Molecule, SSSR=list, rings=list, aromaticBonds=list, kekuleList=list,
+                   maxNum=cython.int, molList=list, newMolList=list, ring=list, bond=Bond)
 
-    if not mol.isCyclic():
+    if features is None:
+        features = analyzeMolecule(mol)
+
+    if not features['isCyclic']:
         return []
 
     molecule = mol.copy(deep=True)
 
-    aromaticBonds = molecule.getAromaticSSSR()[1]
+    # First get all rings in the molecule
+    SSSR = molecule.getSmallestSetOfSmallestRings()
+    rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
 
-    if not aromaticBonds:
-        return []
+    # Then determine which ones are aromatic
+    aromaticBonds = molecule.getAromaticSSSR(SSSR)[1]
 
-    # Convert all aromatic bonds to benzene bond type
-    for ring in aromaticBonds:
-        for bond in ring:
-            bond.order = 'B'
+    # If the species is a radical and the number of aromatic rings is less than the number of total rings,
+    # then there is a chance that the radical can be shifted to a location that increases the number of aromatic rings.
+    if (features['isRadical'] and not features['isArylRadical']) and (len(aromaticBonds) < len(rings)):
+        if molecule.isAromatic():
+            kekuleList = generateKekulizedResonanceIsomers(molecule)
+        else:
+            kekuleList = [molecule]
+        __generateResonanceStructures(kekuleList, [generateAdjacentResonanceIsomers])
 
-    try:
-        molecule.updateAtomTypes(logSpecies=False)
-    except AtomTypeError:
-        # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
-        # Do not add the new isomer since it is malformed
-        return []
+        maxNum = 0
+        molList = []
+
+        # Iterate through the adjacent resonance structures and keep the structures with the most aromatic rings
+        for mol0 in kekuleList:
+            aromaticBonds = mol0.getAromaticSSSR()[1]
+            if len(aromaticBonds) > maxNum:
+                maxNum = len(aromaticBonds)
+                molList = [(mol0, aromaticBonds)]
+            elif len(aromaticBonds) == maxNum:
+                molList.append((mol0, aromaticBonds))
     else:
-        # nothing bad happened
-        return [molecule]
+        # Otherwise, it is not possible to increase the number of aromatic rings by moving electrons,
+        # so go ahead with the inputted form of the molecule
+        molList = [(molecule, aromaticBonds)]
+
+    newMolList = []
+
+    # Generate the aromatic resonance structure(s)
+    for mol0, aromaticBonds in molList:
+        if not aromaticBonds:
+            continue
+        for ring in aromaticBonds:
+            for bond in ring:
+                bond.order = 'B'
+
+        try:
+            mol0.updateAtomTypes(logSpecies=False)
+        except AtomTypeError:
+            continue
+
+        for mol1 in newMolList:
+            if mol1.isIsomorphic(mol0):
+                break
+        else:
+            newMolList.append(mol0)
+
+    return newMolList
 
 def generateKekulizedResonanceIsomers(mol):
     """
