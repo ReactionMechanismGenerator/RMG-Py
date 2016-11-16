@@ -84,6 +84,9 @@ def parseCommandLineArguments():
     parser.add_argument('-t', '--walltime', type=str, nargs=1, default='0',
         metavar='HH:MM:SS', help='set the maximum execution time')
 
+    #Add option to output a folder that stores the details of each kinetic database entry source
+    parser.add_argument('-k', '--kineticsdatastore', action='store_true', help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
+
     return parser.parse_args()
 
 ################################################################################
@@ -122,6 +125,7 @@ if __name__ == '__main__':
         'scratch_directory': args.scratch_directory,
         'restart': args.restart,
         'walltime': args.walltime,
+        'kineticsdatastore': args.kineticsdatastore
         }
 
     if args.profile:
