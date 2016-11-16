@@ -117,7 +117,16 @@ def analyzeMolecule(mol):
 
 def generateResonanceIsomers(mol):
     """
-    Generate and return all of the resonance isomers of this molecule.
+    Generate and return all of the resonance structures for the input molecule.
+
+    Most of the complexity of this method goes into handling aromatic species, particularly to generate an accurate
+    set of resonance structures that is consistent regardless of the input structure. The following considerations
+    are made:
+
+    1. False positives from RDKit aromaticity detection can occur if a molecule has exocyclic double bonds
+    2. False negatives from RDKit aromaticity detection can occur if a radical is delocalized into an aromatic ring
+    3. sp2 hybridized radicals in the plane of an aromatic ring do not participate in hyperconjugation
+    4. Non-aromatic resonance structures of PAHs are not important resonance contributors (assumption)
     """
     cython.declare(molList=list, newMolList=list, features=dict, methodList=list)
 
@@ -126,33 +135,24 @@ def generateResonanceIsomers(mol):
     # Analyze molecule
     features = analyzeMolecule(mol)
 
-    if features['isCyclic'] and features['isRadical'] and not features['isAromatic']:
-        # There is a chance that the molecule has an aromatic resonance structure
-        newMolList = __generateResonanceStructures(molList, [generateAdjacentResonanceIsomers,
-                                                             generateAromaticResonanceIsomers], copy=True)
-        # Check if we generated an aromatic resonance structure
-        if any([m.isAromatic() for m in newMolList]):
-            features['isAromatic'] = True
-    elif features['isAromatic']:
-        # There is a chance that the molecule is considered aromatic by RDKit but not by RMG
-        newMolList = __generateResonanceStructures(molList, [generateAromaticResonanceIsomers], copy=True)
-        # Check if we generated an aromatic resonance structure
-        if not any([m.isAromatic() for m in newMolList]):
-            # If not, then treat this molecule as a non-aromatic species
+    # Use generateAromaticResonanceIsomers to check for false positives and negatives
+    if features['isAromatic'] or (features['isCyclic'] and features['isRadical'] and not features['isArylRadical']):
+        newMolList = generateAromaticResonanceIsomers(mol, features)
+        if len(newMolList) == 0:
+            # Encountered false positive, ie. the molecule is not actually aromatic
             features['isAromatic'] = False
             features['isPolycyclicAromatic'] = False
+    else:
+        newMolList = []
 
-    if features['isAromatic']:
+    if len(newMolList) > 0:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
                 __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers])
                 __generateResonanceStructures(newMolList, [generateAdjacentResonanceIsomers])
                 __generateResonanceStructures(newMolList, [generateClarStructures])
-                # Remove any non-aromatic structures
-                # Assume (dangerously) that aromaticity of all rings cannot be broken simultaneously
+                # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
                 newMolList = [m for m in newMolList if m.isAromatic()]
-                # Add the original molecule back to the beginning of the list if it's not aromatic
-                if not mol.isAromatic(): newMolList.insert(0, mol)
             else:
                 __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers,
                                                            generateOppositeKekuleStructure])
@@ -164,7 +164,17 @@ def generateResonanceIsomers(mol):
             # In this case, generate the kekulized form
             __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers,
                                                        generateOppositeKekuleStructure])
-        molList = newMolList
+
+        # Check for isomorphism against the original molecule
+        for newMol in newMolList:
+            if mol.isIsomorphic(newMol):
+                # There will be at most one isomorphic molecule, since the new molecules have
+                # already been checked against each other, so we can break after removing it
+                newMolList.remove(newMol)
+                break
+        # Add the newly generated structures to the original list
+        # This is not optimal, but is a temporary measure to ensure compatability until other issues are fixed
+        molList.extend(newMolList)
     else:
         methodList = populateResonanceAlgorithms(features)
         __generateResonanceStructures(molList, methodList)
