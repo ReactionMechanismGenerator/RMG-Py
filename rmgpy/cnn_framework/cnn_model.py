@@ -5,6 +5,8 @@ from keras.optimizers import RMSprop, Adam
 import numpy as np
 import theano.tensor as T 
 from keras import initializations
+from keras.utils.visualize_util import plot
+import json
 
 import logging
 
@@ -156,16 +158,67 @@ def reset_model(model):
 			# Initialize weights tensor
 			layer.W_output.set_value((T.tile(W_output, (layer.depth + 1, 1, 1)).eval()).astype(np.float32))
 			layer.b_output.set_value((T.tile(b_output, (layer.depth + 1, 1, 1)).eval()).astype(np.float32))
-			print('graphFP layer reset')
+			logging.info('graphFP layer reset')
 
 		elif '.Dense' in str(layer):
 			layer.W.set_value((layer.init(layer.W.shape.eval()).eval()).astype(np.float32))
 			layer.b.set_value(np.zeros(layer.b.shape.eval(), dtype=np.float32))
-			print('dense layer reset')
+			logging.info('dense layer reset')
 
 		elif '.Dropout' in str(layer):
-			print('dropout unchanged')
+			logging.info('dropout unchanged')
 		else:
 			raise ValueError('Unknown layer {}, cannot reset weights'.format(str(layer)))
-	print('Reset model weights')
+	logging.info('Reset model weights')
 	return model
+
+def save_model(model, loss, val_loss, fpath):
+	'''Saves NN model object and associated information.
+
+	inputs:
+		model - a Keras model
+		loss - list of training losses 
+		val_loss - list of validation losses
+		fpath - root filepath to save everything to (with .json, h5, png, info 
+		config - the configuration dictionary that defined this model 
+		tstamp - current timestamp to log in info file'''
+
+	# Dump data
+	with open(fpath + '.json', 'w') as structure_fpath:
+		json.dump(model.to_json(), structure_fpath)
+	logging.info('...saved structural information')
+
+	# Dump weights
+	model.save_weights(fpath + '.h5', overwrite = True)
+	logging.info('...saved weights')
+
+	# Dump image
+	plot(model, to_file = fpath + '.png')
+	logging.info('...saved image')
+
+	# Dump history
+	save_model_history_manual(loss, val_loss, fpath + '.hist')
+	logging.info ('...saved history')
+
+	logging.info('...saved model to {}.[json, h5, png]'.format(fpath))
+
+def save_model_history_manual(loss, val_loss, fpath):
+	''''This function saves the history returned by model.fit to a tab-
+	delimited file, where model is a keras model'''
+
+	# Open file
+	fid = open(fpath, 'a')
+	logging.info('trained at {}'.format(datetime.datetime.utcnow()))
+	logging.info('iteration\tloss\tval_loss', file = fid)
+
+	try:
+		# Iterate through
+		for i in range(len(loss)):
+			logging.info('{}\t{}\t{}'.format(i + 1, 
+							loss[i], val_loss[i]),
+							file = fid)
+	except KeyError:
+		logging.info('<no history found>', file = fid)
+
+	# Close file
+	fid.close()

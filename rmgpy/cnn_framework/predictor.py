@@ -1,5 +1,5 @@
 
-from cnn_model import build_model, train_model, reset_model
+from cnn_model import build_model, train_model, reset_model, save_model
 from .input import read_input_file
 from .molecule_tensor import get_molecule_tensor
 import os
@@ -61,7 +61,8 @@ class Predictor(object):
 			val_losses.append(val_loss)
 			
 			# save model
-			# self.save_model()
+			fpath = 'fold_{0}'.format(fold + 1)
+			self.save_model(loss, val_loss, fpath)
 
 			# once finish training one fold, reset the model
 			self.reset_model()
@@ -89,9 +90,9 @@ class Predictor(object):
 
 		self.model = reset_model(self.model)
 
-	def save_model(self):
+	def save_model(self, loss, val_loss, fpath):
 
-		pass
+		save_model(self.model, loss, val_loss, fpath)
 
 	def predict(self, molecule):
 
@@ -99,6 +100,7 @@ class Predictor(object):
 
 		molecule_tensor_array = np.array([molecule_tensor])
 		return self.model.predict(molecule_tensor_array)[0][0]
+	
 	def report_training_results(self, mean_loss, mean_val_loss):
 
 		logging.info("##################################")
