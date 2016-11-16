@@ -1638,7 +1638,7 @@ class Molecule(Graph):
         
         return group
 
-    def getAromaticSSSR(self):
+    def getAromaticSSSR(self, SSSR=None):
         """
         Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds
 
@@ -1656,7 +1656,10 @@ class Molecule(Graph):
 
         AROMATIC = BondType.AROMATIC
 
-        rings = [ring0 for ring0 in self.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+        if SSSR is None:
+            SSSR = self.getSmallestSetOfSmallestRings()
+
+        rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
         if not rings:
             return [], []
 

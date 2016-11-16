@@ -208,4 +208,4 @@ cdef class Molecule(Graph):
 
     cpdef list generateResonanceIsomers(self)
 
-    cpdef tuple getAromaticSSSR(Molecule mol)
+    cpdef tuple getAromaticSSSR(self, list SSSR=?)
