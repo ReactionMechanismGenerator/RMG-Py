@@ -7,7 +7,7 @@ cpdef dict analyzeMolecule(Molecule mol)
 
 cpdef list generateResonanceIsomers(Molecule mol)
 
-cpdef __generateResonanceStructures(list molList, list methodList, bint copy=?)
+cpdef list _generateResonanceStructures(list molList, list methodList, bint copy=?)
 
 cpdef list generateAdjacentResonanceIsomers(Molecule mol)
 
@@ -17,7 +17,11 @@ cpdef list generateN5dd_N5tsResonanceIsomers(Molecule mol)
 
 cpdef list generate_isomorphic_isomers(Molecule mol)
 
+cpdef list generateAromaticResonanceIsomers(Molecule mol, dict features=?)
+
 cpdef list generateKekulizedResonanceIsomers(Molecule mol)
+
+cpdef list generateOppositeKekuleStructure(Molecule mol)
 
 cpdef list generateClarStructures(Molecule mol)
 
