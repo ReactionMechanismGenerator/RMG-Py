@@ -1526,7 +1526,7 @@ class Molecule(Graph):
         return all(radList)
 
     def generateResonanceIsomers(self):
-        return resonance.generateResonanceIsomers(self)
+        return resonance.generateResonanceStructures(self)
 
     def getURL(self):
         """
