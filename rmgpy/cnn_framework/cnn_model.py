@@ -1,3 +1,4 @@
+from __future__ import print_function
 from .layers import GraphFP
 from keras.models import Sequential
 from keras.layers.core import Dense
@@ -7,8 +8,9 @@ import theano.tensor as T
 from keras import initializations
 from keras.utils.visualize_util import plot
 import json
-
+import datetime
 import logging
+
 
 def build_model(embedding_size=512, attribute_vector_size=33, depth=5, scale_output=0.05, padding=False, 
 				hidden=50, hidden_activation='tanh',
@@ -209,16 +211,16 @@ def save_model_history_manual(loss, val_loss, fpath):
 	# Open file
 	fid = open(fpath, 'a')
 	logging.info('trained at {}'.format(datetime.datetime.utcnow()))
-	logging.info('iteration\tloss\tval_loss', file = fid)
+	print('iteration\tloss\tval_loss', file=fid)
 
 	try:
 		# Iterate through
 		for i in range(len(loss)):
-			logging.info('{}\t{}\t{}'.format(i + 1, 
+			print('{}\t{}\t{}'.format(i + 1, 
 							loss[i], val_loss[i]),
 							file = fid)
 	except KeyError:
-		logging.info('<no history found>', file = fid)
+		print('<no history found>', file = fid)
 
 	# Close file
 	fid.close()
