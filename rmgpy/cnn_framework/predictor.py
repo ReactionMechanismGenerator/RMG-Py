@@ -39,7 +39,7 @@ class Predictor(object):
 			print path
 		read_input_file(path, self)
 
-	def kfcv_train(self, folds, lr_func):
+	def kfcv_train(self, folds, lr_func, save_model_path):
 
 		# prepare data for training
 		(X, y) = get_HC_polycyclics_data_from_db('sdata134k', 'sdata134k_table')
@@ -61,7 +61,7 @@ class Predictor(object):
 			val_losses.append(val_loss)
 			
 			# save model
-			fpath = 'fold_{0}'.format(fold + 1)
+			fpath = os.path.join(save_model_path, 'fold_{0}'.format(fold))
 			self.save_model(loss, val_loss, fpath)
 
 			# once finish training one fold, reset the model
