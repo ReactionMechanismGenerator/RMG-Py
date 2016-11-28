@@ -127,6 +127,8 @@ cdef class Group(Graph):
 
     cpdef sortAtoms(self)
 
+    cpdef list sortByConnectivity(self, list atomList)
+
     cpdef Graph copy(self, bint deep=?)
 
     cpdef clearLabeledAtoms(self)

@@ -725,32 +725,6 @@ def addBenzeneAtomToGroup(group, connectingAtom, cbf=False):
 
     return (group, newAtom)
 
-def sortByConnectivity(atomList):
-    """
-    Args:
-        atomList: input list of atoms
-
-    Returns: a sorted list of atoms where each atom is connected to a previous
-    atom in the list if possible
-    """
-    # if no input given just return
-    if not atomList: return atomList
-
-    sortedAtomList=[]
-    sortedAtomList.append(atomList.pop(0))
-    while atomList:
-        for atom1 in sortedAtomList:
-            added = False
-            for atom2, bond12 in atom1.bonds.iteritems():
-                if bond12.isBenzene() and atom2 in atomList:
-                    sortedAtomList.append(atom2)
-                    atomList.remove(atom2)
-                    added = True
-            if added: break
-        else:
-            sortedAtomList.append(atomList.pop(0))
-
-    return sortedAtomList
 ################################################################################
 class Group(Graph):
     """
@@ -837,6 +811,33 @@ class Group(Graph):
         the isomorphism functions, much more efficient.
         """
         return self.sortVertices()
+
+    def sortByConnectivity(self, atomList):
+        """
+        Args:
+            atomList: input list of atoms
+
+        Returns: a sorted list of atoms where each atom is connected to a previous
+        atom in the list if possible
+        """
+        # if no input given just return
+        if not atomList: return atomList
+
+        sortedAtomList=[]
+        sortedAtomList.append(atomList.pop(0))
+        while atomList:
+            for atom1 in sortedAtomList:
+                added = False
+                for atom2, bond12 in atom1.bonds.iteritems():
+                    if bond12.isBenzene() and atom2 in atomList:
+                        sortedAtomList.append(atom2)
+                        atomList.remove(atom2)
+                        added = True
+                if added: break
+            else:
+                sortedAtomList.append(atomList.pop(0))
+
+        return sortedAtomList
 
     def copy(self, deep=False):
         """
@@ -1543,9 +1544,10 @@ class Group(Graph):
         It is important that we always check atoms that are already connected to existing rings
         before completely disconnected atoms. Otherwise, we will erroneously create new rings.
         """
-        cbAtomList = sortByConnectivity(cbAtomList)
-        cbfAtomList1 = sortByConnectivity(cbfAtomList1)
-        cbfAtomList2 = sortByConnectivity(cbfAtomList2)
+        cbAtomList = copyGroup.sortByConnectivity(cbAtomList)
+        #blah
+        cbfAtomList1 = copyGroup.sortByConnectivity(cbfAtomList1)
+        cbfAtomList2 = copyGroup.sortByConnectivity(cbfAtomList2)
 
         """
         Step 4. Initalize the list of rings with any benzene rings that are already explicitly stated
