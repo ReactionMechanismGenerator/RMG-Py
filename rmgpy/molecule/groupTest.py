@@ -546,6 +546,42 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.isIsomorphic(group))
         self.assertTrue(group.isIsomorphic(self.group))
 
+    def testCreateAndConnectAtom(self):
+        """
+        Tests createAndConnectAtom method
+        """
+        adjlist1 = """
+1  *1 C u0 {2,S}
+2  *2 C u0 {1,S}
+"""
+
+        answer1 = """
+1  *1 C  u0 {2,S} {3,B}
+2  *2 C  u0 {1,S}
+3     Cb u0 {1,B}
+"""
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        answer1 = Group().fromAdjacencyList(answer1)
+        atom1 = group1.getLabeledAtom("*1")
+        newAtom = group1.createAndConnectAtom(atomtypes = ["Cb"], connectingAtom = atom1, bondOrders = ["B"])
+        self.assertTrue(group1.isIsomorphic(answer1))
+
+        answer2 = """
+1  *1 C  u0 {2,S} {3,[S,D]}
+2  *2 C  u0 {1,S}
+3     [Cs,Cd] u0 {1,[S,D]}
+"""
+
+        #Test that wildcards work alright
+        group2 = Group().fromAdjacencyList(adjlist1)
+        answer2 = Group().fromAdjacencyList(answer2)
+        atom1 = group2.getLabeledAtom("*1")
+        newAtom = group2.createAndConnectAtom(atomtypes = ["Cs", "Cd"], connectingAtom = atom1, bondOrders = ["S","D"])
+        self.assertTrue(group2.isIsomorphic(answer2))
+
+
+
     def testAddImplicitAtomsFromAtomType(self):
         """
         test Group.addImplicitAtomsFromAtomType() method
