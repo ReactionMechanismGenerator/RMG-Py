@@ -525,7 +525,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
 
     # Check that optimization was successful
     if status != 0:
-        raise RuntimeError('Optimization did not obtain optimal solution')
+        raise ILPSolutionError('Optimization could not find a valid solution.')
 
     # Check that we the result contains at least one aromatic sextet
     if objVal == 0:
@@ -535,10 +535,10 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     if maxNum is None:
         maxNum = objVal  # This is the first solution, so the result should be an upper limit
     elif objVal < maxNum:
-        raise ValueError('Sub-optimal solution obtained.')
+        raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
 
     if any([x != 1 and x != 0 for x in solution]):
-        raise ValueError('Non-integer solution obtained from optimization.')
+        raise ILPSolutionError('Optimization obtained a non-integer solution.')
 
     # Generate constraints based on the solution obtained
     y = solution[0:l]
@@ -552,7 +552,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     # Run optimization with additional constraints
     try:
         innerSolutions = clarOptimization(mol, constraints=constraints, maxNum=maxNum)
-    except (ValueError, RuntimeError):
+    except ILPSolutionError:
         innerSolutions = []
 
     return innerSolutions + [(molecule, ASSSR, bonds, solution)]
@@ -573,3 +573,12 @@ def clarTransformation(mol, ring):
 
     for bond in bondList:
         bond.order = 'B'
+
+
+class ILPSolutionError(Exception):
+    """
+    An exception to be raised when solving an integer linear programming problem if a solution
+    could not be found or the solution is not valid. Can pass a string to indicate the reason
+    that the solution is invalid.
+    """
+    pass
