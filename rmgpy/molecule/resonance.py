@@ -442,6 +442,15 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
 
+    Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
+        [0] Molecule object
+        [1] List of aromatic rings
+        [2] List of bonds
+        [3] Optimization solution
+
+    The optimization solution is a list of boolean values with sextet assignments followed by double bond assignments,
+    with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+
     Method from:
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
@@ -561,6 +570,12 @@ def clarOptimization(mol, constraints=None, maxNum=None):
 def clarTransformation(mol, ring):
     """
     Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
+
+    Args:
+        mol    a :class:`Molecule` object
+        ring   a list of :class:`Atom` objects corresponding to an aromatic ring in mol
+
+    This function directly modifies the input molecule and does not return anything.
     """
     cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
 

@@ -1624,6 +1624,13 @@ class Molecule(Graph):
     def getAromaticSSSR(self):
         """
         Returns the smallest set of smallest aromatic rings
+
+        Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
+        RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
+        Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
+
+        The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
+        by RMG, and not by RDKit.
         """
         cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
         cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
