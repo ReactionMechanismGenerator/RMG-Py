@@ -1624,7 +1624,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
                 )
     elif isinstance(kinetics, _kinetics.Chebyshev):
         string += '    TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value_si, kinetics.Tmax.value_si)
-        string += '    PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
+        string += '    PCHEB/ {0:<9.5f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
         string += '    CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
         if kinetics.degreeP < 6:
             coeffs = kinetics.coeffs.value_si.copy()
