@@ -395,7 +395,7 @@ def generateClarStructures(mol):
 
     Returns all Clar structures as a list.
     """
-    cython.declare(output=list, molList=list, newmol=Molecule, SSSR=list, bonds=list, solution=list,
+    cython.declare(output=list, molList=list, newmol=Molecule, asssr=list, bonds=list, solution=list,
                    y=list, x=list, index=cython.int, bond=Bond, ring=list)
 
     if not mol.isCyclic():
@@ -405,13 +405,13 @@ def generateClarStructures(mol):
 
     molList = []
 
-    for newmol, SSSR, bonds, solution in output:
+    for newmol, asssr, bonds, solution in output:
 
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(SSSR)]
-        x = solution[len(SSSR):]
+        y = solution[0:len(asssr)]
+        x = solution[len(asssr):]
 
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
@@ -423,7 +423,7 @@ def generateClarStructures(mol):
                 raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
-        for index, ring in enumerate(SSSR):
+        for index, ring in enumerate(asssr):
             if y[index] == 1:
                 clarTransformation(newmol, ring)
 
@@ -455,7 +455,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Molecule, ASSSR=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+    cython.declare(molecule=Molecule, asssr=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
                    a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
     from lpsolve55 import lpsolve
@@ -463,14 +463,14 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    ASSSR = molecule.getAromaticSSSR()
+    asssr = molecule.getAromaticSSSR()
 
-    if not ASSSR:
+    if not asssr:
         return []
 
     # Get list of atoms that are in rings
     atoms = set()
-    for ring in ASSSR:
+    for ring in asssr:
         atoms.update(ring)
     atoms = list(atoms)
 
@@ -492,7 +492,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
             exo.append(None)
 
     # Dimensions
-    l = len(ASSSR)
+    l = len(asssr)
     m = len(atoms)
     n = l + len(bonds)
 
@@ -500,7 +500,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     # Part of equality constraint Ax=b
     a = []
     for atom in atoms:
-        inRing = [1 if atom in ring else 0 for ring in ASSSR]
+        inRing = [1 if atom in ring else 0 for ring in asssr]
         inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
         a.append(inRing + inBond)
 
@@ -564,16 +564,16 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     except ILPSolutionError:
         innerSolutions = []
 
-    return innerSolutions + [(molecule, ASSSR, bonds, solution)]
+    return innerSolutions + [(molecule, asssr, bonds, solution)]
 
 
-def clarTransformation(mol, ring):
+def clarTransformation(mol, aromaticRing):
     """
     Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
 
     Args:
-        mol    a :class:`Molecule` object
-        ring   a list of :class:`Atom` objects corresponding to an aromatic ring in mol
+        mol             a :class:`Molecule` object
+        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
 
     This function directly modifies the input molecule and does not return anything.
     """
@@ -581,8 +581,8 @@ def clarTransformation(mol, ring):
 
     bondList = []
 
-    for i, atom1 in enumerate(ring):
-        for atom2 in ring[i + 1:]:
+    for i, atom1 in enumerate(aromaticRing):
+        for atom2 in aromaticRing[i + 1:]:
             if mol.hasBond(atom1, atom2):
                 bondList.append(mol.getBond(atom1, atom2))
 
