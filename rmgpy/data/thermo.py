@@ -37,6 +37,7 @@ import re
 import math
 import logging
 import numpy
+import itertools
 from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
@@ -183,12 +184,14 @@ def processOldLibraryEntry(data):
     )
 
 
-def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
+def addThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False):
         """
         Add the thermodynamic data `thermoData2` to the data `thermoData1`,
         and return `thermoData1`.
         
         If `groupAdditivity` is True, append comments related to group additivity estimation
+        If `verbose` is False, omit the comments from a "zero entry", whose H298, S298, and Cp are all 0.
+        If `verbose` is True, or thermoData2 is not a zero entry, add thermoData2.comment to thermoData1.comment.
         """
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
@@ -198,18 +201,25 @@ def addThermoData(thermoData1, thermoData2, groupAdditivity=False):
         thermoData1.H298.value_si += thermoData2.H298.value_si
         thermoData1.S298.value_si += thermoData2.S298.value_si
 
+        testZero = sum(abs(value) for value in [thermoData2.H298.value_si, thermoData2.S298.value_si]+thermoData2.Cpdata.value_si.tolist())
+        # Used to check if all of the entries in thermoData2 are zero
+
         if groupAdditivity:
-            if thermoData1.comment:
-                thermoData1.comment += ' + {0}'.format(thermoData2.comment)
-            else:
-                thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
+            if verbose or testZero !=0:
+            # If verbose==True or testZero!=0, add thermoData2.comment to thermoData1.comment.
+                if thermoData1.comment:
+                    thermoData1.comment += ' + {0}'.format(thermoData2.comment)
+                else:
+                    thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
             
         return thermoData1
     
-def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
+def removeThermoData(thermoData1, thermoData2, groupAdditivity=False, verbose=False):
     """
     Remove the thermodynamic data `thermoData2` from the data `thermoData1`,
     and return `thermoData1`.
+    If `verbose` is True, append ' - thermoData2.comment' to the thermoData1.comment.
+    If `verbose` is False, remove the thermoData2.comment from the thermoData1.comment.
     """
     if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
         raise Exception('Cannot take the difference between these ThermoData objects due to their having different temperature points.')
@@ -220,10 +230,10 @@ def removeThermoData(thermoData1, thermoData2, groupAdditivity=False):
     thermoData1.S298.value_si -= thermoData2.S298.value_si
 
     if groupAdditivity:
-        if thermoData1.comment:
+        if verbose:
             thermoData1.comment += ' - {0}'.format(thermoData2.comment)
         else:
-            thermoData1.comment = 'Thermo group additivity estimation: ' + ' - {0}'.format(thermoData2.comment)
+            thermoData1.comment = re.sub(re.escape(' + '+thermoData2.comment),'',thermoData1.comment, 1)
     return thermoData1
 
 def averageThermoData(thermoDataList=None):
@@ -784,12 +794,12 @@ class ThermoDatabase(object):
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
         self.groups = {}
         self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
-        self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
-        self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
         self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
         self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
+        self.groups['longDistanceInteraction_cyclic']   =   ThermoGroups(label='longDistanceInteraction_cyclic').load(os.path.join(path, 'longDistanceInteraction_cyclic.py'  ), self.local_context, self.global_context)
+        self.groups['longDistanceInteraction_noncyclic']   =   ThermoGroups(label='longDistanceInteraction_noncyclic').load(os.path.join(path, 'longDistanceInteraction_noncyclic.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -1348,6 +1358,23 @@ class ThermoDatabase(object):
             for H, bond in added[atom]:
                 thermoData.H298.value_si -= 52.103 * 4184
 
+        # Remove all of the interactions of the saturated structure. Then add the interactions of the radical.
+        # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
+        # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
+        if saturatedStruct.isCyclic():
+            SSSR = saturatedStruct.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__removeGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], saturatedStruct, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
+            SSSR = molecule.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
+
         return thermoData
         
         
@@ -1414,16 +1441,42 @@ class ThermoDatabase(object):
                     logging.error(molecule.toAdjacencyList())
                     raise
                 # Correct for gauche and 1,5- interactions
-                if not cyclic:
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
-                    except KeyError: pass
-                try:
-                    self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
-                except KeyError: pass
+                # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
+                # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
+                # Currently we only have gauche(1,4) and 1,5 interactions in that file. 
+                # If you want to add more corrections for longer distance, please call getNthNeighbor() method accordingly.
+                # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
+                if not molecule.isAtomInCycle(atom):
+                    for atom_2 in molecule.getNthNeighbor([atom],[1,2]):
+                        if not molecule.isAtomInCycle(atom_2):
+                        # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
+                        # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
+                            try:
+                                self.__addGroupThermoData(thermoData, self.groups['longDistanceInteraction_noncyclic'], molecule, {'*1':atom, '*2': atom_2})
+                            except KeyError: pass
                 try:
                     self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                 except KeyError: pass
+        
+        # Do long distance interaction correction for cyclic molecule. 
+        # First get smallest set of smallest rings. 
+        # Then for every single ring, generate the atom pairs by itertools.permutation.
+        # Finally match the atom pair with the database.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        # WIP: For now, in the database, if an entry describes the interaction between same groups, 
+        # it will be halved because it will be counted twice here. 
+        # Alternatively we could keep all the entries as their full values by using combinations instead of permutations here.
+        # In that case, we need to add more lines to match from reverse side when we didn't hit the most specific level from the forward side.
+        # PS: by saying 'forward side', I mean {'*1':atomPair[0], '*2':atomPair[1]}. So the following is the reverse side '{'*1':atomPair[1], '*2':atomPair[0]}'
+        # In my opinion, it's cleaner to do it in the current way.
+        # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
+        if cyclic:
+            SSSR = molecule.getSmallestSetOfSmallestRings()
+            for ring in SSSR:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
+                    except KeyError: pass
 
         # Do ring corrections separately because we only want to match
         # each ring one time
@@ -1468,7 +1521,9 @@ class ThermoDatabase(object):
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
         if not isPolyringPartialMatched(polyring, matched_group):
-            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
+            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
+            # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
             
@@ -1513,7 +1568,10 @@ class ThermoDatabase(object):
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                     self.groups['ring'], submol, submol.atoms)[0]
             for _ in range(occurance-1):
-                thermoData = removeThermoData(thermoData, singleRingThermodata, True)
+                thermoData = removeThermoData(thermoData, singleRingThermodata, True, True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+
 
     def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """
@@ -1571,7 +1629,9 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data, node
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True), node
+            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node
+            # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
+            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
     def __averageChildrenThermo(self, node):
         """
@@ -1640,6 +1700,46 @@ class ThermoDatabase(object):
             return data
         else:
             return addThermoData(thermoData, data, groupAdditivity=True)
+
+    def __removeGroupThermoData(self, thermoData, database, molecule, atom):
+        """
+        Based on the __addGroupThermoData method. Just replace the last line with 'return removeThermoData()'.
+        Determine the group additivity thermodynamic data for the atom `atom` in the structure `structure`,
+        and REMOVE it from the existing thermo data `thermoData`.
+        """
+        node0 = database.descendTree(molecule, atom, None)
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        while node.data is None and node is not None:
+            node = node.parent
+        if node is None:
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
+
+        data = node.data; comment = node.label
+        while isinstance(data, basestring) and data is not None:
+            for entry in database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        data.comment = '{0}({1})'.format(database.label, comment)
+
+        # This code prints the hierarchy of the found node; useful for debugging
+#        result = ''
+#        while node is not None:
+#           result = ' -> ' + node.label + result
+#           node = node.parent
+#        print result[4:]
+        
+        if thermoData is None:
+            return data
+        else:
+            return removeThermoData(thermoData, data, True)
 
     def getRingGroupsFromComments(self, thermoData):
         """

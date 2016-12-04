@@ -168,16 +168,20 @@ class TestThermoDatabase(unittest.TestCase):
         on various thermo comments.
         """
         from rmgpy.thermo import NASA, NASAPolynomial
-        # Pure group additivity thermo
-        propane = Species(index=3, label="Propane", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.05257,0.0125099,3.79386e-05,-5.12022e-08,1.87065e-11,-14454.2,10.0672], Tmin=(100,'K'), Tmax=(986.57,'K')),
-         NASAPolynomial(coeffs=[5.91316,0.0218763,-8.17661e-06,1.49855e-09,-1.05991e-13,-16038.9,-8.86555], Tmin=(986.57,'K'), Tmax=(5000,'K'))],
-         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)"""), molecule=[Molecule(SMILES="CCC")])
-        
-        source = self.database.extractSourceFromComments(propane)
-        self.assertTrue('GAV' in source, 'Should have found that propane thermo source is GAV.')
-        self.assertEqual(len(source['GAV']['group']), 2)
-        self.assertEqual(len(source['GAV']['other']), 1)
-        self.assertEqual(len(source['GAV']['gauche']), 2)
+        # Pure group additivity thermo.
+        GAVspecies = Species(index=3, label="c1c(O)c(O)c(CC(C)CC)cc1", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-1.18833,0.11272,-4.26393e-05,-2.12017e-08,1.441e-11,-51642.9,38.8904], Tmin=(100,'K'), Tmax=(1078.35,'K')),
+         NASAPolynomial(coeffs=[26.6057,0.0538434,-2.22538e-05,4.22393e-09,-3.00808e-13,-60208.4,-109.218], Tmin=(1078.35,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsCsH) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) +
+         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-Os) + group(Cb-Os) + group(Cb-H) +
+         group(Cb-H) + group(Cb-H) + group(Os-CbH) + group(Os-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
+         longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)"""), molecule=[Molecule(SMILES="c1c(O)c(O)c(CC(C)CC)cc1")])
+
+        source = self.database.extractSourceFromComments(GAVspecies)
+        self.assertTrue('GAV' in source, 'Should have found that the thermo source is GAV.')
+        self.assertEqual(len(source['GAV']['group']), 8)
+        self.assertEqual(len(source['GAV']['longDistanceInteraction_noncyclic']), 1)
+        self.assertEqual(len(source['GAV']['longDistanceInteraction_cyclic']), 1)
+        self.assertEqual(len(source['GAV']['ring']), 1)
 
         # Pure library thermo
         dipk = Species(index=1, label="DIPK", thermo=
@@ -254,6 +258,52 @@ class TestThermoDatabaseAromatics(TestThermoDatabase):
         super(TestThermoDatabaseAromatics, self).__init__(*args, **kwargs)
         self._testMethodDoc = self._testMethodDoc.strip().split('\n')[0] + " for Aromatics.\n"
 
+    def testLongDistanceInteractionInAromaticMolecule(self):
+        """
+        Test long distance interaction is properly caculated for aromatic molecule.
+        """
+        spec = Species().fromSMILES('c(O)1c(O)c(C=O)c(C=O)c(O)c(C=O)1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        self.assertIn('o_OH_OH', thermo.comment)
+        self.assertIn('o_OH_CHO', thermo.comment)
+        self.assertIn('o_CHO_CHO', thermo.comment)
+        self.assertIn('m_CHO_CHO', thermo.comment)
+        self.assertIn('p_OH_OH', thermo.comment)
+        self.assertIn('p_OH_CHO', thermo.comment)
+        self.assertIn('p_CHO_CHO', thermo.comment)
+
+    def testLongDistanceInteractionInAromaticRadical(self):
+        """
+        Test long distance interaction is properly caculated for aromatic radical.
+        """
+        spec = Species().fromSMILES('c([O])1c(C=O)c(C=O)c(OC)cc1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        self.assertNotIn('o_OH_CHO', thermo.comment)
+        self.assertNotIn('p_OH_MeO', thermo.comment)
+        self.assertIn('o_Oj_CHO', thermo.comment)
+        self.assertIn('m_Oj_CHO', thermo.comment)
+        self.assertIn('p_Oj_OCH3', thermo.comment)
+        self.assertIn('o_CHO_CHO', thermo.comment)
+        self.assertIn('o_CHO_MeO', thermo.comment)
+
+    def testLongDistanceInteractionInAromaticBiradical(self):
+        """
+        Test long distance interaction is properly caculated for aromatic biradical.
+        """
+        spec = Species().fromSMILES('c([O])1c([C]=O)cc(C=O)cc1')
+        spec.generateResonanceIsomers()
+        thermo = self.database.getThermoDataFromGroups(spec)
+
+        thermo = self.database.getThermoDataFromGroups(spec)
+        self.assertNotIn('o_OH_CHO', thermo.comment)
+        self.assertNotIn('m_CHO_CHO', thermo.comment)
+        self.assertNotIn('p_OH_CHO', thermo.comment)
+        self.assertNotIn('o_Oj_CHO', thermo.comment)
+        self.assertIn('m_Cj=O_CHO', thermo.comment)
 
 class TestCyclicThermo(unittest.TestCase):
     """
