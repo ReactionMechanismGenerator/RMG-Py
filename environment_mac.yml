@@ -13,6 +13,7 @@ dependencies:
   - rdkit >=2015.09.2
   - pydas >=1.0.1
   - pydqed >=1.0.0
+  - lpsolve55
   - quantities
   - scipy
   - xlwt
