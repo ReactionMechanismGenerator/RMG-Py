@@ -395,8 +395,8 @@ class CoreEdgeReactionModel:
                 else:
                     if areIdenticalSpeciesReferences(rxn, rxn0):
                         return True, rxn0
-            
-            if isinstance(familyObj, KineticsFamily) and familyObj.ownReverse:
+            if isinstance(familyObj, KineticsFamily):
+                
                 if (rxn_id == rxn_id0[::-1]):
                     if areIdenticalSpeciesReferences(rxn, rxn0):
                         return True, rxn0
@@ -1035,13 +1035,13 @@ class CoreEdgeReactionModel:
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
                 logging.info('Pruning species {0:<56}'.format(spec))
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
-                self.removeSpeciesFromEdge(spec)
+                self.removeSpeciesFromEdge(reactionSystems, spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
             logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
                 logging.info('Pruning species {0:<56}'.format(spec))
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
-                self.removeSpeciesFromEdge(spec)
+                self.removeSpeciesFromEdge(reactionSystems, spec)
 
         # Delete any networks that became empty as a result of pruning
         if self.pressureDependence:
@@ -1063,13 +1063,29 @@ class CoreEdgeReactionModel:
 
         logging.info('')
 
-    def removeSpeciesFromEdge(self, spec):
+
+    def removeSpeciesFromEdge(self, reactionSystems, spec):
         """
         Remove species `spec` from the reaction model edge.
         """
 
         # remove the species
         self.edge.species.remove(spec)
+        self.indexSpeciesDict.pop(spec.index)
+
+        # clean up species references in reactionSystems
+        for reactionSystem in reactionSystems:
+            reactionSystem.speciesIndex.pop(spec)
+
+            # identify any reactions it's involved in
+            rxnList = []
+            for rxn in reactionSystem.reactionIndex:
+                if spec in rxn.reactants or spec in rxn.products:
+                    rxnList.append(rxn)
+
+            for rxn in rxnList:
+                reactionSystem.reactionIndex.pop(rxn)
+
         # identify any reactions it's involved in
         rxnList = []
         for rxn in self.edge.reactions:
@@ -1282,14 +1298,15 @@ class CoreEdgeReactionModel:
         logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
+        # Load library reactions, keep reversibility as is
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
             library=reactionLibrary.label, kinetics=entry.data,\
-            duplicate=entry.item.duplicate, reversible=entry.item.reversible
+            duplicate=entry.item.duplicate, reversible=entry.item.reversible if rmg.keepIrreversible else True
             )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
-            
+
         # Perform species constraints and forbidden species checks
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
@@ -1444,7 +1461,7 @@ class CoreEdgeReactionModel:
                         index += 1
 
         count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
-        logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
+        logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(self.networkList)))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
@@ -1460,13 +1477,12 @@ class CoreEdgeReactionModel:
         # direction from the list of core reactions
         # Note that well-skipping reactions may not have a reverse if the well
         # that they skip over is not itself in the core
-        for network in updatedNetworks:
-            for reaction in network.netReactions:
-                try:
-                    index = self.core.reactions.index(reaction)
-                except ValueError:
-                    continue
-                for index2, reaction2 in enumerate(self.core.reactions):
+        index = 0
+        coreReactionCount = len(self.core.reactions)
+        while index < coreReactionCount:
+            reaction = self.core.reactions[index]
+            if isinstance(reaction, PDepReaction):
+                for reaction2 in self.core.reactions[index+1:]:
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
                         dGrxn = reaction.getFreeEnergyOfReaction(300.)
@@ -1493,10 +1509,13 @@ class CoreEdgeReactionModel:
                             self.core.reactions.remove(reaction2)
                             self.core.reactions.insert(index, reaction2)
                             reaction2.reversible = True
+                        coreReactionCount -= 1
                         # There should be only one reverse, so we can stop searching once we've found it
                         break
                 else:
                     reaction.reversible = True
+            # Move to the next core reaction
+            index += 1
 
 
     def markChemkinDuplicates(self):
@@ -1573,7 +1592,7 @@ class CoreEdgeReactionModel:
             
         family = getFamilyLibraryObject(family_label)       
         # if the family is its own reverse (H-Abstraction) then check the other direction
-        if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
+        if isinstance(family,KineticsFamily): 
 
             # Get the short-list of reactions with the same family, product1 and product2
             family_label, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)

@@ -26,12 +26,13 @@
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
-from .group cimport GroupAtom, GroupBond, Group
+cimport rmgpy.molecule.group as gr
 from .element cimport Element
 cimport rmgpy.constants as constants
 cimport numpy
 
 ################################################################################
+cdef dict bond_orders 
 
 cdef class Atom(Vertex):
 
@@ -73,6 +74,8 @@ cdef class Atom(Vertex):
     cpdef updateCharge(self)
     
     cpdef setSpinMultiplicity(self, int spinMultiplicity)
+
+    cpdef getBondOrdersForAtom(self)
     
 ################################################################################
     
@@ -195,7 +198,7 @@ cdef class Molecule(Graph):
 
     cpdef double calculateCpInf(self) except -1
     
-    cpdef updateAtomTypes(self)
+    cpdef updateAtomTypes(self, logSpecies=?)
     
     cpdef bint isRadical(self) except -2
 

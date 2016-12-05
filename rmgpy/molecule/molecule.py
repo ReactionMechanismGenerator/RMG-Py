@@ -50,15 +50,20 @@ except:
     pass
 from rdkit import Chem
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-from .group import GroupAtom, GroupBond, Group, ActionError
-from .atomtype import AtomType, atomTypes, getAtomType
+import rmgpy.molecule.group as gr
+from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
 import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
-from rmgpy.molecule.group import GroupAtom, GroupBond, Group
 
 ################################################################################
+
+bond_orders = {'S': 1, 'D': 2, 'T': 3}
+
+globals().update({
+    'bond_orders': bond_orders,
+})
 
 class Atom(Vertex):
     """
@@ -157,7 +162,7 @@ class Atom(Vertex):
         :class:`GroupAtom` object, then the atom must match any of the
         combinations in the atom pattern.
         """
-        cython.declare(atom=Atom, ap=GroupAtom)
+        cython.declare(atom=Atom, ap=gr.GroupAtom)
         if isinstance(other, Atom):
             atom = other
             return (
@@ -166,7 +171,7 @@ class Atom(Vertex):
                 self.lonePairs              == atom.lonePairs           and
                 self.charge                 == atom.charge
                 )
-        elif isinstance(other, GroupAtom):
+        elif isinstance(other, gr.GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             ap = other
             for a in ap.atomType:
@@ -206,8 +211,8 @@ class Atom(Vertex):
         """
         if isinstance(other, Atom):
             return self.equivalent(other)
-        elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, lp = cython.short, charge=cython.short)
+        elif isinstance(other, gr.GroupAtom):
+            cython.declare(atom=gr.GroupAtom, a=AtomType, radical=cython.short, lp = cython.short, charge=cython.short)
             atom = other
             if self.atomType is None:
                 return False
@@ -308,7 +313,7 @@ class Atom(Vertex):
         # Set the new radical electron count
         self.radicalElectrons += 1
         if self.radicalElectrons <= 0:
-            raise ActionError('Unable to update Atom due to GAIN_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+            raise gr.ActionError('Unable to update Atom due to GAIN_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
 
     def decrementRadical(self):
         """
@@ -319,7 +324,7 @@ class Atom(Vertex):
         # Set the new radical electron count
         radicalElectrons = self.radicalElectrons = self.radicalElectrons - 1
         if radicalElectrons  < 0:
-            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+            raise gr.ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
 
     def setLonePairs(self,lonePairs):
         """
@@ -328,7 +333,7 @@ class Atom(Vertex):
         # Set the number of electron pairs
         self.lonePairs = lonePairs
         if self.lonePairs < 0:
-            raise ActionError('Unable to update Atom due to setLonePairs : Invalid lone electron pairs set "{0}".'.format(self.setLonePairs))
+            raise gr.ActionError('Unable to update Atom due to setLonePairs : Invalid lone electron pairs set "{0}".'.format(self.setLonePairs))
         self.updateCharge()
 
     def incrementLonePairs(self):
@@ -338,7 +343,7 @@ class Atom(Vertex):
         # Set the new lone electron pairs count
         self.lonePairs += 1
         if self.lonePairs <= 0:
-            raise ActionError('Unable to update Atom due to GAIN_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+            raise gr.ActionError('Unable to update Atom due to GAIN_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
         self.updateCharge()
 
     def decrementLonePairs(self):
@@ -348,25 +353,18 @@ class Atom(Vertex):
         # Set the new lone electron pairs count
         self.lonePairs -= 1
         if self.lonePairs  < 0:
-            raise ActionError('Unable to update Atom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+            raise gr.ActionError('Unable to update Atom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
         self.updateCharge()
-        
+
     def updateCharge(self):
         """
-        Update self.charge, according to the valence, and the 
+        Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
-        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-        valence = valences[self.symbol]
-        order = 0
-        for atom2, bond in self.bonds.items():
-            order += orders[bond.order]
-        if self.symbol == 'H' or self.symbol == 'He':
-            self.charge = 2 - valence - order - self.radicalElectrons - 2*self.lonePairs
-        else:
-            self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
-        
+        valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
+        order = self.getBondOrdersForAtom()
+        self.charge = valence_electron - order - self.radicalElectrons - 2*self.lonePairs
+
     def applyAction(self, action):
         """
         Update the atom pattern as a result of applying `action`, a tuple
@@ -390,8 +388,8 @@ class Atom(Vertex):
         elif action[0].upper() == 'LOSE_PAIR':
             for i in range(abs(action[2])): self.decrementLonePairs()
         else:
-            raise ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
-        
+            raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
+
     def setSpinMultiplicity(self,spinMultiplicity):
         """
         Set the spin multiplicity.
@@ -400,9 +398,32 @@ class Atom(Vertex):
         # Set the spin multiplicity
         self.spinMultiplicity = spinMultiplicity
         if self.spinMultiplicity < 0:
-            raise ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
+            raise gr.ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
         self.updateCharge()
-        
+
+    def getBondOrdersForAtom(self):
+        """
+        This helper function is to help calculate total bond orders for an
+        input atom.
+
+        Some special consideration for the order `B` bond. For atoms having 
+        three `B` bonds, the order for each is 4/3.0, while for atoms having other
+        than three `B` bonds, the order for  each is 3/2.0
+        """
+        num_B_bond = 0
+        order = 0
+        for _, bond in self.bonds.iteritems():
+            if bond.order == 'B':
+                num_B_bond += 1
+            else:
+                order += bond_orders[bond.order]
+
+        if num_B_bond == 3:
+            order += num_B_bond * 4/3.0
+        else:
+            order += num_B_bond * 3/2.0
+
+        return order
 
 ################################################################################
 
@@ -454,11 +475,11 @@ class Bond(Edge):
         ``False`` otherwise. `other` can be either a :class:`Bond` or a
         :class:`GroupBond` object.
         """
-        cython.declare(bond=Bond, bp=GroupBond)
+        cython.declare(bond=Bond, bp=gr.GroupBond)
         if isinstance(other, Bond):
             bond = other
             return (self.order == bond.order)
-        elif isinstance(other, GroupBond):
+        elif isinstance(other, gr.GroupBond):
             bp = other
             return (self.order in bp.order)
 
@@ -520,8 +541,8 @@ class Bond(Edge):
         if self.order == 'S': self.order = 'D'
         elif self.order == 'D': self.order = 'T'
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
-        
+            raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
+
     def decrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
@@ -530,8 +551,8 @@ class Bond(Edge):
         if self.order == 'D': self.order = 'S'
         elif self.order == 'T': self.order = 'D'
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
-        
+            raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
+
     def __changeBond(self, order):
         """
         Update the bond as a result of applying a CHANGE_BOND action,
@@ -542,14 +563,14 @@ class Bond(Edge):
             if self.order == 'S': self.order = 'D'
             elif self.order == 'D': self.order = 'T'
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
+                raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         elif order == -1:
             if self.order == 'D': self.order = 'S'
             elif self.order == 'T': self.order = 'D'
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
+                raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
+            raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
 
     def applyAction(self, action):
         """
@@ -566,9 +587,9 @@ class Bond(Edge):
             elif action[2] == 'B':
                 self.order = 'B'
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
+                raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
         else:
-            raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
+            raise gr.ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 #################################################################################
     
@@ -907,14 +928,19 @@ class Molecule(Graph):
                     self.addBond(bond)
         self.updateAtomTypes()
         
-    def updateAtomTypes(self):
+    def updateAtomTypes(self, logSpecies=True):
         """
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
         """
         for atom in self.vertices:
-            atom.atomType = getAtomType(atom, atom.edges)
+            try:
+                atom.atomType = getAtomType(atom, atom.edges)
+            except AtomTypeError:
+                if logSpecies:
+                    logging.error("Could not update atomtypes for {0}.\n{1}".format(self, self.toAdjacencyList()))
+                raise
             
     def updateMultiplicity(self):
         """
@@ -1040,12 +1066,12 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(group=Group, atom=Atom)
+        cython.declare(group=gr.Group, atom=Atom)
         cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
         
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Group):
+        if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         group = other
         
@@ -1090,12 +1116,12 @@ class Molecule(Graph):
         The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        cython.declare(group=Group, atom=Atom)
+        cython.declare(group=gr.Group, atom=Atom)
         cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
 
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Group):
+        if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
                 # Count the number of carbons, oxygens, and radicals in the molecule
@@ -1578,18 +1604,18 @@ class Molecule(Graph):
         # Create GroupAtom object for each atom in the molecule
         groupAtoms = OrderedDict()# preserver order of atoms in original container
         for atom in self.atoms:
-            groupAtoms[atom] = GroupAtom(atomType=[atom.atomType],
+            groupAtoms[atom] = gr.GroupAtom(atomType=[atom.atomType],
                                          radicalElectrons=[atom.radicalElectrons],
                                          charge=[atom.charge],
                                          lonePairs=[atom.lonePairs]
                                          )
                     
-        group = Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])            
+        group = gr.Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])
         
         # Create GroupBond for each bond between atoms in the molecule
         for atom in self.atoms:
             for bondedAtom, bond in atom.edges.iteritems():
-                group.addBond(GroupBond(groupAtoms[atom],groupAtoms[bondedAtom], order=[bond.order]))
+                group.addBond(gr.GroupBond(groupAtoms[atom],groupAtoms[bondedAtom], order=[bond.order]))
             
         group.update()
         

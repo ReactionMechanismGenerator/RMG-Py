@@ -9,11 +9,22 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import Species
-from rmgpy.data.thermo import ThermoDatabase
+from rmgpy.data.thermo import *
 from rmgpy.molecule.molecule import Molecule
 import rmgpy
 
 ################################################################################
+
+class TestThermoDatabaseLoading(unittest.TestCase):
+
+    def testFailingLoadsThermoLibraries(self):
+
+        database = ThermoDatabase()
+        libraries = ['primaryThermoLibrary', 'GRI-Mech3.0', 'I am a library not existing in official RMG']
+        path = os.path.join(settings['database.directory'], 'thermo')
+        
+        with self.assertRaises(Exception):
+            database.loadLibraries(os.path.join(path, 'libraries'), libraries)
 
 class TestThermoDatabase(unittest.TestCase):
     """
@@ -22,9 +33,7 @@ class TestThermoDatabase(unittest.TestCase):
     # Only load these once to save time
     database = ThermoDatabase()
     database.load(os.path.join(settings['database.directory'], 'thermo'))
-#    oldDatabase = ThermoDatabase()
-#    oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
-    
+
     
     def setUp(self):
         """
@@ -152,6 +161,82 @@ class TestThermoDatabase(unittest.TestCase):
 #                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
 
 
+
+    def testParseThermoComments(self):
+        """
+        Test that the ThermoDatabase.extractSourceFromComments function works properly
+        on various thermo comments.
+        """
+        from rmgpy.thermo import NASA, NASAPolynomial
+        # Pure group additivity thermo
+        propane = Species(index=3, label="Propane", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.05257,0.0125099,3.79386e-05,-5.12022e-08,1.87065e-11,-14454.2,10.0672], Tmin=(100,'K'), Tmax=(986.57,'K')),
+         NASAPolynomial(coeffs=[5.91316,0.0218763,-8.17661e-06,1.49855e-09,-1.05991e-13,-16038.9,-8.86555], Tmin=(986.57,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)"""), molecule=[Molecule(SMILES="CCC")])
+        
+        source = self.database.extractSourceFromComments(propane)
+        self.assertTrue('GAV' in source, 'Should have found that propane thermo source is GAV.')
+        self.assertEqual(len(source['GAV']['group']), 2)
+        self.assertEqual(len(source['GAV']['other']), 1)
+        self.assertEqual(len(source['GAV']['gauche']), 2)
+
+        # Pure library thermo
+        dipk = Species(index=1, label="DIPK", thermo=
+        NASA(polynomials=[NASAPolynomial(coeffs=[3.35002,0.017618,-2.46235e-05,1.7684e-08,-4.87962e-12,35555.7,5.75335], Tmin=(100,'K'), Tmax=(888.28,'K')), 
+        NASAPolynomial(coeffs=[6.36001,0.00406378,-1.73509e-06,5.05949e-10,-4.49975e-14,35021,-8.41155], Tmin=(888.28,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo library: DIPK"""), molecule=[Molecule(SMILES="CC(C)C(=O)C(C)C")])
+        
+        source = self.database.extractSourceFromComments(dipk)
+        self.assertTrue('Library' in source)
+        
+        # Mixed library and HBI thermo
+        dipk_rad = Species(index=4, label="R_tert", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[2.90061,0.0298018,-7.06268e-05,6.9636e-08,-2.42414e-11,54431,5.44492], Tmin=(100,'K'), Tmax=(882.19,'K')), 
+        NASAPolynomial(coeffs=[6.70999,0.000201027,6.65617e-07,-7.99543e-11,4.08721e-15,54238.6,-9.73662], Tmin=(882.19,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo library: DIPK + radical(C2CJCHO)"""), molecule=[Molecule(SMILES="C[C](C)C(=O)C(C)C"), Molecule(SMILES="CC(C)=C([O])C(C)C")])
+        
+        source = self.database.extractSourceFromComments(dipk_rad)
+        self.assertTrue('Library' in source)
+        self.assertTrue('GAV' in source)
+        self.assertEqual(len(source['GAV']['radical']),1)
+
+        # Pure QM thermo
+        cineole = Species(index=6, label="Cineole", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.324129,0.0619667,9.71008e-05,-1.60598e-07,6.28285e-11,-38699.9,29.3686], Tmin=(100,'K'), Tmax=(985.52,'K')),
+         NASAPolynomial(coeffs=[20.6043,0.0586913,-2.22152e-05,4.19949e-09,-3.06046e-13,-46791,-91.4152], Tmin=(985.52,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""QM MopacMolPM3 calculation attempt 1"""), molecule=[Molecule(SMILES="CC12CCC(CC1)C(C)(C)O2")])
+        
+        source = self.database.extractSourceFromComments(cineole)
+        self.assertTrue('QM' in source)
+        
+        # Mixed QM and HBI thermo
+        cineole_rad = Species(index=7, label="CineoleRad", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.2897,0.0627717,8.63299e-05,-1.47868e-07,5.81665e-11,-14017.6,31.0266], Tmin=(100,'K'), Tmax=(988.76,'K')),
+         NASAPolynomial(coeffs=[20.4836,0.0562555,-2.13903e-05,4.05725e-09,-2.96023e-13,-21915,-88.1205], Tmin=(988.76,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), comment="""QM MopacMolPM3 calculation attempt 1 + radical(Cs_P)"""), molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")])
+        
+        
+        source = self.database.extractSourceFromComments(cineole_rad)
+        self.assertTrue('QM' in source)
+        self.assertTrue('GAV' in source)
+        self.assertEqual(len(source['GAV']['radical']),1)
+        
+        
+        # No thermo comments
+        other = Species(index=7, label="CineoleRad", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.2897,0.0627717,8.63299e-05,-1.47868e-07,5.81665e-11,-14017.6,31.0266], Tmin=(100,'K'), Tmax=(988.76,'K')),
+         NASAPolynomial(coeffs=[20.4836,0.0562555,-2.13903e-05,4.05725e-09,-2.96023e-13,-21915,-88.1205], Tmin=(988.76,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'), ), molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")])
+        
+        # Function should complain if there's no thermo comments
+        self.assertRaises(self.database.extractSourceFromComments(cineole_rad)) 
+        
+        
+        # Check a dummy species that has plus and minus thermo group contributions
+        polycyclic = Species(index=7, label="dummy", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.2897,0.0627717,8.63299e-05,-1.47868e-07,5.81665e-11,-14017.6,31.0266], Tmin=(100,'K'), Tmax=(988.76,'K')),
+         NASAPolynomial(coeffs=[20.4836,0.0562555,-2.13903e-05,4.05725e-09,-2.96023e-13,-21915,-88.1205], Tmin=(988.76,'K'), Tmax=(5000,'K'))],
+         Tmin=(100,'K'), Tmax=(5000,'K'),  comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + group(Cs-CsCsHH) - ring(Benzene)"""), molecule=[Molecule(SMILES="[CH2]C12CCC(CC1)C(C)(C)O2")])
+   
+        source = self.database.extractSourceFromComments(polycyclic)
+        self.assertTrue('GAV' in source)
+        self.assertEqual(source['GAV']['ring'][0][1],-1)  # the weight of benzene contribution should be -1
+        self.assertEqual(source['GAV']['group'][0][1],2)  # weight of the group(Cs-CsCsHH) conbtribution should be 2
+        
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
     Test only Aromatic species.
@@ -218,47 +303,10 @@ class TestCyclicThermo(unittest.TestCase):
         expected_matchedRings = [self.database.groups['ring'].entries[label] for label in expected_matchedRingsLabels]
         self.assertEqual(set(ringGroups), set(expected_matchedRings))
         
-        expected_matchedPolyringsLabels = ['norbornane']
+        expected_matchedPolyringsLabels = ['s3_5_5_ane']
         expected_matchedPolyrings = [self.database.groups['polycyclic'].entries[label] for label in expected_matchedPolyringsLabels]
 
         self.assertEqual(set(polycyclicGroups), set(expected_matchedPolyrings))
-    
-    def testPolycyclicPicksBestThermo(self):
-        """
-        Test that RMG prioritizes thermo correctly and chooses the thermo from the isomer which
-        has a non generic polycyclic ring correction
-        """
-        
-        spec = Species().fromSMILES('C1=C[C]2CCC=C2C1')
-        spec.generateResonanceIsomers()
-        
-        thermoDataList = []
-        for molecule in spec.molecule:
-            thermo = self.database.estimateRadicalThermoViaHBI(molecule, self.database.computeGroupAdditivityThermo)
-            thermoDataList.append(thermo)
-            
-        thermoDataList.sort(key=lambda x: x.getEnthalpy(298))
-        most_stable_thermo = thermoDataList[0]
-        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(most_stable_thermo)
-        
-        selected_thermo = self.database.getThermoDataFromGroups(spec)
-        
-        self.assertNotEqual(selected_thermo, thermoDataList)
-        
-        selected_ringGroups, selected_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo)
-        
-        # The group used to estimate the most stable thermo is the generic polycyclic group and
-        # therefore is not selected.  Note that this unit test will have to change if the correction is fixed later.
-        self.assertEqual(polycyclicGroups[0].label, 'PolycyclicRing')
-        self.assertEqual(selected_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
-        
-        
-        # Check that the same result occurs when we retrieve thermo from getThermoData
-        selected_thermo2 = self.database.getThermoData(spec)
-        
-        selected2_ringGroups, selected2_polycyclicGroups = self.database.getRingGroupsFromComments(selected_thermo2)
-        self.assertEqual(selected2_polycyclicGroups[0].label, 'C12CCC=C1CC=C2')
-    
 
     def testGetRingGroupsFromComments(self):
         """
@@ -337,6 +385,418 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertTrue(groupToRemove2.parent.data.getEnthalpy(298) == groupToRemove2.data.getEnthalpy(298))
         self.assertTrue(groupToRemove2.parent.data.getEntropy(298) == groupToRemove2.data.getEntropy(298))
         self.assertFalse(False in [groupToRemove2.parent.data.getHeatCapacity(x) == groupToRemove2.data.getHeatCapacity(x) for x in Tlist])
+
+    def testIsPolyringPartialMatched(self):
+        
+        # create testing molecule
+        smiles = 'C1CC2CCCC3CCCC(C1)C23'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = [atom for atom in mol.atoms if atom.isNonHydrogen()]
+
+        # create matched group
+        matched_group = self.database.groups['polycyclic'].entries['PolycyclicRing'].item
+        
+        # test
+        self.assertTrue(isPolyringPartialMatched(polyring, matched_group))
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingPyrene(self):
+
+        # create testing molecule: Pyrene with two ring of aromatic version
+        # the other two ring of kekulized version
+        #
+        # creating it seems not natural in RMG, that's because
+        # RMG cannot parse the adjacencyList of that isomer correctly
+        # so here we start with pyrene radical and get the two aromatic ring isomer
+        # then saturate it.
+        smiles = '[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        mols = []
+        for mol in spe.molecule:
+            sssr0 = mol.getSmallestSetOfSmallestRings()
+            aromaticRingNum = 0
+            for sr0 in sssr0:
+                sr0mol = Molecule(atoms=sr0)
+                if isAromaticRing(sr0mol):
+                    aromaticRingNum += 1
+            if aromaticRingNum == 2:
+                mol.saturate()
+                mols.append(mol)
+        
+        ringGroupLabels = []
+        polycyclicGroupLabels = []
+        for mol in mols:
+            polyring = mol.getDisparateRings()[1][0]
+
+            thermoData = ThermoData(
+                Tdata = ([300,400,500,600,800,1000,1500],"K"),
+                Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+                H298 = (0.0,"kJ/mol"),
+                S298 = (0.0,"J/(mol*K)"),
+            )
+
+            self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+                thermoData, polyring)
+
+            ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+            ringGroupLabels += [ringGroup.label for ringGroup in ringGroups]
+            polycyclicGroupLabels += [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Benzene', ringGroupLabels)
+        self.assertIn('six-inringtwodouble-12', ringGroupLabels)
+        self.assertIn('Cyclohexene', ringGroupLabels)
+        self.assertIn('1,3-Cyclohexadiene', ringGroupLabels)
+        self.assertIn('s2_6_6_ben_ene_1', polycyclicGroupLabels)
+        self.assertIn('s2_6_6_ben_ene_2', polycyclicGroupLabels)
+        self.assertIn('s2_6_6_naphthalene', polycyclicGroupLabels)
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAromaticTricyclic(self):
+
+        # create testing molecule
+        #
+        # creating it seems not natural in RMG, that's because
+        # RMG cannot parse the adjacencyList of that isomer correctly
+        # so here we start with kekulized version and generateResonanceIsomers
+        # and pick the one with two aromatic rings
+        smiles = 'C1=CC2C=CC=C3C=CC(=C1)C=23'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        for mol in spe.molecule:
+            sssr0 = mol.getSmallestSetOfSmallestRings()
+            aromaticRingNum = 0
+            for sr0 in sssr0:
+                sr0mol = Molecule(atoms=sr0)
+                if isAromaticRing(sr0mol):
+                    aromaticRingNum += 1
+            if aromaticRingNum == 2:
+                break
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Benzene', ringGroupLabels)
+        self.assertIn('Cyclopentene', ringGroupLabels)
+        self.assertIn('s2_5_6_indene', polycyclicGroupLabels)
+        self.assertIn('s2_6_6_naphthalene', polycyclicGroupLabels)
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAlkaneTricyclic(self):
+
+        # create testing molecule
+        smiles = 'C1CC2CCCC3C(C1)C23'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Cyclohexane', ringGroupLabels)
+        self.assertIn('Cyclopropane', ringGroupLabels)
+        self.assertIn('s2_6_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_3_6_ane', polycyclicGroupLabels)
+
+class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
+    """
+    Contains unit tests for methods of molecular manipulations for thermo estimation
+    """
+
+    def testConvertRingToSubMolecule(self):
+
+        # list out testing moleculess
+        smiles1 = 'C1CCCCC1'
+        smiles2 = 'C1CCC2CCCCC2C1'
+        smiles3 = 'C1CC2CCCC3CCCC(C1)C23'
+        mol1 = Molecule().fromSMILES(smiles1)
+        mol2 = Molecule().fromSMILES(smiles2)
+        mol3 = Molecule().fromSMILES(smiles3)
+
+        # get ring structure by only extracting non-hydrogens
+        ring1 = [atom for atom in mol1.atoms if atom.isNonHydrogen()]
+        ring2 = [atom for atom in mol2.atoms if atom.isNonHydrogen()]
+        ring3 = [atom for atom in mol3.atoms if atom.isNonHydrogen()]
+
+        # convert to submolecules
+        submol1, _ = convertRingToSubMolecule(ring1)
+        submol2, _ = convertRingToSubMolecule(ring2)
+        submol3, _ = convertRingToSubMolecule(ring3)
+
+        # test against expected submolecules
+        self.assertEqual(len(submol1.atoms), 6)
+        self.assertEqual(len(submol2.atoms), 10)
+        self.assertEqual(len(submol3.atoms), 13)
+
+        bonds1 = []
+        for atom in submol1.atoms:
+            for bondAtom, bond in atom.edges.iteritems():
+                if bond not in bonds1:
+                    bonds1.append(bond)
+
+        bonds2 = []
+        for atom in submol2.atoms:
+            for bondAtom, bond in atom.edges.iteritems():
+                if bond not in bonds2:
+                    bonds2.append(bond)
+
+        bonds3 = []
+        for atom in submol3.atoms:
+            for bondAtom, bond in atom.edges.iteritems():
+                if bond not in bonds3:
+                    bonds3.append(bond)
+
+        self.assertEqual(len(bonds1), 6)
+        self.assertEqual(len(bonds2), 11)
+        self.assertEqual(len(bonds3), 15)
+
+    def testToFailCombineTwoRingsIntoSubMolecule(self):
+        """
+        Test that if two non-overlapped rings lead to AssertionError
+        """
+
+        smiles1 = 'C1CCCCC1'
+        smiles2 = 'C1CCCCC1'
+        mol1 = Molecule().fromSMILES(smiles1)
+        mol2 = Molecule().fromSMILES(smiles2)
+
+        ring1 = [atom for atom in mol1.atoms if atom.isNonHydrogen()]
+        ring2 = [atom for atom in mol2.atoms if atom.isNonHydrogen()]
+        with self.assertRaises(AssertionError):
+            combined = combineTwoRingsIntoSubMolecule(ring1, ring2)
+
+    def testCombineTwoRingsIntoSubMolecule(self):
+
+        # create testing molecule
+        smiles1 = 'C1CCC2CCCCC2C1'
+        mol1 = Molecule().fromSMILES(smiles1)
+
+        # get two SSSRs
+        SSSR = mol1.getSmallestSetOfSmallestRings()
+        ring1 = SSSR[0]
+        ring2 = SSSR[1]
+
+        # combine two rings into submolecule
+        submol, _ = combineTwoRingsIntoSubMolecule(ring1, ring2)
+
+        self.assertEqual(len(submol.atoms), 10)
+
+        bonds = []
+        for atom in submol.atoms:
+            for bondAtom, bond in atom.edges.iteritems():
+                if bond not in bonds:
+                    bonds.append(bond)
+
+        self.assertEqual(len(bonds), 11)
+
+    def testIsAromaticRing(self):
+
+        # create testing rings
+        smiles1 = 'C1CCC1'
+        smiles2 = 'C1CCCCC1'
+        adj3 = """1  C u0 p0 c0 {2,B} {6,B} {7,S}
+2  C u0 p0 c0 {1,B} {3,B} {8,S}
+3  C u0 p0 c0 {2,B} {4,B} {9,S}
+4  C u0 p0 c0 {3,B} {5,B} {10,S}
+5  C u0 p0 c0 {4,B} {6,B} {11,S}
+6  C u0 p0 c0 {1,B} {5,B} {12,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {6,S}
+        """
+        mol1 = Molecule().fromSMILES(smiles1)
+        mol2 = Molecule().fromSMILES(smiles2)
+        mol3 = Molecule().fromAdjacencyList(adj3)
+        ring1mol = Molecule(atoms=[atom for atom in mol1.atoms if atom.isNonHydrogen()])
+        ring2mol = Molecule(atoms=[atom for atom in mol2.atoms if atom.isNonHydrogen()])
+        ring3mol = Molecule(atoms=[atom for atom in mol3.atoms if atom.isNonHydrogen()])
+
+        # check with expected results
+        self.assertEqual(isAromaticRing(ring1mol), False)
+        self.assertEqual(isAromaticRing(ring2mol), False)
+        self.assertEqual(isAromaticRing(ring3mol), True)
+
+    def testFindAromaticBondsFromSubMolecule(self):
+
+        smiles = "C1=CC=C2C=CC=CC2=C1"
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        mol = spe.molecule[1]
+
+        # get two SSSRs
+        SSSR = mol.getSmallestSetOfSmallestRings()
+        ring1 = SSSR[0]
+        ring2 = SSSR[1]
+
+        # create two testing submols
+        submol1 = Molecule(atoms=ring1)
+        submol2 = Molecule(atoms=ring2)
+
+        # check with expected results
+        self.assertEqual(len(findAromaticBondsFromSubMolecule(submol1)), 6)
+        self.assertEqual(len(findAromaticBondsFromSubMolecule(submol2)), 6)
+
+    def testBicyclicDecompositionForPolyringUsingPyrene(self):
+
+        # create testing molecule: Pyrene with two ring of aromatic version
+        # the other two ring of kekulized version
+        #
+        # creating it seems not natural in RMG, that's because
+        # RMG cannot parse the adjacencyList of that isomer correctly
+        # so here we start with pyrene radical and get the two aromatic ring isomer
+        # then saturate it.
+        smiles = '[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        for mol in spe.molecule:
+            sssr0 = mol.getSmallestSetOfSmallestRings()
+            aromaticRingNum = 0
+            for sr0 in sssr0:
+                sr0mol = Molecule(atoms=sr0)
+                if isAromaticRing(sr0mol):
+                    aromaticRingNum += 1
+            if aromaticRingNum == 2:
+                break
+        mol.saturate()
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+
+        # 1st test: number of cores
+        self.assertEqual(len(bicyclicList), 5)
+
+        # 2nd test: ringOccurancesDict
+        ringInCoreOccurances = sorted(ringOccurancesDict.values())
+        expectedRingInCoreOccurances = [2, 2, 3, 3]
+        self.assertEqual(ringInCoreOccurances, expectedRingInCoreOccurances)
+
+        # 3rd test: size of each bicyclic core
+        bicyclicSizes = sorted([len(bicyclic.atoms) for bicyclic in bicyclicList])
+        expectedBicyclicSizes = [10, 10, 10, 10, 10]
+        self.assertEqual(bicyclicSizes, expectedBicyclicSizes)
+
+        # 4th test: bond info for members of each core
+        aromaticBondNumInBicyclics = []
+        for bicyclic in bicyclicList:
+            aromaticBondNum = len(findAromaticBondsFromSubMolecule(bicyclic))
+            aromaticBondNumInBicyclics.append(aromaticBondNum)
+        aromaticBondNumInBicyclics = sorted(aromaticBondNumInBicyclics)
+        expectedAromaticBondNumInBicyclics = [0, 6, 6, 6, 11]
+        self.assertEqual(aromaticBondNumInBicyclics, expectedAromaticBondNumInBicyclics)
+
+    def testBicyclicDecompositionForPolyringUsingAromaticTricyclic(self):
+
+        # create testing molecule
+        #
+        # creating it seems not natural in RMG, that's because
+        # RMG cannot parse the adjacencyList of that isomer correctly
+        # so here we start with kekulized version and generateResonanceIsomers
+        # and pick the one with two aromatic rings
+        smiles = 'C1=CC2C=CC=C3C=CC(=C1)C=23'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        for mol in spe.molecule:
+            sssr0 = mol.getSmallestSetOfSmallestRings()
+            aromaticRingNum = 0
+            for sr0 in sssr0:
+                sr0mol = Molecule(atoms=sr0)
+                if isAromaticRing(sr0mol):
+                    aromaticRingNum += 1
+            if aromaticRingNum == 2:
+                break
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+
+        # 1st test: number of cores
+        self.assertEqual(len(bicyclicList), 3)
+
+        # 2nd test: ringOccurancesDict
+        ringInCoreOccurances = sorted(ringOccurancesDict.values())
+        expectedRingInCoreOccurances = [2, 2, 2]
+        self.assertEqual(ringInCoreOccurances, expectedRingInCoreOccurances)
+
+        # 3rd test: size of each bicyclic core
+        bicyclicSizes = sorted([len(bicyclic.atoms) for bicyclic in bicyclicList])
+        expectedBicyclicSizes = [9, 9, 10]
+        self.assertEqual(bicyclicSizes, expectedBicyclicSizes)
+
+        # 4th test: bond info for members of each core
+        aromaticBondNumInBicyclics = []
+        for bicyclic in bicyclicList:
+            aromaticBondNum = len(findAromaticBondsFromSubMolecule(bicyclic))
+            aromaticBondNumInBicyclics.append(aromaticBondNum)
+        aromaticBondNumInBicyclics = sorted(aromaticBondNumInBicyclics)
+        expectedAromaticBondNumInBicyclics = [6, 6, 11]
+        self.assertEqual(aromaticBondNumInBicyclics, expectedAromaticBondNumInBicyclics)
+
+
+    def testBicyclicDecompositionForPolyringUsingAlkaneTricyclic(self):
+
+        # create testing molecule
+        smiles = 'C1CC2CCCC3C(C1)C23'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+
+        # 1st test: number of cores
+        self.assertEqual(len(bicyclicList), 3)
+
+        # 2nd test: ringOccurancesDict
+        ringInCoreOccurances = sorted(ringOccurancesDict.values())
+        expectedRingInCoreOccurances = [2, 2, 2]
+        self.assertEqual(ringInCoreOccurances, expectedRingInCoreOccurances)
+
+        # 3rd test: size of each bicyclic core
+        bicyclicSizes = sorted([len(bicyclic.atoms) for bicyclic in bicyclicList])
+        expectedBicyclicSizes = [7, 7, 10]
+        self.assertEqual(bicyclicSizes, expectedBicyclicSizes)
+
+        # 4th test: bond info for members of each core
+        aromaticBondNumInBicyclics = []
+        for bicyclic in bicyclicList:
+            aromaticBondNum = len(findAromaticBondsFromSubMolecule(bicyclic))
+            aromaticBondNumInBicyclics.append(aromaticBondNum)
+        aromaticBondNumInBicyclics = sorted(aromaticBondNumInBicyclics)
+        expectedAromaticBondNumInBicyclics = [0, 0, 0]
+        self.assertEqual(aromaticBondNumInBicyclics, expectedAromaticBondNumInBicyclics)
+
 
 ################################################################################
 

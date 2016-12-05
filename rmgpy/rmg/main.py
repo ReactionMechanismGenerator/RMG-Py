@@ -122,6 +122,7 @@ class RMG(util.Subject):
     `generatePlots`                     ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`                   ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `saveEdgeSpecies`                   ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `keepIrreversible`                  ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
@@ -169,8 +170,8 @@ class RMG(util.Subject):
         self.minCoreSizeForPrune = 50
         self.minSpeciesExistIterationsForPrune = 2
         self.filterReactions=False
-        self.unimoelcularReact = None
-        self.bimoleculaReact = None
+        self.unimolecularReact = None
+        self.bimolecularReact = None
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
         self.termination = []
@@ -185,6 +186,7 @@ class RMG(util.Subject):
         self.saveSimulationProfiles = None
         self.verboseComments = None
         self.saveEdgeSpecies = None
+        self.keepIrreversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
         self.speciesConstraints = {}
@@ -322,7 +324,7 @@ class RMG(util.Subject):
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
             logging.info('Filling in rate rules in kinetics families by averaging...')
             for family in self.database.kinetics.families.values():
-                family.fillKineticsRulesByAveragingUp()
+                family.fillKineticsRulesByAveragingUp(verbose=self.verboseComments)
     
     def initialize(self, **kwargs):
         """

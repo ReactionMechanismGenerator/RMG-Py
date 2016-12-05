@@ -65,8 +65,8 @@ cdef class NASA(HeatCapacityModel):
 
     cpdef double getFreeEnergy(self, double T) except 1000000000
 
-    cpdef ThermoData toThermoData(self, double Cp0=?, double CpInf=?)
+    cpdef ThermoData toThermoData(self)
 
-    cpdef Wilhoit toWilhoit(self, double Cp0, double CpInf)
+    cpdef Wilhoit toWilhoit(self)
     
     cpdef NASA changeBaseEnthalpy(self, double deltaH)

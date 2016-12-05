@@ -1,7 +1,7 @@
 name: rmg_env
 channels:
-  - defaults
   - rmg
+  - defaults
 dependencies:
   - mingwpy
   - python
@@ -22,7 +22,6 @@ dependencies:
   - pydqed
   - nose
   - coverage
-  - guppy
   - gprof2dot
   #- cairo
   #- cairocffi

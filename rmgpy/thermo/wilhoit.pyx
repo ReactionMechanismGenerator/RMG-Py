@@ -44,8 +44,6 @@ cdef class Wilhoit(HeatCapacityModel):
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
-    `Cp0`           The heat capacity at zero temperature
-    `CpInf`         The heat capacity at infinite temperature
     `a0`            The zeroth-order Wilhoit polynomial coefficient
     `a1`            The first-order Wilhoit polynomial coefficient
     `a2`            The second-order Wilhoit polynomial coefficient
@@ -62,9 +60,7 @@ cdef class Wilhoit(HeatCapacityModel):
     """
 
     def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.Cp0 = Cp0
-        self.CpInf = CpInf
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Cp0=Cp0, CpInf=CpInf, comment=comment)
         self.B = B
         self.a0 = a0
         self.a1 = a1
@@ -91,20 +87,6 @@ cdef class Wilhoit(HeatCapacityModel):
         A helper function used when pickling a Wilhoit object.
         """
         return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.comment))
-
-    property Cp0:
-        """The heat capacity at zero temperature."""
-        def __get__(self):
-            return self._Cp0
-        def __set__(self, value):
-            self._Cp0 = quantity.HeatCapacity(value)
-
-    property CpInf:
-        """The heat capacity at infinite temperature."""
-        def __get__(self):
-            return self._CpInf
-        def __set__(self, value):
-            self._CpInf = quantity.HeatCapacity(value)
 
     property B:
         """The Wilhoit scaled temperature coefficient."""
@@ -481,6 +463,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
+            comment = self.comment
         )
     
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
@@ -581,6 +564,8 @@ cdef class Wilhoit(HeatCapacityModel):
             Tmin = nasa_low.Tmin,
             Tmax = nasa_high.Tmax,
             E0 = self.E0,
+            Cp0 = self.Cp0,
+            CpInf = self.CpInf,
             comment = self.comment,
         )
     

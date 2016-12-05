@@ -39,6 +39,7 @@ import os.path
 import numpy
 
 import rmgpy.kinetics as _kinetics
+from rmgpy.molecule.element import getElement
 from rmgpy.reaction import Reaction
 #from species import Species
 from rmgpy.rmg.model import Species
@@ -51,6 +52,7 @@ from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.util import retrieveElementCount
 from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
@@ -349,8 +351,11 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
         else:
+            reactantSpecies = speciesDict[reactant]
+            if not reactantSpecies.reactive:
+                reactantSpecies.reactive = True
             for i in range(stoichiometry):
-                reaction.reactants.append(speciesDict[reactant])
+                reaction.reactants.append(reactantSpecies)
     for product in products.split('+'):
         product = product.strip()
         stoichiometry = 1
@@ -367,8 +372,11 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
                 raise ChemkinError('Skip reaction!')
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
+            productSpecies = speciesDict[product]
+            if not productSpecies.reactive:
+                productSpecies.reactive = True
             for i in range(stoichiometry):
-                reaction.products.append(speciesDict[product])
+                reaction.products.append(productSpecies)
     
     # Determine the appropriate units for k(T) and k(T,P) based on the number of reactants
     # This assumes elementary kinetics for all reactions
@@ -560,7 +568,6 @@ def readReactionComments(reaction, comments, read = True):
         
         elif 'Template reaction:' in line:
             label = str(tokens[-1])
-            template = tokens[-1][1:-1].split(',')
             reaction = TemplateReaction(
                 index = reaction.index,
                 reactants = reaction.reactants, 
@@ -569,7 +576,6 @@ def readReactionComments(reaction, comments, read = True):
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 family = label,
-                template = [Entry(label=g) for g in template],
             )
             
         elif 'Library reaction:' in line or 'Seed mechanism:' in line:
@@ -1250,12 +1256,12 @@ def saveHTMLFile(path, readComments = True):
     """
     from rmgpy.rmg.model import CoreEdgeReactionModel
     from rmgpy.rmg.output import saveOutputHTML
-    chemkinPath= path + '/chemkin/chem.inp'
-    dictionaryPath = path + 'RMG_Dictionary.txt'
+    chemkinPath= os.path.join(path, 'chemkin', 'chem.inp')
+    dictionaryPath = os.path.join(path, 'RMG_Dictionary.txt')
     model = CoreEdgeReactionModel()
     model.core.species, model.core.reactions = loadChemkinFile(chemkinPath,dictionaryPath, readComments = readComments)
-    outputPath = path + 'output.html'
-    speciesPath = path + '/species/'
+    outputPath = os.path.join(path, 'output.html')
+    speciesPath = os.path.join(path, 'species')
     if not os.path.isdir(speciesPath):
         os.makedirs(speciesPath)
     saveOutputHTML(outputPath, model)
@@ -1344,23 +1350,7 @@ def writeThermoEntry(species, verbose = True):
     assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
 
     # Determine the number of each type of element in the molecule
-    elements = ['C','H','N','O']; elementCounts = [0,0,0,0]
-    for atom in species.molecule[0].atoms:
-        # The atom itself
-        symbol = atom.element.symbol
-        if symbol not in elements:
-            elements.append(symbol)
-            elementCounts.append(1)
-        else:
-            elementCounts[elements.index(symbol)] += 1
-    # Remove elements with zero count
-    index = 0
-    while index < len(elementCounts):
-        if elementCounts[index] == 0:
-            del elements[index]
-            del elementCounts[index]
-        else:
-            index += 1
+    elementCounts = retrieveElementCount(species.molecule[0])
     
     string = ''
     # Write thermo comments
@@ -1376,20 +1366,30 @@ def writeThermoEntry(species, verbose = True):
 
     # Line 1
     string += '{0:<16}        '.format(getSpeciesIdentifier(species))
-    if len(elements) <= 4:
+    if len(elementCounts) <= 4:
         # Use the original Chemkin syntax for the element counts
-        for symbol, count in zip(elements, elementCounts):
-            string += '{0!s:<2}{1:<3d}'.format(symbol, count)
-        string += '     ' * (4 - len(elements))
+        for key, count in elementCounts.iteritems():
+            if isinstance(key, tuple):
+                symbol, isotope = key
+                chemkinName = getElement(symbol, isotope=isotope).chemkinName
+            else:
+                chemkinName = key
+            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
+        string += '     ' * (4 - len(elementCounts))
     else:
         string += '     ' * 4
     string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
-    if len(elements) > 4:
+    if len(elementCounts) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
         # This will only be recognized by Chemkin 4 or later
-        for symbol, count in zip(elements, elementCounts):
-            string += '{0!s:<2}{1:<3d}'.format(symbol, count)
+        for key, count in elementCounts.iteritems():
+            if isinstance(key, tuple):
+                symbol, isotope = key
+                chemkinName = getElement(symbol, isotope=isotope).chemkinName
+            else:
+                chemkinName = key
+            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
     string += '\n'
 
     # Line 2
@@ -1782,7 +1782,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    f.write('ELEMENTS H C O N Ne Ar He Si S Cl END\n\n')
+    writeElementsSection(f)
 
     # Species section
     f.write('SPECIES\n')
@@ -1831,8 +1831,8 @@ def saveJavaKineticsLibrary(path, species, reactions):
     # Check for duplicate
     markDuplicateReactions(reactions)
     
-    f = open(os.path.join(os.path.dirname(path), 'reactions.txt'), 'w')
-    f2 = open(os.path.join(os.path.dirname(path), 'pdepreactions.txt'), 'w')
+    f = open(os.path.join(path, 'reactions.txt'), 'w')
+    f2 = open(os.path.join(path, 'pdepreactions.txt'), 'w')
 
     # Headers
     f.write('Unit:\n')
@@ -1860,7 +1860,7 @@ def saveJavaKineticsLibrary(path, species, reactions):
     f.close()
     f2.close()
     
-    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species, oldStyle=True)
+    saveSpeciesDictionary(os.path.join(path, 'species.txt'), species, oldStyle=True)
 
 def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
     """
@@ -1918,6 +1918,31 @@ def saveChemkinFiles(rmg):
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+def writeElementsSection(f):
+    """
+    Write the ELEMENTS section of the chemkin file.  This file currently lists
+    all elements and isotopes available in RMG. It may become useful in the future
+    to only include elements/isotopes present in the current RMG run. 
+    """
+
+    s = 'ELEMENTS\n'
+
+    # map of isotope elements with chemkin-compatible element representation:
+
+    elements = ('H', ('H', 2), ('H',3), 'C', ('C', 13), 'O', ('O',18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'Cl')
+    for el in elements:
+        if isinstance(el, tuple):
+            symbol, isotope = el
+            chemkinName = getElement(symbol, isotope=isotope).chemkinName
+            mass = 1000 * getElement(symbol, isotope=isotope).mass
+            s += '\t' + chemkinName + ' /' +  '{0:.3f}'.format(mass) + '/' + '\n'
+        else:
+            s += '\t' + el + '\n'
+    s += 'END\n\n'
+
+    f.write(s)
+
 
 class ChemkinWriter(object):
     """

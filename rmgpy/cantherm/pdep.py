@@ -315,7 +315,7 @@ class PressureDependenceJob(object):
         Pcount = self.Pcount
         if self.Plist is not None:
             pass
-        if self.interpolationModel[0].lower() == 'chebyshev':
+        elif self.interpolationModel[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
             Plist = numpy.zeros(Pcount, numpy.float64)
             for i in range(Pcount):

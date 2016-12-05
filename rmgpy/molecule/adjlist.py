@@ -33,27 +33,11 @@ adjacency list format used by Reaction Mechanism Generator (RMG).
 """
 import logging
 import re
-from .molecule import Atom, Bond
+from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
-from .element import getElement
+from .element import getElement, PeriodicSystem
 #import chempy.molecule.atomtype as atomtypes
 
-bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-
-class PeriodicSystem(object):
-    valence_electrons_first_period_elements  = {'H':1, 'He':2}
-        
-    valence_electrons_second_period_elements = {'C':4, 'N':5, 'O':6, 'Ne':8}
-        
-    valence_electrons_third_period_elements  = {'Si':4, 'S':6, 'Cl':7, 'Ar':8}
-        
-    valence_electrons = {}
-    valence_electrons.update(valence_electrons_first_period_elements)
-    valence_electrons.update(valence_electrons_second_period_elements)
-    valence_electrons.update(valence_electrons_third_period_elements)
-    
-    lone_pairs         = {'H': 0, 'He':1, 'C': 0, 'N': 1, 'Ne': 4, 'O': 2, 'Si':0, 'S': 2, 'Cl':3, 'Ar':4 }
-    
 class Saturator(object):
     @staticmethod
     def saturate(atoms):
@@ -67,7 +51,6 @@ class Saturator(object):
                         - 2* atom.lonePairs - order - atom.charge
             
             '''
-            global bond_orders
             newAtoms = []
             for atom in atoms:
                 try:
@@ -75,9 +58,7 @@ class Saturator(object):
                 except KeyError:
                     raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
                 
-                order = 0
-                for _, bond in atom.bonds.items():
-                    order += bond_orders[bond.order]
+                order = atom.getBondOrdersForAtom()
                     
                 number_of_H_to_be_added = max_number_of_valence_electrons - atom.radicalElectrons - 2* atom.lonePairs - int(order) - atom.charge
                 
@@ -101,17 +82,22 @@ class ConsistencyChecker(object):
             the theoretical one:
             
             '''
-            global bond_orders
             valence = PeriodicSystem.valence_electrons[atom.symbol]
-            order = 0
-            for _, bond in atom.bonds.items():
-                order += bond_orders[bond.order]
+            order = atom.getBondOrdersForAtom()
                 
             theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
             if atom.charge != theoretical:
-                raise InvalidAdjacencyListError('Invalid valency for atom {symbol} with {radicals} unpaired electrons, {lonePairs} pairs of electrons, and {charge} charge.'
-                                                .format(symbol=atom.symbol, radicals=atom.radicalElectrons, lonePairs=atom.lonePairs, charge=atom.charge))
+                raise InvalidAdjacencyListError(
+                    ('Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
+                    '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'
+                    ).format(symbol=atom.symbol,
+                             type=getAtomType(atom, atom.edges).label,
+                             radicals=atom.radicalElectrons,
+                             lonePairs=atom.lonePairs,
+                             charge=atom.charge,
+                             bonds=','.join([bond.order for bond in atom.bonds.values()])
+                            ))
 
     @staticmethod
     def check_multiplicity(nRad, multiplicity):
@@ -310,13 +296,12 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                                  )
                 
             else:
-                standardLonePairs = {'H': 0, 'C': 0, 'O': 2, 'S': 2, 'Si': 0, 'Cl': 3, 'He': 1, 'Ne': 4, 'Ar': 4}
                 if lonePairsOfElectrons is not None:
                     # Intermediate adjlist representation
                     lonePairsOfElectrons = lonePairsOfElectrons + additionalLonePairs[0]
                 else:
                     # Add the standard number of lone pairs with the additional lone pairs
-                    lonePairsOfElectrons = standardLonePairs[atomType[0]] + additionalLonePairs[0]
+                    lonePairsOfElectrons = PeriodicSystem.lone_pairs[atomType[0]] + additionalLonePairs[0]
                     
                 atom = Atom(element=atomType[0],
                         radicalElectrons=radicalElectrons[0],
@@ -381,20 +366,15 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
         if not group:
             if saturateH:
                 # Add explicit hydrogen atoms to complete structure if desired
-                orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-                standardLonePairs = {'H': 0, 'C': 0, 'O': 2, 'S': 2, 'Si': 0, 'Cl': 3, 'He': 1, 'Ne': 4, 'Ar': 4}
-                valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'Cl': 1, 'He': 0, 'Ne': 0, 'Ar': 0}
                 newAtoms = []
                 for atom in atoms:
                     try:
-                        valence = valences[atom.symbol]
+                        valence = PeriodicSystem.valences[atom.symbol]
                     except KeyError:
                         raise InvalidAdjacencyListError('Error in adjacency list:\n{1}\nCannot add hydrogens: Unknown valence for atom "{0}".'.format(atom.symbol, adjlist))
                     radical = atom.radicalElectrons
-                    order = 0
-                    for atom2, bond in atom.bonds.items():
-                        order += orders[bond.order]
-                    count = valence - radical - int(order) - 2*(atom.lonePairs-standardLonePairs[atom.symbol])
+                    order = atom.getBondOrdersForAtom()
+                    count = valence - radical - int(order) - 2*(atom.lonePairs-PeriodicSystem.lone_pairs[atom.symbol])
                     for i in range(count):
                         a = Atom(element='H', radicalElectrons=0, charge=0, label='', lonePairs=0)
                         b = Bond(atom, a, 'S')
@@ -885,8 +865,7 @@ def getOldElectronState(atom):
     """
     Get the old adjacency list format electronic state
     """
-    standardLonePairs = {'H': 0, 'C': 0, 'O': 2, 'S': 2, 'Si': 0, 'Cl': 3, 'He': 1, 'Ne': 4, 'Ar': 4}
-    additionalLonePairs = atom.lonePairs - standardLonePairs[atom.element.symbol]
+    additionalLonePairs = atom.lonePairs - PeriodicSystem.lone_pairs[atom.element.symbol]
     electrons = atom.radicalElectrons + additionalLonePairs * 2
     if electrons == 0:
         electronState = '0'

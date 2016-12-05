@@ -16,7 +16,7 @@ from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
 from .util import partition, agglomerate, generate_combo
 
-import rmgpy.molecule.adjlist as adjlist
+import rmgpy.molecule.element as element
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.resonance as resonance
 # global variables:
@@ -539,11 +539,11 @@ def has_unexpected_lone_pairs(mol):
 
     for at in mol.atoms:
         try:
-            exp = adjlist.PeriodicSystem.lone_pairs[at.symbol]
+            exp = element.PeriodicSystem.lone_pairs[at.symbol]
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lonePairs != adjlist.PeriodicSystem.lone_pairs[at.symbol]: return True 
+            if at.lonePairs != element.PeriodicSystem.lone_pairs[at.symbol]: return True 
 
     return False
 
@@ -616,11 +616,11 @@ def create_P_layer(mol, auxinfo):
     p_layer = []
     for i, at in enumerate(mol.atoms):
         try:
-            exp = adjlist.PeriodicSystem.lone_pairs[at.symbol]
+            exp = element.PeriodicSystem.lone_pairs[at.symbol]
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lonePairs != adjlist.PeriodicSystem.lone_pairs[at.symbol]:
+            if at.lonePairs != element.PeriodicSystem.lone_pairs[at.symbol]:
                 if at.lonePairs == 0:
                     p_layer.append('{}{}'.format(i, '(0)'))
                 else:

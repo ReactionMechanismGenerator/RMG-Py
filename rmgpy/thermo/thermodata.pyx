@@ -48,8 +48,6 @@ cdef class ThermoData(HeatCapacityModel):
     `Cpdata`        An array of heat capacities at the given temperatures
     `H298`          The standard enthalpy of formation at 298 K
     `S298`          The standard entropy at 298 K
-    `Cp0`           The heat capacity at zero temperature
-    `CpInf`         The heat capacity at infinite temperature
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `E0`            The energy at zero Kelvin (including zero point energy)
@@ -59,13 +57,11 @@ cdef class ThermoData(HeatCapacityModel):
     """
 
     def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, comment=comment)
         self.H298 = H298
         self.S298 = S298
         self.Tdata = Tdata
         self.Cpdata = Cpdata
-        self.Cp0 = Cp0
-        self.CpInf = CpInf
     
     def __repr__(self):
         """
@@ -115,20 +111,6 @@ cdef class ThermoData(HeatCapacityModel):
             return self._S298
         def __set__(self, value):
             self._S298 = quantity.Entropy(value)
-
-    property Cp0:
-        """The heat capacity at zero temperature."""
-        def __get__(self):
-            return self._Cp0
-        def __set__(self, value):
-            self._Cp0 = quantity.HeatCapacity(value)
-
-    property CpInf:
-        """The heat capacity at infinite temperature."""
-        def __get__(self):
-            return self._CpInf
-        def __set__(self, value):
-            self._CpInf = quantity.HeatCapacity(value)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -353,13 +335,15 @@ cdef class ThermoData(HeatCapacityModel):
 
         return self.getEnthalpy(T) - T * self.getEntropy(T)
 
-    cpdef Wilhoit toWilhoit(self):
+    cpdef Wilhoit toWilhoit(self, B=None):
         """
         Convert the Benson model to a Wilhoit model. For the conversion to
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
         Benson model.
+
+        B: the characteristic temperature in Kelvin.
         """
-        if self.Cp0 == 0.0 or self.CpInf == 0.0:
+        if 0.0 in [self.Cp0.value_si, self.CpInf.value_si]:
             raise Exception('Cannot convert Benson model to Wilhoit model; first specify Cp0 and CpInf.')
         from rmgpy.thermo.wilhoit import Wilhoit
         
@@ -370,7 +354,10 @@ cdef class ThermoData(HeatCapacityModel):
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
         
-        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        if B:
+            return Wilhoit(comment=self.comment).fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
+        else:
+            return Wilhoit(comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """

@@ -13,7 +13,7 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
-from rmgpy.chemkin import writeThermoEntry
+from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
 from rmgpy.rmg.model import Species
 from rmgpy.thermo.thermoengine import submit
                      
@@ -52,15 +52,10 @@ def runThermoEstimator(inputFile):
     #     )
     # library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
     
-    # Generate the thermo for all the species and write them to chemkin format as well as
-    # ThermoLibrary format with values for H, S, and Cp's.
-    with open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb') as output:
-        for spc in rmg.initialSpecies:
-            output.write(writeThermoEntry(spc))
-            output.write('\n')
-        
-    
 
+    # Save the thermo data to chemkin format output files and dictionary, with no reactions    
+    saveChemkinFile(os.path.join(rmg.outputDirectory, 'chem_annotated.inp'), species=rmg.initialSpecies, reactions=[])
+    saveSpeciesDictionary(os.path.join(rmg.outputDirectory, 'species_dictionary.txt'), species=rmg.initialSpecies)
 
 ################################################################################
 
