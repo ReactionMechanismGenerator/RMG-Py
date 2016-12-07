@@ -1827,6 +1827,37 @@ multiplicity 2
         
         self.assertTrue(exp.isIsomorphic(calc))
 
+    def testAromaticityPerceptionBenzene(self):
+        """Test aromaticity perception via getAromaticSSSR for benzene."""
+        mol = Molecule(SMILES='c1ccccc1')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 1)
+
+    def testAromaticityPerceptionTetralin(self):
+        """Test aromaticity perception via getAromaticSSSR for tetralin."""
+        mol = Molecule(SMILES='c1ccc2c(c1)CCCC2')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 1)
+
+    def testAromaticityPerceptionBiphenyl(self):
+        """Test aromaticity perception via getAromaticSSSR for biphenyl."""
+        mol = Molecule(SMILES='c1ccc(cc1)c2ccccc2')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 2)
+
+    def testAromaticityPerceptionAzulene(self):
+        """Test aromaticity perception via getAromaticSSSR for azulene."""
+        mol = Molecule(SMILES='c1cccc2cccc2c1')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 0)
+
+    def testAromaticityPerceptionFuran(self):
+        """Test aromaticity perception via getAromaticSSSR for furan."""
+        mol = Molecule(SMILES='c1ccoc1')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 0)
+
+
 ################################################################################
 
 if __name__ == '__main__':
