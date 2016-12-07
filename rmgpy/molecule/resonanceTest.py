@@ -356,3 +356,157 @@ class ClarTest(unittest.TestCase):
 
             # Check that we only assign 1 aromatic sextet
             self.assertEqual(sum(y), 1)
+
+    def testPhenanthrene(self):
+        """
+        Test phenanthrene, which is a basic case that should work.
+        """
+        mol = Molecule().fromSMILES('C1=CC=C2C(C=CC3=CC=CC=C32)=C1')
+        newmol = generateClarStructures(mol)
+
+        struct = Molecule().fromAdjacencyList("""1  C u0 p0 c0 {2,S} {3,B} {5,B}
+2  C u0 p0 c0 {1,S} {4,B} {9,B}
+3  C u0 p0 c0 {1,B} {6,S} {10,B}
+4  C u0 p0 c0 {2,B} {7,S} {8,B}
+5  C u0 p0 c0 {1,B} {12,B} {17,S}
+6  C u0 p0 c0 {3,S} {7,D} {18,S}
+7  C u0 p0 c0 {4,S} {6,D} {19,S}
+8  C u0 p0 c0 {4,B} {13,B} {20,S}
+9  C u0 p0 c0 {2,B} {14,B} {23,S}
+10 C u0 p0 c0 {3,B} {11,B} {24,S}
+11 C u0 p0 c0 {10,B} {12,B} {15,S}
+12 C u0 p0 c0 {5,B} {11,B} {16,S}
+13 C u0 p0 c0 {8,B} {14,B} {21,S}
+14 C u0 p0 c0 {9,B} {13,B} {22,S}
+15 H u0 p0 c0 {11,S}
+16 H u0 p0 c0 {12,S}
+17 H u0 p0 c0 {5,S}
+18 H u0 p0 c0 {6,S}
+19 H u0 p0 c0 {7,S}
+20 H u0 p0 c0 {8,S}
+21 H u0 p0 c0 {13,S}
+22 H u0 p0 c0 {14,S}
+23 H u0 p0 c0 {9,S}
+24 H u0 p0 c0 {10,S}
+""")
+
+        self.assertEqual(len(newmol), 1)
+        self.assertTrue(newmol[0].isIsomorphic(struct))
+
+    def testPhenalene(self):
+        """
+        Test phenalene, which currently does not have feasible starting point.
+        """
+        mol = Molecule().fromSMILES('C1=CC2=CC=CC3CC=CC(=C1)C=32')
+        newmol = generateClarStructures(mol)
+
+        struct1 = Molecule().fromAdjacencyList("""1  C u0 p0 c0 {2,S} {6,S} {14,S} {15,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,D}
+3  C u0 p0 c0 {2,S} {4,B} {5,B}
+4  C u0 p0 c0 {3,B} {9,B} {10,S}
+5  C u0 p0 c0 {3,B} {8,S} {11,B}
+6  C u0 p0 c0 {1,S} {8,D} {16,S}
+7  C u0 p0 c0 {2,D} {13,S} {21,S}
+8  C u0 p0 c0 {5,S} {6,D} {22,S}
+9  C u0 p0 c0 {4,B} {12,B} {18,S}
+10 C u0 p0 c0 {4,S} {13,D} {19,S}
+11 C u0 p0 c0 {5,B} {12,B} {23,S}
+12 C u0 p0 c0 {9,B} {11,B} {17,S}
+13 C u0 p0 c0 {7,S} {10,D} {20,S}
+14 H u0 p0 c0 {1,S}
+15 H u0 p0 c0 {1,S}
+16 H u0 p0 c0 {6,S}
+17 H u0 p0 c0 {12,S}
+18 H u0 p0 c0 {9,S}
+19 H u0 p0 c0 {10,S}
+20 H u0 p0 c0 {13,S}
+21 H u0 p0 c0 {7,S}
+22 H u0 p0 c0 {8,S}
+23 H u0 p0 c0 {11,S}
+""")
+        struct2 = Molecule().fromAdjacencyList("""1  C u0 p0 c0 {2,S} {6,S} {14,S} {15,S}
+2  C u0 p0 c0 {1,S} {3,B} {7,B}
+3  C u0 p0 c0 {2,B} {4,B} {5,S}
+4  C u0 p0 c0 {3,B} {9,S} {10,B}
+5  C u0 p0 c0 {3,S} {8,S} {11,D}
+6  C u0 p0 c0 {1,S} {8,D} {16,S}
+7  C u0 p0 c0 {2,B} {13,B} {21,S}
+8  C u0 p0 c0 {5,S} {6,D} {22,S}
+9  C u0 p0 c0 {4,S} {12,D} {18,S}
+10 C u0 p0 c0 {4,B} {13,B} {19,S}
+11 C u0 p0 c0 {5,D} {12,S} {23,S}
+12 C u0 p0 c0 {9,D} {11,S} {17,S}
+13 C u0 p0 c0 {7,B} {10,B} {20,S}
+14 H u0 p0 c0 {1,S}
+15 H u0 p0 c0 {1,S}
+16 H u0 p0 c0 {6,S}
+17 H u0 p0 c0 {12,S}
+18 H u0 p0 c0 {9,S}
+19 H u0 p0 c0 {10,S}
+20 H u0 p0 c0 {13,S}
+21 H u0 p0 c0 {7,S}
+22 H u0 p0 c0 {8,S}
+23 H u0 p0 c0 {11,S}
+""")
+
+        self.assertEqual(len(newmol), 2)
+        self.assertTrue(newmol[0].isIsomorphic(struct1) or newmol[0].isIsomorphic(struct2))
+        self.assertTrue(newmol[1].isIsomorphic(struct2) or newmol[0].isIsomorphic(struct1))
+        self.assertFalse(newmol[0].isIsomorphic(newmol[1]))
+
+    def testCorannulene(self):
+        """
+        Test corannulene, which does not give integer results after initial optimization.
+        """
+        mol = Molecule().fromSMILES('C1=CC2=CC=C3C=CC4=C5C6=C(C2=C35)C1=CC=C6C=C4')
+        newmol = generateClarStructures(mol)
+
+        struct = Molecule().fromAdjacencyList("""1  C u0 p0 c0 {2,S} {5,B} {8,B}
+2  C u0 p0 c0 {1,S} {3,B} {10,B}
+3  C u0 p0 c0 {2,B} {4,S} {9,B}
+4  C u0 p0 c0 {3,S} {5,S} {6,D}
+5  C u0 p0 c0 {1,B} {4,S} {7,B}
+6  C u0 p0 c0 {4,D} {12,S} {13,S}
+7  C u0 p0 c0 {5,B} {14,S} {15,B}
+8  C u0 p0 c0 {1,B} {16,B} {20,S}
+9  C u0 p0 c0 {3,B} {11,S} {17,B}
+10 C u0 p0 c0 {2,B} {18,B} {19,S}
+11 C u0 p0 c0 {9,S} {12,D} {21,S}
+12 C u0 p0 c0 {6,S} {11,D} {22,S}
+13 C u0 p0 c0 {6,S} {14,D} {23,S}
+14 C u0 p0 c0 {7,S} {13,D} {24,S}
+15 C u0 p0 c0 {7,B} {16,B} {25,S}
+16 C u0 p0 c0 {8,B} {15,B} {26,S}
+17 C u0 p0 c0 {9,B} {18,B} {27,S}
+18 C u0 p0 c0 {10,B} {17,B} {28,S}
+19 C u0 p0 c0 {10,S} {20,D} {29,S}
+20 C u0 p0 c0 {8,S} {19,D} {30,S}
+21 H u0 p0 c0 {11,S}
+22 H u0 p0 c0 {12,S}
+23 H u0 p0 c0 {13,S}
+24 H u0 p0 c0 {14,S}
+25 H u0 p0 c0 {15,S}
+26 H u0 p0 c0 {16,S}
+27 H u0 p0 c0 {17,S}
+28 H u0 p0 c0 {18,S}
+29 H u0 p0 c0 {19,S}
+30 H u0 p0 c0 {20,S}
+""")
+
+        self.assertEqual(len(newmol), 5)
+        self.assertTrue(newmol[0].isIsomorphic(struct))
+        self.assertTrue(newmol[1].isIsomorphic(struct))
+        self.assertTrue(newmol[2].isIsomorphic(struct))
+        self.assertTrue(newmol[3].isIsomorphic(struct))
+        self.assertTrue(newmol[4].isIsomorphic(struct))
+
+    def testExocyclicDB(self):
+        """Test that Clar structure generation doesn't modify exocyclic double bonds
+
+        Important for cases where RDKit considers rings to be aromatic by counting pi-electron contributions
+        from exocyclic double bonds, while they don't actually contribute to aromaticity"""
+
+        mol = Molecule(SMILES="C=C1C=CC=CC1=C")
+        newmol = generateClarStructures(mol)
+
+        self.assertEquals(len(newmol), 0)
