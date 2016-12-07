@@ -15,3 +15,5 @@ cpdef list generate_isomorphic_isomers(Molecule mol)
 
 cpdef list generateKekulizedResonanceIsomers(Molecule mol)
 
+cpdef list clarOptimization(Molecule mol, list constraints=?, maxNum=?)
+

@@ -388,3 +388,141 @@ def generate_isomorphic_isomers(mol):
 
     return isomorphic_isomers
 
+
+def clarOptimization(mol, constraints=None, maxNum=None):
+    """
+    Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
+    of Clar sextets within the constraints of molecular geometry and atom valency.
+
+    Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
+        [0] Molecule object
+        [1] List of aromatic rings
+        [2] List of bonds
+        [3] Optimization solution
+
+    The optimization solution is a list of boolean values with sextet assignments followed by double bond assignments,
+    with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+
+    Method from:
+        Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
+            J. Math. Chem. 1994, 15 (1), 93–107.
+    """
+    cython.declare(molecule=Molecule, asssr=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+                   a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
+
+    from lpsolve55 import lpsolve
+
+    # Make a copy of the molecule so we don't destroy the original
+    molecule = mol.copy(deep=True)
+
+    asssr = molecule.getAromaticSSSR()
+
+    if not asssr:
+        return []
+
+    # Get list of atoms that are in rings
+    atoms = set()
+    for ring in asssr:
+        atoms.update(ring)
+    atoms = list(atoms)
+
+    # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
+    bonds = set()
+    for atom in atoms:
+        bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.isNonHydrogen()])
+    bonds = list(bonds)
+
+    # Identify exocyclic bonds, and save their bond orders
+    exo = []
+    for bond in bonds:
+        if bond.atom1 not in atoms or bond.atom2 not in atoms:
+            if bond.order == 'D':
+                exo.append(1)
+            else:
+                exo.append(0)
+        else:
+            exo.append(None)
+
+    # Dimensions
+    l = len(asssr)
+    m = len(atoms)
+    n = l + len(bonds)
+
+    # Connectivity matrix which indicates which rings and bonds each atom is in
+    # Part of equality constraint Ax=b
+    a = []
+    for atom in atoms:
+        inRing = [1 if atom in ring else 0 for ring in asssr]
+        inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
+        a.append(inRing + inBond)
+
+    # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
+    objective = [1] * l + [0] * len(bonds)
+
+    # Solve LP problem using lpsolve
+    lp = lpsolve('make_lp', m, n)               # initialize lp with constraint matrix with m rows and n columns
+    lpsolve('set_verbose', lp, 2)               # reduce messages from lpsolve
+    lpsolve('set_obj_fn', lp, objective)        # set objective function
+    lpsolve('set_maxim', lp)                    # set solver to maximize objective
+    lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
+    lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
+    lpsolve('set_constr_type', lp, ['='] * m)   # set all constraints as equality constraints
+    lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
+
+    # Constrain values of exocyclic bonds, since we don't want to modify them
+    for i in range(l, n):
+        if exo[i - l] is not None:
+            # NOTE: lpsolve indexes from 1, so the variable we're changing should be i + 1
+            lpsolve('set_bounds', lp, i + 1, exo[i - l], exo[i - l])
+
+    # Add constraints to problem if provided
+    if constraints is not None:
+        for constraint in constraints:
+            lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+
+    status = lpsolve('solve', lp)
+    objVal, solution = lpsolve('get_solution', lp)[0:2]
+    lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
+
+    # Check that optimization was successful
+    if status != 0:
+        raise ILPSolutionError('Optimization could not find a valid solution.')
+
+    # Check that we the result contains at least one aromatic sextet
+    if objVal == 0:
+        return []
+
+    # Check that the solution contains the maximum number of sextets possible
+    if maxNum is None:
+        maxNum = objVal  # This is the first solution, so the result should be an upper limit
+    elif objVal < maxNum:
+        raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
+
+    if any([x != 1 and x != 0 for x in solution]):
+        raise ILPSolutionError('Optimization obtained a non-integer solution.')
+
+    # Generate constraints based on the solution obtained
+    y = solution[0:l]
+    new_a = y + [0] * len(bonds)
+    new_b = sum(y) - 1
+    if constraints is not None:
+        constraints.append((new_a, new_b))
+    else:
+        constraints = [(new_a, new_b)]
+
+    # Run optimization with additional constraints
+    try:
+        innerSolutions = clarOptimization(mol, constraints=constraints, maxNum=maxNum)
+    except ILPSolutionError:
+        innerSolutions = []
+
+    return innerSolutions + [(molecule, asssr, bonds, solution)]
+
+
+class ILPSolutionError(Exception):
+    """
+    An exception to be raised when solving an integer linear programming problem if a solution
+    could not be found or the solution is not valid. Can pass a string to indicate the reason
+    that the solution is invalid.
+    """
+    pass
