@@ -23,6 +23,7 @@ requirements:
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
+    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - nose
@@ -57,6 +58,7 @@ requirements:
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
+    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - mopac

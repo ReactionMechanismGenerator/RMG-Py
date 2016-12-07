@@ -1,3 +1,36 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
+"""
+This module contains methods for generation of resonance isomers of molecules.
+"""
+
 import cython
 
 import rmgpy.molecule.generator as generator
@@ -5,7 +38,22 @@ import rmgpy.molecule.parser as parser
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
+from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
+
+def populate_resonance_generation_algorithm():
+    """
+    A list with the current set of resonance generation algorithms.
+    """
+    algorithms = (
+        generateAdjacentResonanceIsomers,
+        generateLonePairRadicalResonanceIsomers,
+        generateN5dd_N5tsResonanceIsomers,
+        generateKekulizedResonanceIsomers,
+        generateAromaticResonanceIsomers,
+    )
+
+    return algorithms
 
 def generateResonanceIsomers(mol):
     """
@@ -341,17 +389,212 @@ def generate_isomorphic_isomers(mol):
 
     return isomorphic_isomers
 
-def populate_resonance_generation_algorithm():
+
+def generateClarStructures(mol):
     """
-    A list with the current set of resonance generation algorithms.
+    Generate Clar structures for a given molecule.
+
+    Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    algorithms = (
-        generateAdjacentResonanceIsomers,
-        generateLonePairRadicalResonanceIsomers,
-        generateN5dd_N5tsResonanceIsomers,
-        generateKekulizedResonanceIsomers,
-        generateAromaticResonanceIsomers,
-    )
+    cython.declare(output=list, molList=list, newmol=Molecule, asssr=list, bonds=list, solution=list,
+                   y=list, x=list, index=cython.int, bond=Bond, ring=list)
+
+    if not mol.isCyclic():
+        return []
+
+    output = clarOptimization(mol)
+
+    molList = []
+
+    for newmol, asssr, bonds, solution in output:
+
+        # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
+        # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
+        # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
+        y = solution[0:len(asssr)]
+        x = solution[len(asssr):]
+
+        # Apply results to molecule - double bond locations first
+        for index, bond in enumerate(bonds):
+            if x[index] == 0:
+                bond.order = 'S'
+            elif x[index] == 1:
+                bond.order = 'D'
+            else:
+                raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
+
+        # Then apply locations of aromatic sextets by converting to benzene bonds
+        for index, ring in enumerate(asssr):
+            if y[index] == 1:
+                clarTransformation(newmol, ring)
+
+        try:
+            newmol.updateAtomTypes()
+        except AtomTypeError:
+            pass
+        else:
+            molList.append(newmol)
+
+    return molList
 
 
-    return algorithms
+def clarOptimization(mol, constraints=None, maxNum=None):
+    """
+    Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
+    of Clar sextets within the constraints of molecular geometry and atom valency.
+
+    Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
+        [0] Molecule object
+        [1] List of aromatic rings
+        [2] List of bonds
+        [3] Optimization solution
+
+    The optimization solution is a list of boolean values with sextet assignments followed by double bond assignments,
+    with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+
+    Method from:
+        Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
+            J. Math. Chem. 1994, 15 (1), 93–107.
+    """
+    cython.declare(molecule=Molecule, asssr=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+                   a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
+
+    from lpsolve55 import lpsolve
+
+    # Make a copy of the molecule so we don't destroy the original
+    molecule = mol.copy(deep=True)
+
+    asssr = molecule.getAromaticSSSR()
+
+    if not asssr:
+        return []
+
+    # Get list of atoms that are in rings
+    atoms = set()
+    for ring in asssr:
+        atoms.update(ring)
+    atoms = list(atoms)
+
+    # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
+    bonds = set()
+    for atom in atoms:
+        bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.isNonHydrogen()])
+    bonds = list(bonds)
+
+    # Identify exocyclic bonds, and save their bond orders
+    exo = []
+    for bond in bonds:
+        if bond.atom1 not in atoms or bond.atom2 not in atoms:
+            if bond.order == 'D':
+                exo.append(1)
+            else:
+                exo.append(0)
+        else:
+            exo.append(None)
+
+    # Dimensions
+    l = len(asssr)
+    m = len(atoms)
+    n = l + len(bonds)
+
+    # Connectivity matrix which indicates which rings and bonds each atom is in
+    # Part of equality constraint Ax=b
+    a = []
+    for atom in atoms:
+        inRing = [1 if atom in ring else 0 for ring in asssr]
+        inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
+        a.append(inRing + inBond)
+
+    # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
+    objective = [1] * l + [0] * len(bonds)
+
+    # Solve LP problem using lpsolve
+    lp = lpsolve('make_lp', m, n)               # initialize lp with constraint matrix with m rows and n columns
+    lpsolve('set_verbose', lp, 2)               # reduce messages from lpsolve
+    lpsolve('set_obj_fn', lp, objective)        # set objective function
+    lpsolve('set_maxim', lp)                    # set solver to maximize objective
+    lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
+    lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
+    lpsolve('set_constr_type', lp, ['='] * m)   # set all constraints as equality constraints
+    lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
+
+    # Constrain values of exocyclic bonds, since we don't want to modify them
+    for i in range(l, n):
+        if exo[i - l] is not None:
+            # NOTE: lpsolve indexes from 1, so the variable we're changing should be i + 1
+            lpsolve('set_bounds', lp, i + 1, exo[i - l], exo[i - l])
+
+    # Add constraints to problem if provided
+    if constraints is not None:
+        for constraint in constraints:
+            lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+
+    status = lpsolve('solve', lp)
+    objVal, solution = lpsolve('get_solution', lp)[0:2]
+    lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
+
+    # Check that optimization was successful
+    if status != 0:
+        raise ILPSolutionError('Optimization could not find a valid solution.')
+
+    # Check that we the result contains at least one aromatic sextet
+    if objVal == 0:
+        return []
+
+    # Check that the solution contains the maximum number of sextets possible
+    if maxNum is None:
+        maxNum = objVal  # This is the first solution, so the result should be an upper limit
+    elif objVal < maxNum:
+        raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
+
+    if any([x != 1 and x != 0 for x in solution]):
+        raise ILPSolutionError('Optimization obtained a non-integer solution.')
+
+    # Generate constraints based on the solution obtained
+    y = solution[0:l]
+    new_a = y + [0] * len(bonds)
+    new_b = sum(y) - 1
+    if constraints is not None:
+        constraints.append((new_a, new_b))
+    else:
+        constraints = [(new_a, new_b)]
+
+    # Run optimization with additional constraints
+    try:
+        innerSolutions = clarOptimization(mol, constraints=constraints, maxNum=maxNum)
+    except ILPSolutionError:
+        innerSolutions = []
+
+    return innerSolutions + [(molecule, asssr, bonds, solution)]
+
+
+def clarTransformation(mol, aromaticRing):
+    """
+    Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
+
+    Args:
+        mol             a :class:`Molecule` object
+        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
+
+    This function directly modifies the input molecule and does not return anything.
+    """
+    cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
+
+    bondList = []
+
+    for i, atom1 in enumerate(aromaticRing):
+        for atom2 in aromaticRing[i + 1:]:
+            if mol.hasBond(atom1, atom2):
+                bondList.append(mol.getBond(atom1, atom2))
+
+    for bond in bondList:
+        bond.order = 'B'
+
+
+class ILPSolutionError(Exception):
+    """
+    An exception to be raised when solving an integer linear programming problem if a solution
+    could not be found or the solution is not valid. Can pass a string to indicate the reason
+    that the solution is invalid.
+    """
+    pass

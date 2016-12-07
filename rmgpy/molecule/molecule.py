@@ -1621,4 +1621,48 @@ class Molecule(Graph):
         
         return group
 
+    def getAromaticSSSR(self):
+        """
+        Returns the smallest set of smallest aromatic rings
 
+        Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
+        RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
+        Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
+
+        The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
+        by RMG, and not by RDKit.
+        """
+        cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
+        cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
+
+        from rdkit.Chem.rdchem import BondType
+
+        AROMATIC = BondType.AROMATIC
+
+        rings = [ring0 for ring0 in self.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+        if not rings:
+            return []
+
+        try:
+            rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
+        except ValueError:
+            return []
+
+        aromaticRings = []
+        for ring0 in rings:
+            aromaticBonds = []
+            # Figure out which atoms and bonds are aromatic and reassign appropriately:
+            for i, atom1 in enumerate(ring0):
+                if not atom1.isCarbon():
+                    # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                    break
+                for atom2 in ring0[i + 1:]:
+                    if self.hasBond(atom1, atom2):
+                        if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
+                                                        rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                            aromaticBonds.append(self.getBond(atom1, atom2))
+            else:  # didn't break so all atoms are carbon
+                if len(aromaticBonds) == 6:
+                    aromaticRings.append(ring0)
+
+        return aromaticRings
