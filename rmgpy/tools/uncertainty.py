@@ -53,7 +53,45 @@ class ThermoParameterUncertainty:
         
         dG = numpy.sqrt(dG2)        
         return dG
+
+    def getPartialUncertaintyValue(self, source, corrSourceType, corrParam=None, corrGroupType=None):
+        """
+        Obtain the partial uncertainty dG/dG_corr*dG_corr, where dG_corr is the correlated parameter
+        
+        `corrParam` is the parameter identifier itself, which is a integer for QM and library parameters, or a string for group values
+        `corrSourceType` is a string, being either 'Library', 'QM', 'GAV', or 'Estimation'
+        `corrGroupType` is a string used only when the source type is 'GAV' and indicates grouptype
+        """
+
+        if corrSourceType == 'Library':
+            if 'Library' in source:
+                if source['Library'] == corrParam:
+                    # Correlated parameter is a source of the overall parameter
+                    return self.dG_library
+
+        elif corrSourceType == 'QM':
+            if 'QM' in source:
+                if source['QM'] == corrParam:
+                    # Correlated parameter is a source of the overall parameter
+                    return self.dG_QM
+
+        elif corrSourceType == 'GAV':
+            if 'GAV' in source:
+                if corrGroupType in source['GAV']:
+                    groupList = source['GAV'][corrGroupType]
+                    for group, weight in groupList:
+                        if group == corrParam:
+                            return weight*self.dG_group
+                            
+        elif corrSourceType == 'Estimation':
+            if 'GAV' in source:
+                return self.dG_GAV
+        else:
+            raise Exception('Thermo correlated source must be GAV, QM, Library, or Estimation')
     
+        # If we get here, it means the correlated parameter was not found
+        return None
+
     def getUncertaintyFactor(self, source):
         """
         Retrieve the uncertainty factor f in kcal/mol when the source of the thermo of a species is given.
@@ -124,6 +162,68 @@ class KineticParameterUncertainty:
             
         dlnk = numpy.sqrt(dlnk2)
         return dlnk
+
+    def getPartialUncertaintyValue(self, source, corrSourceType, corrParam=None, corrFamily=None):
+        """
+        Obtain the partial uncertainty dlnk/dlnk_corr*dlnk_corr, where dlnk_corr is the correlated parameter
+        
+        `corrParam` is the parameter identifier itself, which is the string identifier of the rate rule
+        `corrSourceType` is a string, being either 'Rate Rules', 'Library', 'PDep', 'Training' or 'Estimation'
+        `corrFamily` is a string used only when the source type is 'Rate Rules' and indicates the family
+        """
+
+        if corrSourceType == 'Rate Rules':
+            if 'Rate Rules' in source:
+                familyLabel = source['Rate Rules'][0]
+                if corrFamily == familyLabel:
+                    sourceDict = source['Rate Rules'][1]
+                    rules = sourceDict['rules']
+                    training = sourceDict['training']
+                    if rules:
+                        for ruleEntry, weight in rules:
+                            if corrParam == ruleEntry:
+                                return weight*self.dlnk_rule
+                    if training:
+                        for ruleEntry, trainingEntry, weight in training:
+                            if corrParam == ruleEntry:
+                                return weight*self.dlnk_rule
+
+        # Writing it this way in the function is not the most efficient, but makes it easy to use, and
+        # testing a few if statements is not too costly
+        elif corrSourceType == 'Library':
+            if 'Library' in source:
+                if corrParam == source['Library']:
+                    # Should be a single library reaction source
+                    return self.dlnk_library
+        elif corrSourceType == 'PDep':
+            if 'PDep' in source:
+                if corrParam == source['PDep']:
+                    return self.dlnk_pdep
+        elif corrSourceType == 'Training':
+            if 'Training' in source:
+                # Should be a unique single training reaction
+                if corrParam == source['Training']:
+                    return self.dlnk_training
+
+        elif corrSourceType == 'Estimation':
+            # Return all the uncorrelated uncertainty associated with using an estimation scheme
+            
+            if 'Rate Rules' in source:
+                sourceDict = source['Rate Rules'][1]
+                exact = sourceDict['exact']
+
+                dlnk2 = self.dlnk_family**2  # Base uncorrelated uncertainty just from using rate rule estimation
+                # Additional uncertainty from using non-exact rate rule
+                N = len(sourceDict['rules']) + len(sourceDict['training'])
+                if not exact:
+                    # nonexactness contribution increases as N increases
+                    dlnk2 += (numpy.log10(N+1)*self.dlnk_nonexact)**2
+                return numpy.sqrt(dlnk2)
+        else:
+            raise Exception('Kinetics correlated source must be Rate Rules, Library, PDep, Training, or Estimation')
+    
+        # If we get here, it means that we did not find the correlated parameter in the source
+        return None
     
     def getUncertaintyFactor(self, source):
         """
