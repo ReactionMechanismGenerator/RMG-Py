@@ -17,3 +17,4 @@ cpdef list generateKekulizedResonanceIsomers(Molecule mol)
 
 cpdef list clarOptimization(Molecule mol, list constraints=?, maxNum=?)
 
+cpdef list clarTransformation(Molecule mol, list ring)

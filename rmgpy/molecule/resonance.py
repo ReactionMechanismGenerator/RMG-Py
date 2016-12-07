@@ -519,6 +519,29 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     return innerSolutions + [(molecule, asssr, bonds, solution)]
 
 
+def clarTransformation(mol, aromaticRing):
+    """
+    Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
+
+    Args:
+        mol             a :class:`Molecule` object
+        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
+
+    This function directly modifies the input molecule and does not return anything.
+    """
+    cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
+
+    bondList = []
+
+    for i, atom1 in enumerate(aromaticRing):
+        for atom2 in aromaticRing[i + 1:]:
+            if mol.hasBond(atom1, atom2):
+                bondList.append(mol.getBond(atom1, atom2))
+
+    for bond in bondList:
+        bond.order = 'B'
+
+
 class ILPSolutionError(Exception):
     """
     An exception to be raised when solving an integer linear programming problem if a solution
