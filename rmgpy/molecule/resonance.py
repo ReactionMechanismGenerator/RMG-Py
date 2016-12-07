@@ -38,6 +38,7 @@ import rmgpy.molecule.parser as parser
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
+from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
 
 def populate_resonance_generation_algorithm():
@@ -387,6 +388,54 @@ def generate_isomorphic_isomers(mol):
         index += 1
 
     return isomorphic_isomers
+
+
+def generateClarStructures(mol):
+    """
+    Generate Clar structures for a given molecule.
+
+    Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
+    """
+    cython.declare(output=list, molList=list, newmol=Molecule, asssr=list, bonds=list, solution=list,
+                   y=list, x=list, index=cython.int, bond=Bond, ring=list)
+
+    if not mol.isCyclic():
+        return []
+
+    output = clarOptimization(mol)
+
+    molList = []
+
+    for newmol, asssr, bonds, solution in output:
+
+        # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
+        # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
+        # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
+        y = solution[0:len(asssr)]
+        x = solution[len(asssr):]
+
+        # Apply results to molecule - double bond locations first
+        for index, bond in enumerate(bonds):
+            if x[index] == 0:
+                bond.order = 'S'
+            elif x[index] == 1:
+                bond.order = 'D'
+            else:
+                raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
+
+        # Then apply locations of aromatic sextets by converting to benzene bonds
+        for index, ring in enumerate(asssr):
+            if y[index] == 1:
+                clarTransformation(newmol, ring)
+
+        try:
+            newmol.updateAtomTypes()
+        except AtomTypeError:
+            pass
+        else:
+            molList.append(newmol)
+
+    return molList
 
 
 def clarOptimization(mol, constraints=None, maxNum=None):
