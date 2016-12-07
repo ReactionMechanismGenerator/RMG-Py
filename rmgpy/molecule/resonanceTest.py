@@ -451,7 +451,7 @@ class ClarTest(unittest.TestCase):
 
         self.assertEqual(len(newmol), 2)
         self.assertTrue(newmol[0].isIsomorphic(struct1) or newmol[0].isIsomorphic(struct2))
-        self.assertTrue(newmol[1].isIsomorphic(struct2) or newmol[0].isIsomorphic(struct1))
+        self.assertTrue(newmol[1].isIsomorphic(struct2) or newmol[1].isIsomorphic(struct1))
         self.assertFalse(newmol[0].isIsomorphic(newmol[1]))
 
     def testCorannulene(self):
