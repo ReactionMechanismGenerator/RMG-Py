@@ -314,3 +314,45 @@ class ResonanceTest(unittest.TestCase):
                 else:  # didn't break
                     self.fail(("Expected a resonance form {0!r} that was not generated.\n"
                               "Only generated these:\n{1}").format(expected, '\n'.join([repr(g) for g in isomers])))
+
+
+class ClarTest(unittest.TestCase):
+    """
+    Contains unit tests for Clar structure methods.
+    """
+
+    def testClarTransformation(self):
+        """
+        Basic test that aromatic ring is generated.
+        """
+        mol = Molecule().fromSMILES('c1ccccc1')
+        sssr = mol.getSmallestSetOfSmallestRings()
+        clarTransformation(mol, sssr[0])
+        mol.updateAtomTypes()
+
+        self.assertTrue(mol.isAromatic())
+
+    def testClarOptimization(self):
+        """Test to ensure pi electrons are conserved during optimization"""
+        mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')  # Naphthalene
+        output = clarOptimization(mol)
+
+        for molecule, asssr, bonds, solution in output:
+
+            # Count pi electrons in molecule
+            pi = 0
+            for bond in bonds:
+                if bond.order == 'D':
+                    pi += 2
+
+            # Count pi electrons in solution
+            y = solution[0:len(asssr)]
+            x = solution[len(asssr):]
+            pi_solution = 6 * sum(y) + 2 * sum(x)
+
+            # Check that both counts give 10 pi electrons
+            self.assertEqual(pi, 10)
+            self.assertEqual(pi_solution, 10)
+
+            # Check that we only assign 1 aromatic sextet
+            self.assertEqual(sum(y), 1)
