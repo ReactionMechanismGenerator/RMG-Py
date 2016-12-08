@@ -2,6 +2,7 @@ import os
 import numpy
 import rmgpy.util as util 
 from rmgpy.tools.plot import *
+from rmgpy.tools. data import GenericData
 
 def retrieveSaturatedSpeciesFromList(species, speciesList):
     """
@@ -437,20 +438,89 @@ class Uncertainty:
         for familyLabel in allKineticSources['Training'].keys():
             self.allKineticSources['Training'][familyLabel] = list(allKineticSources['Training'][familyLabel])
     
-    def assignParameterUncertainties(self, gParamEngine = ThermoParameterUncertainty(), kParamEngine = KineticParameterUncertainty()):
+    def assignParameterUncertainties(self, gParamEngine = ThermoParameterUncertainty(), kParamEngine = KineticParameterUncertainty(), correlated=False):
         """
         Assign uncertainties based on the sources of the species thermo and reaction kinetics.
         """
         
         self.thermoInputUncertainties = []
         self.kineticInputUncertainties = []
+
         
         for species in self.speciesList:
-            dG = gParamEngine.getUncertaintyValue(self.speciesSourcesDict[species])
-            self.thermoInputUncertainties.append(dG)
+            if not correlated:
+                dG = gParamEngine.getUncertaintyValue(self.speciesSourcesDict[species])
+                self.thermoInputUncertainties.append(dG)
+            else:
+                source = self.speciesSourcesDict[species]
+                dG = {}
+                if 'Library' in source:
+                    pdG = gParamEngine.getPartialUncertaintyValue(source, 'Library', corrParam=source['Library'])
+                    label = 'Library {}'.format(self.speciesList[source['Library']].toChemkin())
+                    dG[label] = pdG
+                if 'QM' in source:
+                    pdG = gParamEngine.getPartialUncertaintyValue(source, 'QM',corrParam=source['QM'])
+                    label = 'QM {}'.format(self.speciesList[source['QM']].toChemkin())
+                    dG[label] = pdG
+                if 'GAV' in source:
+                    for groupType, groupList in source['GAV'].iteritems():
+                        for group, weight in groupList:
+                            pdG = gParamEngine.getPartialUncertaintyValue(source, 'GAV', group, groupType)
+                            label = 'Group({}) {}'.format(groupType, group.label)
+                            dG[label] = pdG
+                    # We also know if there is group additivity used, there will be uncorrelated estimation error
+                    est_pdG = gParamEngine.getPartialUncertaintyValue(source, 'Estimation')
+                    if est_pdG: 
+                        label = 'Estimation {}'.format(species.toChemkin())
+                        dG[label] = est_pdG
+                self.thermoInputUncertainties.append(dG)
+
+
         for reaction in self.reactionList:
-            dlnk = kParamEngine.getUncertaintyValue(self.reactionSourcesDict[reaction])
-            self.kineticInputUncertainties.append(dlnk)
+            if not correlated:
+                dlnk = kParamEngine.getUncertaintyValue(self.reactionSourcesDict[reaction])
+                self.kineticInputUncertainties.append(dlnk)
+            else:
+                source = self.reactionSourcesDict[reaction]
+                dlnk = {}
+                if 'Rate Rules' in source:
+                    family = source['Rate Rules'][0]
+                    sourceDict = source['Rate Rules'][1]
+                    rules = sourceDict['rules']
+                    training = sourceDict['training']
+                    for ruleEntry, weight in rules:
+                        dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Rate Rules', corrParam=ruleEntry, corrFamily=family)
+                        label = '{} {}'.format(family, ruleEntry)
+                        dlnk[label]=dplnk
+
+                    for ruleEntry, trainingEntry, weight in training:
+                        dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Rate Rules', corrParam=ruleEntry, corrFamily=family)
+                        label = '{} {}'.format(family, ruleEntry)
+                        dlnk[label]=dplnk
+
+                    # There is also estimation error if rate rules are used
+                    est_dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Estimation')
+                    if est_dplnk:
+                        label = 'Estimation {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
+                        dlnk[label]=est_dplnk
+
+                elif 'PDep' in source:
+                    dplnk = kParamEngine.getPartialUncertaintyValue(source, 'PDep', source['PDep'])
+                    label = 'PDep {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
+                    dlnk[label]=dplnk
+
+                elif 'Library' in source:
+                    dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Library', source['Library'])
+                    label = 'Library {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
+                    dlnk[label]=dplnk
+
+                elif 'Training' in source:
+                    dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Training', source['Training'])
+                    family = source['Training'][0]
+                    label = 'Training {} {}'.format(family, reaction.toChemkin(self.speciesList, kinetics=False))
+                    dlnk[label]=dplnk
+                
+                self.kineticInputUncertainties.append(dlnk)
 
     def sensitivityAnalysis(self, initialMoleFractions, sensitiveSpecies, T, P, terminationTime, sensitivityThreshold=1e-3, number=10, fileformat='.png'):
         """
@@ -532,20 +602,41 @@ class Uncertainty:
                     data.uncertainty = self.kineticInputUncertainties[rxnIndex]
                     reactionDataList.append(data)
 
+
+            if correlated:
+                correlatedThermoData = {}
+                correlatedReactionData = {}
+                for data in thermoDataList:
+                    for label, dpG in data.uncertainty.iteritems():
+                        if label in correlatedThermoData:
+                            # Unpack the labels and partial uncertainties
+                            correlatedThermoData[label].data[-1] += data.data[-1]*dpG   # Multiply the sensitivity with the partial uncertainty
+                        else:
+                            correlatedThermoData[label] = GenericData(data=[data.data[-1]*dpG], uncertainty=1, label=label, species='dummy')
+                for data in reactionDataList:
+                    for label, dplnk in data.uncertainty.iteritems():
+                        if label in correlatedReactionData:
+                            correlatedReactionData[label].data[-1] += data.data[-1]*dplnk
+                        else:
+                            correlatedReactionData[label] = GenericData(data=[data.data[-1]*dplnk], uncertainty=1, label=label, reaction='dummy')
+
+                thermoDataList = correlatedThermoData.values()
+                reactionDataList = correlatedReactionData.values()
+
             # Compute total variance
             totalVariance = 0.0
             for data in thermoDataList:
                 totalVariance += (data.data[-1]*data.uncertainty)**2
             for data in reactionDataList:
                 totalVariance += (data.data[-1]*data.uncertainty)**2
-            
-            # Add the reaction index to the data label of the reaction uncertainties
-            for data in reactionDataList:
-                data.label = 'k'+str(data.index) + ': ' + data.label.split()[-1]
+
+            if not correlated:
+                # Add the reaction index to the data label of the reaction uncertainties
+                for data in reactionDataList:
+                    data.label = 'k'+str(data.index) + ': ' + data.label.split()[-1]
             
             thermoUncertaintyPlotPath = os.path.join(self.outputDirectory, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
             reactionUncertaintyPlotPath = os.path.join(self.outputDirectory, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
             ReactionSensitivityPlot(xVar=time,yVar=reactionDataList,numReactions=number).uncertaintyPlot(totalVariance, filename=reactionUncertaintyPlotPath)
             ThermoSensitivityPlot(xVar=time,yVar=thermoDataList,numSpecies=number).uncertaintyPlot(totalVariance, filename=thermoUncertaintyPlotPath)
-
 
