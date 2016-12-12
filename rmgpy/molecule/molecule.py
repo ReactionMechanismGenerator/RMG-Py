@@ -743,6 +743,9 @@ class Molecule(Graph):
         self.updateMultiplicity()
         self.sortVertices()
 
+        for atom in self.atoms:
+            atom.updateCharge()
+
     def getFormula(self):
         """
         Return the molecular formula for the molecule.
