@@ -368,6 +368,11 @@ class Uncertainty:
                 raise Exception('Source of kinetics must be either Library, PDep, Training, or Rate Rules')
             self.reactionSourcesDict[reaction] = source
         
+    def compileAllSources(self):
+        """
+        Compile two dictionaries composed of all the thermo and kinetic sources.  Must
+        be performed after extractSourcesFromModel function
+        """
         # Account for all the thermo sources
         allThermoSources = {'GAV':{}, 'Library':set(), 'QM':set()}
         for source in self.speciesSourcesDict.values():
