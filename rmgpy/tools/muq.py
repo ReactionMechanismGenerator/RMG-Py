@@ -21,17 +21,17 @@ except:
 # and add the ~/anaconda/envs/your_env/lib folder to your $PYTHONPATH
 
 class ReactorModPiece(ModPiece):
-    def __init__(self, cantera, outputSpeciesList, kReactions, kUncertainty, gSpecies, gUncertainty):
+    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty):
         """
         ======================= ====================================================
         Attribute               Description
         ======================= ====================================================
         `cantera`               A Cantera() object containing CanteraConditions and initialized species and reactions
         `outputSpeciesList`     A list of Species() objects corresponding to the desired observables for uncertainty analysis
-        `kReactions`            A list of Reaction() objects corresponding to the uncertain input rate coefficients
-        `kUncertainty`          A list of uncertainties dlnk corresponding to the reactions in kReactions
-        `gSpecies`              A list of Species() objects corresponding to the uncertain input free energies of individual species
-        `gUncertainty`          A list of uncertainties dG corresponding to the species in gSpecies in units of kcal/mol
+        `kParams`               A list of Reaction() objects corresponding to the uncertain input rate coefficients
+        `kUncertainty`          A list of uncertainties dlnk corresponding to the reactions in kParams
+        `gParams`               A list of Species() objects corresponding to the uncertain input free energies of individual species
+        `gUncertainty`          A list of uncertainties dG corresponding to the species in gParams in units of kcal/mol
         ============================================================================
         """
         self.cantera = cantera
@@ -39,21 +39,21 @@ class ReactorModPiece(ModPiece):
         self.outputSpeciesIndices = [cantera.speciesList.index(outputSpecies) for outputSpecies in outputSpeciesList]
         
         
-        self.kReactions = kReactions
+        self.kParams = kParams
         kUncertaintyFactors = [val*numpy.sqrt(3)/numpy.log(10) for val in kUncertainty]
         self.kUncertaintyFactors = {}
-        for i, rxnIndex in enumerate(kReactions):
+        for i, rxnIndex in enumerate(kParams):
             self.kUncertaintyFactors[rxnIndex] = kUncertaintyFactors[i]
             
         
-        self.gSpecies = gSpecies
+        self.gParams = gParams
         gUncertaintyFactors = [val*numpy.sqrt(3) for val in gUncertainty]
         self.gUncertaintyFactors = {}
-        for i, spcIndex in enumerate(gSpecies):
+        for i, spcIndex in enumerate(gParams):
             self.gUncertaintyFactors[spcIndex] = gUncertaintyFactors[i]
         
         # The size of the uncertain inputs: [reaction rates k, species free energy G]         
-        self.inputSize = [len(kReactions) + len(gSpecies)]
+        self.inputSize = [len(kParams) + len(gParams)]
         
         # The size of the vector corresponding to the outputs to be analyzed for uncertainty analysis
         # is equal to the number of cantera conditions involved multiplied by the number of desired observables
@@ -82,16 +82,16 @@ class ReactorModPiece(ModPiece):
         """
         assert len(ins[0]) == self.inputSize[0], "Number of inputs matches number of uncertain parameters"
         
-        k_rv = ins[0][0:len(self.kReactions)]
-        G_rv = ins[0][len(self.kReactions):]
+        k_rv = ins[0][0:len(self.kParams)]
+        G_rv = ins[0][len(self.kParams):]
         
         ## Check that the number of inputs is correct
-        #assert len(k_rv) == len(self.kReactions), "Number of inputs matches number of kReactions"
-        #assert len(G_rv) == len(self.gSpecies), "Number of inputs matches number of gSpecies"
+        #assert len(k_rv) == len(self.kParams), "Number of inputs matches number of kParams"
+        #assert len(G_rv) == len(self.gParams), "Number of inputs matches number of gParams"
         
         # Make deepcopies of the thermo and kinetics so as to not modify the originals in the speciesList and reactionList
-        originalThermo = [copy.deepcopy(self.cantera.speciesList[index].thermo) for index in self.gSpecies]
-        originalKinetics = [copy.deepcopy(self.cantera.reactionList[index].kinetics) for index in self.kReactions]
+        originalThermo = [copy.deepcopy(self.cantera.speciesList[index].thermo) for index in self.gParams]
+        originalKinetics = [copy.deepcopy(self.cantera.reactionList[index].kinetics) for index in self.kParams]
     
 #         print ''
 #         print 'Kinetics before'
@@ -104,9 +104,9 @@ class ReactorModPiece(ModPiece):
         
         # Scale the thermo and kinetics of the current objects        
         for i, rv in enumerate(k_rv):
-            self.scaleToKinetics(rv,self.kReactions[i])
+            self.scaleToKinetics(rv,self.kParams[i])
         for i, rv in enumerate(G_rv):
-            self.scaleToThermo(rv, self.gSpecies[i])
+            self.scaleToThermo(rv, self.gParams[i])
         
         # The model must be refreshed when there are any thermo changes
         # kinetics can be refreshed automatically so we don't need to recreate the Solution() object.
@@ -138,11 +138,11 @@ class ReactorModPiece(ModPiece):
         
         # Now reset the cantera object's speciesList and reactionList back to original thermo and kinetics 
         for i, thermo in enumerate(originalThermo):
-            index = self.gSpecies[i]
+            index = self.gParams[i]
             self.cantera.speciesList[index].thermo = thermo
             
         for i, kinetics in enumerate(originalKinetics):
-            index = self.kReactions[i]
+            index = self.kParams[i]
             self.cantera.reactionList[index].kinetics = kinetics
             
         return list(output)
@@ -201,14 +201,14 @@ class ReactorPCEFactory:
         6. Perform PCE analysis of desired outputs
     """
     
-    def __init__(self, cantera, outputSpeciesList, kReactions, kUncertainty, gSpecies, gUncertainty):
+    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty):
         
         
         self.reactorMod = ReactorModPiece(cantera=cantera,
                             outputSpeciesList=outputSpeciesList,
-                            kReactions=kReactions,
+                            kParams=kParams,
                             kUncertainty = kUncertainty,
-                            gSpecies = gSpecies,
+                            gParams = gParams,
                             gUncertainty = gUncertainty,
                             )
         
@@ -224,9 +224,9 @@ class ReactorPCEFactory:
         
         # Create a random variable collection for each of the uncertain variables
         varCollection = VariableCollection()
-        for rxnIndex in kReactions:
+        for rxnIndex in kParams:
             varCollection.PushVariable("k{0}".format(rxnIndex+1), polyFamily, quadFamily)
-        for speciesIndex in gSpecies:
+        for speciesIndex in gParams:
             varCollection.PushVariable("G{0}".format(speciesIndex+1), polyFamily, quadFamily)
         
         # Initialize the PCE Factory
@@ -339,7 +339,7 @@ class ReactorPCEFactory:
                                                           stddev_percent[outputIndex])
             print ''
         
-            if reactorMod.kReactions:
+            if reactorMod.kParams:
                 print ''
                 print 'Condition {} Reaction Sensitivities'.format(i+1)
                 print '==============================================================================='
@@ -347,7 +347,7 @@ class ReactorPCEFactory:
                 print '==============================================================================='
                 for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                     outputIndex = i*reactorMod.numOutputSpecies+j
-                    for k, rxnIndex in enumerate(reactorMod.kReactions):
+                    for k, rxnIndex in enumerate(reactorMod.kParams):
                         parameterIndex=k
                         description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(),
                                                                  reactorMod.cantera.reactionList[rxnIndex].toChemkin(kinetics=False),
@@ -356,7 +356,7 @@ class ReactorPCEFactory:
                                                                     mainSens[outputIndex][parameterIndex],
                                                                  totalSens[outputIndex][parameterIndex],
                                                                  )
-            if reactorMod.gSpecies:
+            if reactorMod.gParams:
                 print ''
                 print 'Condition {} Thermo Sensitivities'.format(i+1)
                 print '==========================================================='
@@ -365,8 +365,8 @@ class ReactorPCEFactory:
                 for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                     outputIndex = i*reactorMod.numOutputSpecies+j
                     
-                    for g, speciesIndex in enumerate(reactorMod.gSpecies):
-                        parameterIndex = len(reactorMod.kReactions)+g
+                    for g, speciesIndex in enumerate(reactorMod.gParams):
+                        parameterIndex = len(reactorMod.kParams)+g
                         description = 'dln[{0}]/dlnG[{1}]'.format(outputSpecies.toChemkin(),
                                                              reactorMod.cantera.speciesList[speciesIndex].toChemkin(),)
                                                                  
