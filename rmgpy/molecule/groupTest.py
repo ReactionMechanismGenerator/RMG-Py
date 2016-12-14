@@ -546,6 +546,42 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.isIsomorphic(group))
         self.assertTrue(group.isIsomorphic(self.group))
 
+    def testCreateAndConnectAtom(self):
+        """
+        Tests createAndConnectAtom method
+        """
+        adjlist1 = """
+1  *1 C u0 {2,S}
+2  *2 C u0 {1,S}
+"""
+
+        answer1 = """
+1  *1 C  u0 {2,S} {3,B}
+2  *2 C  u0 {1,S}
+3     Cb u0 {1,B}
+"""
+
+        group1 = Group().fromAdjacencyList(adjlist1)
+        answer1 = Group().fromAdjacencyList(answer1)
+        atom1 = group1.getLabeledAtom("*1")
+        newAtom = group1.createAndConnectAtom(atomtypes = ["Cb"], connectingAtom = atom1, bondOrders = ["B"])
+        self.assertTrue(group1.isIsomorphic(answer1))
+
+        answer2 = """
+1  *1 C  u0 {2,S} {3,[S,D]}
+2  *2 C  u0 {1,S}
+3     [Cs,Cd] u0 {1,[S,D]}
+"""
+
+        #Test that wildcards work alright
+        group2 = Group().fromAdjacencyList(adjlist1)
+        answer2 = Group().fromAdjacencyList(answer2)
+        atom1 = group2.getLabeledAtom("*1")
+        newAtom = group2.createAndConnectAtom(atomtypes = ["Cs", "Cd"], connectingAtom = atom1, bondOrders = ["S","D"])
+        self.assertTrue(group2.isIsomorphic(answer2))
+
+
+
     def testAddImplicitAtomsFromAtomType(self):
         """
         test Group.addImplicitAtomsFromAtomType() method
@@ -627,6 +663,110 @@ class TestGroup(unittest.TestCase):
         newGroup =group9.addImplicitAtomsFromAtomType()
         self.assertTrue(group10.isIsomorphic(newGroup))
 
+    def testClassifyBenzeneCarbons(self):
+        """
+        Tests the method classifyingBenzeneCarbons
+        """
+
+        #This tests that we classify Cb atom types correctly
+        adjlist1 = """
+1  *1 Cb u0 {2,B}
+2  *2 Cb u0 {1,B}
+"""
+        group1 = Group().fromAdjacencyList(adjlist1)
+
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)=group1.classifyBenzeneCarbons()
+        self.assertEquals(len(cbfAtomList), 0)
+        for atom in group1.atoms:
+            self.assertIn(atom, cbAtomList)
+
+        #This tests that we classify Cbf atomtypes correctly
+        adjlist2 = """
+1 *1 Cbf u0
+"""
+        group2 = Group().fromAdjacencyList(adjlist2)
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)=group2.classifyBenzeneCarbons()
+        self.assertIn(group2.atoms[0], cbfAtomList)
+        self.assertIn(group2.atoms[0], cbfAtomList1)
+
+        #This tests that we can classify Cb atoms based on bonding and not just atomtype
+        adjlist3 = """
+1 *1 C u0 {2,B}
+2 *2 C u0 {1,B} {3,B}
+3 *3 C u0 {2,B}
+"""
+        group3 = Group().fromAdjacencyList(adjlist3)
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)=group3.classifyBenzeneCarbons()
+        for atom in group3.atoms:
+            self.assertIn(atom, cbAtomList)
+
+        #This tests that we can classify Cbf1 atoms based on bonding and not just atomtype
+        adjlist4 = """
+1 *1 C u0 {2,B} {3,B} {4,B}
+2 *2 C u0 {1,B}
+3 *3 C u0 {1,B}
+4 *4 C u0 {1,B}
+"""
+        group4 = Group().fromAdjacencyList(adjlist4)
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)=group4.classifyBenzeneCarbons()
+        self.assertEquals(len(cbfAtomList), 1)
+        self.assertEquals(len(cbfAtomList1), 1)
+
+        #This tests that we can classify Cbf2 atoms. In the following partial group, we should have:
+        #one Cbf2 atom, two Cbf1 atoms, and 5 Cb atoms
+        adjlist5 = """
+1 *1 C u0 {2,B} {3,B} {4,B}
+2 *2 C u0 {1,B} {5,B} {6,B}
+3 *3 C u0 {1,B} {7,B} {8,B}
+4 *4 C u0 {1,B}
+5 *5 C u0 {2,B}
+6 *6 C u0 {2,B}
+7 *7 C u0 {3,B}
+8 *8 C u0 {3,B}
+"""
+        group5 = Group().fromAdjacencyList(adjlist5)
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)=group5.classifyBenzeneCarbons()
+        self.assertEquals(len(cbfAtomList1), 2)
+        self.assertEquals(len(cbfAtomList2), 1)
+        self.assertEquals(len(cbAtomList), 5)
+
+        #Tests that we can classify connected Cbfs correctly. *1 should be connected to both *2 and *3
+        atom1 = group5.getLabeledAtom("*1")
+        atom2 = group5.getLabeledAtom("*2")
+        atom3 = group5.getLabeledAtom("*3")
+        self.assertIn(atom2, connectedCbfs[atom1])
+        self.assertIn(atom3, connectedCbfs[atom1])
+        self.assertIn(atom1, connectedCbfs[atom2])
+        self.assertIn(atom1, connectedCbfs[atom3])
+
+    def testSortByConnectivity(self):
+        """
+        Tests sortByConnectivity method
+        """
+
+        #Basic test, we should get *1, *3 *2
+        adjlist1 = """
+1 *1 C u0 {3,B}
+2 *2 C u0 {3,B}
+3 *3 C u0 {1,B} {2,B}
+"""
+        group1 = Group().fromAdjacencyList(adjlist1)
+        orderedAtoms = group1.sortByConnectivity(group1.atoms)
+        self.assertEquals([x.label for x in orderedAtoms], ["*1", "*3", "*2"])
+
+        #Check a detached case, we should get *1, *3, *4, *2, *5
+        adjlist2 = """
+1 *1 C u0 {3,B}
+2 *2 C u0 {4,S} {5,B}
+3 *3 C u0 {1,B} {4,B}
+4 *4 C u0 {3,B} {2,S}
+5 *5 C u0 {2,B}
+"""
+        group2 = Group().fromAdjacencyList(adjlist2)
+        orderedAtoms = group2.sortByConnectivity(group2.atoms)
+        self.assertEquals([x.label for x in orderedAtoms], ["*1", "*3", "*4", "*2", "*5"])
+
+
     def testAddImplicitBenzene(self):
         """
         Test the Group.addImplicitBenzene method
@@ -667,6 +807,13 @@ class TestGroup(unittest.TestCase):
 3  *3 Cb u0 p0 c0 {2,B} {4,S}
 4  *4 O u0 p0 c0 {3,S}
     """
+
+        adjlist7="""
+1 *1 Cb u0 {4,B}
+2 *2 Cb u0 {3,B}
+3 *3 Cb u0 {4,B} {2,B}
+4 *4 Cb u0 {1,B} {3,B}
+"""
 
         benzene ="""
 1 C u0 {2,B} {6,B}
@@ -754,6 +901,7 @@ class TestGroup(unittest.TestCase):
         group4 = Group().fromAdjacencyList(adjlist4)
         group5 = Group().fromAdjacencyList(adjlist5)
         group6 = Group().fromAdjacencyList(adjlist6)
+        group7 = Group().fromAdjacencyList(adjlist7)
 
         benzeneGroup = Group().fromAdjacencyList(benzene)
         biphenylGroup = Group().fromAdjacencyList(biphenyl)
@@ -774,6 +922,8 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(answer5.isIsomorphic(group5))
         group6 = group6.addImplicitBenzene()
         self.assertTrue(answer6.isIsomorphic(group6))
+        group7 = group7.addImplicitBenzene()
+        self.assertTrue(benzeneGroup.isIsomorphic(group7))
 
     def testMakeSampleMolecule(self):
         """
@@ -814,6 +964,16 @@ class TestGroup(unittest.TestCase):
         result3 = group3.makeSampleMolecule()
         self.assertTrue(result3.isIsomorphic(Molecule().fromSMILES('[NH4+]')))
 
+        #test creation of charged species when some single bonds present
+        adjlist4 = """
+1 *2 [N5s,N5d] u0 {2,S} {3,S}
+2 *3 R!H       u1 {1,S}
+3 *4 H         u0 {1,S}
+"""
+        group4 = Group().fromAdjacencyList(adjlist4)
+        result4 = group4.makeSampleMolecule()
+        self.assertTrue(result4.isIsomorphic(Molecule().fromSMILES('[NH3+][CH2]')))
+
     def testIsBenzeneExplicit(self):
         """
         Test the Group.isBenzeneExplicit method
@@ -835,7 +995,6 @@ class TestGroup(unittest.TestCase):
         """
         benzene = Group().fromAdjacencyList(benzene)
         self.assertTrue(benzene.isBenzeneExplicit())
-
 
 ################################################################################
 

@@ -125,7 +125,7 @@ class GroupAtom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return '[{0}]'.format(','.join([repr(a.label) for a in self.atomType]))
+        return '[{0} {1}]'.format(self.label, ','.join([repr(a.label) for a in self.atomType]))
 
     def __repr__(self):
         """
@@ -701,7 +701,6 @@ class GroupBond(Edge):
         """
         newBond = mol.Bond(atom1, atom2, order = self.order[0])
         molecule.addBond(newBond)
-################################################################################
 
 class Group(Graph):
     """
@@ -788,6 +787,33 @@ class Group(Graph):
         the isomorphism functions, much more efficient.
         """
         return self.sortVertices()
+
+    def sortByConnectivity(self, atomList):
+        """
+        Args:
+            atomList: input list of atoms
+
+        Returns: a sorted list of atoms where each atom is connected to a previous
+        atom in the list if possible
+        """
+        # if no input given just return
+        if not atomList: return atomList
+
+        sortedAtomList=[]
+        sortedAtomList.append(atomList.pop(0))
+        while atomList:
+            for atom1 in sortedAtomList:
+                added = False
+                for atom2, bond12 in atom1.bonds.iteritems():
+                    if bond12.isBenzene() and atom2 in atomList:
+                        sortedAtomList.append(atom2)
+                        atomList.remove(atom2)
+                        added = True
+                if added: break
+            else:
+                sortedAtomList.append(atomList.pop(0))
+
+        return sortedAtomList
 
     def copy(self, deep=False):
         """
@@ -1139,6 +1165,26 @@ class Group(Graph):
 
         return modified
 
+    def createAndConnectAtom(self, atomtypes, connectingAtom, bondOrders):
+        """
+        This method creates an non-radical, uncharged, :class:GroupAtom with specified list of atomtypes and
+        connects it to one atom of the group, 'connectingAtom'. This is useful for making sample atoms.
+
+        Args:
+            atomtypes: list of atomtype labels (strs)
+            connectingAtom: :class:GroupAtom that is connected to the new benzene atom
+            bondOrders: list of bond Orders connecting newAtom and connectingAtom
+
+        Returns: the newly created atom
+        """
+        atomtypes = [atomTypes[label] for label in atomtypes] #turn into :class: atomtype instead of labels
+
+        newAtom = GroupAtom(atomType= atomtypes, radicalElectrons=[0], charge=[], label='', lonePairs=None)
+        newBond = GroupBond(connectingAtom, newAtom, order=bondOrders)
+        self.addAtom(newAtom)
+        self.addBond(newBond)
+        return newAtom
+
     def addExplicitLigands(self):
         """
         This function Od/Sd ligand to CO or CS atomtypes if they are not already there.
@@ -1162,13 +1208,12 @@ class Group(Graph):
 
         for atomIndex in atomsToAddTo:
             modified = True
+            atomtypes = None
             if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
-                newAtom = GroupAtom(atomType=[atomTypes['Od']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                atomtypes = ['Od']
             elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
-                newAtom = GroupAtom(atomType=[atomTypes['Sd']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-            self.addAtom(newAtom)
-            newBond = GroupBond(self.atoms[atomIndex], newAtom, order=['D'])
-            self.addBond(newBond)
+                atomtypes = ['Sd']
+            self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], ['D'])
 
         return modified
 
@@ -1266,6 +1311,66 @@ class Group(Graph):
 
         return copyGroup
 
+    def classifyBenzeneCarbons(self, partners = None):
+        """
+        Args:
+            group: :class:Group with atoms to classify
+            partners: dictionary of partnered up atoms, which must be a cbf atom
+
+        Returns: tuple with lists of each atom classification
+        """
+        if not partners: partners = {}
+
+        cbAtomList = []
+        cbfAtomList = [] #All Cbf Atoms
+        cbfAtomList1 = [] #Cbf Atoms that are bonded to exactly one other Cbf (part of 2 rings)
+        cbfAtomList2 = [] #Cbf that are sandwiched between two other Cbf (part of 2 rings)
+        connectedCbfs={} #dictionary of connections to other cbfAtoms
+
+        #Only want to work with benzene bonds on carbon
+        labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C']
+        #Also allow with R!H and some nitrogen groups
+        labelsOfCarbonAtomTypes.extend(['R!H', 'N5b', 'N3b'])
+
+        for atom in self.atoms:
+            if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
+            elif atom.atomType[0].label in ['Cb', 'N3b']: #Make Cb and N3b into normal cb atoms
+                cbAtomList.append(atom)
+            elif atom.atomType[0].label == 'Cbf':
+                cbfAtomList.append(atom)
+            else:
+                benzeneBonds = 0
+                for atom2, bond12 in atom.bonds.iteritems():
+                    if bond12.isBenzene(): benzeneBonds+=1
+                if benzeneBonds > 2: cbfAtomList.append(atom)
+                elif benzeneBonds >0: cbAtomList.append(atom)
+
+        #further sort the cbf atoms
+        for cbfAtom in cbfAtomList:
+            fbBonds = 0
+            connectedCbfs[cbfAtom] = []
+            for atom2, bond in cbfAtom.bonds.iteritems():
+                if bond.order[0] == 'B' and atom2 in cbfAtomList:
+                    fbBonds +=1
+                    connectedCbfs[cbfAtom].append(atom2)
+            if fbBonds < 2: cbfAtomList1.append(cbfAtom)
+            elif fbBonds == 2: cbfAtomList2.append(cbfAtom)
+            elif fbBonds == 3: pass #leaving here in case we ever want to handle Cbf3 atoms
+
+        #reclassify any atoms with partners as cbf1 atoms
+        for cbfAtom in partners:
+            if cbfAtom in cbAtomList:
+                cbAtomList.remove(cbfAtom)
+                cbfAtomList.append(cbfAtom)
+                cbfAtomList1.append(cbfAtom)
+
+        #check that cbfAtoms only have benzene bonds
+        for cbfAtom in cbfAtomList:
+            for atom2, bond12 in cbfAtom.bonds.iteritems():
+                assert bond12.isBenzene(), "Cbf atom in {0} has a bond with an order other than 'B'".format(self)
+
+        return (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)
+
     def addImplicitBenzene(self):
         """
         Returns: A modified group with any implicit benzene rings added
@@ -1279,112 +1384,7 @@ class Group(Graph):
         complete rings. This is much stricter than this method can handle, but right now
         this method cannot handle very general cases, so it is better to be conservative. 
         """
-
-        def classifyBenzeneCarbons(group, partners = []):
-            """
-            Args:
-                group: :class:Group with atoms to classify
-                partners: dictionary of partnered up atoms, which must be a cbf atom
-
-            Returns: tuple with lists of each atom classification
-            """
-            cbAtomList = []
-            cbfAtomList = [] #All Cbf Atoms
-            cbfAtomList1 = [] #Cbf Atoms that are bonded to exactly one other Cbf (part of 2 rings)
-            cbfAtomList2 = [] #Cbf that are sandwiched between two other Cbf (part of 2 rings)
-            connectedCbfs={} #dictionary of connections to other cbfAtoms
-
-            #Only want to work with benzene bonds on carbon
-            labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C']
-            #Also allow with R!H and some nitrogen groups
-            labelsOfCarbonAtomTypes.extend(['R!H', 'N5b', 'N3b'])
-
-            for atom in group.atoms:
-                if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-                elif atom.atomType[0].label in ['Cb', 'N3b']: #Make Cb and N3b into normal cb atoms
-                    cbAtomList.append(atom)
-                elif atom.atomType[0].label == 'Cbf':
-                    cbfAtomList.append(atom)
-                else:
-                    benzeneBonds = 0
-                    for atom2, bond12 in atom.bonds.iteritems():
-                        if bond12.isBenzene(): benzeneBonds+=1
-                    if benzeneBonds > 2: cbfAtomList.append(atom)
-                    elif benzeneBonds >0: cbAtomList.append(atom)
-
-            #further sort the cbf atoms
-            for cbfAtom in cbfAtomList:
-                fbBonds = 0
-                connectedCbfs[cbfAtom] = []
-                for atom2, bond in cbfAtom.bonds.iteritems():
-                    if bond.order[0] == 'B' and atom2 in cbfAtomList:
-                        fbBonds +=1
-                        connectedCbfs[cbfAtom].append(atom2)
-                if fbBonds < 2: cbfAtomList1.append(cbfAtom)
-                elif fbBonds == 2: cbfAtomList2.append(cbfAtom)
-                elif fbBonds == 3: pass #leaving here in case we ever want to handle Cbf3 atoms
-
-            #reclassify any atoms with partners as cbf1 atoms
-            for cbfAtom in partners:
-                if cbfAtom in cbAtomList:
-                    cbAtomList.remove(cbfAtom)
-                    cbfAtomList.append(cbfAtom)
-                    cbfAtomList1.append(cbfAtom)
-
-            #check that cbfAtoms only have benzene bonds
-            for cbfAtom in cbfAtomList:
-                for atom2, bond12 in cbfAtom.bonds.iteritems():
-                    assert bond12.isBenzene(), "Cbf atom in {0} has a bond with an order other than 'B'".format(group)
-
-            return (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)
-
-        def addBenzeneAtomToGroup(group, connectingAtom, cbf=False):
-            """
-            This function adds a benzene atom to the group
-
-            Args:
-                group: :class:Group that we want to add a benzene atom to
-                connectingAtom: :class:GroupAtom that is connected to the new benzene atom
-                cbf: boolean indicating if the new atom should be a cbf
-            Returns: a tuple containing the modified group and the new atom
-
-            """
-            newAtom = None
-            if cbf:
-                newAtom = GroupAtom(atomType=[atomTypes['Cbf']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-            else:
-                newAtom = GroupAtom(atomType=[atomTypes['Cb']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-            newBond = GroupBond(connectingAtom, newAtom, order=['B'])
-            group.addAtom(newAtom)
-            group.addBond(newBond)
-
-            return (group, newAtom)
-
-        def sortByConnectivity(atomList):
-            """
-            Args:
-                atomList: input list of atoms
-
-            Returns: a sorted list of atoms where each atom is connected to a previous
-            atom in the list if possible
-            """
-            sortedAtomList=[]
-            while atomList:
-                sortedAtomList.append(atomList.pop(0))
-                previousLength = len(sortedAtomList)
-                for atom1 in atomList:
-                    added = False
-                    for atom2, bond12 in atom1.bonds.iteritems():
-                        if atom2 in sortedAtomList:
-                            sortedAtomList.append(atom1)
-                            added = True
-                            break
-                    if added : continue
-                for atom1 in sortedAtomList[previousLength:]:
-                    atomList.remove(atom1)
-
-            return sortedAtomList
-
+        #First define some helper functions
         def checkSet(superList, subList):
             """
             Args:
@@ -1397,6 +1397,31 @@ class Group(Graph):
             superSet = set(superList)
             subSet = set(subList)
             return superSet.issuperset(subSet)
+
+        def addCbAtomToRing(ring, cbAtom):
+            """
+            Every 'Cb' atom belongs in exactly one benzene ring. This function checks
+            adds the cbAtom to the ring (in connectivity order) if the cbAtom is connected
+            to any the last or first atom in the partial ring.
+
+            Args:
+                ring: list of :class:GroupAtoms representing a partial ring to merge
+                cbAtom: :class:GroupAtom with atomtype 'Cb'
+
+            Returns: If cbAtom connects to the beginning or end of ring, returns a
+            new list of the merged ring, otherwise an empty list
+
+            """
+
+            mergedRing = []
+            #ring already complete
+            if len(ring) == 6 : return mergedRing
+            for atom2, bond12 in cbAtom.bonds.iteritems():
+                if bond12.isBenzene():
+                    if atom2 is ring[-1]: mergedRing = ring+[cbAtom]
+                    elif atom2 is ring[0]: mergedRing = [cbAtom] +ring
+
+            return mergedRing
 
         def mergeOverlappingBenzeneRings(ring1, ring2, od):
             """
@@ -1438,32 +1463,6 @@ class Group(Graph):
                 newRing = ring2[:od-1:-1] + ring1
 
             return newRing
-
-        def addCbAtomToRing(ring, cbAtom):
-            """
-            Every 'Cb' atom belongs in exactly one benzene ring. This function checks
-            adds the cbAtom to the ring (in connectivity order) if the cbAtom is connected
-            to any the last or first atom in the partial ring.
-
-            Args:
-                ring: list of :class:GroupAtoms representing a partial ring to merge
-                cbAtom: :class:GroupAtom with atomtype 'Cb'
-
-            Returns: If cbAtom connects to the beginning or end of ring, returns a
-            new list of the merged ring, otherwise an empty list
-
-            """
-
-            mergedRing = []
-            #ring already complete
-            if len(ring) == 6 : return mergedRing
-            for atom2, bond12 in cbAtom.bonds.iteritems():
-                if bond12.isBenzene():
-                    if atom2 is ring[-1]: mergedRing = ring+[cbAtom]
-                    elif atom2 is ring[0]: mergedRing = [cbAtom] +ring
-
-            return mergedRing
-
         #######################################################################################
         #start of main algorithm
         copyGroup = deepcopy(self)
@@ -1481,7 +1480,7 @@ class Group(Graph):
 
         Currently we only allow 3 Cbf atoms, so Cbf3 is not possible.
         """
-        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs) = classifyBenzeneCarbons(copyGroup)
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs) = copyGroup.classifyBenzeneCarbons()
 
         #check that there are less than three Cbf atoms
         if len(cbfAtomList) > 3:
@@ -1525,12 +1524,12 @@ class Group(Graph):
                     partners[potentialPartner]= cbfAtom
                 #otherwise create a new atom to be the partner
                 else:
-                    (copyGroup, newAtom) = addBenzeneAtomToGroup(copyGroup, cbfAtom, True)
+                    newAtom = copyGroup.createAndConnectAtom(['Cbf'], cbfAtom, ['B'])
                     partners[cbfAtom] = newAtom
                     partners[newAtom] = cbfAtom
 
         #reclassify all atoms since we may have added new ones
-        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs) = classifyBenzeneCarbons(copyGroup, partners)
+        (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs) = copyGroup.classifyBenzeneCarbons(partners)
 
         """
         Step 3. Sort all lists by connectivity
@@ -1540,9 +1539,9 @@ class Group(Graph):
         It is important that we always check atoms that are already connected to existing rings
         before completely disconnected atoms. Otherwise, we will erroneously create new rings.
         """
-        cbAtomList = sortByConnectivity(cbAtomList)
-        cbfAtomList1 = sortByConnectivity(cbfAtomList1)
-        cbfAtomList2 = sortByConnectivity(cbfAtomList2)
+        cbAtomList = copyGroup.sortByConnectivity(cbAtomList)
+        cbfAtomList1 = copyGroup.sortByConnectivity(cbfAtomList1)
+        cbfAtomList2 = copyGroup.sortByConnectivity(cbfAtomList2)
 
         """
         Step 4. Initalize the list of rings with any benzene rings that are already explicitly stated
@@ -1575,7 +1574,7 @@ class Group(Graph):
             allLigands = cbfAtom.bonds.keys()
             #add a new cb atom to the second newRing seed
             if len(allLigands) == 2:
-                (copyGroup, newAtom) = addBenzeneAtomToGroup(copyGroup, cbfAtom)
+                newAtom = copyGroup.createAndConnectAtom(['Cb'], cbfAtom, ['B'])
                 newRingSeeds[1].append(newAtom)
             #join the existing atom to the ringSeed
             elif len(allLigands) == 3:
@@ -1670,7 +1669,7 @@ class Group(Graph):
                 if x ==0: lastAtom = ring[-1]
                 else: lastAtom = mergedRingDict[index][-1]
                 #add a new atom to the ring and the group
-                (copyGroup, newAtom) = addBenzeneAtomToGroup(copyGroup, lastAtom)
+                newAtom = copyGroup. createAndConnectAtom(['Cb'], lastAtom, ['B'])
                 mergedRingDict[index].append(newAtom)
                 #At the end attach to the other endpoint
                 if x == carbonsToGrow -1:

@@ -127,6 +127,8 @@ cdef class Group(Graph):
 
     cpdef sortAtoms(self)
 
+    cpdef list sortByConnectivity(self, list atomList)
+
     cpdef Graph copy(self, bint deep=?)
 
     cpdef clearLabeledAtoms(self)
@@ -159,11 +161,15 @@ cdef class Group(Graph):
 
     cpdef bint addExplicitLigands(self)
 
+    cpdef GroupAtom createAndConnectAtom(self, list atomtype, GroupAtom connectingAtom, list bondOrders)
+
     cpdef bint standardizeGroup(self)
 
     cpdef Group addImplicitAtomsFromAtomType(self)
 
     cpdef mol.Molecule makeSampleMolecule(self)
+
+    cpdef tuple classifyBenzeneCarbons(self, dict partners=?)
 
     cpdef Group addImplicitBenzene(self)
 
