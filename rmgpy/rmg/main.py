@@ -66,6 +66,7 @@ from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
+from cantera import ck2cti
 
 ################################################################################
 
@@ -681,6 +682,13 @@ class RMG(util.Subject):
                 )
                 
                 plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+
+        # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
+        try:
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+        except EnvironmentError:
+            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
                 
         # Write output file
         logging.info('')
@@ -691,6 +699,25 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
+
+    def generateCanteraFiles(self, chemkinFile, **kwargs):
+        """
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
+        and save it in the cantera directory
+        """
+        transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
+        fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
+        outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        canteraDir = os.path.dirname(outName)
+        try:
+            os.makedirs(canteraDir)
+        except OSError:
+            if not os.path.isdir(canteraDir):
+                raise
+        if os.path.exists(outName):
+            os.remove(outName)
+        parser = ck2cti.Parser()
+        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
