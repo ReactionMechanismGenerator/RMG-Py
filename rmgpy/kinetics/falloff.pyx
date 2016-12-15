@@ -104,7 +104,7 @@ cdef class ThirdBody(PDepKineticsModel):
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, Troe):
+        if not isinstance(otherKinetics, ThirdBody):
             return False
         if not KineticsModel.isIdenticalTo(self,otherKinetics):
             return False
@@ -198,7 +198,7 @@ cdef class Lindemann(PDepKineticsModel):
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
         """
-        if not isinstance(otherKinetics, Troe):
+        if not isinstance(otherKinetics, Lindemann):
             return False
         if not KineticsModel.isIdenticalTo(self,otherKinetics):
             return False
