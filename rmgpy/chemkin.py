@@ -1340,7 +1340,7 @@ def getSpeciesIdentifier(species):
 
 ################################################################################
 
-def writeThermoEntry(species, verbose = True):
+def writeThermoEntry(species, elementCounts=None, verbose=True):
     """
     Return a string representation of the NASA model readable by Chemkin.
     To use this method you must have exactly two NASA polynomials in your
@@ -1360,7 +1360,8 @@ def writeThermoEntry(species, verbose = True):
     assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
 
     # Determine the number of each type of element in the molecule
-    elementCounts = retrieveElementCount(species.molecule[0])
+    if elementCounts is None:
+        elementCounts = retrieveElementCount(species.molecule[0])
     
     string = ''
     # Write thermo comments
@@ -1384,11 +1385,11 @@ def writeThermoEntry(species, verbose = True):
                 chemkinName = getElement(symbol, isotope=isotope).chemkinName
             else:
                 chemkinName = key
-            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
+            string += '{0!s:<2}{1:>3d}'.format(chemkinName, count)
         string += '     ' * (4 - len(elementCounts))
     else:
         string += '     ' * 4
-    string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
+    string += 'G{0:>10.3f}{1:>10.3f}{2:>8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
     if len(elementCounts) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
@@ -1399,7 +1400,7 @@ def writeThermoEntry(species, verbose = True):
                 chemkinName = getElement(symbol, isotope=isotope).chemkinName
             else:
                 chemkinName = key
-            string += '{0!s:<2}{1:<3d}'.format(chemkinName, count)
+            string += '{0!s:<2}{1:>3d}'.format(chemkinName, count)
     string += '\n'
 
     # Line 2

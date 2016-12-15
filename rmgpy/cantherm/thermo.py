@@ -50,6 +50,7 @@ from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
+from rmgpy.chemkin import writeThermoEntry
 
 ################################################################################
 
@@ -162,55 +163,9 @@ class ThermoJob:
         f.close()
         
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
-        
-        thermo = species.getThermoData()
-        if isinstance(thermo, NASA):
-        
-            poly_low = thermo.polynomials[0]
-            poly_high = thermo.polynomials[1]
-        
-            # Determine the number of each type of element in the molecule
-            elements = ['C','H','N','O']; elementCounts = [0,0,0,0]
-
-            # Remove elements with zero count
-            index = 2
-            while index < len(elementCounts):
-                if elementCounts[index] == 0:
-                    del elements[index]
-                    del elementCounts[index]
-                else:
-                    index += 1
-        
-            # Line 1
-            string = '{0:<16}        '.format(species.label)
-            if len(elements) <= 4:
-                # Use the original Chemkin syntax for the element counts
-                for symbol, count in zip(elements, elementCounts):
-                    string += '{0!s:<2}{1:<3d}'.format(symbol, count)
-                string += '     ' * (4 - len(elements))
-            else:
-                string += '     ' * 4
-            string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(poly_low.Tmin.value_si, poly_high.Tmax.value_si, poly_low.Tmax.value_si)
-            if len(elements) > 4:
-                string += '&\n'
-                # Use the new-style Chemkin syntax for the element counts
-                # This will only be recognized by Chemkin 4 or later
-                for symbol, count in zip(elements, elementCounts):
-                    string += '{0!s:<2}{1:<3d}'.format(symbol, count)
-            string += '\n'
-        
-            # Line 2
-            string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(poly_high.c0, poly_high.c1, poly_high.c2, poly_high.c3, poly_high.c4)
-        
-            # Line 3
-            string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    3\n'.format(poly_high.c5, poly_high.c6, poly_low.c0, poly_low.c1, poly_low.c2)
-        
-            # Line 4
-            string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}                   4\n'.format(poly_low.c3, poly_low.c4, poly_low.c5, poly_low.c6)
-        
-            f.write(string)
-            
-            f.close()
+        string = writeThermoEntry(species, elementCounts=species.props['elementCounts'], verbose=False)
+        f.write(string)
+        f.close()
     
 
     def plot(self, outputDirectory):
