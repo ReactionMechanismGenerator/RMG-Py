@@ -6,7 +6,7 @@ import rmgpy
 
 from .reduction import *
 
-class ReduceTest(unittest.TestCase):
+class ReduceFunctionalTest(unittest.TestCase):
 
     #MINIMAL
     wd = os.path.join(os.path.dirname(rmgpy.__file__), 'reduction/test_data/minimal/')
@@ -20,7 +20,7 @@ class ReduceTest(unittest.TestCase):
     def setUpClass(cls):
         from .input import load
 
-        super(ReduceTest, cls).setUpClass()
+        super(ReduceFunctionalTest, cls).setUpClass()
 
         rmg, targets, error = load(cls.inputFile, cls.reductionFile, cls.chemkinFile, cls.spcDict)
         cls.rmg = rmg
@@ -32,8 +32,8 @@ class ReduceTest(unittest.TestCase):
     
 
     def testComputeConversion(self):
-        rmg = ReduceTest.rmg
-        target = ReduceTest.targets[0]
+        rmg = ReduceFunctionalTest.rmg
+        target = ReduceFunctionalTest.targets[0]
         reactionModel = rmg.reactionModel
 
         atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
@@ -46,8 +46,8 @@ class ReduceTest(unittest.TestCase):
 
 
     def testReduceCompute(self):
-        rmg = ReduceTest.rmg
-        targets = ReduceTest.targets
+        rmg = ReduceFunctionalTest.rmg
+        targets = ReduceFunctionalTest.targets
         reactionModel = rmg.reactionModel
 
 
