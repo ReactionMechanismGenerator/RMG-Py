@@ -3,8 +3,12 @@ import os.path
 import unittest
 
 import rmgpy
+from external.wip import work_in_progress
 
 from .reduction import *
+
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.species import Species
 
 class ReduceFunctionalTest(unittest.TestCase):
 
@@ -63,5 +67,33 @@ class ReduceFunctionalTest(unittest.TestCase):
             conv, importantRxns = reduceModel(tol, targets, reactionModel, rmg, index)
             self.assertIsNotNone(conv)
 
+class ReduceUnitTest(unittest.TestCase):
+    
+
+    @work_in_progress
+    def testAllEntriesAccessibleInSearchTargetIndex(self):
+        butene1 = Species()
+        butene1.fromSMILES('C=CCC')
+        butene1.label = 'C4H8'
+        
+        butene2 = Species()
+        butene2.fromSMILES('CC=CC')
+        butene2.label = 'C4H8'
+        
+        
+        species_list =[butene1,butene2]
+        # make sure different species with same label
+        assert not species_list[0].isIsomorphic(species_list[1])
+        assert species_list[0].label == species_list[1].label
+        
+        # make fake reactionModel object to fit in with the unittest
+        reaction_model = CoreEdgeReactionModel()
+        reaction_model.core.species = species_list
+        
+        # ensure second species index is returned when it's label is used
+        # in `searchTargetIndex`.
+        input_index = 1
+        output_index = searchTargetIndex(species_list[input_index].label,reaction_model)
+        self.assertEqual(input_index,output_index,'searchTargetIndex will not return the second occurance of species with the same label.')
 if __name__ == '__main__':
     unittest.main()
