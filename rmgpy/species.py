@@ -546,15 +546,17 @@ class TransitionState():
     `frequency`     The negative frequency of the first-order saddle point
     `tunneling`     The type of tunneling model to use for tunneling through the reaction barrier
     `degeneracy`    The reaction path degeneracy
+    `props`         A generic 'properties' dictionary to store user-defined flags
     =============== ============================================================
     """
 
-    def __init__(self, label='', conformer=None, frequency=None, tunneling=None, degeneracy=1):
+    def __init__(self, label='', conformer=None, frequency=None, tunneling=None, degeneracy=1, props=None):
         self.label = label
         self.conformer = conformer
         self.frequency = frequency
         self.tunneling = tunneling
         self.degeneracy = degeneracy
+        self.props = props or {}
 
     def __repr__(self):
         """
@@ -567,6 +569,7 @@ class TransitionState():
         if self.frequency is not None: string += 'frequency={0!r}, '.format(self.frequency)
         if self.tunneling is not None: string += 'tunneling={0!r}, '.format(self.tunneling)
         if self.degeneracy != 1: string += 'degeneracy={0}, '.format(self.degeneracy)
+        if self.props is not None: string += 'props={0}, '.format(self.props)
         string = string[:-2] + ')'
         return string
 
@@ -574,7 +577,7 @@ class TransitionState():
         """
         A helper function used when pickling an object.
         """
-        return (TransitionState, (self.label, self.conformer, self.frequency, self.tunneling, self.degeneracy))
+        return (TransitionState, (self.label, self.conformer, self.frequency, self.tunneling, self.degeneracy, self.props))
 
     def getFrequency(self):
         return self._frequency
