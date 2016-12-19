@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.6. Thermo Estimation Module &mdash; RMG Py 2.0.0 documentation</title>
+    <title>9.6. Thermo Estimation Module &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="16. Standalone Modules" href="index.html" />
-    <link rel="next" title="16.7. Convert FAME to CanTherm Input File" href="convertFAME.html" />
-    <link rel="prev" title="16.5. Generating Flux Diagrams" href="generateFluxDiagram.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="9.7. Convert FAME to CanTherm Input File" href="convertFAME.html" />
+    <link rel="prev" title="9.5. Generating Flux Diagrams" href="generateFluxDiagram.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,38 +58,38 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="convertFAME.html" title="16.7. Convert FAME to CanTherm Input File"
+          <a href="convertFAME.html" title="9.7. Convert FAME to CanTherm Input File"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="generateFluxDiagram.html" title="16.5. Generating Flux Diagrams"
+          <a href="generateFluxDiagram.html" title="9.5. Generating Flux Diagrams"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">16. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="thermo-estimation-module">
-<span id="thermomodule"></span><h1>16.6. Thermo Estimation Module<a class="headerlink" href="#thermo-estimation-module" title="Permalink to this headline">¶</a></h1>
+<span id="thermomodule"></span><h1>9.6. Thermo Estimation Module<a class="headerlink" href="#thermo-estimation-module" title="Permalink to this headline">¶</a></h1>
 <p>The thermo estimation module can be run stand-alone. An example input file for
 this module is shown below:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;Cineole&#39;</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&#39;CC12CCC(CC1)C(C)(C)O2&#39;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Cineole&#39;</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC12CCC(CC1)C(C)(C)O2&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">quantumMechanics</span><span class="p">(</span>
-    <span class="n">software</span><span class="o">=</span><span class="s">&#39;mopac&#39;</span><span class="p">,</span><span class="c">#mopac or gaussian</span>
-    <span class="n">method</span><span class="o">=</span><span class="s">&#39;pm3&#39;</span><span class="p">,</span><span class="c">#pm3, pm6, pm7</span>
-    <span class="n">fileStore</span><span class="o">=</span><span class="s">&#39;QMfiles&#39;</span><span class="p">,</span> <span class="c"># defaults to inside the output folder.</span>
-    <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="k">True</span><span class="p">,</span><span class="c">#True, False</span>
-    <span class="n">maxRadicalNumber</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="c"># 0, 1</span>
+    <span class="n">software</span><span class="o">=</span><span class="s1">&#39;mopac&#39;</span><span class="p">,</span><span class="c1">#mopac or gaussian</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pm3&#39;</span><span class="p">,</span><span class="c1">#pm3, pm6, pm7</span>
+    <span class="n">fileStore</span><span class="o">=</span><span class="s1">&#39;QMfiles&#39;</span><span class="p">,</span> <span class="c1"># defaults to inside the output folder.</span>
+    <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="c1">#True, False</span>
+    <span class="n">maxRadicalNumber</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># 0, 1</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -103,7 +104,7 @@ set to its default value.  In particular, the thermodynamic properties for H and
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson&#8217;s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="../input.html#grimech3-0" id="id1">[GRIMech3.0]</a> as a ThermoLibrary in your model, the syntax will be:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This library is located in the
@@ -123,7 +124,7 @@ If a molecule has a higher radical number, the molecule is saturated with hydrog
 quantum mechanical calculations with subsequent hydrogen bond incrementation is used to determine the
 thermodynamic parameters.</p>
 <p>Submitting a job is easy:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">thermoEstimator</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">thermoEstimator</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>We recommend you make a job-specific directory for each thermoEstimator simulation.</p>
@@ -142,15 +143,15 @@ thermodynamic parameters.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/thermoEstimation.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/thermoEstimation.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -229,8 +230,8 @@ thermodynamic parameters.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

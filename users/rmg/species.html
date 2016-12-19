@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>9. Species Representation &mdash; RMG Py 2.0.0 documentation</title>
+    <title>10. Species Representation &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="10. Group Representation" href="group.html" />
-    <link rel="prev" title="8. Analyzing the Output Files" href="output.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="11. Group Representation" href="group.html" />
+    <link rel="prev" title="9.10. Reaction Reduction in an RMG Job" href="modules/reduction.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,20 +58,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="group.html" title="10. Group Representation"
+          <a href="group.html" title="11. Group Representation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="output.html" title="8. Analyzing the Output Files"
+          <a href="modules/reduction.html" title="9.10. Reaction Reduction in an RMG Job"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="species-representation">
-<span id="species"></span><h1>9. Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this headline">¶</a></h1>
+<span id="species"></span><h1>10. Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this headline">¶</a></h1>
 <p>Species objects in RMG contain a variety of attributes, including user given names,
 thermochemistry, as well as structural isomers.  See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><span class="std std-ref">rmgpy.species.Species</span></a> class
 documentation for more information.</p>
@@ -83,41 +84,41 @@ more information on adjacency lists, see the <a class="reference internal" href=
 <p>Species objects in the input file can also be constructed using other common representations
 such as SMILES, SMARTS, and InChIs.  The following can all be used to represent the methane
 species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Replacing the structure with any of the following representations will also produce
 the same species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s">&quot;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;</span>
 <span class="mi">1</span> <span class="n">C</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">4</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">5</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="s">&quot;),</span>
+<span class="s2">&quot;),</span>
 
-<span class="n">structure</span><span class="o">=</span><span class="n">SMARTS</span><span class="p">(</span><span class="s">&quot;[CH4]&quot;</span><span class="p">),</span>
+<span class="n">structure</span><span class="o">=</span><span class="n">SMARTS</span><span class="p">(</span><span class="s2">&quot;[CH4]&quot;</span><span class="p">),</span>
 
-<span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">),</span>
+<span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
 
-<span class="n">structure</span><span class="o">=</span><span class="n">InChI</span><span class="p">(</span><span class="s">&quot;InChI=1S/CH4/h1H4&quot;</span><span class="p">),</span>
+<span class="n">structure</span><span class="o">=</span><span class="n">InChI</span><span class="p">(</span><span class="s2">&quot;InChI=1S/CH4/h1H4&quot;</span><span class="p">),</span>
 </pre></div>
 </div>
 <p>To quickly generate any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
 species names, use the Molecule Search tool found here: <a class="reference external" href="http://rmg.mit.edu/molecule_search">http://rmg.mit.edu/molecule_search</a></p>
 <div class="section" id="representing-oxygen">
-<span id="id1"></span><h2>9.1. Representing Oxygen<a class="headerlink" href="#representing-oxygen" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>10.1. Representing Oxygen<a class="headerlink" href="#representing-oxygen" title="Permalink to this headline">¶</a></h2>
 <p>Special care should be taken when constructing a mechanism that involves
 molecular oxygen. The ground electronic state of molecular oxygen,
 <span class="math">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
 bond and two lone electrons. In RMG&#8217;s adjaceny list notation the ground state
 of oxygen is represented as</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="mi">1</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -125,7 +126,7 @@ of oxygen is represented as</p>
 your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
 more stable than the first singlet excited state, <span class="math">\(^1\Delta_g\)</span>, which
 does contain a double bond. The adjacency list for singlet oxygen is</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="mi">1</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -147,8 +148,8 @@ reactions of singlet oxygen have been included in RMG.</p>
 <p>In order to allow the singlet form of O2 to be used in RMG, please allow it explicitly by
 setting <code class="docutils literal"><span class="pre">allowSingletO2</span></code> to <code class="docutils literal"><span class="pre">True</span></code> in the <code class="docutils literal"><span class="pre">generateSpeciesConstraints</span></code> section of the
 RMG input file.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
-    <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="k">True</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
+    <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -166,8 +167,8 @@ RMG input file.</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9. Species Representation</a><ul>
-<li><a class="reference internal" href="#representing-oxygen">9.1. Representing Oxygen</a></li>
+<li><a class="reference internal" href="#">10. Species Representation</a><ul>
+<li><a class="reference internal" href="#representing-oxygen">10.1. Representing Oxygen</a></li>
 </ul>
 </li>
 </ul>
@@ -175,15 +176,15 @@ RMG input file.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/species.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/species.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -262,8 +263,8 @@ RMG input file.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Adjacency Lists &mdash; RMG Py 2.0.0 documentation</title>
+    <title>Adjacency Lists &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,15 +17,16 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.symmetry" href="symmetry.html" />
     <link rel="prev" title="rmgpy.molecule.Group" href="group.html" />
 <script type="text/x-mathjax-config">
@@ -64,8 +65,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
             
@@ -113,12 +114,12 @@ If a wildcard is desired, the line <code class="docutils literal"><span class="p
 all multiplicities.  If the multiplicity line is omitted altogether, then a wildcard
 is assumed.</p>
 <p>e.g. the following two group adjlists represent identical groups.</p>
-<div class="highlight-default"><div class="highlight"><pre>group1
+<div class="highlight-default"><div class="highlight"><pre><span></span>group1
 multiplicity x
 1    R!H u0
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre>group2
+<div class="highlight-default"><div class="highlight"><pre><span></span>group2
 1    R!H u0
 </pre></div>
 </div>
@@ -126,7 +127,7 @@ multiplicity x
 each subsequent line describes a single atom and its
 local bond structure. The format of these lines is a whitespace-delimited list
 with tokens</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="n">u</span><span class="o">&lt;</span><span class="n">unpaired</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">p</span><span class="o">&lt;</span><span class="n">pairs</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">c</span><span class="o">&lt;</span><span class="n">charge</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">bondlist</span><span class="o">&gt;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="n">u</span><span class="o">&lt;</span><span class="n">unpaired</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">p</span><span class="o">&lt;</span><span class="n">pairs</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">c</span><span class="o">&lt;</span><span class="n">charge</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">bondlist</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>The first item is the number used to identify that atom. Any number may be used,
@@ -179,7 +180,7 @@ automatically for full molecules.)</p>
 the molecule labeled with <code class="docutils literal"><span class="pre">*1</span></code> and <code class="docutils literal"><span class="pre">*2</span></code>. Note that hydrogen atoms
 can be omitted if desired, as their presence is inferred, provided that unpaired
 electrons, lone pairs, and charges are all correctly defined:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">HXD13</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">HXD13</span>
 <span class="n">multiplicity</span> <span class="mi">1</span>
 <span class="mi">1</span>    <span class="n">C</span> <span class="n">u0</span>       <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 <span class="mi">2</span>    <span class="n">C</span> <span class="n">u0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
@@ -280,15 +281,15 @@ adjacency list.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/adjlist.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/adjlist.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -367,8 +368,8 @@ adjacency list.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

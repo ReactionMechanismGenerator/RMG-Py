@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>2. Release Notes &mdash; RMG Py 2.0.0 documentation</title>
+    <title>17. Release Notes &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="3. Overview of Features" href="features.html" />
-    <link rel="prev" title="1. Introduction" href="introduction.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="18. Credits" href="credits.html" />
+    <link rel="prev" title="16. Frequently Asked Questions" href="faq.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,28 +58,28 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="features.html" title="3. Overview of Features"
+          <a href="credits.html" title="18. Credits"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="introduction.html" title="1. Introduction"
+          <a href="faq.html" title="16. Frequently Asked Questions"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="release-notes">
-<span id="releasenotes"></span><h1>2. Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<span id="releasenotes"></span><h1>17. Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="rmg-py-version-2-0-0">
-<h2>2.1. RMG-Py Version 2.0.0<a class="headerlink" href="#rmg-py-version-2-0-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.1. RMG-Py Version 2.0.0<a class="headerlink" href="#rmg-py-version-2-0-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 16, 2016</p>
 <p>This release includes several milestones of RMG project:</p>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt>Parallelization finally introduced in RMG:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Generates reactions during <code class="docutils literal"><span class="pre">enlarge</span></code> step in parallel fashion (<code class="docutils literal"><span class="pre">rmgpy.rmg.react</span></code>)</li>
 <li>Enables concurrent computing for QMTP thermochemistry calculations (<code class="docutils literal"><span class="pre">rmgpy.thermo.thermoengine</span></code>)</li>
 <li>Instructions of running RMG parallel mode can be found <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SLURM-scheduler">here for SLURM scheduler</a> and <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/Running-RMG-in-parallel-with-a-SGE-scheduler">here for SGE scheduler</a>.</li>
@@ -88,7 +89,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
 <li><dl class="first docutils">
 <dt>Polycyclic thermochemistry estimation improved:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Extends group additivity method for polycyclics and estimates polycyclics of any large sizes by a heuristic method (bicyclics decomposition)</li>
 </ul>
 </dd>
@@ -96,7 +97,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
 <li><dl class="first docutils">
 <dt>New tree averaging for kinetics:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Fixes previous issue of imcomplete generation of cross-level rate rules</li>
 <li>Implements Euclidean distance algorithm for the selection of the best rate rules to use in <code class="docutils literal"><span class="pre">estimateKinetics</span></code></li>
 <li>Streamlines storage of kinetics comments for averaged rules, which can be analyzed by <code class="docutils literal"><span class="pre">extractSourceFromComments</span></code></li>
@@ -106,7 +107,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
 <li><dl class="first docutils">
 <dt>Database entry accessibility tests:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Adds entry accessibility tests for future entries (<code class="docutils literal"><span class="pre">testing.databaseTest</span></code>)</li>
 </ul>
 </dd>
@@ -114,7 +115,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
 <li><dl class="first docutils">
 <dt>Fixes bugs</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>fluxdiagram generation is now fixed, one can use it to generate short video of fluxdigram evolution</li>
 <li>mac environment yml file is introduced to make sure smooth RMG-Py installation and jobs on mac</li>
 <li>fixes failure of <code class="docutils literal"><span class="pre">checkForExistingSpecies</span></code> for polyaromatics species</li>
@@ -128,14 +129,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-0-0">
-<h2>2.2. RMG-database Version 2.0.0<a class="headerlink" href="#rmg-database-version-2-0-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.2. RMG-database Version 2.0.0<a class="headerlink" href="#rmg-database-version-2-0-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 16, 2016</p>
 <p>In conjunction with the release of RMG-Py v2.0.0, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt>Polycyclic thermochemistry estimation improved:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>polycyclic database reorganized and more entries added in systematic way (<code class="docutils literal"><span class="pre">input.thermo.groups.polycyclic</span></code>)</li>
 </ul>
 </dd>
@@ -143,7 +144,7 @@ This release brings some new additions and fixes:</p>
 </li>
 <li><dl class="first docutils">
 <dt>Database entry accessibility tests:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Fixes existing inaccessible entries in solvation/statmech/thermo of RMG-database</li>
 </ul>
 </dd>
@@ -152,12 +153,12 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-4">
-<h2>2.3. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
+<h2>17.3. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 28, 2016</p>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt>Cantera support in RMG (<code class="docutils literal"><span class="pre">rmgpy.tools.canteraModel</span></code>):</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Provides functions to help simulate RMG models using Cantera.</li>
 <li>Has capability to generate cantera conditions and convert CHEMKIN files to cantera models, or use RMG to directly convert species and reactions objects to Cantera objects.</li>
 <li>Demonstrative example found in <code class="docutils literal"><span class="pre">ipython/canteraSimulation.ipynb</span></code></li>
@@ -167,7 +168,7 @@ This release brings some new additions and fixes:</p>
 </li>
 <li><dl class="first docutils">
 <dt>Module for regression testing of models generated by RMG (<code class="docutils literal"><span class="pre">rmgpy.tools.observableRegression</span></code>):</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Helps identify differences between two versions of models generated by RMG, using the &#8220;observables&#8221; that the user cares about.</li>
 </ul>
 </dd>
@@ -175,7 +176,7 @@ This release brings some new additions and fixes:</p>
 </li>
 <li><dl class="first docutils">
 <dt>Automatic plotting of simulations and sensitivities when generating models (<code class="docutils literal"><span class="pre">rmgpy.tools.plot</span></code>):</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Contains plotting classes useful for plotting simulations, sensitivities, and other data</li>
 <li>Automatic plotting of simulations in the job&#8217;s <code class="docutils literal"><span class="pre">solver</span></code> folder when <code class="docutils literal"><span class="pre">saveSimulationProfiles</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code> in the input file.</li>
 <li>Sensitivities for top 10 most sensitivie reactions and thermo now plotted automatically and stored in the <code class="docutils literal"><span class="pre">solver</span></code> folder.</li>
@@ -185,7 +186,7 @@ This release brings some new additions and fixes:</p>
 </li>
 <li><dl class="first docutils">
 <dt>Improved thermochemistry estimation (mostly for cyclics and polycyclics)</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Add rank as an additional attribute in thermo database entries to determine trustworthiness</li>
 </ul>
 </dd>
@@ -193,7 +194,7 @@ This release brings some new additions and fixes:</p>
 </li>
 <li><dl class="first docutils">
 <dt>Bug fixes:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Training reactions now load successfully regardless of <code class="docutils literal"><span class="pre">generateSpeciesConstraints</span></code> parameters</li>
 <li>Transport data is now saved correctly to CHEMKIN <code class="docutils literal"><span class="pre">tran.dat</span></code> file and also imports successfully</li>
 <li>Fixes appending of reactions to CHEMKIN file when reaction libraries are desired to be appended to output</li>
@@ -206,7 +207,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-3">
-<h2>2.4. RMG-Py Version 1.0.3<a class="headerlink" href="#rmg-py-version-1-0-3" title="Permalink to this headline">¶</a></h2>
+<h2>17.4. RMG-Py Version 1.0.3<a class="headerlink" href="#rmg-py-version-1-0-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 4, 2016</p>
 <p>This mini release contains the following updates:</p>
 <ul class="simple">
@@ -215,7 +216,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-2">
-<h2>2.5. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.5. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: January 29, 2016</p>
 <p>This new release adds several new features and bug fixes.</p>
 <ul class="simple">
@@ -236,34 +237,31 @@ the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">vis
 </ul>
 </div>
 <div class="section" id="rmg-database-version-1-0-2">
-<h2>2.6. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.6. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: January 29, 2016</p>
 <p>In conjunction with the release of RMG-Py v1.0.2, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
-<ul>
-<li><p class="first">New group additivity values for oxitene, oxerene, oexpane, and furan ring groups</p>
-</li>
+<ul class="simple">
+<li>New group additivity values for oxitene, oxerene, oexpane, and furan ring groups</li>
 <li><dl class="first docutils">
 <dt>Improvements to sulfur chemistry:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Restructuring of radical trees in the kinetics families <code class="docutils literal"><span class="pre">SubstitutionS</span></code> and <code class="docutils literal"><span class="pre">intra_substitutionCS_cyclization</span></code></li>
 <li>A reaction library for di-tert-butyl sulfide</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first">Improvements for the <code class="docutils literal"><span class="pre">R_Addition_Multiple_Bond</span></code> kinetics family through new rate rules
+<li>Improvements for the <code class="docutils literal"><span class="pre">R_Addition_Multiple_Bond</span></code> kinetics family through new rate rules
 for the addition of allyl radical to double bonds in ethene, propene, and butene-like
 compounds, based on CBS-QB3 estimates from K. Wang, S.M. Villano, A.M. Dean,
 &#8220;Reactions of allylic radicals that impact molecular weight growth kinetics&#8221;, <em>PCCP</em>,
-6255-6273 (2015).</p>
-</li>
-<li><p class="first">Several new thermodynamic and kinetics libraries for molecules associated with the
+6255-6273 (2015).</li>
+<li>Several new thermodynamic and kinetics libraries for molecules associated with the
 pyrolysis of cyclopentadiene in the presence of ethene, based off of calculations from
 the paper A.G. Vandeputte, S.S. Merchant, M.R. Djokic, K.M. Van Geem,
 G.B. Marin, W. H. Green, &#8220;Detailed study of cyclopentadiene pyrolysis in the
-presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</p>
-</li>
+presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</li>
 </ul>
 </div>
 </div>
@@ -279,13 +277,13 @@ presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</p
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">2. Release Notes</a><ul>
-<li><a class="reference internal" href="#rmg-py-version-2-0-0">2.1. RMG-Py Version 2.0.0</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-0-0">2.2. RMG-database Version 2.0.0</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-4">2.3. RMG-Py Version 1.0.4</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-3">2.4. RMG-Py Version 1.0.3</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-2">2.5. RMG-Py Version 1.0.2</a></li>
-<li><a class="reference internal" href="#rmg-database-version-1-0-2">2.6. RMG-database Version 1.0.2</a></li>
+<li><a class="reference internal" href="#">17. Release Notes</a><ul>
+<li><a class="reference internal" href="#rmg-py-version-2-0-0">17.1. RMG-Py Version 2.0.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-0-0">17.2. RMG-database Version 2.0.0</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-4">17.3. RMG-Py Version 1.0.4</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-3">17.4. RMG-Py Version 1.0.3</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-2">17.5. RMG-Py Version 1.0.2</a></li>
+<li><a class="reference internal" href="#rmg-database-version-1-0-2">17.6. RMG-database Version 1.0.2</a></li>
 </ul>
 </li>
 </ul>
@@ -293,15 +291,15 @@ presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</p
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/releaseNotes.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/releaseNotes.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -380,8 +378,8 @@ presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</p
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

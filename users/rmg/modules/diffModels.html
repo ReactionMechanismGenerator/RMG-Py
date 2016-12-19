@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.1. Model Comparison &mdash; RMG Py 2.0.0 documentation</title>
+    <title>9.1. Model Comparison &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="16. Standalone Modules" href="index.html" />
-    <link rel="next" title="16.2. Merging Models" href="mergeModels.html" />
-    <link rel="prev" title="16. Standalone Modules" href="index.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="9.2. Merging Models" href="mergeModels.html" />
+    <link rel="prev" title="9. Standalone Modules" href="index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,25 +58,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="mergeModels.html" title="16.2. Merging Models"
+          <a href="mergeModels.html" title="9.2. Merging Models"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="16. Standalone Modules"
+          <a href="index.html" title="9. Standalone Modules"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">16. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="model-comparison">
-<span id="diffmodels"></span><h1>16.1. Model Comparison<a class="headerlink" href="#model-comparison" title="Permalink to this headline">¶</a></h1>
+<span id="diffmodels"></span><h1>9.1. Model Comparison<a class="headerlink" href="#model-comparison" title="Permalink to this headline">¶</a></h1>
 <p>The script <code class="docutils literal"><span class="pre">diffModels</span></code> compares two RMG generated models to determine their differences.
 To use this method you will need the chemkin and species dictionary outputs from RMG. These can be found in the
 <code class="docutils literal"><span class="pre">chemkin</span></code> folder from the directory of the <code class="docutils literal"><span class="pre">input.py</span></code> file used for the RMG run.  The syntax is as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="o">--</span><span class="n">thermo1</span> <span class="n">THERMO1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span> <span class="o">--</span><span class="n">thermo2</span> <span class="n">THERMO2</span> <span class="o">--</span><span class="n">web</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="o">--</span><span class="n">thermo1</span> <span class="n">THERMO1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span> <span class="o">--</span><span class="n">thermo2</span> <span class="n">THERMO2</span> <span class="o">--</span><span class="n">web</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">CHEMKIN</span></code> represents the chemkin input file (<code class="docutils literal"><span class="pre">chem00XX.inp</span></code>), <code class="docutils literal"><span class="pre">SPECIESDICT</span></code>
@@ -84,7 +85,7 @@ to add separate thermo CHEMKIN files <code class="docutils literal"><span class=
 which model to each file is from.  The optional <code class="docutils literal"><span class="pre">--web</span></code> flag is used for running this script through the
 RMG-website.</p>
 <p>Running the script without any optional flags looks like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span>
 </pre></div>
 </div>
 <p>Output of each comparison is printed, and the method then produces a html file (<code class="docutils literal"><span class="pre">diff.html</span></code>)
@@ -104,15 +105,15 @@ for easy viewing of the comparison.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/diffModels.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/diffModels.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -191,8 +192,8 @@ for easy viewing of the comparison.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

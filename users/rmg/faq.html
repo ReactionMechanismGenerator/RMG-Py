@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>17. Frequently Asked Questions &mdash; RMG Py 2.0.0 documentation</title>
+    <title>16. Frequently Asked Questions &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="18. Credits" href="credits.html" />
-    <link rel="prev" title="16.9. Standardize Model Species Names" href="modules/standardizeModelSpeciesNames.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="17. Release Notes" href="releaseNotes.html" />
+    <link rel="prev" title="15. Liquid Phase Systems" href="liquids.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,32 +58,32 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="credits.html" title="18. Credits"
+          <a href="releaseNotes.html" title="17. Release Notes"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules/standardizeModelSpeciesNames.html" title="16.9. Standardize Model Species Names"
+          <a href="liquids.html" title="15. Liquid Phase Systems"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="frequently-asked-questions">
-<span id="faq"></span><h1>17. Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<span id="faq"></span><h1>16. Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
 <p>For any other questions related to RMG and its usage and installation, please
 post an issue at <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">https://github.com/ReactionMechanismGenerator/RMG-Py/issues</a> and the RMG
 developers will get back to you as soon as we can.  You can also search for your problem on the issues
 page to see if there are already solutions in development.  Alternatively, you can email us at
 <a class="reference external" href="mailto:rmg_dev&#37;&#52;&#48;mit&#46;edu">rmg_dev<span>&#64;</span>mit<span>&#46;</span>edu</a>.</p>
 <div class="section" id="why-can-t-my-adjacency-lists-be-read-any-more">
-<h2>17.1. Why can&#8217;t my adjacency lists be read any more?<a class="headerlink" href="#why-can-t-my-adjacency-lists-be-read-any-more" title="Permalink to this headline">¶</a></h2>
+<h2>16.1. Why can&#8217;t my adjacency lists be read any more?<a class="headerlink" href="#why-can-t-my-adjacency-lists-be-read-any-more" title="Permalink to this headline">¶</a></h2>
 <p>The adjacency list syntax changed in July 2014.
 The minimal requirement for most translations is to prefix the number
 of unpaired electrons with the letter <cite>u</cite>.</p>
 <p>Example old syntax:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">HXD13</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">HXD13</span>
 <span class="mi">1</span>    <span class="n">C</span> <span class="mi">0</span>       <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 <span class="mi">2</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
@@ -92,7 +93,7 @@ of unpaired electrons with the letter <cite>u</cite>.</p>
 </pre></div>
 </div>
 <p>Example new syntax:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">HXD13</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">HXD13</span>
 <span class="mi">1</span>    <span class="n">C</span> <span class="n">u0</span>       <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 <span class="mi">2</span>    <span class="n">C</span> <span class="n">u0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span>    <span class="n">C</span> <span class="n">u0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
@@ -120,8 +121,8 @@ See <a class="reference internal" href="../../reference/molecule/adjlist.html#rm
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">17. Frequently Asked Questions</a><ul>
-<li><a class="reference internal" href="#why-can-t-my-adjacency-lists-be-read-any-more">17.1. Why can&#8217;t my adjacency lists be read any more?</a></li>
+<li><a class="reference internal" href="#">16. Frequently Asked Questions</a><ul>
+<li><a class="reference internal" href="#why-can-t-my-adjacency-lists-be-read-any-more">16.1. Why can&#8217;t my adjacency lists be read any more?</a></li>
 </ul>
 </li>
 </ul>
@@ -129,15 +130,15 @@ See <a class="reference internal" href="../../reference/molecule/adjlist.html#rm
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/faq.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/faq.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -216,8 +217,8 @@ See <a class="reference internal" href="../../reference/molecule/adjlist.html#rm
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

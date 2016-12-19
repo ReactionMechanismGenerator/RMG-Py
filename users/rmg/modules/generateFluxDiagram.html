@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.5. Generating Flux Diagrams &mdash; RMG Py 2.0.0 documentation</title>
+    <title>9.5. Generating Flux Diagrams &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="16. Standalone Modules" href="index.html" />
-    <link rel="next" title="16.6. Thermo Estimation Module" href="thermoEstimation.html" />
-    <link rel="prev" title="16.4. Sensitivity Analysis" href="sensitivity.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="9.6. Thermo Estimation Module" href="thermoEstimation.html" />
+    <link rel="prev" title="9.4. Sensitivity Analysis" href="sensitivity.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,25 +58,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="thermoEstimation.html" title="16.6. Thermo Estimation Module"
+          <a href="thermoEstimation.html" title="9.6. Thermo Estimation Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sensitivity.html" title="16.4. Sensitivity Analysis"
+          <a href="sensitivity.html" title="9.4. Sensitivity Analysis"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">16. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="generating-flux-diagrams">
-<span id="generatefluxdiagram"></span><h1>16.5. Generating Flux Diagrams<a class="headerlink" href="#generating-flux-diagrams" title="Permalink to this headline">¶</a></h1>
+<span id="generatefluxdiagram"></span><h1>9.5. Generating Flux Diagrams<a class="headerlink" href="#generating-flux-diagrams" title="Permalink to this headline">¶</a></h1>
 <p>The script, <code class="docutils literal"><span class="pre">generateFluxDiagrams.py</span></code>, will create a movie out of a completed RMG model
 that shows interconnected arrows between species that represent fluxes.</p>
 <p>To use this method, you just need a completed RMG run.  THe syntax is as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">generateFluxDiagram</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateFluxDiagram</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">input.py</span></code> is the input file for the completed RMG run.  The program will use the automatically
@@ -95,15 +96,15 @@ generated file structure to find the other necessary files to create the movie.<
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/generateFluxDiagram.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/generateFluxDiagram.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -182,8 +183,8 @@ generated file structure to find the other necessary files to create the movie.<
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

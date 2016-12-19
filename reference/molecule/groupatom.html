@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.GroupAtom &mdash; RMG Py 2.0.0 documentation</title>
+    <title>rmgpy.molecule.GroupAtom &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,15 +17,16 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.GroupBond" href="groupbond.html" />
     <link rel="prev" title="rmgpy.molecule.Molecule" href="molecule.html" />
 <script type="text/x-mathjax-config">
@@ -64,8 +65,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
             
@@ -143,6 +144,24 @@ respects wildcards, e.g. <code class="docutils literal"><span class="pre">R!H</s
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.GroupAtom.getBondOrdersForAtom">
+<code class="descname">getBondOrdersForAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.getBondOrdersForAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>This helper function is to help calculate total bond orders for an
+input atom.</p>
+<p>Some special consideration for the order <cite>B</cite> bond. For atoms having
+three <cite>B</cite> bonds, the order for each is 4/3.0, while for atoms having other
+than three <cite>B</cite> bonds, the order for  each is 3/2.0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupAtom.hasWildcards">
+<code class="descname">hasWildcards</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.hasWildcards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom has wildcards in any of the attributes:
+atomtype, electronpairs, lone pairs, charge, and bond order. Returns
+&#8216;&#8217;False&#8217;&#8217; if no attribute has wildcards.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.isOxygen">
 <code class="descname">isOxygen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.isOxygen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal"><span class="pre">False</span></code> if
@@ -162,6 +181,14 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 <code class="descname">isSulfur</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.isSulfur" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupAtom.makeSampleAtom">
+<code class="descname">makeSampleAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.makeSampleAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: a class :Atom: object analagous to the GroupAtom</p>
+<p>This makes a sample, so it takes the first element when there are multiple options inside of
+self.atomtype, self.radicalElectrons, self.lonePairs, and self.charge</p>
 </dd></dl>
 
 <dl class="method">
@@ -186,15 +213,15 @@ not.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/groupatom.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/groupatom.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -273,8 +300,8 @@ not.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

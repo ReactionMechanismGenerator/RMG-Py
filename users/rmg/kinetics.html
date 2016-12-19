@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>13. Kinetics Estimation &mdash; RMG Py 2.0.0 documentation</title>
+    <title>14. Kinetics Estimation &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="14. Liquid Phase Systems" href="liquids.html" />
-    <link rel="prev" title="12. Thermochemistry Estimation" href="thermo.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="15. Liquid Phase Systems" href="liquids.html" />
+    <link rel="prev" title="13. Thermochemistry Estimation" href="thermo.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,24 +58,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="liquids.html" title="14. Liquid Phase Systems"
+          <a href="liquids.html" title="15. Liquid Phase Systems"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="thermo.html" title="12. Thermochemistry Estimation"
+          <a href="thermo.html" title="13. Thermochemistry Estimation"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="kinetics-estimation">
-<span id="kinetics"></span><h1>13. Kinetics Estimation<a class="headerlink" href="#kinetics-estimation" title="Permalink to this headline">¶</a></h1>
+<span id="kinetics"></span><h1>14. Kinetics Estimation<a class="headerlink" href="#kinetics-estimation" title="Permalink to this headline">¶</a></h1>
 <p>This section gives in-depth descriptions of algorithms used for determining
 kinetic parameters. For general usage of the kinetic database see <a class="reference internal" href="database/kinetics.html#kineticsdatabase"><span class="std std-ref">Kinetics Database</span></a>.</p>
 <div class="section" id="priority-of-kinetic-databases">
-<h2>13.1. Priority of Kinetic Databases<a class="headerlink" href="#priority-of-kinetic-databases" title="Permalink to this headline">¶</a></h2>
+<h2>14.1. Priority of Kinetic Databases<a class="headerlink" href="#priority-of-kinetic-databases" title="Permalink to this headline">¶</a></h2>
 <p>When multiple sources are available for kinetic parameters, the following priority
 is followed:</p>
 <ol class="arabic simple">
@@ -128,7 +129,7 @@ by averages of its child nodes, which generates an averaged rate rule with rank 
 Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.</p>
 </div>
 <div class="section" id="kinetic-families">
-<h2>13.2. Kinetic Families<a class="headerlink" href="#kinetic-families" title="Permalink to this headline">¶</a></h2>
+<h2>14.2. Kinetic Families<a class="headerlink" href="#kinetic-families" title="Permalink to this headline">¶</a></h2>
 <p>To show the algorithm used by kinetic families, the following H-abstraction will be
 used an example</p>
 <img alt="../../_images/ExampleReaction.png" class="align-center" src="../../_images/ExampleReaction.png" />
@@ -168,9 +169,9 @@ up to more and more general nodes. In the worst case, the root nodes may be used
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">13. Kinetics Estimation</a><ul>
-<li><a class="reference internal" href="#priority-of-kinetic-databases">13.1. Priority of Kinetic Databases</a></li>
-<li><a class="reference internal" href="#kinetic-families">13.2. Kinetic Families</a></li>
+<li><a class="reference internal" href="#">14. Kinetics Estimation</a><ul>
+<li><a class="reference internal" href="#priority-of-kinetic-databases">14.1. Priority of Kinetic Databases</a></li>
+<li><a class="reference internal" href="#kinetic-families">14.2. Kinetic Families</a></li>
 </ul>
 </li>
 </ul>
@@ -178,15 +179,15 @@ up to more and more general nodes. In the worst case, the root nodes may be used
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/kinetics.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/kinetics.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -265,8 +266,8 @@ up to more and more general nodes. In the worst case, the root nodes may be used
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

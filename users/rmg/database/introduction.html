@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>11.1. Introduction &mdash; RMG Py 2.0.0 documentation</title>
+    <title>12.1. Introduction &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="11. Databases" href="index.html" />
-    <link rel="next" title="11.2. Thermo Database" href="thermo.html" />
-    <link rel="prev" title="11. Databases" href="index.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="12.2. Thermo Database" href="thermo.html" />
+    <link rel="prev" title="12. Databases" href="index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,24 +58,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="thermo.html" title="11.2. Thermo Database"
+          <a href="thermo.html" title="12.2. Thermo Database"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="11. Databases"
+          <a href="index.html" title="12. Databases"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">11. Databases</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="introduction">
-<span id="introdatabase"></span><h1>11.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<span id="introdatabase"></span><h1>12.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p>This section describes some of the general characteristics of RMG&#8217;s databases.</p>
 <div class="section" id="group-definitions">
-<h2>11.1.1. Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h2>
+<h2>12.1.1. Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h2>
 <p>The main section in many of RMG&#8217;s databases are the &#8216;group&#8217; definitions. Groups are
 <a class="reference internal" href="../../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacency lists</span></a>
 that describe structures around the reacting atoms. Between the adjacency
@@ -184,13 +185,13 @@ table below shows all atoms types in RMG.</p>
 </tbody>
 </table>
 <p>Additionally, groups can also be defined as unions of other groups. For example,:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">label</span><span class="o">=</span><span class="s">&quot;X_H_or_Xrad_H&quot;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;X_H_or_Xrad_H&quot;</span><span class="p">,</span>
 <span class="n">group</span><span class="o">=</span><span class="n">OR</span><span class="p">{</span><span class="n">X_H</span><span class="p">,</span> <span class="n">Xrad_H</span><span class="p">},</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="forbidden-groups">
-<h2>11.1.2. Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this headline">¶</a></h2>
+<h2>12.1.2. Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this headline">¶</a></h2>
 <p>Forbidden groups can be defined to ban structures globally in RMG or to
 ban pathways in a specific kinetic family.</p>
 <p>Globally forbidden structures will ban all reactions containing either reactants
@@ -199,10 +200,10 @@ or products that are forbidden.  These groups are stored in in the file located 
 <p>To ban certain specific pathways in the kinetics
 families, a <cite>forbidden</cite> group must be created, like the following group
 in the <code class="docutils literal"><span class="pre">intra_H_migration</span></code> family</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">forbidden</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;bridged56_1254&quot;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;bridged56_1254&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="s">&quot;</span>
+<span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="s2">&quot;</span>
 <span class="mi">1</span> <span class="o">*</span><span class="mi">1</span> <span class="n">C</span> <span class="mi">1</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">6</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="o">*</span><span class="mi">4</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">7</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
@@ -212,12 +213,12 @@ in the <code class="docutils literal"><span class="pre">intra_H_migration</span>
 <span class="mi">7</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">8</span> <span class="o">*</span><span class="mi">3</span> <span class="n">H</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="sd">&quot;&quot;&quot;,</span>
-<span class="sd">    shortDesc = u&quot;&quot;&quot;</span><span class="s">&quot;&quot;&quot;,</span>
-<span class="s">    longDesc =</span>
-<span class="s">u&quot;&quot;&quot;</span>
+<span class="sd">    shortDesc = u&quot;&quot;&quot;</span><span class="s2">&quot;&quot;&quot;,</span>
+<span class="s2">    longDesc =</span>
+<span class="s2">u&quot;&quot;&quot;</span>
 
-<span class="s">&quot;&quot;&quot;,</span>
-<span class="s">)</span>
+<span class="s2">&quot;&quot;&quot;,</span>
+<span class="s2">)</span>
 </pre></div>
 </div>
 <p>Forbidden groups should be placed inside the groups.py file located inside the
@@ -226,7 +227,7 @@ alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.</p>
 </div>
 <div class="section" id="hierarchical-trees">
-<h2>11.1.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h2>
+<h2>12.1.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h2>
 <p>Groups are ordered into the nodes of a hierarchical trees which is written
 at the end of groups.py. The root node of each tree is the most general group with
 the reacting atoms required for the family. Descending from the root node are
@@ -252,10 +253,10 @@ Templates can be filled in with kinetic parameters from the training set or rule
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">11.1. Introduction</a><ul>
-<li><a class="reference internal" href="#group-definitions">11.1.1. Group Definitions</a></li>
-<li><a class="reference internal" href="#forbidden-groups">11.1.2. Forbidden Groups</a></li>
-<li><a class="reference internal" href="#hierarchical-trees">11.1.3. Hierarchical Trees</a></li>
+<li><a class="reference internal" href="#">12.1. Introduction</a><ul>
+<li><a class="reference internal" href="#group-definitions">12.1.1. Group Definitions</a></li>
+<li><a class="reference internal" href="#forbidden-groups">12.1.2. Forbidden Groups</a></li>
+<li><a class="reference internal" href="#hierarchical-trees">12.1.3. Hierarchical Trees</a></li>
 </ul>
 </li>
 </ul>
@@ -263,15 +264,15 @@ Templates can be filled in with kinetic parameters from the training set or rule
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/introduction.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/introduction.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -350,8 +351,8 @@ Templates can be filled in with kinetic parameters from the training set or rule
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

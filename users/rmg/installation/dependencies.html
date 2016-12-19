@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.4.1. Dependencies &mdash; RMG Py 2.0.0 documentation</title>
+    <title>3.4.1. Dependencies &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="4. Installation" href="index.html" />
-    <link rel="next" title="4.5.1. FAQ collection" href="faq.html" />
-    <link rel="prev" title="4.3.2. MacOS X Installation" href="macos.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="3.5.1. FAQ collection" href="faq.html" />
+    <link rel="prev" title="3.3.2. MacOS X Installation" href="macos.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,23 +58,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="faq.html" title="4.5.1. FAQ collection"
+          <a href="faq.html" title="3.5.1. FAQ collection"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="macos.html" title="4.3.2. MacOS X Installation"
+          <a href="macos.html" title="3.3.2. MacOS X Installation"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">4. Installation</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">3. Installation</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="dependencies">
-<span id="id1"></span><h1>4.4.1. Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>3.4.1. Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="list-of-dependencies">
-<h2>4.4.1.1. List of Dependencies<a class="headerlink" href="#list-of-dependencies" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.1.1. List of Dependencies<a class="headerlink" href="#list-of-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>Briefly, RMG depends on the following packages, almost all of which can be found in the <a class="reference external" href="https://anaconda.org/rmg">RMG anaconda channel</a> as binary packages.</p>
 <ul class="simple">
 <li><strong>boost:</strong> portable C++ source libraries</li>
@@ -110,7 +111,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </ul>
 </div>
 <div class="section" id="license-restrictions-on-dependencies">
-<span id="dependenciesrestrictions"></span><h2>4.4.1.2. License Restrictions on Dependencies<a class="headerlink" href="#license-restrictions-on-dependencies" title="Permalink to this headline">¶</a></h2>
+<span id="dependenciesrestrictions"></span><h2>3.4.1.2. License Restrictions on Dependencies<a class="headerlink" href="#license-restrictions-on-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>All of RMG&#8217;s dependencies except the ones listed below are freely available and compatible with RMG&#8217;s open source MIT license (though the specific nature of their licenses vary).</p>
 <ul class="simple">
 <li><strong>pydas</strong>: The DAE solvers used in the simulations come from <a class="reference external" href="http://www.engineering.ucsb.edu/~cse/software.html">Linda Petzold’s research group</a> at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which &#8220;is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is &#8220;available in the public domain.”</li>
@@ -135,9 +136,9 @@ the then you will need the third-party software for the QM calculations:</p>
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4.4.1. Dependencies</a><ul>
-<li><a class="reference internal" href="#list-of-dependencies">4.4.1.1. List of Dependencies</a></li>
-<li><a class="reference internal" href="#license-restrictions-on-dependencies">4.4.1.2. License Restrictions on Dependencies</a></li>
+<li><a class="reference internal" href="#">3.4.1. Dependencies</a><ul>
+<li><a class="reference internal" href="#list-of-dependencies">3.4.1.1. List of Dependencies</a></li>
+<li><a class="reference internal" href="#license-restrictions-on-dependencies">3.4.1.2. License Restrictions on Dependencies</a></li>
 </ul>
 </li>
 </ul>
@@ -145,15 +146,15 @@ the then you will need the third-party software for the QM calculations:</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/dependencies.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/dependencies.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -232,8 +233,8 @@ the then you will need the third-party software for the QM calculations:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9.10. Reaction Reduction in an RMG Job &#8212; RMG Py 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="10. Species Representation" href="../species.html" />
+    <link rel="prev" title="9.9. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body role="document">
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../species.html" title="10. Species Representation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="standardizeModelSpeciesNames.html" title="9.9. Standardize Model Species Names"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="reaction-reduction-in-an-rmg-job">
+<span id="reduction"></span><h1>9.10. Reaction Reduction in an RMG Job<a class="headerlink" href="#reaction-reduction-in-an-rmg-job" title="Permalink to this headline">¶</a></h1>
+<p>This script is located at <code class="docutils literal"><span class="pre">RMG-Py/rmgpy/reduction/main.py</span></code> instead of the usual
+<code class="docutils literal"><span class="pre">RMG-Py/scripts</span></code> folder.</p>
+<p>RMG&#8217;s method of generating reactions between all species in a core mechanism and
+including them in the resulting model
+is a robust process to obtain all chemistry. However, the huge number of cross reactions
+lead to a non-sparse matrix, which can increase computational time when using
+the resulting models in other simulations.</p>
+<p>To help reduce the complexity of RMG produced mechanisms, a mechanism reduction
+script was written that eliminates unimportant reactions up to a set threshold.
+Though this method will reduce number of reactions and guarantee target species
+concentrations at the given conditions are minimally affected, no guarantee is given
+that it will result in optimally reduced mechanism.</p>
+<p>To reduce an RMG job, you will need an additional file <code class="docutils literal"><span class="pre">reduction_input.py</span></code>.
+This file contains two terms that tell the reduction algorithm what to do. The
+example file located in <code class="docutils literal"><span class="pre">rmgpy/reduction/test_data/minimal/chemkin</span></code> is written
+as followed.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<span class="n">tolerance</span> <span class="o">=</span> <span class="o">.</span><span class="mi">05</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">targets</span></code> is a list of species labels whose concentration change should be minimized, and <code class="docutils literal"><span class="pre">tolerance</span></code>
+is the percent change the user can tolerate at the end of simulation. In the above
+example, this would be 5%.
+Higher values of <code class="docutils literal"><span class="pre">tolerance</span></code> lead to fewer final reactions with more error in
+output rates.</p>
+<p>To run a simulation, type</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>python $RMG/rmgpy/reduction/main.py input.py reduction_input.py chem_annotated.inp species_dictionary.txt
+</pre></div>
+</div>
+<p>A command line interface to the reduction driver script is contained in
+<code class="docutils literal"><span class="pre">rmgpy/reduction/main.py</span></code>. It accepts four files:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">input.py</span></code>: RMG-Py input file containing the settings to evaluate state variables.</li>
+<li><code class="docutils literal"><span class="pre">reduction_input.py</span></code>: Reduction input file containing the target variables and associated error tolerances to allow in the reduced model</li>
+<li><code class="docutils literal"><span class="pre">chem_annotated.inp</span></code>: the reaction mechanism to reduce.</li>
+<li><code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>: the species dictionary associated with the reaction mechanism to reduce.</li>
+</ul>
+<p>The algorithm will reduce the number of reactions until the tolerance is no
+longer met. If everything goes as planned, a <code class="docutils literal"><span class="pre">chem_reduced.inp</span></code> is generated
+containing the reduced mechanism. In addition, a number of files
+<code class="docutils literal"><span class="pre">chem_reduced_{i}.inp</span></code> are created and correspond to the intermediate
+reduced mechanisms. They can be used in place of the final reduced model, in case
+the reduction algorithm does not terminate normally.</p>
+<p>You can go to <code class="docutils literal"><span class="pre">$RMG/examples/reduction</span></code> to try this module.</p>
+<div class="section" id="background">
+<h2>9.10.1. Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>The reduction algorithm computes the ratio of species reaction rate
+(<span class="math">\(r_{ij}\)</span>) to the total rate of formation/consumption (<span class="math">\(R_i\)</span>) of all species i,
+and compares this ratio to a tolerance (<span class="math">\(\epsilon\)</span>), with values of epsilon
+between 0 and 1. If the ratio of a reaction is greater than epsilon it
+is deemed <em>important</em> for the species in question. When a reaction is
+not important for a single species, at any given time between t=0 and
+the user-defined end time, then it is deemed unimportant for the given
+system. As a result, the reaction is removed from the mechanism.</p>
+<p>The value of epsilon is determined by an optimization algorithm that
+attempts to reduce the model as much as possible given the constraints
+of the user-defined target variables. A logarithmic bisection
+optimization algorithm is used to provide guesses for the value of
+epsilon based on the two previous guesses that undershoot and overshoot
+the user-defined relative deviation of the target variables</p>
+<p>A value of 5% for the relative deviation of the target variable implies
+that the mole fraction of the target variable at the end time of the
+batch reactor simulation as computed by the reduced mechanism may
+deviate up to 5% w.r.t. to the mole fraction of the target variable at
+the end time of the batch reactor simulation as computed by the full
+mechanism.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.10. Reaction Reduction in an RMG Job</a><ul>
+<li><a class="reference internal" href="#background">9.10.1. Background</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/reduction.rst.rst"
+           rel="nofollow">Edit this page</a></h4><P>
+<div class="customsidebar">
+<P>
+<table cellpadding="3">
+
+<tr><td>
+        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
+        <div class="linkdesc">Learn more about the RMG software</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/"><img src="../../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
+        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
+        <div class="linkdesc">Online form for making an RMG input file</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/molecule_search"><img src="../../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
+        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
+        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/solvation_search"><img src="../../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
+        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
+</td></tr>
+
+
+<tr><td>
+        <a href="http://rmg.mit.edu/pdep/"><img src="../../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
+        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
+</td></tr>
+
+<tr><td>
+        <a href="http://rmg.mit.edu/tools/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
+</td>
+<td>
+        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
+        <div class="linkdesc">Additional tools to supplement RMG</div>
+</td></tr>
+
+</table>
+
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

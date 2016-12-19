@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>2. Installation &mdash; RMG Py 2.0.0 documentation</title>
+    <title>2. Installation &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,15 +17,16 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="CanTherm User’s Guide" href="index.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations" href="input.html" />
     <link rel="prev" title="1. Introduction" href="introduction.html" />
 <script type="text/x-mathjax-config">
@@ -64,8 +65,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
@@ -90,7 +91,7 @@ and special functions.</li>
 <li>Argparse. For parsing input arguments when running scripts</li>
 </ul>
 <p>You can install these dependencies on Linux in the following fashion.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">numpy</span> <span class="n">python</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python</span><span class="o">-</span><span class="n">cairo</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">numpy</span> <span class="n">python</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python</span><span class="o">-</span><span class="n">cairo</span>
 <span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">cython</span><span class="o">&gt;=</span><span class="mf">0.19</span> <span class="n">quantities</span> <span class="n">argparse</span>
 </pre></div>
 </div>
@@ -100,20 +101,20 @@ and special functions.</li>
 <h2>2.2. Installing CanTherm<a class="headerlink" href="#installing-cantherm" title="Permalink to this headline">¶</a></h2>
 <p>Once you have obtained the required dependencies, CanTherm can be installed by
 first obtaining the RMG-Py source code by either downloading into a directory using git:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">Py</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">Py</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <p>or by downloading the zip file of the current RMG-Py master source code found
 <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/archive/master.zip">here</a> and unzipping into
 the appropriate directory.</p>
 <p>Inside the root package directory for <code class="docutils literal"><span class="pre">RMG-Py</span></code>, execute the following make command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">make</span> <span class="n">cantherm</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">cantherm</span>
 </pre></div>
 </div>
 <p>The appropriate cythonization and compilation steps will now begin.  When they are completed,
 you can run a test example by going into the examples folder to run a sample Cantherm job
 to verify the installation:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cd</span> <span class="n">examples</span><span class="o">/</span><span class="n">cantherm</span><span class="o">/</span><span class="n">networks</span><span class="o">/</span><span class="n">acetyl</span><span class="o">+</span><span class="n">O2</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">examples</span><span class="o">/</span><span class="n">cantherm</span><span class="o">/</span><span class="n">networks</span><span class="o">/</span><span class="n">acetyl</span><span class="o">+</span><span class="n">O2</span>
 <span class="n">python</span> <span class="o">../../../../</span><span class="n">cantherm</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -142,15 +143,15 @@ to verify the installation:</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/cantherm/installation.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/cantherm/installation.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -229,8 +230,8 @@ to verify the installation:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

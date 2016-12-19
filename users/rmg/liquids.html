@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>14. Liquid Phase Systems &mdash; RMG Py 2.0.0 documentation</title>
+    <title>15. Liquid Phase Systems &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="15. Guidelines for Building a Model" href="guidelines.html" />
-    <link rel="prev" title="13. Kinetics Estimation" href="kinetics.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="16. Frequently Asked Questions" href="faq.html" />
+    <link rel="prev" title="14. Kinetics Estimation" href="kinetics.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,36 +58,36 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="guidelines.html" title="15. Guidelines for Building a Model"
+          <a href="faq.html" title="16. Frequently Asked Questions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="kinetics.html" title="13. Kinetics Estimation"
+          <a href="kinetics.html" title="14. Kinetics Estimation"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="liquid-phase-systems">
-<span id="liquids"></span><h1>14. Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
+<span id="liquids"></span><h1>15. Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
 <p>To simulate liquids in RMG requires a module in your input file for liquid-phase:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">solvation</span><span class="p">(</span>
-    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">solvation</span><span class="p">(</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Your reaction system will also be different (liquidReactor rather than simpleReactor):</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">liquidReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">liquidReactor</span><span class="p">(</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
-        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+        <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s2">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
-    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;octane&#39;</span><span class="p">,</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;octane&#39;</span><span class="p">,</span><span class="s1">&#39;oxygen&#39;</span><span class="p">],</span>
     <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 
 <span class="p">)</span>
@@ -123,7 +124,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 <p>Notes: sensitivity, sensitivityThreshold and constantSpecies are optionnal keywords.</p>
 <div class="section" id="equation-of-state">
-<h2>14.1. Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
+<h2>15.1. Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
 <p>Specifying a liquidReactor will have two effects:</p>
 <ol class="arabic simple">
 <li>disable the ideal gas law renormalization and instead rely on the concentrations you specified in the input file to initialize the system.</li>
@@ -131,7 +132,7 @@ in one final simulation (sensitivity is not performed in intermediate iterations
 </ol>
 </div>
 <div class="section" id="solvation-thermochemistry">
-<h2>14.2. Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
+<h2>15.2. Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquids is solvation effects on the thermochemistry. By specifying a solvent in the input file, we load the solvent parameters to use.</p>
 <p>The free energy change associated with the process of transferring a
 molecule from the gas phase to the solvent phase is defined as the free
@@ -144,7 +145,7 @@ memory (RAM) requirements are also important considerations. A fairly
 accurate and fast method for computing ΔG, which is used in RMG, is the
 LSER approach described below.</p>
 <div class="section" id="use-of-thermo-libraries-in-liquid-phase-system">
-<span id="useofthermolibrariesliquid"></span><h3>14.2.1. Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
+<span id="useofthermolibrariesliquid"></span><h3>15.2.1. Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
 <p>As it is for gas phase simulation, thermo libraries listed in the input files are checked first to find thermo for a given species and return the first match.
 As it exists two types of thermo libraries, (more details on <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">thermo libraries</span></a>),
 thermo of species matching a library in a liquid phase simulation is obtained following those two cases:</p>
@@ -157,15 +158,15 @@ for this specific species-solvent system.</p>
 </div>
 </div>
 <div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry">
-<span id="lsertoestimatethermo"></span><h3>14.2.2. Use of Abraham LSER to estimate thermochemistry<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry" title="Permalink to this headline">¶</a></h3>
+<span id="lsertoestimatethermo"></span><h3>15.2.2. Use of Abraham LSER to estimate thermochemistry<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry" title="Permalink to this headline">¶</a></h3>
 <p>The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the
 log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent
 (<cite>K</cite><sub>vs</sub>) (also known as gas-solvent partition coefficient) at 298 K:</p>
 <div class="math" id="equation-AbModelEqn">
-<span class="eqno">(1)</span>\[\log K_{vs} = c + eE + sS + aA + bB + lL\]</div>
+<span class="eqno">(1)<a class="headerlink" href="#equation-AbModelEqn" title="Permalink to this equation">¶</a></span>\[\log K_{vs} = c + eE + sS + aA + bB + lL\]</div>
 <p>The Abraham model is used in RMG to estimate ΔG which is related to the <cite>K</cite><sub>vs</sub> of a solute according to the following expression:</p>
 <div class="math" id="equation-partition">
-<span class="eqno">(2)</span>\[\begin{split}ΔG = -RT \ln K_{vs} \\
+<span class="eqno">(2)<a class="headerlink" href="#equation-partition" title="Permalink to this equation">¶</a></span>\[\begin{split}ΔG = -RT \ln K_{vs} \\
 = -2.303RT \log K_{vs}\end{split}\]</div>
 <p>The variables in the Abraham model represent solute (<cite>E, S, A, B, V, L</cite>) and solvent descriptors (<cite>c, e, s, a, b, v, l</cite>)
 for different interactions. The <cite>sS</cite> term is attributed to electrostatic interactions between the
@@ -210,24 +211,24 @@ to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> 
 </ol>
 </div>
 <div class="section" id="group-additivity-method-for-solute-descriptor-estimation">
-<h3>14.2.3. Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
+<h3>15.2.3. Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
 <p>Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach
 to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id11">[Platts1999]</a>) proposed such a scheme employing a set of 81 molecular fragments for estimating <cite>B, E, L, V</cite> and <cite>S</cite> and another set of 51 fragments for the estimation of <cite>A</cite>. Only those fragments containing C, H and O are implemented in order to match RMG&#8217;s existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.</p>
 </div>
 <div class="section" id="mintz-model-for-enthalpy-of-solvation">
-<h3>14.2.4. Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
+<h3>15.2.4. Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
 <p>For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. (<a class="reference internal" href="#mintz2007" id="id12">[Mintz2007]</a>, <a class="reference internal" href="#mintz2007a" id="id13">[Mintz2007a]</a>, <a class="reference internal" href="#mintz2007b" id="id14">[Mintz2007b]</a>, <a class="reference internal" href="#mintz2007c" id="id15">[Mintz2007c]</a>, <a class="reference internal" href="#mintz2007d" id="id16">[Mintz2007d]</a>, <a class="reference internal" href="#mintz2008" id="id17">[Mintz2008]</a>, <a class="reference internal" href="#mintz2008a" id="id18">[Mintz2008a]</a>, <a class="reference internal" href="#mintz2009" id="id19">[Mintz2009]</a>) have developed linear correlations similar to the Abraham model for estimating ΔH:</p>
 <div class="math" id="equation-mintz">
-<span class="eqno">(3)</span>\[ΔH(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L\]</div>
+<span class="eqno">(3)<a class="headerlink" href="#equation-mintz" title="Permalink to this equation">¶</a></span>\[ΔH(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L\]</div>
 <p>where <cite>A, B, E, S</cite> and <cite>L</cite> are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients <cite>c&#8217;, a&#8217;, b&#8217;, e&#8217;, s&#8217;</cite> and <cite>l&#8217;</cite> depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.</p>
 </div>
 </div>
 <div class="section" id="diffusion-limited-kinetics">
-<h2>14.3. Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
+<h2>15.3. Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion limits. The theory behind diffusive limits in solution phase reactions is well established (<a class="reference internal" href="#rice1985" id="id20">[Rice1985]</a>) and the effective rate constant of a bimolecular reaction is given as:</p>
 <div class="math" id="equation-diffusive_limit">
-<span class="eqno">(4)</span>\[k_{\textrm{eff}} = \frac {4\pi R\mathcal{D} k_{\textrm{int}}}{4\pi R\mathcal{D} + k_{\textrm{int}}}\]</div>
+<span class="eqno">(4)<a class="headerlink" href="#equation-diffusive_limit" title="Permalink to this equation">¶</a></span>\[k_{\textrm{eff}} = \frac {4\pi R\mathcal{D} k_{\textrm{int}}}{4\pi R\mathcal{D} + k_{\textrm{int}}}\]</div>
 <p>where <cite>k</cite><sub>int</sub> is the intrinsic reaction rate, <cite>R</cite> is the sum of radii of the reactants and
 <cite>D</cite> is the sum of the diffusivities of the reacting species. RMG uses the McGowan method for estimating
 radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent
@@ -239,55 +240,55 @@ estimated and RMG uses the direction with the larger magnitude.</p>
 <p>The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line
 and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:</p>
 <div class="math" id="equation-viscosity">
-<span class="eqno">(5)</span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
+<span class="eqno">(5)<a class="headerlink" href="#equation-viscosity" title="Permalink to this equation">¶</a></span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
 <p>To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).</p>
 </div>
 <div class="section" id="example-liquid-phase-input-file-no-constant-species">
-<span id="exampleliquidphase"></span><h2>14.4. Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
+<span id="exampleliquidphase"></span><h2>15.4. Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
 <div class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/code/rmgmaster/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 217)</p>
 <p>Title underline too short.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="n">no</span> <span class="n">constant</span> <span class="n">species</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="n">no</span> <span class="n">constant</span> <span class="n">species</span>
 <span class="o">===============================</span>
 </pre></div>
 </div>
 </div>
 <p>This is an example of an input file for a liquid-phase system:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c"># List of species</span>
+<span class="c1"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;octane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;oxygen&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[O][O]&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;oxygen&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[O][O]&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c"># Reaction systems</span>
+<span class="c1"># Reaction systems</span>
 <span class="n">liquidReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
-        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+        <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s2">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">solvation</span><span class="p">(</span>
-    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
 <span class="p">)</span>
 
 <span class="n">simulator</span><span class="p">(</span>
@@ -303,62 +304,62 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
-    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
-    <span class="n">generatePlots</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
-    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="example-liquid-phase-input-file-with-constant-species">
-<h2>14.5. Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
+<h2>15.5. Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
 <div class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/code/rmgmaster/RMG-Py/documentation/source/users/rmg/liquids.rst</tt>, line 278)</p>
 <p>Title underline too short.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="k">with</span> <span class="n">constant</span> <span class="n">species</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Example</span> <span class="n">liquid</span><span class="o">-</span><span class="n">phase</span> <span class="nb">input</span> <span class="n">file</span><span class="p">,</span> <span class="k">with</span> <span class="n">constant</span> <span class="n">species</span>
 <span class="o">===============================</span>
 </pre></div>
 </div>
 </div>
 <p>This is an example of an input file for a liquid-phase system with constant species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># Data sources</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c"># List of species</span>
+<span class="c1"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;octane&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s">&#39;oxygen&#39;</span><span class="p">,</span>
-    <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[O][O]&quot;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;oxygen&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[O][O]&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c"># Reaction systems</span>
+<span class="c1"># Reaction systems</span>
 <span class="n">liquidReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
     <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
-        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
-        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+        <span class="s2">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s2">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s1">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">constantSpecies</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;oxygen&#39;</span><span class="p">],</span>
 <span class="p">)</span>
 
 <span class="n">solvation</span><span class="p">(</span>
-    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s1">&#39;octane&#39;</span>
 <span class="p">)</span>
 
 <span class="n">simulator</span><span class="p">(</span>
@@ -374,11 +375,11 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
-    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
-    <span class="n">generatePlots</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
-    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -480,18 +481,18 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">14. Liquid Phase Systems</a><ul>
-<li><a class="reference internal" href="#equation-of-state">14.1. Equation of state</a></li>
-<li><a class="reference internal" href="#solvation-thermochemistry">14.2. Solvation thermochemistry</a><ul>
-<li><a class="reference internal" href="#use-of-thermo-libraries-in-liquid-phase-system">14.2.1. Use of thermo libraries in liquid phase system</a></li>
-<li><a class="reference internal" href="#use-of-abraham-lser-to-estimate-thermochemistry">14.2.2. Use of Abraham LSER to estimate thermochemistry</a></li>
-<li><a class="reference internal" href="#group-additivity-method-for-solute-descriptor-estimation">14.2.3. Group additivity method for solute descriptor estimation</a></li>
-<li><a class="reference internal" href="#mintz-model-for-enthalpy-of-solvation">14.2.4. Mintz model for enthalpy of solvation</a></li>
+<li><a class="reference internal" href="#">15. Liquid Phase Systems</a><ul>
+<li><a class="reference internal" href="#equation-of-state">15.1. Equation of state</a></li>
+<li><a class="reference internal" href="#solvation-thermochemistry">15.2. Solvation thermochemistry</a><ul>
+<li><a class="reference internal" href="#use-of-thermo-libraries-in-liquid-phase-system">15.2.1. Use of thermo libraries in liquid phase system</a></li>
+<li><a class="reference internal" href="#use-of-abraham-lser-to-estimate-thermochemistry">15.2.2. Use of Abraham LSER to estimate thermochemistry</a></li>
+<li><a class="reference internal" href="#group-additivity-method-for-solute-descriptor-estimation">15.2.3. Group additivity method for solute descriptor estimation</a></li>
+<li><a class="reference internal" href="#mintz-model-for-enthalpy-of-solvation">15.2.4. Mintz model for enthalpy of solvation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#diffusion-limited-kinetics">14.3. Diffusion-limited kinetics</a></li>
-<li><a class="reference internal" href="#example-liquid-phase-input-file-no-constant-species">14.4. Example liquid-phase input file, no constant species</a></li>
-<li><a class="reference internal" href="#example-liquid-phase-input-file-with-constant-species">14.5. Example liquid-phase input file, with constant species</a></li>
+<li><a class="reference internal" href="#diffusion-limited-kinetics">15.3. Diffusion-limited kinetics</a></li>
+<li><a class="reference internal" href="#example-liquid-phase-input-file-no-constant-species">15.4. Example liquid-phase input file, no constant species</a></li>
+<li><a class="reference internal" href="#example-liquid-phase-input-file-with-constant-species">15.5. Example liquid-phase input file, with constant species</a></li>
 </ul>
 </li>
 </ul>
@@ -499,15 +500,15 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/liquids.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/liquids.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -586,8 +587,8 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

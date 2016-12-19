@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.Group &mdash; RMG Py 2.0.0 documentation</title>
+    <title>rmgpy.molecule.Group &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,15 +17,16 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Adjacency Lists" href="adjlist.html" />
     <link rel="prev" title="rmgpy.molecule.GroupBond" href="groupbond.html" />
 <script type="text/x-mathjax-config">
@@ -64,8 +65,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
             
@@ -107,9 +108,41 @@ exist in the graph, or a <code class="xref py py-class docutils literal"><span c
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.addImplicitAtomsFromAtomType">
+<code class="descname">addImplicitAtomsFromAtomType</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.addImplicitAtomsFromAtomType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: a modified group with implicit atoms added
+Add implicit double/triple bonded atoms O, S or R, for which we will use a C</p>
+<p>Not designed to work with wildcards</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.addImplicitBenzene">
+<code class="descname">addImplicitBenzene</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.addImplicitBenzene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: A modified group with any implicit benzene rings added</p>
+<p>This method currently does not if there are wildcards in atomtypes or bond orders
+The current algorithm also requires that all Cb and Cbf are atomtyped</p>
+<p>There are other cases where the algorithm doesn&#8217;t work. For example whenever there
+are many dangling Cb or Cbf atoms not in a ring, it is likely fail. In the database test
+(the only use thus far), we will require that any group with more than 3 Cbfs have
+complete rings. This is much stricter than this method can handle, but right now
+this method cannot handle very general cases, so it is better to be conservative.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.addVertex">
 <code class="descname">addVertex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.addVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a <cite>vertex</cite> to the graph. The vertex is initialized with no edges.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.classifyBenzeneCarbons">
+<code class="descname">classifyBenzeneCarbons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.classifyBenzeneCarbons" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>group: :class:Group with atoms to classify
+partners: dictionary of partnered up atoms, which must be a cbf atom</dd>
+</dl>
+<p>Returns: tuple with lists of each atom classification</p>
 </dd></dl>
 
 <dl class="method">
@@ -132,6 +165,20 @@ exist in the graph, or a <code class="xref py py-class docutils literal"><span c
 is made: copies of the vertices and edges are used in the new graph.
 If <cite>deep</cite> is <code class="docutils literal"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
 original vertices and edges are used in the new graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.createAndConnectAtom">
+<code class="descname">createAndConnectAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.createAndConnectAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method creates an non-radical, uncharged, :class:GroupAtom with specified list of atomtypes and
+connects it to one atom of the group, &#8216;connectingAtom&#8217;. This is useful for making sample atoms.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>atomtypes: list of atomtype labels (strs)
+connectingAtom: :class:GroupAtom that is connected to the new benzene atom
+bondOrders: list of bond Orders connecting newAtom and connectingAtom</dd>
+</dl>
+<p>Returns: the newly created atom</p>
 </dd></dl>
 
 <dl class="method">
@@ -173,6 +220,20 @@ Skips the first line (assuming it&#8217;s a label) unless <cite>withLabel</cite>
 <code class="descname">getAllCycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.getAllCycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a starting vertex, returns a list of all the cycles containing
 that vertex.</p>
+<p>This function returns a duplicate of each cycle because [0,1,2,3]
+is counted as separate from [0,3,2,1]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.getAllCyclesOfSize">
+<code class="descname">getAllCyclesOfSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.getAllCyclesOfSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the all non-duplicate rings with length &#8216;size&#8217;. The
+algorithm implements was adapted from a description by Fan, Panaye,
+Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
+<p>B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. &#8220;Ring Perception: A
+New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+from a Connection Table.&#8221; <em>J. Chem. Inf. Comput. Sci.</em> <strong>33</strong>,
+p. 657-662 (1993).</p>
 </dd></dl>
 
 <dl class="method">
@@ -291,6 +352,20 @@ not.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.isAromaticRing">
+<code class="descname">isAromaticRing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.isAromaticRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns a boolean telling if the group has a 5 or 6 cyclic with
+benzene bonds exclusively</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.isBenzeneExplicit">
+<code class="descname">isBenzeneExplicit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.isBenzeneExplicit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: &#8216;True&#8217; if all Cb, Cbf atoms are in completely explicitly stated benzene rings.</p>
+<p>Otherwise return &#8216;False&#8217;</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.isCyclic">
 <code class="descname">isCyclic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.isCyclic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if one or more cycles are present in the graph or
@@ -350,6 +425,12 @@ cycles in the graph, or <code class="docutils literal"><span class="pre">False</
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.makeSampleMolecule">
+<code class="descname">makeSampleMolecule</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.makeSampleMolecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: A sample class :Molecule: from the group</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.merge">
 <code class="descname">merge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge two groups so as to store them in a single
@@ -404,6 +485,17 @@ the isomorphism functions, much more efficient.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.sortByConnectivity">
+<code class="descname">sortByConnectivity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.sortByConnectivity" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>atomList: input list of atoms</dd>
+</dl>
+<p>Returns: a sorted list of atoms where each atom is connected to a previous
+atom in the list if possible</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.sortVertices">
 <code class="descname">sortVertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.sortVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
@@ -438,9 +530,6 @@ and valency, this function will not change the type.</p>
 <dd><p>This function modifies groups to make them have a standard AdjList form.</p>
 <p>Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
 have explicit Od/Sd ligands. Other functions can be added as necessary</p>
-<p>We also only check when there is exactly one atomType, one bondType, one
-radical setting. For any group where there are wildcards or multiple
-attributes, we do not apply this check.</p>
 <p>Returns a &#8216;True&#8217; if the group was modified otherwise returns &#8216;False&#8217;</p>
 </dd></dl>
 
@@ -480,15 +569,15 @@ isomorphism checks.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/group.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/group.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -567,8 +656,8 @@ isomorphism checks.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

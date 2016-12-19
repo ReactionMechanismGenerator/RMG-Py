@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. Creating Input Files &mdash; RMG Py 2.0.0 documentation</title>
+    <title>4. Creating Input Files &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="RMG User’s Guide" href="index.html" />
-    <link rel="next" title="6. Example Input Files" href="examples.html" />
-    <link rel="prev" title="4.4.1. Dependencies" href="installation/dependencies.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5. Example Input Files" href="examples.html" />
+    <link rel="prev" title="3.5.1. FAQ collection" href="installation/faq.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,36 +58,36 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="6. Example Input Files"
+          <a href="examples.html" title="5. Example Input Files"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="installation/dependencies.html" title="4.4.1. Dependencies"
+          <a href="installation/faq.html" title="3.5.1. FAQ collection"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="creating-input-files">
-<span id="input"></span><h1>5. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
+<span id="input"></span><h1>4. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
 <p>The syntax and parameters within an RMG input file are explained below.  We recommend
 trying to build your first input file while referencing one of the
 <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Example Input Files</span></a>.  Alternatively, you can use our web form found
 at <a class="reference external" href="http://rmg.mit.edu/input">http://rmg.mit.edu/input</a> to assist in creating an input file.</p>
 <div class="section" id="syntax">
-<h2>5.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<h2>4.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>The format of RMG-Py <code class="file docutils literal"><span class="pre">input.py</span></code> is based on Python syntax.</p>
 <p>Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.</p>
 </div>
 <div class="section" id="datasources">
-<h2>5.2. Datasources<a class="headerlink" href="#datasources" title="Permalink to this headline">¶</a></h2>
+<h2>4.2. Datasources<a class="headerlink" href="#datasources" title="Permalink to this headline">¶</a></h2>
 <p>This section explains how to specify various reaction and thermo data sources in the input file.</p>
 <div class="section" id="thermo-libraries">
-<span id="thermolibraries"></span><h3>5.2.1. Thermo Libraries<a class="headerlink" href="#thermo-libraries" title="Permalink to this headline">¶</a></h3>
+<span id="thermolibraries"></span><h3>4.2.1. Thermo Libraries<a class="headerlink" href="#thermo-libraries" title="Permalink to this headline">¶</a></h3>
 <p>By default, RMG will calculate the thermodynamic properties of the species from
 Benson additivity formulas. In general, the group-additivity results are
 suitably accurate. However, if you would like to override the default settings,
@@ -105,7 +106,7 @@ set to its default value.  In particular, the thermodynamic properties for H and
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson&#8217;s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="#grimech3-0" id="id1">[GRIMech3.0]</a> as a ThermoLibrary in your model, the syntax will be:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <table class="docutils citation" frame="void" id="grimech3-0" rules="none">
@@ -125,7 +126,7 @@ directory.</p>
 </div>
 </div>
 <div class="section" id="reaction-libraries">
-<span id="reactionlibraries"></span><h3>5.2.2. Reaction Libraries<a class="headerlink" href="#reaction-libraries" title="Permalink to this headline">¶</a></h3>
+<span id="reactionlibraries"></span><h3>4.2.2. Reaction Libraries<a class="headerlink" href="#reaction-libraries" title="Permalink to this headline">¶</a></h3>
 <p>The next section of the <code class="file docutils literal"><span class="pre">input.py</span></code> file specifies which, if any,
 Reaction Libraries should be used. When a reaction library is specified, RMG will first
 use the reaction library to generate all the relevant reactions for the species
@@ -136,7 +137,7 @@ from the start.</p>
 In the following example, the user has created
 a reaction library with a few additional reactions specific to n-butane, and these reactions
 are to be used in addition to the Glarborg C3 library:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;Glarborg/C3&#39;</span><span class="p">,</span><span class="k">False</span><span class="p">)],</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)],</span>
 </pre></div>
 </div>
 <p>The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
@@ -158,7 +159,7 @@ Library.</p>
 </div>
 </div>
 <div class="section" id="seed-mechanisms">
-<span id="seedmechanism"></span><h3>5.2.3. Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this headline">¶</a></h3>
+<span id="seedmechanism"></span><h3>4.2.3. Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this headline">¶</a></h3>
 <p>The next section of the <code class="file docutils literal"><span class="pre">input.py</span></code> file specifies which, if any,
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
@@ -169,7 +170,7 @@ see <a class="reference internal" href="#reactionlibraries"><span class="std std
 seed mechanism in the location section. Please note that the oxidation
 library should not be used for pyrolysis models. The syntax for the seed mechanisms
 is similar to that of the primary reaction libraries.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>The seed mechanisms are stored in <code class="file docutils literal"><span class="pre">RMG-database/input/kinetics/libraries/</span></code></p>
@@ -180,40 +181,40 @@ the instance of it from the first mechanism in which it appears is
 the one that gets used.</p>
 </div>
 <div class="section" id="kinetics-depositories">
-<span id="kineticsdepositories"></span><h3>5.2.4. Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">]</span>
+<span id="kineticsdepositories"></span><h3>4.2.4. Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="kinetics-families">
-<span id="kineticsfamilies"></span><h3>5.2.5. Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this headline">¶</a></h3>
+<span id="kineticsfamilies"></span><h3>4.2.5. Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this headline">¶</a></h3>
 <p>In this section users can specify the particular reaction families that they wish to use to generate their model. for example you can use only <code class="file docutils literal"><span class="pre">Intra_RH_Add_Endocyclic</span></code> family to build the model by:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Intra_RH_Add_Endocyclic&#39;</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Intra_RH_Add_Endocyclic&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Otherwise, by typing &#8216;default&#8217; (and excluding the brackets that are shown in the example above), RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in <code class="file docutils literal"><span class="pre">RMG-database/input/families/recommended.py</span></code>.</p>
 </div>
 <div class="section" id="kinetics-estimator">
-<h3>5.2.6. Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this headline">¶</a></h3>
+<h3>4.2.6. Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this headline">¶</a></h3>
 <p>The last section is specifying that RMG is estimating kinetics of reactions from rate rules. For more details on how kinetic estimations is working check <a class="reference internal" href="kinetics.html#kinetics"><span class="std std-ref">Kinetics Estimation</span></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span>
 </pre></div>
 </div>
 <p>The following is an example of a database block, based on above chosen libraries and options:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">database</span><span class="p">(</span>
-        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
-        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;Glarborg/C3&#39;</span><span class="p">,</span><span class="k">False</span><span class="p">)],</span>
-        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
-        <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
-        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s">&#39;defult&#39;</span><span class="p">,</span>
-        <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
+        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
+        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)],</span>
+        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
+        <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
+        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;defult&#39;</span><span class="p">,</span>
+        <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="list-of-species">
-<span id="species"></span><h2>5.3. List of species<a class="headerlink" href="#list-of-species" title="Permalink to this headline">¶</a></h2>
+<span id="species"></span><h2>4.3. List of species<a class="headerlink" href="#list-of-species" title="Permalink to this headline">¶</a></h2>
 <p>Species to be included in the core at the start of your RMG job are defined in the species block.
 The label, reactive or inert, and structure of each reactant must be specified.</p>
 <p>The label field will be used throughout your mechanism to identify the species.
@@ -223,15 +224,15 @@ and seed mechanisms  will still be considered. For all other species the reactiv
 be set as <code class="docutils literal"><span class="pre">True</span></code>. The structure of the species can be defined using either by using SMILES or
 <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacencyList</span></a>.</p>
 <p>The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
-        <span class="n">label</span><span class="o">=</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span>
-        <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-        <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+        <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-        <span class="n">label</span><span class="o">=</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span>
-        <span class="n">reactive</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+        <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                1 C 0</span>
@@ -241,7 +242,7 @@ be set as <code class="docutils literal"><span class="pre">True</span></code>. T
 </div>
 </div>
 <div class="section" id="reaction-system">
-<span id="reactionsystem"></span><h2>5.4. Reaction System<a class="headerlink" href="#reaction-system" title="Permalink to this headline">¶</a></h2>
+<span id="reactionsystem"></span><h2>4.4. Reaction System<a class="headerlink" href="#reaction-system" title="Permalink to this headline">¶</a></h2>
 <p>Every reaction system we want the model to be generated at must be defined individually.
 Currently, RMG can only model constant temperature and pressure systems. Future versions
 will allow for variable temperature and pressure. To define a reaction system we need to
@@ -251,19 +252,19 @@ the species block. Every reaction system can have its termination criterion base
 species conversion or termination time or both. When both termination criterion are specified
 the model generation will stop when either of the termination criterion is satisfied.</p>
 <p>The following is an example of a simple reactor system:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">simpleReactor</span><span class="p">(</span>
-        <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">simpleReactor</span><span class="p">(</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
         <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-                <span class="s">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">0.104</span><span class="p">,</span>
-                <span class="s">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">0.0156</span><span class="p">,</span>
-                <span class="s">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.8797</span><span class="p">,</span>
+                <span class="s2">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">0.104</span><span class="p">,</span>
+                <span class="s2">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">0.0156</span><span class="p">,</span>
+                <span class="s2">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.8797</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-                <span class="s">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+                <span class="s1">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="n">e0</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
-        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span><span class="s">&#39;H2&#39;</span><span class="p">],</span>
+        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="n">e0</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span><span class="s1">&#39;H2&#39;</span><span class="p">],</span>
         <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 
 <span class="p">)</span>
@@ -286,9 +287,9 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 </div>
 <div class="section" id="simulator-tolerances">
-<span id="simulatortolerances"></span><h2>5.5. Simulator Tolerances<a class="headerlink" href="#simulator-tolerances" title="Permalink to this headline">¶</a></h2>
+<span id="simulatortolerances"></span><h2>4.5. Simulator Tolerances<a class="headerlink" href="#simulator-tolerances" title="Permalink to this headline">¶</a></h2>
 <p>The next two lines specify the absolute and relative tolerance for the ODE solver, respectively. Common values for the absolute tolerance are 1e-15 to 1e-25. Relative tolerance is usually 1e-4 to 1e-8:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">simulator</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">simulator</span><span class="p">(</span>
     <span class="n">atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span>
     <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span>
     <span class="n">sens_atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span>
@@ -300,12 +301,12 @@ in one final simulation (sensitivity is not performed in intermediate iterations
 are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.</p>
 </div>
 <div class="section" id="model-tolerances">
-<span id="modeltolerances"></span><h2>5.6. Model Tolerances<a class="headerlink" href="#model-tolerances" title="Permalink to this headline">¶</a></h2>
+<span id="modeltolerances"></span><h2>4.6. Model Tolerances<a class="headerlink" href="#model-tolerances" title="Permalink to this headline">¶</a></h2>
 <p>Model tolerances dictate how species get included in the model. For more information, see the theory behind how RMG builds models using the <a class="reference internal" href="../../theory/rmg/enlarger.html#ratebasedmodelenlarger"><span class="std std-ref">Flux-based Algorithm</span></a>.
 For running an initial job, it is recommended to only change the <code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code> and <code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code> values to an equivalent desired value.  We find
 that typically a value between <code class="docutils literal"><span class="pre">0.01</span></code> and <code class="docutils literal"><span class="pre">0.05</span></code> is best.  If your model cannot converge within a few hours, more advanced settings such as <a class="reference internal" href="#filterreactions"><span class="std std-ref">reaction filtering</span></a>
 or <a class="reference internal" href="#pruning"><span class="std std-ref">pruning</span></a> can be turned on to speed up your simulation at a slight risk of omitting chemistry.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">model</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 <span class="p">)</span>
@@ -316,16 +317,16 @@ or <a class="reference internal" href="#pruning"><span class="std std-ref">pruni
 <li><code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code> indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the <code class="docutils literal"><span class="pre">terminationConversion</span></code> or <code class="docutils literal"><span class="pre">terminationTime</span></code>).  This value should be set to be equal to <code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code> unless the advanced <a class="reference internal" href="#pruning"><span class="std std-ref">pruning</span></a> feature is desired.</li>
 </ul>
 <div class="section" id="advanced-setting-speed-up-by-filtering-reactions">
-<span id="filterreactions"></span><h3>5.6.1. Advanced Setting: Speed Up by Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this headline">¶</a></h3>
+<span id="filterreactions"></span><h3>4.6.1. Advanced Setting: Speed Up by Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this headline">¶</a></h3>
 <p>For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of
 <span class="math">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.  Thus it can be further sped up by pre-filtering reactions that are
 added to the model.  This modification to the algorithm does not react core species together
 until their concentrations are deemed high enough.  It is recommended to turn on this flag when
 the model does not converge with normal parameter settings.  See <a class="reference internal" href="../../theory/rmg/enlarger.html#filterreactionstheory"><span class="std std-ref">Filtering Reactions within the Flux-based Algorithm</span></a>. for more details.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">model</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">filterReactions</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+    <span class="n">filterReactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -335,10 +336,10 @@ the model does not converge with normal parameter settings.  See <a class="refer
 </ul>
 </div>
 <div class="section" id="advanced-setting-speed-up-by-pruning">
-<span id="pruning"></span><h3>5.6.2. Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this headline">¶</a></h3>
+<span id="pruning"></span><h3>4.6.2. Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this headline">¶</a></h3>
 <p>For further speed-up, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage.</p>
 <p>A typical set of parameters for pruning is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">model</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mi">1</span><span class="n">e8</span><span class="p">,</span>
     <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
@@ -366,7 +367,7 @@ Therefore, you may find that RMG is not pruning even though the model edge size 
 a safety check within RMG to ensure that species are not pruned too early, resulting in inaccurate chemistry. In order to increase the likelihood of pruning you can
 try increasing <code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code> to an arbitrarily high value.</p>
 <p>As a contrast, a typical set of parameters for non-pruning is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">model</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
     <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
@@ -380,7 +381,7 @@ Because the ODE simulation is always interrupted, no pruning is performed.</p>
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-calculations">
-<span id="ontheflyquantumcalculations"></span><h2>5.7. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
+<span id="ontheflyquantumcalculations"></span><h2>4.7. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
 These calculations are only run if the molecule is not included in a specified thermo library.
 The <code class="docutils literal"><span class="pre">onlyCyclics</span></code> option, if <code class="docutils literal"><span class="pre">True</span></code>, only runs these calculations for cyclic species.
@@ -396,12 +397,12 @@ If a molecule has a higher radical number, the molecule is saturated with hydrog
 quantum mechanical calculations with subsequent hydrogen bond incrementation is used to determine the
 thermodynamic parameters.</p>
 <p>The following is an example of the quantum mechanics options</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">quantumMechanics</span><span class="p">(</span>
-        <span class="n">software</span><span class="o">=</span><span class="s">&#39;mopac&#39;</span><span class="p">,</span>
-        <span class="n">method</span><span class="o">=</span><span class="s">&#39;pm3&#39;</span><span class="p">,</span>
-        <span class="n">fileStore</span><span class="o">=</span><span class="s">&#39;QMfiles&#39;</span><span class="p">,</span>
-        <span class="n">scratchDirectory</span> <span class="o">=</span> <span class="k">None</span><span class="p">,</span>
-        <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="k">True</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">quantumMechanics</span><span class="p">(</span>
+        <span class="n">software</span><span class="o">=</span><span class="s1">&#39;mopac&#39;</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pm3&#39;</span><span class="p">,</span>
+        <span class="n">fileStore</span><span class="o">=</span><span class="s1">&#39;QMfiles&#39;</span><span class="p">,</span>
+        <span class="n">scratchDirectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">maxRadicalNumber</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
@@ -414,7 +415,7 @@ thermodynamic parameters.</p>
 </table>
 </div>
 <div class="section" id="pressure-dependence">
-<span id="pressuredependence"></span><h2>5.8. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
+<span id="pressuredependence"></span><h2>4.8. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when the model should account for pressure
 dependent rate coefficients. RMG can estimate pressure dependence kinetics based on <code class="docutils literal"><span class="pre">Modified</span> <span class="pre">Strong</span> <span class="pre">Collision</span></code> and <code class="docutils literal"><span class="pre">Reservoir</span> <span class="pre">State</span></code> methods.
 The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id3">[Chang2000]</a>,
@@ -423,13 +424,13 @@ utilizes the steady-state/reservoir-state approach of Green and Bhatti <a class=
 and is more theoretically sound but more expensive.</p>
 <p>The pressure dependence block should specify the following:</p>
 <div class="section" id="method-used-for-estimating-pressure-dependent-kinetics">
-<h3>5.8.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
+<h3>4.8.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
 <p>To specify the modified strong collision approach, this item should read</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">method</span><span class="o">=</span><span class="s">&#39;Modified Strong Collision&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;Modified Strong Collision&#39;</span>
 </pre></div>
 </div>
 <p>To specify the reservoir state approach, this item should read</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">method</span><span class="o">=</span><span class="s">&#39;Reservoir State&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;Reservoir State&#39;</span>
 </pre></div>
 </div>
 <p>For more information on the two methods, consult the following resources :</p>
@@ -447,32 +448,32 @@ and is more theoretically sound but more expensive.</p>
 </table>
 </div>
 <div class="section" id="grain-size-and-minimum-number-of-grains">
-<h3>5.8.2. Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
+<h3>4.8.2. Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
 <p>Since the <span class="math">\(k(E)\)</span> requires discretization in the energy space, we need to specify the number of energy grains to use
 when solving the Master Equation. The default value for the minimum number of grains is 250; this was selected to balance the speed
 and accuracy of the Master Equation solver method.  However, for some pressure-dependent networks,
 this number of energy grains will result in the pressure-dependent <span class="math">\(k(T, P)\)</span> being greater than
 the high-P limit</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
 <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="temperature-and-pressure-for-the-interpolation-scheme">
-<h3>5.8.3. Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<h3>4.8.3. Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
 <p>To generate the <span class="math">\(k(T,P)\)</span> interpolation model, a set of temperatures and pressures must be used. RMG can do this automatically, but it must be told a few parameters.
 We need to specify the limits of the temperature and pressure for the fitting of the interpolation scheme and the number of points to be considered in between this limit.
 For typical combustion model temperatures of the experiments range from 300 - 2000 K and pressure 1E-2 to 100 bar</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="interpolation-scheme">
-<h3>5.8.4. Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<h3>4.8.4. Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
 <p>To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;PDepArrhenius&#39;</span><span class="p">,)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;PDepArrhenius&#39;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>The auxillary information printed to the Chemkin chem.inp file will have the &#8220;PLOG&#8221;
@@ -481,12 +482,12 @@ Section 3.6.3 of the <code class="file docutils literal"><span class="pre">CHEMK
 the CHEMKIN manual.</p>
 <p>To fit a set of Chebyshev polynomials on inverse temperature and logarithmic pressure axes mapped
 to [-1,1], use the line</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You should also specify the number of temperature and pressure basis functions by adding the appropriate integers.
 For example, the following specifies that six basis functions in temperature and four in pressure should be used</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The auxillary information printed to the Chemkin chem.inp file will have the &#8220;CHEB&#8221;
@@ -494,7 +495,7 @@ format.  Refer to Section 3.5.3 of the <code class="file docutils literal"><span
 Section 3.6.4 of the <code class="file docutils literal"><span class="pre">CHEMKIN_Theory.pdf</span></code> document.</p>
 </div>
 <div class="section" id="maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">
-<h3>5.8.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
+<h3>4.8.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
 <p>By default pressure dependence is run for every system that might show pressure
 dependence, i.e. every isomerization, dissociation, and association reaction.
 In reality, larger molecules are less likely to exhibit pressure-dependent
@@ -503,19 +504,19 @@ randomization of the internal energy. In certain cases involving very large
 molecules, it makes sense to only consider pressure dependence for molecules
 smaller than some user-defined number of atoms. This is specified e.g. using
 the line</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span>
 </pre></div>
 </div>
 <p>to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).</p>
 <p>The following is an example of pressure dependence options</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">pressureDependence</span><span class="p">(</span>
-        <span class="n">method</span><span class="o">=</span><span class="s">&#39;modified strong collision&#39;</span><span class="p">,</span>
-        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
+        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
         <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
-        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
-        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
-        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
         <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -527,16 +528,16 @@ than the respective number of user-specified temperatures and pressures.</p>
 </div>
 </div>
 <div class="section" id="miscellaneous-options">
-<h2>5.9. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
+<h2>4.9. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
-    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">generatePlots</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
-    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
-    <span class="n">verboseComments</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
-    <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;hour&#39;</span><span class="p">),</span>
+    <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">verboseComments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -551,12 +552,12 @@ HTML file for your model containing all the species and reactions.  Turning this
 <p>Setting <code class="docutils literal"><span class="pre">keepIrreversible</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if <code class="docutils literal"><span class="pre">False</span></code> (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.</p>
 </div>
 <div class="section" id="species-constraints">
-<h2>5.10. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
+<h2>4.10. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
 <p>RMG can generate mechanisms with a number of optional species constraints,
 such as total number of carbon atoms or electrons per species. These are applied to
 all of RMG&#8217;s reaction families.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
-    <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;input species&#39;</span><span class="p">,</span><span class="s">&#39;seed mechanisms&#39;</span><span class="p">,</span><span class="s">&#39;reaction libraries&#39;</span><span class="p">],</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
+    <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;input species&#39;</span><span class="p">,</span><span class="s1">&#39;seed mechanisms&#39;</span><span class="p">,</span><span class="s1">&#39;reaction libraries&#39;</span><span class="p">],</span>
     <span class="n">maximumCarbonAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">maximumHydrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">maximumOxygenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -565,7 +566,7 @@ all of RMG&#8217;s reaction families.</p>
     <span class="n">maximumSulfurAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">maximumHeavyAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">maximumRadicalElectrons</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="k">False</span><span class="p">,</span>
+    <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -591,36 +592,36 @@ forbidden groups.</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">5. Creating Input Files</a><ul>
-<li><a class="reference internal" href="#syntax">5.1. Syntax</a></li>
-<li><a class="reference internal" href="#datasources">5.2. Datasources</a><ul>
-<li><a class="reference internal" href="#thermo-libraries">5.2.1. Thermo Libraries</a></li>
-<li><a class="reference internal" href="#reaction-libraries">5.2.2. Reaction Libraries</a></li>
-<li><a class="reference internal" href="#seed-mechanisms">5.2.3. Seed Mechanisms</a></li>
-<li><a class="reference internal" href="#kinetics-depositories">5.2.4. Kinetics Depositories</a></li>
-<li><a class="reference internal" href="#kinetics-families">5.2.5. Kinetics Families</a></li>
-<li><a class="reference internal" href="#kinetics-estimator">5.2.6. Kinetics Estimator</a></li>
+<li><a class="reference internal" href="#">4. Creating Input Files</a><ul>
+<li><a class="reference internal" href="#syntax">4.1. Syntax</a></li>
+<li><a class="reference internal" href="#datasources">4.2. Datasources</a><ul>
+<li><a class="reference internal" href="#thermo-libraries">4.2.1. Thermo Libraries</a></li>
+<li><a class="reference internal" href="#reaction-libraries">4.2.2. Reaction Libraries</a></li>
+<li><a class="reference internal" href="#seed-mechanisms">4.2.3. Seed Mechanisms</a></li>
+<li><a class="reference internal" href="#kinetics-depositories">4.2.4. Kinetics Depositories</a></li>
+<li><a class="reference internal" href="#kinetics-families">4.2.5. Kinetics Families</a></li>
+<li><a class="reference internal" href="#kinetics-estimator">4.2.6. Kinetics Estimator</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#list-of-species">5.3. List of species</a></li>
-<li><a class="reference internal" href="#reaction-system">5.4. Reaction System</a></li>
-<li><a class="reference internal" href="#simulator-tolerances">5.5. Simulator Tolerances</a></li>
-<li><a class="reference internal" href="#model-tolerances">5.6. Model Tolerances</a><ul>
-<li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">5.6.1. Advanced Setting: Speed Up by Filtering Reactions</a></li>
-<li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">5.6.2. Advanced Setting: Speed Up by Pruning</a></li>
+<li><a class="reference internal" href="#list-of-species">4.3. List of species</a></li>
+<li><a class="reference internal" href="#reaction-system">4.4. Reaction System</a></li>
+<li><a class="reference internal" href="#simulator-tolerances">4.5. Simulator Tolerances</a></li>
+<li><a class="reference internal" href="#model-tolerances">4.6. Model Tolerances</a><ul>
+<li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.6.1. Advanced Setting: Speed Up by Filtering Reactions</a></li>
+<li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.6.2. Advanced Setting: Speed Up by Pruning</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#on-the-fly-quantum-calculations">5.7. On the fly Quantum Calculations</a></li>
-<li><a class="reference internal" href="#pressure-dependence">5.8. Pressure Dependence</a><ul>
-<li><a class="reference internal" href="#method-used-for-estimating-pressure-dependent-kinetics">5.8.1. Method used for estimating pressure dependent kinetics</a></li>
-<li><a class="reference internal" href="#grain-size-and-minimum-number-of-grains">5.8.2. Grain size and minimum number of grains</a></li>
-<li><a class="reference internal" href="#temperature-and-pressure-for-the-interpolation-scheme">5.8.3. Temperature and pressure for the interpolation scheme</a></li>
-<li><a class="reference internal" href="#interpolation-scheme">5.8.4. Interpolation scheme</a></li>
-<li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">5.8.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
+<li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.7. On the fly Quantum Calculations</a></li>
+<li><a class="reference internal" href="#pressure-dependence">4.8. Pressure Dependence</a><ul>
+<li><a class="reference internal" href="#method-used-for-estimating-pressure-dependent-kinetics">4.8.1. Method used for estimating pressure dependent kinetics</a></li>
+<li><a class="reference internal" href="#grain-size-and-minimum-number-of-grains">4.8.2. Grain size and minimum number of grains</a></li>
+<li><a class="reference internal" href="#temperature-and-pressure-for-the-interpolation-scheme">4.8.3. Temperature and pressure for the interpolation scheme</a></li>
+<li><a class="reference internal" href="#interpolation-scheme">4.8.4. Interpolation scheme</a></li>
+<li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">4.8.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#miscellaneous-options">5.9. Miscellaneous Options</a></li>
-<li><a class="reference internal" href="#species-constraints">5.10. Species Constraints</a></li>
+<li><a class="reference internal" href="#miscellaneous-options">4.9. Miscellaneous Options</a></li>
+<li><a class="reference internal" href="#species-constraints">4.10. Species Constraints</a></li>
 </ul>
 </li>
 </ul>
@@ -628,15 +629,15 @@ forbidden groups.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/input.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/input.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -715,8 +716,8 @@ forbidden groups.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

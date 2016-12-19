@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.rmg.main.RMG &mdash; RMG Py 2.0.0 documentation</title>
+    <title>rmgpy.rmg.main.RMG &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,15 +17,16 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../contents.html" />
-    <link rel="up" title="Reaction mechanism generation (rmgpy.rmg)" href="index.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Saving RMG output" href="output.html" />
     <link rel="prev" title="RMG input files" href="input.html" />
 <script type="text/x-mathjax-config">
@@ -64,8 +65,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
       </ul>
     </div>
             
@@ -259,6 +260,13 @@ by the <code class="xref py py-mod docutils literal"><span class="pre">argparse<
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.main.RMG.generateCanteraFiles">
+<code class="descname">generateCanteraFiles</code><span class="sig-paren">(</span><em>chemkinFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.generateCanteraFiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
+and save it in the cantera directory</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.main.RMG.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize an RMG job using the command-line arguments <cite>args</cite> as returned
@@ -366,15 +374,15 @@ Render the result using the program &#8216;dot&#8217; via a command like
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/main.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/main.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -453,8 +461,8 @@ Render the result using the program &#8216;dot&#8217; via a command like
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

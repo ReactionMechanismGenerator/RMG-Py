@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.9. Standardize Model Species Names &mdash; RMG Py 2.0.0 documentation</title>
+    <title>9.9. Standardize Model Species Names &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="16. Standalone Modules" href="index.html" />
-    <link rel="next" title="17. Frequently Asked Questions" href="../faq.html" />
-    <link rel="prev" title="16.8. Database Scripts" href="databaseScripts.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="9.10. Reaction Reduction in an RMG Job" href="reduction.html" />
+    <link rel="prev" title="9.8. Database Scripts" href="databaseScripts.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,26 +58,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../faq.html" title="17. Frequently Asked Questions"
+          <a href="reduction.html" title="9.10. Reaction Reduction in an RMG Job"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="databaseScripts.html" title="16.8. Database Scripts"
+          <a href="databaseScripts.html" title="9.8. Database Scripts"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">16. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="standardize-model-species-names">
-<span id="standardizemodelspeciesnames"></span><h1>16.9. Standardize Model Species Names<a class="headerlink" href="#standardize-model-species-names" title="Permalink to this headline">¶</a></h1>
+<span id="standardizemodelspeciesnames"></span><h1>9.9. Standardize Model Species Names<a class="headerlink" href="#standardize-model-species-names" title="Permalink to this headline">¶</a></h1>
 <p>This script enables the automatic renaming of species names of of two or more Chemkin files (and
 associated species dictionaries) so that they use consistent, matching names.  Simply
 pass the paths of the Chemkin files and species dictionaries on the
 command-line, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">standardizeModelSpeciesNames</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">chem1</span><span class="o">.</span><span class="n">inp</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">species_dictionary1</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">model2</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">chem2</span><span class="o">.</span><span class="n">inp</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">species_dictionary2</span><span class="o">.</span><span class="n">txt</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">standardizeModelSpeciesNames</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">chem1</span><span class="o">.</span><span class="n">inp</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">species_dictionary1</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">model2</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">chem2</span><span class="o">.</span><span class="n">inp</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">species_dictionary2</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
 <p>The resulting files are saved as <code class="docutils literal"><span class="pre">chem1.inp</span></code> and
@@ -96,15 +97,15 @@ how many models you want to standardize) and will be saved in the execution dire
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/standardizeModelSpeciesNames.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/standardizeModelSpeciesNames.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -183,8 +184,8 @@ how many models you want to standardize) and will be saved in the execution dire
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>

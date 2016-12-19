@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>16.8. Database Scripts &mdash; RMG Py 2.0.0 documentation</title>
+    <title>9.8. Database Scripts &#8212; RMG Py 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -17,17 +17,18 @@
         VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="RMG Py 2.0.0 documentation" href="../../../contents.html" />
-    <link rel="up" title="16. Standalone Modules" href="index.html" />
-    <link rel="next" title="16.9. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
-    <link rel="prev" title="16.7. Convert FAME to CanTherm Input File" href="convertFAME.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="9.9. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
+    <link rel="prev" title="9.7. Convert FAME to CanTherm Input File" href="convertFAME.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -57,148 +58,148 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="standardizeModelSpeciesNames.html" title="16.9. Standardize Model Species Names"
+          <a href="standardizeModelSpeciesNames.html" title="9.9. Standardize Model Species Names"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="convertFAME.html" title="16.7. Convert FAME to CanTherm Input File"
+          <a href="convertFAME.html" title="9.7. Convert FAME to CanTherm Input File"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.0.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">16. Standalone Modules</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="database-scripts">
-<span id="databasescripts"></span><h1>16.8. Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this headline">¶</a></h1>
+<span id="databasescripts"></span><h1>9.8. Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this headline">¶</a></h1>
 <p>This section details usage for scripts available in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code> folder.</p>
 <div class="section" id="evanspolanyi-py">
-<h2>16.8.1. evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.1. evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this headline">¶</a></h2>
 <p>This script will generate an Evans-Polanyi plot for a single kinetics
 depository.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">evansPolanyi</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">DEPOSITORY</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">evansPolanyi</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">DEPOSITORY</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">DEPOSITORY</span>    <span class="n">the</span> <span class="n">depository</span> <span class="n">to</span> <span class="n">use</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">DEPOSITORY</span>    <span class="n">the</span> <span class="n">depository</span> <span class="n">to</span> <span class="n">use</span>
 </pre></div>
 </div>
 <p>Optional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>    <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>    <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="exportkineticslibrarytochemkin-py">
-<h2>16.8.2. exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.2. exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this headline">¶</a></h2>
 <p>This script exports an individual RMG-Py kinetics library to a chemkin
 and dictionary file.  Thermo is taken from RMG&#8217;s estimates and libraries.
 In order to use more specific thermo, you must tweak the thermoLibraries and
 estimators in use when loading the database. The script will save the
 chem.inp and species_dictionary.txt files in the local directory.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">exportKineticsLibrarytoChemkin</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">LIBRARYNAME</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">exportKineticsLibrarytoChemkin</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">LIBRARYNAME</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">LIBRARYNAME</span>    <span class="n">the</span> <span class="n">libraryname</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="nb">format</span> <span class="n">kinetics</span> <span class="n">library</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">LIBRARYNAME</span>    <span class="n">the</span> <span class="n">libraryname</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="nb">format</span> <span class="n">kinetics</span> <span class="n">library</span>
 </pre></div>
 </div>
 <p>Optional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="exportolddatabase-py">
-<h2>16.8.3. exportOldDatabase.py<a class="headerlink" href="#exportolddatabase-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.3. exportOldDatabase.py<a class="headerlink" href="#exportolddatabase-py" title="Permalink to this headline">¶</a></h2>
 <p>This script exports the database to the old RMG-Java format. The script
 requires two command-line arguments: the path to the database to import, and
 the path to save the old RMG-Java database to.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">exportOldDatabase</span><span class="o">.</span><span class="n">py</span> <span class="n">OUTPUT</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">exportOldDatabase</span><span class="o">.</span><span class="n">py</span> <span class="n">OUTPUT</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">OUTPUT</span>   <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">database</span> <span class="n">should</span> <span class="n">be</span> <span class="n">saved</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">OUTPUT</span>   <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">database</span> <span class="n">should</span> <span class="n">be</span> <span class="n">saved</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="importchemkinlibrary-py">
-<h2>16.8.4. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.4. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
 RMG-Py kinetics library and thermo library files.  These py files are automatically added to the
 input/kinetics/libraries and input/thermo/libraries folder under the user-specified <cite>name</cite> for the chemkin library.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">importChemkinLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">CHEMKIN</span> <span class="n">DICTIONARY</span> <span class="n">NAME</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importChemkinLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">CHEMKIN</span> <span class="n">DICTIONARY</span> <span class="n">NAME</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">CHEMKIN</span>     <span class="n">The</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">chemkin</span> <span class="n">file</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CHEMKIN</span>     <span class="n">The</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">chemkin</span> <span class="n">file</span>
 <span class="n">DICTIONARY</span>  <span class="n">The</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span> <span class="n">dictionary</span> <span class="n">file</span>
 <span class="n">NAME</span>        <span class="n">Name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">chemkin</span> <span class="n">library</span> <span class="n">to</span> <span class="n">be</span> <span class="n">saved</span>
 </pre></div>
 </div>
 <p>Optional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>  <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>  <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="importjavakineticslibrary-py">
-<h2>16.8.5. importJavaKineticsLibrary.py<a class="headerlink" href="#importjavakineticslibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.5. importJavaKineticsLibrary.py<a class="headerlink" href="#importjavakineticslibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports an individual RMG-Java kinetics library from a local directory and saves the output
 kinetics library py file into a path of the user&#8217;s choosing.  This library will be automatically
 added to the &#8216;libraryname&#8217; folder in the input/kinetics/libraries directory and can
 be used directly as an RMG-Py kinetics library.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">importJavaKineticsLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">INPUT</span> <span class="n">LIBRARYNAME</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importJavaKineticsLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">INPUT</span> <span class="n">LIBRARYNAME</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">kinetics</span> <span class="n">library</span> <span class="n">directory</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">kinetics</span> <span class="n">library</span> <span class="n">directory</span>
 <span class="n">LIBRARYNAME</span>    <span class="n">the</span> <span class="n">libraryname</span> <span class="k">for</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="nb">format</span> <span class="n">kinetics</span> <span class="n">library</span>
 </pre></div>
 </div>
 <p>Optional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="importjavathermolibrary-py">
-<h2>16.8.6. importJavaThermoLibrary.py<a class="headerlink" href="#importjavathermolibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.6. importJavaThermoLibrary.py<a class="headerlink" href="#importjavathermolibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports an individual RMG-Java themo library from a local directory and saves the output
 thermo library py file into a path of the user&#8217;s choosing.  This library will be automatically
 saved to libraryname.py in the input/thermo/libraries directory and can
 be used directly as an RMG-Py thermo library.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">importJavaThermoLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">INPUT</span> <span class="n">LIBRARYNAME</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importJavaThermoLibrary</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="n">INPUT</span> <span class="n">LIBRARYNAME</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">thermo</span> <span class="n">library</span> <span class="n">directory</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">thermo</span> <span class="n">library</span> <span class="n">directory</span>
 <span class="n">LIBRARYNAME</span>    <span class="n">the</span> <span class="n">libraryname</span> <span class="k">for</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="nb">format</span> <span class="n">thermo</span> <span class="n">library</span>
 </pre></div>
 </div>
 <p>Optional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="importolddatabase-py">
-<h2>16.8.7. importOldDatabase.py<a class="headerlink" href="#importolddatabase-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.8.7. importOldDatabase.py<a class="headerlink" href="#importolddatabase-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports an RMG-Java database from the output directory and saves
 it in the input directory. Only recommended for use in extreme circumstances.</p>
 <p>Usage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">python</span> <span class="n">importOldDatabase</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>  <span class="n">INPUT</span> <span class="n">OUTPUT</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">importOldDatabase</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>  <span class="n">INPUT</span> <span class="n">OUTPUT</span>
 </pre></div>
 </div>
 <p>Positional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">database</span> <span class="n">directory</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">INPUT</span>          <span class="n">the</span> <span class="nb">input</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">database</span> <span class="n">directory</span>
 <span class="n">LIBRARYNAME</span>    <span class="n">output</span> <span class="n">path</span> <span class="k">for</span> <span class="n">the</span> <span class="n">desired</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="n">database</span> <span class="n">directory</span>
 </pre></div>
 </div>
 <p>Optional arguments:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>     <span class="n">show</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </div>
@@ -215,14 +216,14 @@ it in the input directory. Only recommended for use in extreme circumstances.</p
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">16.8. Database Scripts</a><ul>
-<li><a class="reference internal" href="#evanspolanyi-py">16.8.1. evansPolanyi.py</a></li>
-<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">16.8.2. exportKineticsLibraryToChemkin.py</a></li>
-<li><a class="reference internal" href="#exportolddatabase-py">16.8.3. exportOldDatabase.py</a></li>
-<li><a class="reference internal" href="#importchemkinlibrary-py">16.8.4. importChemkinLibrary.py</a></li>
-<li><a class="reference internal" href="#importjavakineticslibrary-py">16.8.5. importJavaKineticsLibrary.py</a></li>
-<li><a class="reference internal" href="#importjavathermolibrary-py">16.8.6. importJavaThermoLibrary.py</a></li>
-<li><a class="reference internal" href="#importolddatabase-py">16.8.7. importOldDatabase.py</a></li>
+<li><a class="reference internal" href="#">9.8. Database Scripts</a><ul>
+<li><a class="reference internal" href="#evanspolanyi-py">9.8.1. evansPolanyi.py</a></li>
+<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">9.8.2. exportKineticsLibraryToChemkin.py</a></li>
+<li><a class="reference internal" href="#exportolddatabase-py">9.8.3. exportOldDatabase.py</a></li>
+<li><a class="reference internal" href="#importchemkinlibrary-py">9.8.4. importChemkinLibrary.py</a></li>
+<li><a class="reference internal" href="#importjavakineticslibrary-py">9.8.5. importJavaKineticsLibrary.py</a></li>
+<li><a class="reference internal" href="#importjavathermolibrary-py">9.8.6. importJavaThermoLibrary.py</a></li>
+<li><a class="reference internal" href="#importolddatabase-py">9.8.7. importOldDatabase.py</a></li>
 </ul>
 </li>
 </ul>
@@ -230,15 +231,15 @@ it in the input directory. Only recommended for use in extreme circumstances.</p
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
 
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/databaseScripts.rst"
+<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/databaseScripts.rst.rst"
            rel="nofollow">Edit this page</a></h4><P>
 <div class="customsidebar">
 <P>
@@ -317,8 +318,8 @@ it in the input directory. Only recommended for use in extreme circumstances.</p
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>
