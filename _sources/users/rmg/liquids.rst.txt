@@ -214,7 +214,7 @@ To build accurate models of liquid phase chemical reactions you will also want t
 .. _exampleLiquidPhase:
 
 Example liquid-phase input file, no constant species
-===============================
+=====================================================
 This is an example of an input file for a liquid-phase system::
 
     # Data sources
@@ -275,7 +275,7 @@ This is an example of an input file for a liquid-phase system::
     )
 
 Example liquid-phase input file, with constant species
-===============================
+=======================================================
 This is an example of an input file for a liquid-phase system with constant species::
 
     # Data sources
