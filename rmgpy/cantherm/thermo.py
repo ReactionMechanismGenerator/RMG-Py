@@ -51,6 +51,9 @@ from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.chemkin import writeThermoEntry
+from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+from rmgpy.molecule.util import retrieveElementCount
 
 ################################################################################
 
@@ -163,8 +166,18 @@ class ThermoJob:
         f.close()
         
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
-        string = writeThermoEntry(species, elementCounts=species.props['elementCounts'], verbose=False)
-        f.write(string)
+        if isinstance(species, Species):
+            if species.molecule and isinstance(species.molecule[0], Molecule):
+                elementCounts = retrieveElementCount(species.molecule[0])
+            else:
+                try:
+                    elementCounts = species.props['elementCounts']
+                except KeyError:
+                    elementCounts = {'C': 0, 'H': 0}
+        else:
+            elementCounts = {'C': 0, 'H': 0}
+        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=False)
+        f.write('{0}\n'.format(string))
         f.close()
     
 
