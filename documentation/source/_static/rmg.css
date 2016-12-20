@@ -270,18 +270,25 @@ p.caption {
 
 
 /* -- table styles ----------------------------------------------------------- */
-
-table.docutils,
-table.docutils colgroup, 
-table.docutils th, 
-table.docutils tr, 
-table.docutils td {
-    border: 1px inset #FFFFFF;
+/*
+table,
+table colgroup, 
+table th, 
+table tr, 
+table td {
+    border: 0px inset #000000;
+    padding: 0px
+}
+*/
+ 
+table.data td {
+    padding-right: 3px
 }
 
-table.docutils, table.docutils thead, table.docutils tbody {
+table.data, table.data thead, table.data tbody {
     border-top: 1px solid #000000;
     border-bottom: 1px solid #000000;
+    padding: 20px
 }
 
 
