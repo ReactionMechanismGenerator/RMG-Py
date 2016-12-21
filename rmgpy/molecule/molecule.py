@@ -754,7 +754,6 @@ class Molecule(Graph):
         cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
         
         # Count the number of each element in the molecule
-        hasCarbon = False; hasHydrogen = False
         elements = {}
         for atom in self.vertices:
             symbol = atom.element.symbol
@@ -764,11 +763,11 @@ class Molecule(Graph):
         formula = ''
         
         # Carbon and hydrogen always come first if carbon is present
-        if hasCarbon:
+        if 'C' in elements.keys():
             count = elements['C']
             formula += 'C{0:d}'.format(count) if count > 1 else 'C'
             del elements['C']
-            if hasHydrogen:
+            if 'H' in elements.keys():
                 count = elements['H']
                 formula += 'H{0:d}'.format(count) if count > 1 else 'H'
                 del elements['H']

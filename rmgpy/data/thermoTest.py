@@ -237,6 +237,33 @@ class TestThermoDatabase(unittest.TestCase):
         self.assertEqual(source['GAV']['ring'][0][1],-1)  # the weight of benzene contribution should be -1
         self.assertEqual(source['GAV']['group'][0][1],2)  # weight of the group(Cs-CsCsHH) conbtribution should be 2
         
+    def testSpeciesThermoGenerationHBILibrary(self):
+        """Test thermo generation for species objects.
+
+        Ensure that molecule list is only reordered, and not changed after matching library value"""
+        spec = Species().fromSMILES('C[CH]c1ccccc1')
+        spec.generateResonanceIsomers()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.getThermoData(spec)
+
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
+
+    def testSpeciesThermoGenerationHBIGAV(self):
+        """Test thermo generation for species objects.
+
+        Ensure that molecule list is only reordered, and not changed after group additivity"""
+        spec = Species().fromSMILES('CCC[CH]c1ccccc1')
+        spec.generateResonanceIsomers()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.getThermoData(spec)
+
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('group additivity' in thermo.comment, 'Thermo not found from GAV, test purpose not fulfilled.')
+
+
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
     Test only Aromatic species.
