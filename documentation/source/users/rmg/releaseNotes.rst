@@ -4,6 +4,60 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.0
+====================
+Date: March 07, 2017
+
+- Clar structure generation
+    - optimizes the aromatic isomer representations in RMG
+    - lays the foundations for future development of poly-aromatic kinetics reaction families
+
+- Flux pathway analysis
+    - introduces an ipython notebook for post-generatation pathway analysis (``ipython.mechanism_analyzer.ipynb``)
+    - visualizes reactions and provides flux statistics in a more transparent way
+
+- Cantera mechanism
+    - automatically writes cantera version of RMG-generated mechanism at the end of RMG jobs
+
+- Fixes bugs
+    - upgrades ``pruning`` to fix new memory leaks introduced by recent functionalities
+    - fixes the bug of duplicated species creation caused by ``getThermoData`` removing isomers unexpectedly
+    - fixes restart file generation and parsing problems and users can choose restart mode again
+    - upgrades bicyclic decomposition method such that more deterministic behaviors are ensured
+    - change bond order type to float from string to improve RMG's symmetry calculation for species with multiple resonance structures
+
+RMG-database Version 2.1.0
+==========================
+Date: March 07, 2017
+
+- Several new kinetics libraries added
+    - FFCM-1
+    - JetSurF 0.2
+    - Chernov_aromatic_only
+    - Narayanaswamy_aromatic_only
+    - 1989_Stewart_2CH3_to_C2H5_H
+    - 2005_Senosiain_OH_C2H2
+    - 2006_Joshi_OH_CO
+    - C6H5_C4H4_Mebel
+    - c-C5H5_CH3_Sharma
+
+- Several new thermochemistry libraries added
+    - FFCM-1
+    - JetSurF 0.2
+    - Chernov_aromatic_only
+    - Narayanaswamy_aromatic_only
+
+- Improved kinetics tree accessibility
+    - adds database tests ensuring groups in the tree to be accessible
+    - improves definitions of group structures in the kinetics trees to ensure accessibility
+
+- New oxygenates thermo groups are added based Paraskeva et al.
+
+- Improved database tools
+    - ``convertKineticsLibraryToTrainingReactions.ipynb`` now can visualize groups of matched rate rules that training reactions hit 
+    - ``exportKineticsLibrarytoChemkin.py`` and ``importChemkinLibrary.py`` add more logging information on reaction sources
+
+
 RMG-Py Version 2.0.0
 ====================
 Date: September 16, 2016
