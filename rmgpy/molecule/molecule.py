@@ -1571,6 +1571,55 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
+    def transformLonePairs(self):
+        """
+        Changes lone pairs in a molecule to two radicals for purposes of finding
+        solute data or thermo data via group additivity. Transformed for each atom
+        based on valency.
+        """
+        saturatedStruct = self.copy(deep=True)
+        addedToPairs = {}
+
+        for atom in saturatedStruct.atoms:
+            addedToPairs[atom] = 0
+            if atom.lonePairs > 0:
+                charge = atom.charge # Record this so we can conserve it when checking
+                bonds = saturatedStruct.getBonds(atom)
+                sumBondOrders = 0
+                for key, bond in bonds.iteritems():
+                    if bond.order == 'S': sumBondOrders += 1
+                    if bond.order == 'D': sumBondOrders += 2
+                    if bond.order == 'T': sumBondOrders += 3
+                    if bond.order == 'B': sumBondOrders += 1.5 # We should always have 2 'B' bonds (but what about Cbf?)
+                if atomTypes['Val4'] in atom.atomType.generic: # Carbon, Silicon
+                    while(atom.radicalElectrons + charge + sumBondOrders < 4):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+                if atomTypes['Val5'] in atom.atomType.generic: # Nitrogen
+                    while(atom.radicalElectrons + charge + sumBondOrders < 3):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+                if atomTypes['Val6'] in atom.atomType.generic: # Oxygen, sulfur
+                    while(atom.radicalElectrons + charge + sumBondOrders < 2):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+                if atomTypes['Val7'] in atom.atomType.generic: # Chlorine
+                    while(atom.radicalElectrons + charge + sumBondOrders < 1):
+                        atom.decrementLonePairs()
+                        atom.incrementRadical()
+                        atom.incrementRadical()
+                        addedToPairs[atom] += 1
+
+        saturatedStruct.update()
+        saturatedStruct.updateLonePairs()
+
+        return saturatedStruct, addedToPairs
     def saturate(self):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
