@@ -77,10 +77,21 @@ def __fromInChI(mol, inchistr, backend):
     else:
         raise NotImplementedError('Unrecognized backend for InChI parsing: {0}'.format(backend))
 
+def __fromSMARTS(mol, smartsstr, backend):
+    """Replace the Molecule `mol` with that given by the SMARTS `smartsstr`
+       using the backend `backend`"""
+    if backend.lower() == 'rdkit':
+        rdkitmol = Chem.MolFromSmarts(smartsstr)
+        if rdkitmol is None:
+            raise ValueError("Could not interpret the SMARTS string {0!r}".format(smartsstr))
+        fromRDKitMol(mol, rdkitmol)
+        return mol
+    else:
+        raise NotImplementedError('Unrecognized backend for SMARTS parsing: {0}'.format(backend))
 
 def __parse(mol, identifier, type_identifier, backend):
     """
-    Parses the identifier based on the type of identifier (inchi/smi)
+    Parses the identifier based on the type of identifier (inchi/smi/sma)
     and the backend used.
     
     First, look up the identifier in a dictionary to see if it can be processed
@@ -93,13 +104,15 @@ def __parse(mol, identifier, type_identifier, backend):
 
     if __lookup(mol, identifier, type_identifier) is not None:
         if isCorrectlyParsed(mol, identifier):
-            return mol 
+            return mol
 
     for _backend in (BACKENDS if backend=='try-all' else [backend]):
         if type_identifier == 'smi':
             __fromSMILES(mol, identifier, _backend)
         elif type_identifier == 'inchi':
             __fromInChI(mol, identifier, _backend)
+        elif type_identifier == 'sma':
+            __fromSMARTS(mol, identifier, _backend)
         else:
             raise NotImplementedError("Unknown identifier type {0}".format(type_identifier))
 
@@ -120,6 +133,7 @@ def parse_openbabel(mol, identifier, type_identifier):
     obmol.AddHydrogens()
     obmol.AssignSpinMultiplicity(True)
     fromOBMol(mol, obmol)
+    # mol.updateAtomTypes()
     return mol
 
 
@@ -289,15 +303,14 @@ def fromSMILES(mol, smilesstr, backend='try-all'):
     return __parse(mol, smilesstr, 'smi', backend)
 
 
-def fromSMARTS(mol, smartsstr):
+def fromSMARTS(mol, smartsstr, backend = 'rdkit'):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    rdkitmol = Chem.MolFromSmarts(smartsstr)
-    fromRDKitMol(mol, rdkitmol)
-    return mol
+
+    return __parse(mol, smartsstr, 'sma', backend)
 
 
 def fromRDKitMol(mol, rdkitmol):
@@ -358,12 +371,13 @@ def fromRDKitMol(mol, rdkitmol):
     # Set atom types and connectivity values
     mol.update()
     mol.updateLonePairs()
-    
+
     # Assume this is always true
     # There are cases where 2 radicalElectrons is a singlet, but
     # the triplet is often more stable, 
     mol.multiplicity = mol.getRadicalCount() + 1
-    
+    # mol.updateAtomTypes()
+
     return mol
 
 def fromOBMol(mol, obmol):
