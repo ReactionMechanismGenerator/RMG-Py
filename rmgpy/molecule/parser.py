@@ -104,6 +104,7 @@ def __parse(mol, identifier, type_identifier, backend):
 
     if __lookup(mol, identifier, type_identifier) is not None:
         if isCorrectlyParsed(mol, identifier):
+            mol.updateAtomTypes()
             return mol
 
     for _backend in (BACKENDS if backend=='try-all' else [backend]):
@@ -117,6 +118,7 @@ def __parse(mol, identifier, type_identifier, backend):
             raise NotImplementedError("Unknown identifier type {0}".format(type_identifier))
 
         if isCorrectlyParsed(mol, identifier):
+            mol.updateAtomTypes()
             return mol
         else:
             logging.debug('Backend %s is not able to parse identifier %s', _backend, identifier)

@@ -3,6 +3,7 @@ import unittest
 from rmgpy.molecule.molecule import Molecule
 
 from rmgpy.molecule.parser import *
+from rmgpy.molecule.atomtype import atomTypes
 
 class ParserTest(unittest.TestCase):
 
@@ -41,10 +42,20 @@ class ParserTest(unittest.TestCase):
         mol = fromSMILES(Molecule(), smiles)
         self.assertTrue(mol.isIsomorphic(self.methane))
 
+        #Test that atomtypes that rely on lone pairs for identity are typed correctly
+        smiles = 'CN'
+        mol = fromSMILES(Molecule(), smiles)
+        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'] )
+
     def test_fromInChI(self):
         inchi = 'InChI=1S/CH4/h1H4'
         mol = fromInChI(Molecule(), inchi)
         self.assertTrue(mol.isIsomorphic(self.methane))
+
+        #Test that atomtypes that rely on lone pairs for identity are typed correctly
+        inchi = "InChI=1S/CH5N/c1-2/h2H2,1H3"
+        mol = fromInChI(Molecule(), inchi)
+        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'] )
 
     #Commented out because current implementation of SMARTS is broken
     # def test_fromSMARTS(self):
