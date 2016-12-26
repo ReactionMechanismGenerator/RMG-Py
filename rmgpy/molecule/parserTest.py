@@ -5,6 +5,7 @@ from rmgpy.molecule.parser import *
 from rmgpy.molecule.atomtype import atomTypes
 from external.wip import work_in_progress
 
+
 class ParserTest(unittest.TestCase):
 
     def setUp(self):
@@ -41,6 +42,11 @@ class ParserTest(unittest.TestCase):
         smiles = 'C'
         mol = fromSMILES(Molecule(), smiles)
         self.assertTrue(mol.isIsomorphic(self.methane))
+
+        #Test that atomtypes that rely on lone pairs for identity are typed correctly
+        smiles = 'CN'
+        mol = fromSMILES(Molecule(), smiles)
+        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'] )
 
     def test_fromInChI(self):
         inchi = 'InChI=1S/CH4/h1H4'
