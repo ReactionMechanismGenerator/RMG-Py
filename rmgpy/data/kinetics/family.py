@@ -1404,13 +1404,6 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
-        sameReactants = False
-        if len(reactants) == 2 and len(reactants[0]) == len(reactants[1]):
-            reactantA = reactants[0][0]
-            for reactantB in reactants[1]:
-                if reactantA.isIsomorphic(reactantB):
-                    sameReactants = True
-                    break
                     
         if forward:
             template = self.forwardTemplate
@@ -1564,9 +1557,7 @@ class KineticsFamily(Database):
         # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
         # This is hardcoding of reaction families!
-        # For reactions of the form A + A -> products, the degeneracy is twice
-        # what it should be, so divide those by two
-        if sameReactants or self.label.lower().startswith('r_recombination'):
+        if self.label.lower().startswith('r_recombination'):
             for rxn in rxnList:
                 assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
