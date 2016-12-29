@@ -1109,12 +1109,11 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test the creation of a negatively charged species
-        #commented out until new nitrogen atom types added in
-#         adjlist = """
-# 1  *1 N2s u0
-#         """
-#         answer_smiles = '[NH2-]'
-#         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
+        adjlist = """
+1  *1 N2s u0
+        """
+        answer_smiles = '[NH2-]'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test creation of charged species when some single bonds present
         adjlist = """
