@@ -191,6 +191,18 @@ class TestGetAtomType(unittest.TestCase):
 
         self.mol21 = Molecule().fromSMILES('[C-]#[S+]')
 
+
+        self.mol22 = Molecule().fromAdjacencyList('''1 N u0 p2 c-1 {2,S} {3,S}
+                                                     2 H u0 p0 c0 {1,S}
+                                                     3 N u0 p0 c+1 {1,S} {4,T}
+                                                     4 C u0 p0 c0 {3,T} {5,S}
+                                                     5 H u0 p0 c0 {4,S}''')
+
+        self.mol23 = Molecule().fromAdjacencyList('''1 N u0 p0 c+1 {2,S} {3,T}
+                                                     2 H u0 p0 c0 {1,S}
+                                                     3 N u0 p0 c+1 {1,T} {4,S}
+                                                     4 N u0 p3 c-2 {3,S}''')
+
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
         type = getAtomType(atom, mol.getBonds(atom))
@@ -234,6 +246,8 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol15, 1), 'N5t')
         self.assertEqual(self.atomType(self.mol18, 5), 'N3b')
         self.assertEqual(self.atomType(self.mol18, 0), 'N5b')
+        self.assertEqual(self.atomType(self.mol22, 0), 'N2s')
+        self.assertEqual(self.atomType(self.mol23, 3), 'N1sc')
         
     def testOxygenTypes(self):
         """
