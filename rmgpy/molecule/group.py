@@ -570,7 +570,58 @@ class GroupBond(Edge):
         attributes of the copy will not affect the original.
         """
         return GroupBond(self.vertex1, self.vertex2, self.order[:])
-
+        
+    def getOrderStr(self):
+        """
+        returns a string representing the bond order
+        """
+        return self.order
+        
+    def setOrderStr(self, newOrder):
+        """
+        set the bond order using a valid bond-order character
+        """
+        if all[order in ['S','D','T','B'] for order in newOrder]:
+            self.order = newOrder
+        else:
+            raise ValueError("{} is not a valid bond order character".format(newOrder))
+        
+    def getOrderNum(self):
+        """
+        returns the bond order as a number
+        """
+        values = []
+        for value in self.order:
+            if value == 'S':
+                values.append(1)
+            elif value == 'D':
+                values.append(2)
+            elif value == 'T':
+                values.append(3)
+            elif value == 'B':
+                values.append(1.5)
+            else:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
+        return values
+            
+    def setOrderNum(self, newOrder):
+        """
+        change the bond order with a number
+        """
+        values = []
+        for value in newOrder:
+            if value == 1:
+                values.append('S')
+            elif value == 2:
+                values.append('D')
+            elif value == 3:
+                values.append('T')
+            elif value == 1.5:
+                values.append('B')
+            else:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
+        self.order = values          
+            
     def isSingle(self):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
