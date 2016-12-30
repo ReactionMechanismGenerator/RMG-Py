@@ -1336,7 +1336,7 @@ class Group(Graph):
 
         for atom in self.atoms:
             if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-            elif atom.atomType[0].label in ['Cb', 'N3b']: #Make Cb and N3b into normal cb atoms
+            elif atom.atomType[0].label in ['Cb', 'N5b', 'N3b']: #Make Cb and N3b into normal cb atoms
                 cbAtomList.append(atom)
             elif atom.atomType[0].label == 'Cbf':
                 cbfAtomList.append(atom)
