@@ -1432,7 +1432,7 @@ class Group(Graph):
 
         for atom in self.atoms:
             if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-            elif atom.atomType[0].label in ['Cb', 'N3b']: #Make Cb and N3b into normal cb atoms
+            elif atom.atomType[0].label in ['Cb', 'N5b', 'N3b']: #Make Cb and N3b into normal cb atoms
                 cbAtomList.append(atom)
             elif atom.atomType[0].label == 'Cbf':
                 cbfAtomList.append(atom)
@@ -1843,11 +1843,11 @@ class Group(Graph):
         cbAtomList = []
 
         #only want to work with carbon atoms
-        labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C']
+        labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C', 'N3b', 'N5b']
 
         for atom in self.atoms:
             if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-            elif atom.atomType[0].label in ['Cb', 'Cbf']: #Make Cb and N3b into normal cb atoms
+            elif atom.atomType[0].label in ['Cb', 'Cbf', 'N3b', 'N5b']: #Make Cb and N3b into normal cb atoms
                 cbAtomList.append(atom)
             else:
                 benzeneBonds = 0
