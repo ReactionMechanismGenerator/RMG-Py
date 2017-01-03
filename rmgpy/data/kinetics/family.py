@@ -612,7 +612,6 @@ class KineticsFamily(Database):
             self.depositories.append(depository)
         
 
-            
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
@@ -2143,3 +2142,43 @@ class KineticsFamily(Database):
 
         # Source of the kinetics is from rate rules
         return False, [self.label, sourceDict]
+
+    def getBackboneRoots(self):
+        """
+        Returns: the top level backbone node in a unimolecular family.
+        """
+
+        backboneRoots = [entry for entry in self.groups.top if entry in self.forwardTemplate.reactants]
+        return backboneRoots
+
+    def getEndRoots(self):
+        """
+        Returns: A list of top level end nodes in a unimolecular family
+        """
+
+        endRoots = [entry for entry in self.groups.top if entry not in self.forwardTemplate.reactants]
+        return endRoots
+
+    def getTopLevelGroups(self, root):
+        """
+        Returns a list of group nodes that are the highest in the tree starting at node "root".
+        If "root" is a group node, then it will return a single-element list with "root".
+        Otherwise, for every child of root, we descend until we find no nodes with logic
+        nodes. We then return a list of all group nodes found along the way.
+        """
+
+        groupList = [root]
+        allGroups = False
+
+        while not allGroups:
+            newGroupList = []
+            for entry in groupList:
+                if isinstance(entry.item,Group):
+                    newGroupList.append(entry)
+                else:
+                    newGroupList.extend(entry.children)
+            groupList = newGroupList
+            allGroups = all([isinstance(entry.item, Group) for entry in groupList])
+
+        return groupList
+
