@@ -34,3 +34,4 @@ dependencies:
   - graphviz
   - scoop
   - ffmpeg
+  - jupyter
