@@ -722,6 +722,31 @@ class Group(Graph):
         """
         return (Group, (self.vertices,))
 
+    def _repr_png_(self):
+        """
+        Return a png picture of the group, useful for ipython-qtconsole.
+        """
+        import pydot
+        import os
+
+        graph = pydot.Dot(graph_type='graph', dpi="52")
+        for index, atom in enumerate(self.atoms):
+            atomType = '{0!s} '.format(atom.label if atom.label != '' else '')
+            atomType += ','.join([at.label for at in atom.atomType])
+            atomType = '"' + atomType + '"'
+            graph.add_node(pydot.Node(name=str(index + 1), label=atomType, fontname="Helvetica", fontsize="16"))
+        for atom1 in self.atoms:
+            for atom2, bond in atom1.bonds.iteritems():
+                index1 = self.atoms.index(atom1)
+                index2 = self.atoms.index(atom2)
+                if index1 < index2:
+                    bondType = ','.join([order for order in bond.order])
+                    bondType = '"' + bondType + '"'
+                    graph.add_edge(pydot.Edge(src=str(index1 + 1), dst=str(index2 + 1), label=bondType, fontname="Helvetica", fontsize="16"))
+
+        img = graph.create_png(prog='neato')
+        return img
+
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
