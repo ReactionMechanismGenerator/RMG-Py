@@ -26,7 +26,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         Test the GroupAtom.applyAction() method for a BREAK_BOND action.
         """
-        action = ['BREAK_BOND', '*1', 'S', '*2']
+        action = ['BREAK_BOND', '*1', 1, '*2']
         for label, atomType in atomTypes.iteritems():
             atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
@@ -45,7 +45,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         Test the GroupAtom.applyAction() method for a FORM_BOND action.
         """
-        action = ['FORM_BOND', '*1', 'S', '*2']
+        action = ['FORM_BOND', '*1', 1, '*2']
         for label, atomType in atomTypes.iteritems():
             atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
@@ -241,14 +241,14 @@ class TestGroupBond(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.bond = GroupBond(None, None, order=['D'])
-        self.orderList = [['S'], ['D'], ['T'], ['B'], ['S','D'], ['D','S'], ['D','T'], ['S','D','T']]
+        self.bond = GroupBond(None, None, order=[2])
+        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]
     
     def testApplyActionBreakBond(self):
         """
         Test the GroupBond.applyAction() method for a BREAK_BOND action.
         """
-        action = ['BREAK_BOND', '*1', 'S', '*2']
+        action = ['BREAK_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
             bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
@@ -262,7 +262,7 @@ class TestGroupBond(unittest.TestCase):
         """
         Test the GroupBond.applyAction() method for a FORM_BOND action.
         """
-        action = ['FORM_BOND', '*1', 'S', '*2']
+        action = ['FORM_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
             bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
@@ -283,7 +283,7 @@ class TestGroupBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('T' in order0 or 'B' in order0)
+                self.assertTrue(3 in order0 or 1.5 in order0)
                 
     def testApplyActionDecrementBond(self):
         """
@@ -296,7 +296,7 @@ class TestGroupBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('S' in order0 or 'B' in order0)
+                self.assertTrue(1 in order0 or 1.5 in order0)
             
     def testApplyActionGainRadical(self):
         """
@@ -458,8 +458,8 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(atom3.atomType[0].label == 'R!H')
         self.assertTrue(atom3.radicalElectrons == [0])
 
-        self.assertTrue(bond12.order == ['S','D'])
-        self.assertTrue(bond13.order == ['S'])
+        self.assertTrue(bond12.order == [1,2])
+        self.assertTrue(bond13.isSingle())
 
     def testToAdjacencyList(self):
         """

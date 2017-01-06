@@ -77,6 +77,14 @@ cdef class GroupBond(Edge):
 
     cpdef Edge copy(self)
 
+    cpdef list getOrderStr(self)
+    
+    cpdef setOrderStr(self, list newOrder)
+    
+    cpdef list getOrderNum(self)
+    
+    cpdef setOrderNum(self, list newOrder)
+
     cpdef __changeBond(self, short order)
 
     cpdef bint isSingle(self) except -2
