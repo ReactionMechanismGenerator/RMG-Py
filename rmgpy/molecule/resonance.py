@@ -303,7 +303,7 @@ def generateAromaticResonanceIsomers(mol):
                 aromatic = True
                 # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
                 for bond in aromaticBonds:
-                    bond.order = 'B'
+                    bond.order = 1.5
 
     if aromatic:
         try:
@@ -417,9 +417,9 @@ def generateClarStructures(mol):
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
             if x[index] == 0:
-                bond.order = 'S'
+                bond.order = 1 # single
             elif x[index] == 1:
-                bond.order = 'D'
+                bond.order = 2 # double
             else:
                 raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
@@ -485,7 +485,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     exo = []
     for bond in bonds:
         if bond.atom1 not in atoms or bond.atom2 not in atoms:
-            if bond.order == 'D':
+            if bond.isDouble():
                 exo.append(1)
             else:
                 exo.append(0)
@@ -588,7 +588,7 @@ def clarTransformation(mol, aromaticRing):
                 bondList.append(mol.getBond(atom1, atom2))
 
     for bond in bondList:
-        bond.order = 'B'
+        bond.order = 1.5
 
 
 class ILPSolutionError(Exception):

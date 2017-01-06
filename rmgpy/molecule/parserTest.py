@@ -19,7 +19,7 @@ class ParserTest(unittest.TestCase):
         """
         Test that toRDKitMol returns correct indices and atom mappings.
         """
-        bondOrderDict = {'SINGLE':'S','DOUBLE':'D','TRIPLE':'T','AROMATIC':'B'}
+        bondOrderDict = {'SINGLE':1,'DOUBLE':2,'TRIPLE':3,'AROMATIC':1.5}
         mol = fromSMILES(Molecule(), 'C1CCC=C1C=O')
         rdkitmol, rdAtomIndices = mol.toRDKitMol(removeHs=False, returnMapping=True, sanitize=True)
         for atom in mol.atoms:

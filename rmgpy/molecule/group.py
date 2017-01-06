@@ -694,7 +694,7 @@ class GroupBond(Edge):
             return other.equivalent(self)
         gb = other
         
-        cython.declare(order1=str, order2=str)
+        cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for order1 in self.order:
@@ -724,7 +724,7 @@ class GroupBond(Edge):
             return other.isSpecificCaseOf(self)
         gb = other
         
-        cython.declare(order1=str, order2=str)
+        cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
         for order1 in self.order: # all these must match
@@ -1370,7 +1370,7 @@ class Group(Graph):
             while triple < tripleRequired[0]:
                 triple +=1
                 newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-                newBond = GroupBond(atom1, newAtom, order=[2])
+                newBond = GroupBond(atom1, newAtom, order=[3])
                 implicitAtoms[newAtom] = newBond
 
         for atom, bond in implicitAtoms.iteritems():

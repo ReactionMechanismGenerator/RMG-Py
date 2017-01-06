@@ -273,7 +273,7 @@ def toOBMol(mol):
         a = obmol.NewAtom()
         a.SetAtomicNum(atom.number)
         a.SetFormalCharge(atom.charge)
-    orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
+    orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
             index1 = atoms.index(atom1)
@@ -340,7 +340,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
-    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
+    orders = {1: rdBonds.SINGLE, 2: rdBonds.DOUBLE, 3: rdBonds.TRIPLE, 1.5: rdBonds.AROMATIC}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():

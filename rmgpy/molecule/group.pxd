@@ -42,9 +42,9 @@ cdef class GroupAtom(Vertex):
 
     cpdef __changeBond(self, short order)
 
-    cpdef __formBond(self, str order)
+    cpdef __formBond(self, float order)
 
-    cpdef __breakBond(self, str order)
+    cpdef __breakBond(self, float order)
 
     cpdef __gainRadical(self, short radical)
 

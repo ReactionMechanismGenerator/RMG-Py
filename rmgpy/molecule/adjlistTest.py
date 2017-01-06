@@ -50,8 +50,8 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(atom3.atomType[0].label == 'R!H')
         self.assertTrue(atom3.radicalElectrons == [0, 1])
 
-        self.assertTrue(bond12.order == ['S', 'D'])
-        self.assertTrue(bond13.order == ['S'])
+        self.assertTrue(bond12.order == [1,2])
+        self.assertTrue(bond13.isSingle())
 
 
     def testFromAdjacencyList(self):
@@ -86,8 +86,8 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(atom3.atomType[0].label == 'R!H')
         self.assertTrue(atom3.radicalElectrons == [0])
 
-        self.assertTrue(bond12.order == ['S', 'D'])
-        self.assertTrue(bond13.order == ['S'])
+        self.assertTrue(bond12.order == [1, 2])
+        self.assertTrue(bond13.isSingle())
 
     def testFromAdjacencyList_multiplicity(self):
         gp = Group().fromAdjacencyList(
