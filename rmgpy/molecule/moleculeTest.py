@@ -104,7 +104,7 @@ class TestAtom(unittest.TestCase):
         """
         Test the Atom.applyAction() method for a BREAK_BOND action.
         """
-        action = ['BREAK_BOND', '*1', 'S', '*2']
+        action = ['BREAK_BOND', '*1', 1, '*2']
         for element in elementList:
             atom0 = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=0)
             atom = atom0.copy()
@@ -118,7 +118,7 @@ class TestAtom(unittest.TestCase):
         """
         Test the Atom.applyAction() method for a FORM_BOND action.
         """
-        action = ['FORM_BOND', '*1', 'S', '*2']
+        action = ['FORM_BOND', '*1', 1, '*2']
         for element in elementList:
             atom0 = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=0)
             atom = atom0.copy()
@@ -248,6 +248,19 @@ class TestAtom(unittest.TestCase):
         self.assertFalse(atom1.equivalent(atom2))
         self.assertTrue(atom1.equivalent(atom3))
 
+    def testGetBondOrdersForAtom(self):
+        """
+        Test Atom.getBondOrdersForAtom for all carbons in naphthalene
+        """
+        
+        m = Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2')
+        isomers = m.generateResonanceIsomers()
+        for isomer in isomers:
+            for atom in isomer.atoms:
+                if atom.symbol == 'C':
+                    self.assertEqual(atom.getBondOrdersForAtom(), 4.0)
+
+
 ################################################################################
 
 class TestBond(unittest.TestCase):
@@ -259,8 +272,8 @@ class TestBond(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.bond = Bond(atom1=None, atom2=None, order='D')
-        self.orderList = ['S','D','T','B']
+        self.bond = Bond(atom1=None, atom2=None, order=2)
+        self.orderList = [1,2,3,1.5]
     
     def testIsSingle(self):
         """
@@ -268,7 +281,7 @@ class TestBond(unittest.TestCase):
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'S':
+            if order == 1:
                 self.assertTrue(bond.isSingle())
             else:
                 self.assertFalse(bond.isSingle())
@@ -279,7 +292,7 @@ class TestBond(unittest.TestCase):
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'D':
+            if order == 2:
                 self.assertTrue(bond.isDouble())
             else:
                 self.assertFalse(bond.isDouble())
@@ -290,7 +303,7 @@ class TestBond(unittest.TestCase):
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'T':
+            if order == 3:
                 self.assertTrue(bond.isTriple())
             else:
                 self.assertFalse(bond.isTriple())
@@ -301,7 +314,7 @@ class TestBond(unittest.TestCase):
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'B':
+            if order == 1.5:
                 self.assertTrue(bond.isBenzene())
             else:
                 self.assertFalse(bond.isBenzene())
@@ -314,12 +327,12 @@ class TestBond(unittest.TestCase):
             bond = Bond(None, None, order=order)
             try:
                 bond.incrementOrder()
-                if order == 'S': 
+                if order == 1: 
                     self.assertTrue(bond.isDouble())
-                elif order == 'D': 
+                elif order == 2: 
                     self.assertTrue(bond.isTriple())
             except ActionError:
-                self.assertTrue(order in ['T','B'])
+                self.assertTrue(order in [3,1.5])
         
     def testDecrementOrder(self):
         """
@@ -329,18 +342,18 @@ class TestBond(unittest.TestCase):
             bond = Bond(None, None, order=order)
             try:
                 bond.decrementOrder()
-                if order == 'D': 
+                if order == 2: 
                     self.assertTrue(bond.isSingle())
-                elif order == 'T': 
+                elif order == 3: 
                     self.assertTrue(bond.isDouble())
             except ActionError:
-                self.assertTrue(order in ['S','B'])
+                self.assertTrue(order in [1,1.5])
                 
     def testApplyActionBreakBond(self):
         """
         Test the Bond.applyAction() method for a BREAK_BOND action.
         """
-        action = ['BREAK_BOND', '*1', 'S', '*2']
+        action = ['BREAK_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
             bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
@@ -354,7 +367,7 @@ class TestBond(unittest.TestCase):
         """
         Test the Bond.applyAction() method for a FORM_BOND action.
         """
-        action = ['FORM_BOND', '*1', 'S', '*2']
+        action = ['FORM_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
             bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
@@ -375,7 +388,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('T' == order0 or 'B' == order0)
+                self.assertTrue(3 == order0 or 1.5 == order0)
                 
     def testApplyActionDecrementBond(self):
         """
@@ -388,7 +401,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('S' == order0 or 'B' == order0)
+                self.assertTrue(1 == order0 or 1.5 == order0)
             
     def testApplyActionGainRadical(self):
         """
