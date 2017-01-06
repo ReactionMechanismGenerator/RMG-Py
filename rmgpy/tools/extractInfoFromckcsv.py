@@ -112,6 +112,29 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 firstColDict[header] = contentCol
                 continue
 
+            if tokens[0] == 'Volume':
+                if 'Soln' in tokens[-1]:
+                    raise Exception("This function only supports ckcsv with one Soln!")
+
+                units = row[1].strip()[1:-1].lower()
+                header = tokens[0] + '_(' + units + ')'
+
+                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
+                contentCol *= {'cm3': 1.0, 'm3': 1.00e+6}[units]
+                firstColDict[header] = contentCol
+                continue
+
+            if tokens[0] == 'Temperature':
+                if 'Soln' in tokens[-1]:
+                    raise Exception("This function only supports ckcsv with one Soln!")
+
+                units = row[1].strip()[1:-1].lower()
+                header = tokens[0] + '_(' + units + ')'
+
+                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
+                firstColDict[header] = contentCol
+                continue
+
             if tokens[0] == 'Pressure':      
                 if 'Soln' in tokens[-1]:
                     raise Exception("This function only supports ckcsv with one Soln!")
@@ -123,6 +146,7 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 contentCol *= {'bar': 1.0, 'atm': 1.01325}[units]
                 firstColDict[header] = contentCol
                 continue
+
             # read concentration (mole fraction profile)
             if len(tokens) > 1:
                 if tokens[0] == 'Mole' and tokens[1] == 'fraction':
