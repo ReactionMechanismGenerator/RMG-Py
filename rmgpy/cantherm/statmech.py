@@ -686,7 +686,13 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)']:
         bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
             'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
-            'C#N': 0.22, 'C-S': -2.35, 'S=O': -5.19, 'S-H': -0.52, }    
+            'C#N': 0.22, 'C-S': -2.35, 'S=O': -5.19, 'S-H': -0.52, }
+    # BAC corrections for Klip_3 method (RQCISD(T)/cc-PV(infinity)(Q)Z) from Table 2 in Goldsmith, C. F.; Magoon, G. R.; Green, W. H.,
+    # Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057.
+    # http://dx.doi.org/10.1021/jp303819e
+    elif modelChemistry == 'Klip_3':
+        bondEnergies = {'C-H': -0.03, 'C-C': -0.36, 'C=C': -0.96, 'C#C': -1.41,
+                        'O-H': 0.21, 'C-O': 0.09, 'C=O': 0.11, 'O-O': -0.58,}
     else:
         
         logging.warning('No bond energy correction found for model chemistry: {0}'.format(modelChemistry))
