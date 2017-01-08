@@ -24,7 +24,7 @@ class ThermoParameterUncertainty:
     """
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
-    def __init__(self, dG_library=2.0, dG_QM=3.0, dG_GAV=1.5, dG_group=0.25):
+    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.10):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
@@ -41,18 +41,17 @@ class ThermoParameterUncertainty:
         """
         Retrieve the uncertainty value in kcal/mol when the source of the thermo of a species is given.
         """
-        dG2 = 0.0
+        dG = 0.0
         if 'Library' in source:
-            dG2 += self.dG_library**2
+            dG += self.dG_library
         if 'QM' in source:
-            dG2 += self.dG_QM**2
+            dG += self.dG_QM
         if 'GAV' in source:
-            dG2 += self.dG_GAV**2  # Add a fixed uncertainty for the GAV method
+            dG += self.dG_GAV  # Add a fixed uncertainty for the GAV method
             for groupType, groupEntries in source['GAV'].iteritems():
                 groupWeights = [groupTuple[-1] for groupTuple in groupEntries]
-                dG2 += numpy.sum([(weight*self.dG_group)**2 for weight in groupWeights])
-        
-        dG = numpy.sqrt(dG2)        
+                dG += numpy.sum([weight*self.dG_group for weight in groupWeights])
+           
         return dG
 
     def getPartialUncertaintyValue(self, source, corrSourceType, corrParam=None, corrGroupType=None):
@@ -108,7 +107,7 @@ class KineticParameterUncertainty:
     """
     This class is an engine that generates the reaction uncertainty based on its kinetic sources.
     """
-    def __init__(self, dlnk_library=0.5, dlnk_training=0.5, dlnk_pdep=2.0, dlnk_family=1.0, dlnk_nonexact=4.0, dlnk_rule=1.0):
+    def __init__(self, dlnk_library=0.5, dlnk_training=0.5, dlnk_pdep=2.0, dlnk_family=1.0, dlnk_nonexact=3.5, dlnk_rule=0.5):
         """
         Initialize the different uncertainties dlnk
         
@@ -126,18 +125,18 @@ class KineticParameterUncertainty:
         """
         Retrieve the dlnk uncertainty when the source of the reaction kinetics are given
         """
-        dlnk2 = 0.0
+        dlnk = 0.0
         if 'Library' in source:
             # Should be a single library reaction source
-            dlnk2 +=self.dlnk_library**2
+            dlnk +=self.dlnk_library
         elif 'PDep' in source:
             # Should be a single pdep reaction source
-            dlnk2 +=self.dlnk_pdep**2
+            dlnk +=self.dlnk_pdep
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
             # We still consider the kinetics to be directly dependent 
-            dlnk2 +=self.dlnk_training**2
+            dlnk +=self.dlnk_training
         elif 'Rate Rules' in source:
             familyLabel = source['Rate Rules'][0]
             sourceDict = source['Rate Rules'][1]
@@ -145,23 +144,22 @@ class KineticParameterUncertainty:
             ruleWeights = [ruleTuple[-1] for ruleTuple in sourceDict['rules']]
             trainingWeights = [trainingTuple[-1] for trainingTuple in sourceDict['training']]
                 
-            dlnk2 += self.dlnk_family**2
+            dlnk += self.dlnk_family**2
             N = len(ruleWeights) + len(trainingWeights)
             if not exact:
                 # nonexactness contribution increases as N increases
-                dlnk2 += (numpy.log10(N+1)*self.dlnk_nonexact)**2
+                dlnk += numpy.log10(N+1)*self.dlnk_nonexact
                 
             # Add the contributions from rules
-            dlnk2 += numpy.sum([(weight*self.dlnk_rule)**2 for weight in ruleWeights])
+            dlnk += numpy.sum([weight*self.dlnk_rule for weight in ruleWeights])
             # Add the contributions from training
             # Even though these source from training reactions, we actually
             # use the uncertainty for rate rules, since these are now approximations
             # of the original reaction.  We consider these to be independent of original the training
             # parameters because the rate rules may be reversing the training reactions,
             # which leads to more complicated dependence
-            dlnk2 += numpy.sum([(weight*self.dlnk_rule)**2 for weight in trainingWeights])
+            dlnk += numpy.sum([weight*self.dlnk_rule for weight in trainingWeights])
             
-        dlnk = numpy.sqrt(dlnk2)
         return dlnk
 
     def getPartialUncertaintyValue(self, source, corrSourceType, corrParam=None, corrFamily=None):
@@ -213,13 +211,13 @@ class KineticParameterUncertainty:
                 sourceDict = source['Rate Rules'][1]
                 exact = sourceDict['exact']
 
-                dlnk2 = self.dlnk_family**2  # Base uncorrelated uncertainty just from using rate rule estimation
+                dlnk = self.dlnk_family  # Base uncorrelated uncertainty just from using rate rule estimation
                 # Additional uncertainty from using non-exact rate rule
                 N = len(sourceDict['rules']) + len(sourceDict['training'])
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk2 += (numpy.log10(N+1)*self.dlnk_nonexact)**2
-                return numpy.sqrt(dlnk2)
+                    dlnk += numpy.log10(N+1)*self.dlnk_nonexact
+                return dlnk
         else:
             raise Exception('Kinetics correlated source must be Rate Rules, Library, PDep, Training, or Estimation')
     
