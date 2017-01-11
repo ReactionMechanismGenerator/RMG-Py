@@ -512,7 +512,7 @@ class GroupAtom(Vertex):
         num_B_bond = 0
         order = 0
         for _, bond in self.bonds.iteritems():
-            if bond.order == 1.5:
+            if bond.isBenzene():
                 num_B_bond += 1
             else:
                 order += mol.bond_orders[bond.order]

@@ -413,7 +413,7 @@ class Atom(Vertex):
         num_B_bond = 0
         order = 0
         for _, bond in self.bonds.iteritems():
-            if bond.order == 1.5:
+            if bond.isBenzene():
                 num_B_bond += 1
             else:
                 order += bond.order
@@ -499,13 +499,13 @@ class Bond(Edge):
         """
         returns a string representing the bond order
         """
-        if self.order == 1:
+        if self.isSingle():
             return 'S'
-        elif self.order == 1.5:
+        elif self.isBenzene():
             return 'B'
-        elif self.order == 2:
+        elif self.isDouble():
             return 'D'
-        elif self.order == 3:
+        elif self.isTriple():
             return 'T'
         else:
             raise ValueError("Bond order {} does not have string representation." +  \
