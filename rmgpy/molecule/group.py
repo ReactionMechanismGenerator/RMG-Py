@@ -632,29 +632,32 @@ class GroupBond(Edge):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
+        
+        NOTE: we can replace the absolute value relation with math.isclose when
+        we swtich to python 3.5+
         """
-        return self.order[0] == 1 and len(self.order) == 1
+        return abs(self.order[0]-1) <= 1e-9 and len(self.order) == 1
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
         """
-        return self.order[0] == 2 and len(self.order) == 1
+        return abs(self.order[0]-2) <= 1e-9 and len(self.order) == 1
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
         """
-        return self.order[0] == 3 and len(self.order) == 1
+        return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
         """
-        return self.order[0] == 1.5 and len(self.order) == 1
+        return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
 
     def __changeBond(self, order):
         """

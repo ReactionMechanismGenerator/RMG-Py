@@ -554,33 +554,44 @@ class Bond(Edge):
         b.order = self.order
         return b
 
+    def isOrder(self, otherOrder):
+        """
+        Return ``True`` if the bond represents a single bond or ``False`` if
+        not. This compares floats that takes into account floating point error
+        
+        NOTE: we can replace the absolute value relation with math.isclose when
+        we swtich to python 3.5+
+        """
+        return abs(self.order - otherOrder) <= 1e-9
+
+        
     def isSingle(self):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return self.order == 1
+        return abs(self.order-1) <= 1e-9
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return self.order == 2
+        return abs(self.order-2) <= 1e-9
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return self.order == 3
+        return abs(self.order-3) <= 1e-9
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not.
         """
-        return self.order == 1.5
+        return abs(self.order-1.5) <= 1e-9
 
     def incrementOrder(self):
         """

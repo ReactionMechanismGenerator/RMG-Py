@@ -96,6 +96,8 @@ cdef class Bond(Edge):
     cpdef setOrderNum(self, float newOrder)
 
     cpdef Edge copy(self)
+    
+    cpdef bint isOrder(self, float otherOrder)
 
     cpdef bint isSingle(self) except -2
 

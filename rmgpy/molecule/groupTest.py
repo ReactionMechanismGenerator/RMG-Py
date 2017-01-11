@@ -244,6 +244,36 @@ class TestGroupBond(unittest.TestCase):
         self.bond = GroupBond(None, None, order=[2])
         self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]
     
+    def testGetOrderStr(self):
+        """
+        test the Bond.getOrderStr() method
+        """
+        bond = GroupBond(None,None,order = [1,2,3,1.5])
+        self.assertEqual(bond.getOrderStr(),['S','D','T','B'])
+        
+    def testSetOrderStr(self):
+        """
+        test the Bond.setOrderStr() method
+        """
+        
+        self.bond.setOrderStr(["B",'T'])
+        self.assertEqual(set(self.bond.order), set([3,1.5]))
+    
+    def testGetOrderNum(self):
+        """
+        test the Bond.getOrderNum() method
+        """
+        self.assertEqual(self.bond.getOrderNum(),[2])
+        
+    def testSetOrderNum(self):
+        """
+        test the Bond.setOrderNum() method
+        """
+        
+        self.bond.setOrderNum([3,1,2])
+        self.assertEqual(self.bond.getOrderStr(),['T','S','D'])
+    
+    
     def testApplyActionBreakBond(self):
         """
         Test the GroupBond.applyAction() method for a BREAK_BOND action.

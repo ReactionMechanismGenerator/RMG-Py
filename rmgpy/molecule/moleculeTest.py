@@ -273,8 +273,47 @@ class TestBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = Bond(atom1=None, atom2=None, order=2)
-        self.orderList = [1,2,3,1.5]
+        self.orderList = [1,2,3,1.5, 0.30000000000000004]
     
+    def testGetOrderStr(self):
+        """
+        test the Bond.getOrderStr() method
+        """
+        
+        self.assertEqual(self.bond.getOrderStr(),'D')
+        
+    def testSetOrderStr(self):
+        """
+        test the Bond.setOrderStr() method
+        """
+        
+        self.bond.setOrderStr("B")
+        self.assertEqual(self.bond.order, 1.5)
+    
+    def testGetOrderNum(self):
+        """
+        test the Bond.getOrderNum() method
+        """
+        self.assertEqual(self.bond.getOrderNum(),2)
+        
+    def testSetOrderNum(self):
+        """
+        test the Bond.setOrderNum() method
+        """
+        
+        self.bond.setOrderNum(3)
+        self.assertEqual(self.bond.getOrderStr(),'T')
+    
+        
+    def testIsOrder(self):
+        """
+        Test the Bond.isOrder() method.
+        """
+        for order in self.orderList:
+            bond = Bond(None, None, order=order)
+            self.assertTrue(bond.isOrder(round(order,2)))
+        
+        
     def testIsSingle(self):
         """
         Test the Bond.isSingle() method.
@@ -286,6 +325,17 @@ class TestBond(unittest.TestCase):
             else:
                 self.assertFalse(bond.isSingle())
     
+    def testIsSingleCanTakeFloatingPointAddition(self):
+        """
+        Test the Bond.isSingle() method with taking floating point addition
+        roundoff errors
+        """
+        new_order = 0.1 + 0.3*3
+        self.assertNotEqual(new_order, 1)
+        
+        self.bond.setOrderNum(new_order)
+        self.assertTrue(self.bond.isSingle())
+        
     def testIsDouble(self):
         """
         Test the Bond.isDouble() method.
@@ -332,7 +382,7 @@ class TestBond(unittest.TestCase):
                 elif order == 2: 
                     self.assertTrue(bond.isTriple())
             except ActionError:
-                self.assertTrue(order in [3,1.5])
+                self.assertTrue(order >= 3)
         
     def testDecrementOrder(self):
         """
@@ -347,7 +397,7 @@ class TestBond(unittest.TestCase):
                 elif order == 3: 
                     self.assertTrue(bond.isDouble())
             except ActionError:
-                self.assertTrue(order in [1,1.5])
+                self.assertTrue(order < 1)
                 
     def testApplyActionBreakBond(self):
         """
@@ -388,7 +438,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue(3 == order0 or 1.5 == order0)
+                self.assertTrue(3 <= order0)
                 
     def testApplyActionDecrementBond(self):
         """
@@ -401,7 +451,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue(1 == order0 or 1.5 == order0)
+                self.assertTrue(order0 < 1)
             
     def testApplyActionGainRadical(self):
         """
