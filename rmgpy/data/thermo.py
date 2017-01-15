@@ -418,8 +418,8 @@ def bicyclicDecompositionForPolyring(polyring):
     """
 
     submol, _ = convertRingToSubMolecule(polyring)
-    SSSR = submol.getSmallestSetOfSmallestRings()
-    
+    SSSR = submol.getDeterministicSmallestSetOfSmallestRings()
+
     ringPairWithCommonAtomsList = []
     ringOccurancesDict = {}
     
