@@ -9,14 +9,20 @@ import rmgpy.constants as constants
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
-def processThermoData(spc, thermo0, thermoClass=NASA):
+def processThermoData(spc, thermo0, solventThermoEstimator, thermoClass=NASA):
     """
     Converts via Wilhoit into required `thermoClass` and sets `E0`.
     
     Resulting thermo is returned.
     """
     # TODO moving this as a global import leads to circular imports.
-    from rmgpy.rmg.main import solvent
+    # Because thermoEstimator.py does not use rmgpy.rmg.main, solvent data must be directly passed on
+    # from thermoEstimator input file. If this is normal rmg.py run, it will get the solvent data from
+    # rmgpy.rmg.main.
+    if solventThermoEstimator is None:
+        from rmgpy.rmg.main import solvent
+    else:
+        solvent = solventThermoEstimator
 
     thermo = None
 
@@ -78,7 +84,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     return thermo
     
 
-def generateThermoData(spc, thermoClass=NASA):
+def generateThermoData(spc, solventThermoEstimator, thermoClass=NASA):
     """
     Generates thermo data, first checking Libraries, then using either QM or Database.
     
@@ -100,10 +106,10 @@ def generateThermoData(spc, thermoClass=NASA):
     
     thermo0 = thermodb.getThermoData(spc) 
         
-    return processThermoData(spc, thermo0, thermoClass)    
+    return processThermoData(spc, thermo0, solventThermoEstimator, thermoClass)
 
 
-def evaluator(spc):
+def evaluator(spc, solventThermoEstimator):
     """
     Module-level function passed to workers.
 
@@ -117,11 +123,11 @@ def evaluator(spc):
     logging.debug("Evaluating spc %s ", spc)
 
     spc.generateResonanceIsomers()
-    thermo = generateThermoData(spc)
+    thermo = generateThermoData(spc, solventThermoEstimator)
 
     return thermo
 
-def submit(spc):
+def submit(spc, solventThermoEstimator=None):
     """
     Submits a request to calculate chemical data for the Species object.
 
@@ -131,4 +137,4 @@ def submit(spc):
     the result.
 
     """
-    spc.thermo = submit_(evaluator, spc)
+    spc.thermo = submit_(evaluator, spc, solventThermoEstimator)

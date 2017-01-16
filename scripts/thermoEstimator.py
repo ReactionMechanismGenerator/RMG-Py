@@ -38,7 +38,9 @@ def runThermoEstimator(inputFile):
         rmg.solvent.solventData = rmg.database.solvation.getSolventData(rmg.solvent.solventName)
 
     for species in rmg.initialSpecies:
-        submit(species)
+        # Because thermoEstimator does not used rmgpy.rmg.main where solvent is set as global variable,
+        # the solvent data must be passed on directly to thermoEngine. 
+        submit(species, rmg.solvent)
 
     # library = ThermoLibrary(name='Thermo Estimation Library')
     # for spc in rmg.initialSpecies:
