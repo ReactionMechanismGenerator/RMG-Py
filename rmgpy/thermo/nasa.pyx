@@ -195,6 +195,8 @@ cdef class NASA(HeatCapacityModel):
     `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
     `E0`            The energy at zero Kelvin (including zero point energy)
+    'Cp0'           The heat capacity at zero temperature in J/mol*K
+    'CpInf'         The heat capacity at infinite temperature in J/mol*K
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
@@ -371,3 +373,44 @@ cdef class NASA(HeatCapacityModel):
 
         # initialize cantera.NasaPoly2(T_low, T_high, P_ref, coeffs)
         return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 10000.0, coeffs)
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def fitToFreeEnergyData(self,
+                        numpy.ndarray[numpy.float64_t, ndim=1] Tdata,
+                        numpy.ndarray[numpy.float64_t, ndim=1] dGdata,
+                        double T_min, double T_max):
+        """
+        Fit a NASA model to the data points provided. The data consists of a set
+        of free energy `dGdata` in J/mol at a given set of temperatures `Tdata` in K.
+        The limits of the temperature range 'T_min' and 'T_max' are given in K.
+        This function is used to fit the species solvated phase thermo after the free
+        energy correction is applied.
+        """
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] b, x
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] A
+        cdef int i
+
+        # Because the NASA model is linear with respect to the 7 coefficients (a0, a1, a2, a3, a4, a5, a6),
+        # the fitting can be done in one step without iteration.
+
+        A = numpy.empty((dGdata.shape[0],7), numpy.float64)
+        b = numpy.empty(dGdata.shape[0], numpy.float64)
+
+        for i in range(dGdata.shape[0]):
+            A[i,0] = constants.R * (Tdata[i] - Tdata[i] * log(Tdata[i]))
+            A[i,1] = constants.R * ((Tdata[i]**2.) / 2. - Tdata[i]**2.)
+            A[i,2] = constants.R * ((Tdata[i]**3.) / 3. - (Tdata[i]**3.) / 2.)
+            A[i,3] = constants.R * ((Tdata[i]**4.) / 4. - (Tdata[i]**4.) / 3.)
+            A[i,4] = constants.R * ((Tdata[i]**5.) / 5. - (Tdata[i]**5.) / 4.)
+            A[i,5] = constants.R
+            A[i,6] = -constants.R *Tdata[i]
+            b[i] = dGdata[i]
+
+        x, residues, rank, s = numpy.linalg.lstsq(A, b)
+
+        self.polynomials = [NASAPolynomial(coeffs=[float(x[0]), float(x[1]), float(x[2]), float(x[3]), float(x[4]), float(x[5]), float(x[6])])]
+        self.Tmin = quantity.ScalarQuantity(T_min, 'K' )
+        self.Tmax = quantity.ScalarQuantity(T_max, 'K' )
+
+        return self
