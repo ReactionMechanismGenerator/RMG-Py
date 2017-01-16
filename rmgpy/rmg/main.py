@@ -378,6 +378,9 @@ class RMG(util.Subject):
             self.solvent.solventData = self.database.solvation.getSolventData(self.solvent.solventName)
             diffusionLimiter.enable(self.solvent.solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent.solventName))
+            # Check whether the solvent's molecular structure matches the one found in the solvent database
+            self.database.solvation.checkSolventStructure(self.solvent)
+
 
         data = self.wallTime.split(':')
         self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
