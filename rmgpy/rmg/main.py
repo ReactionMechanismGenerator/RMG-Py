@@ -376,7 +376,7 @@ class RMG(util.Subject):
         # Do all liquid-phase startup things:
         if self.solvent:
             self.solvent.solventData = self.database.solvation.getSolventData(self.solvent.solventName)
-            diffusionLimiter.enable(self.solvent.solventData, self.database.solvation)
+            diffusionLimiter.enable(self.solvent, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent.solventName))
             # Check whether the solvent's molecular structure matches the one found in the solvent database
             self.database.solvation.checkSolventStructure(self.solvent)
