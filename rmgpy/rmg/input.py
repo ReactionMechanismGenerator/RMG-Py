@@ -29,7 +29,6 @@
 ################################################################################
 
 import logging
-import quantities
 import os
 
 from rmgpy import settings
@@ -39,6 +38,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solvent import Solvent
 
 from model import CoreEdgeReactionModel
 
@@ -203,13 +203,13 @@ def liquidReactor(temperature,
     ##chatelak: check the constant species exist
     if constantSpecies is not None:
         logging.debug('  Generation with constant species:')
-        for constantSpecie in constantSpecies:
-            logging.debug("  {0}".format(constantSpecie))
-            if not speciesDict.has_key(constantSpecie):
-                raise InputError('Species {0} not found in the input file'.format(constantSpecie))
+        for constantSpc in constantSpecies:
+            logging.debug("  {0}".format(constantSpc))
+            if not speciesDict.has_key(constantSpc):
+                raise InputError('Species {0} not found in the input file'.format(constantSpc))
              
             
-    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold,constantSpecies)
+    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold, constantSpecies)
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
@@ -219,10 +219,18 @@ def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.sensitivityRelativeTolerance = sens_rtol
     
 def solvation(solvent):
-    # If solvation module in input file, set the RMG solvent variable
-    if not isinstance(solvent,str):
+    # If solvation module in input file, set the RMG solvent class
+    if not isinstance(solvent, str):
         raise InputError("solvent should be a string like 'water'")
-    rmg.solvent = solvent
+    # Check whether the solvent is listed as one of the initial species
+    solventSpecies = None
+    for spc in rmg.initialSpecies:
+        if spc.label == solvent:
+            solventSpecies = spc
+            break
+    if not solventSpecies:
+        raise InputError("One of the initial species must be the solvent with the same string name, '{0}'".format(solvent))
+    rmg.solvent = Solvent(solvent, solventSpecies)
 
 def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False):
     """

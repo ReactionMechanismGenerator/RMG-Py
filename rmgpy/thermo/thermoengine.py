@@ -6,10 +6,8 @@ import logging as logging
 from rmgpy.scoop_framework.util import submit_
 from rmgpy.data.rmg import getDB
 import rmgpy.constants as constants
-from rmgpy.molecule import Molecule
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
-import rmgpy.data.rmg
 
 def processThermoData(spc, thermo0, thermoClass=NASA):
     """
@@ -18,7 +16,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     Resulting thermo is returned.
     """
     # TODO moving this as a global import leads to circular imports.
-    from rmgpy.rmg.model import Species
+    from rmgpy.rmg.main import solvent
 
     thermo = None
 
@@ -31,14 +29,14 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
         wilhoit = thermo0.toWilhoit()
 
     # Add on solvation correction
-    if Species.solventData and not "Liquid thermo library" in thermo0.comment:
-        solvationdatabase = getDB('solvation')
+    if solvent and not "Liquid thermo library" in thermo0.comment:
+        solvationDatabase = getDB('solvation')
         #logging.info("Making solvent correction for {0}".format(Species.solventName))
-        soluteData = solvationdatabase.getSoluteData(spc)
-        solvation_correction = solvationdatabase.getSolvationCorrection(soluteData, Species.solventData)
+        soluteData = solvationDatabase.getSoluteData(spc)
+        solvationCorrection = solvationDatabase.getSolvationCorrection(soluteData, solvent.solventData)
         # correction is added to the entropy and enthalpy
-        wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-        wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+        wilhoit.S0.value_si = (wilhoit.S0.value_si + solvationCorrection.entropy)
+        wilhoit.H0.value_si = (wilhoit.H0.value_si + solvationCorrection.enthalpy)
         
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
@@ -49,7 +47,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     if thermoClass is Wilhoit:
         thermo = wilhoit
     elif thermoClass is NASA:
-        if Species.solventData:
+        if solvent:
             #if liquid phase simulation keep the nasa polynomial if it comes from a liquid phase thermoLibrary. Otherwise convert wilhoit to NASA
             if "Liquid thermo library" in thermo0.comment and isinstance(thermo0, NASA):
                 thermo = thermo0
