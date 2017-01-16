@@ -8,7 +8,7 @@ from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
-from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary
+from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary, SolventData
 from rmgpy.solvent import Solvent
 
 ###################################################
@@ -69,6 +69,33 @@ class TestSoluteDatabase(TestCase):
         self.assertTrue(solventData is not None)
         self.assertEqual(solventData.s_h, 2.836)
         self.assertRaises(DatabaseError, self.database.getSolventData, 'orange_juice')
+
+    def testSolventCoolPropInfo(self):
+        " Test we can give proper values for CoolProp related Species attributes when different solvet database are given"
+
+        # Case 1: When the solventDatabase does not contain any CoolProp related info, inCoolProp is False and
+        # nameinCoolProp is None
+        solventlibrary = SolventLibrary()
+        solventdata = SolventData()
+        solventlibrary.loadEntry(index=1, label='water', solvent=solventdata)
+        self.assertTrue(solventlibrary.entries['water'].data.inCoolProp is False)
+        self.assertTrue(solventlibrary.entries['water'].data.nameinCoolProp is None)
+
+        # Case 2: When the solventDatabase does contain CoolProp related info and the solvent is available in CoolProp,
+        # 'inCoolProp' returns True and 'nameinCoolProp' returns the solvent's name recognizable by CoolProp
+        solventdata.inCoolProp = True
+        solventdata.nameinCoolProp = 'CycloHexane'
+        solventlibrary.loadEntry(index=2, label='cyclohexane', solvent=solventdata)
+        self.assertTrue(solventlibrary.entries['cyclohexane'].data.inCoolProp)
+        self.assertTrue(solventlibrary.entries['cyclohexane'].data.nameinCoolProp is 'CycloHexane')
+
+        # Case 3: When the solventDatabase does contain CoolProp related info and the solvent is unavailable in CoolProp,
+        # 'inCoolProp' returns False and 'nameinCoolProp' returns None
+        solventdata.inCoolProp = False
+        solventdata.nameinCoolProp = None
+        solventlibrary.loadEntry(index=3, label='hexadecane', solvent=solventdata)
+        self.assertFalse(solventlibrary.entries['hexadecane'].data.inCoolProp)
+        self.assertTrue(solventlibrary.entries['hexadecane'].data.nameinCoolProp is None)
         
     def testViscosity(self):
         "Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"

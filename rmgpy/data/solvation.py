@@ -101,6 +101,8 @@ def saveEntry(f, entry):
         f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
         f.write('        beta = {0!r},\n'.format(entry.data.beta))
         f.write('        eps = {0!r},\n'.format(entry.data.eps))
+        f.write('        inCoolProp = {0!r},\n'.format(entry.data.inCoolProp))
+        f.write('        NameinCoolProp = "{0}",\n'.format(entry.data.NameinCoolProp))
         f.write('    ),\n')
     elif entry.data is None:
         f.write('    solute = None,\n')
@@ -144,7 +146,7 @@ class SolventData():
     """
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
     c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None, 
-    C=None, D=None, E=None, alpha=None, beta=None, eps=None):
+    C=None, D=None, E=None, alpha=None, beta=None, eps=None, inCoolProp=False, NameinCoolProp=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
@@ -168,6 +170,9 @@ class SolventData():
         self.beta = beta
         # This is the dielectric constant
         self.eps = eps
+        # This describes the availability of the solvent data in CoolProp and its name in CoolProp
+        self.inCoolProp = inCoolProp
+        self.nameinCoolProp = NameinCoolProp
     
     def getHAbsCorrection(self):
         """
@@ -903,7 +908,7 @@ class SolvationDatabase(object):
         # Use Abraham parameters for solvents to get log K
         logK = (soluteData.S*solventData.s_g)+(soluteData.B*solventData.b_g)+(soluteData.E*solventData.e_g)+(soluteData.L*solventData.l_g)+(soluteData.A*solventData.a_g)+solventData.c_g
         # Convert to delG with units of J/mol
-        delG = -8.314*298*2.303*logK
+        delG = -constants.R*298*math.log(10.)*logK
         return delG
         
     def calcS(self, delG, delH):
