@@ -41,8 +41,7 @@ import numpy
 import rmgpy.kinetics as _kinetics
 from rmgpy.molecule.element import getElement
 from rmgpy.reaction import Reaction
-#from species import Species
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.rmg.pdep import PDepReaction
 from rmgpy.thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants

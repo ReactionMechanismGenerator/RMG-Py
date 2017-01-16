@@ -54,7 +54,8 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
-from model import Species, CoreEdgeReactionModel
+from model import CoreEdgeReactionModel
+from rmgpy.species import Species
 from pdep import PDepNetwork
 import rmgpy.util as util
 

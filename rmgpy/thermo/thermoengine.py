@@ -31,7 +31,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     # Add on solvation correction
     if solvent and not "Liquid thermo library" in thermo0.comment:
         solvationDatabase = getDB('solvation')
-        #logging.info("Making solvent correction for {0}".format(Species.solventName))
+        #logging.info("Making solvent correction for {0}".format(solvent.solventName))
         soluteData = solvationDatabase.getSoluteData(spc)
         solvationCorrection = solvationDatabase.getSolvationCorrection(soluteData, solvent.solventData)
         # correction is added to the entropy and enthalpy

@@ -4,7 +4,7 @@ import logging
 from external.wip import work_in_progress 
 
 from .main import RMG, CoreEdgeReactionModel
-from .model import Species
+from rmgpy.species import Species
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule

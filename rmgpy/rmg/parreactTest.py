@@ -15,7 +15,7 @@ from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 
 from rmgpy.scoop_framework.framework import TestScoopCommon
 

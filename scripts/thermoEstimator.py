@@ -14,7 +14,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
                      
 ################################################################################
@@ -35,8 +35,7 @@ def runThermoEstimator(inputFile):
    
     if rmg.solvent:
         rmg.database.loadSolvation(os.path.join(path, 'solvation'))
-        Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
-        Species.solventName = rmg.solvent
+        rmg.solvent.solventData = rmg.database.solvation.getSolventData(rmg.solvent.solventName)
 
     for species in rmg.initialSpecies:
         submit(species)
