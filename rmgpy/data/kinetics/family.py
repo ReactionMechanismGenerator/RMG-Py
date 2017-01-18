@@ -1151,12 +1151,19 @@ class KineticsFamily(Database):
                     for i in range(4,highest+1):
                         atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
                         
-            elif label == 'H_shift_cyclopentadiene':
+            elif label == 'Intra_ene_reaction':
                 # Labels for nodes are swapped
                 atomLabels['*1'].label = '*2'
                 atomLabels['*2'].label = '*1'
                 atomLabels['*3'].label = '*5'
                 atomLabels['*5'].label = '*3'
+
+            elif label == '6_membered_central_C-C_shift':
+                # Labels for nodes are swapped
+                atomLabels['*1'].label = '*3'
+                atomLabels['*3'].label = '*1'
+                atomLabels['*4'].label = '*6'
+                atomLabels['*6'].label = '*4'
 
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
