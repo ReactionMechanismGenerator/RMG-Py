@@ -9,12 +9,13 @@
 #SBATCH --error=AutoTST.error.%a.log
 
 #time you think you need; default is one day
-#hh:mm:ss
-#SBATCH --time=05:00:00
+# d-hh:mm:ss
+#SBATCH --time=0
 
 #number of tasks you are requesting
-#SBATCH -n 11
-#SBATCH --exclusive
+#SBATCH -n 10
+##SBATCH --ntasks-per-node=2
+##SBATCH --exclusive
 
 #partition to use
 #SBATCH --partition=west
@@ -23,7 +24,7 @@
 #SBATCH -N 1
 
 #an array job
-#SBATCH --array=1-20
+#SBATCH --array=1-50
 
 
 #####################################################
@@ -34,6 +35,4 @@ cd $RMGpy/scripts
 #python filterReactions.py /scratch/westgroup/Importer/RMG-models/
 ## that creates the kineticsDict files, and doesn't need repeating until the imported models change significantly
 echo $SLURM_ARRAY_TASK_ID
-python autoTST-OOH.py
-
-
+python autoTST-OOH.py 2>&1 >AutoTST.combined.$SLURM_ARRAY_TASK_ID.log
