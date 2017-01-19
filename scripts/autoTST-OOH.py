@@ -11,7 +11,7 @@ import itertools
 import cPickle as pickle
 
 # do this before we have a chance to import openbabel!
-import rdkit, rdkit.Chem, rdkit.Chem.rdDistGeom
+import rdkit, rdkit.Chem, rdkit.Chem.rdDistGeom, rdkit.DistanceGeometry
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
@@ -83,7 +83,10 @@ def makeComparison(chemkinRxn):
         if len(checkRxn) == 1:
             break
     else:  # didn't break from for loop
-        raise Exception("Couldn't generate one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
+        for reaction in checkRxn:
+            print "Generated these reactions:"
+            print reaction
+        raise Exception("Couldn't generate exactly one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
     reaction = checkRxn[0]
 
     assert testReaction.isIsomorphic(reaction)
