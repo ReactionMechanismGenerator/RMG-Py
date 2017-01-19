@@ -141,7 +141,7 @@ class GroupAtom(Vertex):
         Return a deep copy of the :class:`GroupAtom` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.charge[:], self.label)
+        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.charge[:], self.label, self.lonePairs[:])
 
     def __changeBond(self, order):
         """
