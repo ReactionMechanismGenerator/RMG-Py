@@ -39,10 +39,16 @@ def processThermoData(spc, thermo0, solventThermoEstimator, thermoClass=NASA):
         solvationDatabase = getDB('solvation')
         #logging.info("Making solvent correction for {0}".format(solvent.solventName))
         soluteData = solvationDatabase.getSoluteData(spc)
-        solvationCorrection = solvationDatabase.getSolvationCorrection(soluteData, solvent.solventData)
-        # correction is added to the entropy and enthalpy
-        wilhoit.S0.value_si = (wilhoit.S0.value_si + solvationCorrection.entropy)
-        wilhoit.H0.value_si = (wilhoit.H0.value_si + solvationCorrection.enthalpy)
+        if solvent.solventData.inCoolProp:
+            if spc.label == solvent.solventName: # the species is the solvent
+                wilhoit, nasa = solvationDatabase.getSolventThermo(solvent.solventData, wilhoit)
+            else: # the species is the solute
+                wilhoit, nasa = solvationDatabase.getSolvationThermo(soluteData, solvent.solventData, wilhoit)
+        else:
+            solvationCorrection = solvationDatabase.getSolvationCorrection298(soluteData, solvent.solventData)
+            # correction is added to the entropy and enthalpy
+            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvationCorrection.entropy)
+            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvationCorrection.enthalpy)
         
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
@@ -60,8 +66,18 @@ def processThermoData(spc, thermo0, solventThermoEstimator, thermoClass=NASA):
                 if thermo.E0 is None:
                     thermo.E0 = wilhoit.E0
             else:
-                thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        else: 
+                if solvent.solventData.inCoolProp:
+                    # Tmax is set high to prevent value error when Cp is calculated for chemkin output file
+                    # Tmax should actually be the critical temperature of the solvent, Tc.
+                    # RMG requires NASA to have two polynomials while liquid phase thermo is fitted to one NASA polynomial
+                    # To prevent error, two NASA polynomials with the same coefficients are used
+                    # Liquid phase thermo should actually have one NASA polynomial with Tmin = 298K and Tmax = Tc
+                    thermo = wilhoit.toNASA(Tmin=298., Tmax=5000.0, Tint=1000.0)
+                    thermo.poly1.coeffs = nasa.poly1.coeffs
+                    thermo.poly1.coeffs = nasa.poly1.coeffs
+                else:
+                    thermo = wilhoit.toNASA(Tmin=298., Tmax=5000.0, Tint=1000.0)
+        else:
             #gas phase with species matching thermo library keep the NASA from library or convert if group additivity
             if "Thermo library" in thermo0.comment and isinstance(thermo0,NASA):
                 thermo=thermo0

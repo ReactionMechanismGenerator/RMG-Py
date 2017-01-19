@@ -10,6 +10,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary, SolventData
 from rmgpy.solvent import Solvent
+from rmgpy.thermo.wilhoit import Wilhoit
 
 ###################################################
 
@@ -191,8 +192,8 @@ multiplicity 2
         soluteData = self.database.getSoluteDataFromGroups(species)
         self.assertTrue(soluteData is not None)
 
-    def testCorrectionGeneration(self):
-        "Test we can estimate solvation thermochemistry."
+    def testCorrectionGeneration298(self):
+        "Test we can estimate solvation thermochemistry at 298 K."
         self.testCases = [
         # solventName, soluteName, soluteSMILES, Hsolv, Gsolv
         ['water', 'acetic acid', 'C(C)(=O)O', -56500, -6700*4.184],
@@ -207,9 +208,9 @@ multiplicity 2
             species = Species(molecule=[Molecule(SMILES=smiles)])
             soluteData = self.database.getSoluteData(species)
             solventData = self.database.getSolventData(solventName)
-            solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)
-            self.assertAlmostEqual(solvationCorrection.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.enthalpy, H))  #0 decimal place, in 10kJ.
-            self.assertAlmostEqual(solvationCorrection.gibbs / 10000., G / 10000., 0, msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.gibbs, G))
+            solvationCorrection298 = self.database.getSolvationCorrection298(soluteData, solventData)
+            self.assertAlmostEqual(solvationCorrection298.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection298.enthalpy, H))  #0 decimal place, in 10kJ.
+            self.assertAlmostEqual(solvationCorrection298.gibbs / 10000., G / 10000., 0, msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection298.gibbs, G))
 
 
     def testSolventMolecule(self):
@@ -252,7 +253,7 @@ multiplicity 2
         self.assertRaises(Exception, solventlibrary.loadEntry, index=4, label='benzene', solvent=None, molecule='ring')
 
     def testSolventStructure(self):
-        " Test whether the solvent structure can be checked"
+        " Test we can compare the input solvent structure with the database one"
 
         # The solvent 'octane' has the wrong SMILES: DatabaseError is raised
         solventName = 'octane'
@@ -263,6 +264,73 @@ multiplicity 2
         # The solvent now has the correct SMILES. No DatabaseError is raised
         solvent.solventSpecies = Species().fromSMILES('CCCCCCCC')
         self.database.checkSolventStructure(solvent)
+
+    def testSoluteThermoCorrection(self):
+        " Test we can apply the solvation free energy correction and get proper thermo for solute species using CoolProp"
+
+        solventName = 'heptane'
+        solventData = self.database.getSolventData(solventName)
+        # Input the CoolProp-related attributes manually if the older version solvent database is used
+        if solventData.inCoolProp is False:
+            solventData.inCoolProp = True
+            solventData.nameinCoolProp = 'Heptane'
+        soluteSMILES = 'CCCCC' # pentane
+        spc = Species().fromSMILES(soluteSMILES)
+        soluteData = self.database.getSoluteData(spc)
+
+        # 1) Check whether the estimated solvation free energy match the data
+        Tlist = [298.0, 350.0, 400.0, 450.0, 500.0] # in K
+        dGsolvData = [-13.7, -11.7, -10.1, -8.8, -7.5] # in kJ/mol
+        dGsolvList = [self.database.getSolvationFreeEnergy(soluteData, solventData, [T])[0]/1000. for T in Tlist] # in kJ/mol
+        for i in range(len(Tlist)):
+            self.assertAlmostEqual(dGsolvData[i] / dGsolvList[i], 1.0, 2, '{0} != {1}'.format(dGsolvData[i], dGsolvList[i]))
+
+        # 2) Check whether the fitted liquid phase Wilhoit and NASA models of the solute species
+        # can correctly estimate the liquid phase gibbs free energy
+        soluteGasWilhoit = Wilhoit(Cp0=(33.2579,'J/(mol*K)'), CpInf=(390.78,'J/(mol*K)'),
+                            a0=-0.853663, a1=3.26113, a2=-4.8167, a3=4.7142e-07,
+                            H0=(-483.881,'kJ/mol'), S0=(-2016.12,'J/(mol*K)'), B=(365.232,'K'))
+        dGgasList = [soluteGasWilhoit.getFreeEnergy(T)/1000. for T in Tlist]
+        dGliquidList = [dGsolvList[i] + dGgasList[i] for i in range(len(Tlist))] # in kJ/mol
+        liquidWilhoit, liquidNasa = self.database.getSolvationThermo(soluteData, solventData, soluteGasWilhoit)
+        dGliquidWilhoit = [liquidWilhoit.getFreeEnergy(T)/1000. for T in Tlist] # in kJ/mol
+        dGliquidNASA = [liquidNasa.getFreeEnergy(T)/1000. for T in Tlist] # in kJ/mol
+        for i in range(len(Tlist)):
+            self.assertAlmostEqual(dGliquidList[i] / dGliquidWilhoit[i], 1.0, 2, '{0} != {1}'.format(dGliquidList[i], dGliquidWilhoit[i]))
+            self.assertAlmostEqual(dGliquidList[i] / dGliquidNASA[i], 1.0, 2, '{0} != {1}'.format(dGliquidList[i], dGliquidNASA[i]))
+
+    def testSolventThermoCorrection(self):
+        " Test we can apply the solvation free energy correction and get proper thermo for solvent species using CoolProp"
+
+        solventName = 'octane'
+        solventData = self.database.getSolventData(solventName)
+        # Input the CoolProp-related attributes manually if the older version solvent database is used
+        if solventData.inCoolProp is False:
+            solventData.inCoolProp = True
+            solventData.nameinCoolProp = 'Octane'
+        solventSMILES = 'CCCCCCCC' # octane
+        spc = Species().fromSMILES(solventSMILES)
+
+        # 1) Check whether the estimated self solvation free energy match the data
+        Tlist = [298.0, 350.0, 400.0, 450.0, 500.0] # in K
+        dGselfSolvData = [-22.3, -19.4, -16.9, -14.3, -11.3] # in kJ/mol
+        dGselfSolvList = [self.database.getSelfSolvationFreeEnergy(solventData, [T])[0]/1000. for T in Tlist] # in kJ/mol
+        for i in range(len(Tlist)):
+            self.assertAlmostEqual(dGselfSolvData[i] / dGselfSolvList[i], 1.0, 2, '{0} != {1}'.format(dGselfSolvData[i], dGselfSolvList[i]))
+
+        # 2) Check whether the fitted liquid phase Wilhoit and NASA models of the solvent species
+        # can correctly estimate the liquid phase gibbs free energy
+        solventGasWilhoit = Wilhoit(Cp0=(33.2579,'J/(mol*K)'), CpInf=(602.799,'J/(mol*K)'),
+                            a0=-7.00901, a1=18.2534, a2=-29.7246, a3=17.9313,
+                            H0=(4354.4,'kJ/mol'), S0=(-3667.07,'J/(mol*K)'), B=(827.47,'K'))
+        dGgasList = [solventGasWilhoit.getFreeEnergy(T)/1000. for T in Tlist]
+        dGliquidList = [dGselfSolvList[i] + dGgasList[i] for i in range(len(Tlist))] # in kJ/mol
+        liquidWilhoit, liquidNasa = self.database.getSolventThermo(solventData, solventGasWilhoit)
+        dGliquidWilhoit = [liquidWilhoit.getFreeEnergy(T)/1000. for T in Tlist] # in kJ/mol
+        dGliquidNASA = [liquidNasa.getFreeEnergy(T)/1000. for T in Tlist] # in kJ/mol
+        for i in range(len(Tlist)):
+            self.assertAlmostEqual(dGliquidList[i] / dGliquidWilhoit[i], 1.0, 2, '{0} != {1}'.format(dGliquidList[i], dGliquidWilhoit[i]))
+            self.assertAlmostEqual(dGliquidList[i] / dGliquidNASA[i], 1.0, 2, '{0} != {1}'.format(dGliquidList[i], dGliquidNASA[i]))
 
 
 #####################################################
