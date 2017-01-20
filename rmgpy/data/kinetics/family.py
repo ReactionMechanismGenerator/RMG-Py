@@ -851,7 +851,7 @@ class KineticsFamily(Database):
             for i, struct in enumerate(productStructure):
                 for s in productStructureList[i]:
                     try:
-                        if s.isIsomorphic(struct): break
+                        if s.isIdentical(struct): break
                     except KeyError:
                         print struct.toAdjacencyList()
                         print s.toAdjacencyList()
