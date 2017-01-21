@@ -42,7 +42,7 @@ from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius, ArrheniusEP
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, StickingCoefficient
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
@@ -947,7 +947,7 @@ class KineticsFamily(Database):
                 reverse_entries.append(entry)
                 continue
             
-            assert isinstance(entry.data, Arrhenius)
+            assert isinstance(entry.data, Arrhenius) or isinstance(entry.data, StickingCoefficient)
             data = deepcopy(entry.data)
             data.changeT0(1)
             
@@ -963,7 +963,7 @@ class KineticsFamily(Database):
                     E0 = deepcopy(data.Ea),
                     Tmin = deepcopy(data.Tmin),
                     Tmax = deepcopy(data.Tmax),
-                ),
+                ) if isinstance(entry.data, Arrhenius) else deepcopy(data),  # if StickingCoefficient
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
