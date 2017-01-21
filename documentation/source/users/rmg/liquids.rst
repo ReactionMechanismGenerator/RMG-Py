@@ -82,14 +82,22 @@ The next correction for liquids is solvation effects on the thermochemistry. By 
 
 The free energy change associated with the process of transferring a
 molecule from the gas phase to the solvent phase is defined as the free
-energy of solvation (ΔG). Many different methods have been developed for
+energy of solvation (ΔGsolv). RMG calculates liquid/solvated phase free energy of species
+by adding the free energy of solvation to the gas phase free energy:
+
+.. math:: ΔG_{liq} = ΔG_{gas} + ΔG_{solv}
+	:label: liquidPhaseΔG
+
+Many different methods have been developed for
 computing solvation energies among which continuum dielectric and force
 field based methods are popular. Not all of these methods are easy to
 automate, and many are not robust i.e. they either fail or give
 unreasonable results for certain solute-solvent pairs. CPU time and
 memory (RAM) requirements are also important considerations. A fairly
-accurate and fast method for computing ΔG, which is used in RMG, is the
-LSER approach described below.
+accurate and fast method for computing ΔGsolv, which is used in RMG, is the
+LSER approach described below. For certain solvents whose thermophysical
+properties can be calculated by CoolProp module, RMG can estimate the temperature
+dependence of ΔGsolv more accurately by combining two correlations. The details are explained below.
 
 .. _useofthermolibrariesliquid:
 
@@ -110,8 +118,8 @@ for this specific species-solvent system.
 
 .. _lserToEstimateThermo:
 
-Use of Abraham LSER to estimate thermochemistry
------------------------------------------------
+Use of Abraham and Mintz LSERs to estimate thermochemistry at 298 K
+-------------------------------------------------------------------
 
 The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the 
 log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent 
@@ -122,7 +130,7 @@ log (base 10) of the partition coefficient) of a solute between the vapor phase 
 
 The Abraham model is used in RMG to estimate ΔG which is related to the `K`\ :sub:`vs`\  of a solute according to the following expression:
 
-.. math:: ΔG = -RT \ln K_{vs} \\
+.. math:: ΔG_{solv} = -RT \ln K_{vs} \\
 	= -2.303RT \log K_{vs}
 	:label: partition
 
@@ -138,10 +146,19 @@ The `aA` and `bB` terms account for the contribution of hydrogen bonding between
 the surrounding solvent molecules. H-bonding interactions require two terms as the solute (or solvent) 
 can act as acceptor (donor) and vice versa. The descriptor `A` is a measure of the solute's ability 
 to donate a hydrogen bond (acidity) and the solvent descriptor `a` is a measure of the solvent's ability 
-to accept a hydrogen bond. A similar explanation applies to the `bB` term [Vitha2006]_, [Abraham1999]_, [Poole2009].
+to accept a hydrogen bond. A similar explanation applies to the `bB` term [Vitha2006]_, [Abraham1999]_, [Poole2009]_.
 
+Recently, Mintz et al. ([Mintz2007]_, [Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_) have developed linear correlations similar to the Abraham model for estimating ΔHsolv at 298 K:
 
-The solvent descriptors (`c, e, s, a, b, l`) are largely treated as regressed empirical coefficients. Parameters are provided in RMG's database for the following solvents:
+.. math:: ΔH_{solv}(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L
+	:label: mintz
+
+where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of ΔGsolv. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation and together with ΔGsolv(298 K) can be used to calculate ΔSsolv(298 K):
+
+.. math:: ΔS_{solv}(298 K) = \frac{ΔH_{solv}(298 K) - ΔG_{solv}(298 K)}{298 K}
+	:label: ΔS_at_298K
+
+The solvent descriptors (`c, e, s, a, b, l, c', a', b', e', s', l'`) are largely treated as regressed empirical coefficients. Parameters are provided in RMG's database for the following solvents:
 
 #. acetonitrile
 #. benzene
@@ -176,16 +193,165 @@ Group additivity is a convenient way of estimating the thermochemistry for thous
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach 
 to estimate the solute descriptors (`A, B, E, L,` and `S`). Platts et al. ([Platts1999]_) proposed such a scheme employing a set of 81 molecular fragments for estimating `B, E, L, V` and `S` and another set of 51 fragments for the estimation of `A`. Only those fragments containing C, H and O are implemented in order to match RMG's existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.
 
-Mintz model for enthalpy of solvation
--------------------------------------
+Estimation of ΔGsolv at temperatures higher than 298 K
+------------------------------------------------------
 
-For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. ([Mintz2007]_, [Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_) have developed linear correlations similar to the Abraham model for estimating ΔH:
+For estimating ΔGsolv at temperatures other than 298 K, RMG implements two different methods depending on whether the solvent's thermophysical
+properties can be calculated via CoolProp. (details about CoolProp is written in Method 2)
 
-.. math:: ΔH(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L
-	:label: mintz
+**Method 1: Linear T-dependence of ΔGsolv**
 
-where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.
+For the solvents not available in CoolProp, ΔHsolv and ΔSsolv are assumed to be independent of temperature, and ΔGsolv at other temperature is found by the following extrapolation:
 
+.. math:: ΔG_{solv}(T) = ΔH_{solv}(298 K) - TΔS_{solv}(298 K)
+	:label: linear_ΔG_T-dependence
+
+|
+| **Method 2: Combined correlations to predict nonlinear T-dependence of ΔGsolv**
+
+If the solvents are available in CoolProp, a more accurate method combining two correlations is used to predict nonlinear temperature dependence of ΔGsolv.
+In 1989, Japas and Levelt Sengers ([Japas1989]_) derived a simple relationship between K-factor (:math:`K^{∞}_{2,1}`) and the solvent's density
+based on the asymptotic behavior of the temperature derivative. Their work showed that near the solvent's critical point,
+the following linear relation between :math:`T \ln K^{∞}_{2,1}` and the solvent's density holds:
+
+.. math:: T \ln K^{∞}_{2,1} = D(ρ^{l}_{1} - ρ_{c,1})
+	:label: Japas&LeveltSengers
+
+where :math:`ρ^{l}_{1}`, :math:`ρ_{c,1}`, and `D` represent the molar density of the solvent at T, the critical molar density of the solvent,
+and the empirical parameter respectively. The subscripts `1` and `2` each represent the solvent and solute. K-factor is defined as the ratio of solute’s equilibrium mole fractions in the
+gas phase (:math:`y_{2}`) and the solvent phase (:math:`x_{2}`) for an infinitely dilute binary mixture, and it is directly
+related to ΔGsolv:
+
+.. math:: K^{∞}_{2,1}(T) = \frac{y_{2}}{x_{2}}
+	:label: K-factor_definition
+
+.. math:: ΔG_{solv}(T) = RT \ln{(\frac{K^{∞}_{2,1}(T)P^{vap}_{1}(T)}{RTρ^{l}_{1}(T)})}
+	:label: ΔG_and_K-factor_relationship
+
+where :math:`P^{vap}_{1}` is the vapor pressure of the solvent. A number of studies ([Harvey1990]_, [Plyasunova2004]_) have
+revealed that this asymptotic linear behavior is ubiquitos in dilute mixtures and can be extended to relatively lower temperature
+regions. This relationship is incredibly simple in that it only requires two points to find the slope.
+Harvey ([Harvey1996]_) later proposed a 3-parameter correlation including additional terms to describe low temperature behavior:
+
+.. math:: T \ln K^{∞}_{2,1} = A + B(1 - \frac{T}{T_{c,1}})^{0.355} + CT^{0.59}\exp{(1 - \frac{T}{T_{c,1}})}
+	:label: Harvey
+
+where :math:`T_{c,1}` represents the solvent's critical temperature and `A`, `B`, and `C` represent the empirical parameters.
+The two correlations by Japas & Levelt Sengers and Harvey were evaluated, and a comparison with several experimental
+data showed that using Harvey's correlation for low temperature region and Japas & Levelt Sengers' correlation for
+high temperature region provided the most accurate estimations. The transition temperature between the low and high temperature
+regions is determined as the point 35% away from 298 K to :math:`T_{c,1}`. The final combined correlations are:
+
+For :math:`298 K ≤ T < T_{tran}` :
+
+.. math:: T \ln K^{∞}_{2,1} = A + B(1 - \frac{T}{T_{c,1}})^{0.355} + CT^{0.59}\exp{(1 - \frac{T}{T_{c,1}})}
+
+For :math:`T_{tran} ≤ T < T_{c,1}` :
+
+.. math:: T \ln K^{∞}_{2,1} = D(ρ^{l}_{1} - ρ_{c,1})
+
+The parameters (`A, B, C, D`) are obtained by imposing the following equality constraints:
+
+| 1) @ 298 K:  :math:`T \ln K^{∞}_{2,1}` (Harvey) :math:`=`  :math:`T \ln K^{∞}_{2,1}` (Abraham LSER)
+|
+| 2) @ 298 K:  :math:`\frac{d(T \ln K^{∞}_{2,1})}{dT}` (Harvey) :math:`=`  :math:`\frac{d(T \ln K^{∞}_{2,1})}{dT}` (Mintz LSER)
+|
+| 3) @ :math:`T_{tran}` :  :math:`T \ln K^{∞}_{2,1}` (Harvey) :math:`-`  :math:`T \ln K^{∞}_{2,1}` (Japas & LeveltSengers) = 0
+|
+| 4) @ :math:`T_{tran}` :  :math:`\frac{d(T \ln K^{∞}_{2,1})}{dT}` (Harvey) :math:`-`  :math:`\frac{d(T \ln K^{∞}_{2,1})}{dT}` (Japas & LeveltSengers) = 0
+
+The temperature derivatives of the Harvey's correlation are calculated algebraically while the temperature derivatives from
+the Mintz LSER and Japas & Levelt Sengers' correlation are estimated using the finite difference method:
+
+    Harvey:  :math:`\frac{d(T \ln K^{∞}_{2,1})}{dT} =` :math:`-\frac{0.355B}{T_{c,1}} (1 - \frac{T}{T_{c,1}})^{-0.645} +` :math:`C\exp{(1 - \frac{T}{T_{c,1}})} (0.59T^{-0.41} -`  :math:`\frac{T^{0.59}}{T_{c,1}}` :math:`)`
+
+    Mintz LSER and Japas & Levelt Sengers:  :math:`\frac{d(T \ln K^{∞}_{2,1})}{dT} ≈ \frac{T \ln K^{∞}_{2,1}@(T+ΔT) - T \ln K^{∞}_{2,1}@(T)}{ΔT}`
+
+After all the parameters are determined, :math:`K^{∞}_{2,1}` is converted into ΔGsolv using Equation (8). The ΔGsolv
+comparison among the experimental data, the linear T-dependence method, and the combined correlation method are shown in the figure below
+for two different solution systems.
+
+.. image:: images/dGsolvComparison.PNG
+	:align: center
+
+where the experimental data for the ethylene in water system is obtained from Harvey ([Harvey1996]_) and the experimental
+data from the ethylbenzene in benzene system is obtained from Kesselman et al. ([Kesselman1968]_), Kutsarov et al. ([Kutsarov1993]_),
+and Al-Ghamdi et al. ([AlGhamdi2001]_). The figure above shows that the combined correlation (method 2) is able to predict
+ΔGsolv more accurately than the linear T-dependence (method 1) can. However, for the ethylbenzene in benzene, method 1 is
+also able to estimate fairly accurate ΔGsolv values at all temperature range.
+
+
+| In order to use this combined correlation method, it is required that the molar volume and vapor pressure of the solvent can be calculated at
+| any temperature. Recently, Bell et al. ([Bell2014]_) developed an open-source thermophysical property libraries CoolProp, which can provide
+| thermodynamic and transport properties for 122 working fluids. The equations of state implemented in CoolProp can provide highly accurate
+| pure fluid models. Among the 25 solvents in RMG's database, the following 14 solvents can be found in CoolProp:
+
+
+#. benzene
+#. cyclohexane
+#. decane
+#. dichloroethane
+#. dodecane
+#. ethanol
+#. heptane
+#. hexane
+#. nonane
+#. octane
+#. pentane
+#. toluene
+#. undecane
+#. water
+
+For the solvents listed above, CoolProp can directly compute the partition coefficient (`K`\ :sub:`vs`\ ) at any temperature,
+allowing RMG to directly compute ΔGsolv from the following expression:
+
+.. math:: ΔG_{solv}(T) = -RT \ln K_{vs}(T)
+	:label: partition2
+
+|
+
+**Caution on the liquid reactor thermo output file**
+
+When the method 1 of ΔGsolv estimation is used, :math:`ΔH_{solv}(298 K)` and :math:`ΔS_{solv}(298 K)` are added to gas
+phase enthalpy (:math:`H(T)`) and entropy (:math:`S(T)`) as constant terms, and the final thermo output would correspond to:
+
+.. math:: C_{P, liquid}(T) = C_{P, gas}(T)
+.. math:: H_{liquid}(T)= = H_{gas}(T) + ΔH_{solv}(298K)
+.. math:: S_{liquid}(T) = S_{gas}(T) + ΔS_{solv}(298K)
+.. math:: G_{liquid}(T) = H_{liquid}(T) - TS_{liquid}(T)
+
+
+Notice that the final heat capacity is the gas phase heat capacity in this case. Because the heat capacity is not used
+in the liquid phase reactor, this does not affect the simulation result.
+
+| When the method 2 of ΔGsolv estimation is used, the liquid phase free energy is first computed by adding ΔGsolv to Ggas:
+
+.. math:: G_{liquid}(T) = G_{gas}(T) + ΔG_{solv}(T)
+
+Then, the NASA polynomial is fitted to the resulting :math:`G_{liquid}(T)` for the temperature range of 298 K to the
+critical temperature of the solvent. Because the NASA polynomial is originally designed for gas phase thermo,
+the :math:`G_{liquid}` values estimated from the fitted NASA model deviate a little from the :math:`G_{liquid}` values
+before the fitting as shown below when the temperature is too close to the critical temperature of the solvent.
+
+.. image:: images/dGLiquidFitted.PNG
+	:align: center
+
+Also, because the NASA polynomial is a heat capacity model that should be fitted to the heat capacity data
+rather than the free energy data, the resulting enthalpy, entropy, and heat capacity from the fitted NASA model may contain
+some error. The users should be aware that only the liquid phase free energy in the thermo output file is accurate in this case
+and the enthalpy, entropy, and heat capacity may have some error. Moreover, the output thermo values are only valid from
+298 K to the critical temperature of the solvent. Yet, because the heat capacity, enthalpy, and entropy are not used
+in the liquid phase reactor, these error do not affect the simulation result. Only the free energy is used to calculate the
+equilibrium constant and the reverse reaction rates.
+
+Pressure effect on ΔGsolv
+-------------------------
+
+For liquid phase reactions, all the solvent's properties and solvation ΔGsolv are evaluated along the solvent's saturation curve
+and thus are only functions of temperature. Majer et al. ([Majer2008]_) showed that the pressure effect is much greater for
+the solutes with greater molar volumes. However, their result also indicates that unless the pressure is higher than
+the solvent's vapor pressure by 2 or greater orders of magnitude, the pressure effect on ΔGsolv is negligible even for
+relatively big solutes. Thus, pressure effect is neglected for liquid phase reactions in RMG.
 
 Diffusion-limited kinetics
 ==========================
@@ -214,7 +380,7 @@ To build accurate models of liquid phase chemical reactions you will also want t
 .. _exampleLiquidPhase:
 
 Example liquid-phase input file, no constant species
-=====================================================
+====================================================
 This is an example of an input file for a liquid-phase system::
 
     # Data sources
@@ -275,7 +441,7 @@ This is an example of an input file for a liquid-phase system::
     )
 
 Example liquid-phase input file, with constant species
-=======================================================
+======================================================
 This is an example of an input file for a liquid-phase system with constant species::
 
     # Data sources
@@ -363,3 +529,21 @@ This is an example of an input file for a liquid-phase system with constant spec
 .. [Mintz2009] \ C. Mintz et al. "Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone." *Thermochim. Acta* **484(1-2)**, p. 65-69 (2009).
 
 .. [Rice1985] \ S.A. Rice. "Diffusion-limited reactions". In *Comprehensive Chemical Kinetics*, EditorsC.H. Bamford, C.F.H. Tipper and R.G. Compton. **25**, (1985).
+
+.. [Japas1989] \ M.L. Japas and J.M.H. Levelt Sengers. "Gas solubility and Henry's law near the solvent's critical point." *AIChE Journal.* **35**, p. 705-713 (1989).
+
+.. [Bell2014] \ I.H. Bell et al. "Pure and pseudo-pure fluid thermophysical property evaluation and the open-source thermophysical property library CoolProp." *Ind. Eng. Chem. Res.* **53**, p. 2498-2508 (2014).
+
+.. [Harvey1990] \ A.H. Harvey et al. "Limiting vs. apparent critical behavior of Henry's constants and K factors." *AIChE Journal.* **36**, p. 1901-1904 (1990).
+
+.. [Plyasunova2004] \ A.V. Plyasunova et al. "Prediction of the Krichevskii parameter for volatile nonelectrolytes in water." *Fluid Phase Equilib.* **222-223**, p. 19-24 (2004).
+
+.. [Harvey1996] \ A. H. Harvey. "Semiempirical correlation for Henry's constants over large temperature ranges." *AIChE Journal.* **42(5)**, p. 1491-1494 (1996).
+
+.. [Majer2008] \ V. Majer et al. "Henry's law constant and related coefficients for aqueous hydrocarbons, CO2 and H2S over a wide range of temperature and pressure." *Fluid Phase Equilib.* **272**, p. 65-74 (2008).
+
+.. [Kesselman1968] \ W. D. Kesselman el al. "Vapor-liquid equilibrium data for benzene-alkylbenzene systems." *J. Chem. Eng. Data* **13**, p. 34-36 (1968).
+
+.. [Kutsarov1993] \ R. K. Kutsarov et al. "Liquid-vapor phase equilibrium of binary C6-C8 aromatic hydrocarbon systems." *Zh. Prikl. Khim.* **66** p. 567-573 (1993).
+
+.. [AlGhamdi2001] \ A. M. Al-Ghamdi and V. N. Kabadi. "High temperature VLE for benzene-ethylbenzene system." *J. Chem. Eng. Data* **46** p. 1330-1332 (2001).
