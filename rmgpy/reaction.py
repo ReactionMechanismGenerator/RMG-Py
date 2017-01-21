@@ -672,6 +672,10 @@ class Reaction:
         of using Evans Polanyi with an exothermic reaction.
         If `forcePositive` is True, then all reactions
         are forced to have a non-negative barrier.
+        This function is not used for liquid phase reactions
+        since the NASA thermo models fitted to the liquid phase free energies
+        output unreasonable values of H0 and E0. If diffusionLimiter.enabled
+        is True, then the reaction is in liquid phase.
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
 
@@ -681,17 +685,17 @@ class Reaction:
         if isinstance(self.kinetics, ArrheniusEP):
             Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H298)
-            if Ea > 0 and self.kinetics.Ea.value_si < 0:
+            if Ea > 0 and self.kinetics.Ea.value_si < 0 and not diffusionLimiter.enabled:
                 self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
                 logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
                 self.kinetics.Ea.value_si = 0
         if isinstance(self.kinetics, Arrhenius):
             Ea = self.kinetics.Ea.value_si
-            if H0 > 0 and Ea < H0:
+            if H0 > 0 and Ea < H0 and not diffusionLimiter.enabled:
                 self.kinetics.Ea.value_si = H0
                 self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
                 logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
-        if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
+        if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0 and not diffusionLimiter.enabled:
             self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
             self.kinetics.Ea.value_si = 0
