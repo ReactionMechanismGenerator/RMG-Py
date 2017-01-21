@@ -1235,7 +1235,7 @@ class KineticsFamily(Database):
 
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
-        if forbidden_structures.isMoleculeForbidden(molecule):
+        if forbidden_structures is not None and forbidden_structures.isMoleculeForbidden(molecule):
             return True
         return False
 
