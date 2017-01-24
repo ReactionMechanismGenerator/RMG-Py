@@ -420,7 +420,12 @@ class KineticsDatabase(object):
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
+                try:
+                    reactionList.extend(family.generateReactions(reactants))
+                except:
+                    print("Problem family: {}".format(label))
+                    print("Problem reactants: {}".format(reactants))
+                    raise
         if products:
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
