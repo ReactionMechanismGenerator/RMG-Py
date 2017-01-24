@@ -366,9 +366,9 @@ cdef class ReactionSystem(DASx):
 
         cdef dict speciesIndex
         cdef list row
-        cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex
+        cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex, infAccumNumIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
-        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, maxEdgeReactionAccum
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates, coreSpeciesProductionRates, coreSpeciesConsumptionRates, totalDivAccumNums
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
@@ -377,7 +377,7 @@ cdef class ReactionSystem(DASx):
         cdef int i, j, k
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        
+        cdef bool zeroProduction, zeroConsumption
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
         # cython declations for sensitivity analysis
@@ -385,6 +385,8 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
         cdef list time_array, normSens_array 
         
+        zeroProduction = False
+        zeroConsumption = False
         pdepNetworks = pdepNetworks or []
 
         numCoreSpecies = len(coreSpecies)
@@ -484,7 +486,8 @@ cdef class ReactionSystem(DASx):
             networkLeakRates = numpy.abs(self.networkLeakRates)
             edgeSpeciesRateRatios = numpy.abs(self.edgeSpeciesRates/charRate)
             networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
-
+            numEdgeReactions = self.numEdgeReactions
+            
             # Update the maximum species rate and maximum network leak rate arrays
             for index in xrange(numCoreSpecies):
                 if maxCoreSpeciesRates[index] < coreSpeciesRates[index]:
@@ -504,23 +507,60 @@ cdef class ReactionSystem(DASx):
             
             #get abs(delta(Ln(total accumulation numbers))) (accumulation number=Production/Consumption)
             #(the natural log operation is avoided until after the maximum accumulation number is found)
-            totalDivAccumNums = numpy.ones((numEdgeReactions,))
+            totalDivAccumNums = numpy.ones(numEdgeReactions)
             for index in xrange(numEdgeReactions):
                 reactionRate = edgeReactionRates[index]
-                for spcIndex in self.reactantIndicies[index+numCoreReactions,:]:
-                    if spcIndex != -1:
+                for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
+                    if spcIndex != -1 and spcIndex<numCoreSpecies:
                         consumption = coreSpeciesConsumptionRates[spcIndex]
-                        totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
-                for spcIndex in self.productIndicies[index+numCoreReactions,:]:
-                    if spcIndex != -1:
+                        if consumption != 0:
+                            totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
+                        elif self.coreSpeciesConcentrations[spcIndex] == 0: 
+                            totalDivAccumNums[index] *= 1.0 #if the species concentration is zero ignore
+                        else:
+                            zeroConsumption = True #otherwise include edge reaction with most flux
+                            infAccumNumIndex = spcIndex
+                            break
+                if infAccumNum:
+                    break
+                for spcIndex in self.productIndices[index+numCoreReactions,:]:
+                    if spcIndex != -1 and spcIndex<numCoreSpecies:
                         production = coreSpeciesProductionRates[spcIndex]
-                        totalDivAccumNums[index] *= (reactionRate+production)/production 
-            
+                        if production != 0:
+                            totalDivAccumNums[index] *= (reactionRate+production)/production
+                        elif self.coreSpeciesConcentrations[spcIndex] == 0: 
+                            totalDivAccumNums[index] *= 1.0 #if the species concentration is zero ignore
+                        else:
+                            zeroProduction = True #otherwise include edge reaction with most flux
+                            infAccumNumIndex = spcIndex
+                            break
             #Get edge reaction with greatest total difference in Ln(accumulation number)
             if numEdgeSpecies > 0:
-                maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
-                maxAccumReaction = edgeReactions[maxReactionIndex]
-                maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
+                maxDifLnAccumNum = numpy.inf
+                if zeroConsumption:
+                    for index in xrange(numEdgeReactions):
+                        maxEdgeReactionAccum = 0.0
+                        maxAccumReactionIndex = -1
+                        if infAccumNumIndex in self.reactantIndices[index+numCoreReactions]:
+                            reactionRate = edgeReactionRates[index]
+                            if reactionRate > maxEdgeReactionAccum:
+                                maxEdgeReactionAccum = reactionRate
+                                maxAccumReactionIndex = index
+                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                elif zeroProduction:
+                    for index in xrange(numEdgeReactions):
+                        maxEdgeReactionAccum = 0.0
+                        maxAccumReactionIndex = -1
+                        if infAccumNumIndex in self.productIndices[index+numCoreReactions]:
+                            reactionRate = edgeReactionRates[index]
+                            if reactionRate > maxEdgeReactionAccum:
+                                maxEdgeReactionAccum = reactionRate
+                                maxAccumReactionIndex = index
+                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                else:
+                    maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
+                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                    maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
             else:
                 maxAccumReactionIndex = -1
                 maxAccumReaction = None
