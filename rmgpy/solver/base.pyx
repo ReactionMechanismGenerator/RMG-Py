@@ -50,7 +50,7 @@ import cython
 import logging
 import csv
 import itertools
-
+from cpython cimport bool
 from rmgpy.quantity import Quantity
 from rmgpy.chemkin import getSpeciesIdentifier
 
@@ -349,7 +349,7 @@ cdef class ReactionSystem(DASx):
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceReactionMoveToCore, double toleranceInterruptSimulation,double toleranceReactionInterruptSimulation,
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,double toleranceReactionMoveToCore=numpy.inf, double toleranceReactionInterruptSimulation=numpy.inf,
         list pdepNetworks=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):
@@ -521,7 +521,7 @@ cdef class ReactionSystem(DASx):
                             zeroConsumption = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
-                if infAccumNum:
+                if zeroConsumption:
                     break
                 for spcIndex in self.productIndices[index+numCoreReactions,:]:
                     if spcIndex != -1 and spcIndex<numCoreSpecies:
@@ -534,8 +534,10 @@ cdef class ReactionSystem(DASx):
                             zeroProduction = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
+                if zeroProduction:
+                    break
             #Get edge reaction with greatest total difference in Ln(accumulation number)
-            if numEdgeSpecies > 0:
+            if len(totalDivAccumNums) > 0:
                 maxDifLnAccumNum = numpy.inf
                 if zeroConsumption:
                     for index in xrange(numEdgeReactions):
@@ -557,14 +559,14 @@ cdef class ReactionSystem(DASx):
                                 maxEdgeReactionAccum = reactionRate
                                 maxAccumReactionIndex = index
                     maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                else:
+                elif len(totalDivAccumNums)>0:
                     maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
                     maxAccumReaction = edgeReactions[maxAccumReactionIndex]
                     maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
             else:
                 maxAccumReactionIndex = -1
                 maxAccumReaction = None
-                maxAccumReactionRate = 0.0
+                maxDifLnAccumNum = 0.0
                 
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
