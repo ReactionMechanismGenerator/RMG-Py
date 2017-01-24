@@ -164,6 +164,9 @@ class RMG(util.Subject):
         self.fluxToleranceKeepInEdge = 0.0
         self.fluxToleranceMoveToCore = 1.0
         self.fluxToleranceInterrupt = 1.0
+        self.reactionToleranceMoveToCore = numpy.inf
+        self.reactionToleranceInterrupt = numpy.inf
+        
         self.absoluteTolerance = 1.0e-8
         self.relativeTolerance = 1.0e-4
         self.sensitivityAbsoluteTolerance = 1.0e-6
@@ -581,7 +584,9 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
+                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt if prune else self.reactionToleranceMoveToCore,
                     pdepNetworks = self.reactionModel.networkList,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
@@ -606,7 +611,10 @@ class RMG(util.Subject):
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                    objectsToEnlarge.append(obj)
+                    elif isinstance(obj, Species):
+                        objectsToEnlarge.append(obj)
+                    elif isinstance(obj,Reaction):
+                        objectsToEnlarge.extend(filter(lambda x: not (x in coreSpecies), Reaction.reactants+Reaction.products))
                     self.done = False
     
     
@@ -646,7 +654,9 @@ class RMG(util.Subject):
                                 edgeReactions = [],
                                 toleranceKeepInEdge = 0,
                                 toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                                toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
                                 toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                                toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                                 pdepNetworks = self.reactionModel.networkList,
                                 absoluteTolerance = self.absoluteTolerance,
                                 relativeTolerance = self.relativeTolerance,
