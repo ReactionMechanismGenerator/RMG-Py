@@ -420,7 +420,12 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
+                try:
+                    reactionList.extend(family.generateReactions(reactants))
+                except:
+                    logging.error("Problem family: {}".format(label))
+                    logging.error("Problem reactants: {}".format(reactants))
+                    raise
         if products:
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
