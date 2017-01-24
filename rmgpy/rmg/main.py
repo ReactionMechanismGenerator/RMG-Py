@@ -55,6 +55,7 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
+from rmgpy.reaction import Reaction
 from pdep import PDepNetwork
 import rmgpy.util as util
 
@@ -616,7 +617,10 @@ class RMG(util.Subject):
                     elif isinstance(obj, Species):
                         objectsToEnlarge.append(obj)
                     elif isinstance(obj,Reaction):
-                        objectsToEnlarge.extend(filter(lambda x: not (x in coreSpecies), Reaction.reactants+Reaction.products))
+                        potentialSpcs = obj.reactants+obj.products
+                        filterFcn = lambda x: not (x in self.reactionModel.core.species)
+                        neededSpcs = filter(filterFcn,potentialSpcs)
+                        objectsToEnlarge.extend(neededSpcs)
                     self.done = False
     
     
