@@ -315,11 +315,11 @@ cdef class SimpleReactor(ReactionSystem):
             if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
                 pass
             elif ip[j,1] == -1: # only one reactant
-                revReactionRate -= k * C[ip[j,0]]
+                revReactionRate = k * C[ip[j,0]]
             elif ip[j,2] == -1: # only two reactants
-                revReactionRate -= k * C[ip[j,0]] * C[ip[j,1]]
+                revReactionRate = k * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
-                revReactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
+                revReactionRate = k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
                 
             reactionRate = fReactionRate-revReactionRate
             
