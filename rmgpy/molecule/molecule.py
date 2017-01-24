@@ -1668,3 +1668,111 @@ class Molecule(Graph):
                     aromaticRings.append(ring0)
 
         return aromaticRings
+
+    def getDeterministicSmallestSetOfSmallestRings(self):
+        """
+        Modified `Graph` method `getSmallestSetOfSmallestRings` by sorting calculated cycles
+        by short lenth and then high atomic number instead of just short length (for cases where
+        multiple cycles with same length are found, `getSmallestSetOfSmallestRings` outputs 
+        non-determinstically ). 
+        
+        For instance, molecule with this SMILES: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
+        output from `getSmallestSetOfSmallestRings`, which leads to non-deterministic bycyclic decomposition
+        Using this new method can effectively prevent this situation.
+        """
+        cython.declare(vertices=list, verticesToRemove=list, rootCandidates_tups=list, graphs=list)
+        cython.declare(cycleList=list, cycleCandidate_tups=list, cycles=list, cycle0=list, originConnDict=dict)
+
+        cython.declare(graph=Molecule, graph0=Molecule, vertex=Atom, rootVertex=Atom)
+        
+        # Make a copy of the graph so we don't modify the original
+        graph = self.copy(deep=True)
+        vertices = graph.vertices[:]
+        
+        # Step 1: Remove all terminal vertices
+        done = False
+        while not done:
+            verticesToRemove = []
+            for vertex in graph.vertices:
+                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
+            done = len(verticesToRemove) == 0
+            # Remove identified vertices from graph
+            for vertex in verticesToRemove:
+                graph.removeVertex(vertex)
+
+        graph.updateConnectivityValues()
+        # get original connectivity values
+        originConnDict = {}
+        for v in graph.vertices:
+            originConnDict[v] = getVertexConnectivityValue(v)
+
+        # Step 2: Remove all other vertices that are not part of cycles
+        verticesToRemove = []
+        for vertex in graph.vertices:
+            found = graph.isVertexInCycle(vertex)
+            if not found:
+                verticesToRemove.append(vertex)
+        # Remove identified vertices from graph
+        for vertex in verticesToRemove:
+            graph.removeVertex(vertex)
+
+        # Step 3: Split graph into remaining subgraphs
+        graphs = graph.split()
+
+        # Step 4: Find ring sets in each subgraph
+        cycleList = []
+        for graph0 in graphs:
+
+            while len(graph0.vertices) > 0:
+
+                # Choose root vertex as vertex with smallest number of edges
+                rootVertex = None
+                graph0.updateConnectivityValues()
+
+                rootCandidates_tups = []
+                for vertex in graph0.vertices:
+                    tup = (vertex, getVertexConnectivityValue(vertex), -originConnDict[vertex])
+                    rootCandidates_tups.append(tup)
+
+                rootVertex = sorted(rootCandidates_tups, key=lambda tup0: tup0[1:], reverse=True)[0][0]
+
+                # Get all cycles involving the root vertex
+                cycles = graph0.getAllCycles(rootVertex)
+                if len(cycles) == 0:
+                    # This vertex is no longer in a ring, so remove it
+                    graph0.removeVertex(rootVertex)
+                    continue
+
+                # Keep the smallest of the cycles found above
+                cycleCandidate_tups = []
+                for cycle0 in cycles:
+                    tup = (cycle0, len(cycle0), -sum([originConnDict[v] for v in cycle0]), -sum([v.element.number for v in cycle0]))
+                    cycleCandidate_tups.append(tup)
+                
+                cycle = sorted(cycleCandidate_tups, key=lambda tup0: tup0[1:])[0][0]
+
+                cycleList.append(cycle)
+
+                # Remove the root vertex to create single edges, note this will not
+                # function properly if there is no vertex with 2 edges (i.e. cubane)
+                graph0.removeVertex(rootVertex)
+
+                # Remove from the graph all vertices in the cycle that have only one edge
+                loneCarbon = True
+                while loneCarbon:
+                    loneCarbon = False
+                    verticesToRemove = []
+
+                    for vertex in cycle:
+                        if len(vertex.edges) == 1:
+                            loneCarbon = True
+                            verticesToRemove.append(vertex)
+                    else:
+                        for vertex in verticesToRemove:
+                            graph0.removeVertex(vertex)
+
+        # Map atoms in cycles back to atoms in original graph
+        for i in range(len(cycleList)):
+            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
+
+        return cycleList
