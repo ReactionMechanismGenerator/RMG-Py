@@ -112,6 +112,6 @@ cdef class ReactionSystem(DASx):
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False)
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
-
+    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum object network, double networkRate):
+     
     cpdef logConversions(self, speciesIndex, y0)
