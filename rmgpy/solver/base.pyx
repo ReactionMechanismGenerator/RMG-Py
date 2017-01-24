@@ -48,7 +48,7 @@ import cython
 import logging
 import csv
 import itertools
-
+from cpython cimport bool
 from rmgpy.quantity import Quantity
 from rmgpy.chemkin import getSpeciesIdentifier
 
@@ -509,7 +509,7 @@ cdef class ReactionSystem(DASx):
                             zeroConsumption = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
-                if infAccumNum:
+                if zeroConsumption:
                     break
                 for spcIndex in self.productIndices[index+numCoreReactions,:]:
                     if spcIndex != -1 and spcIndex<numCoreSpecies:
@@ -522,6 +522,8 @@ cdef class ReactionSystem(DASx):
                             zeroProduction = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
+                if zeroProduction:
+                    break
             #Get edge reaction with greatest total difference in Ln(accumulation number)
             if numEdgeSpecies > 0:
                 maxDifLnAccumNum = numpy.inf
