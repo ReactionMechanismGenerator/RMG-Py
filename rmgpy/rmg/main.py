@@ -66,6 +66,7 @@ from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
+from cantera import ck2cti
 
 ################################################################################
 
@@ -122,9 +123,11 @@ class RMG(util.Subject):
     `generatePlots`                     ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`                   ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `saveEdgeSpecies`                   ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `keepIrreversible`                  ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
+    `kineticsdatastore`                 ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initializationTime`                The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
     `done`                              Whether the job has completed (there is nothing new to add)
@@ -169,8 +172,8 @@ class RMG(util.Subject):
         self.minCoreSizeForPrune = 50
         self.minSpeciesExistIterationsForPrune = 2
         self.filterReactions=False
-        self.unimoelcularReact = None
-        self.bimoleculaReact = None
+        self.unimolecularReact = None
+        self.bimolecularReact = None
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
         self.termination = []
@@ -185,11 +188,13 @@ class RMG(util.Subject):
         self.saveSimulationProfiles = None
         self.verboseComments = None
         self.saveEdgeSpecies = None
+        self.keepIrreversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
         self.speciesConstraints = {}
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
+        self.kineticsdatastore = None
 
         self.execTime = []
     
@@ -317,6 +322,19 @@ class RMG(util.Subject):
                 self.speciesConstraints={}
                 for family in self.database.kinetics.families.values():
                     family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+
+                    #If requested by the user, write a text file for each kinetics family detailing the source of each entry
+                    if self.kineticsdatastore:
+                        logging.info('Writing sources of kinetic entries in family {0} to text file'.format(family.label))
+                        path = os.path.join(self.outputDirectory, 'kinetics_database', family.label + '.txt')
+                        with open(path, 'w') as f:
+                            for template_label, entries in family.rules.entries.iteritems():
+                                f.write("Template [{0}] uses the {1} following source(s):\n".format(template_label,str(len(entries))))
+                                for entry_index, entry in enumerate(entries):
+                                    f.write(str(entry_index+1) + ". " + entry.shortDesc + "\n" + entry.longDesc + "\n")
+                                f.write('\n')
+                            f.write('\n')
+
                 self.speciesConstraints=copySpeciesConstraints
             else:
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
@@ -365,6 +383,13 @@ class RMG(util.Subject):
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+        util.makeOutputSubdirectory(self.outputDirectory, 'kinetics_database')
+
+        # Specifies if details of kinetic database entries should be stored according to user
+        try:
+            self.kineticsdatastore = kwargs['kineticsdatastore']
+        except KeyError:
+            self.kineticsdatastore = False
 
         # Load databases
         self.loadDatabase()
@@ -679,6 +704,13 @@ class RMG(util.Subject):
                 )
                 
                 plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+
+        # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
+        try:
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+        except EnvironmentError:
+            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
                 
         # Write output file
         logging.info('')
@@ -689,6 +721,25 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
+
+    def generateCanteraFiles(self, chemkinFile, **kwargs):
+        """
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
+        and save it in the cantera directory
+        """
+        transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
+        fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
+        outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        canteraDir = os.path.dirname(outName)
+        try:
+            os.makedirs(canteraDir)
+        except OSError:
+            if not os.path.isdir(canteraDir):
+                raise
+        if os.path.exists(outName):
+            os.remove(outName)
+        parser = ck2cti.Parser()
+        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)

@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
 from external.wip import work_in_progress
-from .molecule import Atom, Bond, Molecule, ActionError
-from .group import Group
+from .molecule import Atom, Bond, Molecule
+from .group import Group, ActionError
 from .element import getElement, elementList
+from .resonance import generateAromaticResonanceIsomers
+
 
 ################################################################################
-
 class TestAtom(unittest.TestCase):
     """
     Contains unit tests of the Atom class.
@@ -1276,6 +1278,123 @@ multiplicity 2
         saturated_molecule.saturate()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
+    def testFusedAromatic1(self):
+        """Test we can make aromatic perylene from both adjlist and SMILES"""
+        perylene = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {3,B} {6,B} {7,B}
+2  C u0 p0 c0 {4,B} {5,B} {8,B}
+3  C u0 p0 c0 {1,B} {4,B} {11,B}
+4  C u0 p0 c0 {2,B} {3,B} {12,B}
+5  C u0 p0 c0 {2,B} {6,B} {15,B}
+6  C u0 p0 c0 {1,B} {5,B} {16,B}
+7  C u0 p0 c0 {1,B} {9,B} {10,B}
+8  C u0 p0 c0 {2,B} {13,B} {14,B}
+9  C u0 p0 c0 {7,B} {17,B} {22,S}
+10 C u0 p0 c0 {7,B} {18,B} {23,S}
+11 C u0 p0 c0 {3,B} {18,B} {25,S}
+12 C u0 p0 c0 {4,B} {19,B} {26,S}
+13 C u0 p0 c0 {8,B} {19,B} {28,S}
+14 C u0 p0 c0 {8,B} {20,B} {29,S}
+15 C u0 p0 c0 {5,B} {20,B} {31,S}
+16 C u0 p0 c0 {6,B} {17,B} {32,S}
+17 C u0 p0 c0 {9,B} {16,B} {21,S}
+18 C u0 p0 c0 {10,B} {11,B} {24,S}
+19 C u0 p0 c0 {12,B} {13,B} {27,S}
+20 C u0 p0 c0 {14,B} {15,B} {30,S}
+21 H u0 p0 c0 {17,S}
+22 H u0 p0 c0 {9,S}
+23 H u0 p0 c0 {10,S}
+24 H u0 p0 c0 {18,S}
+25 H u0 p0 c0 {11,S}
+26 H u0 p0 c0 {12,S}
+27 H u0 p0 c0 {19,S}
+28 H u0 p0 c0 {13,S}
+29 H u0 p0 c0 {14,S}
+30 H u0 p0 c0 {20,S}
+31 H u0 p0 c0 {15,S}
+32 H u0 p0 c0 {16,S}
+""")
+        perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
+        for isomer in generateAromaticResonanceIsomers(perylene2):
+            if perylene.isIsomorphic(isomer):
+                break
+        else:  # didn't break
+            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(
+                            perylene.toSMILES(),
+                            perylene2.toSMILES()
+                        ))
+
+    def testFusedAromatic2(self):
+        """Test we can make aromatic naphthalene from both adjlist and SMILES"""
+        naphthalene = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {3,B} {4,B}
+2  C u0 p0 c0 {1,B} {5,B} {6,B}
+3  C u0 p0 c0 {1,B} {8,B} {13,S}
+4  C u0 p0 c0 {1,B} {9,B} {14,S}
+5  C u0 p0 c0 {2,B} {10,B} {17,S}
+6  C u0 p0 c0 {2,B} {7,B} {18,S}
+7  C u0 p0 c0 {6,B} {8,B} {11,S}
+8  C u0 p0 c0 {3,B} {7,B} {12,S}
+9  C u0 p0 c0 {4,B} {10,B} {15,S}
+10 C u0 p0 c0 {5,B} {9,B} {16,S}
+11 H u0 p0 c0 {7,S}
+12 H u0 p0 c0 {8,S}
+13 H u0 p0 c0 {3,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {9,S}
+16 H u0 p0 c0 {10,S}
+17 H u0 p0 c0 {5,S}
+18 H u0 p0 c0 {6,S}
+""")
+        naphthalene2 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+        for isomer in generateAromaticResonanceIsomers(naphthalene2):
+            if naphthalene.isIsomorphic(isomer):
+                break
+        else:  # didn't break
+            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(
+                            naphthalene.toSMILES(),
+                            naphthalene2.toSMILES()
+                        ))
+
+    def testFusedAromatic3(self):
+        """Test we can make aromatic pyrene_rad from both adjlist and SMILES"""
+        pyrene_rad = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  C u0 p0 c0 {2,B} {3,B} {5,B}
+2  C u0 p0 c0 {1,B} {4,B} {6,S}
+3  C u0 p0 c0 {1,B} {8,B} {9,B}
+4  C u0 p0 c0 {2,B} {10,B} {11,S}
+5  C u0 p0 c0 {1,B} {7,B} {15,S}
+6  C u0 p0 c0 {2,S} {12,S} {16,D}
+7  C u0 p0 c0 {5,B} {13,B} {17,S}
+8  C u0 p0 c0 {3,B} {13,B} {19,S}
+9  C u0 p0 c0 {3,B} {10,B} {20,S}
+10 C u0 p0 c0 {4,B} {9,B} {21,S}
+11 C u1 p0 c0 {4,S} {14,S} {22,S}
+12 C u0 p0 c0 {6,S} {14,D} {24,S}
+13 C u0 p0 c0 {7,B} {8,B} {18,S}
+14 C u0 p0 c0 {11,S} {12,D} {23,S}
+15 C u0 p0 c0 {5,S} {16,D} {25,S}
+16 C u0 p0 c0 {6,D} {15,D}
+17 H u0 p0 c0 {7,S}
+18 H u0 p0 c0 {13,S}
+19 H u0 p0 c0 {8,S}
+20 H u0 p0 c0 {9,S}
+21 H u0 p0 c0 {10,S}
+22 H u0 p0 c0 {11,S}
+23 H u0 p0 c0 {14,S}
+24 H u0 p0 c0 {12,S}
+25 H u0 p0 c0 {15,S}
+""")
+        pyrene_rad2 = Molecule().fromSMILES('[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23')
+        for isomer in pyrene_rad2.generateResonanceIsomers():
+            if pyrene_rad.isIsomorphic(isomer):
+                break
+        else:  # didn't break
+            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(
+                            pyrene_rad.toSMILES(),
+                            pyrene_rad2.toSMILES()
+                        ))
 
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
@@ -1579,6 +1698,98 @@ multiplicity 2
         sssr5_sizes_expected = [6, 6, 6]
         self.assertEqual(sssr5_sizes, sssr5_sizes_expected)
     
+    def testGetDeterministicSmallestSetOfSmallestRingsCase1(self):
+        """
+        Test fused tricyclic can be decomposed into single rings more 
+        deterministically
+        """
+        smiles = 'C1C2C3C=CCCC2C13'
+
+        previous_num_shared_atoms_list = None
+        # repeat 100 time to test non-deterministic behavior
+        for _ in range(100):
+            mol =  Molecule().fromSMILES(smiles)
+            sssr_det = mol.getDeterministicSmallestSetOfSmallestRings()
+
+            
+            num_shared_atoms_list = []
+            for i, ring_i in enumerate(sssr_det):
+                for j in range(i+1, len(sssr_det)):
+                    ring_j = sssr_det[j]
+                    num_shared_atoms = len(set(ring_i).intersection(ring_j))
+
+                    num_shared_atoms_list.append(num_shared_atoms)
+
+            num_shared_atoms_list = sorted(num_shared_atoms_list)
+            
+            if previous_num_shared_atoms_list is None:
+                previous_num_shared_atoms_list = num_shared_atoms_list
+                continue
+            self.assertEqual(num_shared_atoms_list, previous_num_shared_atoms_list)
+            previous_num_shared_atoms_list = num_shared_atoms_list
+
+    def testGetDeterministicSmallestSetOfSmallestRingsCase2(self):
+        """
+        Test if two possible smallest rings can join the smallest set
+        the method can pick one of them deterministically using sum of 
+        atomic numbers along the rings.
+        In this test case and with currect method setup, ring (CCSCCCCC)
+        will be picked rather than ring(CCCOCC).
+        """
+
+        smiles = 'C1=CC2C3CSC(CO3)C2C1'
+
+        previous_atom_symbols_list = None
+        # repeat 100 time to test non-deterministic behavior
+        for _ in range(100):
+            mol =  Molecule().fromSMILES(smiles)
+            sssr_det = mol.getDeterministicSmallestSetOfSmallestRings()
+
+            atom_symbols_list = []
+            for ring in sssr_det:
+                atom_symbols = sorted([a.element.symbol for a in ring])
+                atom_symbols_list.append(atom_symbols)
+
+            atom_symbols_list = sorted(atom_symbols_list)
+
+            if previous_atom_symbols_list is None:
+                previous_atom_symbols_list = atom_symbols_list
+                continue
+            self.assertEqual(atom_symbols_list, previous_atom_symbols_list)
+            previous_atom_symbols_list = atom_symbols_list
+
+    @work_in_progress
+    def testGetDeterministicSmallestSetOfSmallestRingsCase3(self):
+        """
+        Test if two possible smallest rings can join the smallest set
+        the method can pick one of them deterministically when their
+        sum of atomic numbers along the rings are also equal to each other.
+        
+        To break the tie, one option we have is to consider adding contributions
+        from other parts of the molecule, such as atomic number weighted connectivity
+        value and differentiate bond orders when calculating connectivity values.
+        """
+        smiles = 'C=1CC2C3CSC(O[Si]3)C2C1'
+
+        previous_atom_symbols_list = None
+        # repeat 100 time to test non-deterministic behavior
+        for _ in range(100):
+            mol =  Molecule().fromSMILES(smiles)
+            sssr_det = mol.getDeterministicSmallestSetOfSmallestRings()
+
+            atom_symbols_list = []
+            for ring in sssr_det:
+                atom_symbols = sorted([a.element.symbol for a in ring])
+                atom_symbols_list.append(atom_symbols)
+
+            atom_symbols_list = sorted(atom_symbols_list)
+
+            if previous_atom_symbols_list is None:
+                previous_atom_symbols_list = atom_symbols_list
+                continue
+            self.assertEqual(atom_symbols_list, previous_atom_symbols_list)
+            previous_atom_symbols_list = atom_symbols_list
+
     def testToGroup(self):
         """
         Test if we can convert a Molecule object into a Group object.
@@ -1707,6 +1918,37 @@ multiplicity 2
         calc = Molecule().fromAdjacencyList(adjlistCalc)
         
         self.assertTrue(exp.isIsomorphic(calc))
+
+    def testAromaticityPerceptionBenzene(self):
+        """Test aromaticity perception via getAromaticSSSR for benzene."""
+        mol = Molecule(SMILES='c1ccccc1')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 1)
+
+    def testAromaticityPerceptionTetralin(self):
+        """Test aromaticity perception via getAromaticSSSR for tetralin."""
+        mol = Molecule(SMILES='c1ccc2c(c1)CCCC2')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 1)
+
+    def testAromaticityPerceptionBiphenyl(self):
+        """Test aromaticity perception via getAromaticSSSR for biphenyl."""
+        mol = Molecule(SMILES='c1ccc(cc1)c2ccccc2')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 2)
+
+    def testAromaticityPerceptionAzulene(self):
+        """Test aromaticity perception via getAromaticSSSR for azulene."""
+        mol = Molecule(SMILES='c1cccc2cccc2c1')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 0)
+
+    def testAromaticityPerceptionFuran(self):
+        """Test aromaticity perception via getAromaticSSSR for furan."""
+        mol = Molecule(SMILES='c1ccoc1')
+        asssr = mol.getAromaticSSSR()
+        self.assertEqual(len(asssr), 0)
+
 
 ################################################################################
 

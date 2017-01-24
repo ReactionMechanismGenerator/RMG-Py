@@ -46,7 +46,7 @@ from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.molepro import MoleProLog 
 from rmgpy.cantherm.qchem import QchemLog 
 
-from rmgpy.species import TransitionState
+from rmgpy.species import TransitionState, Species
 
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
@@ -222,6 +222,10 @@ class StatMechJob:
             atoms = local_context['atoms']
         except KeyError:
             raise InputError('Required attribute "atoms" not found in species file {0!r}.'.format(path))
+        else:
+            if isinstance(self.species, Species):
+                # Save atoms for use in writing thermo output
+                self.species.props['elementCounts'] = atoms
         
         try:
             bonds = local_context['bonds']

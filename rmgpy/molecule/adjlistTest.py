@@ -349,6 +349,55 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond21.isSingle())
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
+
+    def testFromAdjacencyList5(self):
+        """
+        adjlist: Test if fromAdjacencyList works when saturateH is turned on 
+        and test molecule is fused aromatics.
+        """
+        # molecule 5
+        adjlist = """
+1  * C u0 p0 c0 {2,B} {3,B} {4,B}
+2    C u0 p0 c0 {1,B} {5,B} {6,B}
+3    C u0 p0 c0 {1,B} {8,B} {13,S}
+4    C u0 p0 c0 {1,B} {9,B}
+5    C u0 p0 c0 {2,B} {10,B}
+6    C u0 p0 c0 {2,B} {7,B}
+7    C u0 p0 c0 {6,B} {8,B} {11,S}
+8    C u0 p0 c0 {3,B} {7,B} {12,S}
+9    C u0 p0 c0 {4,B} {10,B}
+10   C u0 p0 c0 {5,B} {9,B}
+11   H u0 p0 c0 {7,S}
+12   H u0 p0 c0 {8,S}
+13   H u0 p0 c0 {3,S}
+            """
+        molecule = Molecule().fromAdjacencyList(adjlist, saturateH=True)
+        
+        self.assertTrue(molecule.multiplicity == 1)
+        
+        atom1 = molecule.atoms[0]
+        atom2 = molecule.atoms[1]
+        atom3 = molecule.atoms[2]
+        atom7 = molecule.atoms[6]
+        atom11 = molecule.atoms[10]
+        bond21 = atom2.bonds[atom1]
+        bond13 = atom1.bonds[atom3]
+        bond7_11 = atom7.bonds[atom11]
+
+        self.assertTrue(atom1.label == '*')
+        self.assertTrue(atom1.element.symbol == 'C')
+        self.assertTrue(atom1.radicalElectrons == 0)
+        self.assertTrue(atom1.charge == 0)
+
+        self.assertTrue(atom2.label == '')
+        self.assertTrue(atom2.element.symbol == 'C')
+        self.assertTrue(atom2.radicalElectrons == 0)
+        self.assertTrue(atom2.charge == 0)
+
+        self.assertTrue(bond21.isBenzene())
+        self.assertTrue(bond13.isBenzene())
+        self.assertTrue(bond7_11.isSingle())
+        
     
     def testVariousSpinAdjlists(self):
         """

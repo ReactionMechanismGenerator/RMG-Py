@@ -52,6 +52,26 @@ class TestElement(unittest.TestCase):
         """
         self.assertTrue(rmgpy.molecule.element.getElement(6) is self.element)
         self.assertTrue(rmgpy.molecule.element.getElement('C') is self.element)
+
+    def testGetElementIsotope(self):
+        """
+        Test that the rmgpy.elements.getElement() method works for isotopes.
+        """
+        self.assertTrue(isinstance(rmgpy.molecule.element.getElement('C', isotope=13), Element))
+        self.assertTrue(isinstance(rmgpy.molecule.element.getElement(6, isotope=13), Element))
+
+    def testChemkinName(self):
+        """
+        Test that retrieving the chemkin name of an element works.
+        """
+        d = rmgpy.molecule.element.getElement('H', isotope=2)
+        self.assertEqual(d.chemkinName, 'D')
+
+        c13 = rmgpy.molecule.element.getElement('C', isotope=13)
+        self.assertEqual(c13.chemkinName, 'CI')
+
+        o18 = rmgpy.molecule.element.getElement('O', isotope=18)
+        self.assertEqual(o18.chemkinName, 'OI')
         
 ################################################################################
 

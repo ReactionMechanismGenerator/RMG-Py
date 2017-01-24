@@ -41,6 +41,35 @@ Put kinetic parameters into the training set when:
 * You are confident on the accurcy of the kinetic parameter
 * You wish for the reaction to be generalized to similar reactions in your mechanism
 
+
+Adding Reaction Family
+----------------------
+
+
+
+There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:
+
+
+* ``RMG-database/input/kinetics/families/[family name]``
+	* add folder for your family name
+	* create ``groups.py``, ``rules.py`` and a template folder with species dictionary and ``reactions.py``.
+	* fill the files with rate data that you plan to use.
+	* Many tools exist to help with the conversion process:
+		* ``convertKineticsLibraryToTrainingReactions.ipynb`` in ``RMG-database/scripts``
+		* ``importChemkinLibrary.py`` in ``RMG-database/scripts``
+* rmgpy.data.kinetics.family
+	* ``applyRecipe``: swapping the atom labels (eg. `*1` and `*2`) around
+	* ``getReactionPairs``: figuring out which species becomes which for flux analyses
+	* ``__generateReactions``: correcting degeneracy eg. dividing by 2 for radical recombination
+* rmgpy.data.kinetics.rules
+	* ``processOldLibraryEntry``: determining units when importing RMG-Java database
+	* ``getAllRules``: for radical recombination add reverse templates
+* rmgpy.data.kinetics.groups
+	* ``getReactionTemplate``: for radical recombination duplicate the template
+* RMG-database/input/kinetics/families/recommended.py
+	* allows the usage of the database with the recommended families. 
+
+
 Creating Kinetics Libraries
 ---------------------------
 

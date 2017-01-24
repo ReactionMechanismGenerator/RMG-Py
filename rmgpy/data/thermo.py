@@ -418,8 +418,8 @@ def bicyclicDecompositionForPolyring(polyring):
     """
 
     submol, _ = convertRingToSubMolecule(polyring)
-    SSSR = submol.getSmallestSetOfSmallestRings()
-    
+    SSSR = submol.getDeterministicSmallestSetOfSmallestRings()
+
     ringPairWithCommonAtomsList = []
     ringOccurancesDict = {}
     
@@ -1077,7 +1077,10 @@ class ThermoDatabase(object):
                     for i in range(len(thermo)): 
                         logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][1].toSMILES(), thermo[i][0]))
                     # Save resonance isomers reordered by their thermo
-                    species.molecule = [item[1] for item in thermo]
+                    newMolList = [item[1] for item in thermo]
+                    if len(newMolList) < len(species.molecule):
+                        newMolList.extend([mol for mol in species.molecule if mol not in newMolList])
+                    species.molecule = newMolList
                     thermo0 = thermo[0][2]
                     
                 else:

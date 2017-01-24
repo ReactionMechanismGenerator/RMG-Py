@@ -20,10 +20,10 @@ requirements:
     - gcc # [unix]
     - gcc ==4.8.2 # [linux32]
     - gprof2dot
-    - guppy
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
+    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - nose
@@ -58,6 +58,7 @@ requirements:
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
+    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - mopac
@@ -73,7 +74,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=1.0.2
+    - rmgdatabase >=2.0.0
     - scipy
     - scoop
     - symmetry

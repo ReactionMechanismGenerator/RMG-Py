@@ -55,6 +55,7 @@ speciesDict = {}
 
 def database(
              thermoLibraries = None,
+             transportLibraries = None,
              reactionLibraries = None,
              frequenciesLibraries = None,
              seedMechanisms = None,
@@ -66,11 +67,13 @@ def database(
     # We don't actually load the database until after we're finished reading
     # the input file
     if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
+    if isinstance(transportLibraries, str): transportLibraries = [transportLibraries]
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
     rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
+    rmg.transportLibraries = transportLibraries
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
@@ -306,7 +309,7 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False, wallTime='00:00:00:00'):
+def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False, keepIrreversible=False, wallTime='00:00:00:00'):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     if generateOutputHTML:
@@ -316,8 +319,9 @@ def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, genera
     rmg.saveSimulationProfiles = saveSimulationProfiles
     rmg.verboseComments = verboseComments
     if saveEdgeSpecies:
-        logging.warning('Edge species saving was turned on.  This will slow down model generation for large simulations.')
+        logging.warning('Edge species saving was turned on. This will slow down model generation for large simulations.')
     rmg.saveEdgeSpecies = saveEdgeSpecies
+    rmg.keepIrreversible = keepIrreversible
     rmg.wallTime = wallTime
 
 def generatedSpeciesConstraints(**kwargs):
@@ -624,6 +628,7 @@ def saveInputFile(path, rmg):
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
+    f.write('    keepIrreversible = {0},\n'.format(rmg.keepIrreversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write('    wallTime = {0},\n'.format(rmg.wallTime))
     f.write(')\n\n')

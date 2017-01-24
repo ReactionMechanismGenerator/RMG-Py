@@ -125,6 +125,8 @@ cdef class Graph:
 
     cpdef list getAllCycles(self, Vertex startingVertex)
 
+    cpdef list getAllCyclesOfSize(self, int size)
+
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles)
 
     cpdef list getSmallestSetOfSmallestRings(self)

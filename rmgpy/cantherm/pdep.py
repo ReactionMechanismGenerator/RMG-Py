@@ -46,6 +46,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 
 from rmgpy.cantherm.output import prettify
+from rmgpy.chemkin import writeKineticsEntry
 
 ################################################################################
 
@@ -315,7 +316,7 @@ class PressureDependenceJob(object):
         Pcount = self.Pcount
         if self.Plist is not None:
             pass
-        if self.interpolationModel[0].lower() == 'chebyshev':
+        elif self.interpolationModel[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
             Plist = numpy.zeros(Pcount, numpy.float64)
             for i in range(Pcount):
@@ -445,42 +446,8 @@ class PressureDependenceJob(object):
             for reac in range(Nreac):
                 if reac == prod: continue
                 reaction = self.network.netReactions[count]
-                kinetics = reaction.kinetics
                 count += 1
-                
-                string = '{0!s:51} 1.0 0.0 0.0\n'.format(reaction)
-                
-                if isinstance(kinetics, PDepArrhenius):
-                    for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
-                        string += 'PLOG/ {0:<9.3f} {1:<11.3e} {2:<8.2f} {3:<8.2f}/\n'.format(P / 101325.,
-                            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1e6 ** (len(reaction.reactants) - 1),
-                            arrhenius.n.value_si,
-                            arrhenius.Ea.value_si / 4184.
-                        )
-                        
-                elif isinstance(kinetics, Chebyshev):
-                    coeffs = kinetics.coeffs.value_si.copy()
-                    coeffs[0,0] += 6 * (len(reaction.reactants) - 1)
-                    string += 'TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value_si, kinetics.Tmax.value_si)
-                    string += 'PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
-                    string += 'CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
-                    if kinetics.degreeP < 6:
-                        for i in range(kinetics.degreeT):
-                            string += 'CHEB/'
-                            for j in range(kinetics.degreeP):
-                                string += ' {0:<12.3e}'.format(coeffs[i,j])
-                            string += '/\n'
-                    else:
-                        coeffs_list = []
-                        for i in range(kinetics.degreeT):
-                            for j in range(kinetics.degreeP):
-                                coeffs_list.append(coeffs[i,j])
-                        coeffs_list[0] += 6 * (numReactants - 1)
-                        for i in range(len(coeffs_list)):
-                            if i % 5 == 0: string += '    CHEB/'
-                            string += ' {0:<12.3e}'.format(coeffs_list[i])
-                            if i % 5 == 4: string += '/\n'  
-
+                string = writeKineticsEntry(reaction, speciesList=None, verbose=False)
                 f.write('{0}\n'.format(string))
             
         f.close()

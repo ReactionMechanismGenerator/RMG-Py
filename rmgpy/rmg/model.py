@@ -1035,13 +1035,13 @@ class CoreEdgeReactionModel:
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
                 logging.info('Pruning species {0:<56}'.format(spec))
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
-                self.removeSpeciesFromEdge(spec)
+                self.removeSpeciesFromEdge(reactionSystems, spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
             logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
                 logging.info('Pruning species {0:<56}'.format(spec))
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
-                self.removeSpeciesFromEdge(spec)
+                self.removeSpeciesFromEdge(reactionSystems, spec)
 
         # Delete any networks that became empty as a result of pruning
         if self.pressureDependence:
@@ -1063,13 +1063,29 @@ class CoreEdgeReactionModel:
 
         logging.info('')
 
-    def removeSpeciesFromEdge(self, spec):
+
+    def removeSpeciesFromEdge(self, reactionSystems, spec):
         """
         Remove species `spec` from the reaction model edge.
         """
 
         # remove the species
         self.edge.species.remove(spec)
+        self.indexSpeciesDict.pop(spec.index)
+
+        # clean up species references in reactionSystems
+        for reactionSystem in reactionSystems:
+            reactionSystem.speciesIndex.pop(spec)
+
+            # identify any reactions it's involved in
+            rxnList = []
+            for rxn in reactionSystem.reactionIndex:
+                if spec in rxn.reactants or spec in rxn.products:
+                    rxnList.append(rxn)
+
+            for rxn in rxnList:
+                reactionSystem.reactionIndex.pop(rxn)
+
         # identify any reactions it's involved in
         rxnList = []
         for rxn in self.edge.reactions:
@@ -1282,14 +1298,15 @@ class CoreEdgeReactionModel:
         logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
+        # Load library reactions, keep reversibility as is
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
             library=reactionLibrary.label, kinetics=entry.data,\
-            duplicate=entry.item.duplicate, reversible=entry.item.reversible
+            duplicate=entry.item.duplicate, reversible=entry.item.reversible if rmg.keepIrreversible else True
             )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
-            
+
         # Perform species constraints and forbidden species checks
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):

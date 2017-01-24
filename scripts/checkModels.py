@@ -88,7 +88,7 @@ def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
         }
 
     testThermo, benchThermo = None, None
-    commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig = \
+    commonSpecies, uniqueSpeciesOrig, uniqueSpeciesTest, commonReactions, uniqueReactionsOrig, uniqueReactionsTest = \
     execute(benchChemkin, benchSpeciesDict, benchThermo, testChemkin, testSpeciesDict, testThermo, **kwargs)
 
     errorModel = checkModel(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig)

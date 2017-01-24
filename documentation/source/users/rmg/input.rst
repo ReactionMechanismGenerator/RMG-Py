@@ -543,6 +543,8 @@ Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files wit
 
 Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  
 
+Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if ``False`` (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.
+
 
 Species Constraints
 ===================== 

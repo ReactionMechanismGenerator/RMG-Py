@@ -5,8 +5,8 @@ Standalone Modules
 ******************
 
 There are several standalone modules that can be run separately from RMG.
-These scripts can be found in the ``RMG-Py/scripts`` folder.
-The database scripts are located in the ``RMG-database/scripts`` folder.
+These scripts can be found in the ``RMG-Py/scripts`` folder, unless mentioned
+otherwise.
 
 .. toctree::
     :maxdepth: 1
@@ -20,3 +20,4 @@ The database scripts are located in the ``RMG-database/scripts`` folder.
     convertFAME
     databaseScripts
     standardizeModelSpeciesNames
+    reduction

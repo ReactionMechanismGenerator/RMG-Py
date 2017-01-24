@@ -268,8 +268,11 @@ def searchTargetIndex(targetLabel, reactionModel):
     """
     Searches for the Species object in the core species
     of the reaction that has the same label as the parameter string.
-    """
+    reactionModel must be of class CoreEdgeReactionModel
 
+    Has known issues dealing with duplicate labels. See reductionTest.py
+    for a unittest of this issue.
+    """
     for i, spc in enumerate(reactionModel.core.species):
         if spc.label == targetLabel:
             return i

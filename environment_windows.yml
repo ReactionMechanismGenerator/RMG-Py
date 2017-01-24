@@ -1,7 +1,7 @@
 name: rmg_env
 channels:
-  - defaults
   - rmg
+  - defaults
 dependencies:
   - mingwpy
   - python
@@ -11,6 +11,7 @@ dependencies:
   - cython ==0.21
   - matplotlib >=1.5
   - rdkit >=2015.09.2
+  - lpsolve55
   - quantities
   - scipy
   - xlwt
@@ -22,7 +23,6 @@ dependencies:
   - pydqed
   - nose
   - coverage
-  - guppy
   - gprof2dot
   #- cairo
   #- cairocffi
@@ -33,3 +33,4 @@ dependencies:
   - graphviz
   - scoop
   - ffmpeg
+  - jupyter

@@ -13,6 +13,7 @@ dependencies:
   - rdkit >=2015.09.2
   - pydas >=1.0.1
   - pydqed >=1.0.0
+  - lpsolve55
   - quantities
   - scipy
   - xlwt
@@ -23,7 +24,6 @@ dependencies:
   - pydot ==1.2.2
   - nose
   - coverage
-  - guppy
   - gprof2dot
   - cairo
   - cairocffi
@@ -34,3 +34,4 @@ dependencies:
   - graphviz
   - scoop
   - ffmpeg
+  - jupyter

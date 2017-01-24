@@ -21,7 +21,7 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
-from .adjlist import PeriodicSystem, bond_orders, ConsistencyChecker
+from .adjlist import ConsistencyChecker
 
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
@@ -577,7 +577,7 @@ def convert_3_atom_2_bond_path(start, mol):
 
         for at in mol.atoms:
             if at.number == 8:
-                order = sum([bond_orders[b.order] for _, b in at.bonds.iteritems()])
+                order = at.getBondOrdersForAtom()
                 not_correct = order >= 4
                 if not_correct:
                     return False
@@ -768,15 +768,14 @@ def reset_lone_pairs(mol, p_indices):
     or to the default value.
 
     """
-
     for at in mol.atoms:
         index = mol.atoms.index(at) + 1 #1-based index
         count = p_indices.count(index)
         if count != 0:
             at.lonePairs = count
         else:    
-            order = sum([bond_orders[b.order] for _,b in mol.getBonds(at).iteritems()])
-            at.lonePairs = (PeriodicSystem.valence_electrons[at.symbol] - order - at.radicalElectrons - at.charge) / 2
+            order = at.getBondOrdersForAtom()
+            at.lonePairs = (elements.PeriodicSystem.valence_electrons[at.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """

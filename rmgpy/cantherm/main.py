@@ -171,6 +171,7 @@ class CanTherm:
         """
         Output a header containing identifying information about CanTherm to the log.
         """
+        from rmgpy import __version__
         logging.log(level, 'CanTherm execution initiated at {0}'.format(time.asctime()))
         logging.log(level, '')
     
@@ -178,10 +179,11 @@ class CanTherm:
         logging.log(level, '#                                                             #')
         logging.log(level, '#                          CanTherm                           #')
         logging.log(level, '#                                                             #')
-        logging.log(level, '#   Version: 0.1.0 (14 May 2009)                              #')
+        logging.log(level, '#   Version: {0:48s} #'.format(__version__))
         logging.log(level, '#   Authors: RMG Developers (rmg_dev@mit.edu)                 #')
-        logging.log(level, '#   P.I.:    William H. Green (whgreen@mit.edu)               #')
-        logging.log(level, '#   Website: http://rmg.sourceforge.net/                      #')
+        logging.log(level, '#   P.I.s:   William H. Green (whgreen@mit.edu)               #')
+        logging.log(level, '#            Richard H. West (r.west@neu.edu)                 #')
+        logging.log(level, '#   Website: http://reactionmechanismgenerator.github.io/     #')
         logging.log(level, '#                                                             #')
         logging.log(level, '###############################################################')
         logging.log(level, '')
