@@ -69,7 +69,8 @@ cdef class ReactionSystem(DASx):
     # The reaction and species rates at the current time (in mol/m^3*s)
     cdef public numpy.ndarray coreSpeciesRates
     cdef public numpy.ndarray coreReactionRates
-
+    cdef public numpy.ndarray coreSpeciesProductionRates
+    cdef public numpy.ndarray coreSpeciesConsumptionRates
     cdef public numpy.ndarray edgeSpeciesRates
     cdef public numpy.ndarray edgeReactionRates
 
@@ -106,10 +107,11 @@ cdef class ReactionSystem(DASx):
         list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensitivityAbsoluteTolerance=?, 
-        sensitivityRelativeTolerance=?, sensWorksheet=?, filterReactions=?)
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceReactionMoveToCore, double toleranceInterruptSimulation,double toleranceReactionInterruptSimulation,
+        list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
+        sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?,
+        filterReactions=?)
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
-
+    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
+     
     cpdef logConversions(self, speciesIndex, y0)

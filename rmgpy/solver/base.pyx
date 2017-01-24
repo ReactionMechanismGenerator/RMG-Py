@@ -75,7 +75,7 @@ cdef class ReactionSystem(DASx):
         self.numEdgeSpecies = -1
         self.numEdgeReactions = -1
         self.numPdepNetworks = -1
-
+        
         """
         The number of differential equations that will 
         be solved simulatenously by the solver.
@@ -130,7 +130,8 @@ cdef class ReactionSystem(DASx):
         # The reaction and species rates at the current time (in mol/m^3*s)
         self.coreSpeciesRates = None
         self.coreReactionRates = None
-
+        self.coreSpeciesProductionRates = None
+        self.coreSpeciesConsumptionRates = None
         self.edgeSpeciesRates = None
         self.edgeReactionRates = None
 
@@ -202,6 +203,8 @@ cdef class ReactionSystem(DASx):
         self.generate_reactant_product_indices(coreReactions, edgeReactions)
 
         self.coreSpeciesConcentrations = numpy.zeros((self.numCoreSpecies), numpy.float64)
+        self.coreSpeciesProductionRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
+        self.coreSpeciesConsumptionRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
         self.coreReactionRates = numpy.zeros((self.numCoreReactions), numpy.float64)
         self.edgeReactionRates = numpy.zeros((self.numEdgeReactions), numpy.float64)
         self.coreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
@@ -346,7 +349,7 @@ cdef class ReactionSystem(DASx):
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceReactionMoveToCore, double toleranceInterruptSimulation,double toleranceReactionInterruptSimulation,
         list pdepNetworks=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):
@@ -363,18 +366,20 @@ cdef class ReactionSystem(DASx):
 
         cdef dict speciesIndex
         cdef list row
-        cdef int index, maxSpeciesIndex, maxNetworkIndex
+        cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates, coreSpeciesProductionRates, coreSpeciesConsumptionRates, totalDivAccumNums
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
         cdef bint terminated
-        cdef object maxSpecies, maxNetwork
+        cdef object maxSpecies, maxNetwork, 
         cdef int i, j, k
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
         
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
+        cdef double reactionRate, production, consumption
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
@@ -470,8 +475,11 @@ cdef class ReactionSystem(DASx):
 
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
-
+            
             coreSpeciesRates = numpy.abs(self.coreSpeciesRates)
+            edgeReactionRates = self.edgeReactionRates
+            coreSpeciesConsumptionRates = self.coreSpeciesConsumptionRates
+            coreSpeciesProductionRates = self.coreSpeciesProductionRates
             edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates)
             networkLeakRates = numpy.abs(self.networkLeakRates)
             edgeSpeciesRateRatios = numpy.abs(self.edgeSpeciesRates/charRate)
@@ -493,7 +501,31 @@ cdef class ReactionSystem(DASx):
             for index in xrange(numPdepNetworks):
                 if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
                     maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
-
+            
+            #get abs(delta(Ln(total accumulation numbers))) (accumulation number=Production/Consumption)
+            #(the natural log operation is avoided until after the maximum accumulation number is found)
+            totalDivAccumNums = numpy.ones((numEdgeReactions,))
+            for index in xrange(numEdgeReactions):
+                reactionRate = edgeReactionRates[index]
+                for spcIndex in self.reactantIndicies[index+numCoreReactions,:]:
+                    if spcIndex != -1:
+                        consumption = coreSpeciesConsumptionRates[spcIndex]
+                        totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
+                for spcIndex in self.productIndicies[index+numCoreReactions,:]:
+                    if spcIndex != -1:
+                        production = coreSpeciesProductionRates[spcIndex]
+                        totalDivAccumNums[index] *= (reactionRate+production)/production 
+            
+            #Get edge reaction with greatest total difference in Ln(accumulation number)
+            if numEdgeSpecies > 0:
+                maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
+                maxAccumReaction = edgeReactions[maxReactionIndex]
+                maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
+            else:
+                maxAccumReactionIndex = -1
+                maxAccumReaction = None
+                maxAccumReactionRate = 0.0
+                
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
@@ -526,29 +558,41 @@ cdef class ReactionSystem(DASx):
                         if not bimolecularThreshold[i,j]:
                             if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
                                 bimolecularThreshold[i,j] = True
-
+                                                    
             # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
             if maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
                 invalidObject = maxSpecies
             if maxSpeciesRate > toleranceInterruptSimulation * charRate:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for simulation interruption'.format(self.t, maxSpecies))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
                 break
-
+            
+            #Interrupt simulation if the difference in natural log of total accumulation number exceeds tolerance
+            if maxDifLnAccumNum > toleranceReactionMoveToCore and not invalidObject:
+                logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for moving to model core'.format(self.t, maxAccumReaction))
+                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
+                self.logConversions(speciesIndex, y0)
+                invalidObject = maxAccumReaction
+            if maxDifLnAccumNum > toleranceReactionInterruptSimulation:
+                logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
+                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
+                self.logConversions(speciesIndex, y0)
+                break
+            
             # If pressure dependence, also check the network leak fluxes
             if pdepNetworks:
                 if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for exploring'.format(self.t, maxNetwork.index))
-                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                     self.logConversions(speciesIndex, y0)
                     invalidObject = maxNetwork
                 if maxNetworkRate > toleranceInterruptSimulation * charRate:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for simulation interruption'.format(self.t, maxNetwork.index))
-                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
+                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                     self.logConversions(speciesIndex, y0)
                     break
 
@@ -610,11 +654,12 @@ cdef class ReactionSystem(DASx):
         # (if the simulation was valid)
         return terminated, invalidObject
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate):
+    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """
         Log information about the current maximum species and network rates.
         """
         logging.info('    Characteristic rate: {0:10.4e} mol/m^3*s'.format(charRate))
+        logging.info('    Max(Dif(Ln(accumulation number))):  {0:10.4e}'.format(maxDifLnAccumNum))
         if charRate == 0.0:
             logging.info('    {0} rate: {1:10.4e} mol/m^3*s'.format(species, speciesRate))
             if network is not None:
@@ -623,7 +668,7 @@ cdef class ReactionSystem(DASx):
             logging.info('    {0} rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(species, speciesRate, speciesRate / charRate))
             if network is not None:
                 logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(network.index, networkRate, networkRate / charRate))
-
+                
     cpdef logConversions(self, speciesIndex, y0):
         """
         Log information about the current conversion values.
