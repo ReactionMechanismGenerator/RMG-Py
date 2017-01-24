@@ -169,7 +169,7 @@ cdef class LiquidReactor(ReactionSystem):
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
         cdef double k, V, reactionRate
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates, coreSpeciesConsumptionRates, coreSpeciesProductionRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk
 
@@ -195,6 +195,8 @@ cdef class LiquidReactor(ReactionSystem):
         coreSpeciesConcentrations = numpy.zeros_like(self.coreSpeciesConcentrations)
         coreSpeciesRates = numpy.zeros_like(self.coreSpeciesRates)
         coreReactionRates = numpy.zeros_like(self.coreReactionRates)
+        coreSpeciesConsumptionRates = numpy.zeros_like(self.coreSpeciesConsumptionRates)
+        coreSpeciesProductionRates = numpy.zeros_like(self.coreSpeciesProductionRates)
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
@@ -227,7 +229,7 @@ cdef class LiquidReactor(ReactionSystem):
             else: # three reactants!! (really?)
                 reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
 
-            # Set the reaction and species rates
+           # Set the reaction and species rates
             if j < numCoreReactions:
                 # The reaction is a core reaction
                 coreReactionRates[j] = reactionRate
@@ -237,20 +239,26 @@ cdef class LiquidReactor(ReactionSystem):
                 # and products are core species
                 first = ir[j,0]
                 coreSpeciesRates[first] -= reactionRate
+                coreSpeciesConsumptionRates[first] += reactionRate
                 second = ir[j,1]
                 if second != -1:
                     coreSpeciesRates[second] -= reactionRate
+                    coreSpeciesConsumptionRates[second] += reactionRate
                     third = ir[j,2]
                     if third != -1:
                         coreSpeciesRates[third] -= reactionRate
+                        coreSpeciesConsumptionRates[third] += reactionRate
                 first = ip[j,0]
                 coreSpeciesRates[first] += reactionRate
+                coreSpeciesProductionRates[first] += reactionRate
                 second = ip[j,1]
                 if second != -1:
                     coreSpeciesRates[second] += reactionRate
+                    coreSpeciesProductionRates[second] += reactionRate
                     third = ip[j,2]
                     if third != -1:
                         coreSpeciesRates[third] += reactionRate
+                        coreSpeciesProductionRates[third] += reactionRate
 
             else:
                 # The reaction is an edge reaction
@@ -297,6 +305,8 @@ cdef class LiquidReactor(ReactionSystem):
         self.coreSpeciesConcentrations = coreSpeciesConcentrations
         self.coreSpeciesRates = coreSpeciesRates
         self.coreReactionRates = coreReactionRates
+        self.coreSpeciesProductionRates = coreSpeciesProductionRates
+        self.coreSpeciesConsumptionRates = coreSpeciesConsumptionRates
         self.edgeSpeciesRates = edgeSpeciesRates
         self.edgeReactionRates = edgeReactionRates
         self.networkLeakRates = networkLeakRates
