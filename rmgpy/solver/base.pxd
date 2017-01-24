@@ -108,10 +108,10 @@ cdef class ReactionSystem(DASx):
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceReactionMoveToCore, double toleranceInterruptSimulation,double toleranceReactionInterruptSimulation,
-        list pdepNetworks=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
-        sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
-        filterReactions=False)
+        list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
+        sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?,
+        filterReactions=?)
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum object network, double networkRate):
+    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
      
     cpdef logConversions(self, speciesIndex, y0)
