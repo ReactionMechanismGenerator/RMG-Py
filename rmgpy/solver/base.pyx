@@ -654,7 +654,7 @@ cdef class ReactionSystem(DASx):
         # (if the simulation was valid)
         return terminated, invalidObject
 
-    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum object network, double networkRate):
+    cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """
         Log information about the current maximum species and network rates.
         """
