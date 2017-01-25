@@ -68,7 +68,6 @@ cdef class GroupAtom(Vertex):
 
     cpdef mol.Atom makeSampleAtom(self)
 
-    cpdef getBondOrdersForAtom(self)
 ################################################################################
 
 cdef class GroupBond(Edge):

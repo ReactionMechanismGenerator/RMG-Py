@@ -500,30 +500,6 @@ class GroupAtom(Vertex):
 
         return newAtom
 
-    def getBondOrdersForAtom(self):
-        """
-        This helper function is to help calculate total bond orders for an
-        input atom.
-
-        Some special consideration for the order `B` bond. For atoms having
-        three `B` bonds, the order for each is 4/3.0, while for atoms having other
-        than three `B` bonds, the order for  each is 3/2.0
-        """
-        num_B_bond = 0
-        order = 0
-        for _, bond in self.bonds.iteritems():
-            if bond.isBenzene():
-                num_B_bond += 1
-            else:
-                order += mol.bond_orders[bond.order]
-
-        if num_B_bond == 3:
-            order += num_B_bond * 4/3.0
-        else:
-            order += num_B_bond * 3/2.0
-
-        return order
-
 ################################################################################
 
 class GroupBond(Edge):
