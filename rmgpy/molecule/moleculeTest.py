@@ -461,6 +461,88 @@ class TestBond(unittest.TestCase):
         import cPickle
         bond = cPickle.loads(cPickle.dumps(self.bond))
         self.assertEqual(self.bond.order, bond.order)
+
+    def testUpdateLonePairs(self):
+        """
+        Test that updateLonePairs works as expected
+        """
+        mol_N1sc_N5t = Molecule().fromAdjacencyList("""
+            1 N u0 p0 c+1 {2,T} {4,S}
+            2 N u0 p0 c+1 {1,T} {3,S}
+            3 N u0 p3 c-2 {2,S}
+            4 H u0 p0 c0 {1,S}""")
+        mol_N1s = Molecule().fromAdjacencyList("""
+            1 N u0 p2 c0 {2,S}
+            2 H u0 p0 c0 {1,S}""")
+        mol_N3s = Molecule().fromAdjacencyList("""
+            multiplicity 3
+            1 N u2 p1 c0 {2,S}
+            2 H u0 p0 c0 {1,S}""")
+        mol_N3b = Molecule().fromAdjacencyList("""
+            1  N u0 p1 c0 {2,D} {6,S}
+            2  C u0 p0 c0 {1,D} {3,S} {7,S}
+            3  C u0 p0 c0 {2,S} {4,D} {8,S}
+            4  C u0 p0 c0 {3,D} {5,S} {9,S}
+            5  C u0 p0 c0 {4,S} {6,D} {10,S}
+            6  C u0 p0 c0 {1,S} {5,D} {11,S}
+            7  H u0 p0 c0 {2,S}
+            8  H u0 p0 c0 {3,S}
+            9  H u0 p0 c0 {4,S}
+            10 H u0 p0 c0 {5,S}
+            11 H u0 p0 c0 {6,S}""")
+        mol_N5s = Molecule().fromAdjacencyList("""
+            multiplicity 2
+            1 N u1 p0 c+1 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 O u0 p3 c-1 {1,S}""")
+        mol_N5d = Molecule().fromAdjacencyList("""
+            1 N u0 p0 c+1 {2,D} {3,S} {4,S}
+            2 O u0 p2 c0 {1,D}
+            3 O u0 p2 c0 {1,S} {5,S}
+            4 O u0 p3 c-1 {1,S}
+            5 H u0 p0 c0 {3,S}""")
+        mol_N5dd = Molecule().fromAdjacencyList("""
+            1 N u0 p2 c-1 {2,D}
+            2 N u0 p0 c+1 {1,D} {3,D}
+            3 O u0 p2 c0 {2,D}""")
+        mol_CH2_S = Molecule().fromAdjacencyList("""
+            1 C u0 p1 c0 {2,S} {3,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}""")
+        mol_carbonyl = Molecule().fromAdjacencyList("""
+            1 O u0 p2 c0 {2,D}
+            2 C u0 p0 c0 {1,D} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}""")
+
+        mol_N1sc_N5t.updateLonePairs()
+        mol_N1s.updateLonePairs()
+        mol_N3s.updateLonePairs()
+        mol_N3b.updateLonePairs()
+        mol_N5s.updateLonePairs()
+        mol_N5d.updateLonePairs()
+        mol_N5dd.updateLonePairs()
+        mol_CH2_S.updateLonePairs()
+        mol_carbonyl.updateLonePairs()
+
+        self.assertEqual(mol_N1sc_N5t.atoms[0].lonePairs, 0)
+        self.assertEqual(mol_N1sc_N5t.atoms[2].lonePairs, 3)
+        self.assertEqual(mol_N1s.atoms[0].lonePairs, 2)
+        self.assertEqual(mol_N3s.atoms[0].lonePairs, 1)
+        self.assertEqual(mol_N3b.atoms[0].lonePairs, 1)
+        self.assertEqual(mol_N5s.atoms[0].lonePairs, 0)
+        self.assertEqual(mol_N5s.atoms[3].lonePairs, 3)
+        self.assertEqual(mol_N5d.atoms[0].lonePairs, 0)
+        self.assertEqual(mol_N5d.atoms[1].lonePairs, 2)
+        self.assertEqual(mol_N5d.atoms[2].lonePairs, 2)
+        self.assertEqual(mol_N5d.atoms[3].lonePairs, 3)
+        self.assertEqual(mol_N5dd.atoms[0].lonePairs, 2)
+        self.assertEqual(mol_N5dd.atoms[1].lonePairs, 0)
+        self.assertEqual(mol_N5dd.atoms[2].lonePairs, 2)
+        self.assertEqual(mol_CH2_S.atoms[0].lonePairs, 1)
+        self.assertEqual(mol_carbonyl.atoms[0].lonePairs, 2)
+        self.assertEqual(mol_carbonyl.atoms[1].lonePairs, 0)
         
 ################################################################################
 

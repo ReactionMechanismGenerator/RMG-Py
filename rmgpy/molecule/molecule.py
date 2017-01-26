@@ -1541,22 +1541,11 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            order = 0
             if not atom1.isHydrogen():
-                for atom2, bond12 in atom1.edges.items():
-                    if bond12.isSingle():
-                        order = order + 1
-                    if bond12.isDouble():
-                        order = order + 2
-                    if bond12.isTriple():
-                        order = order + 3
-                    if bond12.isBenzene():
-                        order = order + 1.5
-
-                if atom1.isSilicon() or atom1.isCarbon():
-                    atom1.lonePairs = (4 - atom1.radicalElectrons - int(order)) / 2
-                else:     
-                    atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
+                order = atom1.getBondOrdersForAtom()
+                atom1.lonePairs = (elements.PeriodicSystem.valence_electrons[atom1.symbol] - atom1.radicalElectrons - atom1.charge - int(order)) / 2.0
+                if atom1.lonePairs % 1 > 0 or atom1.lonePairs > 4:
+                    logging.error("Unable to determine the number of lone pairs for element {0} in {1}".format(atom1,self))
             else:
                 atom1.lonePairs = 0
                 

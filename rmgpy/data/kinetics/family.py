@@ -529,6 +529,7 @@ class KineticsFamily(Database):
         local_context['forbidden'] = self.loadForbidden
         local_context['True'] = True
         local_context['False'] = False
+        local_context['reverse'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
@@ -541,9 +542,8 @@ class KineticsFamily(Database):
             self.reverseTemplate = None
             self.reverseRecipe = None
         else:
-            try:
-                self.reverse = local_context['reverse']
-            except KeyError:
+            self.reverse = local_context.get('reverse', None)
+            if self.reverse is None:
                 self.reverse = '{0}_reverse'.format(self.label)
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
             self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
@@ -851,7 +851,7 @@ class KineticsFamily(Database):
             for i, struct in enumerate(productStructure):
                 for s in productStructureList[i]:
                     try:
-                        if s.isIsomorphic(struct): break
+                        if s.isIdentical(struct): break
                     except KeyError:
                         print struct.toAdjacencyList()
                         print s.toAdjacencyList()

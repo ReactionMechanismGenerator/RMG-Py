@@ -34,7 +34,9 @@ This script contains unit tests of the :mod:`rmgpy.quantity` module.
 import unittest
 import numpy
 import os
-from rmgpy.cantherm import CanTherm
+import rmgpy
+from rmgpy.cantherm import CanTherm, input
+from input import jobList
 import rmgpy.constants as constants
 ################################################################################
 
@@ -195,6 +197,75 @@ class testCanthermJob(unittest.TestCase):
         Test the whether or not tunneling has been included in a specific kinetics job.
         """
         self.assertEqual(self.kineticsjob.reaction.transitionState.tunneling, None, msg=None)
+
+
+class testCanthermInput(unittest.TestCase):
+    """
+    Contains unit tests for loading and processing Cantherm input files.
+    """
+    def setUp(self):
+        """Preparation for all unit tests in this class."""
+        self.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'cantherm')
+        self.modelChemistry = "CBS-QB3"
+        self.frequencyScaleFactor = 0.99
+        self.useHinderedRotors = False
+        self.useBondCorrections = True
+
+    def testSpecies(self):
+        """Test loading of species input file."""
+        spec = input.species('C2H4', os.path.join(self.directory, 'species', 'C2H4', 'ethene.py'))
+
+        self.assertTrue(isinstance(spec, rmgpy.species.Species))
+        self.assertEqual(len(spec.molecule), 0)
+
+    def testSpeciesStatmech(self):
+        """Test loading of statmech job from species input file."""
+        job = jobList[-1]
+
+        self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
+
+        job.modelChemistry = self.modelChemistry
+        job.frequencyScaleFactor = self.frequencyScaleFactor
+        job.includeHinderedRotors = self.useHinderedRotors
+        job.applyBondEnergyCorrections = self.useBondCorrections
+        job.load()
+
+        self.assertTrue(isinstance(job.species.props['elementCounts'], dict))
+        self.assertEqual(job.species.props['elementCounts']['C'], 2)
+        self.assertEqual(job.species.props['elementCounts']['H'], 4)
+
+    def testSpeciesThermo(self):
+        """Test thermo job execution for species from separate input file."""
+        input.thermo('C2H4', 'NASA')
+        job = jobList[-1]
+
+        filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'output.py')
+        job.execute(outputFile=filepath)
+
+        self.assertTrue(os.path.isfile(os.path.join(os.path.dirname(filepath), 'output.py')))
+        self.assertTrue(os.path.isfile(os.path.join(os.path.dirname(filepath), 'chem.inp')))
+
+        os.remove(os.path.join(os.path.dirname(filepath), 'output.py'))
+        os.remove(os.path.join(os.path.dirname(filepath), 'chem.inp'))
+
+    def testTransitionState(self):
+        """Test loading of transition state input file."""
+        ts = input.transitionState('TS', os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'TS.py'))
+
+        self.assertTrue(isinstance(ts, rmgpy.species.TransitionState))
+
+    def testTransitionStateStatmech(self):
+        """Test loading of statmech job from transition state input file."""
+        job = jobList[-1]
+
+        self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
+
+        job.modelChemistry = self.modelChemistry
+        job.frequencyScaleFactor = self.frequencyScaleFactor
+        job.includeHinderedRotors = self.useHinderedRotors
+        job.applyBondEnergyCorrections = self.useBondCorrections
+        job.load()
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

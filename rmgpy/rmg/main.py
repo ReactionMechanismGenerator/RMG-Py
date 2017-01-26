@@ -128,6 +128,7 @@ class RMG(util.Subject):
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
+    `kineticsdatastore`                 ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initializationTime`                The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
     `done`                              Whether the job has completed (there is nothing new to add)
@@ -197,6 +198,7 @@ class RMG(util.Subject):
         self.speciesConstraints = {}
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
+        self.kineticsdatastore = None
 
         self.execTime = []
     
@@ -324,6 +326,19 @@ class RMG(util.Subject):
                 self.speciesConstraints={}
                 for family in self.database.kinetics.families.values():
                     family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+
+                    #If requested by the user, write a text file for each kinetics family detailing the source of each entry
+                    if self.kineticsdatastore:
+                        logging.info('Writing sources of kinetic entries in family {0} to text file'.format(family.label))
+                        path = os.path.join(self.outputDirectory, 'kinetics_database', family.label + '.txt')
+                        with open(path, 'w') as f:
+                            for template_label, entries in family.rules.entries.iteritems():
+                                f.write("Template [{0}] uses the {1} following source(s):\n".format(template_label,str(len(entries))))
+                                for entry_index, entry in enumerate(entries):
+                                    f.write(str(entry_index+1) + ". " + entry.shortDesc + "\n" + entry.longDesc + "\n")
+                                f.write('\n')
+                            f.write('\n')
+
                 self.speciesConstraints=copySpeciesConstraints
             else:
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
@@ -372,6 +387,13 @@ class RMG(util.Subject):
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+        util.makeOutputSubdirectory(self.outputDirectory, 'kinetics_database')
+
+        # Specifies if details of kinetic database entries should be stored according to user
+        try:
+            self.kineticsdatastore = kwargs['kineticsdatastore']
+        except KeyError:
+            self.kineticsdatastore = False
 
         # Load databases
         self.loadDatabase()
