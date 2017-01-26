@@ -525,7 +525,7 @@ cdef class ReactionSystem(DASx):
                 if zeroProduction:
                     break
             #Get edge reaction with greatest total difference in Ln(accumulation number)
-            if numEdgeSpecies > 0:
+            if len(totalDivAccumNums) > 0:
                 maxDifLnAccumNum = numpy.inf
                 if zeroConsumption:
                     for index in xrange(numEdgeReactions):
@@ -547,14 +547,14 @@ cdef class ReactionSystem(DASx):
                                 maxEdgeReactionAccum = reactionRate
                                 maxAccumReactionIndex = index
                     maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                else:
+                elif len(totalDivAccumNums)>0:
                     maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
                     maxAccumReaction = edgeReactions[maxAccumReactionIndex]
                     maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
             else:
                 maxAccumReactionIndex = -1
                 maxAccumReaction = None
-                maxAccumReactionRate = 0.0
+                maxDifLnAccumNum = 0.0
                 
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
