@@ -347,7 +347,7 @@ cdef class ReactionSystem(DASx):
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceReactionMoveToCore, double toleranceInterruptSimulation,double toleranceReactionInterruptSimulation,
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,double toleranceReactionMoveToCore=numpy.inf, double toleranceReactionInterruptSimulation=numpy.inf,
         list pdepNetworks=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):
