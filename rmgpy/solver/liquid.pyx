@@ -209,7 +209,7 @@ cdef class LiquidReactor(ReactionSystem):
             C[j] = y[j] / V
             coreSpeciesConcentrations[j] = C[j]
         
-                for j in xrange(ir.shape[0]):
+        for j in xrange(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
                 fReactionRate = 0.0
