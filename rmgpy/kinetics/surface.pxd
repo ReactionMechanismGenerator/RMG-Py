@@ -57,7 +57,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
     
     cpdef double getStickingCoefficient(self, double T, double dHrxn=?) except -1
     cpdef double getActivationEnergy(self, double dHrxn) except -1
-    cpdef StickingCoefficient toStickingCoefficient(self, double dHrxn)
+    cpdef StickingCoefficient toArrhenius(self, double dHrxn)
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     cpdef changeRate(self, double factor)
 

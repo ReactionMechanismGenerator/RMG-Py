@@ -264,10 +264,12 @@ cdef class StickingCoefficientBEP(KineticsModel):
                 Ea = dHrxn
         return Ea
     
-    cpdef StickingCoefficient toStickingCoefficient(self, double dHrxn):
+    cpdef StickingCoefficient toArrhenius(self, double dHrxn):
         """
         Return an :class:`StickingCoefficient` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
+        
+        Note that despite its name it does not return a :class:`Arrhenius` object.
         """
         return StickingCoefficient(
             A = self.A,
@@ -422,6 +424,10 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         """
         Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
+        
+        Note that despite its name it does not return a :class:`Arrhenius` object
+        (although :class:`SurfaceArrhenius` is a subclass of :class:`Arrhenius` 
+        so in a way, it does).
         """
         return SurfaceArrhenius(
             A = self.A,
