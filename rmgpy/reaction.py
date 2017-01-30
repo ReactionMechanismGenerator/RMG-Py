@@ -685,7 +685,7 @@ class Reaction:
         if isinstance(self.kinetics, SurfaceArrhenius):
             return self.kinetics.getRateCoefficient(T, P=0)
 
-        raise NotImplementedError()
+        raise NotImplementedError("Can't getSurfaceRateCoefficient for kinetics type {!r}".format(type(self.kinetics)))
 
 
     def getRate(self, T, P, conc, totalConc=-1.0):
