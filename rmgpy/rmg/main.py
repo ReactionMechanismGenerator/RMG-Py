@@ -167,6 +167,7 @@ class RMG(util.Subject):
         self.fluxToleranceInterrupt = 1.0
         self.reactionToleranceMoveToCore = numpy.inf
         self.reactionToleranceInterrupt = numpy.inf
+        self.ignoreOverallFluxCriterion=False
         
         self.absoluteTolerance = 1.0e-8
         self.relativeTolerance = 1.0e-4
@@ -591,6 +592,7 @@ class RMG(util.Subject):
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
                     toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt if prune else self.reactionToleranceMoveToCore,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
@@ -620,8 +622,11 @@ class RMG(util.Subject):
                         assert len(objectsToEnlarge)>0
                     elif isinstance(obj,Reaction):
                         potentialSpcs = obj.reactants+obj.products
-                        filterFcn = lambda x: not (x in self.reactionModel.core.species)
+                        filterFcn = lambda x: not ((x in self.reactionModel.core.species)) #remove species already in core
                         neededSpcs = filter(filterFcn,potentialSpcs)
+                        for i in range(len(neededSpcs)): #remove duplicate species
+                            if neededSpcs.index(neededSpcs[i]) != i:
+                                del neededSpcs[i]
                         objectsToEnlarge.extend(neededSpcs)
                     self.done = False
     
@@ -666,6 +671,7 @@ class RMG(util.Subject):
                                 toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
                                 toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                                 pdepNetworks = self.reactionModel.networkList,
+                                ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                                 absoluteTolerance = self.absoluteTolerance,
                                 relativeTolerance = self.relativeTolerance,
                                 filterReactions=True,
@@ -719,8 +725,11 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
