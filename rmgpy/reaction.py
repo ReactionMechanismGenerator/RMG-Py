@@ -722,7 +722,9 @@ class Reaction:
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
         """
-        cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
+        cython.declare(Tlist=numpy.ndarray, Plist=numpy.ndarray, K=numpy.ndarray,
+                       rxn=Reaction, klist=numpy.ndarray, i=cython.size_t,
+                       Tindex=cython.size_t, Pindex=cython.size_t)
 
         supported_types = (
                             KineticsData.__name__,
