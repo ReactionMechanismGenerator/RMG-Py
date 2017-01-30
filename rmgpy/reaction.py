@@ -53,8 +53,10 @@ import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.molecule.element import Element
 from rmgpy.species import Species
-from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
-from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, StickingCoefficient, SurfaceArrhenius  #PyDev: @UnresolvedImport
+from rmgpy.kinetics.arrhenius import Arrhenius  #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
+            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, \
+            StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -755,12 +757,20 @@ class Reaction:
         If `forcePositive` is True, then all reactions
         are forced to have a non-negative barrier.
         """
-        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double, kineticsType=type)
         H298 = self.getEnthalpyOfReaction(298)
         H0 = sum([spec.thermo.E0.value_si for spec in self.products]) - sum([spec.thermo.E0.value_si for spec in self.reactants])
-        if isinstance(self.kinetics, ArrheniusEP):
+        if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP)):
             Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
-            self.kinetics = self.kinetics.toArrhenius(H298)
+            kineticsType = type(self.kinetics)
+            if kineticsType is ArrheniusEP:
+                self.kinetics = self.kinetics.toArrhenius(H298)
+            elif kineticsType is SurfaceArrheniusBEP:
+                self.kinetics = self.kinetics.toSurfaceArrhenius(H298)
+            elif kineticsType is StickingCoefficientBEP:
+                self.kinetics = self.kinetics.toStickingCoefficient(H298)
+            else:
+                raise NotImplementedError("Can't fix barrier height for kinetics type {!r}".format(type(self.kinetics)))
             if Ea > 0 and self.kinetics.Ea.value_si < 0:
                 self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
                 logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
