@@ -47,6 +47,19 @@ cdef class StickingCoefficient(KineticsModel):
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
     cpdef changeRate(self, double factor)
+    
+cdef class StickingCoefficientBEP(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _alpha
+    cdef public ScalarQuantity _E0
+    
+    cpdef double getStickingCoefficient(self, double T, double dHrxn=?) except -1
+    cpdef double getActivationEnergy(self, double dHrxn) except -1
+    cpdef StickingCoefficient toStickingCoefficient(self, double dHrxn)
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    cpdef changeRate(self, double factor)
 
 ################################################################################
 cdef class SurfaceArrhenius(Arrhenius):
