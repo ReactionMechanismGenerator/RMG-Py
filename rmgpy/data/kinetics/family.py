@@ -42,7 +42,8 @@ from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, StickingCoefficient
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius,\
+                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
@@ -946,24 +947,47 @@ class KineticsFamily(Database):
                 # this family; save them so we can try this
                 reverse_entries.append(entry)
                 continue
-            
-            assert isinstance(entry.data, Arrhenius) or isinstance(entry.data, StickingCoefficient)
+
             data = deepcopy(entry.data)
             data.changeT0(1)
             
-            new_entry = Entry(
-                index = index,
-                label = ';'.join([g.label for g in template]),
-                item=Reaction(reactants=[g.item for g in template],
-                                                   products=[]),
+            if type(data) is Arrhenius:  # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
                     alpha = 0,
                     E0 = deepcopy(data.Ea),
                     Tmin = deepcopy(data.Tmin),
-                    Tmax = deepcopy(data.Tmax),
-                ) if isinstance(entry.data, Arrhenius) else deepcopy(data),  # if StickingCoefficient
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            elif isinstance(data, StickingCoefficient):
+                data = StickingCoefficientBEP(
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            elif isinstance(data, SurfaceArrhenius):
+                data = SurfaceArrheniusBEP(
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            else:
+                raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
+
+            
+            new_entry = Entry(
+                index = index,
+                label = ';'.join([g.label for g in template]),
+                item=Reaction(reactants=[g.item for g in template],
+                                                   products=[]),
+                data=data,
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
