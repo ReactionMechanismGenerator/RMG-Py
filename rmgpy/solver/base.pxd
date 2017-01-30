@@ -108,7 +108,7 @@ cdef class ReactionSystem(DASx):
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,double toleranceReactionMoveToCore=?,double toleranceReactionInterruptSimulation=?,
-        list pdepNetworks=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
+        list pdepNetworks=?,ignoreOverallFluxCriterion=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
         sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?,
         filterReactions=?)
 
