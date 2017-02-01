@@ -34,6 +34,7 @@ import numpy
 cimport numpy
 
 import itertools
+import logging
 
 from base cimport ReactionSystem
 cimport cython
@@ -190,6 +191,33 @@ cdef class SurfaceReactor(ReactionSystem):
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
+    def log_initial_conditions(self, number=None):
+        """
+        Log to the console some information about this reaction system.
+        
+        Should correspond to the calculations done in set_initial_conditions.
+        """
+        logging.info("\nSurface reaction system {}".format(number if number is not None else ""))
+        logging.info("Gas phase mole fractions:")
+        totalGasMoles = 0
+        for spec, moleFrac in self.initialGasMoleFractions.iteritems():
+            logging.info("  {0:20s} {1:.5g}".format(spec, moleFrac))
+            totalGasMoles += moleFrac
+        logging.info("Total gas phase:          {:.3g} moles".format(totalGasMoles))
+        logging.info("Pressure:                 {:.3g} Pa".format(self.initialP.value_si))
+        logging.info("Temperature:              {} K".format(self.T.value_si))
+        V = constants.R * self.T.value_si * totalGasMoles / self.initialP.value_si
+        logging.info("Reactor volume:           {:.3g} m3".format(V))
+        surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si # 1/m
+        logging.info("Surface/volume ratio:     {:.3g} m2/m3".format(surfaceVolumeRatio_si))
+        logging.info("Surface site density:     {:.3g} mol/m2".format(self.surfaceSiteDensity.value_si))
+        totalSurfaceSites = V * surfaceVolumeRatio_si * self.surfaceSiteDensity.value_si # total surface sites in reactor
+        logging.info("Surface sites in reactor: {:.3g} moles".format(totalSurfaceSites))
+        logging.info("Initial surface coverages (and amounts):")
+        for spec, coverage in self.initialSurfaceCoverages.iteritems():
+            logging.info("  {:18s} {:.5g} = {:.5g} moles".format(spec, coverage, totalSurfaceSites*coverage ))
+        
+        
     def set_initial_conditions(self):
         """
         Sets the initial conditions of the rate equations that represent the 
@@ -209,12 +237,18 @@ cdef class SurfaceReactor(ReactionSystem):
         y0 instance attribute.
 
         """
+        ### 
+        ### WARNING -- When updating this method, please be sure 
+        ###            to also update the log_initial_conditions above
+        ###            which unfortunately is maintained separately.
+        ### 
         cdef double V, P, surfaceVolumeRatio_si
         
         ReactionSystem.set_initial_conditions(self)
         # self.y0 tracks number of moles of each core species
 
         # add only the gas phase species first
+        self.y0 *= 0.
         for spec, moleFrac in self.initialGasMoleFractions.iteritems():
             i = self.get_species_index(spec)
             self.y0[i] = moleFrac # moles in reactor

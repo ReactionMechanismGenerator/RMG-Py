@@ -229,9 +229,17 @@ def surfaceReactor(temperature,
             raise InputError('Initial mole fractions cannot be negative.')
     totalInitialMoles = sum(initialGasMoleFractions.values())
     if totalInitialMoles != 1:
-        logging.warning('Initial mole fractions do not sum to one; renormalizing.')
+        logging.warning('Initial gas mole fractions do not sum to one; renormalizing.')
+        logging.debug('')
+        logging.debug('Original composition:')
+        for spec, molfrac in initialGasMoleFractions.iteritems():
+            logging.debug("{0} = {1}".format(spec, molfrac))
         for spec in initialGasMoleFractions:
             initialGasMoleFractions[spec] /= totalInitialMoles
+        logging.info('')
+        logging.debug('Normalized mole fractions:')
+        for spec, molfrac in initialGasMoleFractions.iteritems():
+            logging.debug("{0} = {1}".format(spec, molfrac))
 
     T = Quantity(temperature)
     initialP = Quantity(initialPressure)
@@ -259,6 +267,7 @@ def surfaceReactor(temperature,
                             sensitiveSpecies,
                             sensitivityThreshold)
     rmg.reactionSystems.append(system)
+    system.log_initial_conditions(number=len(rmg.reactionSystems))
 
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.absoluteTolerance = atol
