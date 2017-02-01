@@ -697,7 +697,7 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
-        # a list with the time, Volume, mole fractions of core species
+        # a list with the time, Volume, number of moles of core species
         self.snapshots = []
 
         if sensitivity:
@@ -785,7 +785,7 @@ cdef class ReactionSystem(DASx):
 
 
             snapshot = [self.t, self.V]
-            snapshot.extend(y_coreSpecies / numpy.sum(y_coreSpecies))
+            snapshot.extend(y_coreSpecies)
             self.snapshots.append(snapshot)            
 
             # Get the characteristic flux
