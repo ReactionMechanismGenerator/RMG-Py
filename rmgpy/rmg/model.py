@@ -652,7 +652,7 @@ class CoreEdgeReactionModel:
                         if not isForward:
                             reaction.template = reaction.reverse.template
                         # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                        delattr(reaction,'reverse')
+                        reaction.reverse = None
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
