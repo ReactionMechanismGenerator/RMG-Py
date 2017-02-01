@@ -542,9 +542,17 @@ class Reaction:
         cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
         dGrxn = 0.0
         for reactant in self.reactants:
-            dGrxn -= reactant.getFreeEnergy(T)
+            try:
+                dGrxn -= reactant.getFreeEnergy(T)
+            except Exception as e:
+                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
+                raise
         for product in self.products:
-            dGrxn += product.getFreeEnergy(T)
+            try:
+                dGrxn += product.getFreeEnergy(T)
+            except Exception as e:
+                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
+                raise
         return dGrxn
 
     def getEquilibriumConstant(self, T, type='Kc'):
