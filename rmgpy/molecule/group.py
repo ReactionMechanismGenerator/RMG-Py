@@ -451,11 +451,13 @@ class GroupBond(Edge):
             if order == 1:
                 if bond == 'S':         newOrder.append('D')
                 elif bond == 'D':       newOrder.append('T')
+                elif bond == 'T':       newOrder.append('Q')
                 else:
                     raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid bond order "{0}" in set {1}".'.format(bond, self.order))
             elif order == -1:
                 if bond == 'D':         newOrder.append('S')
                 elif bond == 'T':       newOrder.append('D')
+                elif bond == 'Q':       newOrder.append('T')
                 else:
                     raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid bond order "{0}" in set {1}".'.format(bond, self.order))
             else:
