@@ -924,42 +924,43 @@ class RMG(util.Subject):
         # The reactions and reactionDict still point to the old reaction families
         reactionDict = {}
         oldFamilies = self.reactionModel.reactionDict.keys()
-        for family0 in self.reactionModel.reactionDict:
+        for family0_label in self.reactionModel.reactionDict:
     
             # Find the equivalent library or family in the newly-loaded kinetics database
-            family = None
-            if isinstance(family0, KineticsLibrary):
+            family_label = None
+            family0_obj = getFamilyLibraryObject(family0_label)
+            if isinstance(family0_obj, KineticsLibrary):
                 for label, database in self.database.kinetics.libraries.iteritems():
-                    if database.label == family0.label:
-                        family = database
+                    if database.label == family0_label:
+                        family_label = database.label
                         break
-            elif isinstance(family0, KineticsFamily):
+            elif isinstance(family0_obj, KineticsFamily):
                 for label, database in self.database.kinetics.families.iteritems():
-                    if database.label == family0.label:
-                        family = database
+                    if database.label == family0_label:
+                        family_label = database.label
                         break    
             else:
                 import pdb; pdb.set_trace()
-            if family is None:
-                raise Exception("Unable to find matching reaction family for %s" % family0.label)
+            if family_label is None:
+                raise Exception("Unable to find matching reaction family for %s" % family0_label)
     
             # Update each affected reaction to point to that new family
             # Also use that new family in a duplicate reactionDict
-            reactionDict[family] = {}
-            for reactant1 in self.reactionModel.reactionDict[family0]:
-                reactionDict[family][reactant1] = {}
-                for reactant2 in self.reactionModel.reactionDict[family0][reactant1]:
-                    reactionDict[family][reactant1][reactant2] = []
-                    if isinstance(family0, KineticsLibrary):
-                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+            reactionDict[family_label] = {}
+            for reactant1 in self.reactionModel.reactionDict[family0_label]:
+                reactionDict[family_label][reactant1] = {}
+                for reactant2 in self.reactionModel.reactionDict[family0_label][reactant1]:
+                    reactionDict[family_label][reactant1][reactant2] = []
+                    if isinstance(family0_obj, KineticsLibrary):
+                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
                             assert isinstance(rxn, LibraryReaction)
-                            rxn.library = family.label
-                            reactionDict[family][reactant1][reactant2].append(rxn)
-                    elif isinstance(family0, KineticsFamily):
-                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+                            rxn.library = family_label
+                            reactionDict[family_label][reactant1][reactant2].append(rxn)
+                    elif isinstance(family0_obj, KineticsFamily):
+                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
                             assert isinstance(rxn, TemplateReaction)
-                            rxn.family = family.label
-                            reactionDict[family][reactant1][reactant2].append(rxn)
+                            rxn.family_label = family_label
+                            reactionDict[family_label][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
         
