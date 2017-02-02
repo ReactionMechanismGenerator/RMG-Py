@@ -182,7 +182,7 @@ class TestGroupAtom(unittest.TestCase):
                 self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
-                self.assertEqual(atom0.lonePairs, [r - 1 for r in atom.lonePairs])
+                self.assertEqual([0,1,2,3], [r - 1 for r in atom.lonePairs])
             except ActionError:
                 self.assertEqual(len(atomType.incrementLonePair), 0)
 
@@ -225,7 +225,7 @@ class TestGroupAtom(unittest.TestCase):
                 self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
-                self.assertEqual(atom0.lonePairs, [r + 1 for r in atom.lonePairs])
+                self.assertEqual([1,2,3,4], [r + 1 for r in atom.lonePairs])
             except ActionError:
                 self.assertEqual(len(atomType.decrementLonePair), 0)
 

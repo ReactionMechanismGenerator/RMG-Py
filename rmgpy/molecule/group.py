@@ -231,7 +231,11 @@ class GroupAtom(Vertex):
         where `pair` specifies the number of lone electron pairs to add.
         """
         lonePairs = []
-        if any([len(atomType.incrementLonePair) == 0 for atomType in self.atomType]):
+        atomType = []
+
+        for atom in self.atomType:
+            atomType.extend(atom.incrementLonePair)
+        if any([len(atom.incrementLonePair) == 0 for atom in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to GAIN_PAIR action: Unknown atom type produced from set "{0}".'.format(self.atomType))
 
         #Add a lone pair to a group atom with none
@@ -243,14 +247,21 @@ class GroupAtom(Vertex):
                 lonePairs.append(x + pair)
             # Set the new lone electron pair count
             self.lonePairs = lonePairs
-        
+
+        # Set the new atom types, removing any duplicates
+        self.atomType = list(set(atomType))
+
     def __losePair(self, pair):
         """
         Update the atom group as a result of applying a LOSE_PAIR action,
         where `pair` specifies the number of lone electron pairs to remove.
         """
         lonePairs = []
-        if any([len(atomType.decrementLonePair) == 0 for atomType in self.atomType]):
+        atomType = []
+
+        for atom in self.atomType:
+            atomType.extend(atom.decrementLonePair)
+        if any([len(atom.decrementLonePair) == 0 for atom in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: Unknown atom type produced from set "{0}".'.format(self.atomType))
 
         if not self.lonePairs:
@@ -262,6 +273,9 @@ class GroupAtom(Vertex):
                 lonePairs.append(x - pair)
             # Set the new lone electron pair count
             self.lonePairs = lonePairs
+
+        # Set the new atom types, removing any duplicates
+        self.atomType = list(set(atomType))
 
     def applyAction(self, action):
         """
