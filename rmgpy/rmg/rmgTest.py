@@ -9,6 +9,8 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react
+from rmgpy.restart import saveRestartFile
+import rmgpy
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
@@ -141,7 +143,33 @@ class TestRMGWorkFlow(unittest.TestCase):
         found, spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
         assert found == True
 
+    def testRestartFileGenerationAndParsing(self):
         
+        # load ownReverse family
+        db_path = os.path.join(settings['database.directory'])
+        self.rmg.database.loadKinetics(os.path.join(db_path, 'kinetics'), \
+                                       kineticsFamilies=['H_Abstraction'],reactionLibraries=[])
+        # react
+        spc1 = Species().fromSMILES("[H]")
+        spc2 = Species().fromSMILES("C=C=C=O")
+
+        self.rmg.reactionModel.core.species.append(spc1)
+        self.rmg.reactionModel.core.species.append(spc2)
+
+        newReactions = []
+        newReactions.extend(react((spc1,spc2)))
+
+        # process newly generated reactions to make sure no duplicated reactions
+        self.rmg.reactionModel.processNewReactions(newReactions, spc2, None)
+
+        # save restart file
+        restart_folder = os.path.join(os.path.dirname(rmgpy.__file__),'rmg/test_data/restartFile')
+        if not os.path.exists(restart_folder):
+            os.mkdir(restart_folder)
+
+        restart_path = os.path.join(restart_folder, 'restart.pkl')
+        saveRestartFile(restart_path, self.rmg)
+
 def findTargetRxnsContaining(mol1, mol2, reactions):
     target_rxns = []
     for rxn in reactions:

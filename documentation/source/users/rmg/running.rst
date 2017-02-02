@@ -3,10 +3,20 @@
 *************
 Running a Job
 *************
- 
-Submitting a job is easy ::
+
+Running RMG job is easy and under different situations you might want add additional flag as the following examples.
+
+Basic run::
 
 	python rmg.py input.py
+
+Run with a restart file (restart file should be located in same folder as input.py)::
+
+    python rmg.py input.py -r
+
+Run with CPU profiling::
+
+    python rmg.py input.py -p
 
 We recommend you make a job-specific directory for each RMG simulation. Some jobs can take quite a while to complete, so we also recommend using a job scheduler (if working in an linux environment). 
 
