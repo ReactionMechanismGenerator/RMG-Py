@@ -896,12 +896,20 @@ class RMG(util.Subject):
         """
     
         import cPickle
+        from rmgpy.rmg.model import getFamilyLibraryObject
     
         # Unpickle the reaction model from the specified restart file
         logging.info('Loading previous restart file...')
         f = open(path, 'rb')
-        self.reactionModel = cPickle.load(f)
+        rmg_restart = cPickle.load(f)
         f.close()
+
+        self.reactionModel = rmg_restart.reactionModel
+        self.unimolecularReact = rmg_restart.unimolecularReact
+        self.bimolecularReact = rmg_restart.bimolecularReact
+        if self.filterReactions:
+            self.unimolecularThreshold = rmg_restart.unimolecularThreshold
+            self.bimolecularThreshold = rmg_restart.bimolecularThreshold
     
         # A few things still point to the species in the input file, so update
         # those to point to the equivalent species loaded from the restart file
