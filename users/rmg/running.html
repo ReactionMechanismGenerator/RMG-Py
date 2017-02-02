@@ -72,8 +72,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="running-a-job">
 <span id="running"></span><h1>6. Running a Job<a class="headerlink" href="#running-a-job" title="Permalink to this headline">¶</a></h1>
-<p>Submitting a job is easy</p>
+<p>Running RMG job is easy and under different situations you might want add additional flag as the following examples.</p>
+<p>Basic run:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Run with a restart file (restart file should be located in same folder as input.py):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span>
+</pre></div>
+</div>
+<p>Run with CPU profiling:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span>
 </pre></div>
 </div>
 <p>We recommend you make a job-specific directory for each RMG simulation. Some jobs can take quite a while to complete, so we also recommend using a job scheduler (if working in an linux environment).</p>

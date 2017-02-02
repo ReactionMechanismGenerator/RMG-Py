@@ -328,6 +328,18 @@ by RMG, and not by RDKit.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getDeterministicSmallestSetOfSmallestRings">
+<code class="descname">getDeterministicSmallestSetOfSmallestRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getDeterministicSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modified <cite>Graph</cite> method <cite>getSmallestSetOfSmallestRings</cite> by sorting calculated cycles
+by short lenth and then high atomic number instead of just short length (for cases where
+multiple cycles with same length are found, <cite>getSmallestSetOfSmallestRings</cite> outputs 
+non-determinstically ).</p>
+<p>For instance, molecule with this SMILES: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
+output from <cite>getSmallestSetOfSmallestRings</cite>, which leads to non-deterministic bycyclic decomposition
+Using this new method can effectively prevent this situation.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getDisparateRings">
 <code class="descname">getDisparateRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getDisparateRings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of distinct polycyclic and monocyclic rings within the graph.
