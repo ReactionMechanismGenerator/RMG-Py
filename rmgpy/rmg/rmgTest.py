@@ -170,6 +170,27 @@ class TestRMGWorkFlow(unittest.TestCase):
         restart_path = os.path.join(restart_folder, 'restart.pkl')
         saveRestartFile(restart_path, self.rmg)
 
+        # load the generated restart file
+        rmg_load = RMG()
+        rmg_load.loadRestartFile(restart_path)
+
+        core_species_num_orig = len(self.rmg.reactionModel.core.species)
+        core_rxn_num_orig = len(self.rmg.reactionModel.core.reactions)
+        core_species_num_load = len(rmg_load.reactionModel.core.species)
+        core_rxn_num_load = len(rmg_load.reactionModel.core.reactions)
+
+        edge_species_num_orig = len(self.rmg.reactionModel.edge.species)
+        edge_rxn_num_orig = len(self.rmg.reactionModel.edge.reactions)
+        edge_species_num_load = len(rmg_load.reactionModel.edge.species)
+        edge_rxn_num_load = len(rmg_load.reactionModel.edge.reactions)
+
+        self.assertEqual(core_species_num_orig, core_species_num_load)
+        self.assertEqual(core_rxn_num_orig, core_rxn_num_load)
+
+        self.assertEqual(edge_species_num_orig, edge_species_num_load)
+        self.assertEqual(edge_rxn_num_orig, edge_rxn_num_load)
+
+
 def findTargetRxnsContaining(mol1, mol2, reactions):
     target_rxns = []
     for rxn in reactions:
