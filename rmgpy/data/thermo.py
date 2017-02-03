@@ -848,7 +848,7 @@ class ThermoDatabase(object):
         """
         assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
 
-        logging.warning(("Trying to generate thermo for surface species"
+        logging.debug(("Trying to generate thermo for surface species"
                         " with these {} resonance isomer(s):").format(len(species.molecule)))
         molecule = species.molecule[0]
         # only want/need to do one resonance structure,
@@ -880,16 +880,16 @@ class ThermoDatabase(object):
 
         dummyMolecule.update()
 
-        logging.warning("Before removing from surface:\n" + molecule.toAdjacencyList())
-        logging.warning("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
+        logging.debug("Before removing from surface:\n" + molecule.toAdjacencyList())
+        logging.debug("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
 
         dummySpecies = Species()
         dummySpecies.molecule.append(dummyMolecule)
         dummySpecies.generateResonanceIsomers()
         thermo = self.getThermoData(dummySpecies, quantumMechanics=quantumMechanics)
 
-        thermo.comment = "Gas phase thermo from {0}. Asorption correction:".format(thermo.comment)
-        logging.warning("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
+        thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
+        logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
         if not isinstance(thermo, ThermoData):
             thermo = thermo.toThermoData()
