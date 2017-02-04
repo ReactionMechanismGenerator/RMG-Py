@@ -1545,8 +1545,16 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     
     string += '{0!s:<51} '.format(reaction_string)
 
-    if isinstance(kinetics, _kinetics.Arrhenius):
-        assert 0.999 < kinetics.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
+    if isinstance(kinetics, _kinetics.StickingCoefficient):
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+            kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si),
+            kinetics.n.value_si,
+            kinetics.Ea.value_si / 4184.
+        )
+        string += '\n    STICK'
+    elif isinstance(kinetics, _kinetics.Arrhenius):
+        if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
+            assert 0.999 < kinetics.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si) * kinetics.A.getConversionFactorFromSItoCM(),
             kinetics.n.value_si,
