@@ -39,6 +39,8 @@ cdef class Units(object):
 
     cpdef double getConversionFactorFromSI(self) except -1
     
+    cpdef double getConversionFactorFromSItoCM(self) except -1
+    
 ################################################################################
 
 cdef class ScalarQuantity(Units):

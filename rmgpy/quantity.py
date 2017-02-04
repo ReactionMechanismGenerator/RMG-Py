@@ -36,6 +36,7 @@ particularly the :class:`Quantity` class for representing physical quantities.
 import numpy
 import quantities as pq
 import logging
+import re
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import QuantityError
@@ -116,6 +117,35 @@ class Units(object):
         of `units` from the SI equivalent units.
         """
         return 1.0 / self.getConversionFactorToSI()
+
+    # match mm cm dm km and m, but not if it's preceded
+    # or followed by another alphabetic character
+    metres = re.compile('(?<![a-z])[mcdk]?m(?![a-z])')
+    def getConversionFactorFromSItoCM(self):
+        """
+        Return the conversion factor for converting into these units
+        only with all lengths in cm, instead of m, mm, dm, or km. 
+        This is useful for outputting chemkin file kinetics.
+        Depending on the stoichiometry of the reaction the reaction rate
+        coefficient could be /s, cm^3/mol/s, cm^6/mol^2/s, and for 
+        heterogeneous reactions even more possibilities.
+        Only lengths are changed - molecules vs moles, and seconds vs minutes,
+        are not changed. 
+        TODO: this will lead to chemkin errors if your rate cofficients
+        are specified in minutes, for example (it will not convent the time
+        component to SI)
+        """
+        requiredUnits = Units.metres.sub('cm', self.units)
+        try:
+            factor = Units.conversionFactors[requiredUnits]
+        except KeyError:
+            # Fall back to (slow!) quantities package for less common units
+            factor = float(pq.Quantity(1.0, requiredUnits).simplified)
+            # Cache the conversion factor so we don't ever need to use
+            # quantities to compute it again
+            Units.conversionFactors[requiredUnits] = factor
+        return 1.0 / factor
+
 
 ################################################################################
 
