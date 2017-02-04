@@ -149,6 +149,31 @@ class TestSpecies(unittest.TestCase):
         for i, j in zip(spec.molecule, spec2.molecule):
             self.assertTrue(i.isIsomorphic(j))
 
+    def testGetResonanceHybrid(self):
+        """
+        Tests that getResonanceHybrid returns an isomorphic structure
+        which has intermediate bond orders
+        """
+        spec = Species().fromSMILES('C=C[CH]CC')
+        hybridMol = spec.getResonanceHybrid()
+        
+        self.assertTrue(hybridMol.toSingleBonds().isIsomorphic(spec.molecule[0].toSingleBonds()))
+        
+        # a rough check for intermediate bond orders
+        expected_orders = [1,1.5]
+        bonds = []
+        # ensure all bond orders are expected
+        for atom in hybridMol.atoms:
+            for atom2 in atom.bonds:
+                bond = hybridMol.getBond(atom,atom2)
+                self.assertTrue(any([bond.isOrder(otherOrder) for otherOrder in expected_orders]), 'Unexpected bond order {}'.format(bond.getOrderNum()))
+                bonds.append(bond)
+                
+        # ensure all expected orders are present
+        for expected_order in expected_orders:
+            self.assertTrue(any([bond.isOrder(expected_order) for bond in bonds]),'No bond of order {} found'.format(expected_order))
+            
+            
     def testCopy(self):
         """Test that we can make a copy of a Species object."""
 
