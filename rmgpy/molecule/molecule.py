@@ -744,7 +744,7 @@ class Molecule(Graph):
 
     def getBonds(self, atom):
         """
-        Return a list of the bonds involving the specified `atom`.
+        Return a dictionary of the bonds involving the specified `atom`.
         """
         return self.getEdges(atom)
 
