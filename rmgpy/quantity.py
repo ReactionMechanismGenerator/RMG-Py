@@ -129,7 +129,10 @@ class Units(object):
         coefficient could be /s, cm^3/mol/s, cm^6/mol^2/s, and for 
         heterogeneous reactions even more possibilities.
         Only lengths are changed - molecules vs moles, and seconds vs minutes,
-        are not changed.
+        are not changed. 
+        TODO: this will lead to chemkin errors if your rate cofficients
+        are specified in minutes, for example (it will not convent the time
+        component to SI)
         """
         requiredUnits = Units.metres.sub('cm', self.units)
         try:
