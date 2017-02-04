@@ -238,7 +238,7 @@ cdef class Graph:
 
     cpdef dict getEdges(self, Vertex vertex):
         """
-        Return a list of the edges involving the specified `vertex`.
+        Return a dictionary of the edges involving the specified `vertex`.
         """
         return vertex.edges
 
