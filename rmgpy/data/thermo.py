@@ -1536,6 +1536,11 @@ class ThermoDatabase(object):
         if matchedRingEntries is []:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
+        completeMatchedGroups = [entry for entry in matchedRingEntries if not isRingPartialMatched(ring, entry.item)]
+
+        if completeMatchedGroups:
+            matchedRingEntries = completeMatchedGroups
+
         depthList = [len(ring_database.ancestors(entry)) for entry in matchedRingEntries]
         mostSpecificMatchIndices = [i for i, x in enumerate(depthList) if x == max(depthList)]
         
