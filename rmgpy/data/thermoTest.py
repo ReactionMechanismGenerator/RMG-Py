@@ -413,7 +413,7 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertTrue(groupToRemove2.parent.data.getEntropy(298) == groupToRemove2.data.getEntropy(298))
         self.assertFalse(False in [groupToRemove2.parent.data.getHeatCapacity(x) == groupToRemove2.data.getHeatCapacity(x) for x in Tlist])
 
-    def testIsPolyringPartialMatched(self):
+    def testIsRingPartialMatched(self):
         
         # create testing molecule
         smiles = 'C1CC2CCCC3CCCC(C1)C23'
@@ -424,7 +424,7 @@ class TestCyclicThermo(unittest.TestCase):
         matched_group = self.database.groups['polycyclic'].entries['PolycyclicRing'].item
         
         # test
-        self.assertTrue(isPolyringPartialMatched(polyring, matched_group))
+        self.assertTrue(isRingPartialMatched(polyring, matched_group))
 
     def testAddRingCorrectionThermoDataFromTreeForExistingTricyclic(self):
 

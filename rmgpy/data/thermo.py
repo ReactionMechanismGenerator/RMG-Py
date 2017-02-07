@@ -391,18 +391,19 @@ def getCopyFromTwoRingsWithCommonAtoms(ring1, ring2):
     
     return ring1Copy, ring2Copy, mergedRing
 
-def isPolyringPartialMatched(polyring, matched_group):
+def isRingPartialMatched(ring, matched_group):
     """
-    An example of polyring partial match is tricyclic polyring is matched by a bicyclic group
+    An example of ring partial match is tricyclic ring is matched by a bicyclic group
     usually because of not enough data in polycyclic tree. The method takes a matched group 
-    returned from descendTree and the polyring (a list of non-hydrogen atoms in the polyring)
+    returned from descendTree and the ring (a list of non-hydrogen atoms in the ring)
     """
-
-    if len(polyring) != len(matched_group.atoms):
+    # if matched group has less atoms than the target ring
+    # it's surely a partial match
+    if len(ring) > len(matched_group.atoms):
         return True
     else:
-        submol_polyring, _ = convertRingToSubMolecule(polyring)
-        sssr = submol_polyring.getSmallestSetOfSmallestRings()
+        submol_ring, _ = convertRingToSubMolecule(ring)
+        sssr = submol_ring.getSmallestSetOfSmallestRings()
         sssr_grp = matched_group.getSmallestSetOfSmallestRings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
