@@ -426,6 +426,20 @@ class TestCyclicThermo(unittest.TestCase):
         # test
         self.assertTrue(isPolyringPartialMatched(polyring, matched_group))
 
+    def testAddRingCorrectionThermoDataFromTreeForExistingTricyclic(self):
+
+        # create testing molecule: C1CC2C3CCC(C3)C2C1
+        # this tricyclic molecule is already in polycyclic database
+        # so algorithm should give complete match: s2-3_5_5_5_ane
+        smiles = 'C1CC2C3CCC(C3)C2C1'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = mol.getDisparateRings()[1][0]
+
+        poly_groups = self.database.groups['polycyclic']
+        _, matched_entry = self.database._ThermoDatabase__addRingCorrectionThermoDataFromTree(None, poly_groups, mol, polyring)
+
+        self.assertEqual(matched_entry.label, 's2-3_5_5_5_ane')
+
     def testAddPolyRingCorrectionThermoDataFromHeuristicUsingPyrene(self):
 
         # create testing molecule: Pyrene with two ring of aromatic version
