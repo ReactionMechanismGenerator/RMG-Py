@@ -1407,7 +1407,11 @@ def getSpeciesIdentifier(species):
     
         # As a last resort, just use the index
         if species.index >= 0:
-            name = 'S({0:d})'.format(species.index)
+            if 'X' in name:
+                # Helpful to keep X in the names of all surface species.
+                name = 'SX({0:d})'.format(species.index)
+            else:
+                name = 'S({0:d})'.format(species.index)
             if len(name) <= 10:
                 return name
 
