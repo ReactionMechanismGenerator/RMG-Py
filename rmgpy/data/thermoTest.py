@@ -436,7 +436,7 @@ class TestCyclicThermo(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         poly_groups = self.database.groups['polycyclic']
-        _, matched_entry = self.database._ThermoDatabase__addRingCorrectionThermoDataFromTree(None, poly_groups, mol, polyring)
+        _, matched_entry, _ = self.database._ThermoDatabase__addRingCorrectionThermoDataFromTree(None, poly_groups, mol, polyring)
 
         self.assertEqual(matched_entry.label, 's2-3_5_5_5_ane')
 

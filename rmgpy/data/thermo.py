@@ -1465,13 +1465,12 @@ class ThermoDatabase(object):
         be applied.
         """
         # look up polycylic tree directly
-        matched_group_thermodata, matched_entry = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
-        matched_group = matched_entry.item
+        matched_group_thermodata, _, isPartialMatch = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
         
         # if partial match (non-H atoms number same between 
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
-        if not isPolyringPartialMatched(polyring, matched_group):
+        if not isPartialMatch:
             thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
@@ -1537,9 +1536,11 @@ class ThermoDatabase(object):
         if matchedRingEntries is []:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
+        isPartialMatch = True
         completeMatchedGroups = [entry for entry in matchedRingEntries if not isRingPartialMatched(ring, entry.item)]
 
         if completeMatchedGroups:
+            isPartialMatch = False
             matchedRingEntries = completeMatchedGroups
 
         depthList = [len(ring_database.ancestors(entry)) for entry in matchedRingEntries]
@@ -1578,9 +1579,9 @@ class ThermoDatabase(object):
         data.comment = '{0}({1})'.format(ring_database.label, comment)
         
         if thermoData is None:
-            return data, node
+            return data, node, isPartialMatch
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True), node
+            return addThermoData(thermoData, data, groupAdditivity=True), node, isPartialMatch
 
     def __averageChildrenThermo(self, node):
         """
