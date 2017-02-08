@@ -1086,24 +1086,24 @@ class GaussianTS(QMReaction, Gaussian):
                         mol = speciesDict[label]
                     try:
                         for atomLabel in labeledAtoms[label]:
-                            initialMap[reactant.molecule[0].getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
+                            initialMap[reactant.getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
                     except ValueError:
                         # atom labels did not match, therefore not a match
-                        label = reactant.molecule[0].getFingerprint() + '-' + str(num)
+                        label = reactant.getFingerprint() + '-' + str(num)
                         valErr = True
 
                     if not valErr:
-                        if reactant.molecule[0].isIsomorphic(mol, initialMap):
+                        if reactant.isIsomorphic(mol, initialMap):
                             # It's already in the species dict
                             rxnLabel += label
                             reactant.label = label
                             label = None
                         else:
-                            label = reactant.molecule[0].getFingerprint() + '-' + str(num)
+                            label = reactant.getFingerprint() + '-' + str(num)
                 if label and label not in speciesDict:
-                    speciesDict[label] = reactant.molecule[0]
-                    labeledAtoms[label] = reactant.molecule[0].getLabeledAtoms()
-                    self.appendSpeciesDict(tsData_folder, reactant.molecule[0], label)
+                    speciesDict[label] = reactant
+                    labeledAtoms[label] = reactant.getLabeledAtoms()
+                    self.appendSpeciesDict(tsData_folder, reactant, label)
                     reactant.label = label
                     rxnLabel += label
 
@@ -1112,11 +1112,11 @@ class GaussianTS(QMReaction, Gaussian):
             if k>0:
                 rxnLabel += ' + '
 
-            label = product.molecule[0].getFingerprint()
-            labeledAtoms[label] = product.molecule[0].getLabeledAtoms()
+            label = product.getFingerprint()
+            labeledAtoms[label] = product.getLabeledAtoms()
             if label not in speciesDict:
-                speciesDict[label] = product.molecule[0]
-                self.appendSpeciesDict(tsData_folder, product.molecule[0], label)
+                speciesDict[label] = product
+                self.appendSpeciesDict(tsData_folder, product, label)
                 product.label = label
                 rxnLabel += label
             else:
@@ -1128,28 +1128,28 @@ class GaussianTS(QMReaction, Gaussian):
                     num += 1
                     initialMap = {}
                     if isinstance(speciesDict[label], Species):
-                        mol = speciesDict[label].molecule[0]
+                        mol = speciesDict[label]
                     else:
                         mol = speciesDict[label]
                     try:
                         for atomLabel in labeledAtoms[label]:
-                            initialMap[product.molecule[0].getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
+                            initialMap[product.getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
                     except ValueError:
                         # atom labels did not match, therefore not a match
-                        label = product.molecule[0].getFingerprint() + '-' + str(num)
+                        label = product.getFingerprint() + '-' + str(num)
                         valErr = True
                     if not valErr:
-                        if product.molecule[0].isIsomorphic(mol, initialMap):
+                        if product.isIsomorphic(mol, initialMap):
                             # It's already in the species dict
                             product.label = label
                             rxnLabel += label
                             label = None
                         else:
-                            label = product.molecule[0].getFingerprint() + '-' + str(num)
+                            label = product.getFingerprint() + '-' + str(num)
                 if label and label not in speciesDict:
-                    speciesDict[label] = product.molecule[0]
-                    labeledAtoms[label] = product.molecule[0].getLabeledAtoms()
-                    self.appendSpeciesDict(tsData_folder, product.molecule[0], label)
+                    speciesDict[label] = product
+                    labeledAtoms[label] = product.getLabeledAtoms()
+                    self.appendSpeciesDict(tsData_folder, product, label)
                     product.label = label
                     rxnLabel += label
 
