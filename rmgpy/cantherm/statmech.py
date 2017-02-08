@@ -652,28 +652,37 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     
     # Step 3: Bond energy corrections
     bondEnergies = {}
+    # 'S-H', 'C-S', 'C=S', 'S-S', 'O-S', 'O=S', 'O=S=O' taken from http://hdl.handle.net/1721.1/98155 (both for
+    # 'CCSD(T)-F12/cc-pVDZ-F12' and 'CCSD(T)-F12/cc-pVTZ-F12')
     if modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
         bondEnergies = { 'C-H': -0.46, 'C-C': -0.68, 'C=C': -1.90, 'C#C': -3.13,
             'O-H': -0.51, 'C-O': -0.23, 'C=O': -0.69, 'O-O': -0.02, 'N-C': -0.67,
             'N=C': -1.46, 'N#C': -2.79, 'N-O': 0.74, 'N_O': -0.23, 'N=O': -0.51,
-            'N-H': -0.69, 'N-N': -0.47, 'N=N': -1.54, 'N#N': -2.05,}
+            'N-H': -0.69, 'N-N': -0.47, 'N=N': -1.54, 'N#N': -2.05, 'S-H': 0.87,
+            'C-S': 0.42, 'C=S': 0.51, 'S-S': 0.86, 'O-S': 0.23, 'O=S': -0.53,
+            'O=S=O': 1.95, }
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
         bondEnergies = { 'C-H': -0.09, 'C-C': -0.27, 'C=C': -1.03, 'C#C': -1.79,
             'O-H': -0.06, 'C-O': 0.14, 'C=O': -0.19, 'O-O': 0.16, 'N-C': -0.18,
             'N=C': -0.41, 'N#C': -1.41, 'N-O': 0.87, 'N_O': -0.09, 'N=O': -0.23,
-            'N-H': -0.01, 'N-N': -0.21, 'N=N': -0.44, 'N#N': -0.76,}
+            'N-H': -0.01, 'N-N': -0.21, 'N=N': -0.44, 'N#N': -0.76, 'S-H': 0.52,
+            'C-S': 0.13, 'C=S': -0.12, 'S-S': 0.30, 'O-S': 0.15, 'O=S': -2.61,
+            'O=S=O': 0.27, }
     elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
         bondEnergies = { 'C-H': -0.08, 'C-C': -0.26, 'C=C': -1.01, 'C#C': -1.66,
             'O-H':  0.07, 'C-O': 0.25, 'C=O': -0.03, 'O-O': 0.26, 'N-C': -0.20,
             'N=C': -0.30, 'N#C': -1.33, 'N-O': 1.01, 'N_O': -0.03, 'N=O': -0.26,
             'N-H':  0.06, 'N-N': -0.23, 'N=N': -0.37, 'N#N': -0.64,}
     
-    # BAC corrections from Table IX in http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 for CBS-Q method
+    # BAC corrections from Table IX in http://dx.doi.org/10.1063/1.477794 for CBS-Q method
     # H-Cl correction from CBS-QB3 enthalpy difference with Gurvich 1989, HF298=-92.31 kJ
+    # 'N=O', 'N-N', 'N=N', 'N-O' corrections taken from Table 2 in R. Ashcraft, S. Raman, W.H. Green J. Phys. Chem. B, Vol. 111, No. 41, 2007; doi: 10.1021/jp073539t
     elif modelChemistry == 'CBS-QB3':
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
-            'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
-            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0, }
+            'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2,
+            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0,
+            'N-H': -0.42, 'C-N': -0.13, 'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58,
+            'N-O': 0.35, }
     elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)']:
         bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
             'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
