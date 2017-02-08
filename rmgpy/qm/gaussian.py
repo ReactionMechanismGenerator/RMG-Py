@@ -1065,11 +1065,11 @@ class GaussianTS(QMReaction, Gaussian):
             if k>0:
                 rxnLabel += ' + '
 
-            label = reactant.getFingerprint() #removed .molecule[0]. According to this, we are assuming that reactant is a molecule and not a species.
-            labeledAtoms[label] = reactant.getLabeledAtoms() #same
+            label = reactant.getFingerprint()
+            labeledAtoms[label] = reactant.getLabeledAtoms()
             if label not in speciesDict.keys():
-                speciesDict[label] = reactant #same
-                self.appendSpeciesDict(tsData_folder, reactant, label) #same
+                speciesDict[label] = reactant
+                self.appendSpeciesDict(tsData_folder, reactant, label)
                 reactant.label = label
                 rxnLabel += label
             else:
