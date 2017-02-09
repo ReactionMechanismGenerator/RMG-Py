@@ -1976,6 +1976,25 @@ multiplicity 2
         asssr = mol.getAromaticSSSR()
         self.assertEqual(len(asssr), 0)
 
+    def testArylRadicalTrue(self):
+        """Test aryl radical perception for phenyl radical."""
+        mol = Molecule(SMILES='[c]1ccccc1')
+        self.assertTrue(mol.isArylRadical())
+
+    def testArylRadicalFalse(self):
+        """Test aryl radical perception for benzyl radical."""
+        mol = Molecule(SMILES='[CH2]c1ccccc1')
+        self.assertFalse(mol.isArylRadical())
+
+    def testArylRadicalBirad(self):
+        """Test aryl radical perception for biradical species.
+
+        This is a case that is not properly handled right now, since a single boolean cannot
+        characterize multiple radicals. In such cases, the method will return false if
+        any of the radicals is not an aryl radical."""
+        mol = Molecule(SMILES='[CH2]c1c[c]ccc1')
+        self.assertFalse(mol.isArylRadical())
+
 
 ################################################################################
 
