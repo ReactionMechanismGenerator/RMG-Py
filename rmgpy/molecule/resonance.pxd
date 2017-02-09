@@ -3,6 +3,8 @@ from .molecule cimport Atom, Bond, Molecule
 
 cpdef tuple populate_resonance_generation_algorithm()
 
+cpdef dict analyzeMolecule(Molecule mol)
+
 cpdef list generateResonanceIsomers(Molecule mol)
 
 cpdef list generateAdjacentResonanceIsomers(Molecule mol)
