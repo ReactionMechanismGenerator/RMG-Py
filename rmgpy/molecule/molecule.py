@@ -1682,9 +1682,9 @@ class Molecule(Graph):
         
         return group
 
-    def getAromaticSSSR(self):
+    def getAromaticSSSR(self, SSSR=None):
         """
-        Returns the smallest set of smallest aromatic rings
+        Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds
 
         Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
@@ -1700,18 +1700,22 @@ class Molecule(Graph):
 
         AROMATIC = BondType.AROMATIC
 
-        rings = [ring0 for ring0 in self.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+        if SSSR is None:
+            SSSR = self.getSmallestSetOfSmallestRings()
+
+        rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
         if not rings:
-            return []
+            return [], []
 
         try:
             rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
-            return []
+            return [], []
 
         aromaticRings = []
+        aromaticBonds = []
         for ring0 in rings:
-            aromaticBonds = []
+            aromaticBondsInRing = []
             # Figure out which atoms and bonds are aromatic and reassign appropriately:
             for i, atom1 in enumerate(ring0):
                 if not atom1.isCarbon():
@@ -1721,12 +1725,13 @@ class Molecule(Graph):
                     if self.hasBond(atom1, atom2):
                         if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
                                                         rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                            aromaticBonds.append(self.getBond(atom1, atom2))
+                            aromaticBondsInRing.append(self.getBond(atom1, atom2))
             else:  # didn't break so all atoms are carbon
-                if len(aromaticBonds) == 6:
+                if len(aromaticBondsInRing) == 6:
                     aromaticRings.append(ring0)
+                    aromaticBonds.append(aromaticBondsInRing)
 
-        return aromaticRings
+        return aromaticRings, aromaticBonds
 
     def getDeterministicSmallestSetOfSmallestRings(self):
         """

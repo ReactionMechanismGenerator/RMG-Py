@@ -464,7 +464,7 @@ def clarOptimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    asssr = molecule.getAromaticSSSR()
+    asssr = molecule.getAromaticSSSR()[0]
 
     if not asssr:
         return []

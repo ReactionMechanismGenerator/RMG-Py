@@ -218,6 +218,6 @@ cdef class Molecule(Graph):
 
     cpdef list generateResonanceIsomers(self)
 
-    cpdef list getAromaticSSSR(Molecule mol)
+    cpdef tuple getAromaticSSSR(self, list SSSR=?)
 
     cpdef list getDeterministicSmallestSetOfSmallestRings(self)
