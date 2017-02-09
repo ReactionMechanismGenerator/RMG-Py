@@ -750,6 +750,8 @@ class ThermoDatabase(object):
         """
         Load the thermo database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
+        
+        If no libraries are given, all are loaded.
         """
         self.libraries = {}; self.libraryOrder = []
         if libraries is None:
@@ -999,6 +1001,10 @@ class ThermoDatabase(object):
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         
+        The method corrects for symmetry when the molecule uses HBI or 
+        group additivity. Libraries and direct QM calculations are already
+        corrected.
+        
         Returns: ThermoData
         """
         from rmgpy.rmg.input import getInput
@@ -1006,18 +1012,20 @@ class ThermoDatabase(object):
         thermo0 = None
         
         thermo0 = self.getThermoDataFromLibraries(species)
+        
+        if thermo0 is not None:
+            logging.debug("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
+            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
+            thermo0 = thermo0[0]
+            return thermo0
+
         try:
             quantumMechanics = getInput('quantumMechanics')
         except Exception, e:
             logging.debug('Quantum Mechanics DB could not be found.')
             quantumMechanics = None
-
-        if thermo0 is not None:
-            logging.debug("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
-            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
-            thermo0 = thermo0[0]
             
-        elif quantumMechanics:
+        if quantumMechanics:
             original_molecule = species.molecule[0]
             if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
                 pass
@@ -1057,6 +1065,9 @@ class ThermoDatabase(object):
                         species.molecule = [item[2] for item in thermo]
                         original_molecule = species.molecule[0]
                     thermo0 = thermo[0][3] 
+
+                    # update entropy by symmetry correction
+                    thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
                     
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
@@ -1086,19 +1097,19 @@ class ThermoDatabase(object):
                         newMolList.extend([mol for mol in species.molecule if mol not in newMolList])
                     species.molecule = newMolList
                     thermo0 = thermo[0][2]
-                    
+
                 else:
                     # Did not find any saturated values in the thermo libraries, so try group additivity instead
                     thermo0 = self.getThermoDataFromGroups(species)
-                
-                
-                
-                
-                
+
             else:
                 # Saturated molecule, estimate it via groups since we've already checked libraries much earlier
                 thermo0 = self.getThermoDataFromGroups(species)
                 
+            # update entropy by symmetry correction
+            thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+
+
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
         findCp0andCpInf(species, thermo0)
 
@@ -1182,6 +1193,8 @@ class ThermoDatabase(object):
         # Last entry is always the estimate from group additivity
         # Make it a tuple
         data = (self.getThermoDataFromGroups(species), None, None)
+        # update group activity for symmetry
+        data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
         thermoDataList.append(data)
 
         # Return all of the resulting thermo parameters
@@ -1236,6 +1249,8 @@ class ThermoDatabase(object):
         
         The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
         the resonance isomers (items in `species.molecule` list) are sorted in ascending order.
+        
+        This does not account for symmetry. The method calling this sould correct for it.
         
         Returns: ThermoData
         """       
@@ -1292,6 +1307,8 @@ class ThermoDatabase(object):
         then applying hydrogen bond increment corrections for the radical
         site(s) and correcting for the symmetry.
         
+        No entropy is included in the returning term.
+        This should be done later by the calling function.
         """
         
         assert molecule.isRadical(), "Method only valid for radicals."
@@ -1325,9 +1342,6 @@ class ThermoDatabase(object):
             thermoData_sat.S298.value_si += constants.R * math.log(saturatedStruct.getSymmetryNumber())
         
         thermoData = thermoData_sat
-        
-        # Correct entropy for symmetry number of radical structure
-        thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
         
         # For each radical site, get radical correction
         # Only one radical site should be considered at a time; all others
@@ -1364,22 +1378,20 @@ class ThermoDatabase(object):
         :class:`Molecule` object `molecule` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        The entropy is not corrected for the symmetry of the molecule.
+        This should be done later by the calling function.
         """
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the thermo wrong
         molecule.sortAtoms()
 
-        if molecule.isRadical(): # radical species
+        if molecule.isRadical():
             thermoData = self.estimateRadicalThermoViaHBI(molecule, self.computeGroupAdditivityThermo)
-            return thermoData
-
-        else: # non-radical species
+        else:
             thermoData = self.computeGroupAdditivityThermo(molecule)
-            # Correct entropy for symmetry number
-            if not 'saturated' in molecule.props: 
-                thermoData.S298.value_si -= constants.R * math.log(molecule.getSymmetryNumber())
-            return thermoData
+        return thermoData
 
 
     def computeGroupAdditivityThermo(self, molecule):

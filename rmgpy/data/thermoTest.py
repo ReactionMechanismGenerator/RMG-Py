@@ -142,13 +142,19 @@ class TestThermoDatabase(unittest.TestCase):
     def testSymmetryContributionRadicals(self):
         """
         Test that the symmetry contribution is correctly added for radicals
-        estimated via the HBI method. 
+        estimated via the HBI method.
+        
+        This is done by testing thermoData from a database and from group 
+        additivity and ensuring they give the correct value. 
         """
         spc = Species(molecule=[Molecule().fromSMILES('[CH3]')])
         
-        thermoData_lib = self.database.getThermoDataFromLibraries(spc)[0]
+        thermoData_lib = self.database.getThermoData(spc)
         
-        thermoData_ga = self.database.getThermoDataFromGroups(spc)
+        databaseWithoutLibraries = ThermoDatabase()
+        databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
+        
+        thermoData_ga = databaseWithoutLibraries.getThermoData(spc)
         
         self.assertAlmostEqual(thermoData_lib.getEntropy(298.), thermoData_ga.getEntropy(298.), 0)
         
