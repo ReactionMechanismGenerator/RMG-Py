@@ -41,19 +41,6 @@ from .molecule import Atom, Bond, Molecule
 from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
 
-def populate_resonance_generation_algorithm():
-    """
-    A list with the current set of resonance generation algorithms.
-    """
-    algorithms = (
-        generateAdjacentResonanceIsomers,
-        generateLonePairRadicalResonanceIsomers,
-        generateN5dd_N5tsResonanceIsomers,
-        generateKekulizedResonanceIsomers,
-        generateAromaticResonanceIsomers,
-    )
-
-    return algorithms
 
 def populateResonanceAlgorithms(features=None):
     """
@@ -577,7 +564,7 @@ def generate_isomorphic_isomers(mol):
         isomer = isomers[index]
         
         newIsomers = []
-        for algo in populate_resonance_generation_algorithm():
+        for algo in populateResonanceAlgorithms():
             newIsomers.extend(algo(isomer))
         
         for newIsomer in newIsomers:
