@@ -1581,7 +1581,7 @@ class Molecule(Graph):
         return total == aryl
 
     def generateResonanceIsomers(self):
-        return resonance.generateResonanceIsomers(self)
+        return resonance.generateResonanceStructures(self)
 
     def getURL(self):
         """

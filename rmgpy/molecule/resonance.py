@@ -69,28 +69,28 @@ def populateResonanceAlgorithms(features=None):
 
     if features is None:
         methodList = [
-            generateAdjacentResonanceIsomers,
-            generateLonePairRadicalResonanceIsomers,
-            generateN5dd_N5tsResonanceIsomers,
-            generateAromaticResonanceIsomers,
-            generateKekulizedResonanceIsomers,
+            generateAdjacentResonanceStructures,
+            generateLonePairRadicalResonanceStructures,
+            generateN5dd_N5tsResonanceStructures,
+            generateAromaticResonanceStructures,
+            generateKekuleStructure,
             generateOppositeKekuleStructure,
             generateClarStructures,
         ]
     else:
         if features['isAromatic']:
-            methodList.append(generateAromaticResonanceIsomers)
-            methodList.append(generateKekulizedResonanceIsomers)
+            methodList.append(generateAromaticResonanceStructures)
+            methodList.append(generateKekuleStructure)
             if features['isPolycyclicAromatic']:
                 methodList.append(generateClarStructures)
             else:
                 methodList.append(generateOppositeKekuleStructure)
         if features['isRadical'] and not features['isArylRadical']:
-            methodList.append(generateAdjacentResonanceIsomers)
+            methodList.append(generateAdjacentResonanceStructures)
         if features['hasNitrogen']:
-            methodList.append(generateN5dd_N5tsResonanceIsomers)
+            methodList.append(generateN5dd_N5tsResonanceStructures)
         if features['hasLonePairs']:
-            methodList.append(generateLonePairRadicalResonanceIsomers)
+            methodList.append(generateLonePairRadicalResonanceStructures)
 
     return methodList
 
@@ -130,7 +130,7 @@ def analyzeMolecule(mol):
 
     return features
 
-def generateResonanceIsomers(mol):
+def generateResonanceStructures(mol):
     """
     Generate and return all of the resonance structures for the input molecule.
 
@@ -160,9 +160,9 @@ def generateResonanceIsomers(mol):
     # Analyze molecule
     features = analyzeMolecule(mol)
 
-    # Use generateAromaticResonanceIsomers to check for false positives and negatives
+    # Use generateAromaticResonanceStructures to check for false positives and negatives
     if features['isAromatic'] or (features['isCyclic'] and features['isRadical'] and not features['isArylRadical']):
-        newMolList = generateAromaticResonanceIsomers(mol, features)
+        newMolList = generateAromaticResonanceStructures(mol, features)
         if len(newMolList) == 0:
             # Encountered false positive, ie. the molecule is not actually aromatic
             features['isAromatic'] = False
@@ -173,22 +173,22 @@ def generateResonanceIsomers(mol):
     if len(newMolList) > 0:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
-                __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers])
-                __generateResonanceStructures(newMolList, [generateAdjacentResonanceIsomers])
-                __generateResonanceStructures(newMolList, [generateClarStructures])
+                _generateResonanceStructures(newMolList, [generateKekuleStructure])
+                _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
+                _generateResonanceStructures(newMolList, [generateClarStructures])
                 # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
                 newMolList = [m for m in newMolList if m.isAromatic()]
             else:
-                __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers,
-                                                           generateOppositeKekuleStructure])
-                __generateResonanceStructures(newMolList, [generateAdjacentResonanceIsomers])
+                _generateResonanceStructures(newMolList, [generateKekuleStructure,
+                                                          generateOppositeKekuleStructure])
+                _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
         elif features['isPolycyclicAromatic']:
-            __generateResonanceStructures(newMolList, [generateClarStructures])
+            _generateResonanceStructures(newMolList, [generateClarStructures])
         else:
             # The molecule is an aryl radical or stable mono-ring aromatic
             # In this case, generate the kekulized form
-            __generateResonanceStructures(newMolList, [generateKekulizedResonanceIsomers,
-                                                       generateOppositeKekuleStructure])
+            _generateResonanceStructures(newMolList, [generateKekuleStructure,
+                                                      generateOppositeKekuleStructure])
 
         # Check for isomorphism against the original molecule
         for newMol in newMolList:
@@ -202,11 +202,11 @@ def generateResonanceIsomers(mol):
         molList.extend(newMolList)
     else:
         methodList = populateResonanceAlgorithms(features)
-        __generateResonanceStructures(molList, methodList)
+        _generateResonanceStructures(molList, methodList)
 
     return molList
 
-def __generateResonanceStructures(molList, methodList, copy=False):
+def _generateResonanceStructures(molList, methodList, copy=False):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
@@ -244,7 +244,7 @@ def __generateResonanceStructures(molList, methodList, copy=False):
 
     return molList
 
-def generateAdjacentResonanceIsomers(mol):
+def generateAdjacentResonanceStructures(mol):
     """
     Generate all of the resonance structures formed by one allyl radical shift.
 
@@ -289,7 +289,7 @@ def generateAdjacentResonanceIsomers(mol):
 
     return isomers
 
-def generateLonePairRadicalResonanceIsomers(mol):
+def generateLonePairRadicalResonanceStructures(mol):
     """
     Generate all of the resonance structures formed by lone electron pair - radical shifts.
     """
@@ -336,7 +336,7 @@ def generateLonePairRadicalResonanceIsomers(mol):
 
     return isomers
 
-def generateN5dd_N5tsResonanceIsomers(mol):
+def generateN5dd_N5tsResonanceStructures(mol):
     """
     Generate all of the resonance structures formed by shifts between N5dd and N5ts.
     """
@@ -419,7 +419,7 @@ def generateN5dd_N5tsResonanceIsomers(mol):
                 
     return isomers
 
-def generateAromaticResonanceIsomers(mol, features=None):
+def generateAromaticResonanceStructures(mol, features=None):
     """
     Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
     
@@ -450,10 +450,10 @@ def generateAromaticResonanceIsomers(mol, features=None):
     # then there is a chance that the radical can be shifted to a location that increases the number of aromatic rings.
     if (features['isRadical'] and not features['isArylRadical']) and (len(aromaticBonds) < len(rings)):
         if molecule.isAromatic():
-            kekuleList = generateKekulizedResonanceIsomers(molecule)
+            kekuleList = generateKekuleStructure(molecule)
         else:
             kekuleList = [molecule]
-        __generateResonanceStructures(kekuleList, [generateAdjacentResonanceIsomers])
+        _generateResonanceStructures(kekuleList, [generateAdjacentResonanceStructures])
 
         maxNum = 0
         molList = []
@@ -494,7 +494,7 @@ def generateAromaticResonanceIsomers(mol, features=None):
 
     return newMolList
 
-def generateKekulizedResonanceIsomers(mol):
+def generateKekuleStructure(mol):
     """
     Generate a kekulized (single-double bond) form of the molecule.
     The specific arrangement of double bonds is non-deterministic, and depends on RDKit.
@@ -560,7 +560,7 @@ def generateOppositeKekuleStructure(mol):
     else:
         return [molecule]
 
-def generate_isomorphic_isomers(mol):
+def generateIsomorphicResonanceStructures(mol):
     """
     Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
     electrons descriptor.
@@ -622,7 +622,7 @@ def generateClarStructures(mol):
     if not mol.isCyclic():
         return []
 
-    output = clarOptimization(mol)
+    output = _clarOptimization(mol)
 
     molList = []
 
@@ -646,7 +646,7 @@ def generateClarStructures(mol):
         # Then apply locations of aromatic sextets by converting to benzene bonds
         for index, ring in enumerate(asssr):
             if y[index] == 1:
-                clarTransformation(newmol, ring)
+                _clarTransformation(newmol, ring)
 
         try:
             newmol.updateAtomTypes()
@@ -658,7 +658,7 @@ def generateClarStructures(mol):
     return molList
 
 
-def clarOptimization(mol, constraints=None, maxNum=None):
+def _clarOptimization(mol, constraints=None, maxNum=None):
     """
     Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
@@ -781,14 +781,14 @@ def clarOptimization(mol, constraints=None, maxNum=None):
 
     # Run optimization with additional constraints
     try:
-        innerSolutions = clarOptimization(mol, constraints=constraints, maxNum=maxNum)
+        innerSolutions = _clarOptimization(mol, constraints=constraints, maxNum=maxNum)
     except ILPSolutionError:
         innerSolutions = []
 
     return innerSolutions + [(molecule, asssr, bonds, solution)]
 
 
-def clarTransformation(mol, aromaticRing):
+def _clarTransformation(mol, aromaticRing):
     """
     Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
 
