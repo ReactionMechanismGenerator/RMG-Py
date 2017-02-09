@@ -358,3 +358,18 @@ class DistanceComputingTest(unittest.TestCase):
         self.assertEquals(distances, expected)
 
 
+class FindAllDelocalizationPathsTest(unittest.TestCase):
+    """
+    test the findAllDelocalizationPaths method
+    """
+    def test_allyl_radical(self):
+        smi = "[CH2]C=C"
+        mol = Molecule().fromSMILES(smi)
+        paths = findAllDelocalizationPaths(mol.atoms[0])
+        self.assertIsNotNone(paths)
+
+    def test_nitrogenated_birad(self):
+        smi = '[CH]=C[N]'
+        mol = Molecule().fromSMILES(smi)
+        paths = findAllDelocalizationPaths(mol.atoms[0])
+        self.assertIsNotNone(paths)
