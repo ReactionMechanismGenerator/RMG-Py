@@ -11,6 +11,8 @@ rate coefficients, and pressure dependent rate coefficients from quantum chemica
 CanTherm is compatible with a variety of ab initio quantum chemistry software programs, including but not limited to
 Gaussian, MOPAC, QChem, and MOLPRO.
 
+*This branch is for the heterogeneous catalysis version!* (be sure to use the corresponding branch in the RMG-database)
+
 ## Source Code Repository
 - [RMG Github Repository](https://github.com/ReactionMechanismGenerator/RMG-Py): contains the latest source code for RMG
 - [RMG-database Github Repository](https://github.com/ReactionMechanismGenerator/RMG-database): contains source code for the latest version of the database
@@ -32,10 +34,16 @@ Alternatively, PDF versions of all the documentation can also be found in the `d
 
 ## Credits
 
+RMG-Py is mostly a product of 
 - [Professor William H. Green's research group](http://cheme.scripts.mit.edu/green-group/) at the 
 [Massachusetts Institute of Technology](http://web.mit.edu/) 
 - [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
 [Northeastern University](http://www.northeastern.edu/). 
+
+This version for heterogeneous catalysis is the result of efforts by
+- [C. Franklin Goldsmith](https://vivo.brown.edu/display/cfgoldsm) at [Brown University](https://www.brown.edu/academics/engineering/)
+- [Richard H. West](http://www.che.neu.edu/people/west-richard) at 
+[Northeastern University](http://www.che.neu.edu). 
 
 ## How to Give Feedback
 

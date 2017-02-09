@@ -1,3 +1,3 @@
 # This file describes the version of RMG-Py
 
-__version__ = '1.0.4'
+__version__ = 'Cat-1.0'
