@@ -42,6 +42,7 @@ import re
 import numpy
 import urllib
 from collections import OrderedDict
+import itertools
 
 import element as elements
 try:
@@ -1563,6 +1564,21 @@ class Molecule(Graph):
             if atom.radicalElectrons > 0:
                 return True
         return False
+
+    def isArylRadical(self, ASSSR=None):
+        """
+        Return ``True`` if the molecule only contains aryl radicals,
+        ie. radical on an aromatic ring, or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom, radList=list)
+        if ASSSR is None:
+            ASSSR = self.getAromaticSSSR()[0]
+
+        total = self.getRadicalCount()
+        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(ASSSR)])
+        aryl = sum([atom.radicalElectrons for atom in aromaticAtoms])
+
+        return total == aryl
 
     def generateResonanceIsomers(self):
         return resonance.generateResonanceIsomers(self)
