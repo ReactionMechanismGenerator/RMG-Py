@@ -81,13 +81,23 @@ cdef class Atom(Vertex):
     
 cdef class Bond(Edge):
 
-    cdef public str order
+    cdef public float order
 
     cpdef bint equivalent(self, Edge other) except -2
 
     cpdef bint isSpecificCaseOf(self, Edge other) except -2
 
+    cpdef str getOrderStr(self)
+    
+    cpdef setOrderStr(self, str newOrder)
+    
+    cpdef float getOrderNum(self)
+    
+    cpdef setOrderNum(self, float newOrder)
+
     cpdef Edge copy(self)
+    
+    cpdef bint isOrder(self, float otherOrder)
 
     cpdef bint isSingle(self) except -2
 

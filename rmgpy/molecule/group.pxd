@@ -42,9 +42,9 @@ cdef class GroupAtom(Vertex):
 
     cpdef __changeBond(self, short order)
 
-    cpdef __formBond(self, str order)
+    cpdef __formBond(self, float order)
 
-    cpdef __breakBond(self, str order)
+    cpdef __breakBond(self, float order)
 
     cpdef __gainRadical(self, short radical)
 
@@ -68,7 +68,6 @@ cdef class GroupAtom(Vertex):
 
     cpdef mol.Atom makeSampleAtom(self)
 
-    cpdef getBondOrdersForAtom(self)
 ################################################################################
 
 cdef class GroupBond(Edge):
@@ -76,6 +75,14 @@ cdef class GroupBond(Edge):
     cdef public list order
 
     cpdef Edge copy(self)
+
+    cpdef list getOrderStr(self)
+    
+    cpdef setOrderStr(self, list newOrder)
+    
+    cpdef list getOrderNum(self)
+    
+    cpdef setOrderNum(self, list newOrder)
 
     cpdef __changeBond(self, short order)
 

@@ -166,9 +166,9 @@ class GroupAtom(Vertex):
         """
         Update the atom group as a result of applying a FORM_BOND action,
         where `order` specifies the order of the forming bond, and should be
-        'S' (since we only allow forming of single bonds).
+        1 (since we only allow forming of single bonds).
         """
-        if order != 'S':
+        if order != 1:
             raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
         for atom in self.atomType:
@@ -182,9 +182,9 @@ class GroupAtom(Vertex):
         """
         Update the atom group as a result of applying a BREAK_BOND action,
         where `order` specifies the order of the breaking bond, and should be
-        'S' (since we only allow breaking of single bonds).
+        1 (since we only allow breaking of single bonds).
         """
-        if order != 'S':
+        if order != 1:
             raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
         for atom in self.atomType:
@@ -500,30 +500,6 @@ class GroupAtom(Vertex):
 
         return newAtom
 
-    def getBondOrdersForAtom(self):
-        """
-        This helper function is to help calculate total bond orders for an
-        input atom.
-
-        Some special consideration for the order `B` bond. For atoms having
-        three `B` bonds, the order for each is 4/3.0, while for atoms having other
-        than three `B` bonds, the order for  each is 3/2.0
-        """
-        num_B_bond = 0
-        order = 0
-        for _, bond in self.bonds.iteritems():
-            if bond.order == 'B':
-                num_B_bond += 1
-            else:
-                order += mol.bond_orders[bond.order]
-
-        if num_B_bond == 3:
-            order += num_B_bond * 4/3.0
-        else:
-            order += num_B_bond * 3/2.0
-
-        return order
-
 ################################################################################
 
 class GroupBond(Edge):
@@ -544,7 +520,12 @@ class GroupBond(Edge):
 
     def __init__(self, atom1, atom2, order=None):
         Edge.__init__(self, atom1, atom2)
-        self.order = order or []
+        if order is not None and all([isinstance(oneOrder,str) for oneOrder in order]):
+            self.setOrderStr(order)
+        elif order is not None and any([isinstance(oneOrder,str) for oneOrder in order]):
+            raise ActionError('order list given {} does not consist of only strings or only numbers'.format(order))
+        else:
+            self.order = order or []
 
     def __str__(self):
         """
@@ -570,55 +551,99 @@ class GroupBond(Edge):
         attributes of the copy will not affect the original.
         """
         return GroupBond(self.vertex1, self.vertex2, self.order[:])
+        
+    def getOrderStr(self):
+        """
+        returns a list of strings representing the bond order
+        """
+        values = []
+        for value in self.order:
+            if value == 1:
+                values.append('S')
+            elif value == 2:
+                values.append('D')
+            elif value == 3:
+                values.append('T')
+            elif value == 1.5:
+                values.append('B')
+            else:
+                raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
+        return values
+        
+    def setOrderStr(self, newOrder):
+        """
+        set the bond order using a valid bond-order character list
+        """
+        
+        values = []
+        for value in newOrder:
+            if value == 'S':
+                values.append(1)
+            elif value == 'D':
+                values.append(2)
+            elif value == 'T':
+                values.append(3)
+            elif value == 'B':
+                values.append(1.5)
+            else:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
+        self.order = values      
 
+        
+    def getOrderNum(self):
+        """
+        returns the bond order as a list of numbers
+        """
+        return self.order
+        
+
+            
+    def setOrderNum(self, newOrder):
+        """
+        change the bond order with a list of numbers
+        """
+        self.order = newOrder
+            
     def isSingle(self):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
+        
+        NOTE: we can replace the absolute value relation with math.isclose when
+        we swtich to python 3.5+
         """
-        return self.order[0] == 'S' and len(self.order) == 1
+        return abs(self.order[0]-1) <= 1e-9 and len(self.order) == 1
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
         """
-        return self.order[0] == 'D' and len(self.order) == 1
+        return abs(self.order[0]-2) <= 1e-9 and len(self.order) == 1
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
         """
-        return self.order[0] == 'T' and len(self.order) == 1
+        return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not. Bonds with any wildcards will return  ``False``.
         """
-        return self.order[0] == 'B' and len(self.order) == 1
+        return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
 
     def __changeBond(self, order):
         """
         Update the bond group as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
-        in bond order, and should be 1 or -1.
+        in bond order. `order` is normally 1 or -1, but can be any value
         """
-        newOrder = []
-        for bond in self.order:
-            if order == 1:
-                if bond == 'S':         newOrder.append('D')
-                elif bond == 'D':       newOrder.append('T')
-                else:
-                    raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid bond order "{0}" in set {1}".'.format(bond, self.order))
-            elif order == -1:
-                if bond == 'D':         newOrder.append('S')
-                elif bond == 'T':       newOrder.append('D')
-                else:
-                    raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid bond order "{0}" in set {1}".'.format(bond, self.order))
-            else:
-                raise ActionError('Unable to update GroupBond due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
+        newOrder = [value + order for value in self.order]
+        if any([value < 0 or value > 3 for value in newOrder]):
+            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(newOrder))
         # Set the new bond orders, removing any duplicates
         self.order = list(set(newOrder))
 
@@ -648,7 +673,7 @@ class GroupBond(Edge):
             return other.equivalent(self)
         gb = other
         
-        cython.declare(order1=str, order2=str)
+        cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for order1 in self.order:
@@ -678,7 +703,7 @@ class GroupBond(Edge):
             return other.isSpecificCaseOf(self)
         gb = other
         
-        cython.declare(order1=str, order2=str)
+        cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
         for order1 in self.order: # all these must match
@@ -1238,7 +1263,7 @@ class Group(Graph):
                 atomtypes = ['Od']
             elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
                 atomtypes = ['Sd']
-            self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], ['D'])
+            self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], [2])
 
         return modified
 
@@ -1309,22 +1334,22 @@ class Group(Graph):
             while oDouble < oDoubleRequired[0]:
                 oDouble +=1
                 newAtom = GroupAtom(atomType=[atomTypes['O']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-                newBond = GroupBond(atom1, newAtom, order=['D'])
+                newBond = GroupBond(atom1, newAtom, order=[2])
                 implicitAtoms[newAtom] = newBond
             while sDouble < sDoubleRequired[0]:
                 sDouble +=1
                 newAtom = GroupAtom(atomType=[atomTypes['S']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-                newBond = GroupBond(atom1, newAtom, order=['D'])
+                newBond = GroupBond(atom1, newAtom, order=[2])
                 implicitAtoms[newAtom] = newBond
             while rDouble < rDoubleRequired[0] or rDouble + oDouble + sDouble < allDoubleRequired[0]:
                 rDouble +=1
                 newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-                newBond = GroupBond(atom1, newAtom, order=['D'])
+                newBond = GroupBond(atom1, newAtom, order=[2])
                 implicitAtoms[newAtom] = newBond
             while triple < tripleRequired[0]:
                 triple +=1
                 newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
-                newBond = GroupBond(atom1, newAtom, order=['T'])
+                newBond = GroupBond(atom1, newAtom, order=[3])
                 implicitAtoms[newAtom] = newBond
 
         for atom, bond in implicitAtoms.iteritems():
@@ -1375,7 +1400,7 @@ class Group(Graph):
             fbBonds = 0
             connectedCbfs[cbfAtom] = []
             for atom2, bond in cbfAtom.bonds.iteritems():
-                if bond.order[0] == 'B' and atom2 in cbfAtomList:
+                if bond.order[0] == 1.5 and atom2 in cbfAtomList:
                     fbBonds +=1
                     connectedCbfs[cbfAtom].append(atom2)
             if fbBonds < 2: cbfAtomList1.append(cbfAtom)
@@ -1392,7 +1417,7 @@ class Group(Graph):
         #check that cbfAtoms only have benzene bonds
         for cbfAtom in cbfAtomList:
             for atom2, bond12 in cbfAtom.bonds.iteritems():
-                assert bond12.isBenzene(), "Cbf atom in {0} has a bond with an order other than 'B'".format(self)
+                assert bond12.isBenzene(), "Cbf atom in {0} has a bond with an order other than 1.5".format(self)
 
         return (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs)
 
@@ -1549,7 +1574,7 @@ class Group(Graph):
                     partners[potentialPartner]= cbfAtom
                 #otherwise create a new atom to be the partner
                 else:
-                    newAtom = copyGroup.createAndConnectAtom(['Cbf'], cbfAtom, ['B'])
+                    newAtom = copyGroup.createAndConnectAtom(['Cbf'], cbfAtom, [1.5])
                     partners[cbfAtom] = newAtom
                     partners[newAtom] = cbfAtom
 
@@ -1599,7 +1624,7 @@ class Group(Graph):
             allLigands = cbfAtom.bonds.keys()
             #add a new cb atom to the second newRing seed
             if len(allLigands) == 2:
-                newAtom = copyGroup.createAndConnectAtom(['Cb'], cbfAtom, ['B'])
+                newAtom = copyGroup.createAndConnectAtom(['Cb'], cbfAtom, [1.5])
                 newRingSeeds[1].append(newAtom)
             #join the existing atom to the ringSeed
             elif len(allLigands) == 3:
@@ -1694,11 +1719,11 @@ class Group(Graph):
                 if x ==0: lastAtom = ring[-1]
                 else: lastAtom = mergedRingDict[index][-1]
                 #add a new atom to the ring and the group
-                newAtom = copyGroup. createAndConnectAtom(['Cb'], lastAtom, ['B'])
+                newAtom = copyGroup. createAndConnectAtom(['Cb'], lastAtom, [1.5])
                 mergedRingDict[index].append(newAtom)
                 #At the end attach to the other endpoint
                 if x == carbonsToGrow -1:
-                    newBond = GroupBond(ring[0], newAtom, order=['B'])
+                    newBond = GroupBond(ring[0], newAtom, order=[1.5])
                     copyGroup.addBond(newBond)
 
         return copyGroup
@@ -1736,7 +1761,7 @@ class Group(Graph):
                 hydrogenNeeded = atom.charge - statedCharge
                 for x in range(hydrogenNeeded):
                     newH = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
-                    newBond = mol.Bond(atom, newH, 'S')
+                    newBond = mol.Bond(atom, newH, 1)
                     newMolecule.addAtom(newH)
                     newMolecule.addBond(newBond)
                 atom.updateCharge()

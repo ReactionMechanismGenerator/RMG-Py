@@ -342,7 +342,7 @@ class ClarTest(unittest.TestCase):
             # Count pi electrons in molecule
             pi = 0
             for bond in bonds:
-                if bond.order == 'D':
+                if bond.isDouble():
                     pi += 2
 
             # Count pi electrons in solution

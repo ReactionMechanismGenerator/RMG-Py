@@ -717,10 +717,7 @@ class SolvationDatabase(object):
                 bonds = saturatedStruct.getBonds(atom)
                 sumBondOrders = 0
                 for key, bond in bonds.iteritems():
-                    if bond.order == 'S': sumBondOrders += 1
-                    if bond.order == 'D': sumBondOrders += 2
-                    if bond.order == 'T': sumBondOrders += 3
-                    if bond.order == 'B': sumBondOrders += 1.5 # We should always have 2 'B' bonds (but what about Cbf?)
+                    sumBondOrders += bond.order# We should always have 2 'B' bonds (but what about Cbf?)
                 if atomTypes['Val4'] in atom.atomType.generic: # Carbon, Silicon
                     while(atom.radicalElectrons + charge + sumBondOrders < 4):
                         atom.decrementLonePairs()

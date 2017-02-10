@@ -454,11 +454,11 @@ def bicyclicDecompositionForPolyring(polyring):
         elif (not isA_aromatic and not isB_aromatic):
             aromaticBonds_inA = findAromaticBondsFromSubMolecule(submolA)
             for aromaticBond_inA in aromaticBonds_inA:
-                aromaticBond_inA.order = 'S'
+                aromaticBond_inA.setOrderNum(1)
 
             aromaticBonds_inB = findAromaticBondsFromSubMolecule(submolB)
             for aromaticBond_inB in aromaticBonds_inB:
-                aromaticBond_inB.order = 'S'
+                aromaticBond_inB.setOrderNum(1)
         elif isA_aromatic:
             aromaticBonds_inB = findAromaticBondsFromSubMolecule(submolB)
             for aromaticBond_inB in aromaticBonds_inB:
@@ -467,14 +467,14 @@ def bicyclicDecompositionForPolyring(polyring):
                 if (aromaticBond_inB.atom1 in submolA.atoms) and (aromaticBond_inB.atom2 in submolA.atoms) and (submolA.hasBond(aromaticBond_inB.atom1, aromaticBond_inB.atom2)):
                     pass
                 else:
-                    aromaticBond_inB.order = 'S'
+                    aromaticBond_inB.setOrderNum(1)
         else:
             aromaticBonds_inA = findAromaticBondsFromSubMolecule(submolA)
             for aromaticBond_inA in aromaticBonds_inA:
                 if (aromaticBond_inA.atom1 in submolB.atoms) and (aromaticBond_inA.atom2 in submolB.atoms) and (submolB.hasBond(aromaticBond_inA.atom1, aromaticBond_inA.atom2)):
                     pass
                 else:
-                    aromaticBond_inA.order = 'S'
+                    aromaticBond_inA.setOrderNum(1)
         mergedRing.update()#
         bicyclicsMergedFromRingPair.append(mergedRing)
 
@@ -1505,7 +1505,7 @@ class ThermoDatabase(object):
                 if not isAromaticRing(submol):
                     aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                     for aromaticBond in aromaticBonds:
-                        aromaticBond.order = 'S'
+                        aromaticBond.setOrderNum(1)
                     
                     submol.update()
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
