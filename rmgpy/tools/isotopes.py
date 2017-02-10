@@ -49,7 +49,8 @@ from rmgpy.tools.loader import loadRMGJob
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.input import getInput
 from rmgpy.rmg.main import RMG, initializeLog
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
+from rmgpy.reaction import Reaction
 from rmgpy.rmg.listener import SimulationProfileWriter
 from rmgpy.thermo.thermoengine import processThermoData
 from rmgpy.data.thermo import findCp0andCpInf
@@ -207,12 +208,15 @@ def solve(rmg):
     
     return spcdata
 
-def cluster(spcList):
+def cluster(objList):
     """
-    Creates subcollections of isotopomers that belong together.
+    Creates subcollections of isotopomers/reactions that 
+    only differ in their isotopic labeling.
+    
+    This method works for either species or reactions
     """
 
-    unclustered = copy(spcList)
+    unclustered = copy(objList)
 
     # [[list of Species objs]]
     clusters = []
@@ -220,7 +224,7 @@ def cluster(spcList):
     while unclustered:
         candidate = unclustered.pop()
         for cluster in clusters:
-            if any([removeIsotope(spc).isIsomorphic(removeIsotope(candidate)) for spc in cluster]):
+            if any([removeIsotope(obj).isIsomorphic(removeIsotope(candidate)) for obj in cluster]):
                 cluster.append(candidate)
                 break
         else:
@@ -228,23 +232,42 @@ def cluster(spcList):
 
     return clusters
 
-def removeIsotope(spc):
+def removeIsotope(labeledObj):
     """
     Create a deep copy of the first molecule of the species object and replace
     non-normal Element objects (of special isotopes) by the 
     expected isotope.
     """
-    stripped = spc.copy(deep=True)
+    if isinstance(labeledObj,Species):
+        stripped = labeledObj.copy(deep=True)
+    
+        for atom in stripped.molecule[0].atoms:
+            if atom.element.isotope != -1:
+                atom.element = getElement(atom.element.symbol)
+    
+        # only do it for the first molecule, generate the other resonance isomers.
+        stripped.molecule = [stripped.molecule[0]]
+        stripped.generateResonanceIsomers()
+    
+        return stripped
 
-    for atom in stripped.molecule[0].atoms:
-        if atom.element.isotope != -1:
-            atom.element = getElement(atom.element.symbol)
-
-    # only do it for the first molecule, generate the other resonance isomers.
-    stripped.molecule = [stripped.molecule[0]]
-    stripped.generateResonanceIsomers()
-
-    return stripped
+    elif isinstance(labeledObj,Reaction):
+        strippedRxn = labeledObj.copy()
+        
+        strippedReactants = []
+        for reactant in  strippedRxn.reactants:
+            strippedReactants.append(removeIsotope(reactant))
+        strippedRxn.reactants = strippedReactants
+            
+        strippedProducts = []
+        for product in  strippedRxn.products:
+            strippedProducts.append(removeIsotope(product))
+        strippedRxn.products = strippedProducts
+        
+        return strippedRxn
+    else:
+        raise TypeError('Only Reaction and Species objects are supported')
+            
 
 def retrieveConcentrations(spcdata, clusters):
     """
@@ -321,6 +344,25 @@ def correctEntropy(isotopomer, isotopeless):
     # put the corrected thermo back as a species attribute:
     isotopomer.thermo = thermo
 
+def correctAfactors(rmg):
+    """
+    Since different isotopomers sometimes have different symmetry
+    numbers (and the TS of both often don't), the rates of the isotopomer
+    reactions may not be correct. This method seeks to correct for this
+    discrpency by taking in an RMG job and modifying the A-factors of 
+    isotopically labeled reactions to be thermodynamically equivalent.
+    
+    Symmetry difference = symmetry labeled reactants / symmetry unlabeled reactants
+    A(labeld) = A(non-labeled) * symmetry difference
+    """
+    rxnModel = rmg.reactionModel
+    
+    rxnList = rxnModel.core.reactions
+    
+    for rxn in rxnList:
+        unlabeledRxn = 5
+    
+    
 def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
     """
     Accepts two input files, one input file with the RMG-Py model to generate, NOT
