@@ -75,6 +75,9 @@ class TestThermoDatabase(unittest.TestCase):
         global database
         self.database = database.thermo
 
+        self.databaseWithoutLibraries = ThermoDatabase()
+        self.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
+
     def testPickle(self):
         """
         Test that a ThermoDatabase object can be successfully pickled and
@@ -107,6 +110,27 @@ class TestThermoDatabase(unittest.TestCase):
             self.assertTrue(type(group0), type(group))
             self.assertEqual(sorted(group0.entries.keys()), sorted(group.entries.keys()))
 
+    def testSymmetryAddedByGetThermoData(self):
+        """
+        Test that `getThermoData` properly accounts for symmetry in thermo
+        by comping with the method `estimateThermoViaGroupAdditivity`
+        """
+        
+        spc = Species(molecule=[Molecule().fromSMILES('C[CH]C=CC')])
+        
+        thermoWithSym = self.databaseWithoutLibraries.getThermoData(spc)
+        thermoWithoutSym = self.databaseWithoutLibraries.estimateThermoViaGroupAdditivity(spc.molecule[0])
+        
+        symmetryNumber = spc.getSymmetryNumber()
+        self.assertNotEqual(symmetryNumber, spc.molecule[0].getSymmetryNumber(),
+                            'For this test to be robust, species symmetry ({}) and molecule symmetry ({}) must be different'.format(symmetryNumber, spc.molecule[0].getSymmetryNumber()))
+        
+        symmetryContributionToEntropy = - constants.R * math.log(symmetryNumber)
+        
+        self.assertAlmostEqual(thermoWithSym.getEntropy(298.), 
+                               thermoWithoutSym.getEntropy(298.) + symmetryContributionToEntropy, 
+                               'The symmetry contribution is wrong {:.3f} /= {:.3f} + {:.3f}'.format(thermoWithSym.getEntropy(298.), thermoWithoutSym.getEntropy(298.), symmetryContributionToEntropy))
+        
     def testSymmetryContributionRadicals(self):
         """
         Test that the symmetry contribution is correctly added for radicals
@@ -119,10 +143,9 @@ class TestThermoDatabase(unittest.TestCase):
         
         thermoData_lib = self.database.getThermoData(spc)
         
-        databaseWithoutLibraries = ThermoDatabase()
-        databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
         
-        thermoData_ga = databaseWithoutLibraries.getThermoData(spc)
+        
+        thermoData_ga = self.databaseWithoutLibraries.getThermoData(spc)
         
         self.assertAlmostEqual(thermoData_lib.getEntropy(298.), thermoData_ga.getEntropy(298.), 0)
 
