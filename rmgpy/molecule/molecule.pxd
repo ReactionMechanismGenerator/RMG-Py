@@ -219,3 +219,5 @@ cdef class Molecule(Graph):
     cpdef tuple getAromaticSSSR(self, list SSSR=?)
 
     cpdef list getDeterministicSmallestSetOfSmallestRings(self)
+
+    cpdef kekulize(self)

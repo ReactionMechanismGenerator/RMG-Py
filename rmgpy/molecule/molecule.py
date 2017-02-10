@@ -57,6 +57,7 @@ import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
+from .kekulize import kekulize
 
 ################################################################################
 
@@ -1830,3 +1831,12 @@ class Molecule(Graph):
             cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
 
         return cycleList
+
+    def kekulize(self):
+        """
+        Kekulizes an aromatic molecule.
+        """
+        try:
+            kekulize(self)
+        except AtomTypeError:
+            logging.error('Unable to kekulize molecule:/n{0}'.format(self.toAdjacencyList()))
