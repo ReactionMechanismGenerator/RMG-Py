@@ -48,11 +48,9 @@ Currently supported resonance types:
 
 import cython
 
-import rmgpy.molecule.generator as generator
-import rmgpy.molecule.parser as parser
-
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
+from .kekulize import kekulize
 from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
 
@@ -502,20 +500,22 @@ def generateKekuleStructure(mol):
     Returns a single Kekule structure as an element of a list of length 1.
     If there's an error (eg. in RDKit) then it just returns an empty list.
     """
-    cython.declare(atom=Atom)
+    cython.declare(atom=Atom, molecule=Molecule)
+
     for atom in mol.atoms:
         if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
             break
     else:
         return []
-   
+
+    molecule = mol.copy(deep=True)
+
     try:
-        rdkitmol = generator.toRDKitMol(mol)  # This perceives aromaticity
-        isomer = parser.fromRDKitMol(Molecule(), rdkitmol)  # This step Kekulizes the molecule
-    except ValueError:
+        kekulize(molecule)
+    except AtomTypeError:
         return []
-    isomer.updateAtomTypes(logSpecies=False)
-    return [isomer]
+
+    return [molecule]
 
 def generateOppositeKekuleStructure(mol):
     """
