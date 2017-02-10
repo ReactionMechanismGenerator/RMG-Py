@@ -261,6 +261,8 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         elif 'explicit reverse' in kinetics or reaction.duplicate:
             # it's a normal high-P reaction - the extra lines were only either REV (explicit reverse) or DUP (duplicate)
             reaction.kinetics = kinetics['arrhenius high']
+        elif 'sticking coefficient' in kinetics:
+            reaction.kinetics = kinetics['sticking coefficient']
         else:
             raise ChemkinError(
                 'Unable to understand all additional information lines for reaction {0}.'.format(entry))
@@ -511,7 +513,16 @@ def _readKineticsLine(line, reaction, speciesDict, Eunits, kunits, klow_units, k
             reaction.reversible = False
         else:
             logging.info("Ignoring explicit reverse rate for reaction {0}".format(reaction))
-
+    elif line.strip() == 'STICK':
+        # Convert what we thought was Arrhenius into StickingCoefficient
+        k = kinetics['arrhenius high']
+        kinetics['sticking coefficient'] = _kinetics.StickingCoefficient(
+            A=k.A.value,
+            n=k.n,
+            Ea=k.Ea,
+            T0=k.T0,
+        )
+        del kinetics['arrhenius high']
     else:
         # Assume a list of collider efficiencies
         try:
