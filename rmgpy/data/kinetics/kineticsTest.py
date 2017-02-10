@@ -1,32 +1,240 @@
 import os
 import unittest 
 from external.wip import work_in_progress
-
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import DatabaseError
 import numpy
+from rmgpy.molecule.molecule import Molecule
 ###################################################
 
 class TestKineticsDatabase(unittest.TestCase):
     
-    def testLoadFamilies(self):
+        
+    def setUp(self):
+        self.path = os.path.join(settings['database.directory'],'kinetics','families')
+        self.database = KineticsDatabase()
+    
+    
+    def test_load_families_throws_proper_exceptions(self):
         """
         Test that the loadFamilies function raises the correct exceptions
         """
-        path = os.path.join(settings['database.directory'],'kinetics','families')
-        database = KineticsDatabase()
+        
         
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families='random')
+            self.database.loadFamilies(self.path, families='random')
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
+            self.database.loadFamilies(self.path, families=['!H_Abstraction','Disproportionation'])
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families=['fake_family'])
+            self.database.loadFamilies(self.path, families=['fake_family'])
         with self.assertRaises(DatabaseError):
-            database.loadFamilies(path, families=[])
+            self.database.loadFamilies(self.path, families=[])
             
+    def test_proper_degeneracy_calculated_for_methyl_methyl_recombindation(self):
 
+        correct_degeneracy = 1
+        rxn_family_str = 'R_Recombination'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """
+        ]
+
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
+        
+        
+        
+    def test_proper_degeneracy_calculated_for_methyl_enriched_methyl_recombindation(self):
+
+        correct_degeneracy = 2
+        rxn_family_str = 'R_Recombination'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            """
+        ]
+
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
+        
+    def test_proper_degeneracy_calculated_for_ethyl_ethyl_disproportionation(self):
+
+        correct_degeneracy = 3
+        rxn_family_str = 'Disproportionation'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """
+        ]
+
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy)
+        
+    def test_proper_degeneracy_calculated_for_ethyl_labeled_ethyl_disproportionation(self):
+
+        correct_degeneracy = 6
+        rxn_family_str = 'Disproportionation'
+        adj_lists = [
+            """
+            multiplicity 2
+            1 C u0 p0 c0 i13 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """,
+            """
+            multiplicity 2
+            1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+            3 H u0 p0 c0 {2,S}
+            4 H u0 p0 c0 {2,S}
+            5 H u0 p0 c0 {1,S}
+            6 H u0 p0 c0 {1,S}
+            7 H u0 p0 c0 {1,S}
+            """
+        ]
+        expected_products = 2
+        self.compare_degeneracy_of_reaction(adj_lists,rxn_family_str,correct_degeneracy,expected_products)
+        
+    def compare_degeneracy_of_reaction(self, reactants_adj_list, 
+                                       rxn_family_str, 
+                                       correct_degeneracy_value,
+                                       num_products = 1):
+        """
+        input a list of adjacency lists (of reactants), 
+        the reaction family name,
+        and the correct degeneracy value
+        """
+        
+        degeneracy, reaction = self.find_reaction_degeneracy(reactants_adj_list,rxn_family_str,
+                                 num_products)
+        self.assertEqual(degeneracy, correct_degeneracy_value,'degeneracy returned ({0}) is not the correct value ({1}) for reaction {2}'.format(degeneracy, correct_degeneracy_value,reaction)) 
+
+    def find_reaction_degeneracy(self, reactants_adj_list,rxn_family_str,
+                                 num_products = 1):
+        """
+        given the adjacency list of reactants and the reaction family, returns
+        a tuple with the degeneracy and the reaction object.
+        """
+        self.database.loadFamilies(self.path, families=[rxn_family_str])
+        family = self.database.families[rxn_family_str]
+        reactants = [Molecule().fromAdjacencyList(reactants_adj_list[0]),
+                     Molecule().fromAdjacencyList(reactants_adj_list[1])] 
+
+        reactions = family.generateReactions(reactants)
+        self.assertEqual(len(reactions), num_products,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_products))
+
+        return sum([family.calculateDegeneracy(reaction) for reaction in reactions]), reaction
+
+    def test_propyl_propyl_reaction_is_faster_than_propyl_butyl(self):
+        rxn_family_str = 'R_Recombination'
+        propyl_adj_list = """
+            multiplicity 2
+            1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+            2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
+            3  C u1 p0 c0 {2,S} {4,S} {5,S}
+            4  H u0 p0 c0 {3,S}
+            5  H u0 p0 c0 {3,S}
+            6  H u0 p0 c0 {1,S}
+            7  H u0 p0 c0 {1,S}
+            8  H u0 p0 c0 {1,S}
+            9  H u0 p0 c0 {2,S}
+            10 H u0 p0 c0 {2,S}
+
+            """
+        butyl_adj_list = """
+            multiplicity 2
+            1  C u0 p0 c0 {2,S} {7,S} {8,S} {9,S}
+            2  C u0 p0 c0 {1,S} {3,S} {10,S} {11,S}
+            3  C u0 p0 c0 {2,S} {4,S} {12,S} {13,S}
+            4  C u1 p0 c0 {3,S} {5,S} {6,S}
+            5  H u0 p0 c0 {4,S}
+            6  H u0 p0 c0 {4,S}
+            7  H u0 p0 c0 {1,S}
+            8  H u0 p0 c0 {1,S}
+            9  H u0 p0 c0 {1,S}
+            10 H u0 p0 c0 {2,S}
+            11 H u0 p0 c0 {2,S}
+            12 H u0 p0 c0 {3,S}
+            13 H u0 p0 c0 {3,S}        
+            """
+        
+        self.database.loadFamilies(self.path, families=[rxn_family_str])
+        family = self.database.families[rxn_family_str]
+        
+        # get reaction objects and their degeneracy
+        pp_degeneracy, pp_reaction = self.find_reaction_degeneracy([propyl_adj_list,propyl_adj_list],rxn_family_str)
+        pb_degeneracy, pb_reaction = self.find_reaction_degeneracy([propyl_adj_list,butyl_adj_list],rxn_family_str)
+        
+        #label reaction objects
+        family.addAtomLabelsForReaction(pp_reaction)
+        family.addAtomLabelsForReaction(pb_reaction)
+        
+        # get kinetics for each reaction
+        template = family.getReactionTemplateLabels(pp_reaction)
+        pp_kinetics_list = family.getKinetics(pp_reaction, template,
+                                              degeneracy=pp_degeneracy,
+                                              estimator = 'rate rules')
+        self.assertEqual(len(pp_kinetics_list), 1, pp_kinetics_list)
+        
+        templateLabels = family.getReactionTemplateLabels(pb_reaction)
+        pb_kinetics_list = family.getKinetics(pb_reaction, templateLabels,
+                                              degeneracy=pb_degeneracy,
+                                              estimator = 'rate rules')
+        self.assertEqual(len(pb_kinetics_list), 1, pb_kinetics_list)
+        
+        # the same reaction group must be found or this test will not work
+        self.assertIn(pp_kinetics_list[0][0].comment,pb_kinetics_list[0][0].comment,
+                         'this test found different kinetics for the two groups, so it will not function as expected\n' + 
+                         str(pp_kinetics_list)+str(pb_kinetics_list))
+        
+        # test that the kinetics are correct
+        self.assertNotEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertEqual(pp_kinetics_list[0][0].getRateCoefficient(300) * 2, pb_kinetics_list[0][0].getRateCoefficient(300))
+        
+        
+        
 class TestKineticsCommentsParsing(unittest.TestCase):
     from rmgpy.data.rmg import RMGDatabase 
 

@@ -1561,12 +1561,9 @@ class KineticsFamily(Database):
             
             index0 += 1
         
-        # For R_Recombination reactions, the degeneracy is twice what it should
-        # be, so divide those by two
-        # This is hardcoding of reaction families!
         # For reactions of the form A + A -> products, the degeneracy is twice
         # what it should be, so divide those by two
-        if sameReactants or self.label.lower().startswith('r_recombination'):
+        if sameReactants:
             for rxn in rxnList:
                 assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
@@ -1736,11 +1733,11 @@ class KineticsFamily(Database):
         kineticsList.sort(key=lambda x: (x[1].rank, x[1].index))
         return kineticsList[0]
         
-    def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
+    def getKinetics(self, reaction, templateLabels, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a result using the user-specified `estimator`
-        of either 'group additivity' or 'rate rules.'  Unlike
+        of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
         results, with each result comprising the kinetics, the source, and
         the entry. If it came from a template estimate, the source and entry
@@ -1751,7 +1748,7 @@ class KineticsFamily(Database):
         
         depositories = self.depositories[:]
 
-        template = self.retrieveTemplate(template)
+        template = self.retrieveTemplate(templateLabels)
         
         # Check the various depositories for kinetics
         for depository in depositories:
