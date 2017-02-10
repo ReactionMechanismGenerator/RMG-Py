@@ -5,7 +5,7 @@ import numpy as np
 
 from rmgpy.species import Species
 from rmgpy.tools.loader import loadRMGJob
-
+import rmgpy
 from rmgpy.species import Species
 from rmgpy.tools.isotopes import *
 
@@ -146,8 +146,17 @@ class IsotopesTest(unittest.TestCase):
         """
         Test that the generation of isotopomers with N isotopes works.
         """
+        from rmgpy.thermo.nasa import NASAPolynomial, NASA
 
         spc = Species().fromSMILES('CC')
+
+        polynomial = NASAPolynomial(coeffs=[1.,1.,1.,1.,1.,1.,1.],
+                         Tmin=(200,'K'),Tmax=(1600,'K'),E0=(1.,'kJ/mol'),
+                         comment='made up thermo')
+        
+        spc.thermo = NASA(polynomials=[polynomial],Tmin=(200,'K'),
+                        Tmax=(1600,'K'),E0=(1.,'kJ/mol'),
+                        comment='made up thermo')
 
         spcs = generateIsotopomers(spc, 0)
         self.assertEquals(len(spcs), 0)
