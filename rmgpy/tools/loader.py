@@ -82,7 +82,13 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:
-        reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
+        try:
+            reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
+        except AttributeError:
+            # maybe it's a SurfaceReactor
+            reactionSystem.initialGasMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialGasMoleFractions.iteritems()])
+            reactionSystem.initialSurfaceCoverages = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialSurfaceCoverages.iteritems()])
+
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]
