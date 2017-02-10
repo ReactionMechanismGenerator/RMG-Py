@@ -336,6 +336,275 @@ multiplicity 2
         self.assertTrue(result1[0].isIsomorphic(result2[0]))
         self.assertTrue(result1[0].isIsomorphic(result3[0]))
 
+    def testKekulizeBenzene(self):
+        """Test that we can kekulize benzene."""
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {6,B} {7,S}
+2  C u0 p0 c0 {1,B} {3,B} {8,S}
+3  C u0 p0 c0 {2,B} {4,B} {9,S}
+4  C u0 p0 c0 {3,B} {5,B} {10,S}
+5  C u0 p0 c0 {4,B} {6,B} {11,S}
+6  C u0 p0 c0 {1,B} {5,B} {12,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {6,S}
+""")
+        keku = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,D} {6,S} {7,S}
+2  C u0 p0 c0 {1,D} {3,S} {8,S}
+3  C u0 p0 c0 {2,S} {4,D} {9,S}
+4  C u0 p0 c0 {3,D} {5,S} {10,S}
+5  C u0 p0 c0 {4,S} {6,D} {11,S}
+6  C u0 p0 c0 {1,S} {5,D} {12,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {6,S}
+""")
+        out = generateKekuleStructure(arom)
+
+        self.assertEqual(len(out), 1)
+        self.assertTrue(out[0].isIsomorphic(keku))
+
+    def testKekulizeNaphthalene(self):
+        """Test that we can kekulize naphthalene."""
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {3,B} {4,B}
+2  C u0 p0 c0 {1,B} {5,B} {6,B}
+3  C u0 p0 c0 {1,B} {8,B} {13,S}
+4  C u0 p0 c0 {1,B} {9,B} {14,S}
+5  C u0 p0 c0 {2,B} {10,B} {17,S}
+6  C u0 p0 c0 {2,B} {7,B} {18,S}
+7  C u0 p0 c0 {6,B} {8,B} {11,S}
+8  C u0 p0 c0 {3,B} {7,B} {12,S}
+9  C u0 p0 c0 {4,B} {10,B} {15,S}
+10 C u0 p0 c0 {5,B} {9,B} {16,S}
+11 H u0 p0 c0 {7,S}
+12 H u0 p0 c0 {8,S}
+13 H u0 p0 c0 {3,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {9,S}
+16 H u0 p0 c0 {10,S}
+17 H u0 p0 c0 {5,S}
+18 H u0 p0 c0 {6,S}
+""")
+        out = generateKekuleStructure(arom)
+
+        self.assertEqual(len(out), 1)
+        self.assertFalse(out[0].isAromatic())
+
+        bonds = set()
+        for atom in out[0].atoms:
+            for bond in atom.bonds.itervalues():
+                bonds.add(bond)
+        dBonds = 0
+        for bond in bonds:
+            if bond.isDouble():
+                dBonds += 1
+
+        self.assertEqual(dBonds, 5)
+
+    def testKekulizePhenanthrene(self):
+        """Test that we can kekulize phenanthrene."""
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {3,B} {5,B}
+2  C u0 p0 c0 {1,B} {4,B} {9,B}
+3  C u0 p0 c0 {1,B} {6,B} {10,B}
+4  C u0 p0 c0 {2,B} {7,B} {8,B}
+5  C u0 p0 c0 {1,B} {12,B} {17,S}
+6  C u0 p0 c0 {3,B} {7,B} {18,S}
+7  C u0 p0 c0 {4,B} {6,B} {19,S}
+8  C u0 p0 c0 {4,B} {13,B} {20,S}
+9  C u0 p0 c0 {2,B} {14,B} {23,S}
+10 C u0 p0 c0 {3,B} {11,B} {24,S}
+11 C u0 p0 c0 {10,B} {12,B} {15,S}
+12 C u0 p0 c0 {5,B} {11,B} {16,S}
+13 C u0 p0 c0 {8,B} {14,B} {21,S}
+14 C u0 p0 c0 {9,B} {13,B} {22,S}
+15 H u0 p0 c0 {11,S}
+16 H u0 p0 c0 {12,S}
+17 H u0 p0 c0 {5,S}
+18 H u0 p0 c0 {6,S}
+19 H u0 p0 c0 {7,S}
+20 H u0 p0 c0 {8,S}
+21 H u0 p0 c0 {13,S}
+22 H u0 p0 c0 {14,S}
+23 H u0 p0 c0 {9,S}
+24 H u0 p0 c0 {10,S}
+""")
+        out = generateKekuleStructure(arom)
+
+        self.assertEqual(len(out), 1)
+        self.assertFalse(out[0].isAromatic())
+
+        bonds = set()
+        for atom in out[0].atoms:
+            for bond in atom.bonds.itervalues():
+                bonds.add(bond)
+        dBonds = 0
+        for bond in bonds:
+            if bond.isDouble():
+                dBonds += 1
+
+        self.assertEqual(dBonds, 7)
+
+    def testKekulizePyrene(self):
+        """Test that we can kekulize pyrene."""
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {3,B} {6,B}
+2  C u0 p0 c0 {1,B} {4,B} {5,B}
+3  C u0 p0 c0 {1,B} {7,B} {8,B}
+4  C u0 p0 c0 {2,B} {9,B} {10,B}
+5  C u0 p0 c0 {2,B} {11,B} {12,B}
+6  C u0 p0 c0 {1,B} {13,B} {14,B}
+7  C u0 p0 c0 {3,B} {15,B} {18,S}
+8  C u0 p0 c0 {3,B} {9,B} {19,S}
+9  C u0 p0 c0 {4,B} {8,B} {20,S}
+10 C u0 p0 c0 {4,B} {16,B} {21,S}
+11 C u0 p0 c0 {5,B} {16,B} {23,S}
+12 C u0 p0 c0 {5,B} {13,B} {24,S}
+13 C u0 p0 c0 {6,B} {12,B} {25,S}
+14 C u0 p0 c0 {6,B} {15,B} {26,S}
+15 C u0 p0 c0 {7,B} {14,B} {17,S}
+16 C u0 p0 c0 {10,B} {11,B} {22,S}
+17 H u0 p0 c0 {15,S}
+18 H u0 p0 c0 {7,S}
+19 H u0 p0 c0 {8,S}
+20 H u0 p0 c0 {9,S}
+21 H u0 p0 c0 {10,S}
+22 H u0 p0 c0 {16,S}
+23 H u0 p0 c0 {11,S}
+24 H u0 p0 c0 {12,S}
+25 H u0 p0 c0 {13,S}
+26 H u0 p0 c0 {14,S}
+""")
+        out = generateKekuleStructure(arom)
+
+        self.assertEqual(len(out), 1)
+        self.assertFalse(out[0].isAromatic())
+
+        bonds = set()
+        for atom in out[0].atoms:
+            for bond in atom.bonds.itervalues():
+                bonds.add(bond)
+        dBonds = 0
+        for bond in bonds:
+            if bond.isDouble():
+                dBonds += 1
+
+        self.assertEqual(dBonds, 8)
+
+    def testKekulizeCorannulene(self):
+        """Test that we can kekulize corannulene."""
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {5,B} {8,B}
+2  C u0 p0 c0 {1,B} {3,B} {10,B}
+3  C u0 p0 c0 {2,B} {4,B} {9,B}
+4  C u0 p0 c0 {3,B} {5,B} {6,B}
+5  C u0 p0 c0 {1,B} {4,B} {7,B}
+6  C u0 p0 c0 {4,B} {12,B} {13,B}
+7  C u0 p0 c0 {5,B} {14,B} {15,B}
+8  C u0 p0 c0 {1,B} {16,B} {20,B}
+9  C u0 p0 c0 {3,B} {11,B} {17,B}
+10 C u0 p0 c0 {2,B} {18,B} {19,B}
+11 C u0 p0 c0 {9,B} {12,B} {21,S}
+12 C u0 p0 c0 {6,B} {11,B} {22,S}
+13 C u0 p0 c0 {6,B} {14,B} {23,S}
+14 C u0 p0 c0 {7,B} {13,B} {24,S}
+15 C u0 p0 c0 {7,B} {16,B} {25,S}
+16 C u0 p0 c0 {8,B} {15,B} {26,S}
+17 C u0 p0 c0 {9,B} {18,B} {27,S}
+18 C u0 p0 c0 {10,B} {17,B} {28,S}
+19 C u0 p0 c0 {10,B} {20,B} {29,S}
+20 C u0 p0 c0 {8,B} {19,B} {30,S}
+21 H u0 p0 c0 {11,S}
+22 H u0 p0 c0 {12,S}
+23 H u0 p0 c0 {13,S}
+24 H u0 p0 c0 {14,S}
+25 H u0 p0 c0 {15,S}
+26 H u0 p0 c0 {16,S}
+27 H u0 p0 c0 {17,S}
+28 H u0 p0 c0 {18,S}
+29 H u0 p0 c0 {19,S}
+30 H u0 p0 c0 {20,S}
+""")
+        out = generateKekuleStructure(arom)
+
+        self.assertEqual(len(out), 1)
+        self.assertFalse(out[0].isAromatic())
+
+        bonds = set()
+        for atom in out[0].atoms:
+            for bond in atom.bonds.itervalues():
+                bonds.add(bond)
+        dBonds = 0
+        for bond in bonds:
+            if bond.isDouble():
+                dBonds += 1
+
+        self.assertEqual(dBonds, 10)
+
+    def testKekulizeCoronene(self):
+        """Test that we can kekulize coronene."""
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {6,B} {12,B}
+2  C u0 p0 c0 {1,B} {3,B} {7,B}
+3  C u0 p0 c0 {2,B} {4,B} {8,B}
+4  C u0 p0 c0 {3,B} {5,B} {9,B}
+5  C u0 p0 c0 {4,B} {6,B} {10,B}
+6  C u0 p0 c0 {1,B} {5,B} {11,B}
+7  C u0 p0 c0 {2,B} {14,B} {15,B}
+8  C u0 p0 c0 {3,B} {16,B} {17,B}
+9  C u0 p0 c0 {4,B} {18,B} {19,B}
+10 C u0 p0 c0 {5,B} {20,B} {21,B}
+11 C u0 p0 c0 {6,B} {22,B} {23,B}
+12 C u0 p0 c0 {1,B} {13,B} {24,B}
+13 C u0 p0 c0 {12,B} {14,B} {25,S}
+14 C u0 p0 c0 {7,B} {13,B} {26,S}
+15 C u0 p0 c0 {7,B} {16,B} {27,S}
+16 C u0 p0 c0 {8,B} {15,B} {28,S}
+17 C u0 p0 c0 {8,B} {18,B} {29,S}
+18 C u0 p0 c0 {9,B} {17,B} {30,S}
+19 C u0 p0 c0 {9,B} {20,B} {31,S}
+20 C u0 p0 c0 {10,B} {19,B} {32,S}
+21 C u0 p0 c0 {10,B} {22,B} {33,S}
+22 C u0 p0 c0 {11,B} {21,B} {34,S}
+23 C u0 p0 c0 {11,B} {24,B} {35,S}
+24 C u0 p0 c0 {12,B} {23,B} {36,S}
+25 H u0 p0 c0 {13,S}
+26 H u0 p0 c0 {14,S}
+27 H u0 p0 c0 {15,S}
+28 H u0 p0 c0 {16,S}
+29 H u0 p0 c0 {17,S}
+30 H u0 p0 c0 {18,S}
+31 H u0 p0 c0 {19,S}
+32 H u0 p0 c0 {20,S}
+33 H u0 p0 c0 {21,S}
+34 H u0 p0 c0 {22,S}
+35 H u0 p0 c0 {23,S}
+36 H u0 p0 c0 {24,S}
+""")
+        out = generateKekuleStructure(arom)
+
+        self.assertEqual(len(out), 1)
+        self.assertFalse(out[0].isAromatic())
+
+        bonds = set()
+        for atom in out[0].atoms:
+            for bond in atom.bonds.itervalues():
+                bonds.add(bond)
+        dBonds = 0
+        for bond in bonds:
+            if bond.isDouble():
+                dBonds += 1
+
+        self.assertEqual(dBonds, 12)
+
     def testKekulizeResonanceIsomer(self):
         """
         Tests that an aromatic molecule returns at least one Kekulized resonance isomer.
