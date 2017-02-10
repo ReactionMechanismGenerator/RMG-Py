@@ -307,8 +307,8 @@ def correctEntropy(isotopomer, isotopeless):
     """
 
     # calculate -R ln (sigma) in SI units (J/K/mol)
-    Sisotopeless = - constants.R * math.log(isotopeless.molecule[0].calculateSymmetryNumber())
-    Sisotopomer = - constants.R * math.log(isotopomer.molecule[0].calculateSymmetryNumber())
+    Sisotopeless = - constants.R * math.log(isotopeless.getSymmetryNumber())
+    Sisotopomer = - constants.R * math.log(isotopomer.getSymmetryNumber())
 
     # convert species thermo to ThermoData object:
     nasa = isotopomer.thermo
