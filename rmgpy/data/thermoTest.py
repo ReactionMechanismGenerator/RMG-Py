@@ -47,6 +47,9 @@ class TestThermoDatabase(unittest.TestCase):
         global database
         self.database = database.thermo
     
+    databaseWithoutLibraries = ThermoDatabase()
+    databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
+    
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -139,6 +142,28 @@ class TestThermoDatabase(unittest.TestCase):
                 self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1,
                                        msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(smiles, Cp, thermoData.getHeatCapacity(T) / 4.184, T))
 
+    def testSymmetryAddedByGetThermoData(self):
+        """
+        Test that `getThermoData` properly accounts for symmetry in thermo
+        by comping with the method `estimateThermoViaGroupAdditivity`
+        """
+        
+        spc = Species(molecule=[Molecule().fromSMILES('C[CH]C=CC')])
+        
+        thermoWithSym = self.databaseWithoutLibraries.getThermoData(spc)
+        thermoWithoutSym = self.databaseWithoutLibraries.estimateThermoViaGroupAdditivity(spc.molecule[0])
+        
+        symmetryNumber = spc.getSymmetryNumber()
+        self.assertNotEqual(symmetryNumber, spc.molecule[0].getSymmetryNumber(),
+                            'For this test to be robust, species symmetry ({}) and molecule symmetry ({}) must be different'.format(symmetryNumber, spc.molecule[0].getSymmetryNumber()))
+        
+        symmetryContributionToEntropy = - constants.R * math.log(symmetryNumber)
+        
+        self.assertAlmostEqual(thermoWithSym.getEntropy(298.), 
+                               thermoWithoutSym.getEntropy(298.) + symmetryContributionToEntropy, 
+                               'The symmetry contribution is wrong {:.3f} /= {:.3f} + {:.3f}'.format(thermoWithSym.getEntropy(298.), thermoWithoutSym.getEntropy(298.), symmetryContributionToEntropy))
+        
+        
     def testSymmetryContributionRadicals(self):
         """
         Test that the symmetry contribution is correctly added for radicals
@@ -151,10 +176,9 @@ class TestThermoDatabase(unittest.TestCase):
         
         thermoData_lib = self.database.getThermoData(spc)
         
-        databaseWithoutLibraries = ThermoDatabase()
-        databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
         
-        thermoData_ga = databaseWithoutLibraries.getThermoData(spc)
+        
+        thermoData_ga = self.databaseWithoutLibraries.getThermoData(spc)
         
         self.assertAlmostEqual(thermoData_lib.getEntropy(298.), thermoData_ga.getEntropy(298.), 0)
         
