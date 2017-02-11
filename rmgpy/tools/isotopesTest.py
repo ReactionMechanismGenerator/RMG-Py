@@ -3,17 +3,18 @@ import os
 import shutil
 import numpy as np
 
-from rmgpy.species import Species
 from rmgpy.tools.loader import loadRMGJob
 import rmgpy
 from rmgpy.species import Species
 from rmgpy.tools.isotopes import *
 
+from rmgpy.reaction import Reaction
+
 class IsotopesTest(unittest.TestCase):
 
-    def testCluster(self):
+    def testClusterWithSpecies(self):
         """
-        Test that isotope partitioning algorithm works.
+        Test that isotope partitioning algorithm work with Reaction Objects.
         """
 
         eth = Species().fromAdjacencyList(
@@ -64,9 +65,113 @@ class IsotopesTest(unittest.TestCase):
         self.assertEquals(len(clusters), 2)
         self.assertEquals(len(clusters[0]), 1)
 
-    def testRemoveIsotope(self):
+    def testClusterWithReactions(self):
         """
-        Test that remove isotope algorithm works.
+        Test that isotope partitioning algorithm works with Reaction objects
+        """
+
+        eth = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+        """
+    )
+
+        ethi = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+        """
+    )
+
+        meth = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+        """
+    )
+
+        rxn0 = Reaction(reactants=[ethi,ethi], products=[ethi,eth])
+        rxn1 = Reaction(reactants=[eth,ethi], products=[eth,eth])
+        rxn2 = Reaction(reactants=[ethi,meth], products=[meth,ethi])
+        rxn3 = Reaction(reactants=[eth,meth], products=[eth,meth])
+        rxn4 = Reaction(reactants=[meth], products=[meth])
+        rxn5 = Reaction(reactants=[ethi], products=[eth])
+        
+        
+        sameClusterList = [rxn0,rxn1]
+
+        clusters = cluster(sameClusterList)
+        self.assertEquals(len(clusters), 1)
+        self.assertEquals(len(clusters[0]), 2)
+        
+        sameClusterList = [rxn2,rxn3]
+
+        clusters = cluster(sameClusterList)
+        self.assertEquals(len(clusters), 1)
+        self.assertEquals(len(clusters[0]), 2)
+
+        multiClusterList = [rxn0, rxn1, rxn2, rxn3, rxn4, rxn5]
+
+        clusters = cluster(multiClusterList)
+        self.assertEquals(len(clusters), 4)
+        self.assertEquals(len(clusters[0]), 1)
+
+        
+    def testRemoveIsotopeForReactions(self):
+        """
+        Test that remove isotope algorithm works with Reaction objects.
+        """
+
+        eth = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+        """
+    )
+
+        ethi = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+        """
+    )
+        unlabeledRxn = Reaction(reactants=[eth], products = [eth])
+        labeledRxn = Reaction(reactants=[ethi], products = [ethi])
+        stripped = removeIsotope(labeledRxn)
+        
+        self.assertTrue(unlabeledRxn.isIsomorphic(stripped))
+
+    def testRemoveIsotopeForSpecies(self):
+        """
+        Test that remove isotope algorithm works with Species.
         """
 
         eth = Species().fromAdjacencyList(
