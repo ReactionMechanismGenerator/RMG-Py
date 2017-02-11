@@ -89,10 +89,12 @@ def calculateAtomSymmetryNumber(molecule, atom):
             if count == [3]: symmetryNumber *= 3
             elif count == [2, 1]: symmetryNumber *= 1
             elif count == [1, 1, 1]: symmetryNumber *= 1
-
         elif single == 2:
             # Two single bonds
             if count == [2]: symmetryNumber *= 2
+        # for resonance hybrids
+        elif single == 1:
+            if count == [2, 1]: symmetryNumber *= 2
         elif double == 2:
             # Two double bonds
             if count == [2]: symmetryNumber *= 2
