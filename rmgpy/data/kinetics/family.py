@@ -132,6 +132,36 @@ class TemplateReaction(Reaction):
         TemplateReaction this should be a KineticsGroups object.
         """
         return self.family
+        
+    def copy(self):
+        """
+        creates a new instance of TemplateReaction
+        """
+        other = TemplateReaction.__new__(TemplateReaction)
+        
+        # this was copied from Reaction.copy class
+        other.index = self.index
+        other.label = self.label
+        other.reactants = []
+        for reactant in self.reactants:
+            other.reactants.append(reactant.copy(deep=True))
+        other.products = []
+        for product in self.products:
+            other.products.append(product.copy(deep=True))
+        other.kinetics = deepcopy(self.kinetics)
+        other.reversible = self.reversible
+        other.transitionState = deepcopy(self.transitionState)
+        other.duplicate = self.duplicate
+        other.degeneracy = self.degeneracy
+        other.pairs = deepcopy(self.pairs)
+        
+        # added for TemplateReaction information
+        other.family = self.family
+        other.template = self.template
+        other.estimator = self.estimator
+        other.reverse = self.reverse
+        
+        return other
 
 ################################################################################
 
