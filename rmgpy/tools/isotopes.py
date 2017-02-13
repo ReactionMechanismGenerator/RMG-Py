@@ -51,6 +51,7 @@ from rmgpy.rmg.input import getInput
 from rmgpy.rmg.main import RMG, initializeLog
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
+from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.rmg.listener import SimulationProfileWriter
 from rmgpy.thermo.thermoengine import processThermoData
 from rmgpy.data.thermo import findCp0andCpInf
@@ -106,6 +107,10 @@ def generateIsotopeModel(outputDirectory, rmg0, isotopes):
     rmg.reactionModel.enlarge(reactEdge=True,
         unimolecularReact=rmg.unimolecularReact,
         bimolecularReact=rmg.bimolecularReact)
+
+    # alter forward reaction rates to be thermodynamically consistant
+    # across isotopomers
+    correctAFactors(rmg.reactionModel.core.reactions)
 
     rmg.saveEverything()
 
@@ -344,24 +349,71 @@ def correctEntropy(isotopomer, isotopeless):
     # put the corrected thermo back as a species attribute:
     isotopomer.thermo = thermo
 
-def correctAfactors(rmg):
+def correctAFactors(reactions):
+    """
+    This method corrects the A factors of reactions
+    to be consistant with the thermodynamics of reactants
+    which leads to a more stable isotopomer ratio.It takes
+    in a list of all core reactions (after model generation)
+    and modifies the A factors of the reactions. The reactions
+    are modified in place (no returning various isotopomers)
+    """
+    reactionClusters = cluster(reactions)
+    for rxnList in reactionClusters:
+        correctAFactorsOfIsotopomers(rxnList)
+
+def correctAFactorsOfIsotopomers(rxnList):
     """
     Since different isotopomers sometimes have different symmetry
     numbers (and the TS of both often don't), the rates of the isotopomer
     reactions may not be correct. This method seeks to correct for this
-    discrpency by taking in an RMG job and modifying the A-factors of 
-    isotopically labeled reactions to be thermodynamically equivalent.
+    discrpency by taking in a list of identical reactions varying in labeling 
+    (which can be obtained from `cluster`), and modifying the A-factors 
+    to be thermodynamically equivalent.
     
-    Symmetry difference = symmetry labeled reactants / symmetry unlabeled reactants
-    A(labeld) = A(non-labeled) * symmetry difference
+    `rxnList` - a list of identical reactions varying in labeling
+    
+    Symmetry difference = symmetry labeled rxn / symmetry unlabeled rxn
+    A(labeled) = A(non-labeled) * symmetry difference
     """
-    rxnModel = rmg.reactionModel
     
-    rxnList = rxnModel.core.reactions
+    unlabeledRxn = removeIsotope(rxnList[0])
+    unlabeledSymmetry = __getReactionSymmetryNumber(unlabeledRxn)
     
     for rxn in rxnList:
-        unlabeledRxn = 5
+        symmetry = __getReactionSymmetryNumber(rxn)
+        AFactorMultiplier = symmetry / unlabeledSymmetry
+        rxn.kinetics.changeRate(AFactorMultiplier)
+        
+def __getReactionSymmetryNumber(reaction):
+    """
+    This method finds the reaction symmetry number for a reaction. The procedure 
+    is slightly modified to account for no transition state, by replacing it with
+    product symmetry.
     
+    When identical reactants are present, the algorythm only accounts for them
+    if they come from reaction family `R_Recombination`. Other reaction
+    families already account for that rate difference in degeneracy caluclations
+    
+    rxn symmetry number = reactant symmetry / product symmetry
+    """
+    reactantSym = 1.
+    for reactant in reaction.reactants:
+        reactantSym *= reactant.getSymmetryNumber()
+    if len(reaction.reactants) == 2 and \
+            reaction.reactants[0].isIsomorphic(reaction.reactants[1]) and \
+            reaction.family.lower().startswith('r_recombination'):
+        reactantSym *= 2
+    
+    productSym = 1.
+    for product in reaction.products:
+        productSym *= product.getSymmetryNumber()
+    if len(reaction.products) == 2 and \
+            reaction.products[0].isIsomorphic(reaction.products[1]):
+        productSym *= 2
+        
+    return reactantSym / productSym
+        
     
 def run(inputFile, isotopeInputFile, outputDir, original=None, isotopeLoc=None):
     """

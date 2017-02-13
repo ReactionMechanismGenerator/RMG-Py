@@ -9,6 +9,8 @@ from rmgpy.species import Species
 from rmgpy.tools.isotopes import *
 
 from rmgpy.reaction import Reaction
+from rmgpy.data.kinetics.family import TemplateReaction
+from rmgpy.kinetics.arrhenius import Arrhenius
 
 class IsotopesTest(unittest.TestCase):
 
@@ -203,6 +205,443 @@ class IsotopesTest(unittest.TestCase):
         stripped = removeIsotope(ethi)
         
         self.assertTrue(eth.isIsomorphic(stripped))
+
+    def testCorrectAFactorsForMethylRecombination(self):
+        """
+        Test that correct A factors are used for isotopomers with various symmetries - methyl recombination
+        """   
+        correctAdjustment = 1.
+        methyl = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 C u1 p0 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+        """)
+        
+        methyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+        """)
+        
+        ethanei = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 i13 {1,S} {6,S} {7,S} {8,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+        """
+    )
+        reaction = TemplateReaction(reactants = [methyl, methyli],
+                            products = [ethanei],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'R_Recombination')
+        reactionRateChange = self.__AFactorRatio(reaction)
+        self.assertAlmostEqual(reactionRateChange, correctAdjustment)
+        
+    def testCorrectAFactorsForHadditionAllyl(self):
+        """
+        Test that correct A factors are used for isotopomers with various symmetries - H addition allyl
+        """   
+        correctAdjustment = .5
+        h = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 H u1 p0 c0
+        """)
+
+        allyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 C u0 p0 c0 i13 {2,D} {6,S} {7,S}
+2 C u0 p0 c0 {1,D} {3,S} {8,S}
+3 C u1 p0 c0 {2,S} {4,S} {5,S}
+4 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {1,S}
+7 H u0 p0 c0 {1,S}
+8 H u0 p0 c0 {2,S}
+
+        """)
+        
+        propenei = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 {2,D} {4,S} {5,S}
+2 C u0 p0 c0 {1,D} {3,S} {6,S}
+3 C u0 p0 c0 i13 {2,S} {7,S} {8,S} {9,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {3,S}
+8 H u0 p0 c0 {3,S}
+9 H u0 p0 c0 {3,S}
+        """
+    )
+        reaction = TemplateReaction(reactants = [allyli,h],
+                            products = [propenei],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'R_Recombination')
+        reactionRateChange = self.__AFactorRatio(reaction)
+        self.assertAlmostEqual(reactionRateChange, correctAdjustment)
+        
+    def testCorrectAFactorsForHabsPropane(self):
+        """
+        Test that correct A factors are used for isotopomers with various symmetries - H abstraction from center propane
+        """   
+        correctAdjustment = 1
+        h = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 H u1 p0 c0
+        """)
+
+        h2 = Species().fromAdjacencyList(
+        """
+1 H u0 p0 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+        """)
+        propanei = Species().fromAdjacencyList(
+        """
+1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
+4  H u0 p0 c0 {1,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+        """)
+        
+        ipropyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 i13 {2,S} {5,S} {6,S} {7,S}
+2  C u1 p0 c0 {1,S} {3,S} {4,S}
+3  H u0 p0 c0 {2,S}
+4  C u0 p0 c0 {2,S} {8,S} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {4,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+        """
+    )
+        reaction = TemplateReaction(reactants = [propanei,h],
+                            products = [ipropyli,h2],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'H_Abstraction')
+        reactionRateChange = self.__AFactorRatio(reaction)
+        self.assertAlmostEqual(reactionRateChange, correctAdjustment)
+        
+    def testCorrectAFactorsForHabsPropane2(self):
+        """
+        Test that correct A factors are used for isotopomers with various symmetries - H abstraction from edge propane
+        """   
+        correctAdjustment = 0.5
+        h = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 H u1 p0 c0
+        """)
+
+        h2 = Species().fromAdjacencyList(
+        """
+1 H u0 p0 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+        """)
+        propanei = Species().fromAdjacencyList(
+        """
+1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
+4  H u0 p0 c0 {1,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+        """)
+        
+        npropyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
+3  C u1 p0 c0 i13 {2,S} {4,S} {5,S}
+4  H u0 p0 c0 {3,S}
+5  H u0 p0 c0 {3,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {2,S}
+
+        """
+    )
+        reaction = TemplateReaction(reactants = [propanei,h],
+                            products = [npropyli,h2],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'H_Abstraction')
+        reactionRateChange = self.__AFactorRatio(reaction)
+        self.assertAlmostEqual(reactionRateChange, correctAdjustment)
+    
+    def testCorrectAFactorsForRAddMultBond(self):
+        """
+        Test that correct A factors are used for isotopomers with identical reactants - R addition multiple bond
+        
+        The rate of reactions with identical reactants should already 
+        be accounted for in the degeneracy term, so this method just ensures
+        the correct rate is used.
+        """   
+        correctAdjustment = 1
+        butenyl = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,D} {7,S} {8,S}
+2  C u0 p0 c0 {1,D} {3,S} {9,S}
+3  C u0 p0 c0 {2,S} {4,S} {10,S} {11,S}
+4  C u1 p0 c0 {3,S} {5,S} {6,S}
+5  H u0 p0 c0 {4,S}
+6  H u0 p0 c0 {4,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+
+        """)
+
+        butenyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,D} {7,S} {8,S}
+2  C u0 p0 c0 {1,D} {3,S} {9,S}
+3  C u0 p0 c0 {2,S} {4,S} {10,S} {11,S}
+4  C u1 p0 c0 i13 {3,S} {5,S} {6,S}
+5  H u0 p0 c0 {4,S}
+6  H u0 p0 c0 {4,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+
+        """)
+        product = Species().fromAdjacencyList(
+        """
+multiplicity 3
+1  C u0 p0 c0 {2,D} {13,S} {14,S}
+2  C u0 p0 c0 {1,D} {3,S} {15,S}
+3  C u0 p0 c0 {2,S} {4,S} {16,S} {17,S}
+4  C u0 p0 c0 {3,S} {5,S} {18,S} {19,S}
+5  C u0 p0 c0 {4,S} {6,S} {9,S} {20,S}
+6  C u1 p0 c0 {5,S} {7,S} {8,S}
+7  H u0 p0 c0 {6,S}
+8  H u0 p0 c0 {6,S}
+9  C u0 p0 c0 {5,S} {10,S} {21,S} {22,S}
+10 C u1 p0 c0 i13 {9,S} {11,S} {12,S}
+11 H u0 p0 c0 {10,S}
+12 H u0 p0 c0 {10,S}
+13 H u0 p0 c0 {1,S}
+14 H u0 p0 c0 {1,S}
+15 H u0 p0 c0 {2,S}
+16 H u0 p0 c0 {3,S}
+17 H u0 p0 c0 {3,S}
+18 H u0 p0 c0 {4,S}
+19 H u0 p0 c0 {4,S}
+20 H u0 p0 c0 {5,S}
+21 H u0 p0 c0 {9,S}
+22 H u0 p0 c0 {9,S}
+        """)
+
+        reaction = TemplateReaction(reactants = [butenyl,butenyli],
+                            products = [product],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'R_Addition_MultipleBond')
+        reactionRateChange = self.__AFactorRatio(reaction)
+        self.assertAlmostEqual(reactionRateChange, correctAdjustment)
+    
+    def __AFactorRatio(self, reaction):
+        """
+        This helper function uses `correctAFactorsFromIsotopomers` to modify the A factor on
+        the reaction. It then returns the ratio of 'correct A factor/original A factor'
+        """
+        
+        originalAFactor = reaction.kinetics.A.value
+        correctAFactorsOfIsotopomers([reaction])
+        newAFactor = reaction.kinetics.A.value
+        return newAFactor / originalAFactor
+        
+    def testEntireAFactorProcessFunctions(self):
+        """
+        Test that correctAFactors method effectively can cluster and modify A factor rates.
+        """
+        from rmgpy.quantity import ScalarQuantity
+        # reaction of one type
+        butenyl = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,D} {7,S} {8,S}
+2  C u0 p0 c0 {1,D} {3,S} {9,S}
+3  C u0 p0 c0 {2,S} {4,S} {10,S} {11,S}
+4  C u1 p0 c0 {3,S} {5,S} {6,S}
+5  H u0 p0 c0 {4,S}
+6  H u0 p0 c0 {4,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+
+        """)
+        butenyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,D} {7,S} {8,S}
+2  C u0 p0 c0 {1,D} {3,S} {9,S}
+3  C u0 p0 c0 {2,S} {4,S} {10,S} {11,S}
+4  C u1 p0 c0 i13 {3,S} {5,S} {6,S}
+5  H u0 p0 c0 {4,S}
+6  H u0 p0 c0 {4,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+
+        """)
+        producti = Species().fromAdjacencyList(
+        """
+multiplicity 3
+1  C u0 p0 c0 {2,D} {13,S} {14,S}
+2  C u0 p0 c0 {1,D} {3,S} {15,S}
+3  C u0 p0 c0 {2,S} {4,S} {16,S} {17,S}
+4  C u0 p0 c0 {3,S} {5,S} {18,S} {19,S}
+5  C u0 p0 c0 {4,S} {6,S} {9,S} {20,S}
+6  C u1 p0 c0 {5,S} {7,S} {8,S}
+7  H u0 p0 c0 {6,S}
+8  H u0 p0 c0 {6,S}
+9  C u0 p0 c0 {5,S} {10,S} {21,S} {22,S}
+10 C u1 p0 c0 i13 {9,S} {11,S} {12,S}
+11 H u0 p0 c0 {10,S}
+12 H u0 p0 c0 {10,S}
+13 H u0 p0 c0 {1,S}
+14 H u0 p0 c0 {1,S}
+15 H u0 p0 c0 {2,S}
+16 H u0 p0 c0 {3,S}
+17 H u0 p0 c0 {3,S}
+18 H u0 p0 c0 {4,S}
+19 H u0 p0 c0 {4,S}
+20 H u0 p0 c0 {5,S}
+21 H u0 p0 c0 {9,S}
+22 H u0 p0 c0 {9,S}
+        """)
+
+        reaction1 = TemplateReaction(reactants = [butenyl,butenyli],
+                            products = [producti],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'R_Addition_MultipleBond')
+
+        # adding two more reactions
+
+        h = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 H u1 p0 c0
+        """)
+        h2 = Species().fromAdjacencyList(
+        """
+1 H u0 p0 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+        """)
+        propanei = Species().fromAdjacencyList(
+        """
+1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
+4  H u0 p0 c0 {1,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+        """)
+        propane = Species().fromAdjacencyList(
+        """
+1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+4  H u0 p0 c0 {1,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+        """)
+        npropyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
+3  C u1 p0 c0 i13 {2,S} {4,S} {5,S}
+4  H u0 p0 c0 {3,S}
+5  H u0 p0 c0 {3,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {2,S}
+        """)
+        npropyl = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
+3  C u1 p0 c0 {2,S} {4,S} {5,S}
+4  H u0 p0 c0 {3,S}
+5  H u0 p0 c0 {3,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {2,S}
+        """)
+
+        reaction2 = TemplateReaction(reactants = [propanei,h],
+                            products = [npropyli,h2],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'H_Abstraction')
+        reaction3 = TemplateReaction(reactants = [propane,h],
+                            products = [npropyl,h2],
+                            kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                            family = 'H_Abstraction')
+
+        reactions = [reaction1,reaction2,reaction3]
+
+        correctAFactors(reactions)
+
+        self.assertAlmostEqual(reaction1.kinetics.A.value, ScalarQuantity(1,'cm^3/(mol*s)').value)
+        self.assertAlmostEqual(reaction2.kinetics.A.value, ScalarQuantity(0.5,'cm^3/(mol*s)').value)
+        self.assertAlmostEqual(reaction3.kinetics.A.value, ScalarQuantity(1,'cm^3/(mol*s)').value)
 
     def testComputeProbabilities(self):
         """
