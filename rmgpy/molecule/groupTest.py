@@ -1026,6 +1026,18 @@ class TestGroup(unittest.TestCase):
         benzene = Group().fromAdjacencyList(benzene)
         self.assertTrue(benzene.isBenzeneExplicit())
 
+    def test_repr_png(self):
+        """Test that a png representation can be created."""
+        adjlist = """
+1 *1 [C,Cd,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
+2 *2 [C,Cd,Ct,CO,CS,Cb] u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
+3 *3 [C,Cd,Ct,CO,CS,Cb] u0 {2,[S,D,T,B]} {4,[S,D,T,B]}
+4 *4 [C,Cd,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
+        """
+        group = Group().fromAdjacencyList(adjlist)
+        result = group._repr_png_()
+        self.assertIsNotNone(result)
+
 ################################################################################
 
 if __name__ == '__main__':
