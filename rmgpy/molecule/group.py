@@ -765,7 +765,7 @@ class Group(Graph):
                 index1 = self.atoms.index(atom1)
                 index2 = self.atoms.index(atom2)
                 if index1 < index2:
-                    bondType = ','.join([order for order in bond.order])
+                    bondType = ','.join([order for order in bond.getOrderStr()])
                     bondType = '"' + bondType + '"'
                     graph.add_edge(pydot.Edge(src=str(index1 + 1), dst=str(index2 + 1), label=bondType, fontname="Helvetica", fontsize="16"))
 
