@@ -1199,6 +1199,60 @@ graph G {
         result = group.draw('canon')
         self.assertEqual(''.join(result.split()), ''.join(expected.split()))
 
+    def testMergeGroups(self):
+        """
+        Test the mergeGroups() function
+        """
+        #basic test of merging a backbone and end group
+        backbone1 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *6 R!H u0 {2,S} {4,S}
+4 *5 R!H u0 {3,S} {5,S}
+5 *2 R!H u0 {4,S} {6,S}
+6 *3 H   u0 {5,S}
+""")
+
+        end1 = Group().fromAdjacencyList("""
+1 *2 Cs u0 {2,S} {3,S}
+2 *3 H  u0 {1,S}
+3    S  u0 {1,S}
+""")
+        desiredMerge1 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *6 R!H u0 {2,S} {4,S}
+4 *5 R!H u0 {3,S} {5,S}
+5 *2 Cs  u0 {4,S} {6,S} {7,S}
+6 *3 H   u0 {5,S}
+7    S   u0 {5,S}
+""")
+
+        mergedGroup = backbone1.mergeGroups(end1)
+        self.assertTrue(mergedGroup.isIdentical(desiredMerge1))
+
+        #test it works when there is a cyclical structure to the backbone
+
+        backbone2 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S} {4,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *2 R!H u0 {2,S} {4,S}
+4 *3 R!H u0 {3,S} {1,S}
+""")
+
+        end2 = Group().fromAdjacencyList("""
+1 *2 Os u0 {2,S}
+2 *3 Cs u0 {1,S}
+""")
+        desiredMerge2 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S} {4,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *2 Os u0 {2,S} {4,S}
+4 *3 Cs u0 {3,S} {1,S}
+""")
+        mergedGroup = backbone2.mergeGroups(end2)
+        self.assertTrue(mergedGroup.isIdentical(desiredMerge2))
+
 ################################################################################
 
 if __name__ == '__main__':

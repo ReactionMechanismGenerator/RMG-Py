@@ -1,8 +1,7 @@
 import unittest
 from rmgpy.data.kinetics.database import KineticsDatabase
 import os.path
-from rmgpy import settings
-
+from rmgpy.molecule.group import Group
 ###################################################
 
 class TestFamily(unittest.TestCase):
@@ -42,19 +41,3 @@ class TestFamily(unittest.TestCase):
         self.assertEquals(len(topGroups), 2)
         self.assertIn(self.family.groups.entries["R5Hall"], topGroups)
         self.assertIn(self.family.groups.entries["R6Hall"], topGroups)
-
-    # def testLoadFamilies(self):
-    #     """
-    #     Test that the loadFamilies function raises the correct exceptions
-    #     """
-    #     path = os.path.join(settings['database.directory'],'kinetics','families')
-    #     database = KineticsDatabase()
-    #
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families='random')
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families=['fake_family'])
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families=[])
