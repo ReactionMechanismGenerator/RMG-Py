@@ -107,7 +107,7 @@ def makeComparison(chemkinRxn):
     gotOne = False
     print("Labeling reactant atoms")
     for reactant in reaction.reactants:
-        reactant = reactant.molecule[0]
+        reactant = reactant
         reactant.clearLabeledAtoms()
         for atom in reactant.atoms:
             for atomLabel in reaction.labeledAtoms:
@@ -117,7 +117,7 @@ def makeComparison(chemkinRxn):
 
     print("Labeling product atoms")
     for product in reaction.products:
-        product = product.molecule[0]
+        product = product
         product.clearLabeledAtoms()
         for atom in product.atoms:
             for atomLabel in reaction.labeledAtoms:
