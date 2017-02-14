@@ -2182,3 +2182,57 @@ class KineticsFamily(Database):
 
         return groupList
 
+    def mergeGroups(self, backbone, end):
+        """
+        This function takes two :class:Group objects and returns a merged based on overlapping atoms
+
+        backbone is the group that has greater labelled atoms usually showing the length of a chain in a family
+        end is the group that has fewer labelled atoms usually defining a reacting site at the end of a chain
+
+        Currently assumes the end can be merged at the closest labelled atom
+        """
+        labeled1 = backbone.getLabeledAtoms()
+        labeled2 = end.getLabeledAtoms()
+        overlappingLabels = [x for x in labeled1 if x in labeled2]
+
+        #dictionary of key = original atoms, value = copy atoms for deep copies of the two groups
+        backboneCopyDict=backbone.copyAndMap()
+        endCopyDict = end.copyAndMap()
+
+        #Sort atoms to go into the mergedGroup
+        mergedGroupAtoms = endCopyDict.values() #all end atoms with end up in the mergedGroup
+        #only non-overlapping atoms from the backbone will be in the mergedGroup
+        for originalAtom, newAtom in backboneCopyDict.iteritems():
+            if not originalAtom.label in overlappingLabels:
+                mergedGroupAtoms.append(newAtom)
+
+        mergedGroup = Group(atoms=mergedGroupAtoms)
+
+        """
+        The following loop will move bonds that are exclusively in the new backbone so that
+        they connect to the backbone. For example, assume backbone has bond atomA-atomB,
+        where atomB is labelled as *2 and there is an atomC in the end analgously labelled
+        *2. We need to remove the bond between atomA and atomB. Then we need to add a bond
+        between atomA and atomC.
+        """
+        bondsToRemove = []
+        for label in overlappingLabels:
+            oldAtomB = backbone.getLabeledAtom(label)
+            for oldAtomA, oldBondAB in oldAtomB.bonds.iteritems():
+                if not oldAtomA.label in overlappingLabels: #this is bond we need to transfer over
+                    #find and record bondAB from new backbone for later removal
+                    newAtomA = backboneCopyDict[oldAtomA]
+                    newAtomB = backboneCopyDict[oldAtomB]
+                    newAtomC = mergedGroup.getLabeledAtom(oldAtomB.label)
+                    for atom, newBondAB in newAtomA.bonds.iteritems():
+                        if atom is newAtomB:
+                            bondsToRemove.append(newBondAB)
+                            break
+                    #add bond between atomA and AtomC
+                    newBondAC = GroupBond(newAtomA, newAtomC, order= oldBondAB.order)
+                    mergedGroup.addBond(newBondAC)
+        #remove bonds from mergedGroup
+        for bond in bondsToRemove:
+            mergedGroup.removeBond(bond)
+
+        return mergedGroup
