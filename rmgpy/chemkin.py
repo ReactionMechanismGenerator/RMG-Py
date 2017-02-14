@@ -1687,7 +1687,7 @@ def markDuplicateReaction(test_reaction, reaction_list):
                 if reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
                     # Only mark as duplicate if both reactions are pressure dependent or both are
                     # not pressure dependent.  Do not mark as duplicates otherwise.
-                    logging.warning('Marked reaction {0} as duplicate for saving to Chemkin file.'.format(reaction1))
+                    logging.warning('Marked reaction {0} as duplicate of {1} for saving to Chemkin file.'.format(reaction1, reaction2))
                     reaction1.duplicate = True
                     reaction2.duplicate = True
 
