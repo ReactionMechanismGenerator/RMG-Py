@@ -391,18 +391,19 @@ def getCopyFromTwoRingsWithCommonAtoms(ring1, ring2):
     
     return ring1Copy, ring2Copy, mergedRing
 
-def isPolyringPartialMatched(polyring, matched_group):
+def isRingPartialMatched(ring, matched_group):
     """
-    An example of polyring partial match is tricyclic polyring is matched by a bicyclic group
+    An example of ring partial match is tricyclic ring is matched by a bicyclic group
     usually because of not enough data in polycyclic tree. The method takes a matched group 
-    returned from descendTree and the polyring (a list of non-hydrogen atoms in the polyring)
+    returned from descendTree and the ring (a list of non-hydrogen atoms in the ring)
     """
-
-    if len(polyring) != len(matched_group.atoms):
+    # if matched group has less atoms than the target ring
+    # it's surely a partial match
+    if len(ring) > len(matched_group.atoms):
         return True
     else:
-        submol_polyring, _ = convertRingToSubMolecule(polyring)
-        sssr = submol_polyring.getSmallestSetOfSmallestRings()
+        submol_ring, _ = convertRingToSubMolecule(ring)
+        sssr = submol_ring.getSmallestSetOfSmallestRings()
         sssr_grp = matched_group.getSmallestSetOfSmallestRings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
@@ -1464,13 +1465,12 @@ class ThermoDatabase(object):
         be applied.
         """
         # look up polycylic tree directly
-        matched_group_thermodata, matched_entry = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
-        matched_group = matched_entry.item
+        matched_group_thermodata, _, isPartialMatch = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
         
         # if partial match (non-H atoms number same between 
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
-        if not isPolyringPartialMatched(polyring, matched_group):
+        if not isPartialMatch:
             thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
@@ -1536,6 +1536,13 @@ class ThermoDatabase(object):
         if matchedRingEntries is []:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
+        isPartialMatch = True
+        completeMatchedGroups = [entry for entry in matchedRingEntries if not isRingPartialMatched(ring, entry.item)]
+
+        if completeMatchedGroups:
+            isPartialMatch = False
+            matchedRingEntries = completeMatchedGroups
+
         depthList = [len(ring_database.ancestors(entry)) for entry in matchedRingEntries]
         mostSpecificMatchIndices = [i for i, x in enumerate(depthList) if x == max(depthList)]
         
@@ -1572,9 +1579,9 @@ class ThermoDatabase(object):
         data.comment = '{0}({1})'.format(ring_database.label, comment)
         
         if thermoData is None:
-            return data, node
+            return data, node, isPartialMatch
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True), node
+            return addThermoData(thermoData, data, groupAdditivity=True), node, isPartialMatch
 
     def __averageChildrenThermo(self, node):
         """
