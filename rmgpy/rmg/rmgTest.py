@@ -190,6 +190,9 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.assertEqual(edge_species_num_orig, edge_species_num_load)
         self.assertEqual(edge_rxn_num_orig, edge_rxn_num_load)
 
+        import shutil
+        shutil.rmtree(restart_folder)
+
 
 def findTargetRxnsContaining(mol1, mol2, reactions):
     target_rxns = []
