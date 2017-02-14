@@ -52,20 +52,27 @@ qmCalc = QMCalculator(
                         )
 
 def calculate(reaction):
+    print("Calculating reaction rate - script/autoTST-OOH.py")
     rxnFamily = reaction.family
+    print("Loading reaction family into tsDatabase")
     tsDatabase = rmgDatabase.kinetics.families[rxnFamily].transitionStates
+    print("Performing getKineticData")
     reaction = qmCalc.getKineticData(reaction, tsDatabase)
+    print("Removing core files")
     for files in os.listdir('./'):  # This deletes any files with names starting 'core' which fill up your disk space on discovery.
         if files.startswith('core'):
             os.remove(files)
+    print("Yay, reaction calculated!!!")
     return reaction
 
 
 
 def makeComparison(chemkinRxn):
+    print("Making the compariton - scripts/autoTST-OOH.py")
 
     print "chemkinRxn: {!r}".format(chemkinRxn)
     # Ensure all resonance isomers have been generated
+    print('Ensuring resonance isomers have been generated')
     for species in itertools.chain(chemkinRxn.reactants, chemkinRxn.products):
         species.molecule = species.molecule[0].generateResonanceIsomers()
 
@@ -88,6 +95,11 @@ def makeComparison(chemkinRxn):
             print reaction
         raise Exception("Couldn't generate exactly one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
     reaction = checkRxn[0]
+    print("The reaction of interest is as follows: ")
+    print(reaction)
+
+    print("asserting that the testReaction is Isomorphic")
+
 
     assert testReaction.isIsomorphic(reaction)
     print "reaction: {!r}".format(reaction)
@@ -96,7 +108,9 @@ def makeComparison(chemkinRxn):
     atLblsP = dict([(lbl[0], False) for lbl in reaction.labeledAtoms])
 
     gotOne = False
+    print("Labeling reactant atoms")
     for reactant in reaction.reactants:
+        reactant = reactant
         reactant.clearLabeledAtoms()
         for atom in reactant.atoms:
             for atomLabel in reaction.labeledAtoms:
@@ -104,7 +118,9 @@ def makeComparison(chemkinRxn):
                     atom.label = atomLabel[0]
                     atLblsR[atomLabel[0]] = True
 
+    print("Labeling product atoms")
     for product in reaction.products:
+        product = product
         product.clearLabeledAtoms()
         for atom in product.atoms:
             for atomLabel in reaction.labeledAtoms:
@@ -114,9 +130,13 @@ def makeComparison(chemkinRxn):
 
     if all(atLblsR.values()) and all(atLblsP.values()):
         gotOne = True
+    print("Setting reaction family to H_Abstraction")
     rxnFamily = reaction.family
     assert gotOne
 
+    print("Asserted gotOne - not entirely sure what this means")
+    print
+    print("Calculating reaction kinetics")
     reaction = calculate(reaction)
 
     print "For reaction {0!r}".format(reaction)
