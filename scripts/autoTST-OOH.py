@@ -37,6 +37,26 @@ print "RUNNING WITH JOB NUMBER i = {}".format(i)
 
 rxnFamilies = ['H_Abstraction']  # Only looking at H_abstraction via OOH
 
+with open('kineticsDict.pkl', 'rb') as f:
+    kineticsDict = pickle.load(f)
+print "Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict))
+
+def sorter_key(rxn):
+    """
+    A key to generate the sort order for reactions.
+    Needs to be consistent across runs, but we want small reactions
+    first, so that it runs faster.
+    """
+    weight = 0.
+    for r in rxn.reactants:
+        weight += r.molecule[0].getMolecularWeight()
+    return (weight, repr(rxn))
+
+allRxns = sorted(kineticsDict.keys(), key=sorter_key)
+chemkinRxn = allRxns[i - 1]
+print str(chemkinRxn)
+print repr(chemkinRxn)
+
 print 'Loading RMG Database ...'
 rmgDatabase = RMGDatabase()
 databasePath = os.path.abspath(os.path.join(os.getenv('RMGpy', '..'), '..', 'RMG-database', 'input'))
@@ -239,11 +259,4 @@ def makeComparison(chemkinRxn):
         with open(os.path.join(folderPath, smiles_dict[entry] + '_kinetics.txt'), 'w') as kinTxt:
                 kinTxt.write(input_string)
 
-
-with open('kineticsDict.pkl', 'rb') as f:
-    kineticsDict = pickle.load(f)
-print "Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict))
-
-allRxns = sorted(kineticsDict.keys(), key=repr)  # somewhat arbitrary sort order, but should at least be consistent across runs.
-chemkinRxn = allRxns[i - 1]
 makeComparison(chemkinRxn)
