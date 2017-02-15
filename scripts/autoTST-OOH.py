@@ -85,7 +85,10 @@ def calculate(reaction):
                 os.remove(files)
             except:
                 print("Error deleting files {}".format(files))
-    print("Yay, reaction calculated!!!")
+    if reaction.kinetics:
+        print("Yay, reaction calculated!!!")
+    else:
+        print("Boo, Reaction not calculated!!!")
     return reaction
 
 
