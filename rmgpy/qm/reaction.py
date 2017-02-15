@@ -816,6 +816,7 @@ class QMReaction:
 
         if not tsFound:
             # Return the reaction without the kinetics included. Fall back on group additivity.
+            logging.warning("Couldn't find transition state. Not using TST")
             return self.reaction
 
         reactants = self.calculateQMData(self.reaction.reactants)
@@ -841,16 +842,16 @@ class QMReaction:
         
         try:
             canThermJob.execute()
-    	    jobResult = "Successful kinetics calculation in CanTherm."
-    	    for job in canThermJob.jobList:
-    	        if isinstance(job, KineticsJob):
+            jobResult = "Successful kinetics calculation in CanTherm."
+            for job in canThermJob.jobList:
+                if isinstance(job, KineticsJob):
                     # Return the reaction with the kinetics.
                     self.saveKineticsData(job.reaction)
-    	            return job.reaction
-    	except ValueError, e:
-    	    jobResult = e
+                    return job.reaction
+        except ValueError, e:
+            jobResult = e
 
-    	logging.info(jobResult)
+        logging.info(jobResult)
         return self.reaction
 
     def determinePointGroup(self):
