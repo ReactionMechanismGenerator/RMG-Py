@@ -198,12 +198,20 @@ class GroupAtom(Vertex):
         """
         Update the atom group as a result of applying a GAIN_RADICAL action,
         where `radical` specifies the number of radical electrons to add.
+
+        The 'radicalElectron' attribute can be an empty list if we use the wildcard
+        argument ux in the group definition. In this case, we will have this
+        function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
+        or 4 radical electrons.
         """
         radicalElectrons = []
         if any([len(atomType.incrementRadical) == 0 for atomType in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to GAIN_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
-        for electron in self.radicalElectrons:
-            radicalElectrons.append(electron + radical)
+        if not self.radicalElectrons:
+            radicalElectrons = [1,2,3,4]
+        else:
+            for electron in self.radicalElectrons:
+                radicalElectrons.append(electron + radical)
         # Set the new radical electron counts
         self.radicalElectrons = radicalElectrons
 
@@ -211,16 +219,25 @@ class GroupAtom(Vertex):
         """
         Update the atom group as a result of applying a LOSE_RADICAL action,
         where `radical` specifies the number of radical electrons to remove.
+
+        The 'radicalElectron' attribute can be an empty list if we use the wildcard
+        argument ux in the group definition. In this case, we will have this
+        function set the atom's 'radicalElectron' to a list allowing 0, 1, 2,
+        or 3 radical electrons.
         """
         radicalElectrons = []
         pairs = set()
         if any([len(atomType.decrementRadical) == 0 for atomType in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
-        for electron in self.radicalElectrons:
-            electron = electron - radical
-            if electron < 0:
-                raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))    
-            radicalElectrons.append(electron)
+
+        if not self.radicalElectrons:
+            radicalElectrons = [0,1,2,3]
+        else:
+            for electron in self.radicalElectrons:
+                electron = electron - radical
+                if electron < 0:
+                    raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+                radicalElectrons.append(electron)
             
         # Set the new radical electron counts
         self.radicalElectrons = radicalElectrons

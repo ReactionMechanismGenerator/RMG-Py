@@ -122,6 +122,14 @@ class TestGroupAtom(unittest.TestCase):
                 self.assertEqual(atom0.lonePairs, atom.lonePairs)
             except ActionError:
                 self.assertEqual(len(atomType.incrementRadical), 0)
+
+        #test when radicals unspecified
+        group = Group().fromAdjacencyList("""
+        1 R ux
+        """) #ux causes a wildcare for radicals
+        atom1 = group.atoms[0]
+        atom1.applyAction(action)
+        self.assertListEqual(atom1.radicalElectrons, [1,2,3,4])
     
     def testApplyActionLoseRadical(self):
         """
@@ -142,6 +150,14 @@ class TestGroupAtom(unittest.TestCase):
                 self.assertEqual(atom0.lonePairs, atom.lonePairs)
             except ActionError:
                 self.assertEqual(len(atomType.decrementRadical), 0)
+
+        #test when radicals unspecified
+        group = Group().fromAdjacencyList("""
+        1 R ux
+        """) #ux causes a wildcare for radicals
+        atom1 = group.atoms[0]
+        atom1.applyAction(action)
+        self.assertListEqual(atom1.radicalElectrons, [0,1,2,3])
 
     def testApplyActionGainPair(self):
         """
