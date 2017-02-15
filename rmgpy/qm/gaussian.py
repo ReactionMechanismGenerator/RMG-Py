@@ -1053,6 +1053,9 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Take a TS data entry and checks if it already exists in the TS database. If it does not,
         add the label to the entry, and add it to the database.
+        
+        ToDo: This is currently broken, because we switched from reactions containing Species 
+        to containing Molecules, which don't have a label attribute, so can't be used this way.
         """
         print("Running updateTSData - qm/gaussian - line 1057")
         # What kind of object is entry?
@@ -1191,13 +1194,13 @@ class GaussianTS(QMReaction, Gaussian):
         return True
 
     def writeRxnOutputFile(self, labels):
-        print("Running writeRxnOutputFile - qm/Gaussian - line 1192")
+        """
+        ToDo: doesn't do anything, because the function it calls at the end is broken
+        """
+        return  # ToDo: fix this
 
         atomDist = self.parseTS(labels)
-
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
-        user = "Nathan Harms <harms.n@husky.neu.edu>" #Could this be throwing some issues?
-        description = "Found via group additive estimation by the automatic transition state generator"
 
         label = ''
         entry = Entry(
@@ -1209,6 +1212,7 @@ class GaussianTS(QMReaction, Gaussian):
         )
 
         # Check if this entry is in the TS database. If not, create the label, add it, and saveEntry
+        # ToDo: Enable this.
         newData = self.updateTSData(entry)
 
 class GaussianTSM062X(GaussianTS):
