@@ -47,8 +47,8 @@ print 'RMG Database Loaded'
 qmCalc = QMCalculator(
                         software='gaussian',
                         method='m062x',
-                        fileStore=os.path.expandvars('/gss_gpfs_scratch/$USER/QMfiles'),
-                        scratchDirectory=os.path.expandvars('/gss_gpfs_scratch/$USER/QMscratch'),
+                        fileStore=os.path.expandvars('/gss_gpfs_scratch/westgroup/QMfiles'),
+                        scratchDirectory=os.path.expandvars('/gss_gpfs_scratch/westgroup/QMscratch'),
                         )
 
 def calculate(reaction):
@@ -61,7 +61,10 @@ def calculate(reaction):
     print("Removing core files")
     for files in os.listdir('./'):  # This deletes any files with names starting 'core' which fill up your disk space on discovery.
         if files.startswith('core'):
-            os.remove(files)
+            try:
+                os.remove(files)
+            except:
+                print("Error deleting files {}".format(files))
     print("Yay, reaction calculated!!!")
     return reaction
 
