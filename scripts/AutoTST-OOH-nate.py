@@ -90,7 +90,10 @@ def makeComparison(chemkinRxn):
         if len(checkRxn) == 1:
             break
     else:  # didn't break from for loop
-        raise Exception("Couldn't generate one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
+        for reaction in checkRxn:
+            print "Generated these reactions:"
+            print reaction
+        raise Exception("Couldn't generate exactly one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
     reaction = checkRxn[0]
     print("The reaction of interest is as follows: ")
     print(reaction)
