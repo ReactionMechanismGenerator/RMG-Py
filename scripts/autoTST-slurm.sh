@@ -3,10 +3,10 @@
 #SBATCH --job-name=AutoTST
 
 #a file for job output, you can check job progress
-#SBATCH --output=AutoTST.out.%a.log
+#SBATCH --output=AutoTST.%a.slurm.log
 
-#a file for errors from the job
-#SBATCH --error=AutoTST.error.%a.log
+# a file for errors from the job
+#SBATCH --error=AutoTST.%a.slurm.log
 
 #time you think you need; default is one day
 # d-hh:mm:ss
@@ -37,4 +37,4 @@ export PYTHONPATH=$RMGpy:$PYTHONPATH
 echo $SLURM_ARRAY_TASK_ID
 # the "stdbuf -o0 -e0"  and the "-u" are to disable buffering,
 # so that you see output from the script in the log files immediately.
-stdbuf -o0 -e0 python -u $RMGpy/scripts/autoTST-OOH.py 2>&1 >AutoTST.combined.$SLURM_ARRAY_TASK_ID.log
+stdbuf -o0 -e0 python -u $RMGpy/scripts/autoTST-OOH.py >AutoTST.$SLURM_ARRAY_TASK_ID.combined.log 2>&1
