@@ -31,10 +31,10 @@
 
 export RMGpy=~/Code/RMG-Py
 export PYTHONPATH=$RMGpy:$PYTHONPATH
-cd $RMGpy/scripts
-#python filterReactions.py /scratch/westgroup/Importer/RMG-models/
+
+#python $RMGpy/scripts/filterReactions.py /scratch/westgroup/Importer/RMG-models/
 ## that creates the kineticsDict files, and doesn't need repeating until the imported models change significantly
 echo $SLURM_ARRAY_TASK_ID
 # the "stdbuf -o0 -e0"  and the "-u" are to disable buffering,
 # so that you see output from the script in the log files immediately.
-stdbuf -o0 -e0 python -u autoTST-OOH.py 2>&1 >AutoTST.combined.$SLURM_ARRAY_TASK_ID.log
+stdbuf -o0 -e0 python -u $RMGpy/scripts/autoTST-OOH.py 2>&1 >AutoTST.combined.$SLURM_ARRAY_TASK_ID.log
