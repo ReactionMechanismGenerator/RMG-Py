@@ -86,7 +86,8 @@ class Gaussian:
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-
+        if process.returncode:
+            logging.warning("Gaussian finished with return code {}".format(process.returncode))
         return self.verifyOutputFile()
 
 
@@ -653,9 +654,9 @@ class GaussianTS(QMReaction, Gaussian):
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
         process.communicate()# necessary to wait for executable termination!
-
+        if process.returncode:
+            logging.warning("Gaussian finished with return code {}".format(process.returncode))
         logFilePath = os.path.splitext(inputFilePath)[0]+self.outputFileExtension
-
         return logFilePath
 
     def runIRC(self):
@@ -664,7 +665,8 @@ class GaussianTS(QMReaction, Gaussian):
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.ircInputFilePath, self.ircOutputFilePath])
         process.communicate()# necessary to wait for executable termination!
-
+        if process.returncode:
+            logging.warning("Gaussian finished with return code {}".format(process.returncode))
         return self.verifyIRCOutputFile()
 
     def checkComplete(self, filePath):
