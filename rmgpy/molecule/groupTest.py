@@ -1133,6 +1133,37 @@ class TestGroup(unittest.TestCase):
         group7 = group7.addImplicitBenzene()
         self.assertTrue(benzeneGroup.isIsomorphic(group7))
 
+    def testPickWildcards(self):
+        """
+        Test the Group.pickWildCards function
+        """
+        #The following tests are for picking optimal bond orders when there are bond wilcards
+        #test that Cb/Cbf atoms with [D,B] chooses [B] instead of [D] bonds
+        adjlist1 = """
+    1 *1 R!H       u1 {2,[D,B]}
+    2 *2 [Cbf,Cdd] u0 {1,[D,B]} {3,[D,B]}
+    3 *3 [Cb,Cd]   u0 {2,[D,B]} {4,S}
+    4 *4 R!H       u0 {3,S} {5,S}
+    5 *5 H         u0 {4,S}
+"""
+        group1 = Group().fromAdjacencyList(adjlist1)
+        group1.pickWildcards()
+        atoms = group1.atoms
+        self.assertTrue(atoms[0].bonds[atoms[1]].isBenzene())
+        self.assertTrue(atoms[1].bonds[atoms[2]].isBenzene())
+
+        adjlist2 = """
+    1 *1 R!H       u1 {2,[S,D]} {4,[S,D]}
+    2 *2 [CO,Cdd]  u0 {1,[S,D]} {3,[S,D]}
+    3 *3 [Od,Cd]   u0 {2,[S,D]}
+    4 *4 [Cdd,Cd]  u0 {1,[S,D]}
+"""
+        group2 = Group().fromAdjacencyList(adjlist2)
+        group2.pickWildcards()
+        atoms = group2.atoms
+        self.assertTrue(atoms[1].bonds[atoms[2]].isDouble)
+        self.assertTrue(atoms[0].bonds[atoms[3]].isDouble)
+
     def testMakeSampleMolecule(self):
         """
         Test the Group.makeSampleMolecule method

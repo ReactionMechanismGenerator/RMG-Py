@@ -1836,17 +1836,78 @@ class Group(Graph):
 
         return copyGroup
 
+    def pickWildcards(self):
+        """
+        Returns: the :class:Group object without wildcards in either atomtype or bonding
+
+        This function will naively pick the first atomtype for each atom, but will try
+        to pick bond orders that make sense given the selected atomtypes
+        """
+        for atom1 in self.atoms:
+            atom1.atomType=[atom1.atomType[0]]
+            for atom2, bond12 in atom1.bonds.iteritems():
+                #skip dynamic bond ordering if there are no wildcards
+                if len(bond12.order) < 2 :
+                    continue
+                atom1Features = atom1.atomType[0].getFeatures()
+                atom2Features = atom2.atomType[0].getFeatures()
+                #skip dynamic bond ordering if there are no features required by the atomtype
+                if not any(atom1Features) and not any(atom2Features):
+                    bond12.order = [bond12.order[0]]
+                    atom2.bonds[atom1].order = bond12.order
+                    continue
+
+                atom1Bonds = atom1.countBonds()
+                atom2Bonds = atom2.countBonds()
+                requiredFeatures1 = [atom1Features[x][0] - atom1Bonds[x] if atom1Features[x] else 0 for x in range(len(atom1Bonds))]
+                requiredFeatures2 = [atom2Features[x][0] - atom2Bonds[x] if atom2Features[x] else 0 for x in range(len(atom2Bonds))]
+
+                #subtract 1 from allDouble for each sDouble, oDouble, rDouble so that we don't count them twice
+                requiredFeatures1[1] = requiredFeatures1[1] - requiredFeatures1[2] - requiredFeatures1[3] -requiredFeatures1[4]
+                requiredFeatures2[1] = requiredFeatures2[1] - requiredFeatures2[2] - requiredFeatures2[3] -requiredFeatures2[4]
+                #reverse it because coincidentally the reverse has good priority on what to check first
+                requiredFeatures1.reverse()
+                requiredFeatures2.reverse()
+
+                #required features are a now list of [benzene, triple, sDouble, oDouble, rDouble, allDouble, single]
+                for index, (feature1, feature2) in enumerate(zip(requiredFeatures1[:-1], requiredFeatures2[:-1])):
+                    if feature1 > 0 or feature2 > 0:
+                        if index == 0 and 1.5 in bond12.order: #benzene bonds
+                            bond12.order = [1.5]
+                            atom2.bonds[atom1].order = bond12.order
+                            break
+                        elif index == 1 and 3 in bond12.order: #triple bond
+                            bond12.order = [3]
+                            atom2.bonds[atom1].order = bond12.order
+                            break
+                        elif index > 1 and 2 in bond12.order: #any case of double bonds
+                            if index == 2: #sDouble bonds
+                                if (feature1 > 0 and atom2.isSulfur()) or (feature2 > 0 and atom1.isSulfur()):
+                                    bond12.order = [2]
+                                    atom2.bonds[atom1].order = bond12.order
+                                    break
+                            elif index == 3: #oDoubleBonds
+                                if (feature1 > 0 and atom2.isOxygen()) or (feature2 > 0 and atom1.isOxygen()):
+                                    bond12.order = [2]
+                                    atom2.bonds[atom1].order = bond12.order
+                                    break
+                            else: #rDouble or allDouble necessary
+                                bond12.order = [2]
+                                atom2.bonds[atom1].order = bond12.order
+                                break
+                else: #no features required, then pick the first order
+                    bond12.order = [bond12.order[0]]
+                    atom2.bonds[atom1].order = bond12.order
+
     def makeSampleMolecule(self):
         """
         Returns: A sample class :Molecule: from the group
         """
 
-        #Remove all wildcards
         modifiedGroup = self.copy(deep = True)
-        for atom in modifiedGroup.atoms:
-            atom.atomType=[atom.atomType[0]]
-            for atom2, bond12 in atom.bonds.iteritems():
-                bond12.order=[bond12.order[0]]
+
+        #Remove all wildcards
+        modifiedGroup.pickWildcards()
 
         #Add implicit atoms
         modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()

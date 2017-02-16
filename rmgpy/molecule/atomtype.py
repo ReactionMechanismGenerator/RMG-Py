@@ -430,6 +430,7 @@ for atomType in atomTypes.values():
         for index in range(len(items)):
             items[index] = atomTypes[items[index]]
 
+
 def getFeatures(atom, bonds):
     """
     Returns a list of features needed to determine atomType for :class:'Atom'

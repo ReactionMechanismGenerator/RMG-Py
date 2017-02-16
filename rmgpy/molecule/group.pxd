@@ -176,6 +176,8 @@ cdef class Group(Graph):
 
     cpdef Group addImplicitAtomsFromAtomType(self)
 
+    cpdef pickWildcards(self)
+
     cpdef mol.Molecule makeSampleMolecule(self)
 
     cpdef tuple classifyBenzeneCarbons(self, dict partners=?)
