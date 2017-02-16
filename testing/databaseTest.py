@@ -459,7 +459,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     elif num_of_Dbonds == 1:
                         for ligand, bond in atom.bonds.iteritems():
                             #Ignore ligands that are not double bonded
-                            if 'D' in bond.order:
+                            if any([abs(2-order) < 1e-7 for order in bond.order]):
                                 for ligAtomType in ligand.atomType:
                                     if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']): correctAtomList.append('CO')
                                     elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']): correctAtomList.append('CS')
@@ -612,7 +612,7 @@ Matched group AdjList:
                     elif num_of_Dbonds == 1:
                         for ligand, bond in atom.bonds.iteritems():
                             #Ignore ligands that are not double bonded
-                            if 'D' in bond.order:
+                            if any([abs(2-order) < 1e-7 for order in bond.order]):
                                 for ligAtomType in ligand.atomType:
                                     if ligand.atomType[0].isSpecificCaseOf(atomTypes['O']): correctAtomList.append('CO')
                                     elif ligand.atomType[0].isSpecificCaseOf(atomTypes['S']): correctAtomList.append('CS')
