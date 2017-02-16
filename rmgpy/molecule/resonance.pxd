@@ -21,8 +21,6 @@ cpdef list generateAromaticResonanceStructures(Molecule mol, dict features=?)
 
 cpdef list generateKekuleStructure(Molecule mol)
 
-cpdef list generateOppositeKekuleStructure(Molecule mol)
-
 cpdef list generateClarStructures(Molecule mol)
 
 cpdef list _clarOptimization(Molecule mol, list constraints=?, maxNum=?)

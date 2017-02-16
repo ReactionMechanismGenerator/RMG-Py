@@ -74,7 +74,6 @@ def populateResonanceAlgorithms(features=None):
             generateN5dd_N5tsResonanceStructures,
             generateAromaticResonanceStructures,
             generateKekuleStructure,
-            generateOppositeKekuleStructure,
             generateClarStructures,
         ]
     else:
@@ -569,49 +568,6 @@ def generateKekuleStructure(mol):
         return []
 
     return [molecule]
-
-def generateOppositeKekuleStructure(mol):
-    """
-    Generate the Kekule structure with opposite single/double bond arrangement
-    for single ring aromatics.
-
-    Returns a single Kekule structure as an element of a list of length 1.
-    """
-
-    # This won't work with the aromatic form of the molecule
-    if mol.isAromatic():
-        return []
-
-    molecule = mol.copy(deep=True)
-
-    aromaticBonds = molecule.getAromaticRings()[1]
-
-    # We can only do this for single ring aromatics for now
-    if len(aromaticBonds) != 1:
-        return []
-
-    numS = 0
-    numD = 0
-    for bond in aromaticBonds[0]:
-        if bond.isSingle():
-            numS += 1
-            bond.order = 2
-        elif bond.isDouble():
-            numD += 1
-            bond.order = 1
-        else:
-            # Something is wrong: there is a bond that is not single or double
-            return []
-
-    if numS != 3 or numD != 3:
-        return []
-
-    try:
-        molecule.updateAtomTypes()
-    except AtomTypeError:
-        return []
-    else:
-        return [molecule]
 
 def generateIsomorphicResonanceStructures(mol):
     """
