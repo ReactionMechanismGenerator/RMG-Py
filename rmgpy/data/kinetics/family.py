@@ -44,6 +44,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
 from rmgpy.species import Species
+from rmgpy.molecule.resonance import generateAromaticResonanceStructures
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
 from .depository import KineticsDepository
@@ -1080,6 +1081,10 @@ class KineticsFamily(Database):
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
 
+        # For molecules, we need to assign atom indices in order to track atoms for isomorphism checking later
+        if isinstance(reactantStructure, Molecule):
+            reactantStructure.assignAtomIDs()
+
         # Hardcoding of reaction family for radical recombination (colligation)
         # because the two reactants are identical, they have the same tags
         # In this case, we must change the labels from '*' and '*' to '*1' and
@@ -1529,57 +1534,86 @@ class KineticsFamily(Database):
                     rxnList.append(reaction)
             
         # The reaction list may contain duplicates of the same reaction
-        # These duplicates should be combined (by increasing the degeneracy of
-        # one of the copies and removing the others)
-        index0 = 0
-        while index0 < len(rxnList):
-            reaction0 = rxnList[index0]
-            
-            products0 = reaction0.products if forward else reaction0.reactants
-            products0 = [product.generateResonanceIsomers() for product in products0]
-            
-            # Remove duplicates from the reaction list
-            index = index0 + 1
-            while index < len(rxnList):
-                reaction = rxnList[index]
-            
-                products = reaction.products if forward else reaction.reactants
-                
-                # We know the reactants are the same, so we only need to compare the products
-                match = False
-                if len(products) == len(products0) == 1:
-                    for product in products0[0]:
-                        if products[0].isIsomorphic(product):
-                            match = True
+        # These duplicates should be combined and the reaction degeneracy should be increased
+        # Reaction degeneracy is only increased if two reaction are isomorphic but resulted
+        # from different transition states.
+        # We want to sort all the reactions into sublists composed of isomorphic reactions
+        rxnSorted = []
+        for rxn0 in rxnList:
+            # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
+            for i in range(len(rxn0.products)):
+                if rxn0.products[i].isCyclic:
+                    aromaticStructs = generateAromaticResonanceStructures(rxn0.products[i])
+                    if aromaticStructs:
+                        rxn0.products[i] = aromaticStructs[0]
+            if len(rxnSorted) == 0:
+                # This is the first reaction, so create a new sublist
+                rxnSorted.append([rxn0])
+            else:
+                products0 = rxn0.products if forward else rxn0.reactants
+                products0 = [product.generateResonanceIsomers(keepIsomorphic=True) for product in products0]
+
+                # Loop through each sublist, which represents a unique reaction
+                for rxnList1 in rxnSorted:
+                    # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
+                    identical = False
+                    isomorphic = False
+                    for rxn in rxnList1:
+                        products = rxn.products if forward else rxn.reactants
+
+                        # We know the reactants are the same, so we only need to compare the products
+                        if len(products) == len(products0) == 1:
+                            for product in products0[0]:
+                                if products[0].isIdentical(product):
+                                    identical = True
+                                    isomorphic = True
+                                    break
+                                elif not isomorphic and products[0].isIsomorphic(product):
+                                    isomorphic = True
+                        elif len(products) == len(products0) == 2:
+                            for productA in products0[0]:
+                                for productB in products0[1]:
+                                    if products[0].isIdentical(productA) and products[1].isIdentical(productB):
+                                        identical = True
+                                        isomorphic = True
+                                        break
+                                    elif products[0].isIdentical(productB) and products[1].isIdentical(productA):
+                                        identical = True
+                                        isomorphic = True
+                                        break
+                                    elif not isomorphic and products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
+                                        isomorphic = True
+                                    elif not isomorphic and products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
+                                        isomorphic = True
+
+                        if identical:
+                            # An exact copy of rxn0 is already in our list, so we can move on to the next rxn
                             break
-                elif len(products) == len(products0) == 2:
-                    for productA in products0[0]:
-                        for productB in products0[1]:
-                            if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                                match = True
-                                break
-                    
-                # If we found a match, remove it from the list
-                # Also increment the reaction path degeneracy of the remaining reaction
-                if match:
-                    rxnList.remove(reaction)
-                    reaction0.degeneracy += 1
+                        elif isomorphic:
+                            # This is the right sublist for rxn0, but continue to see if there is an identical rxn
+                            continue
+                        else:
+                            # This is the wrong sublist, so move on to the next sublist
+                            break
+                    else:
+                        # We did not break, so this is the right sublist, but there is no identical reaction
+                        # This means that we should add rxn0 to the sublist as a degenerate rxn
+                        rxnList1.append(rxn0)
+                    if identical or isomorphic:
+                        # We already found the right sublist, so we can move on to the next rxn
+                        break
                 else:
-                    index += 1
-            
-            index0 += 1
+                    # We did not break, which means that there was no isomorphic sublist, so create a new one
+                    rxnSorted.append([rxn0])
+
+        rxnList = []
+        for rxnList1 in rxnSorted:
+            # Collapse our sorted reaction list by taking one reaction from each sublist
+            rxn = rxnList1[0]
+            # The degeneracy of each reaction is the number of reactions that were in the sublist
+            rxn.degeneracy = len(rxnList1)
+            rxnList.append(rxn)
         
-        # For R_Recombination reactions, the degeneracy is twice what it should
-        # be, so divide those by two
-        # This is hardcoding of reaction families!
-        if self.label.lower().startswith('r_recombination'):
-            for rxn in rxnList:
-                assert(rxn.degeneracy % 2 == 0)
-                rxn.degeneracy /= 2
-                
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
