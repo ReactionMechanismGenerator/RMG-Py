@@ -21,6 +21,7 @@ from reaction import QMReaction
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics import saveEntry
 from rmgpy.data.kinetics.transitionstates import DistanceData
+from pybel import Outputfile
 
 class Gaussian:
     """
@@ -185,6 +186,7 @@ class Gaussian:
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
+        logging.info("Writing gaussian input file {}".format(inputFilePath))
         if not top_keys:
             top_keys = self.inputFileKeywords(attempt)
         if scf:
@@ -479,7 +481,7 @@ class GaussianTS(QMReaction, Gaussian):
         for the `attmept`th attempt.
         fromInt are files written after an internal coordinate error (switch to cartesian).
         """
-        print("Creating input file - qm/gaussian.py - line 484")
+        logging.info("Creating input file")
         output = ['', self.uniqueID, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
 
@@ -510,7 +512,7 @@ class GaussianTS(QMReaction, Gaussian):
         IRC calculation on the transition state. The geometry is taken
         from the checkpoint file created during the geometry search.
         """
-        print("Creating IRC file - qm/gaussian.py - line 515")
+        logging.info("Creating IRC file")
         output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity )]
         if os.path.exists(self.getFilePath('.chk')):
             top_keys = self.inputFileKeywords(0, irc=True)
@@ -529,7 +531,7 @@ class GaussianTS(QMReaction, Gaussian):
         Writes and runs a loose optimization of the transition state estimate with frozen reaction
         center distances.
         """
-        print("Running loose optimization of TS - qm/gaussian.py - line 534")
+        logging.info("Running loose optimization of TS with frozen center")
 
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
@@ -574,7 +576,7 @@ class GaussianTS(QMReaction, Gaussian):
         Writes and runs a ts optimization of the transition state estimate with everything frozen
         except the reaction center distances.
         """
-        print("Optimization of TS reaction center distances - qm/gaussian.py - line 579")
+        logging.info("Optimization of TS reaction center distances")
 
         inputFilePath = self.getFilePath('RxnC{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
@@ -626,7 +628,7 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Calculate the QM data and return a QMData object.
         """
-        print("Calculating the QM data ???- qm/gaussian.py - line 631")
+        logging.info("Calculating (or loading) the QM kinetics data")
 
         self.createGeometry()
         if self.verifyOutputFile():
@@ -638,7 +640,7 @@ class GaussianTS(QMReaction, Gaussian):
                 self.createIRCFile()
                 success = self.run()
                 if success:
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                    logging.info('Attempt {0} of {1} on {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
@@ -657,7 +659,7 @@ class GaussianTS(QMReaction, Gaussian):
         return logFilePath
 
     def runIRC(self):
-        print("Running IRC - qm/gaussian.py - line 662")
+        logging.info("Running IRC")
         self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.ircInputFilePath, self.ircOutputFilePath])
@@ -672,7 +674,7 @@ class GaussianTS(QMReaction, Gaussian):
         Incomplete IRC files may exist from previous runs, due to the job being prematurely terminated.
         This checks to ensure the job has been completed.
         """
-        print("Running checkComplete - qm/Gaussian - line 677")
+        logging.info("Checking IRC file is complete")
         convergenceFailure = False
         complete = False
 
@@ -699,7 +701,7 @@ class GaussianTS(QMReaction, Gaussian):
 
         if all(finished_keys):
             complete = True
-
+        logging.info("IRC file {} is {}complete".format(filePath, '' if complete else 'NOT '))
         return complete, convergenceFailure
 
     def verifyOutputFile(self):
@@ -718,7 +720,7 @@ class GaussianTS(QMReaction, Gaussian):
         will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
         This will initiate a subsequent calculation in cartesian coordinates.
         """
-        print("Running verifyOutputFile - qm/gaussian - line 723")
+        logging.info("Verifying output file {}".format(self.outputFilePath))
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
             return False
@@ -769,9 +771,10 @@ class GaussianTS(QMReaction, Gaussian):
         will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
         This will initiate a subsequent calculation in cartesian coordinates.
         """
-        print("Running verify OPT OutputFile - qm/gaussian - line 774")
+
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+        logging.info("Verifying the Optimization output file {}".format(outputFilePath))
 
         if not os.path.exists(outputFilePath):
             logging.info("Output file {0} does not exist.".format(outputFilePath))
@@ -812,7 +815,7 @@ class GaussianTS(QMReaction, Gaussian):
         Compares IRC geometries to input geometries.
         """
 
-        print("Running verifyIRCOutputFile - qm/gaussian - 817")
+        logging.info("Verifying the IRC output file {}".format(self.ircOutputFilePath))
         if not os.path.exists(self.ircOutputFilePath):
             logging.info("Output file {0} does not exist.".format(self.ircOutputFilePath))
             return False
@@ -847,7 +850,7 @@ class GaussianTS(QMReaction, Gaussian):
                     steps.append(numStp)
 
         # Check that ALL 'success' keywords were found in the file.
-        print("Checking if the success keywords are found in the file.")
+        logging.info("Checking if all the success keywords are found in the file.")
         if not successKeysFound['Normal termination of Gaussian']:
             logging.error('Not all of the required keywords for success were found in the IRC output file!')
             return False
@@ -920,7 +923,7 @@ class GaussianTS(QMReaction, Gaussian):
         point. This would be valueable as it would prevent the need for an IRC in these cases, saving
         on the computational cost.
         """
-        print("Running testTSGeometry - qm/gaussian - 925")
+        logging.info("Running testTSGeometry which has a confusing docstring")
         labeledList = reactant.getLabeledAtoms()
         labeledAtoms = labeledList.values()
         labels = labeledList.keys()
@@ -942,7 +945,7 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Takes an output file, and extracts the geometry from it to ensure it has the same structure as the molecule provided.
         """
-        print("Running checkGeometry - qm/gaussian - 947")
+        logging.info("Checking geometry is the expected molecule {}".format(molecule.toSMILES()))
         parser = cclib.parser.Gaussian(outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
@@ -953,13 +956,14 @@ class GaussianTS(QMReaction, Gaussian):
         if mol.isIsomorphic(molecule.toSingleBonds()):
             return True
         else:
+            logging.info("(It wasn't)")
             return False
 
     def parse(self):
         """
         Parses the results of the Gaussian calculation, and returns a CCLibData object.
         """
-        print("Running parse - qm/gaussian - 964")
+        logging.info("Parsing the gaussian output {}".format(self.outputFilePath))
         parser = cclib.parser.Gaussian(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
@@ -975,7 +979,7 @@ class GaussianTS(QMReaction, Gaussian):
         return self.qmData
 
     def parseTS(self, labels):
-        print("Running parseTS - qm/gaussian - 980")
+        logging.info("Parsing the TS to get interatomic distances.")
 
         def getDistance(coordinates1, coordinates2):
             """
@@ -1055,7 +1059,7 @@ class GaussianTS(QMReaction, Gaussian):
         ToDo: This is currently broken, because we switched from reactions containing Species 
         to containing Molecules, which don't have a label attribute, so can't be used this way.
         """
-        print("Running updateTSData - qm/gaussian - line 1057")
+        logging.info("Updating the TS distance training database")
         # What kind of object is entry?
         tsData_folder = os.path.abspath(os.path.join(rmgpy.getPath(), '../../RMG-database/input/kinetics/families/{0}'.format(self.reaction.family)))
         speciesDict = self.tsDatabase.getSpecies(os.path.join(tsData_folder, 'TS_training/dictionary.txt'))

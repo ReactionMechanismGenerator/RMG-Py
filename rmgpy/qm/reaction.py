@@ -334,7 +334,7 @@ class QMReaction:
 
                     maxLij = Uik + Ukj - 0.1
                     if bm[i,j] >  maxLij:
-                        print "CHANGING Lower limit {0} to {1}".format(bm[i,j], maxLij)
+                        logging.info("Changing lower limit {0} to {1}".format(bm[i, j], maxLij))
                         bm[i,j] = maxLij
 
         return bm
@@ -427,7 +427,7 @@ class QMReaction:
         else:
             optEst = self.optEstimate(labels)
             optRC = self.optRxnCenter(labels)
-            print "Optimizing TS once"
+            logging.info("Optimizing TS attempt 1")
             self.createInputFile(1, optEst=optRC)
             converged, internalCoord = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
@@ -535,7 +535,7 @@ class QMReaction:
         for i in range(len(tsBM)):
             for j in range(i,len(tsBM)):
                 if tsBM[j,i] > tsBM[i,j]:
-                        print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
+                        logging.info("BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j, i], tsBM[i, j]))
 
         self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
         atomSymbols, atomCoords = self.reactantGeom.parseMOL(self.reactantGeom.getRefinedMolFilePath())
