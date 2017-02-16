@@ -514,8 +514,7 @@ class Bond(Edge):
         elif self.isTriple():
             return 'T'
         else:
-            raise ValueError("Bond order {} does not have string representation." +  \
-            "".format(self.order))
+            raise ValueError("Bond order {} does not have string representation.".format(self.order))
         
     def setOrderStr(self, newOrder):
         """
@@ -980,11 +979,15 @@ class Molecule(Graph):
                     self.addBond(bond)
         self.updateAtomTypes()
         
-    def updateAtomTypes(self, logSpecies=True):
+    def updateAtomTypes(self, logSpecies=True, raiseException=True):
         """
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
+        
+        If `raiseException` is `False`, then the generic atomType 'R' will
+        be prescribed to any atom when getAtomType fails. Currently used for
+        resonance hybrid atom types.
         """
         for atom in self.vertices:
             try:
@@ -992,7 +995,9 @@ class Molecule(Graph):
             except AtomTypeError:
                 if logSpecies:
                     logging.error("Could not update atomtypes for {0}.\n{1}".format(self, self.toAdjacencyList()))
-                raise
+                if raiseException:
+                    raise
+                atom.atomType = atomTypes['R']
             
     def updateMultiplicity(self):
         """

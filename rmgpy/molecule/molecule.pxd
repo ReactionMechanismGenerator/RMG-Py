@@ -207,7 +207,7 @@ cdef class Molecule(Graph):
 
     cpdef double calculateCpInf(self) except -1
     
-    cpdef updateAtomTypes(self, logSpecies=?)
+    cpdef updateAtomTypes(self, bint logSpecies=?, bint raiseException=?)
     
     cpdef bint isRadical(self) except -2
 
