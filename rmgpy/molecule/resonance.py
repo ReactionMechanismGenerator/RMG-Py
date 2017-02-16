@@ -189,9 +189,8 @@ def generateResonanceStructures(mol, clarStructures=True, keepIsomorphic=False):
                 pass
         else:
             # The molecule is an aryl radical or stable mono-ring aromatic
-            # In this case, generate the kekulized form
-            _generateResonanceStructures(newMolList, [generateKekuleStructure,
-                                                      generateOppositeKekuleStructure], keepIsomorphic)
+            # In this case, we already have the aromatic form, so we're done
+            pass
 
         # Check for isomorphism against the original molecule
         for i, newMol in enumerate(newMolList):
