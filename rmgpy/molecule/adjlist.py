@@ -96,7 +96,7 @@ class ConsistencyChecker(object):
                              radicals=atom.radicalElectrons,
                              lonePairs=atom.lonePairs,
                              charge=atom.charge,
-                             bonds=','.join([bond.order for bond in atom.bonds.values()])
+                             bonds=','.join([str(bond.order) for bond in atom.bonds.values()])
                             ))
 
     @staticmethod
