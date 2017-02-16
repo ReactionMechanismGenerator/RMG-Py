@@ -5,6 +5,10 @@
 import os
 import sys
 import logging
+FORMAT = "%(filename)s:%(lineno)d %(funcName)s %(levelname)s %(message)s"
+logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
 import re
 import imp
 import itertools
