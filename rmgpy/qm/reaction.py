@@ -114,7 +114,7 @@ def loadKineticsDataFile(filePath):
             }
             exec resultFile in global_context, local_context
     except IOError, e:
-        logging.info("Couldn't read kinetics file {0}".format(filePath))
+        logging.error("Couldn't read kinetics file {0}".format(filePath))
         return None
     except (NameError, TypeError, SyntaxError), e:
         logging.error('The kinetics file "{0}" was invalid:'.format(filePath))
@@ -604,7 +604,7 @@ class QMReaction:
         local_context = loadKineticsDataFile(filePath)
         if local_context is None:
             # file does not exist or is invalid
-            logging.warning("Kinetics results file {} does not exist or is invalid".format(filePath))
+            logging.info("Kinetics results file {} does not exist or is invalid".format(filePath))
             return None
         
         if local_context['method'] != self.method:
