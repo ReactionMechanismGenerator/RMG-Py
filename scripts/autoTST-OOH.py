@@ -65,8 +65,15 @@ logging.info(repr(chemkinRxn))
 logging.info('Loading RMG Database ...')
 rmgDatabase = RMGDatabase()
 databasePath = os.path.abspath(os.path.join(os.getenv('RMGpy', '..'), '..', 'RMG-database', 'input'))
-rmgDatabase.load(databasePath, kineticsFamilies=rxnFamilies)  # unsure if this is the right environment
 logging.info(databasePath)
+rmgDatabase.load(databasePath,
+                 kineticsFamilies=rxnFamilies,
+                 transportLibraries=[],
+                 reactionLibraries=[],
+                 seedMechanisms=[],
+                 thermoLibraries=['primaryThermoLibrary', 'KlippensteinH2O2', 'thermo_DFT_CCSDTF12_BAC', 'CBS_QB3_1dHR' ],
+                 solvation=False,
+                 )
 logging.info('RMG Database Loaded')
 
 qmCalc = QMCalculator(
