@@ -42,7 +42,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    
   by changing it to the following line :: 
 
-   export PATH=~/anaconda/envs/rmg/bin:$PATH
+   export PATH=~/anaconda/envs/rmg_env/bin:$PATH
 
   be sure to either close and reopen your terminal to refresh your environment variables, or type the following command ::
  
