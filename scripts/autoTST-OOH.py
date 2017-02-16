@@ -84,23 +84,24 @@ qmCalc = QMCalculator(
                         )
 
 def calculate(reaction):
-    print("Calculating reaction rate - script/autoTST-OOH.py")
+    logging.info("Calculating reaction rate for {!s}".format(reaction))
     rxnFamily = reaction.family
-    print("Loading reaction family into tsDatabase")
+    logging.info("Selecting the appropriate TS distance database for family {!r}".format(rxnFamily))
     tsDatabase = rmgDatabase.kinetics.families[rxnFamily].transitionStates
-    print("Performing getKineticData")
+    logging.info("Calculating kinetic data by calling qmCalc.getKineticData")
     reaction = qmCalc.getKineticData(reaction, tsDatabase)
-    print("Removing core files")
+    logging.info("Removing 'core*' files")
     for files in os.listdir('./'):  # This deletes any files with names starting 'core' which fill up your disk space on discovery.
         if files.startswith('core'):
             try:
                 os.remove(files)
             except:
-                print("Error deleting files {}".format(files))
+                logging.info("Error deleting files {}".format(files))
     if reaction.kinetics:
-        print("Yay, reaction calculated!!!")
+        logging.info("Yay, reaction kinetics calculated!!!")
+        logging.info(repr(reaction))
     else:
-        print("Boo, Reaction not calculated!!!")
+        logging.info("Boo, reaction kinetics not calculated!!!")
     return reaction
 
 
@@ -133,12 +134,10 @@ def makeComparison(chemkinRxn):
             logging.info(reaction)
         raise Exception("Couldn't generate exactly one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
     reaction = checkRxn[0]
-    print("The reaction of interest is as follows: ")
-    print(reaction)
+    logging.info("The reaction of interest is as follows: ")
+    logging.info(reaction)
 
-    print("asserting that the testReaction is Isomorphic")
-
-
+    logging.info("asserting that the testReaction is Isomorphic")
     assert testReaction.isIsomorphic(reaction)
     logging.info("reaction: {!r}".format(reaction))
 
@@ -146,7 +145,7 @@ def makeComparison(chemkinRxn):
     atLblsP = dict([(lbl[0], False) for lbl in reaction.labeledAtoms])
 
     gotOne = False
-    print("Labeling reactant atoms")
+    logging.info("Labeling reactant atoms")
     for reactant in reaction.reactants:
         reactant = reactant
         reactant.clearLabeledAtoms()
@@ -156,7 +155,7 @@ def makeComparison(chemkinRxn):
                     atom.label = atomLabel[0]
                     atLblsR[atomLabel[0]] = True
 
-    print("Labeling product atoms")
+    logging.info("Labeling product atoms")
     for product in reaction.products:
         product = product
         product.clearLabeledAtoms()
@@ -168,13 +167,13 @@ def makeComparison(chemkinRxn):
 
     if all(atLblsR.values()) and all(atLblsP.values()):
         gotOne = True
-    print("Setting reaction family to H_Abstraction")
-    rxnFamily = reaction.family
-    assert gotOne
 
-    print("Asserted gotOne - not entirely sure what this means")
-    print
-    print("Calculating reaction kinetics")
+    rxnFamily = reaction.family
+    assert gotOne, "Couldn't label all the atoms using the reaction family template"
+
+    logging.info("We have generated a {!s} reaction that matches, and used it to label the atoms.".format(rxnFamily))
+
+    logging.info("Calculating reaction kinetics")
     reaction = calculate(reaction)
 
     logging.info("For reaction {0!r}".format(reaction))
