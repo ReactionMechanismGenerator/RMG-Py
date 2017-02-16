@@ -579,6 +579,8 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Writes and runs a ts optimization of the transition state estimate with everything frozen
         except the reaction center distances.
+        
+        Takes its geometry from the, presumed, log file of the previous step, which ends "Est.log"
         """
         logging.info("Optimization of TS reaction center distances")
 
@@ -656,6 +658,10 @@ class GaussianTS(QMReaction, Gaussian):
         return result
 
     def runAlt(self, inputFilePath):
+        """
+        Run the provided `inputFilePath` through gaussian, and return 
+        the resulting `logFilePath`. Does no processing.
+        """
         self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
