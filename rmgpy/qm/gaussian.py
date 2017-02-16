@@ -7,9 +7,7 @@ import logging
 import re
 import math
 import numpy
-import itertools
 from subprocess import Popen
-import re
 import collections
 from copy import deepcopy
 
