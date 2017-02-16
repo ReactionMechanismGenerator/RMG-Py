@@ -584,7 +584,7 @@ class GaussianTS(QMReaction, Gaussian):
         if not os.path.exists(outputFilePath):
             # Get the geometry from the OptEst file
             readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-            assert os.path.exists(readFilePath)
+            assert os.path.exists(readFilePath), "Expected gaussian output file {} doesn't exist".format(readFilePath)
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(readFilePath)
 
             attempt = 1
