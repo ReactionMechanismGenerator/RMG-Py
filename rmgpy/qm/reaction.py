@@ -423,11 +423,14 @@ class QMReaction:
         """
         Conduct the optimization step of the transition state search.
         """
+        logging.info("Starting optimization steps of the TS search.")
         if os.path.exists(self.outputFilePath):
+            logging.info("Output file {} exists. Trying that.".format(self.outputFilePath))
             converged, internalCoord = self.verifyOutputFile()
         else:
             optEst = self.optEstimate(labels)
             optRC = self.optRxnCenter(labels)
+
             logging.info("Optimizing TS attempt 1")
             self.createInputFile(1, optEst=optRC)
             converged, internalCoord = self.run()

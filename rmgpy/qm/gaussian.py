@@ -537,7 +537,10 @@ class GaussianTS(QMReaction, Gaussian):
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
 
-        if not os.path.exists(outputFilePath):
+        if os.path.exists(outputFilePath):
+            logging.info("Output file {} exists. Using that instead of re-running.".format(outputFilePath))
+            return outputFilePath
+        else:
             attempt = 1
 
             output = ['', self.uniqueID, '' ]
@@ -582,7 +585,10 @@ class GaussianTS(QMReaction, Gaussian):
         inputFilePath = self.getFilePath('RxnC{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
 
-        if not os.path.exists(outputFilePath):
+        if os.path.exists(outputFilePath):
+            logging.info("Output file {} exists. Using that instead of re-running.".format(outputFilePath))
+            return outputFilePath
+        else:
             # Get the geometry from the OptEst file
             readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
             assert os.path.exists(readFilePath), "Expected gaussian output file {} doesn't exist".format(readFilePath)
