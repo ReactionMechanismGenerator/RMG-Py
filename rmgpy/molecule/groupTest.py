@@ -1125,6 +1125,22 @@ class TestGroup(unittest.TestCase):
         answer_smiles = '[NH3+][CH2]'
         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
+        #test that Cb/Cbf atoms with [D,B] chooses [B] instead of [D] bonds
+        adjlist5 = """
+1 *1 R!H       u1 {2,[D,B]}
+2 *4 [Cbf,Cdd] u0 {1,[D,B]} {3,[D,B]}
+3 *5 [Cb,Cd]   u0 {2,[D,B]} {4,S}
+4 *2 R!H       u0 {3,S} {5,S}
+5 *3 H         u0 {4,S}
+"""
+        group5 = Group().fromAdjacencyList(adjlist5)
+        result5 = group5.makeSampleMolecule()
+        atom1 = result5.getLabeledAtom("*1")
+        atom4 = result5.getLabeledAtom("*4")
+        atom5 = result5.getLabeledAtom("*5")
+        self.assertTrue(atom1.bonds[atom4].isBenzene())
+        self.assertTrue(atom5.bonds[atom4].isBenzene())
+
     def testIsBenzeneExplicit(self):
         """
         Test the Group.isBenzeneExplicit method

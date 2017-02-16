@@ -36,7 +36,7 @@ reaction sites).
 import cython
 
 from .graph import Vertex, Edge, Graph
-from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
+from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures, aromaticAtomtypes
 from .element import PeriodicSystem
 import rmgpy.molecule.molecule as mol
 from copy import deepcopy, copy
@@ -1778,11 +1778,21 @@ class Group(Graph):
         modifiedGroup = self.copy(deep = True)
         for atom in modifiedGroup.atoms:
             atom.atomType=[atom.atomType[0]]
+            print atom
             for atom2, bond12 in atom.bonds.iteritems():
-                bond12.order=[bond12.order[0]]
+                # print atom.atomType, atom2.atomType
+                if atom.atomType[0] in aromaticAtomtypes or atom2.atomType[0] in aromaticAtomtypes:
+                    if 1.5 in bond12.order:
+                        bond12.order = [1.5]
+                    else: bond12.order = [bond12.order[0]]
+                else:
+                    bond12.order = [bond12.order[0]]
 
         # print "initial"
         # print self.toAdjacencyList()
+        #
+        # print "after eliminating wildcards"
+        # print modifiedGroup.toAdjacencyList()
 
         #Add implicit atoms
         modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()

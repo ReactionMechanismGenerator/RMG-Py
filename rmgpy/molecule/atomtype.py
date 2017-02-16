@@ -422,6 +422,12 @@ atomTypes['Ar'  ].setActions(incrementBond=[],               decrementBond=[],  
 #list of elements that do not have more specific atomTypes
 allElements=['H', 'He', 'C', 'O', 'N', 'Si', 'S', 'Ne','Cl', 'Ar', ]
 nonSpecifics=['H', 'He', 'Ne', 'Cl', 'Ar',]
+#define list of aromaticAtomTypes
+aromaticAtomtypes = []
+for label, atomtype in atomTypes.iteritems():
+    requiredBenzene = atomtype.getFeatures()[6]
+    if requiredBenzene and 0 not in requiredBenzene:
+        aromaticAtomtypes.append(atomtype)
 
 for atomType in atomTypes.values():
     for items in [atomType.generic, atomType.specific,
@@ -429,6 +435,7 @@ for atomType in atomTypes.values():
       atomType.breakBond, atomType.incrementRadical, atomType.decrementRadical, atomType.incrementLonePair, atomType.decrementLonePair]:
         for index in range(len(items)):
             items[index] = atomTypes[items[index]]
+
 
 def getFeatures(atom, bonds):
     """
