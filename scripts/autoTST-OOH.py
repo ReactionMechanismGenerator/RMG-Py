@@ -35,15 +35,15 @@ elif os.getenv('LSB_JOBINDEX'):
     i = int(os.getenv('LSB_JOBINDEX'))
 else:
     #raise Exception("Specify a TS number!")
-    print("Number not specified as script argument or via environment variable, so using default")
+    logging.warning("Number not specified as script argument or via environment variable, so using default")
     i = 1
-print "RUNNING WITH JOB NUMBER i = {}".format(i)
+logging.info("RUNNING WITH JOB NUMBER i = {}".format(i))
 
 rxnFamilies = ['H_Abstraction']  # Only looking at H_abstraction via OOH
 
 with open('kineticsDict.pkl', 'rb') as f:
     kineticsDict = pickle.load(f)
-print "Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict))
+logging.info("Loaded {} reactions from kineticsDict.pkl".format(len(kineticsDict)))
 
 def sorter_key(rxn):
     """
@@ -58,15 +58,16 @@ def sorter_key(rxn):
 
 allRxns = sorted(kineticsDict.keys(), key=sorter_key)
 chemkinRxn = allRxns[i - 1]
-print str(chemkinRxn)
-print repr(chemkinRxn)
+logging.info("This reaction:")
+logging.info(str(chemkinRxn))
+logging.info(repr(chemkinRxn))
 
-print 'Loading RMG Database ...'
+logging.info('Loading RMG Database ...')
 rmgDatabase = RMGDatabase()
 databasePath = os.path.abspath(os.path.join(os.getenv('RMGpy', '..'), '..', 'RMG-database', 'input'))
-print databasePath
 rmgDatabase.load(databasePath, kineticsFamilies=rxnFamilies)  # unsure if this is the right environment
-print 'RMG Database Loaded'
+logging.info(databasePath)
+logging.info('RMG Database Loaded')
 
 qmCalc = QMCalculator(
                         software='gaussian',
@@ -98,11 +99,11 @@ def calculate(reaction):
 
 
 def makeComparison(chemkinRxn):
-    print("Making the compariton - scripts/autoTST-OOH.py")
+    logging.info("Making the comparison - scripts/autoTST-OOH.py")
 
-    print "chemkinRxn: {!r}".format(chemkinRxn)
+    logging.info("chemkinRxn: {!r}".format(chemkinRxn))
     # Ensure all resonance isomers have been generated
-    print('Ensuring resonance isomers have been generated')
+    logging.info('Ensuring resonance isomers have been generated')
     for species in itertools.chain(chemkinRxn.reactants, chemkinRxn.products):
         species.molecule = species.molecule[0].generateResonanceIsomers()
 
@@ -121,8 +122,8 @@ def makeComparison(chemkinRxn):
             break
     else:  # didn't break from for loop
         for reaction in checkRxn:
-            print "Generated these reactions:"
-            print reaction
+            logging.info("Generated these reactions:")
+            logging.info(reaction)
         raise Exception("Couldn't generate exactly one reaction matching {} in family {}".format(chemkinRxn, rxnFamilies))
     reaction = checkRxn[0]
     print("The reaction of interest is as follows: ")
@@ -132,7 +133,7 @@ def makeComparison(chemkinRxn):
 
 
     assert testReaction.isIsomorphic(reaction)
-    print "reaction: {!r}".format(reaction)
+    logging.info("reaction: {!r}".format(reaction))
 
     atLblsR = dict([(lbl[0], False) for lbl in reaction.labeledAtoms])
     atLblsP = dict([(lbl[0], False) for lbl in reaction.labeledAtoms])
@@ -169,14 +170,14 @@ def makeComparison(chemkinRxn):
     print("Calculating reaction kinetics")
     reaction = calculate(reaction)
 
-    print "For reaction {0!r}".format(reaction)
+    logging.info("For reaction {0!r}".format(reaction))
     if reaction.kinetics:
-        print "We have calculated kinetics {0!r}".format(reaction.kinetics)
+        logging.info("We have calculated kinetics {0!r}".format(reaction.kinetics))
         kineticsDict[chemkinRxn]['AutoTST'] = reaction.kinetics
         with open('kineticsDictTST.pkl', 'wb') as f:
             pickle.dump(kineticsDict, f)
     else:
-        print "Couldn't calculate kinetics."
+        logging.warning("Couldn't calculate kinetics.")
 
 
     if reaction.kinetics and False:
