@@ -297,6 +297,7 @@ class QMReaction:
         """
         Uses rdkit to generate the bounds matrix of a rdkit molecule.
         """
+        logging.info("Generating bounds matrix for {}".format(molecule.toSMILES()))
         geometry = self.getGeometry(molecule, self.settings)
         rdKitMol = self.getRDKitMol(geometry)
         boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdKitMol)
@@ -436,6 +437,7 @@ class QMReaction:
                 os.remove(self.ircOutputFilePath)
 
         if internalCoord and not converged:
+            logging.info("Optimizing TS attempt 2")
             self.createInputFile(2)
             converged = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
@@ -445,9 +447,11 @@ class QMReaction:
             complete, convergenceFailure = self.checkComplete(self.outputFilePath)
             if convergenceFailure:
                 # Rerun the calculation with `scf=qc`
+                logging.info("Optimizing TS attempt 1 but with quadratic scf")
                 self.createInputFile(1, optEst=optRC, scf=True)
                 converged, internalCoord = self.run()
                 if internalCoord:
+                    logging.info("Optimizing TS attempt 2 but with quadratic scf")
                     self.createInputFile(2, scf=True)
                     converged = self.run()
                 shutil.copy(self.outputFilePath, self.outputFilePath+'.QC.log')
@@ -501,6 +505,7 @@ class QMReaction:
         Returns (success, notes) where success is a True if it worked, else False,
         and notes is a string describing what happened.
         """
+        logging.info("Generating a TS geometry via the direct guess method")
         def getDistance(coordinates1, coordinates2):
             """
             Return the square of the distance (in Angstrom) between the two atoms.
@@ -517,6 +522,7 @@ class QMReaction:
         labels, atomMatch = self.getLabels(reactant)
         
         if os.path.exists(self.getTSFilePath):
+            logging.info("TS file {} exists. Loading it to save time.".format(self.getTSFilePath))
             self.loadTSData()
             return True
         
@@ -530,16 +536,17 @@ class QMReaction:
         setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
 
         if not setBM:
+            logging.error("Couldn't create smoothed bounds matrix")
             return False
 
         for i in range(len(tsBM)):
             for j in range(i,len(tsBM)):
                 if tsBM[j,i] > tsBM[i,j]:
-                        logging.info("BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j, i], tsBM[i, j]))
+                        logging.error("BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j, i], tsBM[i, j]))
 
         self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
         atomSymbols, atomCoords = self.reactantGeom.parseMOL(self.reactantGeom.getRefinedMolFilePath())
-
+        logging.info("TS estimate made. About to try the search...")
         check =  self.tsSearch(labels)
         
         return check
@@ -548,6 +555,7 @@ class QMReaction:
         """
         Save the generated TS data.
         """
+        logging.info("Saving TS result file {}".format(self.getTSFilePath))
         with open(self.getTSFilePath, 'w') as resultFile:
             resultFile.write('rxnLabel = "{0!s}"\n'.format(self.uniqueID))
             resultFile.write('method = "{0!s}"\n'.format(self.method))
@@ -562,6 +570,7 @@ class QMReaction:
         local_context = loadTSDataFile(filePath)
         if local_context is None:
             # file does not exist or is invalid
+            logging.warning("TS data file {} does not exist or is invalid".format(filePath))
             return None
         
         if local_context['rxnLabel'] != self.uniqueID:
@@ -581,6 +590,7 @@ class QMReaction:
         Save the calculated kinetics. `reaction` is a CanTherm reaction object that
         should include the molecular parameters.
         """
+        logging.info("Saving kinetics data file {}".format(self.getKineticsFilePath))
         with open(self.getKineticsFilePath, 'w') as resultFile:
             resultFile.write('method = "{0!s}"\n'.format(self.method))
             resultFile.write('reaction = {0!r}\n'.format(reaction))
@@ -594,6 +604,7 @@ class QMReaction:
         local_context = loadKineticsDataFile(filePath)
         if local_context is None:
             # file does not exist or is invalid
+            logging.warning("Kinetics results file {} does not exist or is invalid".format(filePath))
             return None
         
         if local_context['method'] != self.method:
