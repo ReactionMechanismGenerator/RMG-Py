@@ -487,10 +487,10 @@ class Bond(Edge):
         cython.declare(bond=Bond, bp=gr.GroupBond)
         if isinstance(other, Bond):
             bond = other
-            return (self.getOrderNum() == bond.getOrderNum())
+            return self.isOrder(bond.getOrderNum())
         elif isinstance(other, gr.GroupBond):
             bp = other
-            return (self.getOrderNum() in bp.getOrderNum())
+            return any([self.isOrder(otherOrder) for otherOrder in bp.getOrderNum()])
 
     def isSpecificCaseOf(self, other):
         """
@@ -567,7 +567,7 @@ class Bond(Edge):
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
-        return abs(self.order - otherOrder) <= 1e-9
+        return abs(self.order - otherOrder) <= 1e-6
 
         
     def isSingle(self):
@@ -575,28 +575,28 @@ class Bond(Edge):
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return abs(self.order-1) <= 1e-9
+        return abs(self.order-1) <= 1e-6
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return abs(self.order-2) <= 1e-9
+        return abs(self.order-2) <= 1e-6
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return abs(self.order-3) <= 1e-9
+        return abs(self.order-3) <= 1e-6
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not.
         """
-        return abs(self.order-1.5) <= 1e-9
+        return abs(self.order-1.5) <= 1e-6
 
     def incrementOrder(self):
         """
