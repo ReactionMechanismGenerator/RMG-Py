@@ -50,7 +50,7 @@ cdef class Species:
     cdef public str aug_inchi
     cdef public short symmetryNumber
     
-    cpdef generateResonanceIsomers(self)
+    cpdef generateResonanceIsomers(self,bint keepIsomorphic=?)
     
     cpdef bint isIsomorphic(self, other)
     
