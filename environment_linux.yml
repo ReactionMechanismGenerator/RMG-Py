@@ -36,3 +36,4 @@ dependencies:
   - libgfortran >=1.0 # You may need to comment this out for mac osx
   - ffmpeg
   - jupyter
+  - networkx
