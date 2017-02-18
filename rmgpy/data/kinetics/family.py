@@ -1165,6 +1165,11 @@ class KineticsFamily(Database):
                 atomLabels['*4'].label = '*6'
                 atomLabels['*6'].label = '*4'
 
+            elif label == '1,2_shiftC':
+                # Labels for nodes are swapped
+                atomLabels['*2'].label = '*3'
+                atomLabels['*3'].label = '*2'
+
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
 
