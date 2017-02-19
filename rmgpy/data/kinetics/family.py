@@ -317,6 +317,7 @@ class KineticsFamily(Database):
     `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     `ownReverse`        `Boolean`                       It's its own reverse?
+    'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -340,7 +341,8 @@ class KineticsFamily(Database):
                  forwardRecipe=None,
                  reverseTemplate=None,
                  reverseRecipe=None,
-                 forbidden=None
+                 forbidden=None,
+                 boundaryAtoms = None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.reverse = reverse
@@ -350,6 +352,7 @@ class KineticsFamily(Database):
         self.reverseRecipe = reverseRecipe
         self.forbidden = forbidden
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
+        self.boundaryAtoms = boundaryAtoms
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
@@ -530,11 +533,14 @@ class KineticsFamily(Database):
         local_context['True'] = True
         local_context['False'] = False
         local_context['reverse'] = None
+        local_context['boundaryAtoms'] = None
+
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
-        
+        self.boundaryAtoms = local_context.get('boundaryAtoms', None)
+
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
