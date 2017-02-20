@@ -118,7 +118,7 @@ def find_shortest_path(start, end, path=None):
         return path
 
     shortest = None
-    for node,_ in start.bonds.iteritems():
+    for node,_ in start.edges.iteritems():
         if node not in path:
             newpath = find_shortest_path(node, end, path)
             if newpath:

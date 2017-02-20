@@ -317,6 +317,7 @@ class KineticsFamily(Database):
     `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     `ownReverse`        `Boolean`                       It's its own reverse?
+    'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -340,7 +341,8 @@ class KineticsFamily(Database):
                  forwardRecipe=None,
                  reverseTemplate=None,
                  reverseRecipe=None,
-                 forbidden=None
+                 forbidden=None,
+                 boundaryAtoms = None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.reverse = reverse
@@ -350,6 +352,7 @@ class KineticsFamily(Database):
         self.reverseRecipe = reverseRecipe
         self.forbidden = forbidden
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
+        self.boundaryAtoms = boundaryAtoms
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
@@ -530,11 +533,14 @@ class KineticsFamily(Database):
         local_context['True'] = True
         local_context['False'] = False
         local_context['reverse'] = None
+        local_context['boundaryAtoms'] = None
+
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
-        
+        self.boundaryAtoms = local_context.get('boundaryAtoms', None)
+
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -606,7 +612,6 @@ class KineticsFamily(Database):
             self.depositories.append(depository)
         
 
-            
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
@@ -2137,3 +2142,43 @@ class KineticsFamily(Database):
 
         # Source of the kinetics is from rate rules
         return False, [self.label, sourceDict]
+
+    def getBackboneRoots(self):
+        """
+        Returns: the top level backbone node in a unimolecular family.
+        """
+
+        backboneRoots = [entry for entry in self.groups.top if entry in self.forwardTemplate.reactants]
+        return backboneRoots
+
+    def getEndRoots(self):
+        """
+        Returns: A list of top level end nodes in a unimolecular family
+        """
+
+        endRoots = [entry for entry in self.groups.top if entry not in self.forwardTemplate.reactants]
+        return endRoots
+
+    def getTopLevelGroups(self, root):
+        """
+        Returns a list of group nodes that are the highest in the tree starting at node "root".
+        If "root" is a group node, then it will return a single-element list with "root".
+        Otherwise, for every child of root, we descend until we find no nodes with logic
+        nodes. We then return a list of all group nodes found along the way.
+        """
+
+        groupList = [root]
+        allGroups = False
+
+        while not allGroups:
+            newGroupList = []
+            for entry in groupList:
+                if isinstance(entry.item,Group):
+                    newGroupList.append(entry)
+                else:
+                    newGroupList.extend(entry.children)
+            groupList = newGroupList
+            allGroups = all([isinstance(entry.item, Group) for entry in groupList])
+
+        return groupList
+

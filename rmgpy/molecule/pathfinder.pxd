@@ -1,4 +1,5 @@
 from .molecule cimport Atom, Bond, Molecule
+from .graph cimport Vertex, Edge
 
 cpdef list find_butadiene(Atom start, Atom end)
 
@@ -6,7 +7,7 @@ cpdef list find_butadiene_end_with_charge(Atom start)
 
 cpdef list find_allyl_end_with_charge(Atom start)
 
-cpdef list find_shortest_path(Atom start, Atom end, list path=*)
+cpdef list find_shortest_path(Vertex start, Vertex end, list path=*)
 
 cpdef list add_unsaturated_bonds(list path)
 
