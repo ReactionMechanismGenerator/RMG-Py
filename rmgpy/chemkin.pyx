@@ -1747,7 +1747,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
     string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, _kinetics.StickingCoefficient):
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
@@ -1764,7 +1764,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
               but instead it is {}
               """.format(string, repr(kinetics), num_reactants, 1.0e6 ** (num_reactants - 1), conversion_factor)
             # debugging; for gas phase only
-        string += '{0:<9.6e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.6e} {1:<9.3f} {2:<9.4f}'.format(
             kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si) * conversion_factor,
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
@@ -1773,7 +1773,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         arrhenius = kinetics.arrheniusHigh
         conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
         assert 0.999 < conversion_factor / 1.0e6 ** (num_reactants - 1) < 1.001  # for gas phase only
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * conversion_factor,
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
@@ -1782,7 +1782,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         arrhenius = kinetics.arrheniusLow
         conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
         assert 0.999 < conversion_factor / 1.0e6 ** num_reactants < 1.001  # for gas phase only
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * conversion_factor,
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
@@ -1791,7 +1791,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         arrhenius = kinetics.highPlimit
         conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
         assert 0.999 < conversion_factor / 1.0e6 ** (num_reactants - 1) < 1.001  # for gas phase only
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * conversion_factor,
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
@@ -1822,7 +1822,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             arrhenius = kinetics.arrheniusLow
             conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
             assert 0.999 < conversion_factor / 1.0e6 ** num_reactants < 1.001  # for gas phase only
-            string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
+            string += '    LOW/ {0:<9e} {1:<9.3f} {2:<9.4f}/\n'.format(
                 arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * conversion_factor,
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
@@ -1830,10 +1830,10 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             if isinstance(kinetics, _kinetics.Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si,
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si,
                                                                                   kinetics.T1.value_si)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha,
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g} {3:<9g}/\n'.format(kinetics.alpha,
                                                                                             kinetics.T3.value_si,
                                                                                             kinetics.T1.value_si,
                                                                                             kinetics.T2.value_si)
@@ -1843,7 +1843,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
                 for arrh in arrhenius.arrhenius:
                     conversion_factor = arrh.A.get_conversion_factor_from_si_to_cm_mol_s()
                     assert 0.999 < conversion_factor / 1.0e6 ** (num_reactants - 1) < 1.001  # for gas phase only
-                    string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(
+                    string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.4f}/\n'.format(
                         P / 101325.,
                         arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * conversion_factor,
                         arrh.n.value_si,
@@ -1852,7 +1852,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             else:
                 conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
                 assert 0.999 < conversion_factor / 1.0e6 ** (num_reactants - 1) < 1.001  # for gas phase only
-                string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(
+                string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.4f}/\n'.format(
                     P / 101325.,
                     arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * conversion_factor,
                     arrhenius.n.value_si,
