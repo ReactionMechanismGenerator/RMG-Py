@@ -597,6 +597,20 @@ class Group(Graph):
         """
         return self.hasEdge(atom1, atom2)
 
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the group contains an 'X' surface site.
+        """
+        cython.declare(atom=GroupAtom)
+        for atom in self.atoms:
+            if atom.isSurfaceSite():
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the group is nothing but a surface site 'X'."
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
+
     def removeAtom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does
@@ -884,6 +898,3 @@ class Group(Graph):
         else:
             return True
 
-    def isSurfaceSite(self):
-        "Returns ``True`` iff the group is nothing but a surface site 'X'."
-        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())

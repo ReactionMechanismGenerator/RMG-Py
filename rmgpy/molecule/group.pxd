@@ -102,7 +102,7 @@ cdef class Group(Graph):
     cpdef bint hasAtom(self, GroupAtom atom)
 
     cpdef bint hasBond(self, GroupAtom atom1, GroupAtom atom2)
-
+    
     cpdef removeAtom(self, GroupAtom atom)
 
     cpdef removeBond(self, GroupBond bond)
@@ -136,3 +136,5 @@ cdef class Group(Graph):
     cpdef bint isIdentical(self, Graph other)
     
     cpdef bint isSurfaceSite(self) except -2
+    
+    cpdef bint containsSurfaceSite(self) except -2
