@@ -1563,28 +1563,28 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, _kinetics.Arrhenius):
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, _kinetics.ThirdBody):
         arrhenius = kinetics.arrheniusLow
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif hasattr(kinetics,'highPlimit') and kinetics.highPlimit is not None:
         arrhenius = kinetics.highPlimit
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
@@ -1612,7 +1612,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         if isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
-            string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
+            string += '    LOW/ {0:<9e} {1:<9.3f} {2:<9.4f}/\n'.format(
                 arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
@@ -1620,20 +1620,20 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             if isinstance(kinetics, _kinetics.Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g} {3:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
     elif isinstance(kinetics, _kinetics.PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             if isinstance(arrhenius, _kinetics.MultiArrhenius):
                 for arrh in arrhenius.arrhenius:
-                    string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                    string += '    PLOG/ {0:<9.4f} {1:<9.3e} {2:<9.3f} {3:<9.4f}/\n'.format(P / 101325.,
                     arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * 1.0e6 ** (numReactants - 1),
                     arrh.n.value_si,
                     arrh.Ea.value_si / 4184.
                     )
             else:
-                string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                string += '    PLOG/ {0:<9.4f} {1:<9.3e} {2:<9.3f} {3:<9.4f}/\n'.format(P / 101325.,
                     arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
                     arrhenius.n.value_si,
                     arrhenius.Ea.value_si / 4184.
