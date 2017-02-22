@@ -267,7 +267,7 @@ class Atom(Vertex):
     def isNonHydrogen(self):
         """
         Return ``True`` if the atom does not represent a hydrogen atom or
-        ``False`` if not.
+        ``False`` if it does.
         """
         return self.element.number != 1
 
