@@ -664,6 +664,7 @@ class Group(Graph):
         """
         Remove the labels from all atoms in the molecular group.
         """
+        cython.declare(atom=GroupAtom)
         for atom in self.vertices:
             atom.label = ''
 
@@ -672,6 +673,7 @@ class Group(Graph):
         Return ``True`` if the group contains an atom with the label
         `label` and ``False`` otherwise.
         """
+        cython.declare(atom=GroupAtom)
         for atom in self.vertices:
             if atom.label == label: return True
         return False
@@ -681,6 +683,7 @@ class Group(Graph):
         Return the atom in the group that is labeled with the given `label`.
         Raises :class:`ValueError` if no atom in the group has that label.
         """
+        cython.declare(atom=GroupAtom)
         for atom in self.vertices:
             if atom.label == label: return atom
         raise ValueError('No atom in the functional group has the label "{0}".'.format(label))
@@ -691,6 +694,7 @@ class Group(Graph):
         and the values the atoms themselves. If two or more atoms have the
         same label, the value is converted to a list of these atoms.
         """
+        cython.declare(atom=GroupAtom)
         labeled = {}
         for atom in self.vertices:
             if atom.label != '':
