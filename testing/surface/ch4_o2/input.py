@@ -45,15 +45,15 @@ surfaceReactor(
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
         "CH4": 0.1,
-        "O2": 0.1,
-	"N2": 0.8,
+        "O2": 0.2,
+        "N2": 0.7,
     },
     initialSurfaceCoverages={
         "vacantX": 1.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
     surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
-    terminationConversion = { "CH4":0.95,},
+    terminationConversion = { "CH4":0.99,},
     terminationTime=(0.1, 's'),
 )
 
@@ -64,7 +64,7 @@ simulator(
 
 model(
     toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=1e-4,
+    toleranceMoveToCore=1e-5,
     toleranceInterruptSimulation=0.1,
     maximumEdgeSpecies=100000
 )
