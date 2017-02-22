@@ -1573,12 +1573,20 @@ class KineticsFamily(Database):
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
         struct = templateReactant.item
         
+        reactantContainsSurfaceSite = reactant.containsSurfaceSite()
+
         if isinstance(struct, LogicNode):
             mappings = []
             for child_structure in struct.getPossibleStructures(self.groups.entries):
+                if child_structure.containsSurfaceSite() != reactantContainsSurfaceSite:
+                    # An adsorbed template can't match a gas-phase species and vice versa
+                    continue
                 mappings.extend(reactant.findSubgraphIsomorphisms(child_structure))
             return mappings
         elif isinstance(struct, Group):
+            if struct.containsSurfaceSite() != reactantContainsSurfaceSite:
+                # An adsorbed template can't match a gas-phase species and vice versa
+                return []
             return reactant.findSubgraphIsomorphisms(struct)
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
