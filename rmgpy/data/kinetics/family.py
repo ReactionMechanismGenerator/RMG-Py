@@ -1316,6 +1316,8 @@ class KineticsFamily(Database):
             return mappings
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
+        else:
+            raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
     def generateReactions(self, reactants):
         """
