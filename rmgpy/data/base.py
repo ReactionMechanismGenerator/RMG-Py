@@ -270,7 +270,7 @@ class Database:
             entries.sort(key=lambda x: (x.index))
         return entries
     
-    def getSpecies(self, path):
+    def getSpecies(self, path, resonance=True):
         """
         Load the dictionary containing all of the species in a kinetics library or depository.
         """
@@ -282,7 +282,8 @@ class Database:
                 if line.strip() == '' and adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generateResonanceIsomers()
+                    if resonance:
+                        species.generateResonanceIsomers()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
@@ -294,7 +295,8 @@ class Database:
                 if adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generateResonanceIsomers()
+                    if resonance:
+                        species.generateResonanceIsomers()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
