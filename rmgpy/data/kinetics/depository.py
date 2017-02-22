@@ -128,7 +128,8 @@ class KineticsDepository(Database):
         Database.load(self, path, local_context, global_context)
         
         # Load the species in the kinetics library
-        speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'))
+        # Do not generate resonance structures, since training reactions may be written for a specific resonance form
+        speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'), resonance=False)
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
         for entry in entries:
@@ -165,13 +166,15 @@ class KineticsDepository(Database):
                 reactant = reactant.strip()
                 if reactant not in speciesDict:
                     raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(reactant, self.label))
-                # For some reason we need molecule objects in the depository rather than species objects
+                # Depository reactions should have molecule objects because they are needed in order to descend the
+                # tree using `getReactionTemplate()` later, but species objects work because `getReactionTemplate()`
+                # will simply pick the first molecule object in `Species().molecule`.
                 rxn.reactants.append(speciesDict[reactant])
             for product in products.split('+'):
                 product = product.strip()
                 if product not in speciesDict:
                     raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(product, self.label))
-                # For some reason we need molecule objects in the depository rather than species objects
+                # Same comment about molecule vs species objects as above.
                 rxn.products.append(speciesDict[product])
                 
             if not rxn.isBalanced():
