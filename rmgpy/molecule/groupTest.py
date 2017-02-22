@@ -642,6 +642,30 @@ class TestGroup(unittest.TestCase):
         self.assertFalse(self.group.containsLabeledAtom('*5'))
         self.assertFalse(self.group.containsLabeledAtom('*6'))
         
+    def testContainsSurfaceSite(self):
+        """
+        Test the Group.containsSurfaceSite() method.
+        """
+        self.assertFalse(self.group.containsSurfaceSite())
+        surfaceGroup = Group().fromAdjacencyList("""
+1 *1 X u0 {2,[S,D]}
+2 *2 R u0 {1,[S,D]}
+""")
+        self.assertTrue(surfaceGroup.containsSurfaceSite())
+
+    def testIsSurfaceSite(self):
+        """
+        Test the Group.isSurfaceSite() method.
+        """
+        self.assertFalse(self.group.isSurfaceSite())
+        surfaceGroup = Group().fromAdjacencyList("""
+1 *1 X u0 {2,[S,D]}
+2 *2 R u0 {1,[S,D]}
+""")
+        self.assertFalse(surfaceGroup.isSurfaceSite())
+        surfaceSite = Group().fromAdjacencyList("1 *1 X u0")
+        self.assertTrue(surfaceSite.isSurfaceSite())
+
     def testGetLabeledAtom(self):
         """
         Test the Group.getLabeledAtom() method.
