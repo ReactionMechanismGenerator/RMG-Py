@@ -1290,9 +1290,8 @@ class KineticsFamily(Database):
 
     def __matchReactantToTemplate(self, reactant, templateReactant):
         """
-        Return ``True`` if the provided reactant matches the provided
-        template reactant and ``False`` if not, along with a complete list of the
-        mappings.
+        Return a complete list of the mappings if the provided reactant 
+        matches the provided template reactant, or an empty list if not.
         """
 
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
