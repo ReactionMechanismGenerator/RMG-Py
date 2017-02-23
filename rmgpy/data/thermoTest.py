@@ -449,7 +449,7 @@ class TestCyclicThermo(unittest.TestCase):
         # RMG cannot parse the adjacencyList of that isomer correctly
         # so here we start with pyrene radical and get the two aromatic ring isomer
         # then saturate it.
-        smiles = '[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
         spe = Species().fromSMILES(smiles)
         spe.generateResonanceIsomers()
         mols = []
@@ -461,7 +461,6 @@ class TestCyclicThermo(unittest.TestCase):
                 if isAromaticRing(sr0mol):
                     aromaticRingNum += 1
             if aromaticRingNum == 2:
-                mol.saturate()
                 mols.append(mol)
         
         ringGroupLabels = []
@@ -485,12 +484,9 @@ class TestCyclicThermo(unittest.TestCase):
             polycyclicGroupLabels += [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
 
         self.assertIn('Benzene', ringGroupLabels)
-        self.assertIn('six-inringtwodouble-12', ringGroupLabels)
         self.assertIn('Cyclohexene', ringGroupLabels)
-        self.assertIn('1,3-Cyclohexadiene', ringGroupLabels)
         self.assertIn('s2_6_6_ben_ene_1', polycyclicGroupLabels)
-        self.assertIn('s2_6_6_ben_ene_2', polycyclicGroupLabels)
-        self.assertIn('s2_6_6_naphthalene', polycyclicGroupLabels)
+        self.assertIn('s2_6_6_diene_2_7', polycyclicGroupLabels)
 
     def testAddPolyRingCorrectionThermoDataFromHeuristicUsingAromaticTricyclic(self):
 
@@ -715,7 +711,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # RMG cannot parse the adjacencyList of that isomer correctly
         # so here we start with pyrene radical and get the two aromatic ring isomer
         # then saturate it.
-        smiles = '[C]1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
         spe = Species().fromSMILES(smiles)
         spe.generateResonanceIsomers()
         for mol in spe.molecule:
@@ -727,8 +723,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                     aromaticRingNum += 1
             if aromaticRingNum == 2:
                 break
-        mol.saturate()
-        
+
         # extract polyring from the molecule
         polyring = mol.getDisparateRings()[1][0]
 
@@ -753,7 +748,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
             aromaticBondNum = len(findAromaticBondsFromSubMolecule(bicyclic))
             aromaticBondNumInBicyclics.append(aromaticBondNum)
         aromaticBondNumInBicyclics = sorted(aromaticBondNumInBicyclics)
-        expectedAromaticBondNumInBicyclics = [0, 6, 6, 6, 11]
+        expectedAromaticBondNumInBicyclics = [0, 6, 6, 6, 6]
         self.assertEqual(aromaticBondNumInBicyclics, expectedAromaticBondNumInBicyclics)
 
     def testBicyclicDecompositionForPolyringUsingAromaticTricyclic(self):

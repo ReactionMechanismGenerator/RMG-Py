@@ -90,7 +90,7 @@ def failsSpeciesConstraints(species):
 
     maxRadicals = speciesConstraints.get('maximumRadicalElectrons', -1)
     if maxRadicals != -1:
-        if (struct.getNumberOfRadicalElectrons() > maxRadicals):
+        if (struct.getRadicalCount() > maxRadicals):
             return True
 
     maxIsotopes = speciesConstraints.get('maximumIsotopicAtoms', -1)

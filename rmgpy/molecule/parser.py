@@ -431,7 +431,7 @@ def fixCharge(mol, u_indices):
         return
 
     is_charged = sum([abs(at.charge) for at in mol.atoms]) != 0
-    is_correct = mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)
+    is_correct = mol.getRadicalCount() == (mol.multiplicity - 1)
     if mol.multiplicity < 3 or is_correct or not is_charged:
         return
 
@@ -667,7 +667,7 @@ def fix_triplet_to_singlet(mol, p_indices):
 
     for at in mol.atoms:
         index = mol.atoms.index(at) + 1
-        if mol.getNumberOfRadicalElectrons() == 2 and index in p_indices:
+        if mol.getRadicalCount() == 2 and index in p_indices:
             at.lonePairs += 1
             at.radicalElectrons -= 2
             p_indices.remove(index)
@@ -846,7 +846,7 @@ def fix_unsaturated_bond(mol, indices, aug_inchi):
     of atoms that should be unpaired electrons left. 
     """
 
-    correct = mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)
+    correct = mol.getRadicalCount() == (mol.multiplicity - 1)
     
     if not correct and not indices:
         raise Exception( 'Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
@@ -856,5 +856,5 @@ def fix_unsaturated_bond(mol, indices, aug_inchi):
 
     while not correct and unsaturated and len(indices) > 1:
         mol = fix_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
-        correct = mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)
+        correct = mol.getRadicalCount() == (mol.multiplicity - 1)
         unsaturated = isUnsaturated(mol)

@@ -42,6 +42,7 @@ import re
 import numpy
 import urllib
 from collections import OrderedDict
+import itertools
 
 import element as elements
 try:
@@ -848,7 +849,9 @@ class Molecule(Graph):
     
     def getRadicalCount(self):
         """
-        Return the number of unpaired electrons.
+        Return the total number of radical electrons on all atoms in the
+        molecule. In this function, monoradical atoms count as one, biradicals
+        count as two, etc.
         """
         cython.declare(atom=Atom, radicals=cython.short)
         radicals = 0
@@ -870,18 +873,6 @@ class Molecule(Graph):
                 if atom.element.symbol == element:
                     numAtoms += 1
             return numAtoms
-
-    def getNumberOfRadicalElectrons(self):
-        """
-        Return the total number of radical electrons on all atoms in the
-        molecule. In this function, monoradical atoms count as one, biradicals
-        count as two, etc. 
-        """
-        cython.declare(numRadicals=cython.int, atom=Atom)
-        numRadicals = 0
-        for atom in self.vertices:
-            numRadicals += atom.radicalElectrons
-        return numRadicals
 
     def copy(self, deep=False):
         """
@@ -1564,8 +1555,23 @@ class Molecule(Graph):
                 return True
         return False
 
+    def isArylRadical(self, ASSSR=None):
+        """
+        Return ``True`` if the molecule only contains aryl radicals,
+        ie. radical on an aromatic ring, or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom, radList=list)
+        if ASSSR is None:
+            ASSSR = self.getAromaticSSSR()[0]
+
+        total = self.getRadicalCount()
+        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(ASSSR)])
+        aryl = sum([atom.radicalElectrons for atom in aromaticAtoms])
+
+        return total == aryl
+
     def generateResonanceIsomers(self):
-        return resonance.generateResonanceIsomers(self)
+        return resonance.generateResonanceStructures(self)
 
     def getURL(self):
         """
@@ -1666,9 +1672,9 @@ class Molecule(Graph):
         
         return group
 
-    def getAromaticSSSR(self):
+    def getAromaticSSSR(self, SSSR=None):
         """
-        Returns the smallest set of smallest aromatic rings
+        Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds
 
         Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
@@ -1684,18 +1690,22 @@ class Molecule(Graph):
 
         AROMATIC = BondType.AROMATIC
 
-        rings = [ring0 for ring0 in self.getSmallestSetOfSmallestRings() if len(ring0) == 6]
+        if SSSR is None:
+            SSSR = self.getSmallestSetOfSmallestRings()
+
+        rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
         if not rings:
-            return []
+            return [], []
 
         try:
             rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
-            return []
+            return [], []
 
         aromaticRings = []
+        aromaticBonds = []
         for ring0 in rings:
-            aromaticBonds = []
+            aromaticBondsInRing = []
             # Figure out which atoms and bonds are aromatic and reassign appropriately:
             for i, atom1 in enumerate(ring0):
                 if not atom1.isCarbon():
@@ -1705,12 +1715,13 @@ class Molecule(Graph):
                     if self.hasBond(atom1, atom2):
                         if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
                                                         rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                            aromaticBonds.append(self.getBond(atom1, atom2))
+                            aromaticBondsInRing.append(self.getBond(atom1, atom2))
             else:  # didn't break so all atoms are carbon
-                if len(aromaticBonds) == 6:
+                if len(aromaticBondsInRing) == 6:
                     aromaticRings.append(ring0)
+                    aromaticBonds.append(aromaticBondsInRing)
 
-        return aromaticRings
+        return aromaticRings, aromaticBonds
 
     def getDeterministicSmallestSetOfSmallestRings(self):
         """

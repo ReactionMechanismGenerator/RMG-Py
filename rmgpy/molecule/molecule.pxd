@@ -152,8 +152,6 @@ cdef class Molecule(Graph):
 
     cpdef int getNumAtoms(self, str element=?)
 
-    cpdef int getNumberOfRadicalElectrons(self)
-
     cpdef Graph copy(self, bint deep=?)
 
     cpdef deleteHydrogens(self)
@@ -212,10 +210,12 @@ cdef class Molecule(Graph):
     
     cpdef bint isRadical(self) except -2
 
+    cpdef bint isArylRadical(self, list ASSSR=?) except -2
+
     cpdef int calculateSymmetryNumber(self) except -1
 
     cpdef list generateResonanceIsomers(self)
 
-    cpdef list getAromaticSSSR(Molecule mol)
+    cpdef tuple getAromaticSSSR(self, list SSSR=?)
 
     cpdef list getDeterministicSmallestSetOfSmallestRings(self)
