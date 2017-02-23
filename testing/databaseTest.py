@@ -634,6 +634,12 @@ The following adjList may have atoms in a different ordering than the input file
             for x in E:
                 s += '\n'+str(x)
             nose.tools.assert_true(False,s)
+    def kinetics_checkSampleDescendsToGroup(self, family_name):
+        """
+        This test first creates a sample :class:Molecule from a :class:Group. Then it checks
+        that this molecule hits the original group or a child when it descends down the tree.
+        """
+        family = self.database.kinetics.families[family_name]
 
         #ignore any products
         ignore=[]
