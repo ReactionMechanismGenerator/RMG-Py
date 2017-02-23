@@ -262,10 +262,11 @@ class GaussianMol(QMMolecule, Gaussian):
         """
         for atom in self.molecule.vertices:
             if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
+                logging.warning("Skipping species that contains nitrogen: {}".format(self.molecule.toSMILES()))
                 return None
 
         if self.verifyOutputFile():
-            logging.info("Found a successful output file already; using that.")
+            logging.info("Found a successful output file; using that.")
             source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
             self.createGeometry()
