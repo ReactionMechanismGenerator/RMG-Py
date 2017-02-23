@@ -1781,9 +1781,14 @@ class Group(Graph):
             for atom2, bond12 in atom.bonds.iteritems():
                 bond12.order=[bond12.order[0]]
 
+        # print "initial"
+        # print self.toAdjacencyList()
+
         #Add implicit atoms
         modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()
 
+        # print "after implicit"
+        # print modifiedGroup.toAdjacencyList()
 
         #Add implicit benzene rings
         modifiedGroup = modifiedGroup.addImplicitBenzene()
@@ -1803,6 +1808,8 @@ class Group(Graph):
             for atom2, bond12 in atom1.bonds.iteritems():
                 bond12.makeBond(newMolecule, groupToMol[atom1], groupToMol[atom2])
 
+        # print "first molecule"
+        # print newMolecule.toAdjacencyList()
 
         #Saturate up to expected valency
         for molAtom in newMolecule.atoms:
@@ -1821,6 +1828,9 @@ class Group(Graph):
                     newMolecule.addAtom(newH)
                     newMolecule.addBond(newBond)
                 molAtom.updateCharge()
+
+        # print "after saturated"
+        # print newMolecule.toAdjacencyList()
 
         newMolecule.update()
         return newMolecule
