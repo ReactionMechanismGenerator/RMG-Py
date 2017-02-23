@@ -45,7 +45,7 @@ cdef class Reaction:
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
     cdef public bint duplicate
-    cdef public int _degeneracy
+    cdef public float _degeneracy
     cdef public list pairs
     cdef public dict k_effective_cache
     

@@ -132,7 +132,7 @@ class Reaction:
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
-        if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
+        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
         string = string[:-2] + ')'
         return string
@@ -164,15 +164,16 @@ class Reaction:
     def __getDegneneracy(self):
         return self._degeneracy
     def __setDegeneracy(self, new):
-        # find how much to modify the rate
-        if self._degeneracy < 2:
-            degeneracyRatio = new
-        else:
-            degeneracyRatio = (new*1.0) / self._degeneracy
         # modify rate if kinetics exists
         if self.kinetics is not None:
+            if self._degeneracy < 2:
+                degeneracyRatio = new
+            else:
+                degeneracyRatio = (new*1.0) / self._degeneracy
             self.kinetics.changeRate(degeneracyRatio)
-            logging.debug('did not modify A factor when modifying degeneracy since the reaction rate was not set')
+        else:
+            logging.debug('did not modify A factor when modifying degeneracy since' \
+                          'the reaction rate was not set')
         # set new degeneracy
         self._degeneracy = new
     degeneracy = property(__getDegneneracy, __setDegeneracy)
@@ -1116,11 +1117,11 @@ class Reaction:
         other.products = []
         for product in self.products:
             other.products.append(product.copy(deep=True))
+        other.degeneracy = self.degeneracy
         other.kinetics = deepcopy(self.kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
-        other.degeneracy = self.degeneracy
         other.pairs = deepcopy(self.pairs)
         
         return other

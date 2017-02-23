@@ -95,7 +95,7 @@ def saveEntry(f, entry):
                                                     "but reaction {0!s} has label {1!r}".format(
                                                      entry.item, entry.label))
             # Add degeneracy if the reaction is coming from a depository or kinetics library
-            f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
+            f.write('    degeneracy = {0:.1f},\n'.format(entry.item.degeneracy))
             if entry.item.duplicate:
                 f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
             if not entry.item.reversible:
