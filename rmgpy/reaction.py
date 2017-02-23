@@ -107,11 +107,11 @@ class Reaction:
         self.label = label
         self.reactants = reactants
         self.products = products
+        self.degeneracy = degeneracy
         self.kinetics = kinetics
         self.reversible = reversible
         self.transitionState = transitionState
         self.duplicate = duplicate
-        self.degeneracy = degeneracy
         self.pairs = pairs
         
         if diffusionLimiter.enabled:
@@ -159,6 +159,22 @@ class Reaction:
                            self.degeneracy,
                            self.pairs
                            ))
+
+    def __getDegneneracy(self):
+        return self._degeneracy
+    def __setDegeneracy(self, new):
+        # find how much to modify the rate
+        if self._degeneracy < 2:
+            degeneracyRatio = new
+        else:
+            degeneracyRatio = (new*1.0) / self._degeneracy
+        # modify rate if kinetics exists
+        if self.kinetics is not None:
+            self.kinetics.changeRate(degeneracyRatio)
+            logging.debug('did not modify A factor when modifying degeneracy since the reaction rate was not set')
+        # set new degeneracy
+        self._degeneracy = new
+    degeneracy = property(__getDegneneracy, __setDegeneracy)
 
     def toChemkin(self, speciesList=None, kinetics=True):
         """

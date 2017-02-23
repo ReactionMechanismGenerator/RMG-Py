@@ -949,6 +949,16 @@ class TestReaction(unittest.TestCase):
 
         diffusionLimiter.enabled = False
 
+    def testDegeneracyUpdatesRate(self):
+        """
+        This method tests that a change in degeneracy will result in a modified rate constant
+        """
+
+        prefactor = self.reaction.kinetics.A.value_si
+        degeneracyFactor = 2
+        self.reaction.degeneracy *= degeneracyFactor
+        self.assertAlmostEqual(self.reaction.kinetics.A.value_si, degeneracyFactor * prefactor)
+
 class TestReactionToCantera(unittest.TestCase):
     """
     Contains unit tests of the Reaction class associated with forming Cantera objects.
