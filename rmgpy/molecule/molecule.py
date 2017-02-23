@@ -849,7 +849,9 @@ class Molecule(Graph):
     
     def getRadicalCount(self):
         """
-        Return the number of unpaired electrons.
+        Return the total number of radical electrons on all atoms in the
+        molecule. In this function, monoradical atoms count as one, biradicals
+        count as two, etc.
         """
         cython.declare(atom=Atom, radicals=cython.short)
         radicals = 0
@@ -871,18 +873,6 @@ class Molecule(Graph):
                 if atom.element.symbol == element:
                     numAtoms += 1
             return numAtoms
-
-    def getNumberOfRadicalElectrons(self):
-        """
-        Return the total number of radical electrons on all atoms in the
-        molecule. In this function, monoradical atoms count as one, biradicals
-        count as two, etc. 
-        """
-        cython.declare(numRadicals=cython.int, atom=Atom)
-        numRadicals = 0
-        for atom in self.vertices:
-            numRadicals += atom.radicalElectrons
-        return numRadicals
 
     def copy(self, deep=False):
         """
