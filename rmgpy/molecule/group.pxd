@@ -64,6 +64,8 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint isSulfur(self)
 
+    cpdef list countBonds(self, wildcards = ?)
+
     cpdef bint hasWildcards(self)
 
     cpdef mol.Atom makeSampleAtom(self)

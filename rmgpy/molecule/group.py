@@ -478,6 +478,36 @@ class GroupAtom(Vertex):
 
         return False
 
+    def countBonds(self, wildcards = False):
+        """
+        Returns: list of the number of bonds currently on the :class:GroupAtom
+
+        If the argument wildcards is turned off then any bonds with multiple
+        options for bond orders will not be counted
+        """
+        #count up number of bonds
+        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+        for atom2, bond12 in self.bonds.iteritems():
+            if not wildcards and len(bond12.order) > 1:
+                continue
+            # Count numbers of each higher-order bond type
+            if bond12.isSingle(wildcards = True):
+                single += 1
+            if bond12.isDouble(wildcards = True):
+                if atom2.isOxygen():
+                    oDouble += 1
+                elif atom2.isSulfur():
+                    sDouble += 1
+                else:
+                    # rDouble is for double bonds NOT to oxygen or Sulfur
+                    rDouble += 1
+            if bond12.isTriple(wildcards = True): triple += 1
+            if bond12.isBenzene(wildcards = True): benzene += 1
+
+        allDouble = rDouble + oDouble + sDouble
+
+        return [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
+
     def makeSampleAtom(self):
         """
 
