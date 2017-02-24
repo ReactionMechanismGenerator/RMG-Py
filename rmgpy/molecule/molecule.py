@@ -1225,7 +1225,7 @@ class Molecule(Graph):
         """
         from .draw import MoleculeDrawer
         format = os.path.splitext(path)[-1][1:].lower()
-        MoleculeDrawer().draw(self, format, path=path)
+        MoleculeDrawer().draw(self, format, target=path)
     
     def _repr_png_(self):
         """

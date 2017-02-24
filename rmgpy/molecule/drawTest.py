@@ -37,7 +37,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = 'test_molecule.png'
         if os.path.exists(path):
             os.unlink(path)
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='png', path=path)
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='png', target=path)
         self.assertTrue(os.path.exists(path), "File doesn't exist")
         os.unlink(path)
         self.assertIsInstance(surface, ImageSurface)
@@ -53,7 +53,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = 'test_molecule.pdf'
         if os.path.exists(path):
             os.unlink(path)
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', path=path)
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', target=path)
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
         os.unlink(path)
@@ -70,7 +70,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         if os.path.exists(path):
             os.unlink(path)
         polycycle = Molecule(SMILES="C123CC4CC1COCC2CCC34")
-        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', path=path)
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', target=path)
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
         os.unlink(path)
