@@ -636,8 +636,6 @@ class GroupBond(Edge):
         returns the bond order as a list of numbers
         """
         return self.order
-        
-
             
     def setOrderNum(self, newOrder):
         """
@@ -645,36 +643,68 @@ class GroupBond(Edge):
         """
         self.order = newOrder
             
-    def isSingle(self):
+    def isSingle(self, wildcards = False):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are single.
         
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
-        return abs(self.order[0]-1) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-1) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-1) <= 1e-9 and len(self.order) == 1
 
-    def isDouble(self):
+    def isDouble(self, wildcards = False):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are double.
         """
-        return abs(self.order[0]-2) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-2) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-2) <= 1e-9 and len(self.order) == 1
 
-    def isTriple(self):
+    def isTriple(self, wildcards = False):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are triple.
         """
-        return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-3) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
 
-    def isBenzene(self):
+    def isBenzene(self, wildcards = False):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are benzene
         """
-        return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-1.5) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
 
     def __changeBond(self, order):
         """

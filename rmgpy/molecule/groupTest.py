@@ -385,8 +385,55 @@ class TestGroupBond(unittest.TestCase):
         
         self.bond.setOrderNum([3,1,2])
         self.assertEqual(self.bond.getOrderStr(),['T','S','D'])
+
+    def testIsSingle(self):
+        """
+        test the Bond.isSingle() method
+        """
+        self.bond.setOrderNum([1])
+        self.assertTrue(self.bond.isSingle())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isSingle(wildcards = False))
+        self.assertTrue(self.bond.isSingle(wildcards = True))
+
+    def testIsDouble(self):
+        """
+        test the Bond.isDouble() method
+        """
+        self.bond.setOrderNum([2])
+        self.assertTrue(self.bond.isDouble())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isDouble(wildcards = False))
+        self.assertTrue(self.bond.isDouble(wildcards = True))
     
-    
+    def testIsTriple(self):
+        """
+        test the Bond.isTriple() method
+        """
+        self.bond.setOrderNum([3])
+        self.assertTrue(self.bond.isTriple())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isTriple(wildcards = False))
+        self.assertTrue(self.bond.isTriple(wildcards = True))
+
+    def testIsBenzene(self):
+        """
+        test the Bond.isBenzene() method
+        """
+        self.bond.setOrderNum([1.5])
+        self.assertTrue(self.bond.isBenzene())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isBenzene(wildcards = False))
+        self.assertTrue(self.bond.isBenzene(wildcards = True))
+
     def testApplyActionBreakBond(self):
         """
         Test the GroupBond.applyAction() method for a BREAK_BOND action.

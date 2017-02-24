@@ -86,13 +86,13 @@ cdef class GroupBond(Edge):
 
     cpdef __changeBond(self, short order)
 
-    cpdef bint isSingle(self) except -2
+    cpdef bint isSingle(self, bint wildcards = ?) except -2
 
-    cpdef bint isDouble(self) except -2
+    cpdef bint isDouble(self, bint wildcards = ?) except -2
 
-    cpdef bint isTriple(self) except -2
+    cpdef bint isTriple(self, bint wildcards = ?) except -2
 
-    cpdef bint isBenzene(self) except -2
+    cpdef bint isBenzene(self, bint wildcards = ?) except -2
 
     cpdef applyAction(self, list action)
 
