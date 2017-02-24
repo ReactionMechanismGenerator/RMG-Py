@@ -617,7 +617,6 @@ class CoreEdgeReactionModel:
 
         else:
             # We are reacting the edge
-
             rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
             
@@ -629,52 +628,14 @@ class CoreEdgeReactionModel:
                     pass
                 self.processNewReactions([rxn], spc)
 
-        ################################################################
-        # Begin processing the new species and reactions
-        
-        # Generate kinetics of new reactions
-        logging.info('Generating kinetics for new reactions...')
-        for reaction in self.newReactionList:
-            family = getFamilyLibraryObject(reaction.family)
+        self.generateKineticsForNewReactions(self.newReactionList)
 
-            # If the reaction already has kinetics (e.g. from a library),
-            # assume the kinetics are satisfactory
-            if reaction.kinetics is None:
-                # Set the reaction kinetics
-                kinetics, source, entry, isForward = self.generateKinetics(reaction)
-                reaction.kinetics = kinetics
-                # Flip the reaction direction if the kinetics are defined in the reverse direction
-                if not isForward:
-                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                if family.ownReverse and hasattr(reaction,'reverse'):
-                    if reaction.reverse:
-                        if not isForward:
-                            reaction.template = reaction.reverse.template
-                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                        reaction.reverse = None
-                    
-        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
-        # self.newReactionList only contains *actually* new reactions, all in the forward direction.
-        for reaction in self.newReactionList:
-            # convert KineticsData to Arrhenius forms
-            if isinstance(reaction.kinetics, KineticsData):
-                reaction.kinetics = reaction.kinetics.toArrhenius()
-            #  correct barrier heights of estimated kinetics
-            if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
-                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
-                
-            if self.pressureDependence and reaction.isUnimolecular():
-                # If this is going to be run through pressure dependence code,
-                # we need to make sure the barrier is positive.
-                reaction.fixBarrierHeight(forcePositive=True)
-            
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks()
             logging.info('')
-            
+
         # Check new core and edge reactions for Chemkin duplicates
         # The same duplicate reaction gets brought into the core
         # at the same time, so there is no danger in checking all of the edge.
@@ -699,6 +660,56 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
+
+        
+    def generateKineticsForNewReactions(self, newReactionList):
+        """
+        Generate the kinetics for things in newReactionList.
+        
+        1. Assumes things that already have kinetics (they came from a library)
+        are already OK
+        2. Other things are generated using `self.generateKinetics(reaction)`
+        3. If that returns the reverse, then the reaction is flipped
+        4. ArrheniuEP (Evans Polanyi) ace converted to Arrhenius
+        5. Barrier heights are fixed to ensure match endothermicity, if needed.  
+        """
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
+        for reaction in newReactionList:
+            family = getFamilyLibraryObject(reaction.family)
+
+            # If the reaction already has kinetics (e.g. from a library),
+            # assume the kinetics are satisfactory
+            if reaction.kinetics is None:
+                # Set the reaction kinetics
+                kinetics, source, entry, isForward = self.generateKinetics(reaction)
+                reaction.kinetics = kinetics
+                # Flip the reaction direction if the kinetics are defined in the reverse direction
+                if not isForward:
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
+                if family.ownReverse and hasattr(reaction,'reverse'):
+                    if reaction.reverse:
+                        if not isForward:
+                            reaction.template = reaction.reverse.template
+                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                        reaction.reverse = None
+                    
+        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
+        # newReactionList only contains *actually* new reactions, all in the forward direction.
+        for reaction in newReactionList:
+            # convert KineticsData to Arrhenius forms
+            if isinstance(reaction.kinetics, KineticsData):
+                reaction.kinetics = reaction.kinetics.toArrhenius()
+            #  correct barrier heights of estimated kinetics
+            if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
+                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if self.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
+            
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """
