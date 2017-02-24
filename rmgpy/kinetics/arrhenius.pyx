@@ -423,10 +423,10 @@ cdef class PDepArrhenius(PDepKineticsModel):
     
     """
 
-    def __init__(self, pressures=None, arrhenius=None, highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+    def __init__(self, pressures=None, arrhenius=[], highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit, comment=comment)
         self.pressures = pressures
-        self.arrhenius = arrhenius or []
+        self.arrhenius = arrhenius
 
     def __repr__(self):
         """
@@ -577,7 +577,7 @@ cdef class MultiArrhenius(KineticsModel):
     
     """
     
-    def __init__(self, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+    def __init__(self, arrhenius=[], Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrhenius = arrhenius
         
@@ -696,7 +696,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
     
     """
     
-    def __init__(self, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+    def __init__(self, arrhenius=[], Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrhenius = arrhenius
         
