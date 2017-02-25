@@ -38,6 +38,7 @@ import os.path
 import re
 import codecs
 import math
+import numpy
 from copy import  deepcopy
 
 from rmgpy.data.base import Database, Entry, DatabaseError, getAllCombinations
@@ -471,11 +472,14 @@ class KineticsRules(Database):
                 childrenSet[i] = parent.children
                 childrenList.extend(getAllCombinations(childrenSet))
                 distanceList.extend([k.nodalDistance for k in parent.children])
+                
+        if distanceList != []:
+            minDist = min(distanceList) #average the minimum distance neighbors
         
-        minDist = min(distanceList) #average the minimum distance neighbors
-        
-        childrenList = [childrenList[i] for i in xrange(len(childrenList)) if distanceList[i]==minDist]
-        
+            closeChildrenList = [childrenList[i] for i in xrange(len(childrenList)) if distanceList[i]==minDist]
+        else:
+            closeChildrenList = []
+            
         kineticsList = []
         for template in childrenList:
             label = ';'.join([g.label for g in template])
@@ -485,7 +489,7 @@ class KineticsRules(Database):
             else:
                 kinetics = self.fillRulesByAveragingUp(template, alreadyDone, verbose)
             
-            if kinetics is not None:
+            if template in closeChildrenList and kinetics is not None:
                 kineticsList.append([kinetics, template])
         
         # See if we already have a rate rule for this exact template instead
@@ -579,25 +583,41 @@ class KineticsRules(Database):
         )
         return averagedKinetics
     
-    def calculateNormDistance(self, template, otherTemplate):
-        """
-        Calculate the norm distance squared between two rate rules with
-        `template` and `otherTemplate`.  The norm distance is 
-        a^2 + b^2 + c^2 .... when a is the distance between the nodes in the
-        first tree, b is the distance between the nodes in the second tree, etc.
-        """
-        
-        # Do it the stupid way first and calculate distances from the top 
-        # rather than from each other for now... it's dumb but need to see results first
-        import numpy
+#    def calculateNormDistance(self, template, otherTemplate):
+#        """
+#        Calculate the norm distance squared between two rate rules with
+#        `template` and `otherTemplate`.  The norm distance is 
+#        a^2 + b^2 + c^2 .... when a is the distance between the nodes in the
+#        first tree, b is the distance between the nodes in the second tree, etc.
+#        """
+#        
+#        # Do it the stupid way first and calculate distances from the top 
+#        # rather than from each other for now... it's dumb but need to see results first
+#        depth = numpy.array([node.level for node in template])
+#        otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
+#        distance = numpy.array(depth-otherDepth)
+#        norm = numpy.dot(distance,distance)
+#        return norm
+    
+    def calculateNormDistance(self,template,otherTemplate):
+        #assume one or the other is the ancestor of the other one on each tree
+        #...it ran ok, so that seems to be correct
         depth = numpy.array([node.level for node in template])
         otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
-        weights = numpy.array([template[i].nodalDistance for i in range(len(template))]) #we weigh the nodes based on nodalDistance (distance specified between an entry and its parent)
-        distance = numpy.array(depth-otherDepth,numpy.float64)
-        distance *= weights 
+        distance = numpy.zeros(depth.shape)
+        for i in xrange(len(depth)):
+            if depth[i] > otherDepth[i]:
+                tracer = template[i]
+                target = otherTemplate[i]
+            else:
+                tracer = otherTemplate[i]
+                target = template[i]
+            while tracer != target:
+                distance[i] += tracer.nodalDistance
+                tracer = tracer.parent
         norm = numpy.dot(distance,distance)
         return norm
-        
+                
     def estimateKinetics(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -622,6 +642,7 @@ class KineticsRules(Database):
                 if entry is None: continue
                 kinetics = deepcopy(entry.data)
                 kineticsList.append([kinetics, t])
+            
             
             if len(kineticsList) > 0:                 
                 
