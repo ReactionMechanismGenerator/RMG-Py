@@ -73,6 +73,7 @@ class KineticsRules(Database):
                   longDesc='',
                   rank=None,
                   nodalDistance=None,
+                  treeDistances=None
                   ):
             
         entry = Entry(
@@ -591,11 +592,10 @@ class KineticsRules(Database):
         import numpy
         depth = numpy.array([node.level for node in template])
         otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
-        weights = numpy.array([self.treeDistances[i] if template[i].nodalDistance is None else template[i].nodalDistance for i in range(len(template))])
-        distance = numpy.array(depth-otherDepth)
-        distance *= weights #need to take values from template if available
+        weights = numpy.array([template[i].nodalDistance for i in range(len(template))]) #we weigh the nodes based on nodalDistance (distance specified between an entry and its parent)
+        distance = numpy.array(depth-otherDepth,numpy.float64)
+        distance *= weights 
         norm = numpy.dot(distance,distance)
-        assert False
         return norm
         
     def estimateKinetics(self, template, degeneracy=1):

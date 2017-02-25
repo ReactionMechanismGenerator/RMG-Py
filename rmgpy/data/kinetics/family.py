@@ -394,10 +394,6 @@ class KineticsFamily(Database):
         self.boundaryAtoms = boundaryAtoms
         self.treeDistances = treeDistances
         
-        if self.treeDistances is None:
-            self.treeDistances = np.ones(len(self.top))
-        else:
-            assert len(self.treeDistances) == len(self.top), 'treeDistances must be the same length as the number of trees in the family'
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
@@ -560,7 +556,23 @@ class KineticsFamily(Database):
         ftemp.write('\n')
         
         ftemp.close()
-    
+        
+    def distributeTreeDistances(self):
+        """
+        fills in nodalDistance (the distance between an entry and its parent)
+        if not already entered with the value from treeDistances associated
+        with the tree the entry comes from
+        """
+        toplabels = [i.label for i in self.groups.top]
+        for entryName,entry in self.groups.entries.iteritems():
+            topentry = entry
+            while not (topentry.parent is None): #get the top for the tree entry is in
+                topentry = topentry.parent
+            if topentry.label in toplabels: #not exactly sure where the ones that don't match come from, they aren't in the trees, so this should be ok
+                ind = toplabels.index(topentry.label)
+                if entry.nodalDistance is None:
+                    entry.nodalDistance = self.treeDistances[ind]
+                
     def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
         Load a kinetics database from a file located at `path` on disk.
@@ -585,7 +597,8 @@ class KineticsFamily(Database):
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
-        self.treeDistances = local_context.get('treeDistances',np.ones(len(self.top)))
+        self.treeDistances = local_context.get('treeDistances',None)
+        
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -605,6 +618,7 @@ class KineticsFamily(Database):
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
+        
         # load the groups indicated in the entry label
         for label, entries in self.rules.entries.iteritems():
             nodes = label.split(';')
@@ -628,6 +642,12 @@ class KineticsFamily(Database):
                     logging.debug("Loading kinetics family depository from {0}".format(fpath))
                     depository.load(fpath, local_context, global_context)
                     self.depositories.append(depository)
+                    
+            if self.treeDistances is None:
+                self.treeDistances = np.ones(len(self.groups.top))
+            else:
+                self.treeDistances = np.array(self.treeDistances,np.float64)
+            self.distributeTreeDistances()
             return
                     
         if not depositoryLabels:
@@ -655,8 +675,13 @@ class KineticsFamily(Database):
             logging.debug("Loading kinetics family depository from {0}".format(fpath))
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
+            
+        if self.treeDistances is None:
+            self.treeDistances = np.ones(len(self.groups.top))
+        else:
+            self.treeDistances = np.array(self.treeDistances,np.float64)
+        self.distributeTreeDistances()
         
-
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
