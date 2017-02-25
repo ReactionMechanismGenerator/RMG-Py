@@ -571,13 +571,13 @@ class CoreEdgeReactionModel:
                 markDuplicateReaction(rxn, checkedReactions)
                 checkedReactions.append(rxn)
 
+        logging.info('\nAfter reacting core to generate edge reactions')
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
             reactionsMovedFromEdge=reactionsMovedFromEdge,
             newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
             newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
-            reactEdge=reactEdge,
         )
 
         logging.info('')
@@ -696,13 +696,16 @@ class CoreEdgeReactionModel:
                 markDuplicateReaction(rxn, checkedReactions)
                 checkedReactions.append(rxn)
 
+        if isinstance(newObject, Species):
+            logging.info('\nAfter adding {0!s} to core'.format(newObject))
+        else:
+            logging.info('\nAfter exploring {0!s} in {1!s}'.format(newObject[0], newObject[1]))
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
             reactionsMovedFromEdge=reactionsMovedFromEdge,
             newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
-            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
-            reactEdge=reactEdge,
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
         )
 
         logging.info('')
@@ -932,18 +935,15 @@ class CoreEdgeReactionModel:
                 
         return kinetics, source, entry, isForward
     
-    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None, reactEdge=False):
+    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies,
+                            newEdgeReactions, reactionsMovedFromEdge=None):
         """
         Output a summary of a model enlargement step to the log. The details of
         the enlargement are passed in the `newCoreSpecies`, `newCoreReactions`,
         `newEdgeSpecies`, and `newEdgeReactions` objects. 
         """
 
-        logging.info('')
-        if reactEdge:
-            logging.info('Summary of Secondary Model Edge Enlargement')
-        else:
-            logging.info('Summary of Model Enlargement')
+        logging.info('Summary of Model Enlargement')
         logging.info('---------------------------------')
 
         logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
