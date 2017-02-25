@@ -393,8 +393,11 @@ class KineticsFamily(Database):
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
         self.boundaryAtoms = boundaryAtoms
         self.treeDistances = treeDistances
+        
         if self.treeDistances is None:
             self.treeDistances = np.ones(len(self.top))
+        else:
+            assert len(self.treeDistances) == len(self.top), 'treeDistances must be the same length as the number of trees in the family'
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
@@ -576,13 +579,13 @@ class KineticsFamily(Database):
         local_context['False'] = False
         local_context['reverse'] = None
         local_context['boundaryAtoms'] = None
-
+        local_context['treeDistances'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
-
+        self.treeDistances = local_context.get('treeDistances',np.ones(len(self.top)))
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:

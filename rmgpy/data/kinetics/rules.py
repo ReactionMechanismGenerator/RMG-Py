@@ -591,10 +591,11 @@ class KineticsRules(Database):
         import numpy
         depth = numpy.array([node.level for node in template])
         otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
-
+        weights = numpy.array([self.treeDistances[i] if template[i].nodalDistance is None else template[i].nodalDistance for i in range(len(template))])
         distance = numpy.array(depth-otherDepth)
-        distance *= numpy.array(self.treeDistances) #need to take values from template if available
+        distance *= weights #need to take values from template if available
         norm = numpy.dot(distance,distance)
+        assert False
         return norm
         
     def estimateKinetics(self, template, degeneracy=1):
