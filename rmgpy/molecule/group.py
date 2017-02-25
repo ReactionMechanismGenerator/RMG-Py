@@ -792,8 +792,15 @@ class Group(Graph):
         """
         Return a png picture of the group, useful for ipython-qtconsole.
         """
+        return self.draw('png')
+
+    def draw(self, format):
+        """
+        Use pydot to draw a basic graph of the group.
+
+        Use format to specify the desired output format, eg. 'png', 'svg', 'ps', 'pdf', 'plain', etc.
+        """
         import pydot
-        import os
 
         graph = pydot.Dot(graph_type='graph', dpi="52")
         for index, atom in enumerate(self.atoms):
@@ -810,7 +817,7 @@ class Group(Graph):
                     bondType = '"' + bondType + '"'
                     graph.add_edge(pydot.Edge(src=str(index1 + 1), dst=str(index2 + 1), label=bondType, fontname="Helvetica", fontsize="16"))
 
-        img = graph.create_png(prog='neato')
+        img = graph.create(prog='neato', format=format)
         return img
 
     def __getAtoms(self): return self.vertices
