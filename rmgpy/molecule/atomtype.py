@@ -239,10 +239,9 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'Cl','Ar']
 )
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
-    'C',
     'He',
     'Val4','Val5','Val6','Val7',
-    'Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
+    'C', 'Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
     'Ne',
@@ -420,7 +419,8 @@ atomTypes['Cl'  ].setActions(incrementBond=[],               decrementBond=['Cl'
 atomTypes['Ar'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
 #list of elements that do not have more specific atomTypes
-allElements=['H', 'He', 'C', 'O', 'N', 'Si', 'S', 'Ne','Cl', 'Ar', ]
+#these are ordered on priority of picking if we encounter a more general atomType for make
+allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He',]
 nonSpecifics=['H', 'He', 'Ne', 'Cl', 'Ar',]
 
 for atomType in atomTypes.values():

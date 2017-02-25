@@ -1640,12 +1640,6 @@ class Group(Graph):
         """
         (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs) = copyGroup.classifyBenzeneCarbons()
 
-        #check that there are less than three Cbf atoms
-        if len(cbfAtomList) > 3:
-            if not self.isBenzeneExplicit():
-                raise ImplicitBenzeneError("{0} has more than three Cbf atoms and does not have fully explicit benzene rings.")
-            #already fully explicit if it passes isBenzeneExplict()
-            else: return copyGroup
         """
         #Step 2. Partner up each Cbf1 and Cbf2 atom
 
@@ -1827,7 +1821,7 @@ class Group(Graph):
                 if x ==0: lastAtom = ring[-1]
                 else: lastAtom = mergedRingDict[index][-1]
                 #add a new atom to the ring and the group
-                newAtom = copyGroup. createAndConnectAtom(['Cb'], lastAtom, [1.5])
+                newAtom = copyGroup.createAndConnectAtom(['Cb'], lastAtom, [1.5])
                 mergedRingDict[index].append(newAtom)
                 #At the end attach to the other endpoint
                 if x == carbonsToGrow -1:
@@ -1899,6 +1893,13 @@ class Group(Graph):
                     bond12.order = [bond12.order[0]]
                     atom2.bonds[atom1].order = bond12.order
 
+        #if we have wildcard atomtypes pick one based on ordering of allElements
+        for atom in self.atoms:
+            for elementLabel in allElements:
+                if atomTypes[elementLabel] in atom.atomType[0].specific:
+                    atom.atomType=[atomTypes[elementLabel]]
+                    break
+
     def makeSampleMolecule(self):
         """
         Returns: A sample class :Molecule: from the group
@@ -1909,11 +1910,20 @@ class Group(Graph):
         #Remove all wildcards
         modifiedGroup.pickWildcards()
 
+        #check that there are less than three Cbf atoms
+        cbfCount = 0
+        for atom in modifiedGroup.atoms:
+            if atom.atomType[0] is atomTypes['Cbf']: cbfCount+=1
+        if cbfCount > 3:
+            if not modifiedGroup.isBenzeneExplicit():
+                raise ImplicitBenzeneError("{0} has more than three Cbf atoms and does not have fully explicit benzene rings.")
+
         #Add implicit atoms
         modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()
 
         #Add implicit benzene rings
-        modifiedGroup = modifiedGroup.addImplicitBenzene()
+        if not modifiedGroup.isBenzeneExplicit():
+            modifiedGroup = modifiedGroup.addImplicitBenzene()
         #Make dictionary of :GroupAtoms: to :Atoms: and vice versa
         groupToMol = {}
         molToGroup = {}
