@@ -359,7 +359,10 @@ class Reaction:
     def isIsomorphic(self, other, eitherDirection=True):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
-        or ``False`` if they are different. 
+        or ``False`` if they are different. The comparison involves comparing
+        isomorphism of reactants and products, and doesn't use any kinetic
+        information.
+
         If `eitherDirection=False` then the directions must match.
         """
         
