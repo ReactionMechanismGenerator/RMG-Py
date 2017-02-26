@@ -58,12 +58,15 @@ from numpy.linalg import LinAlgError
 
 ################################################################################
 
-def createNewSurface(format, path=None, width=1024, height=768):
+def createNewSurface(format, target=None, width=1024, height=768):
     """
-    Create a new surface of the specified `type`: "png" for
-    :class:`ImageSurface`, "svg" for :class:`SVGSurface`, "pdf" for
-    :class:`PDFSurface`, or "ps" for :class:`PSSurface`. If the surface is to
-    be saved to a file, use the `path` parameter to give the path to the file.
+    Create a new surface of the specified `format`:
+        "png" for :class:`ImageSurface`
+        "svg" for :class:`SVGSurface`
+        "pdf" for :class:`PDFSurface`
+        "ps" for :class:`PSSurface`
+    The surface will be written to the `target` parameter , which can be a
+    path to save the surface to, or file-like object with a `write()` method.
     You can also optionally specify the `width` and `height` of the generated
     surface if you know what it is; otherwise a default size of 1024 by 768 is
     used.
@@ -76,11 +79,11 @@ def createNewSurface(format, path=None, width=1024, height=768):
     if format == 'png':
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
     elif format == 'svg':
-        surface = cairo.SVGSurface(path, width, height)
+        surface = cairo.SVGSurface(target, width, height)
     elif format == 'pdf':
-        surface = cairo.PDFSurface(path, width, height)
+        surface = cairo.PDFSurface(target, width, height)
     elif format == 'ps':
-        surface = cairo.PSSurface(path, width, height)
+        surface = cairo.PSSurface(target, width, height)
     else:
         raise ValueError('Invalid value "{0}" for type parameter; valid values are "png", "svg", "pdf", and "ps".'.format(type))
     return surface
@@ -125,7 +128,7 @@ class MoleculeDrawer:
         self.surface = None
         self.cr = None
         
-    def draw(self, molecule, format, path=None):
+    def draw(self, molecule, format, target=None):
         """
         Draw the given `molecule` using the given image `format` - pdf, svg, ps, or
         png. If `path` is given, the drawing is saved to that location on disk. The
@@ -225,7 +228,7 @@ class MoleculeDrawer:
   
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
-        surface0 = createNewSurface(format=format, path=None)
+        surface0 = createNewSurface(format=format, target=None)
         cr0 = cairo.Context(surface0)
     
         # Render using Cairo
@@ -236,7 +239,7 @@ class MoleculeDrawer:
         yoff = self.top
         width = self.right - self.left
         height = self.bottom - self.top
-        self.surface = createNewSurface(format=format, path=path, width=width, height=height)
+        self.surface = createNewSurface(format=format, target=target, width=width, height=height)
         self.cr = cairo.Context(self.surface)
 
         # Draw white background
@@ -245,12 +248,15 @@ class MoleculeDrawer:
 
         self.render(self.cr, offset=(-xoff,-yoff))
 
-        if path is not None:
+        if target is not None:
             # Finish Cairo drawing
             # Save PNG of drawing if appropriate
-            ext = os.path.splitext(path)[1].lower()
-            if ext == '.png':
-                self.surface.write_to_png(path)
+            if isinstance(target, str):
+                ext = os.path.splitext(target)[1].lower()
+                if ext == '.png':
+                    self.surface.write_to_png(target)
+                else:
+                    self.surface.finish()
             else:
                 self.surface.finish()
     

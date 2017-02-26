@@ -362,7 +362,7 @@ class NetworkDrawer:
         width = max([rect[2]+rect[0] for rect in wellRects]) - min([rect[0] for rect in wellRects]) + 2 * padding
         
         # Draw to the final surface
-        surface = createNewSurface(format=format, path=path, width=width, height=height)
+        surface = createNewSurface(format=format, target=path, width=width, height=height)
         cr = cairo.Context(surface)
         
         # Some global settings

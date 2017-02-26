@@ -1151,6 +1151,46 @@ class TestGroup(unittest.TestCase):
         result = group._repr_png_()
         self.assertIsNotNone(result)
 
+    def testDrawGroup(self):
+        """Test that the draw method returns the expected pydot graph."""
+        adjlist = """
+1 *1 [C,Cd,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
+2 *2 [C,Cd,Ct,CO,CS,Cb] u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
+3 *3 [C,Cd,Ct,CO,CS,Cb] u0 {2,[S,D,T,B]} {4,[S,D,T,B]}
+4 *4 [C,Cd,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
+        """
+        # Use of tabs in the expected string is intentional
+        expected = """
+graph G {
+	graph [dpi=52];
+	node [label="\N"];
+	1	 [fontname=Helvetica,
+		fontsize=16,
+		label="*1 C,Cd,Ct,CO,CS,Cb"];
+	2	 [fontname=Helvetica,
+		fontsize=16,
+		label="*2 C,Cd,Ct,CO,CS,Cb"];
+	1 -- 2	 [fontname=Helvetica,
+		fontsize=16,
+		label="S,D,T,B"];
+	3	 [fontname=Helvetica,
+		fontsize=16,
+		label="*3 C,Cd,Ct,CO,CS,Cb"];
+	2 -- 3	 [fontname=Helvetica,
+		fontsize=16,
+		label="S,D,T,B"];
+	4	 [fontname=Helvetica,
+		fontsize=16,
+		label="*4 C,Cd,Ct,CO,CS,Cb"];
+	3 -- 4	 [fontname=Helvetica,
+		fontsize=16,
+		label="S,D,T,B"];
+}
+        """
+        group = Group().fromAdjacencyList(adjlist)
+        result = group.draw('canon')
+        self.assertEqual(''.join(result.split()), ''.join(expected.split()))
+
 ################################################################################
 
 if __name__ == '__main__':
