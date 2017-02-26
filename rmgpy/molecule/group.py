@@ -59,6 +59,19 @@ class ImplicitBenzeneError(Exception):
     """
     pass
 
+class UnexpectedChargeError(Exception):
+    """
+    An exception class when encountering a group/molecule with unexpected charge
+    Curently in RMG, we never expect to see -2/+2 or greater magnitude charge,
+    we only except +1/-1 charges on nitrogen, oxygen, sulfur or specifically
+    carbon monoxide/monosulfide.
+
+    Attributes:
+    `graph` is the molecule or group object with the unexpected charge
+    """
+    def __init__(self, graph):
+        self.graph = graph
+
 ################################################################################
 
 class GroupAtom(Vertex):
@@ -1959,6 +1972,19 @@ class Group(Graph):
                 molAtom.updateCharge()
 
         newMolecule.update()
+        #Check that the charge of atoms is expected
+        carbonMonoxide = mol.Molecule(SMILES="[C-]#[O+]")
+        carbonMonosulfide = mol.Molecule(SMILES="[C-]#[O+]")
+        for atom in newMolecule.atoms:
+            if abs(atom.charge) > 1: raise UnexpectedChargeError(graph = newMolecule)
+            elif abs(atom.charge) == 1:
+                if atom.atomType.isSpecificCaseOf(atomTypes['N']): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['O']): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['S']): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonoxide): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonosulfide): pass
+                else:
+                    raise UnexpectedChargeError(graph = newMolecule)
         return newMolecule
 
     def isBenzeneExplicit(self):

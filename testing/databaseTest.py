@@ -510,7 +510,6 @@ Matched group AdjList:
 {5}
                                            """.format(family_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
 
-
     def general_checkNodesFoundInTree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
