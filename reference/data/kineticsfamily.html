@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.data.kinetics.KineticsFamily &#8212; RMG Py 2.0.0 documentation</title>
+    <title>rmgpy.data.kinetics.KineticsFamily &#8212; RMG Py 2.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.0',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -63,7 +63,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="kineticsdepository.html" title="rmgpy.data.kinetics.KineticsDepository"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
@@ -74,7 +74,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.kinetics.KineticsFamily<a class="headerlink" href="#rmgpy-data-kinetics-kineticsfamily" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.data.kinetics.KineticsFamily">
-<em class="property">class </em><code class="descclassname">rmgpy.data.kinetics.</code><code class="descname">KineticsFamily</code><span class="sig-paren">(</span><em>entries=None</em>, <em>top=None</em>, <em>label=''</em>, <em>name=''</em>, <em>reverse=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>forwardTemplate=None</em>, <em>forwardRecipe=None</em>, <em>reverseTemplate=None</em>, <em>reverseRecipe=None</em>, <em>forbidden=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.data.kinetics.</code><code class="descname">KineticsFamily</code><span class="sig-paren">(</span><em>entries=None</em>, <em>top=None</em>, <em>label=''</em>, <em>name=''</em>, <em>reverse=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>forwardTemplate=None</em>, <em>forwardRecipe=None</em>, <em>reverseTemplate=None</em>, <em>reverseRecipe=None</em>, <em>forbidden=None</em>, <em>boundaryAtoms=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with an RMG kinetics family: a set of reactions with 
 similar chemistry, and therefore similar reaction rates. The attributes 
 are:</p>
@@ -119,15 +119,19 @@ are:</p>
 <td><cite>Boolean</cite></td>
 <td>It&#8217;s its own reverse?</td>
 </tr>
-<tr class="row-odd"><td><cite>groups</cite></td>
+<tr class="row-odd"><td>&#8216;boundaryAtoms&#8217;</td>
+<td>list</td>
+<td>Labels which define the boundaries of end groups in backbone/end families</td>
+</tr>
+<tr class="row-even"><td><cite>groups</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></td>
 <td>The set of kinetics group additivity values</td>
 </tr>
-<tr class="row-even"><td><cite>rules</cite></td>
+<tr class="row-odd"><td><cite>rules</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></code></td>
 <td>The set of kinetics rate rules from RMG-Java</td>
 </tr>
-<tr class="row-odd"><td><cite>depositories</cite></td>
+<tr class="row-even"><td><cite>depositories</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>A set of additional depositories used to store kinetics data from various sources</td>
 </tr>
@@ -224,7 +228,7 @@ Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_D
 <p>For a reaction from rate rules, the Source_Data is a tuple containing
 [Family_Label, {&#8216;template&#8217;: originalTemplate,</p>
 <div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/kehang/code/release/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 10)</p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/kehang/code/rmgmaster/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 10)</p>
 Unexpected indentation.</div>
 <blockquote>
 <div>&#8216;degeneracy&#8217;: degeneracy, 
@@ -233,7 +237,7 @@ Unexpected indentation.</div>
 &#8216;training&#8217;: a list of (original rate rule entry associated with training entry, original training entry, weight in average)
 }]</div></blockquote>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/code/release/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 15)</p>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/code/rmgmaster/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 15)</p>
 Block quote ends without a blank line; unexpected unindent.</div>
 <p>where TrainingReactions are ones that have created rules used in the estimate.</p>
 <p>where Exact is a boolean of whether the rate is an exact match, 
@@ -273,6 +277,18 @@ at this time. Returns a list of <code class="xref py py-class docutils literal">
 using <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects for both reactants and products
 The reactions are constructed such that the forward direction is
 consistent with the template of this reaction family.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getBackboneRoots">
+<code class="descname">getBackboneRoots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getBackboneRoots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: the top level backbone node in a unimolecular family.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getEndRoots">
+<code class="descname">getEndRoots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getEndRoots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: A list of top level end nodes in a unimolecular family</p>
 </dd></dl>
 
 <dl class="method">
@@ -381,6 +397,15 @@ the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),...]</p>
 <dt id="rmgpy.data.kinetics.KineticsFamily.getSpecies">
 <code class="descname">getSpecies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getTopLevelGroups">
+<code class="descname">getTopLevelGroups</code><span class="sig-paren">(</span><em>root</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getTopLevelGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of group nodes that are the highest in the tree starting at node &#8220;root&#8221;.
+If &#8220;root&#8221; is a group node, then it will return a single-element list with &#8220;root&#8221;.
+Otherwise, for every child of root, we descend until we find no nodes with logic
+nodes. We then return a list of all group nodes found along the way.</p>
 </dd></dl>
 
 <dl class="method">

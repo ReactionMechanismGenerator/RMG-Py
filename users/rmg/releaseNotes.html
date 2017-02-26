@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>17. Release Notes &#8212; RMG Py 2.0.0 documentation</title>
+    <title>17. Release Notes &#8212; RMG Py 2.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.0',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -63,7 +63,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="faq.html" title="16. Frequently Asked Questions"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
@@ -72,8 +72,104 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="release-notes">
 <span id="releasenotes"></span><h1>17. Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rmg-py-version-2-1-0">
+<h2>17.1. RMG-Py Version 2.1.0<a class="headerlink" href="#rmg-py-version-2-1-0" title="Permalink to this headline">¶</a></h2>
+<p>Date: February 26, 2017</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Clar structure generation</dt>
+<dd><ul class="first last">
+<li>optimizes the aromatic isomer representations in RMG</li>
+<li>lays the foundations for future development of poly-aromatic kinetics reaction families</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Flux pathway analysis</dt>
+<dd><ul class="first last">
+<li>introduces an ipython notebook for post-generatation pathway analysis (<code class="docutils literal"><span class="pre">ipython.mechanism_analyzer.ipynb</span></code>)</li>
+<li>visualizes reactions and provides flux statistics in a more transparent way</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Cantera mechanism</dt>
+<dd><ul class="first last">
+<li>automatically writes cantera version of RMG-generated mechanism at the end of RMG jobs</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Fixes bugs</dt>
+<dd><ul class="first last">
+<li>upgrades <code class="docutils literal"><span class="pre">pruning</span></code> to fix new memory leaks introduced by recent functionalities</li>
+<li>fixes the bug of duplicated species creation caused by <code class="docutils literal"><span class="pre">getThermoData</span></code> removing isomers unexpectedly</li>
+<li>fixes restart file generation and parsing problems and users can choose restart mode again</li>
+<li>upgrades bicyclic decomposition method such that more deterministic behaviors are ensured</li>
+<li>change bond order type to float from string to improve RMG&#8217;s symmetry calculation for species with multiple resonance structures</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="rmg-database-version-2-1-0">
+<h2>17.2. RMG-database Version 2.1.0<a class="headerlink" href="#rmg-database-version-2-1-0" title="Permalink to this headline">¶</a></h2>
+<p>Date: February 26, 2017</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Several new kinetics libraries added</dt>
+<dd><ul class="first last">
+<li>FFCM-1</li>
+<li>JetSurF 0.2</li>
+<li>Chernov_aromatic_only</li>
+<li>Narayanaswamy_aromatic_only</li>
+<li>1989_Stewart_2CH3_to_C2H5_H</li>
+<li>2005_Senosiain_OH_C2H2</li>
+<li>2006_Joshi_OH_CO</li>
+<li>C6H5_C4H4_Mebel</li>
+<li>c-C5H5_CH3_Sharma</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Several new thermochemistry libraries added</dt>
+<dd><ul class="first last">
+<li>FFCM-1</li>
+<li>JetSurF 0.2</li>
+<li>Chernov_aromatic_only</li>
+<li>Narayanaswamy_aromatic_only</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Improved kinetics tree accessibility</dt>
+<dd><ul class="first last">
+<li>adds database tests ensuring groups in the tree to be accessible</li>
+<li>improves definitions of group structures in the kinetics trees to ensure accessibility</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>New oxygenates thermo groups are added based Paraskeva et al.</li>
+<li><dl class="first docutils">
+<dt>Improved database tools</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> now can visualize groups of matched rate rules that training reactions hit</li>
+<li><code class="docutils literal"><span class="pre">exportKineticsLibrarytoChemkin.py</span></code> and <code class="docutils literal"><span class="pre">importChemkinLibrary.py</span></code> add more logging information on reaction sources</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
 <div class="section" id="rmg-py-version-2-0-0">
-<h2>17.1. RMG-Py Version 2.0.0<a class="headerlink" href="#rmg-py-version-2-0-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.3. RMG-Py Version 2.0.0<a class="headerlink" href="#rmg-py-version-2-0-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 16, 2016</p>
 <p>This release includes several milestones of RMG project:</p>
 <ul class="simple">
@@ -129,7 +225,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-0-0">
-<h2>17.2. RMG-database Version 2.0.0<a class="headerlink" href="#rmg-database-version-2-0-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.4. RMG-database Version 2.0.0<a class="headerlink" href="#rmg-database-version-2-0-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 16, 2016</p>
 <p>In conjunction with the release of RMG-Py v2.0.0, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
@@ -153,7 +249,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-4">
-<h2>17.3. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
+<h2>17.5. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 28, 2016</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -207,7 +303,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-3">
-<h2>17.4. RMG-Py Version 1.0.3<a class="headerlink" href="#rmg-py-version-1-0-3" title="Permalink to this headline">¶</a></h2>
+<h2>17.6. RMG-Py Version 1.0.3<a class="headerlink" href="#rmg-py-version-1-0-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 4, 2016</p>
 <p>This mini release contains the following updates:</p>
 <ul class="simple">
@@ -216,7 +312,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-2">
-<h2>17.5. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.7. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: January 29, 2016</p>
 <p>This new release adds several new features and bug fixes.</p>
 <ul class="simple">
@@ -237,7 +333,7 @@ the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">vis
 </ul>
 </div>
 <div class="section" id="rmg-database-version-1-0-2">
-<h2>17.6. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.8. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: January 29, 2016</p>
 <p>In conjunction with the release of RMG-Py v1.0.2, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
@@ -278,12 +374,14 @@ presence of ethene: realistic pathways from C5H5 to naphthalene&#8221; (2016)</l
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">17. Release Notes</a><ul>
-<li><a class="reference internal" href="#rmg-py-version-2-0-0">17.1. RMG-Py Version 2.0.0</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-0-0">17.2. RMG-database Version 2.0.0</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-4">17.3. RMG-Py Version 1.0.4</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-3">17.4. RMG-Py Version 1.0.3</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-2">17.5. RMG-Py Version 1.0.2</a></li>
-<li><a class="reference internal" href="#rmg-database-version-1-0-2">17.6. RMG-database Version 1.0.2</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-0">17.1. RMG-Py Version 2.1.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-0">17.2. RMG-database Version 2.1.0</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-0-0">17.3. RMG-Py Version 2.0.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-0-0">17.4. RMG-database Version 2.0.0</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-4">17.5. RMG-Py Version 1.0.4</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-3">17.6. RMG-Py Version 1.0.3</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-2">17.7. RMG-Py Version 1.0.2</a></li>
+<li><a class="reference internal" href="#rmg-database-version-1-0-2">17.8. RMG-database Version 1.0.2</a></li>
 </ul>
 </li>
 </ul>

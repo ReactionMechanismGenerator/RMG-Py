@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.molecule.Molecule &#8212; RMG Py 2.0.0 documentation</title>
+    <title>rmgpy.molecule.Molecule &#8212; RMG Py 2.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.0',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -63,7 +63,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="bond.html" title="rmgpy.molecule.Bond"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.0.0</a> &raquo;</li>
+<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
@@ -307,7 +307,7 @@ p. 657-662 (1993).</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getAromaticSSSR">
 <code class="descname">getAromaticSSSR</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAromaticSSSR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the smallest set of smallest aromatic rings</p>
+<dd><p>Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds</p>
 <p>Identifies rings using <cite>Graph.getSmallestSetOfSmallestRings()</cite>, then uses RDKit to perceive aromaticity.
 RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel&#8217;s Rule.
 Therefore, this method identifies &#8220;true&#8221; aromaticity, rather than simply the RMG bond type.</p>
@@ -417,14 +417,6 @@ the number of atoms of that element is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.getNumberOfRadicalElectrons">
-<code class="descname">getNumberOfRadicalElectrons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getNumberOfRadicalElectrons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total number of radical electrons on all atoms in the
-molecule. In this function, monoradical atoms count as one, biradicals
-count as two, etc.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getPolycyclicRings">
 <code class="descname">getPolycyclicRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getPolycyclicRings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of cycles that are polycyclic.
@@ -442,7 +434,9 @@ Cycles which are not polycyclic are not returned.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.getRadicalCount">
 <code class="descname">getRadicalCount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalCount" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of unpaired electrons.</p>
+<dd><p>Return the total number of radical electrons on all atoms in the
+molecule. In this function, monoradical atoms count as one, biradicals
+count as two, etc.</p>
 </dd></dl>
 
 <dl class="method">
@@ -508,6 +502,13 @@ atoms.  Assumes that aromatic rings always consist of 6 atoms.
 In cases of naphthalene, where a 6 + 4 aromatic system exists,
 there will be at least one 6 membered aromatic ring so this algorithm
 will not fail for fused aromatic rings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.isArylRadical">
+<code class="descname">isArylRadical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isArylRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the molecule only contains aryl radicals,
+ie. radical on an aromatic ring, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
