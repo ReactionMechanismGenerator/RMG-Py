@@ -95,7 +95,7 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_degeneracy_for_methyl_labeled_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + labeled methyl recombination"""
 
-        correct_degeneracy = 1
+        correct_degeneracy = 2
         rxn_family_str = 'R_Recombination'
         adj_lists = [
             """
@@ -119,7 +119,7 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_degeneracy_for_ethyl_ethyl_disproportionation(self):
         """Test that the proper degeneracy is calculated for ethyl + ethyl disproportionation"""
 
-        correct_degeneracy = 6
+        correct_degeneracy = 3
         rxn_family_str = 'Disproportionation'
         adj_lists = [
             """
@@ -221,13 +221,13 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         return sum([reaction.degeneracy for reaction in reactions]), reactions
 
-    def test_propyl_propyl_reaction_is_the_same_as_propyl_butyl(self):
+    def test_propyl_propyl_reaction_is_the_half_propyl_butyl(self):
         """
         test that propyl propyl r-recombination is the same rate as propyl butyl
 
         this test assures that r-recombination reactions from the same rate rule
-        have the same reaction rate since they have both symmetrical transition
-        states and reactants, which should cancel out in TST
+        with identical reactants have half the reaction rate since there is a 
+        symmetrical transition state.
         """
         rxn_family_str = 'R_Recombination'
         propyl_adj_list = """
@@ -288,16 +288,17 @@ class TestReactionDegeneracy(unittest.TestCase):
                          str(pp_kinetics_list)+str(pb_kinetics_list))
 
         # test that the kinetics are correct
-        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300) * 2, pb_kinetics_list[0][0].getRateCoefficient(300))
 
-    def test_identical_reactants_have_faster_kinetics(self):
+    def test_identical_reactants_have_similar_kinetics(self):
         """
-        tests identical reactants have faster kinetics that different reactants.
-
-        this test assures that r addition multiple bond reactions from the same
-        rate rule have the faster reaction rate if the reactants are identicaal
-        since they have symmetrical reactants, with little change in the
-        transition state symmetry. This should be more robust than just checking
+        tests identical reactants have the same kinetics than different reactants.
+        
+        this test assures that r addition multiple bond reactions from the same 
+        rate rule have the same reaction rate if the reactants are identicaal 
+        since little changes in the reactant or transition state symmetry. 
+        
+        This method should be more robust than just checking
         the degeneracy of reactions.
         """
         rxn_family_str = 'R_Addition_MultipleBond'
@@ -413,8 +414,7 @@ class TestReactionDegeneracy(unittest.TestCase):
                          str(pp_kinetics_list)+str(pb_kinetics_list))
 
         # test that the kinetics are correct
-        self.assertNotEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
-        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300) / 2, pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
         
 class TestKineticsCommentsParsing(unittest.TestCase):
 
@@ -602,4 +602,3 @@ class TestKinetics(unittest.TestCase):
         self.assertIsNone(out)
         out = lib.convertDuplicatesToMulti()
         self.assertIsNone(out)
-
