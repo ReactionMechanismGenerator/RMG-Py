@@ -55,28 +55,42 @@ def react(*spcTuples):
 
     Returns a flat generator object containing the generated Reaction objects.
     """
-    
-    combos = []
-
-    for t in spcTuples:
-        t = tuple([spc.copy(deep=True) for spc in t])
-        if len(t) == 1:#unimolecular reaction
-            spc, = t
-            mols = [(mol, spc.index) for mol in spc.molecule]
-            combos.extend([(combo,) for combo in mols])
-        elif len(t) == 2:#bimolecular reaction
-            spcA, spcB = t
-            molsA = [(mol, spcA.index) for mol in spcA.molecule]
-            molsB = [(mol, spcB.index) for mol in spcB.molecule]
-            combos.extend(itertools.product(molsA, molsB))
 
     results = map_(
-                reactMolecules,
-                combos
-            )
+                reactSpecies,
+                spcTuples)
 
-    reactionList = itertools.chain.from_iterable(results)
-    return reactionList
+    reactions = itertools.chain.from_iterable(results)
+
+    return reactions
+
+def reactSpecies(speciesTuple):
+    """
+    given one species tuple, will find the reactions and remove degeneracy
+    from them.
+    """
+
+    speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
+
+    combos = []
+    if len(speciesTuple) == 1:#unimolecular reaction
+        spc, = speciesTuple
+        mols = [(mol, spc.index) for mol in spc.molecule]
+        combos.extend([(combo,) for combo in mols])
+    elif len(speciesTuple) == 2:#bimolecular reaction
+        spcA, spcB = speciesTuple
+        molsA = [(mol, spcA.index) for mol in spcA.molecule]
+        molsB = [(mol, spcB.index) for mol in spcB.molecule]
+        combos.extend(itertools.product(molsA, molsB))
+
+    reactions = map(reactMolecules,combos)
+    reactions = findDegeneracies(list(itertools.chain.from_iterable(reactions)))
+
+    deflate(reactions,
+            [spec.molecule[0] for spec in speciesTuple],
+            [spec.index for spec in speciesTuple])
+
+    return reactions
 
 def reactMolecules(moleculeTuples):
     """
@@ -88,9 +102,7 @@ def reactMolecules(moleculeTuples):
     """
 
     families = getDB('kinetics').families
-    
     molecules, reactantIndices = zip(*moleculeTuples)
-
     reactionList = []
     for _, family in families.iteritems():
         rxns = family.generateReactions(molecules)
@@ -99,9 +111,59 @@ def reactMolecules(moleculeTuples):
     for reactant in molecules:
         reactant.clearLabeledAtoms()
 
-    deflate(reactionList, molecules, reactantIndices)
-
     return reactionList
+
+def findDegeneracies(rxnList, forward = True):
+    """
+    given a list of reactions, this method removes degenerate reactions and
+    increments the degeneracy of the reaction object.
+
+    This algorithm used to exist in family.__generateReactions, but was moved
+    here because it didn't have family dependence.
+    """
+
+    index0 = 0
+    while index0 < len(rxnList):
+        reaction0 = rxnList[index0]
+
+        products0 = reaction0.products if forward else reaction0.reactants
+        products0 = [product.generateResonanceIsomers() for product in products0]
+
+        # Remove duplicates from the reaction list
+        index = index0 + 1
+        while index < len(rxnList):
+            reaction = rxnList[index]
+
+            products = reaction.products if forward else reaction.reactants
+
+            # We know the reactants are the same, so we only need to compare the products
+            match = False
+            if len(products) == len(products0) == 1:
+                for product in products0[0]:
+                    if products[0].isIsomorphic(product):
+                        match = True
+                        break
+            elif len(products) == len(products0) == 2:
+                for productA in products0[0]:
+                    for productB in products0[1]:
+                        if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
+                            match = True
+                            break
+                        elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
+                            match = True
+                            break
+
+            # If we found a match, remove it from the list
+            # Also increment the reaction path degeneracy of the remaining reaction
+            if match:
+                rxnList.remove(reaction)
+                reaction0.degeneracy += 1
+            else:
+                index += 1
+
+        index0 += 1
+
+    return rxnList
 
 def deflate(rxns, molecules, reactantIndices):
     """

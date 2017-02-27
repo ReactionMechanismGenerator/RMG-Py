@@ -1398,8 +1398,8 @@ class KineticsFamily(Database):
                         # Delete this reaction, since it should probably also be forbidden in the initial direction
                         # Hack fix for now
                         del rxn
-                elif len(reactions) > 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+                    logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     logging.info("Found the following reverse reactions")
                     for rxn0 in reactions:
                         logging.info(str(rxn0))
@@ -1423,10 +1423,13 @@ class KineticsFamily(Database):
     
     def calculateDegeneracy(self, reaction):
         """
-        For a `reaction` given in the direction in which the kinetics are
-        defined, compute the reaction-path degeneracy.
+        For a `reaction`  with `Molecule` objects given in the direction in which
+        the kinetics are defined, compute the reaction-path degeneracy.
         """
+        from rmgpy.rmg.react import findDegeneracies
+
         reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
+        findDegeneracies(reactions)
         if len(reactions) != 1:
             for reactant in reaction.reactants:
                 logging.error("Reactant: {0!r}".format(reactant))
@@ -1445,6 +1448,9 @@ class KineticsFamily(Database):
         will return an empty list. Each item in the list of reactants should
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
+        
+        This method returns degenerate reactions, and `react.findDegeneracies`
+        can be used to find the degenerate reactions.
         """
 
         rxnList = []; speciesList = []
@@ -1562,97 +1568,6 @@ class KineticsFamily(Database):
                     
                 if match: 
                     rxnList.append(reaction)
-            
-        # The reaction list may contain duplicates of the same reaction
-        # These duplicates should be combined (by increasing the degeneracy of
-        # one of the copies and removing the others)
-        index0 = 0
-        while index0 < len(rxnList):
-            reaction0 = rxnList[index0]
-            
-            products0 = reaction0.products if forward else reaction0.reactants
-            products0 = [product.generateResonanceIsomers() for product in products0]
-            
-            # Remove duplicates from the reaction list
-            index = index0 + 1
-            while index < len(rxnList):
-                reaction = rxnList[index]
-            
-                products = reaction.products if forward else reaction.reactants
-                
-                # We know the reactants are the same, so we only need to compare the products
-                match = False
-                if len(products) == len(products0) == 1:
-                    for product in products0[0]: # for each resonance isomer of the only product0
-                        if products[0].isIsomorphic(product):
-                            match = True
-                            break
-                elif len(products) == len(products0) == 2:
-                    for productA in products0[0]:
-                        for productB in products0[1]:
-                            if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                                match = True
-                                break
-                elif len(products) == len(products0) == 3:
-                    for productA, productB, productC in itertools.product(products0[0], products0[1], products0[2]):
-                    # This is equivalent to three nested for loops,
-                    # but allows us to break out of them all at once
-                    # with a single break statement.
-                        if (    products[0].isIsomorphic(productA) and
-                                products[1].isIsomorphic(productB) and
-                                products[2].isIsomorphic(productC) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productA) and
-                                products[1].isIsomorphic(productC) and
-                                products[2].isIsomorphic(productB) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productB) and
-                                products[1].isIsomorphic(productA) and
-                                products[2].isIsomorphic(productC) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productC) and
-                                products[1].isIsomorphic(productA) and
-                                products[2].isIsomorphic(productB) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productB) and
-                                products[1].isIsomorphic(productC) and
-                                products[2].isIsomorphic(productA) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productC) and
-                                products[1].isIsomorphic(productB) and
-                                products[2].isIsomorphic(productA) ):
-                            match = True
-                            break
-                elif len(products) == len(products0):
-                    raise NotImplementedError(
-                        "Can't yet check degeneracy of reactions with {0} products".format(len(products))
-                        )
-
-                # If we found a match, remove it from the list
-                # Also increment the reaction path degeneracy of the remaining reaction
-                if match:
-                    rxnList.remove(reaction)
-                    reaction0.degeneracy += 1
-                else:
-                    index += 1
-            
-            index0 += 1
-        
-        # For R_Recombination reactions, the degeneracy is twice what it should
-        # be, so divide those by two
-        # This is hardcoding of reaction families!
-        if self.label.lower().startswith('r_recombination'):
-            for rxn in rxnList:
-                assert(rxn.degeneracy % 2 == 0)
-                rxn.degeneracy /= 2
                 
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
