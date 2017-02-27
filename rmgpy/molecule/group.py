@@ -1974,7 +1974,12 @@ class Group(Graph):
         newMolecule.update()
         #Check that the charge of atoms is expected
         carbonMonoxide = mol.Molecule(SMILES="[C-]#[O+]")
-        carbonMonosulfide = mol.Molecule(SMILES="[C-]#[O+]")
+        carbonMonosulfide = mol.Molecule().fromAdjacencyList(
+"""
+1 S u0 p1 c+1 {2,T}
+2 C u0 p1 c-1 {1,T}
+"""
+        )
         for atom in newMolecule.atoms:
             if abs(atom.charge) > 1: raise UnexpectedChargeError(graph = newMolecule)
             elif abs(atom.charge) == 1:
