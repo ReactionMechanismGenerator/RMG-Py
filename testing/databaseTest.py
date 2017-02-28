@@ -657,8 +657,19 @@ The following adjList may have atoms in a different ordering than the input file
         #If family is backbone archetype, then we need to merge groups before descending
         roots = family.groups.top
         if len(roots) > len(family.forwardTemplate.reactants):
-            backbone = family.getBackboneRoots()[0]
-            backboneSample = family.getTopLevelGroups(backbone)[0] #pick smallest backbone
+            backboneRoots = family.getBackboneRoots()
+            allBackboneGroups = []
+            for backboneRoot in backboneRoots:
+                allBackboneGroups.extend(family.getTopLevelGroups(backboneRoot))
+            #list of numbered of labelled atoms for allBackboneGroups
+            backboneSizes = [len(backbone.item.getLabeledAtoms()) for backbone in allBackboneGroups]
+
+            #pick a backbone that is two labelled atoms larger than the smallest
+            if min(backboneSizes) + 2 in backboneSizes:
+                backboneSample = allBackboneGroups[backboneSizes.index(min(backboneSizes) + 2)]
+            #or if it doesn't exist, pick the largest backbone
+            else:
+                backboneSample = allBackboneGroups[backboneSizes.index(max(backboneSizes))]
             mergesNecessary = True
         else: mergesNecessary = False
 
@@ -673,8 +684,8 @@ The following adjList may have atoms in a different ordering than the input file
                 if ancestors: root = ancestors[-1] #top level root will be last one in ancestors
                 else: root = entry
                 try:
-                    if mergesNecessary and root is not backbone: #we may need to merge
-                        mergedGroup = family.mergeGroups(backboneSample.item, entry.item)
+                    if mergesNecessary and root not in backboneRoots: #we may need to merge
+                        mergedGroup = backboneSample.item.mergeGroups(entry.item)
                         sampleMolecule = mergedGroup.makeSampleMolecule()
                     else:
                         sampleMolecule = entry.item.makeSampleMolecule()
@@ -704,8 +715,8 @@ Matched group AdjList:
                    match.label,
                    sampleMolecule.toAdjacencyList(),
                    entry.item.toAdjacencyList(),
-                   "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root is not backbone else '',
-                   backboneSample.item.toAdjacencyList() if mergesNecessary and root is not backbone else '',
+                   "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root not in backboneRoots else '',
+                   backboneSample.item.toAdjacencyList() if mergesNecessary and root not in backboneRoots else '',
                    match.item.toAdjacencyList()))
 
                 except UnexpectedChargeError, e:
@@ -718,8 +729,8 @@ Origin Group AdjList:
                     entry.label,
                     e.graph.toAdjacencyList(),
                     entry.item.toAdjacencyList(),
-                    "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root is not backbone else '',
-                    backboneSample.item.toAdjacencyList() if mergesNecessary and root is not backbone else '')
+                    "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root not in backboneRoots else '',
+                    backboneSample.item.toAdjacencyList() if mergesNecessary and root not in backboneRoots else '')
                     )
 
                 except ImplicitBenzeneError:
