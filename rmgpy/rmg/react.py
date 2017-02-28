@@ -113,7 +113,7 @@ def reactMolecules(moleculeTuples):
 
     return reactionList
 
-def findDegeneracies(rxnList, forward = True):
+def findDegeneracies(rxnList):
     """
     given a list of reactions, this method removes degenerate reactions and
     increments the degeneracy of the reaction object.
@@ -126,36 +126,14 @@ def findDegeneracies(rxnList, forward = True):
     while index0 < len(rxnList):
         reaction0 = rxnList[index0]
 
-        products0 = reaction0.products if forward else reaction0.reactants
-        products0 = [product.generateResonanceIsomers() for product in products0]
-
         # Remove duplicates from the reaction list
         index = index0 + 1
         while index < len(rxnList):
             reaction = rxnList[index]
-
-            products = reaction.products if forward else reaction.reactants
-
-            # We know the reactants are the same, so we only need to compare the products
-            match = False
-            if len(products) == len(products0) == 1:
-                for product in products0[0]:
-                    if products[0].isIsomorphic(product):
-                        match = True
-                        break
-            elif len(products) == len(products0) == 2:
-                for productA in products0[0]:
-                    for productB in products0[1]:
-                        if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                            match = True
-                            break
-                        elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                            match = True
-                            break
-
-            # If we found a match, remove it from the list
-            # Also increment the reaction path degeneracy of the remaining reaction
-            if match:
+            # ensure same family and structure
+            # (template can be added later after multiple TS's are enabled with all([template0 in reaction.template for template0 in reaction0.template]))
+            if reaction.family == reaction0.family and \
+                 reaction0.isIsomorphic(reaction): 
                 rxnList.remove(reaction)
                 reaction0.degeneracy += 1
             else:
