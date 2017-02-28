@@ -1681,7 +1681,7 @@ class Group(Graph):
                     #Potential partner must not have any bonds except benzene bonds
                     elif bond12.isBenzene():
                         bondsAreBenzene = [True if bond23.isBenzene() else False for bond23 in atom2.bonds.values()]
-                        if all(bondsAreBenzene):
+                        if all(bondsAreBenzene) and 0 in atom2.radicalElectrons:
                             potentialPartner= atom2
                 #Make a Cb atom the partner, now marking it as a Cbfatom
                 if potentialPartner:
