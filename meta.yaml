@@ -81,6 +81,8 @@ requirements:
     - xlwt
 
 test:
+  source_files:
+    - '*'
   requires:
     - nose
   imports:
