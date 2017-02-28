@@ -126,6 +126,18 @@ def findDegeneracies(rxnList):
     while index0 < len(rxnList):
         reaction0 = rxnList[index0]
 
+        # obtain species with all resonance isomers
+        storeReactants = reaction0.reactants[:]
+        storeProducts = reaction0.products[:]
+        for i, mol in enumerate(reaction0.reactants):
+            spec = Species(molecule = [mol])
+            spec.generateResonanceIsomers()
+            reaction0.reactants[i] = spec
+        for i, mol in enumerate(reaction0.products):
+            spec = Species(molecule = [mol])
+            spec.generateResonanceIsomers()
+            reaction0.products[i] = spec
+
         # Remove duplicates from the reaction list
         index = index0 + 1
         while index < len(rxnList):
@@ -141,6 +153,9 @@ def findDegeneracies(rxnList):
 
         index0 += 1
 
+        # reconvert the reaction back to molecule objects (for deflating)
+        reaction0.reactants = storeReactants
+        reaction0.products = storeProducts
     # half degeneracy for sameReactants (see Bishop and Laidler 1965)
     for reaction in rxnList:
         if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
