@@ -163,6 +163,12 @@ def findDegeneracies(rxnList, forward = True):
 
         index0 += 1
 
+    # half degeneracy for sameReactants (see Bishop and Laidler 1965)
+    for reaction in rxnList:
+        if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
+            assert reaction.degeneracy % 2 == 0
+            reaction.degeneracy /= 2
+
     return rxnList
 
 def deflate(rxns, molecules, reactantIndices):
