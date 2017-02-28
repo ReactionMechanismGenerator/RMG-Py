@@ -1511,7 +1511,14 @@ class KineticsFamily(Database):
             for reaction in rxnList0:
             
                 products0 = reaction.products if forward else reaction.reactants
-                    
+
+                # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
+                for i in range(len(products0)):
+                    if products0[i].isCyclic:
+                        aromaticStructs = generateAromaticResonanceStructures(products0[i])
+                        if aromaticStructs:
+                            products0[i] = aromaticStructs[0]
+
                 # Skip reactions that don't match the given products
                 match = False
 
