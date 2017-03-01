@@ -4,7 +4,9 @@ Running CanTherm
 
 To execute a CanTherm job, invoke the command ::
 
-    $ python cantherm.py FILE
+    $ python cantherm.py INPUTFILE
+
+The absolute or relative paths to the cantherm.py file as well as to the input file must be given.
 
 The job will run and the results will be saved to ``output.py`` in the same
 directory as the input file. If you wish to save the output elsewhere, use
