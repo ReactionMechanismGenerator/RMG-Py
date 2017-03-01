@@ -9,7 +9,8 @@ from rmgpy.data.rmg import RMGDatabase
 from copy import copy, deepcopy
 from rmgpy.data.base import LogicOr
 from rmgpy.molecule import Group
-from rmgpy.molecule.atomtype import atomTypes, AtomTypeError
+from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule.pathfinder import find_shortest_path
 
 import nose
 import nose.tools
@@ -80,12 +81,18 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, family_name
 
-            # this patch of code is commented out till the kinetics database is ready for proper testing
-            # test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
-            # test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
-            # test.description = test_name
-            # self.compat_func_name = test_name
-            # yield test, family_name
+            if len(family.forwardTemplate.reactants) < len(family.groups.top) and family_name != 'Diels_alder_addition':
+                test = lambda x: self.kinetics_checkUnimolecularGroups(family_name)
+                test_name = "Kinetics family {0} check that unimolecular group is formatted correctly?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+                
+            test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
+            test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, family_name
 
             for depository in family.depositories:
 
@@ -473,16 +480,168 @@ The following adjList may have atoms in a different ordering than the input file
 {4}
                                             """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
 
+    def kinetics_checkUnimolecularGroups(self,family_name):
+        """
+        This test goes through all unimolecular groups that have more than one top level, top level groups
+        that overlap with family.reactant are assumed to be backbones(contains the whole reactant molecule)
+        and the other top levels are assumedto be endgroups
+
+        the following are format requirements are checked:
+        1)endgroup entries hav exactly the same labels as their top level entry
+        2)backbone groups have all labels that endgroups have
+        3)backbone groups have labels tracing between the endgroups that follow the shortest path
+        4)The end subgraph inside each backbone is exactly the same as the top level of the correspodning end tree
+        """
+
+        def getEndFromBackbone(backbone, endLabels):
+            """
+            :param backbone: :class: Entry for a backbone of molecule
+            :param endLabels: Labels in the end groups
+            :return: A subgraph representing the end group of the molecule
+            """
+            #make copy for manipulation
+            copyGroup = backbone.item.copy(True)
+
+            #Find the endGroup atoms
+            for atom in copyGroup.atoms:
+                if atom.label in endLabels:
+                    midAtom = atom
+                    break
+
+            #find the bonds to break
+            bondsToBreak = []
+            for atom2, bond in midAtom.bonds.iteritems():
+                if atom2.label is None or atom2.label not in endLabels: #
+                    bondsToBreak.append(bond)
+
+
+            for bond in bondsToBreak:
+                copyGroup.removeBond(bond)
+
+            #split group into end and backbone fragment
+            groups = copyGroup.split()
+
+            #verify group was split correctly and identify the correct end group
+            endLabels = set(endLabels)
+            for group in groups:
+                groupLabels = set(atom.label for atom in group.atoms)
+                groupLabels.discard('')
+                if endLabels == groupLabels:
+                    break
+            else:
+                print(endLabels)
+                print(groupLabels)
+                for group in groups:
+                    print(group.toAdjacencyList(label=backbone.label))
+                raise Exception("Group {0} not split correctly".format(backbone.label))
+
+            return group
+        #################################################################################
+        family = self.database.kinetics.families[family_name]
+        print family
+
+        backbone =  family.getBackboneRoots()[0]
+
+        endGroups = family.getEndRoots()
+
+        endLabels = {}
+        for endGroup in endGroups:
+            labels = []
+            for atom in endGroup.item.atoms:
+                if atom.label:
+                    labels.append(atom.label)
+            endLabels[endGroup] = set(labels)
+
+        #get boundary atoms to test that backbones have labels between end groups
+        nose.tools.assert_is_not_none(family.boundaryAtoms)
+
+        # set of all end_labels should be backbone label
+        backboneLabel = set([])
+        for end, end_label in endLabels.iteritems():
+            for label in end_label:
+                backboneLabel.add(label)
+
+        #define types of errors
+        A = [] #end groups have too many labels
+        B = [] #end group lacks necessary label
+        C = [] #backbone missing end group labels
+        D = [] #backbone missing labels in between groups
+        E = [] #backbone tries to define atoms inside end groups
+        for group_name, entry in family.groups.entries.iteritems():
+            if isinstance(entry.item, Group):
+                group = entry.item
+                if backbone in family.ancestors(entry):
+                    for atom in group.atoms:
+                        if atom.label: presentLabels.add(atom.label)
+                    #Check C
+                    for endGroup, labels in endLabels.iteritems():
+                        if not labels.issubset(presentLabels):
+                            C.append([endGroup, entry])
+                    #check D
+                    midAtoms = [group.getLabeledAtom(x) for x in family.boundaryAtoms]
+                    pathAtoms = find_shortest_path(midAtoms[0], midAtoms[1])
+                    for atom in pathAtoms:
+                        if not atom.label:
+                            D.append([backbone, entry])
+                            break
+                    #check E
+                    for endGroup, labels in endLabels.iteritems():
+                        endFromBackbone = getEndFromBackbone(entry, labels)
+                        presentLabels = endFromBackbone.getLabeledAtoms()
+                        presentLabels = set(presentLabels.keys())
+                        if labels == presentLabels:
+                            if not endGroup.item.isIdentical(endFromBackbone):
+                                E.append([endGroup, entry])
+                        else: raise Exception("Group {0} has split into end group {1}, but does not match any root".format(entry.label, endFromBackbone.toAdjacencyList()))
+
+                else:
+                    presentLabels = set([])
+                    for endNode, labelledAtoms in endLabels.iteritems():
+                        if endNode in family.ancestors(entry):
+                            for atom in group.atoms:
+                                if atom.label: presentLabels.add(atom.label)
+                            #Check A
+                            if not presentLabels.issubset(labelledAtoms):
+                                A.append([endNode, entry])
+                            #Check B
+                            if not labelledAtoms.issubset(presentLabels):
+                                B.append([endNode, entry])
+
+
+        #print outputs
+        if A != []:
+            s = "These end groups have extra labels that their top level end group do not have:"+"\n [root group, error group]"
+            for x in A:
+                s += '\n'+str(x)
+            nose.tools.assert_true(False,s)
+        if B != []:
+            s = "These end groups are missing labels that their top level end group have:"+"\n [root group, error group]"
+            for x in B:
+                s += '\n'+str(x)
+            nose.tools.assert_true(False,s)
+        if C != []:
+            s = "These backbone groups are missing labels that are in the end groups:"+"\n [root group, error group]"
+            for x in C:
+                s += '\n'+str(x)
+            nose.tools.assert_true(False,s)
+        if D != []:
+            s = "These backbone groups are missing labels along the path atoms:"+"\n [root group, error group]"
+            for x in D:
+                s += '\n'+str(x)
+            nose.tools.assert_true(False,s)
+        if E != []:
+            s = "These backbone have end subgraphs that don't match a root:"+"\n [root group, error group]"
+            for x in E:
+                s += '\n'+str(x)
+            nose.tools.assert_true(False,s)
     def kinetics_checkSampleDescendsToGroup(self, family_name):
         """
         This test first creates a sample :class:Molecule from a :class:Group. Then it checks
         that this molecule hits the original group or a child when it descends down the tree.
-        
-        this test is not currently called. It will be used when the kinetics database is fixed
-        to allow for biomolecular reaction finding effectively.
         """
         family = self.database.kinetics.families[family_name]
 
+        #ignore any products
         ignore=[]
         if not family.ownReverse:
             for product in family.forwardTemplate.products:
@@ -490,14 +649,20 @@ The following adjList may have atoms in a different ordering than the input file
                 ignore.extend(product.children)
         else: ignore=[]
 
+        #Do not perform test if family is unimolecular or (more generally) backbone archetype
+        roots = family.groups.top
+        if len(roots) > len(family.forwardTemplate.reactants):
+            return
+
         for entryName, entry in family.groups.entries.iteritems():
-            print entryName
             if entry in ignore: continue
             elif isinstance(entry.item, Group):
-                # print entryName
+                ancestors=family.ancestors(entry)
+                if ancestors: root = ancestors[-1]
+                else: root = entry
                 sampleMolecule = entry.item.makeSampleMolecule()
                 atoms = sampleMolecule.getLabeledAtoms()
-                match = family.groups.descendTree(sampleMolecule, atoms, strict=True)
+                match = family.groups.descendTree(sampleMolecule, atoms, strict=True, root = root)
 
                 assert entry in [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
@@ -508,8 +673,7 @@ Origin Group AdjList:
 
 Matched group AdjList:
 {5}
-                                           """.format(family_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
-
+""".format(family_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
 
     def general_checkNodesFoundInTree(self, group_name, group):
         """
@@ -649,7 +813,7 @@ Origin Group AdjList:
 
 Matched group AdjList:
 {5}
-                                           """.format(group_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
+""".format(group_name, entry, match, sampleMolecule.toAdjacencyList(), entry.item.toAdjacencyList(),match.item.toAdjacencyList())
 
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)

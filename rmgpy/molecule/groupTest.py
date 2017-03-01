@@ -1073,18 +1073,21 @@ class TestGroup(unittest.TestCase):
         Test the Group.makeSampleMolecule method
         """
 
-        # result = self.group.makeSampleMolecule()
-        # print result.multiplicity
-        # self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
-
+        def performSampMoleComparison(adjlist, answer_smiles):
+            """
+            Creates a sample molecule from the adjlist and returns if it is isomorphic to a molecule created from
+            the inputted smiles
+            """
+            group = Group().fromAdjacencyList(adjlist)
+            result = group.makeSampleMolecule()
+            return (result.isIsomorphic(Molecule().fromSMILES(answer_smiles)))
+########################################################################################################################
         #tests adding implicit atoms
-        adjlist1 = """
+        adjlist = """
 1  *1 Cd u0
             """
-
-        group1 = Group().fromAdjacencyList(adjlist1)
-        result1 = group1.makeSampleMolecule()
-        self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=C')))
+        answer_smiles = 'C=C'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test creating implicit benzene atoms
         adjlist2 = """
@@ -1098,24 +1101,45 @@ class TestGroup(unittest.TestCase):
         resonanceList2=naphthaleneMolecule.generateResonanceIsomers()
         self.assertTrue(any([result2.isIsomorphic(x) for x in resonanceList2]))
 
-        #test the creation of a charged species
-        adjlist3 = """
+        #test the creation of a positively charged species
+        adjlist = """
 1  *1 N5s u0
         """
+        answer_smiles = '[NH4+]'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
-        group3 = Group().fromAdjacencyList(adjlist3)
-        result3 = group3.makeSampleMolecule()
-        self.assertTrue(result3.isIsomorphic(Molecule().fromSMILES('[NH4+]')))
+        #test the creation of a negatively charged species
+        #commented out until new nitrogen atom types added in
+#         adjlist = """
+# 1  *1 N2s u0
+#         """
+#         answer_smiles = '[NH2-]'
+#         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test creation of charged species when some single bonds present
-        adjlist4 = """
+        adjlist = """
 1 *2 [N5s,N5d] u0 {2,S} {3,S}
 2 *3 R!H       u1 {1,S}
 3 *4 H         u0 {1,S}
 """
-        group4 = Group().fromAdjacencyList(adjlist4)
-        result4 = group4.makeSampleMolecule()
-        self.assertTrue(result4.isIsomorphic(Molecule().fromSMILES('[NH3+][CH2]')))
+        answer_smiles = '[NH3+][CH2]'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
+
+        #test that Cb/Cbf atoms with [D,B] chooses [B] instead of [D] bonds
+        adjlist5 = """
+1 *1 R!H       u1 {2,[D,B]}
+2 *4 [Cbf,Cdd] u0 {1,[D,B]} {3,[D,B]}
+3 *5 [Cb,Cd]   u0 {2,[D,B]} {4,S}
+4 *2 R!H       u0 {3,S} {5,S}
+5 *3 H         u0 {4,S}
+"""
+        group5 = Group().fromAdjacencyList(adjlist5)
+        result5 = group5.makeSampleMolecule()
+        atom1 = result5.getLabeledAtom("*1")
+        atom4 = result5.getLabeledAtom("*4")
+        atom5 = result5.getLabeledAtom("*5")
+        self.assertTrue(atom1.bonds[atom4].isBenzene())
+        self.assertTrue(atom5.bonds[atom4].isBenzene())
 
     def testIsBenzeneExplicit(self):
         """

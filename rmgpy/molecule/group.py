@@ -36,7 +36,7 @@ reaction sites).
 import cython
 
 from .graph import Vertex, Edge, Graph
-from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
+from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures, aromaticAtomtypes
 from .element import PeriodicSystem
 import rmgpy.molecule.molecule as mol
 from copy import deepcopy, copy
@@ -530,14 +530,14 @@ class GroupAtom(Vertex):
         #Based on git history, it is probably because RDKit requires a number instead of None
         #Instead we will set it to 0 here
 
-        if newAtom.lonePairs == -100:
-            if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
-                newAtom.lonePairs = 0
-                newAtom.charge = 1
-            elif atomtype is atomTypes['N1d']:
-                newAtom.charge = -1
-            else:
-                newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
+        #Hard code charge for a few atomtypes
+        if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
+            newAtom.lonePairs = 0
+            newAtom.charge = 1
+        elif atomtype in [atomTypes[x] for x in ['N1d']]:
+            newAtom.charge = -1
+        elif newAtom.lonePairs == -100:
+            newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
         return newAtom
 
@@ -1432,7 +1432,7 @@ class Group(Graph):
 
         for atom in self.atoms:
             if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-            elif atom.atomType[0].label in ['Cb', 'N3b']: #Make Cb and N3b into normal cb atoms
+            elif atom.atomType[0].label in ['Cb', 'N5b', 'N3b']: #Make Cb and N3b into normal cb atoms
                 cbAtomList.append(atom)
             elif atom.atomType[0].label == 'Cbf':
                 cbfAtomList.append(atom)
@@ -1781,44 +1781,75 @@ class Group(Graph):
         Returns: A sample class :Molecule: from the group
         """
 
-        # print self
-        # print self.atoms
+        #Remove all wildcards
+        modifiedGroup = self.copy(deep = True)
+        for atom in modifiedGroup.atoms:
+            atom.atomType=[atom.atomType[0]]
+            print atom
+            for atom2, bond12 in atom.bonds.iteritems():
+                # print atom.atomType, atom2.atomType
+                if atom.atomType[0] in aromaticAtomtypes or atom2.atomType[0] in aromaticAtomtypes:
+                    if 1.5 in bond12.order:
+                        bond12.order = [1.5]
+                    else: bond12.order = [bond12.order[0]]
+                else:
+                    bond12.order = [bond12.order[0]]
+
+        # print "initial"
+        # print self.toAdjacencyList()
+        #
+        # print "after eliminating wildcards"
+        # print modifiedGroup.toAdjacencyList()
 
         #Add implicit atoms
-        modifiedGroup = self.addImplicitAtomsFromAtomType()
+        modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()
+
+        # print "after implicit"
+        # print modifiedGroup.toAdjacencyList()
+
         #Add implicit benzene rings
         modifiedGroup = modifiedGroup.addImplicitBenzene()
-        #Make dictionary of :GroupAtoms: to :Atoms:
-        atomDict = {}
+        #Make dictionary of :GroupAtoms: to :Atoms: and vice versa
+        groupToMol = {}
+        molToGroup = {}
         for atom in modifiedGroup.atoms:
-            atomDict[atom] = atom.makeSampleAtom()
+            molAtom = atom.makeSampleAtom()
+            groupToMol[atom] = molAtom
+            molToGroup[molAtom] = atom
 
         #create the molecule
-        newMolecule = mol.Molecule(atoms = atomDict.values())
+        newMolecule = mol.Molecule(atoms = groupToMol.values())
+            
         #Add explicit bonds to :Atoms:
         for atom1 in modifiedGroup.atoms:
             for atom2, bond12 in atom1.bonds.iteritems():
-                bond12.makeBond(newMolecule, atomDict[atom1], atomDict[atom2])
+                bond12.makeBond(newMolecule, groupToMol[atom1], groupToMol[atom2])
 
+        # print "first molecule"
+        # print newMolecule.toAdjacencyList()
 
         #Saturate up to expected valency
-        for atom in newMolecule.atoms:
-            statedCharge = atom.charge
-            atom.updateCharge()
-            if atom.charge - statedCharge:
-                hydrogenNeeded = atom.charge - statedCharge
+        for molAtom in newMolecule.atoms:
+            statedCharge = molAtom.charge
+            molAtom.updateCharge()
+            if molAtom.charge - statedCharge:
+                hydrogenNeeded = molAtom.charge - statedCharge
+                if molAtom in molToGroup and molToGroup[molAtom].atomType[0].single:
+                    maxSingle = max(molToGroup[molAtom].atomType[0].single)
+                    singlePresent = sum([1 for atom in molAtom.bonds if molAtom.bonds[atom].isSingle()])
+                    maxHydrogen = maxSingle - singlePresent
+                    if hydrogenNeeded > maxHydrogen: hydrogenNeeded = maxHydrogen
                 for x in range(hydrogenNeeded):
                     newH = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
-                    newBond = mol.Bond(atom, newH, 1)
+                    newBond = mol.Bond(molAtom, newH, 1)
                     newMolecule.addAtom(newH)
                     newMolecule.addBond(newBond)
-                atom.updateCharge()
-            # print statedCharge, atom.charge, type(atom.charge)
+                molAtom.updateCharge()
+
+        # print "after saturated"
+        # print newMolecule.toAdjacencyList()
 
         newMolecule.update()
-        # print newMolecule.atoms
-
-
         return newMolecule
 
     def isBenzeneExplicit(self):

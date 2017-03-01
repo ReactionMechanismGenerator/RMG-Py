@@ -89,6 +89,8 @@ cdef class Graph:
     
     cpdef Graph copy(self, bint deep=?)
 
+    cpdef dict copyAndMap(self)
+
     cpdef Graph merge(self, Graph other)
 
     cpdef list split(self)
