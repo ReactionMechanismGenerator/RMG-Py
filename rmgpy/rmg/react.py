@@ -159,7 +159,7 @@ def findDegeneracies(rxnList):
     # half degeneracy for sameReactants (see Bishop and Laidler 1965)
     for reaction in rxnList:
         if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
-            assert reaction.degeneracy % 2 == 0
+            assert reaction.degeneracy % 2 == 0, 'Reaction with isomorphic reactants had an odd degeneracy of {0}. The reaction is {1}'.format(reaction.degeneracy, str(reaction))
             reaction.degeneracy /= 2
 
     return rxnList
