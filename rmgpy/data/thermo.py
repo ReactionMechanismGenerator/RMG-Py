@@ -859,24 +859,26 @@ class ThermoDatabase(object):
             if atom.isSurfaceSite():
                 sitesToRemove.append(atom)
         for site in sitesToRemove:
-            assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-            bondedAtom = site.bonds.keys()[0]
-            bond = site.bonds[bondedAtom]
-            dummyMolecule.removeBond(bond)
-            if bond.isSingle():
-                bondedAtom.incrementRadical()
-            elif bond.isVanDerWaals():
+            numbonds = len(site.bonds)
+            if numbonds == 0:
+                #vanDerWaals
                 pass
-            elif bond.isDouble():
-                bondedAtom.incrementRadical()
-                bondedAtom.incrementRadical()
-            elif bond.isTriple():
-                bondedAtom.incrementRadical()
-                bondedAtom.incrementLonePairs()
             else:
-                raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bondedAtom = site.bonds.keys()[0]
+                bond = site.bonds[bondedAtom]
+                dummyMolecule.removeBond(bond)
+                if bond.isSingle():
+                    bondedAtom.incrementRadical()
+                elif bond.isDouble():
+                    bondedAtom.incrementRadical()
+                    bondedAtom.incrementRadical()
+                elif bond.isTriple():
+                    bondedAtom.incrementRadical()
+                    bondedAtom.incrementLonePairs()
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             dummyMolecule.removeAtom(site)
-
 
         dummyMolecule.update()
 
@@ -904,7 +906,6 @@ class ThermoDatabase(object):
         thermo.Cp0 = None
         thermo.CpInf = None
         return thermo
-        #raise NotImplementedError("To be continued...")
         
     def getThermoDataFromLibraries(self, species, trainingSet=None):
         """
