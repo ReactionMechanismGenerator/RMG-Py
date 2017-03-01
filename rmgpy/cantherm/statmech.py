@@ -548,7 +548,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360+ SOC['S']}
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
-    elif modelChemistry == 'M08SO/MG3S*': # * indicates that the grid size used in the [QChem} electronic 
+    elif modelChemistry == 'M08SO/MG3S*': # * indicates that the grid size used in the [QChem] electronic 
         #structure calculation utilized 75 radial points and 434 angular points 
         #(i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
         atomEnergies = {'H':-0.5017321350 + SOC['H'], 'N':-54.5574039365 + SOC['N'], 'O':-75.0382931348+ SOC['O'], 'C':-37.8245648740+ SOC['C'], 'P':-341.2444299005+ SOC['P'], 'S':-398.0940312227+ SOC['S'] }
@@ -673,27 +673,31 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         if symbol in atomEnergies: E0 += count * atomEnergies[symbol] * 4184.
     
     # Step 3: Bond energy corrections
+    #The order of elements in the bond correction label is important and should follow the order specified below:
+    #'C', 'N', 'O', 'S', 'P', and 'H'
+    #Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively.
+    # For example, ``'C=N'`` is correct while ``'N=C'`` is incorrect
     bondEnergies = {}
     # 'S-H', 'C-S', 'C=S', 'S-S', 'O-S', 'O=S', 'O=S=O' taken from http://hdl.handle.net/1721.1/98155 (both for
     # 'CCSD(T)-F12/cc-pVDZ-F12' and 'CCSD(T)-F12/cc-pVTZ-F12')
     if modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
         bondEnergies = { 'C-H': -0.46, 'C-C': -0.68, 'C=C': -1.90, 'C#C': -3.13,
-            'O-H': -0.51, 'C-O': -0.23, 'C=O': -0.69, 'O-O': -0.02, 'N-C': -0.67,
-            'N=C': -1.46, 'N#C': -2.79, 'N-O': 0.74, 'N_O': -0.23, 'N=O': -0.51,
+            'O-H': -0.51, 'C-O': -0.23, 'C=O': -0.69, 'O-O': -0.02, 'C-N': -0.67,
+            'C=N': -1.46, 'C#N': -2.79, 'N-O': 0.74, 'N_O': -0.23, 'N=O': -0.51,
             'N-H': -0.69, 'N-N': -0.47, 'N=N': -1.54, 'N#N': -2.05, 'S-H': 0.87,
             'C-S': 0.42, 'C=S': 0.51, 'S-S': 0.86, 'O-S': 0.23, 'O=S': -0.53,
             'O=S=O': 1.95, }
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
         bondEnergies = { 'C-H': -0.09, 'C-C': -0.27, 'C=C': -1.03, 'C#C': -1.79,
-            'O-H': -0.06, 'C-O': 0.14, 'C=O': -0.19, 'O-O': 0.16, 'N-C': -0.18,
-            'N=C': -0.41, 'N#C': -1.41, 'N-O': 0.87, 'N_O': -0.09, 'N=O': -0.23,
+            'O-H': -0.06, 'C-O': 0.14, 'C=O': -0.19, 'O-O': 0.16, 'C-N': -0.18,
+            'C=N': -0.41, 'C#N': -1.41, 'N-O': 0.87, 'N_O': -0.09, 'N=O': -0.23,
             'N-H': -0.01, 'N-N': -0.21, 'N=N': -0.44, 'N#N': -0.76, 'S-H': 0.52,
             'C-S': 0.13, 'C=S': -0.12, 'S-S': 0.30, 'O-S': 0.15, 'O=S': -2.61,
             'O=S=O': 0.27, }
     elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
         bondEnergies = { 'C-H': -0.08, 'C-C': -0.26, 'C=C': -1.01, 'C#C': -1.66,
-            'O-H':  0.07, 'C-O': 0.25, 'C=O': -0.03, 'O-O': 0.26, 'N-C': -0.20,
-            'N=C': -0.30, 'N#C': -1.33, 'N-O': 1.01, 'N_O': -0.03, 'N=O': -0.26,
+            'O-H':  0.07, 'C-O': 0.25, 'C=O': -0.03, 'O-O': 0.26, 'C-N': -0.20,
+            'C=N': -0.30, 'C#N': -1.33, 'N-O': 1.01, 'N_O': -0.03, 'N=O': -0.26,
             'N-H':  0.06, 'N-N': -0.23, 'N=N': -0.37, 'N#N': -0.64,}
     
     # BAC corrections from Table IX in http://dx.doi.org/10.1063/1.477794 for CBS-Q method
@@ -702,15 +706,14 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'CBS-QB3':
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2,
-            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0,
+            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'O=S': -0.78, 'S-H': 0.0,
             'N-H': -0.42, 'C-N': -0.13, 'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58,
             'N-O': 0.35, }
     elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)']:
         bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
             'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
-            'C#N': 0.22, 'C-S': -2.35, 'S=O': -5.19, 'S-H': -0.52, }    
+            'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52, }    
     else:
-        
         logging.warning('No bond energy correction found for model chemistry: {0}'.format(modelChemistry))
 
     for symbol, count in bonds.items():
