@@ -633,6 +633,16 @@ class Group(Graph):
         """
         return self.removeEdge(bond)
 
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all bonds that are definitely only van der Waals bonds.
+        """
+        cython.declare(atom=GroupAtom, bond=GroupBond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.order == ['vdW']:
+                    self.removeBond(bond)
+
     def sortAtoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.

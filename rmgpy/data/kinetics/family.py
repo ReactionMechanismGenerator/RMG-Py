@@ -1185,6 +1185,10 @@ class KineticsFamily(Database):
                 productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
 
+        # Remove vdW bonds
+        for struct in productStructures:
+            struct.removeVanDerWaalsBonds()
+
         # If product structures are Molecule objects, update their atom types
         for struct in productStructures:
             if isinstance(struct, Molecule):
