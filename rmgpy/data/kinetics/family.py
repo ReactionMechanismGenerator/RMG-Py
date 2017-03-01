@@ -52,6 +52,8 @@ from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
 
+from rmgpy.rmg.react import findDegeneracies
+
 ################################################################################
 
 class InvalidActionError(Exception):
@@ -1425,8 +1427,12 @@ class KineticsFamily(Database):
         """
         For a `reaction`  with `Molecule` objects given in the direction in which
         the kinetics are defined, compute the reaction-path degeneracy.
+
+        This method by default adjusts for double counting of identical reactants. 
+        This should only be adjusted once per reaction. To not adjust for 
+        identical reactants (since you will be reducing them later in the algorithm), add
+        `ignoreSameReactants= True` to this method.
         """
-        from rmgpy.rmg.react import findDegeneracies
 
         reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
         findDegeneracies(reactions)
@@ -1568,7 +1574,7 @@ class KineticsFamily(Database):
                     
                 if match: 
                     rxnList.append(reaction)
-                
+
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
