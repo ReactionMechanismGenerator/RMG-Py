@@ -515,8 +515,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     """
     
     # Spin orbit correction (SOC) in Hartrees
-    # Values taken from note 22 of http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 and converted to hartrees
-    # Values in millihartree are also available (with fewer significant figures) from http://jcp.aip.org/resource/1/jcpsa6/v106/i3/p1063_s1
+    # Values taken from ref 22 of http://dx.doi.org/10.1063/1.477794 and converted to hartrees
+    # Values in millihartree are also available (with fewer significant figures) from table VII of http://dx.doi.org/10.1063/1.473182 
     SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0} 
     
     # Step 1: Reference all energies to a model chemistry-independent basis
