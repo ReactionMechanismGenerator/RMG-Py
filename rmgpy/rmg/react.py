@@ -84,7 +84,9 @@ def reactSpecies(speciesTuple):
         combos.extend(itertools.product(molsA, molsB))
 
     reactions = map(reactMolecules,combos)
-    reactions = findDegeneracies(list(itertools.chain.from_iterable(reactions)))
+    reactions = list(itertools.chain.from_iterable(reactions))
+    findDegeneracies(reactions)
+    reduceSameReactantDegeneracy(reactions)
 
     deflate(reactions,
             [spec.molecule[0] for spec in speciesTuple],
@@ -115,11 +117,13 @@ def reactMolecules(moleculeTuples):
 
 def findDegeneracies(rxnList):
     """
-    given a list of reactions, this method removes degenerate reactions and
-    increments the degeneracy of the reaction object.
+    given a list of reaction object with Molecule objects, this method 
+    removes degenerate reactions and
+    increments the degeneracy of the reaction object. This method modifies
+    rxnList in place and does not return anything.
 
     This algorithm used to exist in family.__generateReactions, but was moved
-    here because it didn't have family dependence.
+    here because it didn't have any family dependence.
     """
 
     index0 = 0
@@ -146,8 +150,13 @@ def findDegeneracies(rxnList):
             # (template can be added later after multiple TS's are enabled with all([template0 in reaction.template for template0 in reaction0.template]))
             if reaction.family == reaction0.family and \
                  reaction0.isIsomorphic(reaction): 
+                reaction0.degeneracy += reaction.degeneracy
+                try:
+                    reaction0.reverse.degeneracy += reaction.reverse.degeneracy
+                except AttributeError:
+                    pass
                 rxnList.remove(reaction)
-                reaction0.degeneracy += 1
+                
             else:
                 index += 1
 
@@ -156,13 +165,22 @@ def findDegeneracies(rxnList):
         # reconvert the reaction back to molecule objects (for deflating)
         reaction0.reactants = storeReactants
         reaction0.products = storeProducts
-    # half degeneracy for sameReactants (see Bishop and Laidler 1965)
+
+
+def reduceSameReactantDegeneracy(rxnList):
+    """
+    This method reduces the degeneracy of reactions with identical reactants,
+    since translational component of the transition states are already taken
+    into account (so swapping the same reactant is not valid)
+    
+    This comes from work by Bishop and Laidler in 1965
+    """
     for reaction in rxnList:
         if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
             assert reaction.degeneracy % 2 == 0, 'Reaction with isomorphic reactants had an odd degeneracy of {0}. The reaction is {1}'.format(reaction.degeneracy, str(reaction))
             reaction.degeneracy /= 2
 
-    return rxnList
+    
 
 def deflate(rxns, molecules, reactantIndices):
     """

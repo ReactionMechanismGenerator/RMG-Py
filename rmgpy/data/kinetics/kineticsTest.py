@@ -7,7 +7,7 @@ from rmgpy.data.base import DatabaseError
 import numpy
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.react import findDegeneracies
+from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy
 ###################################################
 
 def setUpModule():
@@ -219,6 +219,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         reactions = family.generateReactions(reactants)
         findDegeneracies(reactions)
+        reduceSameReactantDegeneracy(reactions)
         self.assertEqual(len(reactions), num_independent_reactions,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_independent_reactions))
 
         return sum([reaction.degeneracy for reaction in reactions]), reactions
