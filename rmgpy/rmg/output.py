@@ -92,7 +92,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                logging.error("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                raise
         #spec.thermo.comment=
         # Text wrap the thermo comments
     # We want to keep species sorted in the original order in which they were added to the RMG core.
