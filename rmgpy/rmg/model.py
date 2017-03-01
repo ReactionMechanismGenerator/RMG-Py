@@ -647,10 +647,10 @@ class CoreEdgeReactionModel:
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
                     reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                if family.ownReverse and hasattr(reaction,'reverse'):
-                    if reaction.reverse:
-                        if not isForward:
+                    if family.ownReverse and hasattr(reaction,'reverse'):
+                        if reaction.reverse:
                             reaction.template = reaction.reverse.template
+                            reaction.degeneracy = reaction.reverse.degeneracy
                         # We're done with the "reverse" attribute, so delete it to save a bit of memory
                         reaction.reverse = None
                     
