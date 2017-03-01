@@ -420,11 +420,17 @@ class MoleculeDrawer:
                     break
             else:
                 raise Exception("Can't find surface site")
-            adsorbate = site.bonds.keys()[0]
-            vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
-            angle = math.atan2(vector0[0], vector0[1]) - math.pi
-            rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-            self.coordinates = coordinates = numpy.dot(coordinates, rot)
+            if site.bonds:
+                adsorbate = site.bonds.keys()[0]
+                vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
+                angle = math.atan2(vector0[0], vector0[1]) - math.pi
+                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+                self.coordinates = coordinates = numpy.dot(coordinates, rot)
+            else:
+                # van der waals
+                index = atoms.index(site)
+                coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
+                coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
 
     
     def __findCyclicBackbone(self):
