@@ -38,6 +38,30 @@ def get_HC_polycyclics_data_from_db(db_name, collection_name):
 	
 	return (X, y)
 
+def get_data_from_db(db_name, collection_name):
+
+	# connect to db and query
+	client = MongoClient('localhost', 27017)
+	db =  getattr(client, db_name)
+	collection = getattr(db, collection_name)
+	db_cursor = collection.find()
+
+	# collect data
+	logging.info('Collecting polycyclic data...')
+	X = []
+	y = []
+	for db_mol in db_cursor:
+		smile = str(db_mol["SMILES_input"])
+		mol = Molecule().fromSMILES(smile)
+		mol_tensor = get_molecule_tensor(mol)
+		hf298_qm = float(db_mol["Hf298"])
+		X.append(mol_tensor)
+		y.append(hf298_qm)
+
+	logging.info('Done collecting data: {0} points...'.format(len(X)))
+	
+	return (X, y)
+
 def prepare_folded_data(X, y, folds):
 
 	# Get target size of each fold
