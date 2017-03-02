@@ -18,6 +18,9 @@ def parseCommandLineArguments():
 	parser.add_argument('file', metavar='FILE', type=str, nargs=1,
 		help='a predictor training input file')
 
+	parser.add_argument('-f', '--folds', type=int, 
+		help='number of folds for training')
+
 	return parser.parse_args()
 ################################################################################
 
@@ -78,19 +81,19 @@ if __name__ == '__main__':
 
 	args = parseCommandLineArguments()
 	input_file = args.file[0]
+	folds = args.folds
 	input_directory = os.path.abspath(os.path.dirname(input_file))
 	
 	level = logging.INFO
 	initializeLog(level, os.path.join(input_directory, 'train.log'))
 
 	h298_predictor = Predictor()
-
 	h298_predictor.load_input(input_file)
 
 	lr_func = "float(0.0007 * np.exp(- epoch / 30.0))"
-	
+		
 	save_model_path = os.path.join(input_directory, 'saved_model')
 	if not os.path.exists(save_model_path):
 		os.mkdir(save_model_path)
 	
-	h298_predictor.kfcv_train(folds=5, lr_func=lr_func, save_model_path=save_model_path)
+	h298_predictor.kfcv_train(folds=folds, lr_func=lr_func, save_model_path=save_model_path)
