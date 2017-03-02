@@ -864,8 +864,11 @@ class MoleculeDrawer:
         self.symbols = symbols = [atom.symbol for atom in atoms]
         for i in range(len(symbols)):
             # Don't label carbon atoms, unless there are only one or two heavy atoms
+            # or they are isotopically labeled
             if symbols[i] == 'C' and len(symbols) > 2:
-                if len(atoms[i].bonds) > 1 or (atoms[i].radicalElectrons == 0 and atoms[i].charge == 0):
+                if (len(atoms[i].bonds) > 1 or \
+                        (atoms[i].radicalElectrons == 0 and atoms[i].charge == 0))\
+                        and atoms[i].element.isotope== -1:
                     symbols[i] = ''
         # Do label atoms that have only double bonds to one or more labeled atoms
         changed = True
@@ -1165,7 +1168,8 @@ class MoleculeDrawer:
             boundingRect = [x1, y1, x2, y2]
     
             # Set color for text
-            if   heavyAtom == 'C':  cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            if   atom.element.isotope != -1: cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
+            elif heavyAtom == 'C':  cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
             elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'F':  cr.set_source_rgba(0.5, 0.75, 1.0, 1.0)
