@@ -5,7 +5,7 @@ from .molecule_tensor import get_molecule_tensor
 import os
 import rmgpy
 import numpy as np
-from .data import get_HC_polycyclics_data_from_db, prepare_folded_data, prepare_data_one_fold
+from .data import get_data_from_db, prepare_folded_data, prepare_data_one_fold
 import logging
 
 class Predictor(object):
@@ -42,7 +42,7 @@ class Predictor(object):
 	def kfcv_train(self, folds, lr_func, save_model_path):
 
 		# prepare data for training
-		(X, y) = get_HC_polycyclics_data_from_db('sdata134k', 'sdata134k_table')
+		(X, y) = get_data_from_db('sdata134k', 'polycyclic_ff_table')
 		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds)
 
 		losses = []
