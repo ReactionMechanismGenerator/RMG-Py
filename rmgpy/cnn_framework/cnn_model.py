@@ -76,7 +76,7 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 	"""
 
 	# Get data from helper function
-	(X_train, X_val, _, y_train, y_val, _) = data
+	(X_train, X_val, X_test, y_train, y_val, y_test) = data
 
 	# Create learning rate function
 	lr_func_string = 'def lr(epoch):\n    return {}\n'.format(lr_func)
@@ -134,10 +134,29 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 		if patience == -1:
 			model.load_weights('train_cnn_results/best.h5')
 
+		# evaluate test loss upon final model
+		mean_test_loss = evaluate_mean_tst_loss(model, X_test, y_test)
+
 	except KeyboardInterrupt:
 		logging.info('User terminated training early (intentionally)')
 
-	return (model, loss, val_loss)
+	return (model, loss, val_loss, mean_test_loss)
+
+def evaluate_mean_tst_loss(model, X_test, y_test):
+
+	"""
+	Given final model and test examples
+	returns mean test loss: a float number
+	"""
+	test_losses = []
+	for j in range(len(X_test)):
+		single_mol_as_array = np.array(X_test[j:j+1])
+		single_y_as_array = np.reshape(y_test[j], (1, -1))
+		sloss = model.test_on_batch(single_mol_as_array, single_y_as_array)
+		test_losses.append(sloss)
+
+	mean_test_loss = np.mean(test_losses)
+	return mean_test_loss
 
 def reset_model(model):
 	'''Given a Keras model consisting only of GraphFP, Dense, and Dropout layers,
