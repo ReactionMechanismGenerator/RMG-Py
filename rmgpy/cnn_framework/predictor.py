@@ -1,5 +1,5 @@
 
-from cnn_model import build_model, train_model, reset_model, save_model
+from cnn_model import build_model, train_model, reset_model, save_model, write_loss_report
 from .input import read_input_file
 from .molecule_tensor import get_molecule_tensor
 import os
@@ -47,11 +47,12 @@ class Predictor(object):
 
 		losses = []
 		val_losses = []
+		test_losses = []
 		for fold in range(folds):
 			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold)
 
 			# execute train_model
-			(model, loss, val_loss) = train_model(self.model, data, 
+			(model, loss, val_loss, mean_test_loss) = train_model(self.model, data, 
 												nb_epoch=150, lr_func=lr_func, 
 												patience=10)
 
@@ -59,20 +60,24 @@ class Predictor(object):
 			# containing loss for each epoch
 			losses.append(loss)
 			val_losses.append(val_loss)
+			test_losses.append(mean_test_loss)
 			
-			# save model
+			# save model and write fold report
 			fpath = os.path.join(save_model_path, 'fold_{0}'.format(fold))
-			self.save_model(loss, val_loss, fpath)
+			self.save_model(loss, val_loss, mean_test_loss, fpath)
 
 			# once finish training one fold, reset the model
 			self.reset_model()
 
 		# mean loss and val_loss used for selecting parameters, 
 		# e.g., lr, epoch, attributes, etc
-		mean_loss = np.mean([l[-1] for l in losses if len(l) > 0 ])
-		mean_val_loss = np.mean([l[-1] for v_l in val_losses if len(l) > 0 ])
+		full_folds_mean_loss = np.mean([l[-1] for l in losses if len(l) > 0 ])
+		full_folds_mean_val_loss = np.mean([l[-1] for v_l in val_losses if len(l) > 0 ])
+		full_folds_mean_test_loss = np.mean(test_losses)
 
-		self.report_training_results(mean_loss, mean_val_loss)
+		full_folds_loss_report_path = os.path.join(save_model_path, 'full_folds_loss_report.txt')
+		write_loss_report(full_folds_mean_loss, full_folds_mean_val_loss, \
+			full_folds_mean_test_loss, full_folds_loss_report_path)
 
 	def load_parameters(self, param_path=None):
 
@@ -90,9 +95,9 @@ class Predictor(object):
 
 		self.model = reset_model(self.model)
 
-	def save_model(self, loss, val_loss, fpath):
+	def save_model(self, loss, val_loss, mean_test_loss, fpath):
 
-		save_model(self.model, loss, val_loss, fpath)
+		save_model(self.model, loss, val_loss, mean_test_loss, fpath)
 
 	def predict(self, molecule):
 
@@ -100,12 +105,3 @@ class Predictor(object):
 
 		molecule_tensor_array = np.array([molecule_tensor])
 		return self.model.predict(molecule_tensor_array)[0][0]
-	
-	def report_training_results(self, mean_loss, mean_val_loss):
-
-		logging.info("##################################")
-		logging.info("# Training Completed!          ###")
-		logging.info("# Training Mean Loss: {0:2.2f}   ###".format(mean_loss))
-		logging.info("# Validation Mean Loss: {0:2.2f} ###".format(mean_val_loss))
-		logging.info("##################################")
-    

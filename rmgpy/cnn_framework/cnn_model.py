@@ -193,13 +193,14 @@ def reset_model(model):
 	logging.info('Reset model weights')
 	return model
 
-def save_model(model, loss, val_loss, fpath):
+def save_model(model, loss, val_loss, mean_test_loss, fpath):
 	'''Saves NN model object and associated information.
 
 	inputs:
 		model - a Keras model
 		loss - list of training losses 
 		val_loss - list of validation losses
+		mean_test_loss - test loss on test set
 		fpath - root filepath to save everything to (with .json, h5, png, info 
 		config - the configuration dictionary that defined this model 
 		tstamp - current timestamp to log in info file'''
@@ -219,6 +220,10 @@ def save_model(model, loss, val_loss, fpath):
 
 	# Dump history
 	save_model_history_manual(loss, val_loss, fpath + '.hist')
+
+	mean_loss = loss[-1]
+	mean_val_loss = val_loss[-1]
+	write_loss_report(mean_loss, mean_val_loss, mean_test_loss, fpath + '_loss_report.txt')
 	logging.info ('...saved history')
 
 	logging.info('...saved model to {}.[json, h5, png]'.format(fpath))
@@ -243,3 +248,16 @@ def save_model_history_manual(loss, val_loss, fpath):
 
 	# Close file
 	fid.close()
+
+def write_loss_report(mean_loss, mean_val_loss, mean_test_loss, fpath):
+
+	"""
+	Write training, validation and test mean loss
+	"""
+	loss_report = open(fpath, 'a')
+	print("{:50} {}".format("Training loss (mse):", mean_loss), file=loss_report)
+	print("{:50} {}".format("Validation loss (mse):", mean_val_loss), file=loss_report)
+	print("{:50} {:.4f}".format("Test loss (mse):", mean_test_loss), file=loss_report)
+
+	# Close file
+	loss_report.close()
