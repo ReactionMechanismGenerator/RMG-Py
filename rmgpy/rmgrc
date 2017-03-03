@@ -22,3 +22,5 @@
 
 # The path to the directory where the RMG-database is located on disk
 #database.directory : ../../RMG-database/input
+#test_data.directory : test_data
+
