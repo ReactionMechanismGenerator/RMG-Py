@@ -23,6 +23,7 @@ dependencies:
   - pyparsing
   - pydot ==1.2.2
   - pyrdl
+  - pydot-ng
   - nose
   - coverage
   - gprof2dot
@@ -41,3 +42,4 @@ dependencies:
   - mock
   - muq
   - pymongo
+  - keras
