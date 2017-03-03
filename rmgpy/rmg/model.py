@@ -324,7 +324,7 @@ class CoreEdgeReactionModel:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
         spec.coreSizeAtCreation = len(self.core.species)
-        spec.generateResonanceIsomers()
+        spec.generateResonanceIsomers(keepIsomorphic = True)
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
         submit(spec)
