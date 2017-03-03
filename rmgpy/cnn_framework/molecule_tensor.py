@@ -103,7 +103,7 @@ def get_bond_attributes(molecule, non_H_atoms):
 	for atom in non_H_atoms:
 		for bonded_atom, bond in atom.bonds.iteritems():
 			if not bonded_atom.isHydrogen() and (bond not in bond_attributes_dict):
-				attributes = oneHotVector(bond.order,
+				attributes = oneHotVector(bond.getOrderStr(),
 										['S', 'B', 'D', 'T']
 										)
 				# Add if is aromatic
@@ -127,33 +127,33 @@ def is_bond_conjugated(bond):
 	
 	atom1 = bond.atom1
 	atom2 = bond.atom2
-	if bond.order == 'S':
+	if bond.getOrderStr() == 'S':
 		atom1_has_non_single_bond = False
 		atom2_has_non_single_bond = False
 		for bonded_atom, bond in atom1.bonds.iteritems():
-			if bond.order != "S":
+			if bond.getOrderStr() != "S":
 				atom1_has_non_single_bond = True
 				break
 		for bonded_atom, bond in atom2.bonds.iteritems():
-			if bond.order != "S":
+			if bond.getOrderStr() != "S":
 				atom2_has_non_single_bond = True
 				break
 
 		return (atom1_has_non_single_bond and atom2_has_non_single_bond)
 
-	elif bond.order == 'B':
+	elif bond.getOrderStr() == 'B':
 		return True
 	else:
 		for atom3, bond23 in atom2.bonds.iteritems():
-			if bond23.order == "S":
+			if bond23.getOrderStr() == "S":
 				for atom4, bond34 in atom3.bonds.iteritems():
-					if bond34.order != "S":
+					if bond34.getOrderStr() != "S":
 						return True
 
 		for atom3, bond13 in atom1.bonds.iteritems():
-			if bond13.order == "S":
+			if bond13.getOrderStr() == "S":
 				for atom4, bond34 in atom3.bonds.iteritems():
-					if bond34.order != "S":
+					if bond34.getOrderStr() != "S":
 						return True
 
 		return False
