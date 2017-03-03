@@ -90,6 +90,9 @@ def get_atom_attributes(molecule, non_H_atoms):
 				break
 		attributes.append(is_aromatic)
 
+		# add atom in i-member rings
+		attributes += is_atom_in_ring(molecule, atom)
+
 		atom_attributes_dict[atom] = np.array(attributes, dtype=np.float32)
 	
 	return atom_attributes_dict
