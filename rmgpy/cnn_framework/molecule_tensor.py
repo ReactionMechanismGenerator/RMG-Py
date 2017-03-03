@@ -29,6 +29,26 @@ def get_molecule_tensor(molecule):
 
 	return molecule_tensor
 
+def get_attribute_vector_size():
+
+	"""
+	this method examines current feature engineering setup
+	returns attibute vector size on the fly using an example molecule
+	"""
+	from rmgpy.molecule.molecule import Molecule
+
+	molecule = Molecule().fromSMILES('CC')
+	non_H_atoms = [atom0 for atom0 in molecule.atoms if not atom0.isHydrogen()]
+	
+	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms)
+	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms)
+
+	atom_attribute_num = len(atom_attributes_dict.values()[0])
+	bond_attribute_num = len(bond_attributes_dict.values()[0])
+	attribute_num = atom_attribute_num + bond_attribute_num
+
+	return attribute_num
+
 def get_atom_attributes(molecule, non_H_atoms):
 
 	"""
