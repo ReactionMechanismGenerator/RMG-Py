@@ -100,6 +100,10 @@ class Test_Predictor(unittest.TestCase):
 		self.assertAlmostEqual(dense2.b.eval()[0], 3.074, 3)
 		
 	def test_predict(self):
+		"""
+		Test predictor is predicting within a reasonable range
+		we should change weights.h5 everytime we change feature space
+		"""
 		
 		test_predictor_input = os.path.join(os.path.dirname(rmgpy.__file__),
 											'cnn_framework',
