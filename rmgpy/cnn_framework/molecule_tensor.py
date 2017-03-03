@@ -94,6 +94,26 @@ def get_atom_attributes(molecule, non_H_atoms):
 	
 	return atom_attributes_dict
 
+def is_atom_in_ring(molecule, atom):
+	"""
+	Given an atom and the molecule it belongs to
+	return a list of counts, each count shows
+	the occurances of the atom is involved in
+	3, 4, 5, 6, 7, 8-member rings
+
+	For instance, atom is in one 3-member ring and two 
+	5-member rings, the returned list would be
+	[1, 0, 2, 0, 0, 0]
+	"""
+	SSSR = molecule.getDeterministicSmallestSetOfSmallestRings()
+	atom_in_rings = [0]*6
+	for ring in SSSR:
+		if atom in ring:
+			idx = len(ring) - 3
+			atom_in_rings[idx] = atom_in_rings[idx] + 1
+
+	return atom_in_rings
+
 def get_bond_attributes(molecule, non_H_atoms):
 	"""
 	this method takes a molecule with hydrogen pre-removed and returns a dict
