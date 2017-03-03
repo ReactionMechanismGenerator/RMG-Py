@@ -195,7 +195,7 @@ class Test_Molecule_Tensor(unittest.TestCase):
 
 		self.assertEqual(len(mol_tensor_test), 1)
 		self.assertEqual(len(mol_tensor_test[0]), 1)
-		self.assertEqual(len(mol_tensor_test[0][0]), 33)
+		self.assertEqual(len(mol_tensor_test[0][0]), get_attribute_vector_size())
 
 	def test_get_molecule_tensor_2(self):
 
@@ -205,6 +205,6 @@ class Test_Molecule_Tensor(unittest.TestCase):
 
 		self.assertEqual(len(mol_tensor_test), 2)
 		self.assertEqual(len(mol_tensor_test[0]), 2)
-		self.assertEqual(len(mol_tensor_test[0][0]), 33)
+		self.assertEqual(len(mol_tensor_test[0][0]), get_attribute_vector_size())
 
 

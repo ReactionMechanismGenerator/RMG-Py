@@ -5,6 +5,7 @@ import unittest
 import os
 import rmgpy
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.cnn_framework.molecule_tensor import get_attribute_vector_size
 
 class Test_Predictor(unittest.TestCase):
 
@@ -20,7 +21,7 @@ class Test_Predictor(unittest.TestCase):
 		self.assertTrue(isinstance(predictor_model.layers[0], GraphFP))
 		self.assertTrue(isinstance(predictor_model.layers[1], Dense))
 
-		self.assertEqual(predictor_model.layers[0].inner_dim, 32)
+		self.assertEqual(predictor_model.layers[0].inner_dim, get_attribute_vector_size()-1)
 		self.assertEqual(predictor_model.layers[0].output_dim, 512)
 
 	def test_load_input(self):
