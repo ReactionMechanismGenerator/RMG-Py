@@ -79,6 +79,9 @@ def initializeLog(verbose, log_file_name):
 
 if __name__ == '__main__':
 
+	# to run the script
+	# type: python train_cnn.py input.py -f some_number
+
 	args = parseCommandLineArguments()
 	input_file = args.file[0]
 	folds = args.folds
