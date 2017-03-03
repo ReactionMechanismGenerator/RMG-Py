@@ -37,3 +37,5 @@ dependencies:
   - jupyter
   - networkx
   - mock
+  - pymongo
+  - keras
