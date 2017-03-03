@@ -83,24 +83,28 @@ class RMGDatabase:
              statmechLibraries=None,
              depository=True,
              solvation=True,
-             ):
+             testing = False):
         """
         Load the RMG database from the given `path` on disk, where `path`
         points to the top-level folder of the RMG database. If none of the
         optional arguments are provided, then the entire database will be
         loaded. You can use the optional arguments to specify that only certain
         components of the database be loaded.
+
+        Argument testing will load a lighter version of the database used for unit-tests
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
-        self.loadTransport(os.path.join(path, 'transport'), transportLibraries)
-        self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        if not testing:
+            self.loadTransport(os.path.join(path, 'transport'), transportLibraries)
+            self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         self.loadKinetics(os.path.join(path, 'kinetics'),
                           reactionLibraries,
                           seedMechanisms,
                           kineticsFamilies,
                           kineticsDepositories
                           )
-        self.loadStatmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
+        if not testing:
+            self.loadStatmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
         
         if solvation:
             self.loadSolvation(os.path.join(path, 'solvation'))
