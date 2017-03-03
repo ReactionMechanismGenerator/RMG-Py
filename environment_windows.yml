@@ -38,3 +38,4 @@ dependencies:
   - mock
   # - muq
   - pymongo
+  - keras
