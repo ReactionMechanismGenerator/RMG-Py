@@ -82,7 +82,7 @@ class MolecularFeatureExtractor():
 							if atom_i.bonds[atom_j] not in shared_bonds:
 								shared_bonds.append(atom_i.bonds[atom_j])
 				
-				bond_orders = [bond.order for bond in shared_bonds]
+				bond_orders = [bond.getOrderStr() for bond in shared_bonds]
 				bond_orders_counts = np.array([bond_orders.count(order) for order in orders])
 				bond_order_sharedby_bicyclic_counts += bond_orders_counts
 
@@ -102,7 +102,7 @@ class MolecularFeatureExtractor():
 						if atom_i.bonds[atom_j] not in bonds_in_unicyclic:
 							bonds_in_unicyclic.append(atom_i.bonds[atom_j])
 		
-			bond_orders = [bond.order for bond in bonds_in_unicyclic]
+			bond_orders = [bond.getOrderStr() for bond in bonds_in_unicyclic]
 			bond_orders_counts = np.array([bond_orders.count(order) for order in orders])
 			ring_size = len(ring)
 			bond_order_in_i_member_ring_counts[((ring_size-i_min)*len(orders)):((ring_size-i_min+1)*len(orders))] += bond_orders_counts
