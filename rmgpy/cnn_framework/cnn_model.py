@@ -10,9 +10,10 @@ from keras.utils.visualize_util import plot
 import json
 import datetime
 import logging
+from rmgpy.cnn_framework.molecule_tensor import get_attribute_vector_size
 
 
-def build_model(embedding_size=512, attribute_vector_size=33, depth=5, scale_output=0.05, padding=False, 
+def build_model(embedding_size=512, attribute_vector_size=None, depth=5, scale_output=0.05, padding=False, 
 				hidden=50, hidden_activation='tanh',
 				output_activation='linear', output_size=1, 
 				lr=0.01, optimizer='adam', loss='mse'):
@@ -24,7 +25,11 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5, scale_out
 	
 	model = Sequential()
 
-	model.add(GraphFP(embedding_size, attribute_vector_size-1, 
+	if attribute_vector_size is None:
+		attribute_vector_size = get_attribute_vector_size()
+
+	model.add(GraphFP(output_dim=embedding_size, 
+		inner_dim=attribute_vector_size-1, 
 		depth=depth,
 		scale_output=scale_output,
 		padding=padding,
@@ -37,7 +42,7 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5, scale_out
 		logging.info('cnn_model: added {} Dense layer (-> {})'.format(hidden_activation, hidden))
 		
 	model.add(Dense(output_size, activation=output_activation))
-	logging.info('cnn_model: added lin Dense layer (-> {})'.format(output_size))
+	logging.info('cnn_model: added {} Dense layer (-> {})'.format(output_activation, output_size))
 
 	# Compile
 	if optimizer == 'adam':
