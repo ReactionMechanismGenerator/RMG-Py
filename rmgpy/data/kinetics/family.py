@@ -1170,6 +1170,11 @@ class KineticsFamily(Database):
                 atomLabels['*2'].label = '*3'
                 atomLabels['*3'].label = '*2'
 
+            elif label == 'Intra_R_Add_Exo_scission':
+                # Labels for nodes are swapped
+                atomLabels['*1'].label = '*4'
+                atomLabels['*4'].label = '*1'
+
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
 
