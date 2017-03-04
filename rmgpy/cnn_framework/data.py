@@ -8,7 +8,7 @@ from pymongo import MongoClient
 def get_HC_polycyclics_data_from_db(db_name, collection_name):
 
 	# connect to db and query
-	client = MongoClient('localhost', 27017)
+	client = MongoClient('mongodb://user:user@rmg.mit.edu/admin', 27018)
 	db =  getattr(client, db_name)
 	collection = getattr(db, collection_name)
 	db_cursor = collection.find()
@@ -41,13 +41,13 @@ def get_HC_polycyclics_data_from_db(db_name, collection_name):
 def get_data_from_db(db_name, collection_name):
 
 	# connect to db and query
-	client = MongoClient('localhost', 27017)
+	client = MongoClient('mongodb://user:user@rmg.mit.edu/admin', 27018)
 	db =  getattr(client, db_name)
 	collection = getattr(db, collection_name)
 	db_cursor = collection.find()
 
 	# collect data
-	logging.info('Collecting polycyclic data...')
+	logging.info('Collecting polycyclic data: {0}.{1}...'.format(db_name, collection_name))
 	X = []
 	y = []
 	for db_mol in db_cursor:
