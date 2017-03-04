@@ -5,7 +5,7 @@ class Test_Data(unittest.TestCase):
 
 	def setUp(self):
 
-		(X, y) = get_HC_polycyclics_data_from_db('sdata134k', 'sdata134k_table')
+		(X, y) = get_data_from_db('sdata134k', 'polycyclic_2954_table')
 		
 		self.X = X
 		self.y = y
@@ -13,8 +13,8 @@ class Test_Data(unittest.TestCase):
 
 	def test_get_HC_polycyclics_data_from_db(self):
 
-		self.assertEqual(len(self.X), 3162)
-		self.assertEqual(len(self.y), 3162)
+		self.assertEqual(len(self.X), 2954)
+		self.assertEqual(len(self.y), 2954)
 
 	def test_prepare_folded_data(self):
 
