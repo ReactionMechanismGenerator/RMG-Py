@@ -533,16 +533,11 @@ The following adjList may have atoms in a different ordering than the input file
                 if endLabels == groupLabels:
                     break
             else:
-                print(endLabels)
-                print(groupLabels)
-                for group in groups:
-                    print(group.toAdjacencyList(label=backbone.label))
                 raise Exception("Group {0} not split correctly".format(backbone.label))
 
             return group
         #################################################################################
         family = self.database.kinetics.families[family_name]
-        print family
 
         backbone =  family.getBackboneRoots()[0]
 
@@ -679,7 +674,6 @@ The following adjList may have atoms in a different ordering than the input file
         for entryName, entry in family.groups.entries.iteritems():
             if entry in ignore: continue
             elif isinstance(entry.item, Group):
-                print entryName
                 ancestors=family.ancestors(entry)
                 if ancestors: root = ancestors[-1] #top level root will be last one in ancestors
                 else: root = entry
@@ -764,12 +758,7 @@ Origin Group AdjList:
         for nodeName, nodeGroup in group.entries.iteritems():
             del entriesCopy[nodeName]
             for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
-                try:
-                    group.matchNodeToNode(nodeGroup,nodeGroupOther)
-                except:
-                    print nodeName
-                    print nodeNameOther
-                    pass
+                group.matchNodeToNode(nodeGroup,nodeGroupOther)
                 nose.tools.assert_false(group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther))
 
     def general_checkChildParentRelationships(self, group_name, group):
@@ -864,10 +853,8 @@ The following adjList may have atoms in a different ordering than the input file
 
         skipped = []
         for entryName, entry in group.entries.iteritems():
-            print entryName
             try:
                 if isinstance(entry.item, Group):
-                    # print entryName
                     sampleMolecule = entry.item.makeSampleMolecule()
 
                     #for now ignore sample atoms that use nitrogen types
@@ -881,7 +868,7 @@ The following adjList may have atoms in a different ordering than the input file
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = group.descendTree(sampleMolecule, atoms, strict=True)
 
-                    assert entry in [match]+group.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+                    nose.tools.assert_in(entry, [match]+group.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}
 
@@ -895,7 +882,7 @@ Matched group AdjList:
            match,
            sampleMolecule.toAdjacencyList(),
            entry.item.toAdjacencyList(),
-           match.item.toAdjacencyList())
+           match.item.toAdjacencyList()))
             except UnexpectedChargeError, e:
                 nose.tools.assert_true(False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
