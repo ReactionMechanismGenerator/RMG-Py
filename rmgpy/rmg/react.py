@@ -72,16 +72,7 @@ def reactSpecies(speciesTuple):
 
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
-    combos = []
-    if len(speciesTuple) == 1:#unimolecular reaction
-        spc, = speciesTuple
-        mols = [(mol, spc.index) for mol in spc.molecule]
-        combos.extend([(combo,) for combo in mols])
-    elif len(speciesTuple) == 2:#bimolecular reaction
-        spcA, spcB = speciesTuple
-        molsA = [(mol, spcA.index) for mol in spcA.molecule]
-        molsB = [(mol, spcB.index) for mol in spcB.molecule]
-        combos.extend(itertools.product(molsA, molsB))
+    combos = getMoleculeTuples(speciesTuple)
 
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
@@ -93,6 +84,25 @@ def reactSpecies(speciesTuple):
             [spec.index for spec in speciesTuple])
 
     return reactions
+
+def getMoleculeTuples(speciesTuple):
+    """
+    returns a list of molule tuples from given speciesTuples.
+
+    The species objects should already have resonance isomers
+    generated for the function to work
+    """
+    combos = []
+    if len(speciesTuple) == 1:#unimolecular reaction
+        spc, = speciesTuple
+        mols = [(mol, spc.index) for mol in spc.molecule]
+        combos.extend([(combo,) for combo in mols])
+    elif len(speciesTuple) == 2:#bimolecular reaction
+        spcA, spcB = speciesTuple
+        molsA = [(mol, spcA.index) for mol in spcA.molecule]
+        molsB = [(mol, spcB.index) for mol in spcB.molecule]
+        combos.extend(itertools.product(molsA, molsB))
+    return combos
 
 def reactMolecules(moleculeTuples):
     """
