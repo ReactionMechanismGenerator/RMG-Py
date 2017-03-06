@@ -59,14 +59,16 @@ class Settings(dict):
     ``settings`` in this module, which is an instance of this class.
     """
     
-    def __init__(self):
+    def __init__(self, path = None):
         super(Settings, self).__init__()
         self.filename = None
         self.sources = dict()
-        self.load()
+        self.load(path)
     
     def __setitem__(self, key, value):
         if key == 'database.directory':
+            value = os.path.abspath(os.path.expandvars(value))
+        elif key == 'test_data.directory':
             value = os.path.abspath(os.path.expandvars(value))
         else:
             print('Unexpecting setting "{0}" encountered.'.format(key))
@@ -134,6 +136,12 @@ class Settings(dict):
                     value = value.strip()
                     self['database.directory'] = value
                     self.sources['database.directory'] = "from {0}".format(self.filename)
+
+                elif line.find('test_data.directory') != -1:
+                    value = line.split()[-1]  # Get the last token from this line
+                    value = value.strip()
+                    self['test_data.directory'] = value
+                    self.sources['test_data.directory'] = "from {0}".format(self.filename)
     
     def reset(self):
         """
@@ -143,9 +151,11 @@ class Settings(dict):
         rmgpy_module_dir = os.path.abspath(os.path.dirname(__file__))
         self['database.directory'] = os.path.realpath(os.path.join(rmgpy_module_dir, '..', '..', 'RMG-database', 'input'))
         self.sources['database.directory'] = 'Default, relative to RMG-Py source code'
+        self['test_data.directory'] = os.path.realpath(os.path.join(rmgpy_module_dir, 'test_data'))
+        self.sources['test_data.directory'] = 'Default, relative to RMG-Py source code'
 
 # The global settings object
-settings = Settings()
+settings = Settings(path = None)
 
 ################################################################################
 

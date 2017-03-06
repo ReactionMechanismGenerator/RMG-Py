@@ -317,6 +317,24 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(self.atom.label, atom.label)
         self.assertEqual(self.atom.lonePairs, atom.lonePairs)
 
+    def testCountBonds(self):
+        """
+        Tests the countBonds function
+        """
+        adjlist = """
+1 *2 C     u0     {2,[D,T]} {3,S}
+2 *3 C     u0     {1,[D,T]} {4,B}
+3    C     ux     {1,S} {5,D}
+4    C     u[0,1] {2,B}
+5    O     u0     {3,D}
+"""
+        test = Group().fromAdjacencyList(adjlist)
+        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
+        self.assertListEqual([1,0,0,0,0,0,0], test.atoms[0].countBonds())
+        self.assertListEqual([1,1,1,0,0,1,0], test.atoms[0].countBonds(wildcards = True))
+        self.assertListEqual([0,0,0,0,0,0,1], test.atoms[3].countBonds())
+        self.assertListEqual([1,1,0,1,0,0,0], test.atoms[2].countBonds())
+
     def testHasWildcards(self):
         """
         Tests the GroupAtom.hasWildcards() method
@@ -385,8 +403,55 @@ class TestGroupBond(unittest.TestCase):
         
         self.bond.setOrderNum([3,1,2])
         self.assertEqual(self.bond.getOrderStr(),['T','S','D'])
+
+    def testIsSingle(self):
+        """
+        test the Bond.isSingle() method
+        """
+        self.bond.setOrderNum([1])
+        self.assertTrue(self.bond.isSingle())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isSingle(wildcards = False))
+        self.assertTrue(self.bond.isSingle(wildcards = True))
+
+    def testIsDouble(self):
+        """
+        test the Bond.isDouble() method
+        """
+        self.bond.setOrderNum([2])
+        self.assertTrue(self.bond.isDouble())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isDouble(wildcards = False))
+        self.assertTrue(self.bond.isDouble(wildcards = True))
     
-    
+    def testIsTriple(self):
+        """
+        test the Bond.isTriple() method
+        """
+        self.bond.setOrderNum([3])
+        self.assertTrue(self.bond.isTriple())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isTriple(wildcards = False))
+        self.assertTrue(self.bond.isTriple(wildcards = True))
+
+    def testIsBenzene(self):
+        """
+        test the Bond.isBenzene() method
+        """
+        self.bond.setOrderNum([1.5])
+        self.assertTrue(self.bond.isBenzene())
+
+        #test interaction with wildcards
+        self.bond.setOrderNum([1, 2, 3 , 1.5])
+        self.assertFalse(self.bond.isBenzene(wildcards = False))
+        self.assertTrue(self.bond.isBenzene(wildcards = True))
+
     def testApplyActionBreakBond(self):
         """
         Test the GroupBond.applyAction() method for a BREAK_BOND action.
@@ -1068,23 +1133,57 @@ class TestGroup(unittest.TestCase):
         group7 = group7.addImplicitBenzene()
         self.assertTrue(benzeneGroup.isIsomorphic(group7))
 
+    def testPickWildcards(self):
+        """
+        Test the Group.pickWildCards function
+        """
+        #The following tests are for picking optimal bond orders when there are bond wilcards
+        #test that Cb/Cbf atoms with [D,B] chooses [B] instead of [D] bonds
+        adjlist1 = """
+    1 *1 R!H       u1 {2,[D,B]}
+    2 *2 [Cbf,Cdd] u0 {1,[D,B]} {3,[D,B]}
+    3 *3 [Cb,Cd]   u0 {2,[D,B]} {4,S}
+    4 *4 R!H       u0 {3,S} {5,S}
+    5 *5 H         u0 {4,S}
+"""
+        group1 = Group().fromAdjacencyList(adjlist1)
+        group1.pickWildcards()
+        atoms = group1.atoms
+        self.assertTrue(atoms[0].bonds[atoms[1]].isBenzene())
+        self.assertTrue(atoms[1].bonds[atoms[2]].isBenzene())
+
+        adjlist2 = """
+    1 *1 R!H       u1 {2,[S,D]} {4,[S,D]}
+    2 *2 [CO,Cdd]  u0 {1,[S,D]} {3,[S,D]}
+    3 *3 [Od,Cd]   u0 {2,[S,D]}
+    4 *4 [Cdd,Cd]  u0 {1,[S,D]}
+"""
+        group2 = Group().fromAdjacencyList(adjlist2)
+        group2.pickWildcards()
+        atoms = group2.atoms
+        self.assertTrue(atoms[1].bonds[atoms[2]].isDouble)
+        self.assertTrue(atoms[0].bonds[atoms[3]].isDouble)
+
     def testMakeSampleMolecule(self):
         """
         Test the Group.makeSampleMolecule method
         """
 
-        # result = self.group.makeSampleMolecule()
-        # print result.multiplicity
-        # self.assertTrue(result.isIsomorphic(Molecule().fromSMILES('OCC')))
-
+        def performSampMoleComparison(adjlist, answer_smiles):
+            """
+            Creates a sample molecule from the adjlist and returns if it is isomorphic to a molecule created from
+            the inputted smiles
+            """
+            group = Group().fromAdjacencyList(adjlist)
+            result = group.makeSampleMolecule()
+            return (result.isIsomorphic(Molecule().fromSMILES(answer_smiles)))
+########################################################################################################################
         #tests adding implicit atoms
-        adjlist1 = """
+        adjlist = """
 1  *1 Cd u0
             """
-
-        group1 = Group().fromAdjacencyList(adjlist1)
-        result1 = group1.makeSampleMolecule()
-        self.assertTrue(result1.isIsomorphic(Molecule().fromSMILES('C=C')))
+        answer_smiles = 'C=C'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test creating implicit benzene atoms
         adjlist2 = """
@@ -1098,24 +1197,29 @@ class TestGroup(unittest.TestCase):
         resonanceList2=naphthaleneMolecule.generateResonanceIsomers()
         self.assertTrue(any([result2.isIsomorphic(x) for x in resonanceList2]))
 
-        #test the creation of a charged species
-        adjlist3 = """
+        #test the creation of a positively charged species
+        adjlist = """
 1  *1 N5s u0
         """
+        answer_smiles = '[NH4+]'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
-        group3 = Group().fromAdjacencyList(adjlist3)
-        result3 = group3.makeSampleMolecule()
-        self.assertTrue(result3.isIsomorphic(Molecule().fromSMILES('[NH4+]')))
+        #test the creation of a negatively charged species
+        #commented out until new nitrogen atom types added in
+#         adjlist = """
+# 1  *1 N2s u0
+#         """
+#         answer_smiles = '[NH2-]'
+#         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test creation of charged species when some single bonds present
-        adjlist4 = """
+        adjlist = """
 1 *2 [N5s,N5d] u0 {2,S} {3,S}
 2 *3 R!H       u1 {1,S}
 3 *4 H         u0 {1,S}
 """
-        group4 = Group().fromAdjacencyList(adjlist4)
-        result4 = group4.makeSampleMolecule()
-        self.assertTrue(result4.isIsomorphic(Molecule().fromSMILES('[NH3+][CH2]')))
+        answer_smiles = '[NH3+][CH2]'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
     def testIsBenzeneExplicit(self):
         """
@@ -1190,6 +1294,60 @@ graph G {
         group = Group().fromAdjacencyList(adjlist)
         result = group.draw('canon')
         self.assertEqual(''.join(result.split()), ''.join(expected.split()))
+
+    def testMergeGroups(self):
+        """
+        Test the mergeGroups() function
+        """
+        #basic test of merging a backbone and end group
+        backbone1 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *6 R!H u0 {2,S} {4,S}
+4 *5 R!H u0 {3,S} {5,S}
+5 *2 R!H u0 {4,S} {6,S}
+6 *3 H   u0 {5,S}
+""")
+
+        end1 = Group().fromAdjacencyList("""
+1 *2 Cs u0 {2,S} {3,S}
+2 *3 H  u0 {1,S}
+3    S  u0 {1,S}
+""")
+        desiredMerge1 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *6 R!H u0 {2,S} {4,S}
+4 *5 R!H u0 {3,S} {5,S}
+5 *2 Cs  u0 {4,S} {6,S} {7,S}
+6 *3 H   u0 {5,S}
+7    S   u0 {5,S}
+""")
+
+        mergedGroup = backbone1.mergeGroups(end1)
+        self.assertTrue(mergedGroup.isIdentical(desiredMerge1))
+
+        #test it works when there is a cyclical structure to the backbone
+
+        backbone2 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S} {4,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *2 R!H u0 {2,S} {4,S}
+4 *3 R!H u0 {3,S} {1,S}
+""")
+
+        end2 = Group().fromAdjacencyList("""
+1 *2 Os u0 {2,S}
+2 *3 Cs u0 {1,S}
+""")
+        desiredMerge2 = Group().fromAdjacencyList("""
+1 *1 R!H u1 {2,S} {4,S}
+2 *4 R!H u0 {1,S} {3,S}
+3 *2 Os u0 {2,S} {4,S}
+4 *3 Cs u0 {3,S} {1,S}
+""")
+        mergedGroup = backbone2.mergeGroups(end2)
+        self.assertTrue(mergedGroup.isIdentical(desiredMerge2))
 
 ################################################################################
 

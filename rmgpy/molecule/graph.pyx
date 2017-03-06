@@ -321,13 +321,41 @@ cdef class Graph:
                     other.addEdge(edge)
         return other
 
+    cpdef dict copyAndMap(self):
+        """
+        Create a deep copy of the current graph, and return the dict
+        'mapping'. Method was modified from Graph.copy() method
+        """
+        cdef Graph other
+        cdef Vertex vertex, vertex1, vertex2
+        cdef Edge edge
+        cdef dict edges, mapping
+        cdef list vertices
+        cdef int index1, index2
+
+        other = Graph()
+        vertices = self.vertices
+        mapping = {}
+        for vertex in vertices:
+            vertex2 = other.addVertex(vertex.copy())
+            mapping[vertex] = vertex2
+
+        for vertex1 in vertices:
+            for vertex2 in vertex1.edges:
+                edge = vertex1.edges[vertex2]
+                edge = edge.copy()
+                edge.vertex1 = mapping[vertex1]
+                edge.vertex2 = mapping[vertex2]
+                other.addEdge(edge)
+        return mapping
+
     cpdef Graph merge(self, Graph other):
         """
         Merge two graphs so as to store them in a single Graph object.
         """
         cdef Graph new
         cdef Vertex vertex, vertex1, vertex2
-        
+
         # Create output graph
         new = Graph()
 

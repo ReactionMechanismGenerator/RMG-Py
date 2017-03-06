@@ -59,6 +59,19 @@ class ImplicitBenzeneError(Exception):
     """
     pass
 
+class UnexpectedChargeError(Exception):
+    """
+    An exception class when encountering a group/molecule with unexpected charge
+    Curently in RMG, we never expect to see -2/+2 or greater magnitude charge,
+    we only except +1/-1 charges on nitrogen, oxygen, sulfur or specifically
+    carbon monoxide/monosulfide.
+
+    Attributes:
+    `graph` is the molecule or group object with the unexpected charge
+    """
+    def __init__(self, graph):
+        self.graph = graph
+
 ################################################################################
 
 class GroupAtom(Vertex):
@@ -478,6 +491,36 @@ class GroupAtom(Vertex):
 
         return False
 
+    def countBonds(self, wildcards = False):
+        """
+        Returns: list of the number of bonds currently on the :class:GroupAtom
+
+        If the argument wildcards is turned off then any bonds with multiple
+        options for bond orders will not be counted
+        """
+        #count up number of bonds
+        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+        for atom2, bond12 in self.bonds.iteritems():
+            if not wildcards and len(bond12.order) > 1:
+                continue
+            # Count numbers of each higher-order bond type
+            if bond12.isSingle(wildcards = True):
+                single += 1
+            if bond12.isDouble(wildcards = True):
+                if atom2.isOxygen():
+                    oDouble += 1
+                elif atom2.isSulfur():
+                    sDouble += 1
+                else:
+                    # rDouble is for double bonds NOT to oxygen or Sulfur
+                    rDouble += 1
+            if bond12.isTriple(wildcards = True): triple += 1
+            if bond12.isBenzene(wildcards = True): benzene += 1
+
+        allDouble = rDouble + oDouble + sDouble
+
+        return [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
+
     def makeSampleAtom(self):
         """
 
@@ -530,14 +573,14 @@ class GroupAtom(Vertex):
         #Based on git history, it is probably because RDKit requires a number instead of None
         #Instead we will set it to 0 here
 
-        if newAtom.lonePairs == -100:
-            if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
-                newAtom.lonePairs = 0
-                newAtom.charge = 1
-            elif atomtype is atomTypes['N1d']:
-                newAtom.charge = -1
-            else:
-                newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
+        #Hard code charge for a few atomtypes
+        if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
+            newAtom.lonePairs = 0
+            newAtom.charge = 1
+        elif atomtype in [atomTypes[x] for x in ['N1d']]:
+            newAtom.charge = -1
+        elif newAtom.lonePairs == -100:
+            newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
         return newAtom
 
@@ -636,8 +679,6 @@ class GroupBond(Edge):
         returns the bond order as a list of numbers
         """
         return self.order
-        
-
             
     def setOrderNum(self, newOrder):
         """
@@ -645,36 +686,68 @@ class GroupBond(Edge):
         """
         self.order = newOrder
             
-    def isSingle(self):
+    def isSingle(self, wildcards = False):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are single.
         
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
-        return abs(self.order[0]-1) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-1) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-1) <= 1e-9 and len(self.order) == 1
 
-    def isDouble(self):
+    def isDouble(self, wildcards = False):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are double.
         """
-        return abs(self.order[0]-2) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-2) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-2) <= 1e-9 and len(self.order) == 1
 
-    def isTriple(self):
+    def isTriple(self, wildcards = False):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are triple.
         """
-        return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-3) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
 
-    def isBenzene(self):
+    def isBenzene(self, wildcards = False):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
-        not. Bonds with any wildcards will return  ``False``.
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are benzene
         """
-        return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
+        if wildcards:
+            for order in self.order:
+                if abs(order-1.5) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
 
     def __changeBond(self, order):
         """
@@ -1432,7 +1505,7 @@ class Group(Graph):
 
         for atom in self.atoms:
             if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-            elif atom.atomType[0].label in ['Cb', 'N3b']: #Make Cb and N3b into normal cb atoms
+            elif atom.atomType[0].label in ['Cb', 'N5b', 'N3b']: #Make Cb and N3b into normal cb atoms
                 cbAtomList.append(atom)
             elif atom.atomType[0].label == 'Cbf':
                 cbfAtomList.append(atom)
@@ -1580,12 +1653,6 @@ class Group(Graph):
         """
         (cbAtomList, cbfAtomList, cbfAtomList1, cbfAtomList2, connectedCbfs) = copyGroup.classifyBenzeneCarbons()
 
-        #check that there are less than three Cbf atoms
-        if len(cbfAtomList) > 3:
-            if not self.isBenzeneExplicit():
-                raise ImplicitBenzeneError("{0} has more than three Cbf atoms and does not have fully explicit benzene rings.")
-            #already fully explicit if it passes isBenzeneExplict()
-            else: return copyGroup
         """
         #Step 2. Partner up each Cbf1 and Cbf2 atom
 
@@ -1614,7 +1681,7 @@ class Group(Graph):
                     #Potential partner must not have any bonds except benzene bonds
                     elif bond12.isBenzene():
                         bondsAreBenzene = [True if bond23.isBenzene() else False for bond23 in atom2.bonds.values()]
-                        if all(bondsAreBenzene):
+                        if all(bondsAreBenzene) and 0 in atom2.radicalElectrons:
                             potentialPartner= atom2
                 #Make a Cb atom the partner, now marking it as a Cbfatom
                 if potentialPartner:
@@ -1767,7 +1834,7 @@ class Group(Graph):
                 if x ==0: lastAtom = ring[-1]
                 else: lastAtom = mergedRingDict[index][-1]
                 #add a new atom to the ring and the group
-                newAtom = copyGroup. createAndConnectAtom(['Cb'], lastAtom, [1.5])
+                newAtom = copyGroup.createAndConnectAtom(['Cb'], lastAtom, [1.5])
                 mergedRingDict[index].append(newAtom)
                 #At the end attach to the other endpoint
                 if x == carbonsToGrow -1:
@@ -1776,49 +1843,153 @@ class Group(Graph):
 
         return copyGroup
 
+    def pickWildcards(self):
+        """
+        Returns: the :class:Group object without wildcards in either atomtype or bonding
+
+        This function will naively pick the first atomtype for each atom, but will try
+        to pick bond orders that make sense given the selected atomtypes
+        """
+        for atom1 in self.atoms:
+            atom1.atomType=[atom1.atomType[0]]
+            for atom2, bond12 in atom1.bonds.iteritems():
+                #skip dynamic bond ordering if there are no wildcards
+                if len(bond12.order) < 2 :
+                    continue
+                atom1Features = atom1.atomType[0].getFeatures()
+                atom2Features = atom2.atomType[0].getFeatures()
+                #skip dynamic bond ordering if there are no features required by the atomtype
+                if not any(atom1Features) and not any(atom2Features):
+                    bond12.order = [bond12.order[0]]
+                    atom2.bonds[atom1].order = bond12.order
+                    continue
+
+                atom1Bonds = atom1.countBonds()
+                atom2Bonds = atom2.countBonds()
+                requiredFeatures1 = [atom1Features[x][0] - atom1Bonds[x] if atom1Features[x] else 0 for x in range(len(atom1Bonds))]
+                requiredFeatures2 = [atom2Features[x][0] - atom2Bonds[x] if atom2Features[x] else 0 for x in range(len(atom2Bonds))]
+
+                #subtract 1 from allDouble for each sDouble, oDouble, rDouble so that we don't count them twice
+                requiredFeatures1[1] = requiredFeatures1[1] - requiredFeatures1[2] - requiredFeatures1[3] -requiredFeatures1[4]
+                requiredFeatures2[1] = requiredFeatures2[1] - requiredFeatures2[2] - requiredFeatures2[3] -requiredFeatures2[4]
+                #reverse it because coincidentally the reverse has good priority on what to check first
+                requiredFeatures1.reverse()
+                requiredFeatures2.reverse()
+
+                #required features are a now list of [benzene, triple, sDouble, oDouble, rDouble, allDouble, single]
+                for index, (feature1, feature2) in enumerate(zip(requiredFeatures1[:-1], requiredFeatures2[:-1])):
+                    if feature1 > 0 or feature2 > 0:
+                        if index == 0 and 1.5 in bond12.order: #benzene bonds
+                            bond12.order = [1.5]
+                            atom2.bonds[atom1].order = bond12.order
+                            break
+                        elif index == 1 and 3 in bond12.order: #triple bond
+                            bond12.order = [3]
+                            atom2.bonds[atom1].order = bond12.order
+                            break
+                        elif index > 1 and 2 in bond12.order: #any case of double bonds
+                            if index == 2: #sDouble bonds
+                                if (feature1 > 0 and atom2.isSulfur()) or (feature2 > 0 and atom1.isSulfur()):
+                                    bond12.order = [2]
+                                    atom2.bonds[atom1].order = bond12.order
+                                    break
+                            elif index == 3: #oDoubleBonds
+                                if (feature1 > 0 and atom2.isOxygen()) or (feature2 > 0 and atom1.isOxygen()):
+                                    bond12.order = [2]
+                                    atom2.bonds[atom1].order = bond12.order
+                                    break
+                            else: #rDouble or allDouble necessary
+                                bond12.order = [2]
+                                atom2.bonds[atom1].order = bond12.order
+                                break
+                else: #no features required, then pick the first order
+                    bond12.order = [bond12.order[0]]
+                    atom2.bonds[atom1].order = bond12.order
+
+        #if we have wildcard atomtypes pick one based on ordering of allElements
+        for atom in self.atoms:
+            for elementLabel in allElements:
+                if atomTypes[elementLabel] in atom.atomType[0].specific:
+                    atom.atomType=[atomTypes[elementLabel]]
+                    break
+
     def makeSampleMolecule(self):
         """
         Returns: A sample class :Molecule: from the group
         """
 
-        # print self
-        # print self.atoms
+        modifiedGroup = self.copy(deep = True)
+
+        #Remove all wildcards
+        modifiedGroup.pickWildcards()
+
+        #check that there are less than three Cbf atoms
+        cbfCount = 0
+        for atom in modifiedGroup.atoms:
+            if atom.atomType[0] is atomTypes['Cbf']: cbfCount+=1
+        if cbfCount > 3:
+            if not modifiedGroup.isBenzeneExplicit():
+                raise ImplicitBenzeneError("{0} has more than three Cbf atoms and does not have fully explicit benzene rings.")
 
         #Add implicit atoms
-        modifiedGroup = self.addImplicitAtomsFromAtomType()
+        modifiedGroup = modifiedGroup.addImplicitAtomsFromAtomType()
+
         #Add implicit benzene rings
-        modifiedGroup = modifiedGroup.addImplicitBenzene()
-        #Make dictionary of :GroupAtoms: to :Atoms:
-        atomDict = {}
+        if not modifiedGroup.isBenzeneExplicit():
+            modifiedGroup = modifiedGroup.addImplicitBenzene()
+        #Make dictionary of :GroupAtoms: to :Atoms: and vice versa
+        groupToMol = {}
+        molToGroup = {}
         for atom in modifiedGroup.atoms:
-            atomDict[atom] = atom.makeSampleAtom()
+            molAtom = atom.makeSampleAtom()
+            groupToMol[atom] = molAtom
+            molToGroup[molAtom] = atom
 
         #create the molecule
-        newMolecule = mol.Molecule(atoms = atomDict.values())
+        newMolecule = mol.Molecule(atoms = groupToMol.values())
+            
         #Add explicit bonds to :Atoms:
         for atom1 in modifiedGroup.atoms:
             for atom2, bond12 in atom1.bonds.iteritems():
-                bond12.makeBond(newMolecule, atomDict[atom1], atomDict[atom2])
-
+                bond12.makeBond(newMolecule, groupToMol[atom1], groupToMol[atom2])
 
         #Saturate up to expected valency
-        for atom in newMolecule.atoms:
-            statedCharge = atom.charge
-            atom.updateCharge()
-            if atom.charge - statedCharge:
-                hydrogenNeeded = atom.charge - statedCharge
+        for molAtom in newMolecule.atoms:
+            statedCharge = molAtom.charge
+            molAtom.updateCharge()
+            if molAtom.charge - statedCharge:
+                hydrogenNeeded = molAtom.charge - statedCharge
+                if molAtom in molToGroup and molToGroup[molAtom].atomType[0].single:
+                    maxSingle = max(molToGroup[molAtom].atomType[0].single)
+                    singlePresent = sum([1 for atom in molAtom.bonds if molAtom.bonds[atom].isSingle()])
+                    maxHydrogen = maxSingle - singlePresent
+                    if hydrogenNeeded > maxHydrogen: hydrogenNeeded = maxHydrogen
                 for x in range(hydrogenNeeded):
                     newH = mol.Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
-                    newBond = mol.Bond(atom, newH, 1)
+                    newBond = mol.Bond(molAtom, newH, 1)
                     newMolecule.addAtom(newH)
                     newMolecule.addBond(newBond)
-                atom.updateCharge()
-            # print statedCharge, atom.charge, type(atom.charge)
+                molAtom.updateCharge()
 
         newMolecule.update()
-        # print newMolecule.atoms
-
-
+        #Check that the charge of atoms is expected
+        carbonMonoxide = mol.Molecule(SMILES="[C-]#[O+]")
+        carbonMonosulfide = mol.Molecule().fromAdjacencyList(
+"""
+1 S u0 p1 c+1 {2,T}
+2 C u0 p1 c-1 {1,T}
+"""
+        )
+        for atom in newMolecule.atoms:
+            if abs(atom.charge) > 1: raise UnexpectedChargeError(graph = newMolecule)
+            elif abs(atom.charge) == 1:
+                if atom.atomType.isSpecificCaseOf(atomTypes['N']): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['O']): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['S']): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonoxide): pass
+                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonosulfide): pass
+                else:
+                    raise UnexpectedChargeError(graph = newMolecule)
         return newMolecule
 
     def isBenzeneExplicit(self):
@@ -1834,11 +2005,11 @@ class Group(Graph):
         cbAtomList = []
 
         #only want to work with carbon atoms
-        labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C']
+        labelsOfCarbonAtomTypes = [x.label for x in atomTypes['C'].specific] + ['C', 'N3b', 'N5b']
 
         for atom in self.atoms:
             if not atom.atomType[0].label in labelsOfCarbonAtomTypes: continue
-            elif atom.atomType[0].label in ['Cb', 'Cbf']: #Make Cb and N3b into normal cb atoms
+            elif atom.atomType[0].label in ['Cb', 'Cbf', 'N3b', 'N5b']: #Make Cb and N3b into normal cb atoms
                 cbAtomList.append(atom)
             else:
                 benzeneBonds = 0
@@ -1856,3 +2027,56 @@ class Group(Graph):
                 if atom in ring: inRing = True
             if not inRing: return False
         else: return True
+
+    def mergeGroups(self, other):
+        """
+        This function takes `other` :class:Group object and returns a merged :class:Group object based
+        on overlapping labeled atoms between self and other
+
+        Currently assumes `other` can be merged at the closest labelled atom
+        """
+        labeled1 = self.getLabeledAtoms()
+        labeled2 = other.getLabeledAtoms()
+        overlappingLabels = [x for x in labeled1 if x in labeled2]
+
+        #dictionary of key = original atoms, value = copy atoms for deep copies of the two groups
+        selfDict= self.copyAndMap()
+        otherDict = other.copyAndMap()
+
+        #Sort atoms to go into the mergedGroup
+        mergedGroupAtoms = otherDict.values() #all end atoms with end up in the mergedGroup
+        #only non-overlapping atoms from the backbone will be in the mergedGroup
+        for originalAtom, newAtom in selfDict.iteritems():
+            if not originalAtom.label in overlappingLabels:
+                mergedGroupAtoms.append(newAtom)
+
+        mergedGroup = Group(atoms=mergedGroupAtoms)
+
+        """
+        The following loop will move bonds that are exclusively in the new backbone so that
+        they connect to the backbone. For example, assume backbone has bond atomA-atomB,
+        where atomB is labelled as *2 and there is an atomC in the end analgously labelled
+        *2. We need to remove the bond between atomA and atomB. Then we need to add a bond
+        between atomA and atomC.
+        """
+        bondsToRemove = []
+        for label in overlappingLabels:
+            oldAtomB = self.getLabeledAtom(label)
+            for oldAtomA, oldBondAB in oldAtomB.bonds.iteritems():
+                if not oldAtomA.label in overlappingLabels: #this is bond we need to transfer over
+                    #find and record bondAB from new backbone for later removal
+                    newAtomA = selfDict[oldAtomA]
+                    newAtomB = selfDict[oldAtomB]
+                    newAtomC = mergedGroup.getLabeledAtom(oldAtomB.label)
+                    for atom, newBondAB in newAtomA.bonds.iteritems():
+                        if atom is newAtomB:
+                            bondsToRemove.append(newBondAB)
+                            break
+                    #add bond between atomA and AtomC
+                    newBondAC = GroupBond(newAtomA, newAtomC, order= oldBondAB.order)
+                    mergedGroup.addBond(newBondAC)
+        #remove bonds from mergedGroup
+        for bond in bondsToRemove:
+            mergedGroup.removeBond(bond)
+
+        return mergedGroup

@@ -1,8 +1,8 @@
 import unittest
 from rmgpy.data.kinetics.database import KineticsDatabase
 import os.path
+from rmgpy.molecule.group import Group
 from rmgpy import settings
-
 ###################################################
 
 class TestFamily(unittest.TestCase):
@@ -13,9 +13,9 @@ class TestFamily(unittest.TestCase):
         A function run before each unit test in this class.
         """
         # Set up a dummy database
-        dir_path = os.path.dirname(os.path.realpath(__file__))
         self.database = KineticsDatabase()
-        self.database.loadFamilies(os.path.join(dir_path,"family_test_data"), families=['intra_H_migration'])
+        self.database.loadFamilies(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families'),
+                                   families=['intra_H_migration'])
         self.family = self.database.families['intra_H_migration']
 
     def testGetBackboneRoots(self):
@@ -42,19 +42,3 @@ class TestFamily(unittest.TestCase):
         self.assertEquals(len(topGroups), 2)
         self.assertIn(self.family.groups.entries["R5Hall"], topGroups)
         self.assertIn(self.family.groups.entries["R6Hall"], topGroups)
-
-    # def testLoadFamilies(self):
-    #     """
-    #     Test that the loadFamilies function raises the correct exceptions
-    #     """
-    #     path = os.path.join(settings['database.directory'],'kinetics','families')
-    #     database = KineticsDatabase()
-    #
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families='random')
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families=['fake_family'])
-    #     with self.assertRaises(DatabaseError):
-    #         database.loadFamilies(path, families=[])

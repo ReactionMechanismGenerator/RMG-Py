@@ -181,9 +181,16 @@ class TestGetAtomType(unittest.TestCase):
                                                      9  H u0 p0 {3,S}
                                                      10 H u0 p0 {4,S}
                                                      11 H u0 p0 {5,S}''')
-        self.mol19 = Molecule().fromSMILES('C=S')
-        
-    
+
+        self.mol19 = Molecule().fromAdjacencyList('''1 C u0 p0 c0 {2,D} {3,S} {4,S}
+                                                     2 S u0 p2 c0 {1,D}
+                                                     3 H u0 p0 c0 {1,S}
+                                                     4 H u0 p0 c0 {1,S}''')
+
+        self.mol20 = Molecule().fromSMILES('[C-]#[O+]')
+
+        self.mol21 = Molecule().fromSMILES('[C-]#[S+]')
+
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
         type = getAtomType(atom, mol.getBonds(atom))
@@ -234,6 +241,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         self.assertEqual(self.atomType(self.mol1, 1), 'Os')
         self.assertEqual(self.atomType(self.mol1, 3), 'Od')
+        self.assertEqual(self.atomType(self.mol20, 1), 'Ot')
     
     def testSiliconTypes(self):
         """
@@ -251,6 +259,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         self.assertEqual(self.atomType(self.mol4, 8), 'Ss')
         self.assertEqual(self.atomType(self.mol4, 10), 'Sd')
+        self.assertEqual(self.atomType(self.mol21, 1), 'St')
     
     def testOtherTypes(self):
         """

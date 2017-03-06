@@ -163,6 +163,36 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(graph2.isIsomorphic(graph))
         self.assertTrue(graph.isIsomorphic(graph2))
 
+    def test_copyAndMap(self):
+        """
+        Test the returned dictionary points toward equivaalent vertices and edges
+        """
+
+        vertices = [Vertex() for i in range(6)]
+        edges = [
+            Edge(vertices[0], vertices[1]),
+            Edge(vertices[1], vertices[2]),
+            Edge(vertices[2], vertices[3]),
+            Edge(vertices[3], vertices[4]),
+            Edge(vertices[4], vertices[5]),
+        ]
+
+        graph = Graph()
+        for vertex in vertices: graph.addVertex(vertex)
+        for edge in edges: graph.addEdge(edge)
+
+        graphDict = graph.copyAndMap()
+        graph2 = Graph(vertices = graphDict.values())
+
+        for vertex in graph.vertices:
+            self.assertTrue(graph2.hasVertex(graphDict[vertex]))
+        for v1 in graph.vertices:
+            for v2 in v1.edges:
+                self.assertTrue(graph2.hasEdge(graphDict[v1], graphDict[v2]))
+                self.assertTrue(graph2.hasEdge(graphDict[v2], graphDict[v1]))
+        self.assertTrue(graph2.isIsomorphic(graph))
+        self.assertTrue(graph.isIsomorphic(graph2))
+
     def test_split(self):
         """
         Test the graph split function to ensure a proper splitting of the graph

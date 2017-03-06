@@ -64,6 +64,8 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint isSulfur(self)
 
+    cpdef list countBonds(self, wildcards = ?)
+
     cpdef bint hasWildcards(self)
 
     cpdef mol.Atom makeSampleAtom(self)
@@ -86,13 +88,13 @@ cdef class GroupBond(Edge):
 
     cpdef __changeBond(self, short order)
 
-    cpdef bint isSingle(self) except -2
+    cpdef bint isSingle(self, bint wildcards = ?) except -2
 
-    cpdef bint isDouble(self) except -2
+    cpdef bint isDouble(self, bint wildcards = ?) except -2
 
-    cpdef bint isTriple(self) except -2
+    cpdef bint isTriple(self, bint wildcards = ?) except -2
 
-    cpdef bint isBenzene(self) except -2
+    cpdef bint isBenzene(self, bint wildcards = ?) except -2
 
     cpdef applyAction(self, list action)
 
@@ -174,6 +176,8 @@ cdef class Group(Graph):
 
     cpdef Group addImplicitAtomsFromAtomType(self)
 
+    cpdef pickWildcards(self)
+
     cpdef mol.Molecule makeSampleMolecule(self)
 
     cpdef tuple classifyBenzeneCarbons(self, dict partners=?)
@@ -181,4 +185,6 @@ cdef class Group(Graph):
     cpdef Group addImplicitBenzene(self)
 
     cpdef bint isBenzeneExplicit(self)
+
+    cpdef Group mergeGroups(self, Group other)
 
