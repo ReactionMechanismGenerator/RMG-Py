@@ -149,8 +149,6 @@ def findDegeneracies(rxnList):
         reaction0 = rxnList[index0]
 
         # obtain species with all resonance isomers
-        storeReactants = reaction0.reactants[:]
-        storeProducts = reaction0.products[:]
         for i, mol in enumerate(reaction0.reactants):
             spec = Species(molecule = [mol])
             spec.generateResonanceIsomers()
@@ -179,11 +177,6 @@ def findDegeneracies(rxnList):
                 index += 1
 
         index0 += 1
-
-        # reconvert the reaction back to molecule objects (for deflating)
-        reaction0.reactants = storeReactants
-        reaction0.products = storeProducts
-
 
 def reduceSameReactantDegeneracy(rxnList):
     """
@@ -254,7 +247,7 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
 
 def deflateReaction(rxn, molDict):
     """
-    This function deflates a single reaction, and uses the provided 
+    This function deflates a single reaction holding speices objects, and uses the provided 
     dictionary to populate reactants/products/pairs with integer indices,
     if possible.
 
@@ -267,10 +260,10 @@ def deflateReaction(rxn, molDict):
     integer index, or either a Species object.
     """
 
-    for mol in itertools.chain(rxn.reactants, rxn.products):
-        if not mol in molDict:
-            molDict[mol] = Species(molecule=[mol])
+    for spec in itertools.chain(rxn.reactants, rxn.products):
+        if not spec.molecule[0] in molDict:
+            molDict[spec.molecule[0]] = spec
 
-    rxn.reactants = [molDict[mol] for mol in rxn.reactants]
-    rxn.products = [molDict[mol] for mol in rxn.products]
-    rxn.pairs = [(molDict[reactant], molDict[product]) for reactant, product in rxn.pairs]
+    rxn.reactants = [molDict[spec.molecule[0]] for spec in rxn.reactants]
+    rxn.products = [molDict[spec.molecule[0]] for spec in rxn.products]
+    rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]
