@@ -79,9 +79,17 @@ def reactSpecies(speciesTuple):
     findDegeneracies(reactions)
     reduceSameReactantDegeneracy(reactions)
 
+    # get a molecule list with species indexes
+    zippedList = []
+    for spec in speciesTuple:
+        for mol in spec.molecule:
+            zippedList.append((mol,spec.index))
+
+    molecules, reactantIndices = zip(*zippedList)
+
     deflate(reactions,
-            [spec.molecule[0] for spec in speciesTuple],
-            [spec.index for spec in speciesTuple])
+            molecules,
+            reactantIndices)
 
     return reactions
 
