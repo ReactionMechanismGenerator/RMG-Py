@@ -122,7 +122,7 @@ class Geometry:
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        if bm is None:
+        if bm is None: #bm = bounds matrix?
             AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
@@ -161,6 +161,17 @@ class Geometry:
         return rdmol, minEid
 
     def optimize(self, rdmol, boundsMatrix=None, atomMatch=None):
+        """
+
+        Optimizes the rdmol object using UFF.
+        Determines the energy level for each of the conformers identified in rdmol.GetConformer.
+
+
+        :param rdmol:
+        :param boundsMatrix:
+        :param atomMatch:
+        :return rdmol, minEid (index of the lowest energy conformer)
+        """
 
         energy=0.0
         minEid=0;
@@ -290,9 +301,17 @@ class Geometry:
         return dist
 
     def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
-        # Save xyz coordinates on each atom in molecule ****
+
+        """
+        Save xyz coordinates on each atom in molecule from RDMol using the conformer ID given by minEid.
+        Uses rdAtIdx to map the RMG atoms onto RDKit atoms.
+
+        :param rdmol:
+        :param minEid:
+        :param rdAtIdx:
+        """
         for atom in self.molecule.atoms:
-            point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
+            point = rdmol.GetConformer(minEid).GetAtomPosition(rdAtIdx[atom])
             atom.coords = numpy.array([point.x, point.y, point.z])
 
     def saveCoordinatesFromQMData(self, qmdata):
@@ -465,7 +484,7 @@ class QMMolecule:
 
     def generateQMData(self):
         """
-        Calculate the QM data somehow and return a CCLibData object, or None if it fails.
+        Calculate the QM data using a defined level of theory and return a CCLibData object, or None if it fails.
         """
         raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
         return qmdata.QMData() or None
