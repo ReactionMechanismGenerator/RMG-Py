@@ -28,9 +28,12 @@
 #
 ################################################################################
 
+import math
+import numpy
 import os.path
-
 import rmgpy.constants as constants
+
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 class MoleProLog:
     """
@@ -42,7 +45,226 @@ class MoleProLog:
     
     def __init__(self, path):
         self.path = path
-            
+
+    def getNumberOfAtoms(self):
+        """
+        Return the number of atoms in the molecular configuration used in
+        the MolPro log file.
+        """
+
+        Natoms = 0
+        # Open Gaussian log file for parsing
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '' and Natoms == 0:
+            # Automatically determine the number of atoms
+            if 'ATOMIC COORDINATES' in line and Natoms == 0:
+                for i in range(4): line = f.readline()
+                while 'Bond lengths' not in line:
+                    Natoms += 1
+                    line = f.readline()
+            line = f.readline()
+        # Close file when finished
+        f.close()
+        # Return the result
+        Natoms -= 1
+
+        return Natoms
+
+    def loadForceConstantMatrix(self):
+        """
+        No force constant matrices are reported by the MolPro Files
+        """
+
+        F = None
+
+       # Natoms = self.getNumberOfAtoms()
+       # Nrows = Natoms * 3
+       #
+       # f = open(self.path, 'r')
+       # line = f.readline()
+       # while line != '':
+       #     # Read force constant matrix
+       #     if 'Force constants in Cartesian coordinates:' in line:
+       #         F = numpy.zeros((Nrows,Nrows), numpy.float64)
+       #         for i in range(int(math.ceil(Nrows / 5.0))):
+       #             # Header row
+       #             line = f.readline()
+       #             # Matrix element rows
+       #             for j in range(i*5, Nrows):
+       #                 data = f.readline().split()
+       #                 for k in range(len(data)-1):
+       #                     F[j,i*5+k] = float(data[k+1].replace('D', 'E'))
+       #                     F[i*5+k,j] = F[j,i*5+k]
+       #         # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
+       #         F *= 4.35974417e-18 / 5.291772108e-11**2
+       #     line = f.readline()
+       # # Close file when finished
+       # f.close()
+
+        return F
+
+    def loadGeometry(self):
+        """
+        Return the optimum geometry of the molecular configuration from the
+        Gaussian log file. If multiple such geometries are identified, only the
+        last is returned.
+        """
+
+        symbol = []; coord = []
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+            # Automatically determine the number of atoms
+            if 'Atomic Coordinates' in line:
+                number = []; coord = []
+                for i in range(4): line = f.readline()
+                #raise Exception('{0:s}'.format(line))
+                count = 0
+                while line != '\n':
+                    #if count == 2:
+                    #    raise Exception('{0:s}'.format(line))
+                    data = line.split()
+                    #raise Exception('{0:s}'.format(data[1]))
+                    symbol.append(str(data[1]))
+                    #raise Exception('gets here')
+                    #raise Exception('{0:s}'.format(symbol))
+                    coord.append([float(data[3]), float(data[4]), float(data[5])])
+                    #raise Exception('{0:s}'.format(coord))
+                    #raise Exception('{0:d}'.format(count))
+                    count += 1
+                    #raise Exception('{0:d}'.format(count))
+                    #raise Exception('{0:s}'.format(line))
+                    line = f.readline()
+                    #if line == '':
+                    #    raise Exception('{0:s}'.format(line))
+            line = f.readline()
+        # Close file when finished
+        f.close()
+
+        coord = numpy.array(coord, numpy.float64)
+        number = numpy.zeros(len(symbol), numpy.int)
+        mass = numpy.zeros(len(symbol), numpy.float64)
+        # Use the atomic mass of the most common isotope rather than the
+        # average atomic mass
+        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
+        for i in range(len(symbol)):
+            if symbol[i] == 'H':
+                number[i] = 1
+                mass[i] = 1.00782503207
+            elif symbol[i] == 'C':
+                number[i] = 6
+                mass[i] = 12.0
+            elif symbol[i] == 'N':
+                number[i] = 7
+                mass[i] = 14.0030740048
+            elif symbol[i] == 'O':
+                number[i] = 8
+                mass[i] = 15.99491461956
+            elif symbol[i] == 'P':
+                number[i] = 15
+                mass[i] = 30.97376163
+            elif symbol[i] == 'S':
+                number[i] = 16
+                mass[i] = 31.97207100
+            elif symbol[i] == 'Cl':
+                number[i] = 17
+                mass[i] = 35.4527
+            elif symbol[i] == 'I':
+                number[i] = 53
+                mass[i] = 126.90447
+            else:
+                print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
+        #raise Exception(('{0:s}'.format(mass)))
+        return coord, number, mass
+
+    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):
+        """
+        Load the molecular degree of freedom data from a log file created as
+        the result of a MolPro "Freq" quantum chemistry calculation with the thermo printed.
+        """
+
+        modes = []
+        E0 = 0.0
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+
+            # The data we want is in the Thermochemistry section of the output
+            if 'THERMODYNAMICAL' in line:
+                modes = []
+                inPartitionFunctions = False
+                line = f.readline()
+                while line != '':
+
+                    # This marks the end of the thermochemistry section
+                    if '*************************************************' in line:
+                        break
+
+                    # Read molecular mass for external translational modes
+                    elif 'Molecular Mass:' in line:
+                        mass = float(line.split()[2])
+                        translation = IdealGasTranslation(mass=(mass,"amu"))
+                        modes.append(translation)
+                    # Read MolPro's estimate of the external symmetry number
+                    elif 'Rotational Symmetry factor' in line and symmetry is None:
+                        symmetry = int(float(line.split()[3]))
+
+                    # Read moments of inertia for external rotational modes
+                    elif 'Rotational Constants' in line and line.split()[-1]=='[GHz]':
+                        inertia = [float(d) for d in line.split()[-4:-1]]
+                        for i in range(3):
+                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) *constants.Na*1e23
+                        rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                        modes.append(rotation)
+
+                    elif 'Rotational Constant' in line and line.split()[3]=='[GHz]':
+                        #raise Exception('get here')
+                        inertia = [float(line.split()[2])]
+                        inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
+                        rotation = LinearRotor(inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
+                        modes.append(rotation)
+
+                    # Read vibrational modes
+                    elif 'Vibrational Temperatures' in line:
+                        #raise Exception('get here')
+                        frequencies = []
+                        frequencies.extend([float(d) for d in line.split()[3:]])
+                        line = f.readline()
+                        while line.strip() != '':
+                            frequencies.extend([float(d) for d in line.split()])
+                            line = f.readline()
+                        # Convert from K to cm^-1
+                        if len(frequencies) > 0:
+                            frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
+                            vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+                            modes.append(vibration)
+
+                    # Read ground-state energy
+                    elif 'Electronic Energy + Zero-Point correction:' in line:
+                        E0 = float(line.split()[5]) * 4.35974394e-18 * constants.Na
+
+                    elif 'Log10(Z)' in line:
+                        inPartitionFunctions = True
+
+                    # Read spin multiplicity if not explicitly given
+                    elif 'Partition Function' in line and inPartitionFunctions and spinMultiplicity is None:
+                        line = f.readline()
+                        spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
+
+                    # Read the next line in the file
+                    line = f.readline()
+
+            # Read the next line in the file
+            line = f.readline()
+
+        # Close file when finished
+        f.close()
+        #raise Exception('{0:s}'.format(modes))
+        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
+
     def loadEnergy(self,frequencyScaleFactor=1.):
         """
         Return the f12 energy in J/mol from a MolePro Logfile of a CCSD(T)-f12 job. 
@@ -70,14 +292,20 @@ class MoleProLog:
                 if 'RHF-UCCSD(T)-F12a energy' in line or 'CCSD(T)-F12a total energy  ' in line:
                     E0=float(line.split()[-1])
                     break
+                if 'CCSD(T) total energy' in line:
+                    E0=float(line.split()[-1])
+                    break
                 line=f.readline()
         else:
             while line!='':
                 if 'RHF-UCCSD(T)-F12b energy' in line or 'CCSD(T)-F12b total energy  ' in line:
                     E0=float(line.split()[-1])
                     break
+                if 'CCSD(T) total energy' in line:
+                    E0=float(line.split()[-1])
+                    break
                 line=f.readline()
-        
+
         f.close()
         
         #multiply E0 by correct constants
@@ -85,3 +313,42 @@ class MoleProLog:
             E0 = E0 * constants.E_h * constants.Na
             return E0
         else: raise Exception('Unable to find energy in MolePro log file.')
+
+
+    def loadZeroPointEnergy(self):
+        """
+        Load the unscaled zero-point energy in J/mol from a MolPro log file.
+        """
+
+        modes = []
+        ZPE = None
+        spinMultiplicity = 1
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+
+            # Do NOT read the ZPE from the "E(ZPE)=" line, as this is the scaled version!
+            # We will read in the unscaled ZPE and later multiply the scaling factor
+            # from the input file
+
+            if 'Electronic Energy at 0 [K]:' in line:
+                electronic_energy = float(line.split()[5])
+                line = f.readline()
+                EEplusZPE = float(line.split()[5])
+                ZPE = (EEplusZPE-electronic_energy) * constants.E_h * constants.Na
+            #elif '\\ZeroPoint=' in line:
+            #    line = line.strip() + f.readline().strip()
+            #    start = line.find('\\ZeroPoint=') + 11
+            #    end = line.find('\\', start)
+            #    ZPE = float(line[start:end]) * constants.E_h * constants.Na
+            # Read the next line in the file
+            line = f.readline()
+
+        # Close file when finished
+        f.close()
+
+        if ZPE is not None:
+            return ZPE
+        else:
+            raise Exception('Unable to find zero-point energy in MolPro log file.')
