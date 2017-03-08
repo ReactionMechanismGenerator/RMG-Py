@@ -88,8 +88,8 @@ def reactSpecies(speciesTuple):
     molecules, reactantIndices = zip(*zippedList)
 
     deflate(reactions,
-            molecules,
-            reactantIndices)
+            [spec for spec in speciesTuple],
+            [spec.index for spec in speciesTuple])
 
     return reactions
 
@@ -133,7 +133,7 @@ def reactMolecules(moleculeTuples):
 
     return reactionList
 
-def findDegeneracies(rxnList):
+def findDegeneracies(rxnList, useSpeciesReaction = True):
     """
     given a list of reaction object with Molecule objects, this method 
     removes degenerate reactions and
@@ -147,17 +147,8 @@ def findDegeneracies(rxnList):
     index0 = 0
     while index0 < len(rxnList):
         reaction0 = rxnList[index0]
-
-        # obtain species with all resonance isomers
-        for i, mol in enumerate(reaction0.reactants):
-            spec = Species(molecule = [mol])
-            spec.generateResonanceIsomers()
-            reaction0.reactants[i] = spec
-        for i, mol in enumerate(reaction0.products):
-            spec = Species(molecule = [mol])
-            spec.generateResonanceIsomers()
-            reaction0.products[i] = spec
-
+        if useSpeciesReaction:
+            convertToSpeciesObjects(reaction0)
         # Remove duplicates from the reaction list
         index = index0 + 1
         while index < len(rxnList):
@@ -178,6 +169,42 @@ def findDegeneracies(rxnList):
 
         index0 += 1
 
+def convertToSpeciesObjects(reaction):
+    """
+    modifies a reaction holding Molecule objects to a reaction holding
+    Species objects, with generated resonance isomers.
+    """
+
+    # obtain species with all resonance isomers
+    for i, mol in enumerate(reaction.reactants):
+        spec = Species(molecule = [mol])
+        spec.generateResonanceIsomers()
+        reaction.reactants[i] = spec
+    for i, mol in enumerate(reaction.products):
+        spec = Species(molecule = [mol])
+        spec.generateResonanceIsomers()
+        reaction.products[i] = spec
+
+    # convert reaction.pairs object to species
+    newPairs=[]
+    for reactant, product in reaction.pairs:
+        newPair = []
+        for reactant0 in reaction.reactants:
+            if reactant0.isIsomorphic(reactant):
+                newPair.append(reactant0)
+                break
+        for product0 in reaction.products:
+            if product0.isIsomorphic(product):
+                newPair.append(product0)
+                break
+        newPairs.append(newPair)
+    reaction.pairs = newPairs
+
+    try:
+        convertToSpeciesObjects(reaction.reverse)
+    except AttributeError:
+        pass
+
 def reduceSameReactantDegeneracy(rxnList):
     """
     This method reduces the degeneracy of reactions with identical reactants,
@@ -193,7 +220,7 @@ def reduceSameReactantDegeneracy(rxnList):
 
     
 
-def deflate(rxns, molecules, reactantIndices):
+def deflate(rxns, species, reactantIndices):
     """
     The purpose of this function is to replace the reactants and
     products of a reaction, stored as Molecule objects by 
@@ -214,7 +241,7 @@ def deflate(rxns, molecules, reactantIndices):
 
     for i, coreIndex in enumerate(reactantIndices):
         if coreIndex != -1:
-            molDict[molecules[i]] = coreIndex 
+            molDict[species[i].molecule[0]] = coreIndex 
 
     for rxn in rxns:
         deflateReaction(rxn, molDict)
@@ -252,14 +279,13 @@ def deflateReaction(rxn, molDict):
     if possible.
 
     If the Molecule object could not be found in the dictionary, a new
-    dictionary entry is created, creating a new Species object as the value
+    dictionary entry is created, using the Species object as the value
     for the entry.
 
     The reactants/products/pairs of both the forward and reverse reaction 
     object are populated with the value of the dictionary, either an
     integer index, or either a Species object.
     """
-
     for spec in itertools.chain(rxn.reactants, rxn.products):
         if not spec.molecule[0] in molDict:
             molDict[spec.molecule[0]] = spec
