@@ -187,6 +187,8 @@ scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFlux
 
 modules = []
 for root, dirs, files in os.walk('rmgpy'):
+    if 'test_data' in root:
+        continue
     for file in files:
         if file.endswith('.py') or file.endswith('.pyx'):
             if 'Test' not in file and '__init__' not in file:
