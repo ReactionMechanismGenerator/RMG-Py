@@ -121,7 +121,7 @@ simulator(
 #all relative values are normalized by a characteristic flux at that time point
 model(
 	#determines the relative flux to put a species into the core.  
-	#A higher value will result in a larger, more complex model
+	#A smaller value will result in a larger, more complex model
 	#when running a new model, it is recommended to start with higher values and then decrease to converge on the model
     toleranceMoveToCore=0.1,
     #comment out the next three terms to disable pruning
