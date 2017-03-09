@@ -460,13 +460,19 @@ class KineticsRules(Database):
         # If a particular node has no children, it is skipped from the children expansion altogether.
 
         childrenList = []
+        distanceList = []
         for i, parent in enumerate(rootTemplate):
             # Start with the root template, and replace the ith member with its children
             if parent.children:
                 childrenSet = [[group] for group in rootTemplate]
                 childrenSet[i] = parent.children
                 childrenList.extend(getAllCombinations(childrenSet))
-
+                distanceList.extend([k.nodalDistance for k in parent.children])
+        
+        minDist = min(distanceList) #average the minimum distance neighbors
+        
+        childrenList = [childrenList[i] for i in xrange(len(childrenList)) if distanceList[i]==minDist]
+        
         kineticsList = []
         for template in childrenList:
             label = ';'.join([g.label for g in template])
@@ -478,10 +484,11 @@ class KineticsRules(Database):
             
             if kinetics is not None:
                 kineticsList.append([kinetics, template])
-                
+        
         # See if we already have a rate rule for this exact template instead
         # and return it now that we have finished searching its children
         entry = self.getRule(rootTemplate)
+        
         if entry is not None and entry.rank > 0:
             # We already have a rate rule for this exact template
             # If the entry has rank of zero, then we have so little faith
