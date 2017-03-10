@@ -833,6 +833,81 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         expectedAromaticBondNumInBicyclics = [0, 0, 0]
         self.assertEqual(aromaticBondNumInBicyclics, expectedAromaticBondNumInBicyclics)
 
+    def testSplitBicyclicIntoSingleRings(self):
+        """
+        Test bicyclic molecule can be divided into individual rings properly
+        """
+        smiles1 = 'C1=CCC2C1=C2'
+        mol1 = Molecule().fromSMILES(smiles1)
+        bicyclic1 = mol1.getDisparateRings()[1][0]
+
+        bicyclic1_submol = convertRingToSubMolecule(bicyclic1)[0]
+        single_ring_submols1 = splitBicyclicIntoSingleRings(bicyclic1_submol)
+        self.assertEqual(len(single_ring_submols1), 2)
+
+        single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols1, \
+                                key=lambda submol: len(submol.atoms))
+
+        expected_submol_a = Molecule().fromSMILES('C1=CC1')
+        atomsToRemove = []
+        for atom in expected_submol_a.atoms:
+            if len(atom.bonds) == 1: 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_submol_a.removeAtom(atom)
+        expected_submol_a.updateConnectivityValues()
+
+        expected_submol_b = Molecule().fromSMILES('C1=CCCC1')
+        atomsToRemove = []
+        for atom in expected_submol_b.atoms:
+            if len(atom.bonds) == 1: 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_submol_b.removeAtom(atom)
+        expected_submol_b.updateConnectivityValues()
+
+
+        self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
+        self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
+
+
+        smiles2 = 'C1=CCC2=C1C2'
+        mol2 = Molecule().fromSMILES(smiles2)
+        bicyclic2 = mol2.getDisparateRings()[1][0]
+
+        bicyclic2_submol = convertRingToSubMolecule(bicyclic2)[0]
+        single_ring_submols2 = splitBicyclicIntoSingleRings(bicyclic2_submol)
+        self.assertEqual(len(single_ring_submols2), 2)
+
+        single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols2, \
+                                key=lambda submol: len(submol.atoms))
+
+        expected_submol_a = Molecule().fromSMILES('C1=CC1')
+        # remove hydrogen
+        atomsToRemove = []
+        for atom in expected_submol_a.atoms:
+            if atom.isHydrogen(): 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_submol_a.removeAtom(atom)
+        expected_submol_a.updateConnectivityValues()
+
+        expected_submol_b = Molecule().fromSMILES('C1=CC=CC1')
+        # remove hydrogen
+        atomsToRemove = []
+        for atom in expected_submol_b.atoms:
+            if atom.isHydrogen(): 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_submol_b.removeAtom(atom)
+        expected_submol_b.updateConnectivityValues()
+
+        self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
+        self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
 
 ################################################################################
 
