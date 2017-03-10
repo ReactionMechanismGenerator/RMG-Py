@@ -991,6 +991,14 @@ class ThermoDatabase(object):
             libstr = os.path.join(groupsPath, 'Other_Library.txt'),
         )
 
+    def recordPolycylicGenericNodes(self):
+
+        self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
+        for label, entry in self.groups['polycyclic'].entries.iteritems():
+
+            if isinstance(entry.data, ThermoData): 
+                continue
+            self.groups['polycyclic'].genericNodes.append(label)
 
     def getThermoData(self, species, trainingSet=None):
         """
