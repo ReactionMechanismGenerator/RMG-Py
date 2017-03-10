@@ -1015,6 +1015,64 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         joinedCycle=combineCycles(testCycle1,testCycle2)
         self.assertTrue(sorted(mainCycle)==sorted(joinedCycle))
 
+    def testSplitBicyclicIntoSingleRings1(self):
+        """
+        Test bicyclic molecule "C1=CCC2C1=C2" can be divided into 
+        individual rings properly
+        """
+        smiles = 'C1=CCC2C1=C2'
+        mol = Molecule().fromSMILES(smiles)
+        bicyclic = mol.getDisparateRings()[1][0]
+
+        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
+        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+        self.assertEqual(len(single_ring_submols), 2)
+
+        single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
+                                key=lambda submol: len(submol.atoms))
+
+        expected_submol_a = Molecule().fromSMILES('C1=CC1')
+        expected_submol_a.deleteHydrogens()
+        expected_submol_a.updateConnectivityValues()
+
+        expected_submol_b = Molecule().fromSMILES('C1=CCCC1')
+        expected_submol_b.deleteHydrogens()
+        expected_submol_b.updateConnectivityValues()
+
+
+        self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
+        self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
+
+    def testSplitBicyclicIntoSingleRings2(self):
+        """
+        Test bicyclic molecule "C1=CCC2=C1C2" can be divided into 
+        individual rings properly
+        """
+
+        smiles = 'C1=CCC2=C1C2'
+        mol = Molecule().fromSMILES(smiles)
+        bicyclic = mol.getDisparateRings()[1][0]
+
+        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
+        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+        self.assertEqual(len(single_ring_submols), 2)
+
+        single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
+                                key=lambda submol: len(submol.atoms))
+
+        expected_submol_a = Molecule().fromSMILES('C1=CC1')
+        # remove hydrogen
+        expected_submol_a.deleteHydrogens()
+        expected_submol_a.updateConnectivityValues()
+
+        expected_submol_b = Molecule().fromSMILES('C1=CC=CC1')
+        # remove hydrogen
+        expected_submol_b.deleteHydrogens()
+        expected_submol_b.updateConnectivityValues()
+
+        self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
+        self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
+
 @attr('auth')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
