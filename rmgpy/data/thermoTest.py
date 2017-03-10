@@ -909,6 +909,33 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
         self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
 
+    def testSaturateRingBonds1(self):
+        """
+        Test unsaturated bonds can be saturated properly
+        """
+        smiles = 'C1=CCC2=C1C2'
+        mol = Molecule().fromSMILES(smiles)
+        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+
+        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+
+        expected_saturated_ring_submol = Molecule().fromSMILES('C1CCC2C1C2')
+        # remove hydrogen
+        atomsToRemove = []
+        for atom in expected_saturated_ring_submol.atoms:
+            if atom.isHydrogen(): 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_saturated_ring_submol.removeAtom(atom)
+        
+        expected_saturated_ring_submol.updateConnectivityValues()
+
+        self.assertFalse(alreadySaturated)
+        self.assertEqual(saturated_ring_submol.multiplicity, \
+                            expected_saturated_ring_submol.multiplicity)
+        self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
+
 ################################################################################
 
 if __name__ == '__main__':
