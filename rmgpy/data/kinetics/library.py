@@ -294,7 +294,7 @@ class KineticsLibrary(Database):
 #        if not rxn.isBalanced():
 #            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
 #        label = str(rxn)
-        assert index not in self.entries, "Reaction {0} already present!".format(label)
+        assert index not in self.entries, "Index of reaction {0} is not unique!".format(label)
         self.entries[index] = Entry(
             index = index,
             label = label,
