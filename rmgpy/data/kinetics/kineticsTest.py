@@ -11,6 +11,30 @@ from rmgpy.species import Species
 from rmgpy.data.rmg import RMGDatabase
 ###################################################
 
+def setUpModule():
+    """A function that is run ONCE before all unit tests in this module."""
+    global database
+    database = RMGDatabase()
+    database.load(
+        path=settings['database.directory'],
+        thermoLibraries=['primaryThermoLibrary'],
+        reactionLibraries=[],
+        kineticsFamilies=[
+            'R_Recombination',
+            'Disproportionation',
+            'R_Addition_MultipleBond',
+            'intra_H_migration'
+        ],
+    )
+    for family in database.kinetics.families.values():
+        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
+        family.fillKineticsRulesByAveragingUp(verbose=True)
+
+def tearDownModule():
+    """A function that is run ONCE after all unit tests in this module."""
+    from rmgpy.data import rmg
+    rmg.database = None
+
 class TestKineticsDatabase(unittest.TestCase):
     
     def testLoadFamilies(self):
@@ -31,15 +55,11 @@ class TestKineticsDatabase(unittest.TestCase):
             
 class TestReactionDegeneracy(unittest.TestCase):
 
-    # load database once for entire class
-    database = RMGDatabase()
-    database.load(path = settings['database.directory'],
-         kineticsFamilies=['R_Recombination', 'Disproportionation','R_Addition_MultipleBond'],
-         depository=True,
-         solvation=True,)
-    for family in database.kinetics.families.values():
-        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
-        family.fillKineticsRulesByAveragingUp(verbose=True)
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database
 
     def test_degeneracy_for_methyl_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + methyl recombination"""
@@ -391,25 +411,11 @@ class TestReactionDegeneracy(unittest.TestCase):
         
 class TestKineticsCommentsParsing(unittest.TestCase):
 
-    database=RMGDatabase()
-    database.load(settings['database.directory'], 
-                      kineticsFamilies=['Disproportionation'], 
-                      kineticsDepositories=[],
-                      thermoLibraries=['primaryThermoLibrary'],   # Use just the primary thermo library, which contains necessary small molecular thermo
-                      reactionLibraries=[],
-                      )
-
-    # Prepare the database by loading training reactions but not averaging the rate rules
-    for family in database.kinetics.families.values():
-        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)    
-        family.fillKineticsRulesByAveragingUp(verbose=True)
-        
-    def setUp(self):
-        """
-        A function run before each unit test in this class.
-        """
-        
-        self.database = self.__class__.database
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database
         
     def testParseKinetics(self):
         from rmgpy.chemkin import loadChemkinFile
