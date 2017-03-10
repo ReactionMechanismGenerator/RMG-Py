@@ -491,6 +491,33 @@ def splitBicyclicIntoSingleRings(bicyclic_submol):
     return [convertRingToSubMolecule(SSSR[0])[0], 
                 convertRingToSubMolecule(SSSR[1])[0]]
 
+def saturateRingBonds(ring_submol):
+    """
+    Given a ring submolelcule (`Molecule`), makes a deep copy and converts non-single bonds 
+    into single bonds, returns a new saturated submolecule (`Molecule`)
+    """
+    from rmgpy.molecule.molecule import Molecule, Bond
+
+    atomsMapping = {}
+    for atom in ring_submol.atoms:
+        if atom not in atomsMapping:
+            atomsMapping[atom] = atom.copy()
+
+    mol0 = Molecule(atoms=atomsMapping.values())
+
+    alreadySaturated = True
+    for atom in ring_submol.atoms:
+        for bondedAtom, bond in atom.edges.iteritems():
+            if bondedAtom in ring_submol.atoms:
+                if bond.order > 1.0: alreadySaturated = False
+                if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
+                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=1.0))
+    
+    mol0.updateAtomTypes()
+    mol0.updateMultiplicity()
+    mol0.updateConnectivityValues()
+    return mol0, alreadySaturated
+
 ################################################################################
 
 class ThermoDepository(Database):
