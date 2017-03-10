@@ -1,6 +1,7 @@
 import os
 import unittest 
 from external.wip import work_in_progress
+import itertools
 
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
@@ -60,6 +61,85 @@ class TestReactionDegeneracy(unittest.TestCase):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         self.database = database
+
+    def testR_Addition_MultipleBondBenzene(self):
+        """Test that the proper degeneracy is calculated for H addition to benzene"""
+        family = 'R_Addition_MultipleBond'
+        reactants = [
+            Molecule().fromSMILES('c1ccccc1'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        reactants = [mol.generateResonanceIsomers() for mol in reactants]
+
+        combinations = itertools.product(reactants[0], reactants[1])
+
+        reactionList = []
+        for combi in combinations:
+            reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
+
+        self.assertEqual(len(reactionList), 1)
+        for rxn in reactionList:
+            self.assertEqual(rxn.degeneracy, 6)
+
+    def testR_Addition_MultipleBondMethylNaphthalene(self):
+        """Test that the proper degeneracy is calculated for H addition to methylnaphthalene"""
+        family = 'R_Addition_MultipleBond'
+        reactants = [
+            Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        reactants = [mol.generateResonanceIsomers() for mol in reactants]
+
+        combinations = itertools.product(reactants[0], reactants[1])
+
+        reactionList = []
+        for combi in combinations:
+            reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
+
+        product = Species().fromSMILES('C[C]1CC=CC2=CC=CC=C12')
+        product.generateResonanceIsomers()
+
+        targetReactions = []
+        for rxn in reactionList:
+            for spc in rxn.products:
+                if product.isIsomorphic(spc):
+                    targetReactions.append(rxn)
+
+        self.assertEqual(len(targetReactions), 3)
+        for rxn in targetReactions:
+            self.assertEqual(rxn.degeneracy, 1)
+
+    def testR_RecombinationPhenyl(self):
+        """Test that the proper degeneracy is calculated for phenyl + H recombination"""
+        family = 'R_Recombination'
+        reactants = [
+            Molecule().fromSMILES('[c]1ccccc1'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        reactants = [mol.generateResonanceIsomers() for mol in reactants]
+
+        combinations = itertools.product(reactants[0], reactants[1])
+
+        reactionList = []
+        for combi in combinations:
+            reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
+
+        self.assertEqual(len(reactionList), 1)
+        for rxn in reactionList:
+            self.assertEqual(rxn.degeneracy, 1)
+
+    def testR_RecombinationH(self):
+        """Test that the proper degeneracy is calculated for H + H recombination"""
+        family = 'R_Recombination'
+        reactants = [
+            Molecule().fromSMILES('[H]'),
+            Molecule().fromSMILES('[H]'),
+        ]
+
+        reactionList = self.database.kinetics.families[family].generateReactions(reactants)
+
+        self.assertEqual(len(reactionList), 1)
+        self.assertEqual(reactionList[0].degeneracy, 1)
 
     def test_degeneracy_for_methyl_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + methyl recombination"""
