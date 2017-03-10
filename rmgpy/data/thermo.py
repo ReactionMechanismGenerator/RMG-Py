@@ -480,6 +480,17 @@ def bicyclicDecompositionForPolyring(polyring):
         bicyclicsMergedFromRingPair.append(mergedRing)
 
     return bicyclicsMergedFromRingPair, ringOccurancesDict
+
+def splitBicyclicIntoSingleRings(bicyclic_submol):
+    """
+    Splits a given bicyclic submolecule into two individual single 
+    ring submolecules (a list of `Molecule`s ).
+    """
+    SSSR = bicyclic_submol.getDeterministicSmallestSetOfSmallestRings()
+
+    return [convertRingToSubMolecule(SSSR[0])[0], 
+                convertRingToSubMolecule(SSSR[1])[0]]
+
 ################################################################################
 
 class ThermoDepository(Database):
