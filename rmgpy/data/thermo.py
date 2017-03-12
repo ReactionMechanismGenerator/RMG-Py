@@ -1604,15 +1604,24 @@ class ThermoDatabase(object):
         be applied.
         """
         # look up polycylic tree directly
-        matched_group_thermodata, _, isPartialMatch = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
+        matched_group_thermodata, matched_group, isPartialMatch = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
         
         # if partial match (non-H atoms number same between 
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
         if not isPartialMatch:
-            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
-            # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
-            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+            if isBicyclic(polyring) and matched_group.label in self.groups['polycyclic'].genericNodes:
+                # apply secondary decompostion formula
+                # to get a estimated_group_thermodata
+                estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+                if not estimated_bicyclic_thermodata:
+                    estimated_bicyclic_thermodata = matched_group_thermodata
+                thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True, verbose=True)
+            else:
+                # keep matched_group_thermodata as is
+                thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
             
@@ -1633,8 +1642,19 @@ class ThermoDatabase(object):
         
         # loop over 2-ring cores
         for bicyclic in bicyclicsMergedFromRingPair:
-            self.__addRingCorrectionThermoDataFromTree(thermoData, 
+            matched_group_thermodata, matched_group, _ = self.__addRingCorrectionThermoDataFromTree(None, 
                 self.groups['polycyclic'], bicyclic, bicyclic.atoms)
+
+            if matched_group.label in self.groups['polycyclic'].genericNodes:
+                # apply secondary decompostion formula
+                # to get a estimated_group_thermodata
+                estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(bicyclic.atoms)
+                if not estimated_bicyclic_thermodata:
+                    estimated_bicyclic_thermodata = matched_group_thermodata 
+                thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True)
+            else:
+                # keep matched_group_thermodata as is
+                thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
 
         # loop over 1-ring 
         for singleRingTuple, occurance in ringOccurancesDict.iteritems():
