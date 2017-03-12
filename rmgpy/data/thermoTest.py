@@ -904,6 +904,30 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(isAromaticRing(ring2mol), False)
         self.assertEqual(isAromaticRing(ring3mol), True)
 
+    def testIsBicyclic1(self):
+        """
+        Test isBicyclic identifies bicyclic correctly
+        The test molecule is bicyclic, we expect isBicyclic()
+        returns True.
+        """
+        smiles = 'C1=CCC2C1=C2'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = mol.getDisparateRings()[1][0]
+
+        self.assertTrue(isBicyclic(polyring))
+
+    def testIsBicyclic2(self):
+        """
+        Test isBicyclic identifies bicyclic correctly
+        The test molecule is tetracyclic, we expect 
+        isBicyclic() returns False
+        """
+        smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = mol.getDisparateRings()[1][0]
+
+        self.assertFalse(isBicyclic(polyring))
+
     def testFindAromaticBondsFromSubMolecule(self):
 
         smiles = "C1=CC=C2C=CC=CC2=C1"
