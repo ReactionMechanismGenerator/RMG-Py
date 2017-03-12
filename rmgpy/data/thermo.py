@@ -305,6 +305,16 @@ def isAromaticRing(submol):
                     return False
     return True
 
+def isBicyclic(polyring):
+    """
+    Given a polyring (a list of `Atom`s)
+    returns True if it's a bicyclic, False otherwise
+    """
+    submol, _ = convertRingToSubMolecule(polyring)
+    sssr = submol.getSmallestSetOfSmallestRings()
+
+    return len(sssr) == 2
+
 def findAromaticBondsFromSubMolecule(submol):
     """
     This method finds all the aromatic bonds within a input submolecule and 
