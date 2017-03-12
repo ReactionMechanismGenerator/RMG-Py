@@ -716,6 +716,57 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_6_6_ane', polycyclicGroupLabels)
         self.assertIn('s2_3_6_ane', polycyclicGroupLabels)
 
+    def testGetBicyclicCorrectionThermoDataFromHeuristic1(self):
+        """
+        Test bicyclic correction estimated properly from heuristic formula
+        The test molecule "C1=CCC2C1=C2" has a shared atom with Cd atomtype, 
+        but in the correction estimation we stil expect the five-member ring 
+        part to match Cyclopentene
+        """
+        smiles = 'C1=CCC2C1=C2'
+        mol = Molecule().fromSMILES(smiles)
+
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = self.database.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Cyclopentane', ringGroupLabels)
+        self.assertIn('Cyclopropane', ringGroupLabels)
+        self.assertIn('Cyclopentene', ringGroupLabels)
+        self.assertIn('Cyclopropene', ringGroupLabels)
+        self.assertIn('s2_3_5_ane', polycyclicGroupLabels)
+
+    def testGetBicyclicCorrectionThermoDataFromHeuristic2(self):
+        """
+        Test bicyclic correction estimated properly from heuristic formula
+        The test molecule "C1=CCC2=C1C2" doesn't have controversial shared 
+        atomtypes in correction estimation, which is regarded as a simple case.
+        """
+        smiles = 'C1=CCC2=C1C2'
+        mol = Molecule().fromSMILES(smiles)
+
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = self.database.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Cyclopentane', ringGroupLabels)
+        self.assertIn('Cyclopropane', ringGroupLabels)
+        self.assertIn('Cyclopentadiene', ringGroupLabels)
+        self.assertIn('Cyclopropene', ringGroupLabels)
+        self.assertIn('s2_3_5_ane', polycyclicGroupLabels)
+        
 class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
     """
     Contains unit tests for methods of molecular manipulations for thermo estimation
