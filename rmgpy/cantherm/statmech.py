@@ -393,13 +393,6 @@ class StatMechJob:
                        
             logging.debug('    Determining frequencies from reduced force constant matrix...')
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
-            
-            # The frequencies have changed after projection, hence we need to recompute the ZPE
-            # We might need to multiply the scaling factor to the frequencies 
-            ZPE = self.getZPEfromfrequencies(frequencies)
-            E0_withZPE = E0 + ZPE
-            # Reset the E0 of the conformer
-            conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
 
         elif len(conformer.modes) > 2:
             frequencies = conformer.modes[2].frequencies.value_si
