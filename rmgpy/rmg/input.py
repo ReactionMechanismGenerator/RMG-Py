@@ -74,6 +74,17 @@ def database(
     rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
     rmg.transportLibraries = transportLibraries
+    # Modify reactionLibraries if the user didn't specify tuple input
+    if reactionLibraries:
+        index = 0
+        while index < len(reactionLibraries):
+            if isinstance(reactionLibraries[index],tuple):
+                pass
+            elif isinstance(reactionLibraries[index],str):
+                reactionLibraries[index] = (reactionLibraries[index], False)
+            else:
+                raise TypeError('reaction libraries must be input as tuples or strings')
+            index += 1
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
