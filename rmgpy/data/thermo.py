@@ -350,6 +350,8 @@ def convertRingToSubMolecule(ring):
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
     
+    mol0.updateMultiplicity()
+    mol0.updateConnectivityValues()
     return mol0, atomsMapping
 
 def combineTwoRingsIntoSubMolecule(ring1, ring2):
@@ -381,6 +383,9 @@ def combineTwoRingsIntoSubMolecule(ring1, ring2):
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
     
+    mol0.updateMultiplicity()
+    mol0.updateConnectivityValues()
+
     return mol0, atomsMapping
 
 def getCopyForOneRing(ring):
