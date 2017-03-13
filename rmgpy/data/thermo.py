@@ -519,9 +519,12 @@ def saturateRingBonds(ring_submol):
     for atom in ring_submol.atoms:
         for bondedAtom, bond in atom.edges.iteritems():
             if bondedAtom in ring_submol.atoms:
-                if bond.order > 1.0: alreadySaturated = False
+                if bond.order > 1.0 and not bond.isBenzene(): alreadySaturated = False
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
-                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=1.0))
+                    bond_order = 1.0
+                    if bond.isBenzene():
+                        bond_order = 1.5
+                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond_order))
     
     mol0.updateAtomTypes()
     mol0.updateMultiplicity()
