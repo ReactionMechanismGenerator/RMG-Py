@@ -1002,6 +1002,67 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                             expected_saturated_ring_submol.multiplicity)
         self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
 
+    def testSaturateRingBonds2(self):
+        """
+        Test unsaturated bonds can be saturated properly
+        """
+        smiles = 'C1=CC=C2CCCCC2=C1'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        mol = spe.molecule[1]
+        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+
+        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+
+        expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
+        expected_spe.generateResonanceIsomers()
+        expected_saturated_ring_submol = expected_spe.molecule[1]
+        # remove hydrogen
+        atomsToRemove = []
+        for atom in expected_saturated_ring_submol.atoms:
+            if atom.isHydrogen(): 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_saturated_ring_submol.removeAtom(atom)
+        
+        expected_saturated_ring_submol.updateConnectivityValues()
+
+        self.assertTrue(alreadySaturated)
+        self.assertEqual(saturated_ring_submol.multiplicity, \
+                            expected_saturated_ring_submol.multiplicity)
+        self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
+
+    def testSaturateRingBonds3(self):
+        """
+        Test unsaturated bonds can be saturated properly
+        """
+        smiles = 'C1=CC=C2CC=CCC2=C1'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        mol = spe.molecule[1]
+        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+
+        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+
+        expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
+        expected_spe.generateResonanceIsomers()
+        expected_saturated_ring_submol = expected_spe.molecule[1]
+        # remove hydrogen
+        atomsToRemove = []
+        for atom in expected_saturated_ring_submol.atoms:
+            if atom.isHydrogen(): 
+                atomsToRemove.append(atom)
+
+        for atom in atomsToRemove:
+            expected_saturated_ring_submol.removeAtom(atom)
+        
+        expected_saturated_ring_submol.updateConnectivityValues()
+
+        self.assertFalse(alreadySaturated)
+        self.assertEqual(saturated_ring_submol.multiplicity, \
+                            expected_saturated_ring_submol.multiplicity)
+        self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
 ################################################################################
 
 if __name__ == '__main__':
