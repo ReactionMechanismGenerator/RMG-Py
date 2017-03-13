@@ -349,7 +349,12 @@ cdef class ReactionSystem(DASx):
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,double toleranceReactionMoveToCore=numpy.inf, double toleranceReactionInterruptSimulation=numpy.inf,
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
+        double toleranceMoveEdgeReactionToCore=numpy.inf,double toleranceMoveEdgeReactionToCoreInterrupt=numpy.inf,
+        double toleranceMoveEdgeReactionToSurface=numpy.inf, double toleranceMoveSurfaceSpeciesToCore=numpy.inf,
+        double toleranceMoveSurfaceReactionToCore=numpy.inf,
+        double toleranceMoveEdgeReactionToSurfaceInterrupt=numpy.inf, double toleranceMoveSurfaceSpeciesToCoreInterrupt=numpy.inf, 
+        double toleranceMoveSurfaceReactionToCoreInterrupt=numpy.inf,
         list pdepNetworks=None, ignoreOverallFluxCriterion=False, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):
@@ -614,12 +619,12 @@ cdef class ReactionSystem(DASx):
                 break
             
             #Interrupt simulation if the difference in natural log of total accumulation number exceeds tolerance
-            if maxDifLnAccumNum > toleranceReactionMoveToCore and not invalidObject:
+            if maxDifLnAccumNum > toleranceMoveEdgeReactionToCore and not invalidObject:
                 logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for moving to model core'.format(self.t, maxAccumReaction))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
                 invalidObject = maxAccumReaction
-            if maxDifLnAccumNum > toleranceReactionInterruptSimulation:
+            if maxDifLnAccumNum > toleranceMoveEdgeReactionToCoreInterrupt:
                 logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
