@@ -136,6 +136,10 @@ cdef class ReactionSystem(DASx):
         self.edgeReactionRates = None
 
         self.networkLeakRates = None
+        
+        #surface indices
+        self.surfaceSpeciesIndices = None
+        self.surfaceReactionIndices = None
 
         # variables that cache maximum rate (ratio) data
         self.maxCoreSpeciesRates = None
@@ -176,7 +180,9 @@ cdef class ReactionSystem(DASx):
         """
         return (self.__class__, (self.termination,))
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies,
+                          list surfaceReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
+                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
@@ -219,6 +225,13 @@ cdef class ReactionSystem(DASx):
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
         
+        self.surfaceSpeciesIndices = numpy.zeros(len(surfaceSpecies),dtype=numpy.int)
+        self.surfaceReactionIndices = numpy.zeros(len(surfaceReactions),dtype=numpy.int)
+        
+        for i in range(len(surfaceSpecies)):
+            self.surfaceSpeciesIndices[i] = coreSpecies.index(surfaceSpecies[i])
+        for i in range(len(surfaceReactions)):
+            self.surfaceReactionIndices[i] = coreReactions.index(surfaceReactions[i]) 
 
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
@@ -386,6 +399,7 @@ cdef class ReactionSystem(DASx):
         cdef bool zeroProduction, zeroConsumption
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
+        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
@@ -399,13 +413,21 @@ cdef class ReactionSystem(DASx):
         numEdgeSpecies = len(edgeSpecies)
         numPdepNetworks = len(pdepNetworks)
         numCoreReactions = len(coreReactions)
-
+        
+        
+        
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, sensitivityRelativeTolerance, filterReactions)
-
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, 
+                             pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, 
+                             sensitivityRelativeTolerance, filterReactions)
+        
+        logging.info(self.surfaceSpeciesIndices)
+        surfaceSpeciesIndices = self.surfaceSpeciesIndices
+        surfaceReactionIndices = self.surfaceReactionIndices
+        
         invalidObject = None
         terminated = False
         maxSpeciesIndex = -1
