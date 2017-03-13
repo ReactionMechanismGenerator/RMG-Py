@@ -106,7 +106,7 @@ cdef class ReactionSystem(DASx):
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, 
         list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
 
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
+    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list surfaceSpecies, list edgeReactions,list surfaceReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,double toleranceMoveEdgeReactionToCore=?,double toleranceMoveEdgeReactionToCoreInterrupt=?,
         double toleranceMoveEdgeReactionToSurface=?, double toleranceMoveSurfaceSpeciesToCore=?, double toleranceMoveSurfaceReactionToCore=?,
         double toleranceMoveEdgeReactionToSurfaceInterrupt=?, double toleranceMoveSurfaceSpeciesToCoreInterrupt=?, 

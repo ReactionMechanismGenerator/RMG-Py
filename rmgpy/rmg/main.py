@@ -584,6 +584,8 @@ class RMG(util.Subject):
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
+                    surfaceSpecies = self.reactionModel.surfaceSpecies,
+                    surfaceReactions = self.reactionModel.surfaceReactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,

@@ -348,7 +348,7 @@ cdef class ReactionSystem(DASx):
                 self.networkIndices[j,l] = i
 
     @cython.boundscheck(False)
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
+    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,list surfaceSpecies, list surfaceReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         double toleranceMoveEdgeReactionToCore=numpy.inf,double toleranceMoveEdgeReactionToCoreInterrupt=numpy.inf,
         double toleranceMoveEdgeReactionToSurface=numpy.inf, double toleranceMoveSurfaceSpeciesToCore=numpy.inf,
@@ -358,6 +358,7 @@ cdef class ReactionSystem(DASx):
         list pdepNetworks=None, ignoreOverallFluxCriterion=False, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):
+        
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
