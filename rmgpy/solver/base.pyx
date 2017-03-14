@@ -179,7 +179,8 @@ cdef class ReactionSystem(DASx):
         A helper function used when pickling an object.
         """
         return (self.__class__, (self.termination,))
-
+    
+     
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies,
                           list surfaceReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
                           sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
@@ -189,7 +190,6 @@ cdef class ReactionSystem(DASx):
         method in the derived class; don't forget to also call the base class
         version, too.
         """
-
         self.numCoreSpecies = len(coreSpecies)
         self.numCoreReactions = len(coreReactions)
         self.numEdgeSpecies = len(edgeSpecies)
@@ -224,18 +224,57 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
-        
-        self.surfaceSpeciesIndices = numpy.zeros(len(surfaceSpecies),dtype=numpy.int)
-        self.surfaceReactionIndices = numpy.zeros(len(surfaceReactions),dtype=numpy.int)
-        
-        for i in range(len(surfaceSpecies)):
-            self.surfaceSpeciesIndices[i] = coreSpecies.index(surfaceSpecies[i])
-        for i in range(len(surfaceReactions)):
-            self.surfaceReactionIndices[i] = coreReactions.index(surfaceReactions[i]) 
 
+        self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+        
+        
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
-
+    
+    def initialize_surface(self,coreSpecies,coreReactions,surfaceSpecies,surfaceReactions):
+#        cdef list productIndices,reactantIndices, surfaceSpeciesIndices, surfaceReationIndices
+#        cdef set possibleSpeciesIndices
+#        cdef int i,j
+#        cdef bool notInSurface
+        
+        logging.info('initializing surface')
+        productIndices = self.productIndices
+        reactantIndices = self.reactantIndices
+        
+        surfaceSpeciesIndices = []
+        surfaceReactionIndices = []
+        possibleSpeciesIndices = set()
+        
+        for i in range(len(surfaceSpecies)):
+            surfaceSpeciesIndices.append(coreSpecies.index(surfaceSpecies[i]))
+        for i in range(len(surfaceReactions)):
+            surfaceReactionIndices.append(coreReactions.index(surfaceReactions[i]))
+        
+        for i in surfaceReactionIndices: #remove surface reactions whose species have been moved to the bulk core
+            notInSurface = True
+            for j in productIndices[i]:
+                possibleSpeciesIndices.add(j)
+                if j in surfaceSpeciesIndices:
+                    notInSurface = False
+            for j in reactantIndices[i]:
+                possibleSpeciesIndices.add(j)
+                if j in surfaceSpeciesIndices:
+                    notInSurface = False
+            if notInSurface:
+                surfaceReactions.remove(coreReactions[i])
+                surfaceReactionIndices.remove(i)
+        
+        for i in surfaceSpeciesIndices: #remove species without reactions in the surface
+            if not(i in possibleSpeciesIndices):
+                surfaceSpecies.remove(coreSpecies[i])
+                surfaceSpeciesIndices.remove(i)
+        
+        self.surfaceSpeciesIndices = surfaceSpeciesIndices
+        self.surfaceReactionIndices = surfaceReactionIndices
+        
+        return
+        
+        
     def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
         Computes the number of differential equations and initializes the tolerance arrays.        
@@ -422,12 +461,17 @@ cdef class ReactionSystem(DASx):
         cdef bint terminated
         cdef object maxSpecies, maxNetwork, 
         cdef int i, j, k
+        cdef numpy.float64_t maxSurfaceDifLnAccumNum, maxSurfaceSpeciesRate 
+        cdef int maxSurfaceAccumReactionIndex, ind, maxSurfaceSpeciesIndex
+        cdef object maxSurfaceAccumReaction, maxSurfaceSpecies
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
         cdef bool zeroProduction, zeroConsumption
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
-        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
+        cdef list surfaceSpeciesIndices, surfaceReactionIndices
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
@@ -455,7 +499,7 @@ cdef class ReactionSystem(DASx):
         logging.info(self.surfaceSpeciesIndices)
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
-        
+        surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
         invalidObject = None
         terminated = False
         maxSpeciesIndex = -1
@@ -488,9 +532,9 @@ cdef class ReactionSystem(DASx):
             # identify sensitive species indices
             sensSpeciesIndices = numpy.array([speciesIndex[spec] for spec in self.sensitiveSpecies], numpy.int)  # index within coreSpecies list of the sensitive species
                 
-        
         stepTime = 1e-12
         prevTime = self.t
+        
         while not terminated:
             # Integrate forward in time by one time step
             try:
