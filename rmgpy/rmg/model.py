@@ -92,7 +92,7 @@ class ReactionModel:
     def __init__(self, species=None, reactions=None):
         self.species = species or []
         self.reactions = reactions or []
-    
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -209,6 +209,9 @@ class CoreEdgeReactionModel:
             self.edge = ReactionModel()
         else:
             self.edge = edge
+        
+        self.surfaceSpecies = []
+        self.surfaceReactions = []
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity

@@ -165,8 +165,8 @@ class RMG(util.Subject):
         self.fluxToleranceKeepInEdge = 0.0
         self.fluxToleranceMoveToCore = 1.0
         self.fluxToleranceInterrupt = 1.0
-        self.reactionToleranceMoveToCore = numpy.inf
-        self.reactionToleranceInterrupt = numpy.inf
+        self.toleranceMoveEdgeReactionToCore = numpy.inf
+        self.toleranceReactionInterruptSimulation = numpy.inf
         self.ignoreOverallFluxCriterion=False
         
         self.absoluteTolerance = 1.0e-8
@@ -581,22 +581,30 @@ class RMG(util.Subject):
                     # Turn pruning off if we haven't reached minimum core size.
                     prune = False
                     
-                try: terminated, obj = reactionSystem.simulate(
+
+                try: terminated, obj,surfaceSpecies,surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
+                    surfaceSpecies = self.reactionModel.surfaceSpecies,
+                    surfaceReactions = self.reactionModel.surfaceReactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
+                    toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
-                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt if prune else self.reactionToleranceMoveToCore,
+                    toleranceMoveEdgeReactionToCoreInterrupt= self.toleranceMoveEdgeReactionToCoreInterrupt if prune else self.toleranceMoveEdgeReactionToCore,
+                    toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
+                    toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
+                    toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
+                    toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
                     ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
                 )
+                
                 except:
                     logging.error("Model core reactions:")
                     if len(self.reactionModel.core.reactions) > 5:
@@ -605,6 +613,10 @@ class RMG(util.Subject):
                         from rmgpy.cantherm.output import prettify
                         logging.error(prettify(repr(self.reactionModel.core.reactions)))
                     raise
+
+                self.reactionModel.surfaceSpecies = surfaceSpecies
+                self.reactionModel.surfaceReactions = surfaceReactions
+
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
@@ -667,9 +679,9 @@ class RMG(util.Subject):
                                 edgeReactions = [],
                                 toleranceKeepInEdge = 0,
                                 toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                                toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
+                                toleranceReactionMoveToCore = self.toleranceMoveEdgeReactionToCore,
                                 toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
-                                toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
+                                toleranceReactionInterruptSimulation = self.toleranceReactionInterruptSimulation,
                                 pdepNetworks = self.reactionModel.networkList,
                                 ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                                 absoluteTolerance = self.absoluteTolerance,
@@ -725,9 +737,9 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
+                    toleranceReactionMoveToCore = self.toleranceMoveEdgeReactionToCore,
                     toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
-                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
+                    toleranceReactionInterruptSimulation = self.toleranceReactionInterruptSimulation,
                     pdepNetworks = self.reactionModel.networkList,
                     ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,

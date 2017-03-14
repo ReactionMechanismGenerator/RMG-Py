@@ -66,6 +66,10 @@ cdef class ReactionSystem(DASx):
 
     cdef public numpy.ndarray coreSpeciesConcentrations
     
+    #surface information
+    cdef public numpy.ndarray surfaceSpeciesIndices
+    cdef public numpy.ndarray surfaceReactionIndices
+    
     # The reaction and species rates at the current time (in mol/m^3*s)
     cdef public numpy.ndarray coreSpeciesRates
     cdef public numpy.ndarray coreReactionRates
@@ -103,11 +107,13 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray bimolecularThreshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, 
-        list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies,
+        list surfaceReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
 
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,double toleranceReactionMoveToCore=?,double toleranceReactionInterruptSimulation=?,
+    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list surfaceSpecies, list edgeReactions,list surfaceReactions,
+        double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,double toleranceMoveEdgeReactionToCore=?,double toleranceMoveEdgeReactionToCoreInterrupt=?,
+        double toleranceMoveEdgeReactionToSurface=?, double toleranceMoveSurfaceSpeciesToCore=?, double toleranceMoveSurfaceReactionToCore=?,
+        double toleranceMoveEdgeReactionToSurfaceInterrupt=?, 
         list pdepNetworks=?,ignoreOverallFluxCriterion=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
         sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?,
         filterReactions=?)
