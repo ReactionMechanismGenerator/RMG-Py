@@ -88,9 +88,9 @@ class GraphFP(Layer):
 			trim_to = T.eq(trim, 0).nonzero()[0][0] # first index with no bonds
 			original_graph = original_graph[:trim_to, :trim_to, :] # reduced graph
 
-		# Get attribute values for layer zero
+		# Get attribute values for r=1
 		# where attributes is a 2D tensor and attributes[#, :] is the vector of
-		# concatenated node and edge attributes. In the first layer (depth 0), the 
+		# concatenated node and edge attributes. In the first layer (depth r=1), the 
 		# edge attribute section is initialized to zeros. After increasing depth, howevevr,
 		# this part of the vector will become non-zero.
 
@@ -114,9 +114,10 @@ class GraphFP(Layer):
 		bonds.name = 'bonds'
 
 		# Iterate through different depths, updating attributes each time
+		graph = original_graph
 		for depth in range(self.depth):
-			(attributes, graph) = self.attributes_update(attributes, depth + 1, original_graph, original_graph, bonds)
-			presum_fp_new = self.attributes_to_fp_contribution(attributes, depth)
+			(attributes, graph) = self.attributes_update(attributes, depth + 1, graph, original_graph, bonds)
+			presum_fp_new = self.attributes_to_fp_contribution(attributes, depth + 1)
 			presum_fp_new.name = 'presum_fp_new contribution'
 			fp = fp + K.sum(presum_fp_new, axis = 0) 
 
