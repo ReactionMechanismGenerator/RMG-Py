@@ -52,7 +52,9 @@ cdef class Species:
     
     cpdef generateResonanceIsomers(self,bint keepIsomorphic=?)
     
-    cpdef bint isIsomorphic(self, other)
+    cpdef bint isIsomorphic(self, other) except -2
+
+    cpdef bint isIdentical(self, other) except -2
     
     cpdef fromAdjacencyList(self, adjlist)
     cpdef fromSMILES(self, smiles)
