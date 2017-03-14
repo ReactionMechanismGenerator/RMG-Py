@@ -62,6 +62,8 @@ clean:
 	rm -rf build/
 	find . -name '*.so' -exec rm -f '{}' \;
 	find . -name '*.pyc' -exec rm -f '{}' \;
+	find rmgpy -name '*.c' -exec rm -f '{}' \;
+	find rmgpy -name '*.html' -exec rm -f '{}' \;
 
 clean-solver:
 	rm -r build/pyrex/rmgpy/solver/
