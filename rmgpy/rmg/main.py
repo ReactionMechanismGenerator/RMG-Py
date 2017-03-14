@@ -602,6 +602,7 @@ class RMG(util.Subject):
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
                 )
+                
                 except:
                     logging.error("Model core reactions:")
                     if len(self.reactionModel.core.reactions) > 5:
@@ -610,6 +611,10 @@ class RMG(util.Subject):
                         from rmgpy.cantherm.output import prettify
                         logging.error(prettify(repr(self.reactionModel.core.reactions)))
                     raise
+
+                self.reactionModel.surfaceSpecies = surfaceSpecies
+                self.reactionModel.surfaceReactions = surfaceReactions
+
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
