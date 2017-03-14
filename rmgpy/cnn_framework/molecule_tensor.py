@@ -136,13 +136,15 @@ def get_bond_attributes(molecule, non_H_atoms):
 				
 				attributes.append(molecule.__isChainInCycle([bond.atom1, bond.atom2]))
 
+				attributes.extend(is_bond_in_ring(molecule, bond))
+
 				# add if connected
 				attributes.append(1)
 
 				bond_attributes_dict[bond] = np.array(attributes, dtype=np.float32)
 
 	if not bond_attributes_dict:
-		bond_attributes_dict['no_bond'] = np.array([0]*8, dtype=np.float32)
+		bond_attributes_dict['no_bond'] = np.array([0]*14, dtype=np.float32)
 	
 	return bond_attributes_dict
 
