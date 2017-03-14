@@ -359,7 +359,36 @@ cdef class ReactionSystem(DASx):
             for l, spec in enumerate(network.source):
                 i = self.get_species_index(spec)
                 self.networkIndices[j,l] = i
-
+                                   
+    @cython.boundscheck(False)                               
+    cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,list surfSpeciesIndices):
+        """
+        determines the index under the surface layering constraint, all of the reactants or all of the products must be in the
+        bulk core (in the core, but not in the surface)
+        """
+        
+        cdef numpy.ndarray[numpy.int_t, ndim=1] sortedIndices
+        cdef int i,j,k,index, numCoreSpecies, numCoreReactions
+        
+        numCoreSpecies = self.numCoreSpecies
+        numCoreReactions = self.numCoreReactions
+        productIndices= self.productIndices
+        reactantIndices = self.reactantIndices
+        
+        sortedIndices = numpy.flipud(numpy.argsort(arr))
+        
+        for index in sortedIndices:
+            for j in productIndices[index+numCoreReactions]:
+                if j in surfSpeciesIndices or j >= numCoreSpecies:
+                    break
+            else:
+                return index
+            for j in reactantIndices[index+numCoreReactions]:
+                if j in surfSpeciesIndices or j >= numCoreSpecies:
+                    break
+            else:
+                return index
+        
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,list surfaceSpecies, list surfaceReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
@@ -856,3 +885,5 @@ class TerminationConversion:
     def __init__(self, spec=None, conv=0.0):
         self.species = spec
         self.conversion = conv
+
+############################
