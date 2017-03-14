@@ -595,8 +595,6 @@ class RMG(util.Subject):
                     toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
                     toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
                     toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
-                    toleranceMoveSurfaceSpeciesToCoreInterrupt = self.toleranceMoveSurfaceSpeciesToCoreInterrupt,
-                    toleranceMoveSurfaceReactionToCoreInterrupt = self.toleranceMoveSurfaceReactionToCoreInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
                     ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,

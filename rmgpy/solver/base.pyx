@@ -366,8 +366,7 @@ cdef class ReactionSystem(DASx):
         double toleranceMoveEdgeReactionToCore=numpy.inf,double toleranceMoveEdgeReactionToCoreInterrupt=numpy.inf,
         double toleranceMoveEdgeReactionToSurface=numpy.inf, double toleranceMoveSurfaceSpeciesToCore=numpy.inf,
         double toleranceMoveSurfaceReactionToCore=numpy.inf,
-        double toleranceMoveEdgeReactionToSurfaceInterrupt=numpy.inf, double toleranceMoveSurfaceSpeciesToCoreInterrupt=numpy.inf, 
-        double toleranceMoveSurfaceReactionToCoreInterrupt=numpy.inf,
+        double toleranceMoveEdgeReactionToSurfaceInterrupt=numpy.inf,
         list pdepNetworks=None, ignoreOverallFluxCriterion=False, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
         sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):

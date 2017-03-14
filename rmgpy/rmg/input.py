@@ -269,8 +269,6 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     rmg.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
     rmg.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
     rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurfaceInterrupt
-    rmg.toleranceMoveSurfaceSpeciesToCoreInterrupt = toleranceMoveSurfaceSpeciesToCoreInterrupt
-    rmg.toleranceMoveSurfaceReactionToCoreInterrupt = toleranceMoveSurfaceReactionToCoreInterrupt
     
 def quantumMechanics(
                     software,
