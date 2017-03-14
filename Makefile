@@ -20,7 +20,7 @@ minimal:
 main:
 	@ echo "Checking you have PyDQED..."
 	@ python -c 'import pydqed; print pydqed.__file__'
-	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
+	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp --inplace
 
 solver:
 
@@ -62,7 +62,7 @@ clean:
 	rm -rf build/
 	find . -name '*.so' -exec rm -f '{}' \;
 	find . -name '*.pyc' -exec rm -f '{}' \;
-	
+
 clean-solver:
 	rm -r build/pyrex/rmgpy/solver/
 	rm -r build/build/pyrex/rmgpy/solver/
@@ -80,7 +80,8 @@ ifeq ($(OS),Windows_NT)
 else
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+	coverage run -m nose --nocapture --nologcapture --all-modules --verbose --exe rmgpy
+	coverage html
 endif
 test-database:
 	nosetests -v -d testing/databaseTest.py	
