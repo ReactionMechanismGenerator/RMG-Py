@@ -175,6 +175,46 @@ class Test_Molecule_Tensor(unittest.TestCase):
 		self.assertTrue(is_bond_conjugated(bond45))
 		self.assertTrue(is_bond_conjugated(bond56))
 
+	def test_is_bond_in_ring(self):
+
+		mol_test = Molecule().fromAdjacencyList(
+"""1  C u0 p0 c0 {2,S} {11,S} {12,S} {13,S}
+2  C u0 p0 c0 {1,S} {3,S} {14,S} {15,S}
+3  C u0 p0 c0 {2,S} {4,S} {10,S} {16,S}
+4  C u0 p0 c0 {3,S} {5,S} {9,S} {17,S}
+5  C u0 p0 c0 {4,S} {6,S} {18,S} {19,S}
+6  S u0 p2 c0 {5,S} {7,S}
+7  C u0 p0 c0 {6,S} {8,S} {10,S} {20,S}
+8  C u0 p0 c0 {7,S} {9,S} {21,S} {22,S}
+9  C u0 p0 c0 {4,S} {8,S} {23,S} {24,S}
+10 C u0 p0 c0 {3,S} {7,S} {11,S} {25,S}
+11 C u0 p0 c0 {1,S} {10,S} {26,S} {27,S}
+12 H u0 p0 c0 {1,S}
+13 H u0 p0 c0 {1,S}
+14 H u0 p0 c0 {2,S}
+15 H u0 p0 c0 {2,S}
+16 H u0 p0 c0 {3,S}
+17 H u0 p0 c0 {4,S}
+18 H u0 p0 c0 {5,S}
+19 H u0 p0 c0 {5,S}
+20 H u0 p0 c0 {7,S}
+21 H u0 p0 c0 {8,S}
+22 H u0 p0 c0 {8,S}
+23 H u0 p0 c0 {9,S}
+24 H u0 p0 c0 {9,S}
+25 H u0 p0 c0 {10,S}
+26 H u0 p0 c0 {11,S}
+27 H u0 p0 c0 {11,S}
+"""
+)
+		atom4 = mol_test.atoms[4]
+		atom5 = mol_test.atoms[5]
+		bond45 = atom4.bonds[atom5]
+		bond45_in_rings = is_bond_in_ring(mol_test, bond45)
+		expected_bond45_in_rings = [0, 0, 0, 2, 0, 0]
+
+		self.assertEqual(bond45_in_rings, expected_bond45_in_rings)
+
 	def test_get_bond_attributes_1(self):
 
 		mol_test = Molecule().fromSMILES('CC')
