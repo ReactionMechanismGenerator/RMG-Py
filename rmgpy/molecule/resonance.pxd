@@ -5,7 +5,7 @@ cpdef list populateResonanceAlgorithms(dict features=?)
 
 cpdef dict analyzeMolecule(Molecule mol)
 
-cpdef list generateResonanceStructures(Molecule mol, bint clarStructures=?, bint keepIsomorphic=?)
+cpdef list generateResonanceStructures(Molecule mol, bint clarStructures=?, bint keepIsomorphic=?, bint keepInitial=?)
 
 cpdef list _generateResonanceStructures(list molList, list methodList, bint keepIsomorphic=?, bint copy=?)
 

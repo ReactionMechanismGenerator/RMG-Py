@@ -162,7 +162,7 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
 
-    def generateResonanceIsomers(self):
+    def generateResonanceIsomers(self, keepIsomorphic=False, keepInitial=False):
         """
         Generate all of the resonance isomers of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
@@ -170,7 +170,8 @@ class Species(object):
         resonance isomers have already been generated.
         """
         if len(self.molecule) == 1:
-            self.molecule = self.molecule[0].generateResonanceIsomers()
+            self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic=keepIsomorphic,
+                                                                      keepInitial=keepInitial)
     
     def isIsomorphic(self, other):
         """
