@@ -181,6 +181,28 @@ def is_bond_conjugated(bond):
 
 		return False
 
+def is_bond_in_ring(molecule, bond):
+	"""
+	Given a bond and the molecule it belongs to
+	return a list of counts, each count shows
+	the occurances where the bond is involved in
+	3, 4, 5, 6, 7, 8-member rings
+
+	For instance, a bond is in one 3-member ring and two 
+	5-member rings, the returned list would be
+	[1, 0, 2, 0, 0, 0]
+	"""
+	SSSR = molecule.getDeterministicSmallestSetOfSmallestRings()
+	bond_in_rings = [0]*6
+	atom1 = bond.atom1
+	atom2 = bond.atom2
+	for ring in SSSR:
+		if atom1 in ring and atom1 in ring :
+			idx = len(ring) - 3
+			bond_in_rings[idx] = bond_in_rings[idx] + 1
+
+	return bond_in_rings
+	
 def oneHotVector(val, lst):
 	'''Converts a value to a one-hot vector based on options in lst'''
 	if val not in lst:
