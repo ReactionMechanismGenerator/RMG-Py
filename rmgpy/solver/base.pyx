@@ -633,28 +633,32 @@ cdef class ReactionSystem(DASx):
                         consumption = coreSpeciesConsumptionRates[spcIndex]
                         if consumption != 0:
                             totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
-                        elif self.coreSpeciesConcentrations[spcIndex] == 0: 
+                        elif coreSpeciesConcentrations[spcIndex] == 0: 
                             totalDivAccumNums[index] *= 1.0 #if the species concentration is zero ignore
                         else:
                             zeroConsumption = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
                 if zeroConsumption:
+                    logging.warn('zero Consumption') #reversibility issues
                     break
                 for spcIndex in self.productIndices[index+numCoreReactions,:]:
                     if spcIndex != -1 and spcIndex<numCoreSpecies:
                         production = coreSpeciesProductionRates[spcIndex]
                         if production != 0:
                             totalDivAccumNums[index] *= (reactionRate+production)/production
-                        elif self.coreSpeciesConcentrations[spcIndex] == 0: 
+                        elif coreSpeciesConcentrations[spcIndex] == 0: 
                             totalDivAccumNums[index] *= 1.0 #if the species concentration is zero ignore
                         else:
                             zeroProduction = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
                 if zeroProduction:
+                    logging.warn('zero Production') #reversibility issues
                     break
+                
             #Get edge reaction with greatest total difference in Ln(accumulation number)
+            
             if len(totalDivAccumNums) > 0:
                 maxDifLnAccumNum = numpy.inf
                 if zeroConsumption:
