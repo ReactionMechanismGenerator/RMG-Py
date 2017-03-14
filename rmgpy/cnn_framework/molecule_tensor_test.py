@@ -228,6 +228,7 @@ class Test_Molecule_Tensor(unittest.TestCase):
 								0,
 								0,
 								0,
+								0, 0, 0, 0, 0, 0,
 								1]
 		expected_attributes = np.array(expected_attributes, dtype=np.float32)
 		for test_entry, expected_entry in zip(bond_attributes_dict[non_H_atoms[0].bonds[non_H_atoms[1]]], expected_attributes):
@@ -260,6 +261,7 @@ class Test_Molecule_Tensor(unittest.TestCase):
 								1,
 								1,
 								1,
+								0, 0, 0, 1, 0, 0,
 								1]
 		expected_attributes = np.array(expected_attributes, dtype=np.float32)
 		for test_entry, expected_entry in zip(bond_attributes_dict[non_H_atoms[0].bonds[non_H_atoms[1]]], expected_attributes):
