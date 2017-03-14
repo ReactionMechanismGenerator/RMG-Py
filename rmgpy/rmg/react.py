@@ -170,10 +170,10 @@ def deflateReaction(rxn, molDict):
     integer index, or either a Species object.
     """
 
-    for mol in itertools.chain(rxn.reactants, rxn.products):
-        if not mol in molDict:
-            molDict[mol] = Species(molecule=[mol])
+    for spc in itertools.chain(rxn.reactants, rxn.products):
+        if not spc.molecule[0] in molDict:
+            molDict[spc.molecule[0]] = spc
 
-    rxn.reactants = [molDict[mol] for mol in rxn.reactants]
-    rxn.products = [molDict[mol] for mol in rxn.products]
-    rxn.pairs = [(molDict[reactant], molDict[product]) for reactant, product in rxn.pairs]
+    rxn.reactants = [molDict[spc.molecule[0]] for spc in rxn.reactants]
+    rxn.products = [molDict[spc.molecule[0]] for spc in rxn.products]
+    rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]

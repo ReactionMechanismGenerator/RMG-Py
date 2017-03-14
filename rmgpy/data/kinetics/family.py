@@ -1286,6 +1286,10 @@ class KineticsFamily(Database):
             elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
                 return None
 
+        # Convert to species objects
+        reactants = [Species(molecule=[mol]) for mol in reactants]
+        products = [Species(molecule=[mol]) for mol in products]
+
         # Create and return template reaction object
         reaction = TemplateReaction(
             reactants = reactants if isForward else products,
@@ -1299,7 +1303,7 @@ class KineticsFamily(Database):
         # (e.g. for generating reaction pairs and templates)
         labeledAtoms = []
         for reactant in reaction.reactants:
-            for label, atom in reactant.getLabeledAtoms().items():
+            for label, atom in reactant.molecule[0].getLabeledAtoms().items():
                 labeledAtoms.append((label, atom))
         reaction.labeledAtoms = labeledAtoms
         
@@ -1333,6 +1337,14 @@ class KineticsFamily(Database):
         The reactions are constructed such that the forward direction is
         consistent with the template of this reaction family.
         """
+        if isinstance(reactants, tuple):
+            reactants = list(reactants)
+        # We want to work with species objects
+        for i, reactant in enumerate(reactants):
+            if isinstance(reactant, Molecule):
+                reactants[i] = Species(molecule=[reactant])
+            elif isinstance(reactant, list):
+                reactants[i] = Species(molecule=reactant)
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
@@ -1419,15 +1431,20 @@ class KineticsFamily(Database):
         isomer of the species of interest.
         """
 
-        rxnList = []; speciesList = []
+        for i, reactant in enumerate(reactants):
+            if isinstance(reactant, Molecule):
+                reactants[i] = Species(molecule=[reactant])
+            elif isinstance(reactant, list):
+                reactants[i] = Species(molecule=reactant)
+        if products is not None:
+            for i, product in enumerate(products):
+                if isinstance(product, Molecule):
+                    products[i] = Species(molecule=[product])
+                elif isinstance(product, list):
+                    products[i] = Species(molecule=product)
 
-        # Wrap each reactant in a list if not already done (this is done to 
-        # allow for passing multiple resonance structures for each molecule)
-        # This also makes a copy of the reactants list so we don't modify the
-        # original
-        reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
+        rxnList = []
 
-                    
         if forward:
             template = self.forwardTemplate
         elif self.reverseTemplate is None:
@@ -1439,7 +1456,7 @@ class KineticsFamily(Database):
         if len(reactants) == 1 and len(template.reactants) == 1:
 
             # Iterate over all resonance isomers of the reactant
-            for molecule in reactants[0]:
+            for molecule in reactants[0].molecule:
 
                 mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
                 for map in mappings:
@@ -1456,8 +1473,8 @@ class KineticsFamily(Database):
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template.reactants) == 2:
 
-            moleculesA = reactants[0]
-            moleculesB = reactants[1]
+            moleculesA = reactants[0].molecule
+            moleculesB = reactants[1].molecule
 
             # Iterate over all resonance isomers of the reactant
             for moleculeA in moleculesA:
@@ -1502,9 +1519,11 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            
-            products = [product.generateResonanceIsomers() for product in products]
-            
+
+            for product in products:
+                assert isinstance(product, Species)
+                product.generateResonanceIsomers()
+
             rxnList0 = rxnList[:]
             rxnList = []
             index = 0
@@ -1513,30 +1532,21 @@ class KineticsFamily(Database):
                 products0 = reaction.products if forward else reaction.reactants
 
                 # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
-                for i in range(len(products0)):
-                    if products0[i].isCyclic:
-                        aromaticStructs = generateAromaticResonanceStructures(products0[i])
-                        if aromaticStructs:
-                            products0[i] = aromaticStructs[0]
+                for product0 in products0:
+                    product0.molecule.extend(generateAromaticResonanceStructures(product0.molecule[0]))
 
                 # Skip reactions that don't match the given products
                 match = False
 
                 if len(products) == len(products0) == 1:
-                    for product in products[0]:
-                        if products0[0].isIsomorphic(product):
-                            match = True
-                            break
+                    if products0[0].isIsomorphic(products[0]):
+                        match = True
                 elif len(products) == len(products0) == 2:
-                    for productA in products[0]:
-                        for productB in products[1]:
-                            if products0[0].isIsomorphic(productA) and products0[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
-                                match = True
-                                break
-                    
+                    if products0[0].isIsomorphic(products[0]) and products0[1].isIsomorphic(products[1]):
+                        match = True
+                    elif products0[0].isIsomorphic(products[1]) and products0[1].isIsomorphic(products[0]):
+                        match = True
+
                 if match: 
                     rxnList.append(reaction)
             
@@ -1547,19 +1557,16 @@ class KineticsFamily(Database):
         # We want to sort all the reactions into sublists composed of isomorphic reactions
         rxnSorted = []
         for rxn0 in rxnList:
-            # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
-            for i in range(len(rxn0.products)):
-                if rxn0.products[i].isCyclic:
-                    aromaticStructs = generateAromaticResonanceStructures(rxn0.products[i])
-                    if aromaticStructs:
-                        rxn0.products[i] = aromaticStructs[0]
+
+            products0 = rxn0.products if forward else rxn0.reactants
+            for product in products0:
+                assert isinstance(product, Species)
+                product.generateResonanceIsomers(keepIsomorphic=True, keepInitial=True, replaceExisting=True)
+
             if len(rxnSorted) == 0:
                 # This is the first reaction, so create a new sublist
                 rxnSorted.append([rxn0])
             else:
-                products0 = rxn0.products if forward else rxn0.reactants
-                products0 = [product.generateResonanceIsomers(keepIsomorphic=True) for product in products0]
-
                 # Loop through each sublist, which represents a unique reaction
                 for rxnList1 in rxnSorted:
                     # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
@@ -1570,28 +1577,22 @@ class KineticsFamily(Database):
 
                         # We know the reactants are the same, so we only need to compare the products
                         if len(products) == len(products0) == 1:
-                            for product in products0[0]:
-                                if products[0].isIdentical(product):
-                                    identical = True
-                                    isomorphic = True
-                                    break
-                                elif not isomorphic and products[0].isIsomorphic(product):
-                                    isomorphic = True
+                            if products[0].isIdentical(products0[0]):
+                                identical = True
+                                isomorphic = True
+                            elif not isomorphic and products[0].isIsomorphic(products0[0]):
+                                isomorphic = True
                         elif len(products) == len(products0) == 2:
-                            for productA in products0[0]:
-                                for productB in products0[1]:
-                                    if products[0].isIdentical(productA) and products[1].isIdentical(productB):
-                                        identical = True
-                                        isomorphic = True
-                                        break
-                                    elif products[0].isIdentical(productB) and products[1].isIdentical(productA):
-                                        identical = True
-                                        isomorphic = True
-                                        break
-                                    elif not isomorphic and products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                                        isomorphic = True
-                                    elif not isomorphic and products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                                        isomorphic = True
+                            if products[0].isIdentical(products0[0]) and products[1].isIdentical(products0[1]):
+                                identical = True
+                                isomorphic = True
+                            elif products[0].isIdentical(products0[1]) and products[1].isIdentical(products0[0]):
+                                identical = True
+                                isomorphic = True
+                            elif not isomorphic and products[0].isIsomorphic(products0[0]) and products[1].isIsomorphic(products0[1]):
+                                isomorphic = True
+                            elif not isomorphic and products[0].isIsomorphic(products0[1]) and products[1].isIsomorphic(products0[0]):
+                                isomorphic = True
 
                         if identical:
                             # An exact copy of rxn0 is already in our list, so we can move on to the next rxn
@@ -1627,7 +1628,8 @@ class KineticsFamily(Database):
             
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
-                reactant.clearLabeledAtoms()
+                for mol in reactant.molecule:
+                    mol.clearLabeledAtoms()
             for label, atom in reaction.labeledAtoms:
                 atom.label = label
             
@@ -1665,20 +1667,20 @@ class KineticsFamily(Database):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
-            if reaction.reactants[0].containsLabeledAtom('*1'):
-                if reaction.products[0].containsLabeledAtom('*3'):
+            if reaction.reactants[0].molecule[0].containsLabeledAtom('*1'):
+                if reaction.products[0].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
                     pairs.append([reaction.reactants[1],reaction.products[1]])
-                elif reaction.products[1].containsLabeledAtom('*3'):
+                elif reaction.products[1].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
-            elif reaction.reactants[1].containsLabeledAtom('*1'):
-                if reaction.products[1].containsLabeledAtom('*3'):
+            elif reaction.reactants[1].molecule[0].containsLabeledAtom('*1'):
+                if reaction.products[1].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
                     pairs.append([reaction.reactants[1],reaction.products[1]])
-                elif reaction.products[0].containsLabeledAtom('*3'):
+                elif reaction.products[0].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
@@ -1687,20 +1689,20 @@ class KineticsFamily(Database):
             # Hardcoding for disproportionation: pair the reactant containing
             # *1 with the product containing *1
             assert len(reaction.reactants) == len(reaction.products) == 2
-            if reaction.reactants[0].containsLabeledAtom('*1'):
-                if reaction.products[0].containsLabeledAtom('*1'):
+            if reaction.reactants[0].molecule[0].containsLabeledAtom('*1'):
+                if reaction.products[0].molecule[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
                     pairs.append([reaction.reactants[1],reaction.products[1]])
-                elif reaction.products[1].containsLabeledAtom('*1'):
+                elif reaction.products[1].molecule[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
-            elif reaction.reactants[1].containsLabeledAtom('*1'):
-                if reaction.products[1].containsLabeledAtom('*1'):
+            elif reaction.reactants[1].molecule[0].containsLabeledAtom('*1'):
+                if reaction.products[1].molecule[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
                     pairs.append([reaction.reactants[1],reaction.products[1]])
-                elif reaction.products[0].containsLabeledAtom('*1'):
+                elif reaction.products[0].molecule[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
@@ -1709,20 +1711,20 @@ class KineticsFamily(Database):
             # Hardcoding for Substitution_O: pair the reactant containing
             # *2 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
-            if reaction.reactants[0].containsLabeledAtom('*2'):
-                if reaction.products[0].containsLabeledAtom('*3'):
+            if reaction.reactants[0].molecule[0].containsLabeledAtom('*2'):
+                if reaction.products[0].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
                     pairs.append([reaction.reactants[1],reaction.products[1]])
-                elif reaction.products[1].containsLabeledAtom('*3'):
+                elif reaction.products[1].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
-            elif reaction.reactants[1].containsLabeledAtom('*2'):
-                if reaction.products[1].containsLabeledAtom('*3'):
+            elif reaction.reactants[1].molecule[0].containsLabeledAtom('*2'):
+                if reaction.products[1].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
                     pairs.append([reaction.reactants[1],reaction.products[1]])
-                elif reaction.products[0].containsLabeledAtom('*3'):
+                elif reaction.products[0].molecule[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
