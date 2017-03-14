@@ -543,6 +543,10 @@ cdef class ReactionSystem(DASx):
             edgeSpeciesRateRatios = numpy.abs(self.edgeSpeciesRates/charRate)
             networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
             numEdgeReactions = self.numEdgeReactions
+            coreReactionRates = self.coreReactionRates
+            productIndices = self.productIndices
+            reactantIndices = self.reactantIndices
+            coreSpeciesConcentrations = self.coreSpeciesConcentrations
             
             # Update the maximum species rate and maximum network leak rate arrays
             for index in xrange(numCoreSpecies):
