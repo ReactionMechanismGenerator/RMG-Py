@@ -224,18 +224,57 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
-        
-        self.surfaceSpeciesIndices = numpy.zeros(len(surfaceSpecies),dtype=numpy.int)
-        self.surfaceReactionIndices = numpy.zeros(len(surfaceReactions),dtype=numpy.int)
-        
-        for i in range(len(surfaceSpecies)):
-            self.surfaceSpeciesIndices[i] = coreSpecies.index(surfaceSpecies[i])
-        for i in range(len(surfaceReactions)):
-            self.surfaceReactionIndices[i] = coreReactions.index(surfaceReactions[i]) 
 
+        self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+        
+        
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
-
+    
+    def initialize_surface(self,coreSpecies,coreReactions,surfaceSpecies,surfaceReactions):
+#        cdef list productIndices,reactantIndices, surfaceSpeciesIndices, surfaceReationIndices
+#        cdef set possibleSpeciesIndices
+#        cdef int i,j
+#        cdef bool notInSurface
+        
+        logging.info('initializing surface')
+        productIndices = self.productIndices
+        reactantIndices = self.reactantIndices
+        
+        surfaceSpeciesIndices = []
+        surfaceReactionIndices = []
+        possibleSpeciesIndices = set()
+        
+        for i in range(len(surfaceSpecies)):
+            surfaceSpeciesIndices.append(coreSpecies.index(surfaceSpecies[i]))
+        for i in range(len(surfaceReactions)):
+            surfaceReactionIndices.append(coreReactions.index(surfaceReactions[i]))
+        
+        for i in surfaceReactionIndices: #remove surface reactions whose species have been moved to the bulk core
+            notInSurface = True
+            for j in productIndices[i]:
+                possibleSpeciesIndices.add(j)
+                if j in surfaceSpeciesIndices:
+                    notInSurface = False
+            for j in reactantIndices[i]:
+                possibleSpeciesIndices.add(j)
+                if j in surfaceSpeciesIndices:
+                    notInSurface = False
+            if notInSurface:
+                surfaceReactions.remove(coreReactions[i])
+                surfaceReactionIndices.remove(i)
+        
+        for i in surfaceSpeciesIndices: #remove species without reactions in the surface
+            if not(i in possibleSpeciesIndices):
+                surfaceSpecies.remove(coreSpecies[i])
+                surfaceSpeciesIndices.remove(i)
+        
+        self.surfaceSpeciesIndices = surfaceSpeciesIndices
+        self.surfaceReactionIndices = surfaceReactionIndices
+        
+        return
+        
+        
     def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
         Computes the number of differential equations and initializes the tolerance arrays.        
