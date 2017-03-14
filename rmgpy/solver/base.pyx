@@ -856,3 +856,16 @@ class TerminationConversion:
     def __init__(self, spec=None, conv=0.0):
         self.species = spec
         self.conversion = conv
+############################
+
+def getReverseSortedIndices(arr):
+    """
+    returns the indices of arr in order of decreasing value of arr[i] such that arr[out[i+1]] < arr[out[i]]
+    making arr[out[-1]] the minimum and arr[out[0]] the maximum value
+    """
+    out = sorted(xrange(0,len(arr)),key=lambda x: arr[x])
+    out.reverse()
+    return numpy.array(out)
+
+
+    
