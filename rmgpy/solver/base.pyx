@@ -179,7 +179,8 @@ cdef class ReactionSystem(DASx):
         A helper function used when pickling an object.
         """
         return (self.__class__, (self.termination,))
-
+    
+     
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies,
                           list surfaceReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
                           sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
@@ -189,7 +190,6 @@ cdef class ReactionSystem(DASx):
         method in the derived class; don't forget to also call the base class
         version, too.
         """
-
         self.numCoreSpecies = len(coreSpecies)
         self.numCoreReactions = len(coreReactions)
         self.numEdgeSpecies = len(edgeSpecies)
@@ -464,12 +464,17 @@ cdef class ReactionSystem(DASx):
         cdef bint terminated
         cdef object maxSpecies, maxNetwork, 
         cdef int i, j, k
+        cdef numpy.float64_t maxSurfaceDifLnAccumNum, maxSurfaceSpeciesRate 
+        cdef int maxSurfaceAccumReactionIndex, ind, maxSurfaceSpeciesIndex
+        cdef object maxSurfaceAccumReaction, maxSurfaceSpecies
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
         cdef bool zeroProduction, zeroConsumption
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
-        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
+        cdef list surfaceSpeciesIndices, surfaceReactionIndices
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
@@ -497,7 +502,7 @@ cdef class ReactionSystem(DASx):
         logging.info(self.surfaceSpeciesIndices)
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
-        
+        surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
         invalidObject = None
         terminated = False
         maxSpeciesIndex = -1
@@ -530,9 +535,9 @@ cdef class ReactionSystem(DASx):
             # identify sensitive species indices
             sensSpeciesIndices = numpy.array([speciesIndex[spec] for spec in self.sensitiveSpecies], numpy.int)  # index within coreSpecies list of the sensitive species
                 
-        
         stepTime = 1e-12
         prevTime = self.t
+        
         while not terminated:
             # Integrate forward in time by one time step
             try:
