@@ -709,6 +709,93 @@ cdef class ReactionSystem(DASx):
                 maxNetwork = pdepNetworks[maxNetworkIndex]
                 maxNetworkRate = networkLeakRates[maxNetworkIndex]
                 
+            #calculate criteria for surface species
+            surfaceTotalDivAccumNums = numpy.zeros(len(surfaceReactionIndices))
+            
+            for i in xrange(len(surfaceReactionIndices)):
+                index = surfaceReactionIndices[index]
+                reactionRate = coreReactionRates[index]
+                for spcIndex in reactantIndices[index+numCoreReactions,:]:
+                    if spcIndex != -1 and spcIndex<numCoreSpecies:
+                        consumption = coreSpeciesConsumptionRates[spcIndex]
+                        if consumption != 0:
+                            surfaceTotalDivAccumNums[index] *= (reactionRate+consumption)/consumption
+                        elif coreSpeciesConcentrations[spcIndex] == 0: 
+                            surfaceTotalDivAccumNums[index] *= 1.0 #if the species concentration is zero ignore
+                        else:
+                            zeroConsumption = True #otherwise include edge reaction with most flux
+                            surfaceInfAccumNumIndex = spcIndex
+                            break
+                if zeroConsumption:
+                    logging.warn('zero Consumption') #reversibility issues
+                    break
+                for spcIndex in productIndices[index+numCoreReactions,:]:
+                    if spcIndex != -1 and spcIndex<numCoreSpecies:
+                        production = coreSpeciesProductionRates[spcIndex]
+                        if production != 0:
+                            surfaceTotalDivAccumNums[index] *= (reactionRate+production)/production
+                        elif coreSpeciesConcentrations[spcIndex] == 0: 
+                            surfaceTotalDivAccumNums[index] *= 1.0 #if the species concentration is zero ignore
+                        else:
+                            zeroProduction = True #otherwise include edge reaction with most flux
+                            infAccumNumIndex = spcIndex
+                            break
+                if zeroProduction:
+                    logging.warn('zero Production') #reversibility issues
+                    break
+                
+            #Get edge reaction with greatest total difference in Ln(accumulation number)
+            
+            if len(surfaceTotalDivAccumNums) > 0:
+                maxSurfaceDifLnAccumNum = numpy.inf
+                if zeroConsumption:
+                    for index in xrange(numEdgeReactions):
+                        maxEdgeReactionAccum = 0.0 
+                        maxAccumReactionIndex = -1
+                        if surfaceInfAccumNumIndex in reactantIndices[index+numCoreReactions]:
+                            reactionRate = edgeReactionRates[index]
+                            if reactionRate > maxEdgeReactionAccum:
+                                maxEdgeReactionAccum = reactionRate
+                                maxAccumReactionIndex = index
+                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                elif zeroProduction:
+                    for index in xrange(numEdgeReactions):
+                        maxEdgeReactionAccum = 0.0
+                        maxAccumReactionIndex = -1
+                        if infAccumNumIndex in productIndices[index+numCoreReactions]:
+                            reactionRate = edgeReactionRates[index]
+                            if reactionRate > maxEdgeReactionAccum:
+                                maxEdgeReactionAccum = reactionRate
+                                maxAccumReactionIndex = index
+                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                elif len(totalDivAccumNums)>0: 
+                    maxSurfaceAccumReactionIndex = numpy.argmax(surfaceTotalDivAccumNums)
+                    maxSurfaceAccumReaction = coreReactions[maxSurfaceAccumReactionIndex]
+                    maxSurfaceDifLnAccumNum = numpy.log(surfaceTotalDivAccumNums[maxSurfaceAccumReactionIndex])
+            else:
+                maxSurfaceAccumReactionIndex = -1
+                maxSurfaceAccumReaction = None
+                maxSurfaceDifLnAccumNum = 0.0
+                
+            # Get the surface species with the highest flux
+            surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
+            surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
+            for i in xrange(len(surfaceSpeciesIndices)):
+                surfaceSpeciesRates[i] = max(surfaceSpeciesProduction[i],surfaceSpeciesConsumption[i])
+                
+            if len(surfaceSpeciesIndices) > 0:
+                ind = numpy.argmax(surfaceSpeciesRates)
+                maxSurfaceSpeciesIndex = surfaceSpeciesIndices[ind]
+                maxSurfaceSpecies = coreSpecies[maxSurfaceSpeciesIndex]
+                maxSurfaceSpeciesRate = surfaceSpeciesRates[ind]
+            else:
+                maxSurfaceSpeciesIndex = -1
+                maxSurfaceSpecies = None
+                maxSurfaceSpeciesRate = 0.0
+
+            
+            
+            
             
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
