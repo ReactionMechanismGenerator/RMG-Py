@@ -1624,10 +1624,17 @@ class ThermoDatabase(object):
         # apply formula: 
         # bicyclic correction ~= saturated bicyclic correction - 
         # saturated single ring corrections + single ring corrections
+        estimated_bicyclic_thermodata = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
         saturated_bicyclic_thermoData = self.__addRingCorrectionThermoDataFromTree(None, 
                 self.groups['polycyclic'], saturated_bicyclic_submol, saturated_bicyclic_submol.atoms)[0]
 
-        estimated_bicyclic_thermodata = saturated_bicyclic_thermoData
+        estimated_bicyclic_thermodata = addThermoData(estimated_bicyclic_thermodata,\
+                                            saturated_bicyclic_thermoData , groupAdditivity=True)
         
         for submol in saturated_single_ring_submols:
             
