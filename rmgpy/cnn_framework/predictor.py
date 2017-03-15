@@ -101,7 +101,8 @@ class Predictor(object):
 
 	def predict(self, molecule):
 
-		molecule_tensor = get_molecule_tensor(molecule)
+		molecule_tensor = get_molecule_tensor(molecule, \
+							self.add_extra_atom_attribute, self.add_extra_bond_attribute)
 
 		molecule_tensor_array = np.array([molecule_tensor])
 		return self.model.predict(molecule_tensor_array)[0][0]
