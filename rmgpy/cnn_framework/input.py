@@ -2,22 +2,30 @@
 import os
 import logging
 from .cnn_model import build_model
+from rmgpy.cnn_framework.molecule_tensor import get_attribute_vector_size
 
 predictor = None
 
 def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2, 
+                add_extra_atom_attribute=True, add_extra_bond_attribute=True,
                 scale_output=0.05, padding=False, 
                 hidden=0, hidden_activation='tanh',
                 output_activation='linear', output_size=1, 
                 lr=0.01, optimizer='adam', loss='mse'):
     
-    model = build_model(embedding_size, attribute_vector_size, depth, 
+    if attribute_vector_size is None:
+        attribute_vector_size = get_attribute_vector_size(\
+                                    add_extra_atom_attribute, add_extra_bond_attribute)
+    
+    model = build_model(embedding_size, attribute_vector_size, depth,
                 scale_output, padding, 
                 hidden, hidden_activation,
                 output_activation, output_size, 
                 lr, optimizer, loss)
     
     predictor.model = model
+    predictor.add_extra_atom_attribute = add_extra_atom_attribute
+    predictor.add_extra_bond_attribute = add_extra_bond_attribute
 
 def read_input_file(path, predictor0):
 
