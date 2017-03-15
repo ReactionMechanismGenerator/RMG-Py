@@ -1,7 +1,7 @@
 
 import numpy as np
 
-def get_molecule_tensor(molecule):
+def get_molecule_tensor(molecule, add_extra_atom_attribute=True, add_extra_bond_attribute=True):
 
 	"""
 	this method takes RMG `Molecule` object and vectorize 
@@ -11,8 +11,8 @@ def get_molecule_tensor(molecule):
 	non_H_atoms = [atom0 for atom0 in molecule.atoms if not atom0.isHydrogen()]
 	non_H_atom_num = len(non_H_atoms)
 	
-	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms)
-	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms)
+	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms, add_extra_atom_attribute)
+	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms, add_extra_bond_attribute)
 
 	atom_attribute_num = len(atom_attributes_dict.values()[0])
 	bond_attribute_num = len(bond_attributes_dict.values()[0])
@@ -29,7 +29,7 @@ def get_molecule_tensor(molecule):
 
 	return molecule_tensor
 
-def get_attribute_vector_size():
+def get_attribute_vector_size(add_extra_atom_attribute=True, add_extra_bond_attribute=True):
 
 	"""
 	this method examines current feature engineering setup
@@ -40,8 +40,8 @@ def get_attribute_vector_size():
 	molecule = Molecule().fromSMILES('CC')
 	non_H_atoms = [atom0 for atom0 in molecule.atoms if not atom0.isHydrogen()]
 	
-	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms)
-	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms)
+	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms, add_extra_atom_attribute)
+	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms, add_extra_bond_attribute)
 
 	atom_attribute_num = len(atom_attributes_dict.values()[0])
 	bond_attribute_num = len(bond_attributes_dict.values()[0])
@@ -49,7 +49,7 @@ def get_attribute_vector_size():
 
 	return attribute_num
 
-def get_atom_attributes(molecule, non_H_atoms):
+def get_atom_attributes(molecule, non_H_atoms, add_extra_attribute=True):
 
 	"""
 	this method takes a molecule with hydrogen pre-removed and returns a dict
@@ -91,7 +91,8 @@ def get_atom_attributes(molecule, non_H_atoms):
 		attributes.append(is_aromatic)
 
 		# add atom in i-member rings
-		attributes += is_atom_in_ring(molecule, atom)
+		if add_extra_attribute:
+			attributes += is_atom_in_ring(molecule, atom)
 
 		atom_attributes_dict[atom] = np.array(attributes, dtype=np.float32)
 	
@@ -117,7 +118,7 @@ def is_atom_in_ring(molecule, atom):
 
 	return atom_in_rings
 
-def get_bond_attributes(molecule, non_H_atoms):
+def get_bond_attributes(molecule, non_H_atoms, add_extra_attribute=True):
 	"""
 	this method takes a molecule with hydrogen pre-removed and returns a dict
 	with bond as key, bond attributes as value
@@ -136,7 +137,8 @@ def get_bond_attributes(molecule, non_H_atoms):
 				
 				attributes.append(molecule.__isChainInCycle([bond.atom1, bond.atom2]))
 
-				attributes.extend(is_bond_in_ring(molecule, bond))
+				if add_extra_attribute:
+					attributes.extend(is_bond_in_ring(molecule, bond))
 
 				# add if connected
 				attributes.append(1)
