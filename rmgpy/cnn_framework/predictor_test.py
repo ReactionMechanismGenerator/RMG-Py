@@ -5,7 +5,6 @@ import unittest
 import os
 import rmgpy
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.cnn_framework.molecule_tensor import get_attribute_vector_size
 
 class Test_Predictor(unittest.TestCase):
 
@@ -21,7 +20,7 @@ class Test_Predictor(unittest.TestCase):
 		self.assertTrue(isinstance(predictor_model.layers[0], GraphFP))
 		self.assertTrue(isinstance(predictor_model.layers[1], Dense))
 
-		self.assertEqual(predictor_model.layers[0].inner_dim, get_attribute_vector_size()-1)
+		self.assertEqual(predictor_model.layers[0].inner_dim, 32)
 		self.assertEqual(predictor_model.layers[0].output_dim, 512)
 
 	def test_load_input(self):
@@ -44,17 +43,17 @@ class Test_Predictor(unittest.TestCase):
 		dense1 = self.predictor.model.layers[1]
 		dense2 = self.predictor.model.layers[2]
 
-		self.assertEqual(gfp.W_inner.shape.eval()[0], 6)
-		self.assertEqual(gfp.W_inner.shape.eval()[1], 32)
-		self.assertEqual(gfp.W_inner.shape.eval()[2], 32)
-		self.assertEqual(gfp.b_inner.shape.eval()[0], 6)
+		self.assertEqual(gfp.W_inner.shape.eval()[0], 3)
+		self.assertEqual(gfp.W_inner.shape.eval()[1], 38)
+		self.assertEqual(gfp.W_inner.shape.eval()[2], 38)
+		self.assertEqual(gfp.b_inner.shape.eval()[0], 3)
 		self.assertEqual(gfp.b_inner.shape.eval()[1], 1)
-		self.assertEqual(gfp.b_inner.shape.eval()[2], 32)
+		self.assertEqual(gfp.b_inner.shape.eval()[2], 38)
 
-		self.assertEqual(gfp.W_output.shape.eval()[0], 6)
-		self.assertEqual(gfp.W_output.shape.eval()[1], 32)
+		self.assertEqual(gfp.W_output.shape.eval()[0], 3)
+		self.assertEqual(gfp.W_output.shape.eval()[1], 38)
 		self.assertEqual(gfp.W_output.shape.eval()[2], 512)
-		self.assertEqual(gfp.b_output.shape.eval()[0], 6)
+		self.assertEqual(gfp.b_output.shape.eval()[0], 3)
 		self.assertEqual(gfp.b_output.shape.eval()[1], 1)
 		self.assertEqual(gfp.b_output.shape.eval()[2], 512)
 
@@ -88,16 +87,16 @@ class Test_Predictor(unittest.TestCase):
 		dense1 = self.predictor.model.layers[1]
 		dense2 = self.predictor.model.layers[2]
 
-		self.assertAlmostEqual(gfp.W_inner.eval()[0][0][0], 1.050, 3)
-		self.assertAlmostEqual(gfp.b_inner.eval()[0][0][0], 0.036, 3)
-		self.assertAlmostEqual(gfp.W_output.eval()[0][0][0], 0.181, 3)
-		self.assertAlmostEqual(gfp.b_output.eval()[0][0][0], 0.071, 3)
+		self.assertAlmostEqual(gfp.W_inner.eval()[0][0][0], 0.950, 3)
+		self.assertAlmostEqual(gfp.b_inner.eval()[0][0][0], 0.028, 3)
+		self.assertAlmostEqual(gfp.W_output.eval()[0][0][0], -0.203, 3)
+		self.assertAlmostEqual(gfp.b_output.eval()[0][0][0], -0.014, 3)
 
-		self.assertAlmostEqual(dense1.W.eval()[0][0], 0.344, 3)
-		self.assertAlmostEqual(dense1.b.eval()[0], 0.486, 3)
+		self.assertAlmostEqual(dense1.W.eval()[0][0], 0.191, 3)
+		self.assertAlmostEqual(dense1.b.eval()[0], -0.024, 3)
 
-		self.assertAlmostEqual(dense2.W.eval()[0][0], 3.284, 3)
-		self.assertAlmostEqual(dense2.b.eval()[0], 3.074, 3)
+		self.assertAlmostEqual(dense2.W.eval()[0][0], 2.987, 3)
+		self.assertAlmostEqual(dense2.b.eval()[0], 2.874, 3)
 		
 	def test_predict(self):
 		"""
@@ -112,6 +111,8 @@ class Test_Predictor(unittest.TestCase):
 											'predictor_input.py'
 											)
 		self.predictor.load_input(test_predictor_input)
+		self.assertTrue(self.predictor.add_extra_atom_attribute)
+		self.assertFalse(self.predictor.add_extra_bond_attribute)
 
 		param_path = os.path.join(os.path.dirname(rmgpy.__file__),
 											'cnn_framework',
@@ -125,4 +126,4 @@ class Test_Predictor(unittest.TestCase):
 
 		h298_predicted = self.predictor.predict(mol_test)
 
-		self.assertAlmostEqual(h298_predicted, 30.16, 1)
+		self.assertAlmostEqual(h298_predicted, 7.4, 0)
