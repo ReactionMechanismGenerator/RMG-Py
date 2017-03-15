@@ -238,9 +238,8 @@ def solvation(solvent):
 
 def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
-          toleranceMoveEdgeReactionToSurfaceInterrupt=numpy.inf, toleranceMoveSurfaceSpeciesToCoreInterrupt=numpy.inf, 
-          toleranceMoveSurfaceReactionToCoreInterrupt=numpy.inf,
-          toleranceReactionInterruptSimulation=numpy.inf, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
+          toleranceMoveEdgeReactionToSurfaceInterrupt=None,
+          toleranceReactionInterruptSimulation=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
@@ -268,7 +267,21 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     rmg.toleranceMoveEdgeReactionToSurface = toleranceMoveEdgeReactionToSurface
     rmg.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
     rmg.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
-    rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurfaceInterrupt
+    
+    if toleranceInterruptSimulation:
+        rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
+    else:
+        rmg.fluxToleranceInterrupt = toleranceMoveToCore
+        
+    if toleranceMoveEdgeReactionToSurfaceInterrupt:
+        rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurfaceInterrupt
+    else:
+        rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurface
+    
+    if toleranceReactionInterruptSimulation:
+        rmg.toleranceReactionInterruptSimulation = toleranceReactionInterruptSimulation
+    else:
+        rmg.toleranceReactionInterruptSimulation = toleranceMoveEdgeReactionToCore
     
 def quantumMechanics(
                     software,
