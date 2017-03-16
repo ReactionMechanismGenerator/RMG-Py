@@ -27,7 +27,7 @@
 
 """
 This module contains graph ismorphism functions that implement the VF2
-algorithm of Vento and Foggia.
+algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
 """
 
 cimport cython
@@ -203,6 +203,17 @@ cdef class VF2:
             return True
 
         # Create list of pairs of candidates for inclusion in mapping
+        """
+        10.1109/TPAMI.2004.75 says:
+        "The set P(s) will be made of all the node pairs (n,m),
+        with n belonging to T1out(s) and m to T2out(s),
+        unless one of these two sets is empty. In this case,
+        the set P(s) is likewise obtained by considering
+        T1in(s) and T2in(s), respectively."
+
+        But: for us, bonds are not directional, so ignore Tin(s)
+        and just use Tout(s) which is what we call "terminals".
+        """
         hasTerminals = False
         for vertex2 in self.graph2.vertices:
             if vertex2.ignore:
@@ -212,14 +223,32 @@ cdef class VF2:
                 hasTerminals = True
                 break
         else:
-            vertex2 = self.graph2.vertices[0]
-            
+            """
+            "In presence of not connected graphs, for some state s,
+            all of the above sets may be empty. In this case,
+            the set of candidate pairs making up P(s) will be
+            the set Pd(s) of all the pairs of nodes not contained
+            neither in G1(s) nor in G2(s)."
+
+            So: use nodes not yet mapped.
+            """
+            # Take first unmapped vertex
+            for vertex2 in self.graph2.vertices:
+                if vertex2.mapping is None:
+                    break
+            else:
+                raise VF2Error("Still seeking candidate pairs but all nodes in graph2 are already mapped.")
+
         for vertex1 in self.graph1.vertices:
             if vertex1.ignore:
                 continue
             # If terminals are available, then skip vertices in the first
             # graph that are not terminals
-            if hasTerminals and not vertex1.terminal: continue
+            if hasTerminals and not vertex1.terminal:
+                continue
+            # Otherwise take any node that is not already matched
+            if vertex1.mapping is not None:
+                continue
             # Propose a pairing
             if self.feasible(vertex1, vertex2):
                 # Add proposed match to mapping
@@ -230,7 +259,7 @@ cdef class VF2:
                     return True
                 # Undo proposed match
                 self.removeFromMapping(vertex1, vertex2)
-                
+
         # None of the proposed matches led to a complete isomorphism, so return False
         return False     
         
