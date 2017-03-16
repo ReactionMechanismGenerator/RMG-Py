@@ -48,7 +48,7 @@ cdef class Species:
     cdef public dict props
     cdef public str aug_inchi
     
-    cpdef generateResonanceIsomers(self, bint keepIsomorphic=?, bint keepInitial=?)
+    cpdef generateResonanceIsomers(self, bint keepIsomorphic=?, bint keepInitial=?, bint replaceExisting=?)
     
     cpdef bint isIsomorphic(self, other) except -2
 

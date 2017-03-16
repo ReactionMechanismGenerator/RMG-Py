@@ -162,14 +162,19 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
 
-    def generateResonanceIsomers(self, keepIsomorphic=False, keepInitial=False):
+    def generateResonanceIsomers(self, keepIsomorphic=False, keepInitial=False, replaceExisting=False):
         """
-        Generate all of the resonance isomers of this species. The isomers are
-        stored as a list in the `molecule` attribute. If the length of
-        `molecule` is already greater than one, it is assumed that all of the
-        resonance isomers have already been generated.
+        Generate all of the resonance structures of this species. The structures are
+        stored as a list in the `molecule` attribute.
+
+        Args:
+            keepIsomorphic:     use isIdentical comparison to remove duplicate structures instead of isIsomorphic
+            keepInitial:        force the algorithm to keep the input molecule first in the list, otherwise the
+                                algorithm may remove or reorder the input molecule for aromatic species
+            replaceExisting:    if True, discard existing resonance structures and replace with new ones
+                                if False, do not generate new resonance structures if some already exist
         """
-        if len(self.molecule) == 1:
+        if replaceExisting or len(self.molecule) == 1:
             self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic=keepIsomorphic,
                                                                       keepInitial=keepInitial)
     
