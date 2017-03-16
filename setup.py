@@ -5,7 +5,7 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu), 
+#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu),
 #   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
@@ -36,13 +36,13 @@ try:
     from distutils.extension import Extension
 except ImportError:
     print 'The distutils package is required to build or install RMG Py.'
-    
+
 try:
     from Cython.Distutils import build_ext
     import Cython.Compiler.Options
 except ImportError:
     print 'Cython (http://www.cython.org/) is required to build or install RMG Py.'
-    
+
 try:
     import numpy
 except ImportError:
@@ -107,7 +107,7 @@ def getMainExtensionModules():
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
     ]
-    
+
 def getSolverExtensionModules():
     return [
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
@@ -183,6 +183,11 @@ if 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
+# Remove duplicates while preserving order:
+from collections import OrderedDict
+ext_modules = list(OrderedDict.fromkeys(ext_modules))
+
+
 scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
          'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
          'testing/databaseTest.py']
@@ -194,7 +199,7 @@ for root, dirs, files in os.walk('rmgpy'):
             if 'Test' not in file and '__init__' not in file:
                 if not root.endswith('rmgpy/cantherm/files'):
                     module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
-                    modules.append(module)       
+                    modules.append(module)
 
 # Initiate the build and/or installation
 
