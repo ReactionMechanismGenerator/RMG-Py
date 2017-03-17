@@ -1295,7 +1295,7 @@ def getSpeciesIdentifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#\[\]]+', label):
             if len(label) <= 10:
                 return label
             elif len(label) <= 15:
@@ -1304,6 +1304,14 @@ def getSpeciesIdentifier(species):
             else:
                 logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
                 return label
+        elif len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#=\[\]]+', label):
+            if len(label) <= 10:
+                return label.replace('=','d')
+            elif len(label) <= 15:
+                return label.replace('=', 'd')
+            else:
+                logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
+                return label.replace('=', 'd')
         else:
             # try the chemical formula if the species label is not present
             if len(species.molecule) > 0:
