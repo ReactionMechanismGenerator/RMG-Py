@@ -36,7 +36,8 @@ _known_smiles_molecules = {
                  'CO2': 'O=C=O',
                  'CO': '[C-]#[O+]',
                  'C2H4': 'C=C',
-                 'O2': 'O=O'
+                 'O2': 'O=O',
+                 'C': '[C]',
              }
 
 _known_smiles_radicals = {
