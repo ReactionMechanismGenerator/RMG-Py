@@ -833,6 +833,17 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         expectedAromaticBondNumInBicyclics = [0, 0, 0]
         self.assertEqual(aromaticBondNumInBicyclics, expectedAromaticBondNumInBicyclics)
 
+    def testCombineCycles(self):
+        """
+        This method tests the combineCycles method, which simply joins two lists
+        together without duplication.
+        """
+        mainCycle=Molecule(SMILES='C1CCC2CCCCC2C1').atoms
+        testCycle1=mainCycle[0:8]
+        testCycle2=mainCycle[6:]
+        joinedCycle=combineCycles(testCycle1,testCycle2)
+        self.assertTrue(sorted(mainCycle)==sorted(joinedCycle))
+
 
 ################################################################################
 
