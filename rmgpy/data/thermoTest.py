@@ -69,6 +69,40 @@ class TestThermoDatabase(unittest.TestCase):
             ['C1C=CC=C1',       2,    32.5, 65.5, 18.16, 24.71, 30.25, 34.7, 41.25, 45.83, 52.61],
         ]
 
+    def testPickle(self):
+        """
+        Test that a ThermoDatabase object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        thermodb0 = cPickle.loads(cPickle.dumps(self.database))
+        
+        self.assertEqual(thermodb0.libraryOrder, self.database.libraryOrder)
+        self.assertEqual(sorted(thermodb0.depository.keys()), \
+                        sorted(self.database.depository.keys()))
+
+        self.assertEqual(sorted(thermodb0.libraries.keys()), \
+                        sorted(self.database.libraries.keys()))
+        self.assertEqual(sorted(thermodb0.groups.keys()), \
+                        sorted(self.database.groups.keys()))
+
+        for key, depository0 in thermodb0.depository.iteritems():
+            depository = self.database.depository[key]
+            self.assertTrue(type(depository0), type(depository))
+            self.assertEqual(sorted(depository0.entries.keys()), sorted(depository.entries.keys()))
+
+        for key, library0 in thermodb0.libraries.iteritems():
+            library = self.database.libraries[key]
+            self.assertTrue(type(library0), type(library))
+            self.assertEqual(sorted(library0.entries.keys()), sorted(library.entries.keys()))
+
+        for key, group0 in thermodb0.groups.iteritems():
+            group = self.database.groups[key]
+            self.assertTrue(type(group0), type(group))
+            self.assertEqual(sorted(group0.entries.keys()), sorted(group.entries.keys()))
+
+
+
     @work_in_progress
     def testNewThermoGeneration(self):
         """
@@ -108,7 +142,6 @@ class TestThermoDatabase(unittest.TestCase):
         thermoData_ga = self.database.getThermoDataFromGroups(spc)
         
         self.assertAlmostEqual(thermoData_lib.getEntropy(298.), thermoData_ga.getEntropy(298.), 0)
-
         
     @work_in_progress
     def testSymmetryNumberGeneration(self):
