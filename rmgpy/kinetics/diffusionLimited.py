@@ -48,13 +48,10 @@ class DiffusionLimited():
 
     def getSolventViscosity(self, T):
         return self.solventData.getSolventViscosity(T)
-              
+
     def getEffectiveRate(self, reaction, T):
         """
-        Return the ratio of k_eff to k_intrinsic, which is between 0 and 1.
-        
-        It is 1.0 if diffusion has no effect.
-        
+        Returns the effective rate of reaction, accounting for diffusion.
         For 1<=>2 reactions, the reverse rate is limited.
         For 2<=>2 reactions, the faster direction is limited.
         For 2<=>1 or 2<=>3 reactions, the forward rate is limited.
@@ -66,7 +63,7 @@ class DiffusionLimited():
         Keq = reaction.getEquilibriumConstant(T) # Kc
         k_reverse = k_forward / Keq
         k_eff = k_forward
-        
+
         if reactants == 1:
             if products == 1:
                 k_eff = k_forward
@@ -86,19 +83,21 @@ class DiffusionLimited():
                     k_diff = self.getDiffusionLimit(T, reaction, forward=False)
                     k_eff_reverse = k_reverse*k_diff/(k_reverse+k_diff)
                     k_eff = k_eff_reverse * Keq
-        return k_eff        
-    
+        return k_eff
+
     def getDiffusionFactor(self, reaction, T):
         """
-        Return the diffusion factor of the specified reaction.
+        Return the diffusion factor of the specified reaction
+        This is the ratio of k_eff to k_intrinsic, which is between 0 and 1.
+        It is 1.0 if diffusion has no effect.
         """
         return self.getEffectiveRate(reaction, T)/reaction.kinetics.getRateCoefficient(T,P=0)
 
-    
+
     def getDiffusionLimit(self, T, reaction, forward=True):
         """
         Return the diffusive limit on the rate coefficient, k_diff.
-        
+
         This is the upper limit on the rate, in the specified direction.
         (ie. forward direction if forward=True [default] or reverse if forward=False)
         Returns the rate coefficient k_diff in m3/mol/s.
@@ -117,7 +116,7 @@ class DiffusionLimited():
             diff = soluteData.getStokesDiffusivity(T, self.getSolventViscosity(T))
             radii += radius  # meters
             diffusivities += diff #m^2/s
-        
+
         k_diff = 4 * constants.pi * radii * diffusivities * constants.Na  # m3/mol/s
         return k_diff
 
