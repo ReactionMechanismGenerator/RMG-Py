@@ -42,6 +42,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 from rmgpy.kinetics import Arrhenius
 from rmgpy.data.solvation import SolvationDatabase
+from rmgpy.data.thermo import ThermoData
 from rmgpy.kinetics.diffusionLimited import DiffusionLimited, diffusionLimiter
 ################################################################################
 
@@ -66,6 +67,16 @@ class TestDiffusionLimited(unittest.TestCase):
             ],
             Tmin=(298,'K'), Tmax=(5000,'K'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(577.856,'J/(mol*K)'),
             comment="""Thermo library: JetSurF0.2"""), molecule=[Molecule(SMILES="CC[CH]CCCCC")])
+        ethane = Species(label="", thermo=ThermoData(
+            Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([10.294,12.643,14.933,16.932,20.033,22.438,26.281],'cal/(mol*K)'), H298=(12.549,'kcal/mol'), S298=(52.379,'cal/(mol*K)'),
+            Cp0=(33.2579,'J/(mol*K)'), CpInf=(133.032,'J/(mol*K)'), comment="""Thermo library: CH"""),
+            molecule=[Molecule(SMILES="C=C")])
+        decyl = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs=[-1.31358,0.117973,-7.51843e-05,2.43331e-08,-3.17523e-12,-9689.68,43.501], Tmin=(298,'K'), Tmax=(1390,'K')),
+            NASAPolynomial(coeffs=[31.5697,0.0455818,-1.54995e-05,2.39711e-09,-1.3871e-13,-21573.8,-134.709], Tmin=(1390,'K'), Tmax=(5000,'K'))
+            ],
+            Tmin=(298,'K'), Tmax=(5000,'K'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(719.202,'J/(mol*K)'),
+            comment="""Thermo library: JetSurF0.2"""), molecule=[Molecule(SMILES="[CH2]CCCCCCCCC")])
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.solvent = 'octane'
@@ -73,8 +84,11 @@ class TestDiffusionLimited(unittest.TestCase):
         self.T = 298
         self.uni_reaction = Reaction(reactants=[octyl_pri], products=[octyl_sec])
         self.uni_reaction.kinetics = Arrhenius(A=(2.0, '1/s'), n=0, Ea=(0,'kJ/mol'))
+        self.bi_uni_reaction = Reaction(reactants=[octyl_pri, ethane], products=[decyl])
+        self.bi_uni_reaction.kinetics = Arrhenius(A=(1.0E-22, 'cm^3/molecule/s'), n=0, Ea=(0,'kJ/mol'))
         self.intrinsic_rates = {
             self.uni_reaction: self.uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
+            self.bi_uni_reaction: self.bi_uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
             }
 
     def tearDown(self):
@@ -87,6 +101,14 @@ class TestDiffusionLimited(unittest.TestCase):
         """
         effective_rate = diffusionLimiter.getEffectiveRate(self.uni_reaction, self.T)
         self.assertEqual(effective_rate, self.intrinsic_rates[self.uni_reaction])
+
+    def testGetEffectiveRate2to1(self):
+        """
+        Tests that the effective rate is limited in the forward direction for
+        a 2 -> 1 reaction
+        """
+        effective_rate = diffusionLimiter.getEffectiveRate(self.bi_uni_reaction, self.T)
+        self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
 
 ################################################################################
 
