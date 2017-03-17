@@ -1,4 +1,5 @@
 import unittest
+import mock
 import os
 from chemkin import *
 import rmgpy
@@ -7,7 +8,87 @@ import rmgpy
 ###################################################
 
 class ChemkinTest(unittest.TestCase):
-    def testReadTemplateReactionFamilyForMinimalExample(self):
+    @mock.patch('rmgpy.chemkin.logging')
+    def test_readThermoEntry_BadElementCount(self, mock_logging):
+        """
+        Test that invalid element count logs the appropriate warning.
+
+        This test uses the `mock` module in order to test calls to logging.
+        The `mock.patch` decorator replaces the logging module instance in
+        rmgpy.chemkin with a mock instance that can be accessed by this
+        unit test. By using the mock instance, it is possible to assert that
+        the expected logging statements are being created.
+        """
+        entry = """C2H6                    H   XC   X          L   100.000  5000.000  827.28      1
+ 2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
+-1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
+-8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
+"""
+        with self.assertRaises(ValueError):
+            readThermoEntry(entry)
+
+        mock_logging.info.assert_called_with("Trouble reading line 'C2H6                    H   XC   X          L   100.000  5000.000  827.28      1' element segment 'H   X'")
+
+    @mock.patch('rmgpy.chemkin.logging')
+    def test_readThermoEntry_NotGasPhase(self, mock_logging):
+        """
+        Test that non gas phase data logs the appropriate warning.
+
+        This test uses the `mock` module in order to test calls to logging.
+        The `mock.patch` decorator replaces the logging module instance in
+        rmgpy.chemkin with a mock instance that can be accessed by this
+        unit test. By using the mock instance, it is possible to assert that
+        the expected logging statements are being created.
+        """
+        entry = """C2H6                    H   6C   2          L   100.000  5000.000  827.28      1
+ 2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
+-1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
+-8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
+"""
+        species, thermo, formula = readThermoEntry(entry)
+
+        mock_logging.warning.assert_called_with("Was expecting gas phase thermo data for C2H6. Skipping thermo data.")
+        self.assertEqual(species, 'C2H6')
+        self.assertIsNone(formula)
+        self.assertIsNone(thermo)
+
+    @mock.patch('rmgpy.chemkin.logging')
+    def test_readThermoEntry_NotFloat(self, mock_logging):
+        """
+        Test that non-float parameters log the appropriate warning.
+
+        This test uses the `mock` module in order to test calls to logging.
+        The `mock.patch` decorator replaces the logging module instance in
+        rmgpy.chemkin with a mock instance that can be accessed by this
+        unit test. By using the mock instance, it is possible to assert that
+        the expected logging statements are being created.
+        """
+        entry = """C2H6                    H   6C   2          G   100.000  5000.000  827.28      1
+ X.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
+-1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
+-8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
+"""
+        species, thermo, formula = readThermoEntry(entry)
+
+        mock_logging.warning.assert_called_with("could not convert string to float: X.44813916E+00")
+        self.assertEqual(species, 'C2H6')
+        self.assertIsNone(formula)
+        self.assertIsNone(thermo)
+
+    def test_readThermoEntry_NoTRange(self):
+        """Test that missing temperature range can be handled for thermo entry."""
+        entry = """C2H6                    H   6C   2          G                                  1
+ 2.44813916E+00 1.83377834E-02-7.25714119E-06 1.35300042E-09-9.60327447E-14    2
+-1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
+-8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
+"""
+        species, thermo, formula = readThermoEntry(entry, Tmin=100.0, Tint=827.28, Tmax=5000.0)
+
+        self.assertEqual(species, 'C2H6')
+        self.assertEqual(formula, {'H': 6, 'C': 2})
+        self.assertTrue(isinstance(thermo, NASA))
+
+    def testReadAndWriteTemplateReactionFamilyForMinimalExample(self):
         """
         This example is mainly to test if family info can be correctly
         parsed from comments like '!Template reaction: R_Recombination'.
@@ -26,7 +107,21 @@ class ChemkinTest(unittest.TestCase):
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
 
-    def testReadTemplateReactionFamilyForPDDExample(self):
+        # saveChemkinFile
+        chemkinSavePath = os.path.join(folder, 'minimal', 'chem_new.inp')
+        dictionarySavePath = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
+
+        saveChemkinFile(chemkinSavePath, species, reactions, verbose=True, checkForDuplicates=True)
+        saveSpeciesDictionary(dictionarySavePath, species, oldStyle=False)
+
+        self.assertTrue(os.path.isfile(chemkinSavePath))
+        self.assertTrue(os.path.isfile(dictionarySavePath))
+
+        # clean up
+        os.remove(chemkinSavePath)
+        os.remove(dictionarySavePath)
+
+    def testReadAndWriteTemplateReactionFamilyForPDDExample(self):
         """
         This example is mainly to ensure comments like
         '! Kinetics were estimated in this direction instead
@@ -47,6 +142,20 @@ class ChemkinTest(unittest.TestCase):
 
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
+
+        # saveChemkinFile
+        chemkinSavePath = os.path.join(folder, 'minimal', 'chem_new.inp')
+        dictionarySavePath = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
+
+        saveChemkinFile(chemkinSavePath, species, reactions, verbose=False, checkForDuplicates=False)
+        saveSpeciesDictionary(dictionarySavePath, species, oldStyle=False)
+
+        self.assertTrue(os.path.isfile(chemkinSavePath))
+        self.assertTrue(os.path.isfile(dictionarySavePath))
+
+        # clean up
+        os.remove(chemkinSavePath)
+        os.remove(dictionarySavePath)
 
     def testTransportDataReadAndWrite(self):
         """
