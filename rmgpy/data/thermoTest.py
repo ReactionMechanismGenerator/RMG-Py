@@ -613,6 +613,22 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(len(bonds2), 11)
         self.assertEqual(len(bonds3), 15)
 
+    def testGetCopyForOneRing(self):
+        """
+        This method tests the getCopyForOneRing method, which returns
+        an atom object list that contains deep copies of the atoms
+        """
+
+        testAtomList=Molecule(SMILES='C1CCCCC1').atoms
+        copiedAtomList=getCopyForOneRing(testAtomList)
+
+        testMolecule=Molecule(atoms=testAtomList)
+        copiedMolecule=Molecule(atoms=copiedAtomList)
+
+        self.assertTrue(testAtomList!=copiedAtomList)
+        self.assertTrue(len(testAtomList)==len(copiedAtomList))
+        self.assertTrue(testMolecule.is_equal(copiedMolecule))
+
     def testToFailCombineTwoRingsIntoSubMolecule(self):
         """
         Test that if two non-overlapped rings lead to AssertionError
