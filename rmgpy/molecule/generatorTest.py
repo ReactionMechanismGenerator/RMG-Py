@@ -471,7 +471,6 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = "C"
         self.compare(adjlist, smiles)
 
-    @work_in_progress
     def test_C(self):
         "Test the SMILES generation for atomic carbon mult=(1,3,5)"
         adjlist = "1 C u0 p2 c0"
