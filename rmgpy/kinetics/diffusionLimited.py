@@ -46,6 +46,12 @@ class DiffusionLimited():
         diffusionLimiter.database = solvationDatabase
         diffusionLimiter.solventData = solventData
 
+    def disable(self):
+        "Turn it off. Mostly useful for unit testing teardown"
+        diffusionLimiter.enabled = False
+        del(diffusionLimiter.database)
+        del(diffusionLimiter.solventData)
+
     def getSolventViscosity(self, T):
         return self.solventData.getSolventViscosity(T)
 

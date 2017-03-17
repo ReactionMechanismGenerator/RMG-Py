@@ -33,10 +33,16 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.diffusionLimited` mo
 """
 
 import unittest
-import numpy
+import os
 
-from rmgpy.kinetics.diffusionLimited import DiffusionLimited
-
+from rmgpy import settings
+from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+from rmgpy.reaction import Reaction
+from rmgpy.thermo.nasa import NASA, NASAPolynomial
+from rmgpy.kinetics import Arrhenius
+from rmgpy.data.solvation import SolvationDatabase
+from rmgpy.kinetics.diffusionLimited import DiffusionLimited, diffusionLimiter
 ################################################################################
 
 class TestDiffusionLimited(unittest.TestCase):
@@ -48,7 +54,39 @@ class TestDiffusionLimited(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        raise NotImplementedError
+        octyl_pri = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs=[-0.772759,0.093255,-5.84447e-05,1.8557e-08,-2.37127e-12,-3926.9,37.6131], Tmin=(298,'K'), Tmax=(1390,'K')),
+            NASAPolynomial(coeffs=[25.051,0.036948,-1.25765e-05,1.94628e-09,-1.12669e-13,-13330.1,-102.557], Tmin=(1390,'K'), Tmax=(5000,'K'))
+            ],
+            Tmin=(298,'K'), Tmax=(5000,'K'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(577.856,'J/(mol*K)'),
+            comment="""Thermo library: JetSurF0.2"""), molecule=[Molecule(SMILES="[CH2]CCCCCCC")])
+        octyl_sec = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs=[-0.304233,0.0880077,-4.90743e-05,1.21858e-08,-8.87773e-13,-5237.93,36.6583], Tmin=(298,'K'), Tmax=(1383,'K')),
+            NASAPolynomial(coeffs=[24.9044,0.0366394,-1.2385e-05,1.90835e-09,-1.10161e-13,-14713.5,-101.345], Tmin=(1383,'K'), Tmax=(5000,'K'))
+            ],
+            Tmin=(298,'K'), Tmax=(5000,'K'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(577.856,'J/(mol*K)'),
+            comment="""Thermo library: JetSurF0.2"""), molecule=[Molecule(SMILES="CC[CH]CCCCC")])
+        self.database = SolvationDatabase()
+        self.database.load(os.path.join(settings['database.directory'], 'solvation'))
+        self.solvent = 'octane'
+        diffusionLimiter.enable(self.database.getSolventData(self.solvent), self.database)
+        self.T = 298
+        self.uni_reaction = Reaction(reactants=[octyl_pri], products=[octyl_sec])
+        self.uni_reaction.kinetics = Arrhenius(A=(2.0, '1/s'), n=0, Ea=(0,'kJ/mol'))
+        self.intrinsic_rates = {
+            self.uni_reaction: self.uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
+            }
+
+    def tearDown(self):
+        diffusionLimiter.disable()
+
+    def testGetEffectiveRateUnimolecular(self):
+        """
+        Tests that the effective rate is the same as the intrinsic rate for
+        unimiolecular reactions.
+        """
+        effective_rate = diffusionLimiter.getEffectiveRate(self.uni_reaction, self.T)
+        self.assertEqual(effective_rate, self.intrinsic_rates[self.uni_reaction])
 
 ################################################################################
 
