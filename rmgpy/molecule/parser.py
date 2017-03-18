@@ -42,12 +42,17 @@ INCHI_LOOKUPS = {
             'He': '[He]',
         }
 SMILES_LOOKUPS = {
-            '[He]':# RDKit improperly handles helium and returns it in a triplet state
+    '[He]':  # RDKit improperly handles helium and returns it in a triplet state
             """
             He
             multiplicity 1
             1 He u0 p1
+            """,
+    '[C]':  # We'd return the quintuplet without this
             """
+            multiplicity 3
+            1 C u2 p1 c0
+            """,
 }     
 
 def __fromSMILES(mol, smilesstr, backend):
