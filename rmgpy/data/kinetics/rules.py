@@ -72,6 +72,7 @@ class KineticsRules(Database):
                   shortDesc='',
                   longDesc='',
                   rank=None,
+                  nodalDistance=None,
                   ):
             
         entry = Entry(
@@ -84,6 +85,7 @@ class KineticsRules(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
             rank = rank,
+            nodalDistance=nodalDistance,
         )
         try:
             self.entries[label].append(entry)
@@ -591,6 +593,7 @@ class KineticsRules(Database):
         otherDepth = numpy.array([otherNode.level for otherNode in otherTemplate])
 
         distance = numpy.array(depth-otherDepth)
+        distance *= numpy.array(self.treeDistances) #need to take values from template if available
         norm = numpy.dot(distance,distance)
         return norm
         

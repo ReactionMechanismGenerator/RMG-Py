@@ -37,6 +37,7 @@ import logging
 import codecs
 from copy import deepcopy
 import itertools
+import numpy as np
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -379,7 +380,8 @@ class KineticsFamily(Database):
                  reverseTemplate=None,
                  reverseRecipe=None,
                  forbidden=None,
-                 boundaryAtoms = None
+                 boundaryAtoms = None,
+                 treeDistances = None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.reverse = reverse
@@ -390,6 +392,9 @@ class KineticsFamily(Database):
         self.forbidden = forbidden
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
         self.boundaryAtoms = boundaryAtoms
+        self.treeDistances = treeDistances
+        if self.treeDistances is None:
+            self.treeDistances = np.ones(len(self.top))
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
