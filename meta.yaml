@@ -61,6 +61,7 @@ requirements:
     - lpsolve55
     - markupsafe
     - matplotlib >=1.5
+    - mock
     - mopac
     - nose
     - numpy
