@@ -111,24 +111,25 @@ class TestThermoDatabase(unittest.TestCase):
         
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-            molecule=Molecule(SMILES=smiles)
-            species = Species(molecule=molecule)
+            species = Species().fromSMILES(smiles)
             species.generateResonanceIsomers()
-            species.molecule[0]
             thermoData = self.database.getThermoDataFromGroups(species)
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
                 thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
                 for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data
+                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data[0]
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
                     thermoData = thermoData0
                     molecule = mol
-            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
+            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1,
+                                   msg="H298 error for {0}. Expected {1}, but calculated {2}.".format(smiles, H298, thermoData.getEnthalpy(298) / 4184))
+            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1,
+                                   msg="S298 error for {0}. Expected {1}, but calculated {2}.".format(smiles, S298, thermoData.getEntropy(298) / 4.184))
             for T, Cp in zip(self.Tlist, Cplist):
-                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles,T))
+                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1,
+                                       msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(smiles, Cp, thermoData.getHeatCapacity(T) / 4.184, T))
 
     def testSymmetryContributionRadicals(self):
         """
@@ -152,48 +153,21 @@ class TestThermoDatabase(unittest.TestCase):
         to select the stablest resonance isomer.
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
-            molecule=Molecule(SMILES=smiles)
-            species = Species(molecule=molecule)
+            species = Species().fromSMILES(smiles)
             species.generateResonanceIsomers()
-            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
+            thermoData = self.database.getThermoDataFromGroups(species)
             # pick the molecule with lowest H298
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
                 thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
                 for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data
+                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data[0]
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
                     thermoData = thermoData0
                     molecule = mol
-            self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
-
-#    @work_in_progress
-#    def testOldThermoGeneration(self):
-#        """
-#        Test that the old ThermoDatabase generates relatively accurate thermo data.
-#        """
-#        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
-#            Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-#            species = Species(molecule=[Molecule(SMILES=smiles)])
-#            species.generateResonanceIsomers()
-#            thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
-#            molecule = species.molecule[0]
-#            for mol in species.molecule[1:]:
-#                thermoData0 = self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[0][0]
-#                for data in self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[1:]:
-#                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-#                        thermoData0 = data
-#                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
-#                    thermoData = thermoData0
-#                    molecule = mol
-#            
-#            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-#            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
-#            for T, Cp in zip(self.Tlist, Cplist):
-#                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
-
-
+            self.assertEqual(symm, molecule.calculateSymmetryNumber(),
+                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, molecule.calculateSymmetryNumber()))
 
     def testParseThermoComments(self):
         """
