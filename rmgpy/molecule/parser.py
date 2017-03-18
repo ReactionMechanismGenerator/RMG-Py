@@ -54,6 +54,12 @@ SMILES_LOOKUPS = {
             multiplicity 1
             1 Ar u0 p4
             """,
+    '[C]':  # We'd return the quintuplet without this
+            """
+            multiplicity 3
+            1 C u2 p1 c0
+            """,
+
 }     
 
 def __fromSMILES(mol, smilesstr, backend):

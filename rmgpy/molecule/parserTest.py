@@ -278,6 +278,15 @@ class ParserTest(unittest.TestCase):
         self.compare(adjlist, smiles)
 
 
+        # Test atomic C, which is triplet in ground state
+        adjlist = '''
+        multiplicity 3
+        1 C u2 p1 c0
+        '''
+        smiles = '[C]'
+        self.compare(adjlist, smiles)
+
+
         # Test O2
         adjlist = '''
         multiplicity 3
