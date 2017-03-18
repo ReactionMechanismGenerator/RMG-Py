@@ -269,6 +269,26 @@ class ParserTest(unittest.TestCase):
         self.compare(adjlist, smiles)
 
 
+        # Test CH, methylidyne.
+        # Wikipedia reports:
+        # The ground state is a doublet radical with one unpaired electron,
+        # and the first two excited states are a quartet radical with three
+        # unpaired electrons and a doublet radical with one unpaired electron.
+        # With the quartet radical only 71 kJ above the ground state, a sample
+        # of methylidyne exists as a mixture of electronic states even at
+        # room temperature, giving rise to complex reactions.
+        #
+        # Should we make the doublet? For now, this is a regression test,
+        # because we currently make the quartet.
+        adjlist = '''
+        multiplicity 4
+        1 C u3 p0 c0 {2,S}
+        2 H u0 p0 c0 {1,S}
+        '''
+        smiles = '[CH]'
+        self.compare(adjlist, smiles)
+
+
         # Test H
         adjlist = '''
         multiplicity 2
