@@ -58,7 +58,6 @@ class ParserTest(unittest.TestCase):
         self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'] )
 
     #current implementation of SMARTS is broken
-    @work_in_progress
     def test_fromSMARTS(self):
         smarts = '[CH4]'
         mol = fromSMARTS(Molecule(), smarts)

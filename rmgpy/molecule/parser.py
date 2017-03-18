@@ -335,6 +335,7 @@ def fromRDKitMol(mol, rdkitmol):
     mol.vertices = []
     
     # Add hydrogen atoms to complete molecule if needed
+    rdkitmol.UpdatePropertyCache(strict=False)
     rdkitmol = Chem.AddHs(rdkitmol)
     Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
     
