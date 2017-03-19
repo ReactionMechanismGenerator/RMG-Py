@@ -592,10 +592,6 @@ class KineticsRules(Database):
         entry used to determine the kinetics only if it is an exact match,
         and is None if some averaging or use of a parent node took place.
         """
-        def getTemplateLabel(template):
-            # Get string format of the template in the form "(leaf1,leaf2)"
-            return '[{0}]'.format(';'.join([g.label for g in template]))
-        
         entry = self.getRule(template)
         
         originalLeaves = getTemplateLabel(template)
@@ -656,7 +652,7 @@ class KineticsRules(Database):
                     if not template0[index].parent: # We're at the top-level node in this subtreee
                         continue
                     dist = deepcopy(distanceList0[i])
-                    t = deepcopy(template0)
+                    t = template0[:]
                     dist[index] += t[index].nodalDistance
                     t[index] = t[index].parent
                      
@@ -734,4 +730,3 @@ def removeIdenticalKinetics(kList):
 def getTemplateLabel(template):
     # Get string format of the template in the form "(leaf1,leaf2)"
     return '[{0}]'.format(';'.join([g.label for g in template]))
-
