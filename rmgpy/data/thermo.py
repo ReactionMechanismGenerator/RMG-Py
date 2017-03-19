@@ -1575,7 +1575,7 @@ class ThermoDatabase(object):
             if matched_group.label in self.groups['polycyclic'].genericNodes:
                 # apply secondary decompostion formula
                 # to get a estimated_group_thermodata
-                estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+                estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(bicyclic.atoms)
                 if not estimated_bicyclic_thermodata:
                     estimated_bicyclic_thermodata = matched_group_thermodata 
                 thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True)
