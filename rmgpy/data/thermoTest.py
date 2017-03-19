@@ -561,6 +561,82 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_6_6_ane', polycyclicGroupLabels)
         self.assertIn('s2_3_6_ane', polycyclicGroupLabels)
 
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingHighlyUnsaturatedPolycyclics1(self):
+        """
+        Test proper thermo estimation for highly unsaturated polycyclic whose decomposed 
+        bicyclics are not stored in database. Those bicyclics thermo will be estimated through
+        a heuristic formula.
+
+        In the future, the test assertion may be updated if some of the decomposed bicyclics
+        have been added to database.
+        """
+        # create testing molecule
+        smiles = '[CH]=C1C2=C=C3C=CC1C=C32'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('1,4-Cyclohexadiene', ringGroupLabels)
+        self.assertIn('Cyclopentene', ringGroupLabels)
+        self.assertIn('cyclobutadiene_13', ringGroupLabels)
+        self.assertIn('s3_5_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_4_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_4_5_ane', polycyclicGroupLabels)
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingHighlyUnsaturatedPolycyclics2(self):
+        """
+        Test proper thermo estimation for highly unsaturated polycyclic whose decomposed 
+        bicyclics are not stored in database. Those bicyclics thermo will be estimated through
+        a heuristic formula.
+        
+        In the future, the test assertion may be updated if some of the decomposed bicyclics
+        have been added to database.
+        """
+        # create testing molecule
+        smiles = 'C1=C2C#CC3C=CC1C=C23'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('1,4-Cyclohexadiene', ringGroupLabels)
+        self.assertIn('Cyclopentyne', ringGroupLabels)
+        self.assertIn('Cyclopentadiene', ringGroupLabels)
+        self.assertIn('s3_5_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_5_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_5_5_ane', polycyclicGroupLabels)
+
     def testGetBicyclicCorrectionThermoDataFromHeuristic1(self):
         """
         Test bicyclic correction estimated properly from heuristic formula
