@@ -85,11 +85,13 @@ def simulateOne(reactionModel, atol, rtol, reactionSystem):
     for source, networks in reactionModel.networkDict.items():
         pdepNetworks.extend(networks)
     
-    terminated, obj = reactionSystem.simulate(
+    terminated, obj,sspcs,srxns = reactionSystem.simulate(
         coreSpecies = reactionModel.core.species,
         coreReactions = reactionModel.core.reactions,
         edgeSpecies = reactionModel.edge.species,
         edgeReactions = reactionModel.edge.reactions,
+        surfaceSpecies = [],
+        surfaceReactions = [],
         toleranceKeepInEdge = 0,
         toleranceMoveToCore = 1,
         toleranceInterruptSimulation = 1,
@@ -293,7 +295,7 @@ def computeObservables(targets, reactionModel, reactionSystem, atol, rtol):
     reactionSystem.initializeModel(\
         reactionModel.core.species, reactionModel.core.reactions,\
         reactionModel.edge.species, reactionModel.edge.reactions, \
-        [], atol, rtol)
+        [],[],[], atol, rtol)
 
     #run the simulation:
     simulateOne(reactionModel, atol, rtol, reactionSystem)
@@ -345,7 +347,7 @@ def computeConversion(targetLabel, reactionModel, reactionSystem, atol, rtol):
     reactionSystem.initializeModel(\
         reactionModel.core.species, reactionModel.core.reactions,\
         reactionModel.edge.species, reactionModel.edge.reactions, \
-        [], atol, rtol)
+        [],[],[], atol, rtol)
 
     #get the initial moles:
     y0 = reactionSystem.y.copy()

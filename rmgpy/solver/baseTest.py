@@ -54,11 +54,13 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEqual(self.listener.data, [])
 
         # run simulation:
-        terminated, obj = reactionSystem.simulate(
+        terminated, obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = reactionModel.core.species,
             coreReactions = reactionModel.core.reactions,
             edgeSpecies = reactionModel.edge.species,
             edgeReactions = reactionModel.edge.reactions,
+            surfaceSpecies = [],
+            surfaceReactions = [],
             toleranceKeepInEdge = 0,
             toleranceMoveToCore = 1,
             toleranceInterruptSimulation = 1,

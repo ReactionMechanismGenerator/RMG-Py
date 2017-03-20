@@ -106,11 +106,14 @@ def simulate(rmg):
         pdepNetworks = []
         for source, networks in rmg.reactionModel.networkDict.items():
             pdepNetworks.extend(networks)
-        terminated, obj = reactionSystem.simulate(
+            
+        terminated, obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = rmg.reactionModel.core.species,
             coreReactions = rmg.reactionModel.core.reactions,
             edgeSpecies = rmg.reactionModel.edge.species,
             edgeReactions = rmg.reactionModel.edge.reactions,
+            surfaceSpecies = [],
+            surfaceReactions = [],
             toleranceKeepInEdge = 0,
             toleranceMoveToCore = 1,
             toleranceInterruptSimulation = 1,
