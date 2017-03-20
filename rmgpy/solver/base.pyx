@@ -694,9 +694,13 @@ cdef class ReactionSystem(DASx):
             
             #get the reaction with the greatest total difference in Ln(accumulation number) under the surface layering constraint
             maxLayeringReactionIndex = self.maxIndUnderSurfaceLayeringConstraint(totalDivAccumNums,surfaceSpeciesIndices)
-            maxLayeringReaction = edgeReactions[maxLayeringReactionIndex]
-            maxLayeringDifLnAccumNum = numpy.log(totalDivAccumNums[maxLayeringReactionIndex])
-            
+            if maxLayeringReactionIndex:
+                maxLayeringReaction = edgeReactions[maxLayeringReactionIndex]
+                maxLayeringDifLnAccumNum = numpy.log(totalDivAccumNums[maxLayeringReactionIndex])
+            else:
+                maxLayeringReaction = None
+                maxLayeringDifLnAccumNum = 0
+                
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
