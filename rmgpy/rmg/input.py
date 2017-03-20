@@ -239,7 +239,7 @@ def solvation(solvent):
 def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
-          toleranceReactionInterruptSimulation=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
+          toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
@@ -257,7 +257,6 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.toleranceMoveEdgeReactionToCore = toleranceMoveEdgeReactionToCore
-    rmg.toleranceReactionInterruptSimulation = toleranceReactionInterruptSimulation
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
     rmg.minCoreSizeForPrune = minCoreSizeForPrune
@@ -278,10 +277,10 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     else:
         rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurface
     
-    if toleranceReactionInterruptSimulation:
-        rmg.toleranceReactionInterruptSimulation = toleranceReactionInterruptSimulation
+    if toleranceMoveEdgeReactionToCoreInterrupt:
+        rmg.toleranceMoveEdgeReactionToCoreInterrupt = toleranceMoveEdgeReactionToCoreInterrupt
     else:
-        rmg.toleranceReactionInterruptSimulation = toleranceMoveEdgeReactionToCore
+        rmg.toleranceMoveEdgeReactionToCoreInterrupt = toleranceMoveEdgeReactionToCore
     
 def quantumMechanics(
                     software,
