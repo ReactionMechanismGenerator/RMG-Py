@@ -59,6 +59,12 @@ SMILES_LOOKUPS = {
             multiplicity 3
             1 C u2 p1 c0
             """,
+    '[CH]':  # We'd return the quartet without this
+            """
+            multiplicity 2
+            1 C u1 p1 c0 {2,S}
+            2 H u0 p0 c0 {1,S}
+            """,
 
 }     
 
