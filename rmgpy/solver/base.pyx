@@ -230,27 +230,24 @@ cdef class ReactionSystem(DASx):
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
 
-        self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+        surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
         
         
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
     
     def initialize_surface(self,coreSpecies,coreReactions,surfaceSpecies,surfaceReactions):
+        """
+        removes surfaceSpecies and surfaceReactions from  until they are self consistent: 
+            1) every reaction has one species in the surface
+            2) every species participates in a surface reaction
+        """
 #        cdef list productIndices,reactantIndices, surfaceSpeciesIndices, surfaceReationIndices
 #        cdef set possibleSpeciesIndices
 #        cdef int i,j
 #        cdef bool notInSurface
         
-        if surfaceSpecies == [] and surfaceReactions == []:
-            self.surfaceSpeciesIndices = []
-            self.surfaceReactionIndices = []
-            return
-        
         logging.info('initializing surface ...')
-        logging.info('surface is: ')
-        logging.info([i.label for i in surfaceSpecies])
-        logging.info([str(i) for i in surfaceReactions])
         
         productIndices = self.productIndices
         reactantIndices = self.reactantIndices
@@ -264,6 +261,7 @@ cdef class ReactionSystem(DASx):
         for i in range(len(surfaceReactions)):
             surfaceReactionIndices.append(coreReactions.index(surfaceReactions[i]))
         
+        
         for i in surfaceReactionIndices: #remove surface reactions whose species have been moved to the bulk core
             notInSurface = True
             for j in productIndices[i]:
@@ -275,21 +273,28 @@ cdef class ReactionSystem(DASx):
                 if j in surfaceSpeciesIndices:
                     notInSurface = False
             if notInSurface:
+                logging.info('removing disconnected reaction from surface: {0}'.format(str(coreReactions[i])))
                 surfaceReactions.remove(coreReactions[i])
                 surfaceReactionIndices.remove(i)
         
         for i in surfaceSpeciesIndices: #remove species without reactions in the surface
             if not(i in possibleSpeciesIndices):
+                logging.info('removing disconnected species from surface: {0}'.format(coreSpecies[i].label))
                 surfaceSpecies.remove(coreSpecies[i])
                 surfaceSpeciesIndices.remove(i)
+        
+        surfaceSpeciesIndices = numpy.array(surfaceSpeciesIndices,dtype=numpy.int)
+        surfaceReactionIndices = numpy.array(surfaceReactionIndices,dtype=numpy.int)
         
         self.surfaceSpeciesIndices = surfaceSpeciesIndices
         self.surfaceReactionIndices = surfaceReactionIndices
         
+        surfaceSpecies = [coreSpecies[i] for i in surfaceSpeciesIndices]
+        surfaceReactions = [coreReactions[i] for i in surfaceReactionIndices]
+        
         logging.info('surface initialization complete')
-        
-        return
-        
+
+        return surfaceSpecies,surfaceReactions
         
     def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
@@ -416,14 +421,20 @@ cdef class ReactionSystem(DASx):
                 self.networkIndices[j,l] = i
                                    
     #@cython.boundscheck(False)                               
-    cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,list surfSpeciesIndices):
+    cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,numpy.ndarray[numpy.int_t,ndim=1] surfSpeciesIndices):
         """
-        determines the index under the surface layering constraint, all of the reactants or all of the products must be in the
+        determines the "surface index" maximizing arr value under the surface layering constraint, all of the reactants or all of the products must be in the
         bulk core (in the core, but not in the surface)
         """
         
         cdef numpy.ndarray[numpy.int_t, ndim=1] sortedIndices
         cdef int i,j,k,index, numCoreSpecies, numCoreReactions
+
+        if len(surfSpeciesIndices) == 0:
+            if len(arr) > 0:
+                return arr.argmax()
+            else:
+                return
         
         numCoreSpecies = self.numCoreSpecies
         numCoreReactions = self.numCoreReactions
@@ -487,7 +498,7 @@ cdef class ReactionSystem(DASx):
         cdef bool zeroProduction, zeroConsumption
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
-        cdef list surfaceSpeciesIndices, surfaceReactionIndices
+        cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
@@ -514,8 +525,8 @@ cdef class ReactionSystem(DASx):
         
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
-        surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
         
+       
         invalidObject = None
         terminated = False
         maxSpeciesIndex = -1
@@ -586,7 +597,7 @@ cdef class ReactionSystem(DASx):
                             normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])/c*4184   # no normalization against dG, converstion to kcal/mol units
                     normSens_array[i].append(normSens)
 
-
+           
             snapshot = [self.t, self.V]
             snapshot.extend(y_coreSpecies / numpy.sum(y_coreSpecies))
             self.snapshots.append(snapshot)            
@@ -626,7 +637,7 @@ cdef class ReactionSystem(DASx):
                     maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
             
             
-            if charRate == 0:
+            if charRate == 0 and len(edgeSpeciesRates)>0:
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
                 maxSpecies = edgeSpecies[maxSpeciesIndex]
                 maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
@@ -705,10 +716,10 @@ cdef class ReactionSystem(DASx):
             
             #get the reaction with the greatest total difference in Ln(accumulation number) under the surface layering constraint
             maxLayeringReactionIndex = self.maxIndUnderSurfaceLayeringConstraint(totalDivAccumNums,surfaceSpeciesIndices)
-            if maxLayeringReactionIndex:
+            if maxLayeringReactionIndex>=0: #found 
                 maxLayeringReaction = edgeReactions[maxLayeringReactionIndex]
                 maxLayeringDifLnAccumNum = numpy.log(totalDivAccumNums[maxLayeringReactionIndex])
-            else:
+            else: 
                 maxLayeringReaction = None
                 maxLayeringDifLnAccumNum = 0
                 
@@ -793,12 +804,12 @@ cdef class ReactionSystem(DASx):
                 maxSurfaceAccumReactionIndex = -1
                 maxSurfaceAccumReaction = None
                 maxSurfaceDifLnAccumNum = 0.0
-                
-            # Get the surface species with the highest flux
+            
+            surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
             surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
             surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
             for i in xrange(len(surfaceSpeciesIndices)):
-                surfaceSpeciesRates[i] = max(surfaceSpeciesProduction[i],surfaceSpeciesConsumption[i])
+                surfaceSpeciesRates[i] = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))
                 
             if len(surfaceSpeciesIndices) > 0:
                 maxSurfaceSpeciesIndex = numpy.argmax(surfaceSpeciesRates)
@@ -808,10 +819,6 @@ cdef class ReactionSystem(DASx):
                 maxSurfaceSpeciesIndex = -1
                 maxSurfaceSpecies = None
                 maxSurfaceSpeciesRate = 0.0
-
-            
-            
-            
             
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
@@ -829,21 +836,24 @@ cdef class ReactionSystem(DASx):
                         if not bimolecularThreshold[i,j]:
                             if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
                                 bimolecularThreshold[i,j] = True
-            
 
             #manage surface movement "on the fly"
-            if maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore and not invalidObject:
+            if maxSurfaceSpecies and maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore:
                 logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
                 surfaceSpecies.remove(maxSurfaceSpecies)
-                self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                surfaceReactionIndices = self.surfaceReactionIndices
                 logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-            if maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
+            if maxSurfaceAccumReaction and maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
                 logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
                 surfaceReactions.remove(maxSurfaceAccumReaction)
-                self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                surfaceSpecies,surfaceReactions =self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                surfaceReactionIndices = self.surfaceReactionIndices
                 logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-            
-            # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
+                            
+                # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
             if (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject):
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
@@ -889,7 +899,6 @@ cdef class ReactionSystem(DASx):
                 logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
                 self.logConversions(speciesIndex, y0)
                 
-                
                 if maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurfaceInterrupt: 
                     logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
@@ -927,7 +936,7 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
                         self.logConversions(speciesIndex, y0)
                         break
-
+            
             # Increment destination step time if necessary
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
