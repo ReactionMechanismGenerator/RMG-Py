@@ -832,8 +832,18 @@ cdef class ReactionSystem(DASx):
                                 bimolecularThreshold[i,j] = True
             
 
-
-                                 
+            #manage surface movement "on the fly"
+            if maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore and not invalidObject:
+                logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
+                surfaceSpecies.remove(maxSurfaceSpecies)
+                self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+            if maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
+                logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
+                surfaceReactions.remove(maxSurfaceAccumReaction)
+                self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+            
             # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
             if (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject):
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
@@ -887,18 +897,7 @@ cdef class ReactionSystem(DASx):
                     self.logConversions(speciesIndex, y0)
                     break
             
-            #manage surface movement "on the fly"
-            if maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore and not invalidObject:
-                logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
-                surfaceSpecies.remove(maxSurfaceSpecies)
-                self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-            if maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
-                logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
-                surfaceReactions.remove(maxSurfaceAccumReaction)
-                self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-            
+           
             # If pressure dependence, also check the network leak fluxes
             if pdepNetworks:
                 if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
