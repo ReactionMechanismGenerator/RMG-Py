@@ -36,7 +36,8 @@ _known_smiles_molecules = {
                  'CO2': 'O=C=O',
                  'CO': '[C-]#[O+]',
                  'C2H4': 'C=C',
-                 'O2': 'O=O'
+                 'O2': 'O=O',
+                 'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
              }
 
 _known_smiles_radicals = {
@@ -47,7 +48,7 @@ _known_smiles_radicals = {
                  'HO2': '[O]O',
                  'CH': '[CH]',
                  'H': '[H]',
-                 'C': '[C]',
+                 'C': '[C]',  # this, in the radical list, could be triplet or quintet.
                  #'CO2': it could be [O][C][O] or O=[C][O]
                  #'CO': '[C]=O', could also be [C][O]
                  #'C2H4': could  be [CH3][CH] or [CH2][CH2]
