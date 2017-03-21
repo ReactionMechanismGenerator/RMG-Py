@@ -95,9 +95,9 @@ class TestReact(unittest.TestCase):
         """
         Test that reaction deflate function works.
         """
-        molA = Molecule().fromSMILES('[OH]')
-        molB = Molecule().fromSMILES('CC')
-        molC = Molecule().fromSMILES('[CH3]')
+        molA = Species().fromSMILES('[OH]')
+        molB = Species().fromSMILES('CC')
+        molC = Species().fromSMILES('[CH3]')
 
         reactants = [molA, molB]
 
@@ -174,15 +174,15 @@ class TestReact(unittest.TestCase):
         Test if the deflateReaction function works.
         """
 
-        molA = Molecule().fromSMILES('[OH]')
-        molB = Molecule().fromSMILES('CC')
-        molC = Molecule().fromSMILES('[CH3]')
+        molA = Species().fromSMILES('[OH]')
+        molB = Species().fromSMILES('CC')
+        molC = Species().fromSMILES('[CH3]')
 
         reactants = [molA, molB]
 
         # both reactants were already part of the core:
         reactantIndices = [1, 2]
-        molDict = {molA: 1, molB: 2}
+        molDict = {molA.molecule[0]: 1, molB.molecule[0]: 2}
 
         rxn = Reaction(reactants=[molA, molB], products=[molC],
         pairs=[(molA, molC), (molB, molC)])
@@ -197,7 +197,7 @@ class TestReact(unittest.TestCase):
 
         # one of the reactants was not yet part of the core:
         reactantIndices = [-1, 2]
-        molDict = {molA: Species(molecule=[molA]), molB: 2}
+        molDict = {molA.molecule[0]: molA, molB.molecule[0]: 2}
 
         rxn = Reaction(reactants=[molA, molB], products=[molC],
                 pairs=[(molA, molC), (molB, molC)])
@@ -205,7 +205,7 @@ class TestReact(unittest.TestCase):
         deflateReaction(rxn, molDict)
 
         for spc, t in zip(rxn.reactants, [Species, int]):
-            self.assertTrue(isinstance(spc, t))
+            self.assertTrue(isinstance(spc, t), 'Species {} is not of type {}'.format(spc,t))
         for spc in rxn.products:
             self.assertTrue(isinstance(spc, Species))
 
