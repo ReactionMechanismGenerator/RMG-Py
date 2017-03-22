@@ -161,9 +161,11 @@ class MoleculeDrawer:
         # However, if this would remove all atoms, then don't remove any
         atomsToRemove = []
         self.implicitHydrogens = {}
+        surfaceSites = []
         for atom in self.molecule.atoms:
             if atom.isHydrogen() and atom.label == '': atomsToRemove.append(atom)
-        if len(atomsToRemove) < len(self.molecule.atoms):
+            elif atom.isSurfaceSite(): surfaceSites.append(atom)
+        if len(atomsToRemove) < len(self.molecule.atoms) - len(surfaceSites):
             for atom in atomsToRemove:
                 for atom2 in atom.bonds:
                     try:
@@ -239,6 +241,11 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['H', 'H', 'X']:
+            # Render as H2::X instead of crashing on H-H::X (vdW bond)
+            self.molecule.removeAtom(self.molecule.atoms[0])
+            self.symbols = ['H2', 'X']
+            self.coordinates = numpy.array([[0,-0.5],[0,0.5]], numpy.float64) * self.options['bondLength']
   
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
