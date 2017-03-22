@@ -106,6 +106,8 @@ cdef class Group(Graph):
     cpdef removeAtom(self, GroupAtom atom)
 
     cpdef removeBond(self, GroupBond bond)
+    
+    cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)
 

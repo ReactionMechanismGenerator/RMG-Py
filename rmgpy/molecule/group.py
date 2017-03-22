@@ -157,6 +157,9 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the forming bond, and should be
         'S' (since we only allow forming of single bonds).
         """
+        if order == 'vdW':
+            # no change to atom types!
+            return
         if order != 'S':
             raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
@@ -173,6 +176,9 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the breaking bond, and should be
         'S' (since we only allow breaking of single bonds).
         """
+        if order == 'vdW':
+            # no change to atom types!
+            return
         if order != 'S':
             raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
@@ -626,6 +632,16 @@ class Group(Graph):
         this removal.
         """
         return self.removeEdge(bond)
+
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all bonds that are definitely only van der Waals bonds.
+        """
+        cython.declare(atom=GroupAtom, bond=GroupBond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.order == ['vdW']:
+                    self.removeBond(bond)
 
     def sortAtoms(self):
         """

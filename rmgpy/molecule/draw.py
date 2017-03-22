@@ -156,9 +156,11 @@ class MoleculeDrawer:
         # However, if this would remove all atoms, then don't remove any
         atomsToRemove = []
         self.implicitHydrogens = {}
+        surfaceSites = []
         for atom in self.molecule.atoms:
             if atom.isHydrogen() and atom.label == '': atomsToRemove.append(atom)
-        if len(atomsToRemove) < len(self.molecule.atoms):
+            elif atom.isSurfaceSite(): surfaceSites.append(atom)
+        if len(atomsToRemove) < len(self.molecule.atoms) - len(surfaceSites):
             for atom in atomsToRemove:
                 for atom2 in atom.bonds:
                     try:
@@ -223,6 +225,11 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['H', 'H', 'X']:
+            # Render as H2::X instead of crashing on H-H::X (vdW bond)
+            self.molecule.removeAtom(self.molecule.atoms[0])
+            self.symbols = ['H2', 'X']
+            self.coordinates = numpy.array([[0,-0.5],[0,0.5]], numpy.float64) * self.options['bondLength']
   
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
@@ -289,27 +296,38 @@ class MoleculeDrawer:
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
-        flag_charge = 0
-        
-        for atom in self.molecule.atoms:
-            if atom.charge != 0: #atomType.label in ['N5s','N5d','N5dd','N5t','N5b']:
-                 flag_charge = 1
-                 break
+
+
         
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
-        
-        if flag_charge == 1:
-            # If there are only one or two atoms to draw, then determining the
-            # coordinates is trivial
-            if Natoms == 1:
-                self.coordinates[0,:] = [0.0, 0.0]
-                return self.coordinates
-            elif Natoms == 2:
-                self.coordinates[0,:] = [-0.5, 0.0]
-                self.coordinates[1,:] = [0.5, 0.0]
-                return self.coordinates
-        
+
+        # If there are only one or two atoms to draw, then determining the
+        # coordinates is trivial
+        if Natoms == 1:
+            self.coordinates[0, :] = [0.0, 0.0]
+            return self.coordinates
+        elif Natoms == 2:
+            if atoms[0].isSurfaceSite():
+                self.coordinates[0, :] = [0.0, -0.5]
+                self.coordinates[1, :] = [0.0, 0.5]
+            elif atoms[1].isSurfaceSite():
+                self.coordinates[0, :] = [0.0, 0.5]
+                self.coordinates[1, :] = [0.0, -0.5]
+            else:
+                self.coordinates[0, :] = [-0.5, 0.0]
+                self.coordinates[1, :] = [0.5, 0.0]
+            return self.coordinates
+
+        # Decide whether we can use RDKit or have to generate coordinates ourselves
+        for atom in self.molecule.atoms:
+            if atom.charge != 0: #atomType.label in ['N5s','N5d','N5dd','N5t','N5b']:
+                 useRDKit = False
+                 break
+        else: # didn't break
+            useRDKit = True
+
+        if not useRDKit:
             if len(self.cycles) > 0:
                 # Cyclic molecule
                 backbone = self.__findCyclicBackbone()
@@ -332,7 +350,8 @@ class MoleculeDrawer:
                 else:
                     angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
                     rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                    coordinates = numpy.dot(coordinates, rot)
+                    # need to keep self.coordinates and coordinates referring to the same object
+                    self.coordinates = coordinates = numpy.dot(coordinates, rot)
                 
             # Center backbone at origin
             xmin = numpy.min(coordinates[:,0])
@@ -355,8 +374,7 @@ class MoleculeDrawer:
             self.__generateNeighborCoordinates(backbone)
             
         else:
-            
-            # Use rdkit 2D coordinate generation:
+            # Use RDKit 2D coordinate generation:
             
             # Generate the RDkit molecule from the RDkit molecule, use geometry
             # in order to match the atoms in the rdmol with the atoms in the
@@ -370,7 +388,7 @@ class MoleculeDrawer:
             for atom in atoms:
                 index = rdAtomIdx[atom]
                 point = rdmol.GetConformer(0).GetAtomPosition(index)
-                coordinates[index,:]= [point.x*0.6, point.y*0.6]
+                coordinates[index,:] = [point.x*0.6, point.y*0.6]
             
             # RDKit generates some molecules more vertically than horizontally,
             # Especially linear ones. This will reflect any molecule taller than
@@ -381,7 +399,7 @@ class MoleculeDrawer:
                 coordinates[:,0] = temp[:,1]
                 coordinates[:,1] = temp[:,0]
             
-        # For surface species:
+        # For surface species, rotate them so the site is at the bottom.
         if self.molecule.containsSurfaceSite():
             if len(self.molecule.atoms) == 1:
                 return coordinates
@@ -390,11 +408,17 @@ class MoleculeDrawer:
                     break
             else:
                 raise Exception("Can't find surface site")
-            adsorbate = site.bonds.keys()[0]
-            vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
-            angle = math.atan2(vector0[0], vector0[1]) - math.pi
-            rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-            self.coordinates = numpy.dot(coordinates, rot)
+            if site.bonds:
+                adsorbate = site.bonds.keys()[0]
+                vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
+                angle = math.atan2(vector0[0], vector0[1]) - math.pi
+                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+                self.coordinates = coordinates = numpy.dot(coordinates, rot)
+            else:
+                # van der waals
+                index = atoms.index(site)
+                coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
+                coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
 
     
     def __findCyclicBackbone(self):

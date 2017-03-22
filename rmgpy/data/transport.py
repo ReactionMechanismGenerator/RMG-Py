@@ -332,7 +332,10 @@ class TransportDatabase(object):
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         """
-        transport = None
+        transport = (None, None, None)
+
+        if species.containsSurfaceSite():
+            return transport
         
         for label in self.libraryOrder:
             transport = self.getTransportPropertiesFromLibrary(species, self.libraries[label])

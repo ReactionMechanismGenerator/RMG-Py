@@ -736,6 +736,16 @@ class Molecule(Graph):
         self._fingerprint = None
         return self.removeEdge(bond)
 
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all van der Waals bonds.
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals():
+                    self.removeBond(bond)
+
     def sortAtoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.

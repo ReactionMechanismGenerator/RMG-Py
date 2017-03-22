@@ -134,6 +134,8 @@ cdef class Molecule(Graph):
     cpdef removeAtom(self, Atom atom)
 
     cpdef removeBond(self, Bond bond)
+    
+    cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)
     

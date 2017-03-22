@@ -237,7 +237,9 @@ class ReactionRecipe:
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
                     if struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
-                    bond = GroupBond(atom1, atom2, order=['S']) if pattern else Bond(atom1, atom2, order='S')
+                    if info not in ('S', 'vdW'):
+                        raise InvalidActionError('Attempted to create bond of type {:!r}'.format(info))
+                    bond = GroupBond(atom1, atom2, order=[info]) if pattern else Bond(atom1, atom2, order=info)
                     struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -1184,6 +1186,10 @@ class KineticsFamily(Database):
             if not productStructures[0].containsLabeledAtom('*1') and \
                 productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
+
+        # Remove vdW bonds
+        for struct in productStructures:
+            struct.removeVanDerWaalsBonds()
 
         # If product structures are Molecule objects, update their atom types
         for struct in productStructures:
