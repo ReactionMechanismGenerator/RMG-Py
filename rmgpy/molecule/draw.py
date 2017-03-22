@@ -401,7 +401,7 @@ class MoleculeDrawer:
                 coordinates[:,0] = temp[:,1]
                 coordinates[:,1] = temp[:,0]
             
-        # For surface species:
+        # For surface species, rotate them so the site is at the bottom.
         if self.molecule.containsSurfaceSite():
             if len(self.molecule.atoms) == 1:
                 return coordinates
@@ -415,7 +415,7 @@ class MoleculeDrawer:
                 vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
                 angle = math.atan2(vector0[0], vector0[1]) - math.pi
                 rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                self.coordinates = numpy.dot(coordinates, rot)
+                self.coordinates = coordinates = numpy.dot(coordinates, rot)
             else:
                 # van der waals
                 index = rdAtomIdx[site]
