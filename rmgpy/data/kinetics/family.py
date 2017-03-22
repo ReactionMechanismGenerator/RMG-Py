@@ -1801,11 +1801,16 @@ class KineticsFamily(Database):
         depositories as well as generating a result using the user-specified `estimator`
         of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
-        results, with each result comprising the kinetics, the source,
-        the entry, and whether it's in the forward direction.
-        The source will be the depository name or estimator method.
-        If it came from a template estimated with averaging then the
-        entry will be `None`.
+        results, with each result comprising of
+
+        1. the kinetics
+        2. the source - this will be `None` if from a template estimate
+        3. the entry  - this will be `None` if from a template estimate
+        4. isForward a boolean denoting whether the matched entry is in the same
+        direction as the inputted reaction. This will always be True if using
+        rates rules or group additivity. This can be `True` or `False` if using
+        a depository
+
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
