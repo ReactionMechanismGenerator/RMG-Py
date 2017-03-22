@@ -418,7 +418,7 @@ class MoleculeDrawer:
                 self.coordinates = coordinates = numpy.dot(coordinates, rot)
             else:
                 # van der waals
-                index = rdAtomIdx[site]
+                index = atoms.index(site)
                 coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
                 coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
 
