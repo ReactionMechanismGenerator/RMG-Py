@@ -351,7 +351,8 @@ class MoleculeDrawer:
                 else:
                     angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
                     rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                    coordinates = numpy.dot(coordinates, rot)
+                    # need to keep self.coordinates and coordinates referring to the same object
+                    self.coordinates = coordinates = numpy.dot(coordinates, rot)
                 
             # Center backbone at origin
             xmin = numpy.min(coordinates[:,0])
