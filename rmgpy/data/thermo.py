@@ -775,6 +775,9 @@ class ThermoDatabase(object):
                     self.libraries[library.label] = library
                     self.libraryOrder.append(library.label)
                 else:
+                    if libraryName == "KlippensteinH2O2":
+                        logging.info("""\n** Note: The thermo library KlippensteinH2O2 was replaced and is no longer available in RMG.
+                        For H2 combustion chemistry consider using the BurkeH2O2 library instead\n""")
                     raise Exception('Library {} not found in {}...Please check if your library is correctly placed'.format(libraryName, path))
 
     def loadGroups(self, path):
