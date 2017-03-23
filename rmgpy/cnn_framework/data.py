@@ -31,18 +31,35 @@ def get_data_from_db(db_name, collection_name,
 	
 	return (X, y)
 
-def prepare_folded_data(X, y, folds):
+def prepare_folded_data(X, y, folds, shuffle_seed=None):
 
 	# Get target size of each fold
 	n = len(X)
 	logging.info('Total of {} input data points'.format(n))
 	target_fold_size = int(np.ceil(float(n) / folds))
-	
+
+	# Feed shuffle seed
+	if shuffle_seed is not None:
+		np.random.seed(shuffle_seed)
+
+	all_indices = range(n)
+	np.random.shuffle(all_indices)
+
+	# shuffle X and y
+	X_shuffled = [X[i] for i in all_indices]
+	y_shuffled = [y[i] for i in all_indices]
+
 	# Split up data
-	folded_Xs 		= [X[i:i+target_fold_size]   for i in range(0, n, target_fold_size)]
-	folded_ys 		= [y[i:i+target_fold_size]   for i in range(0, n, target_fold_size)]
+	folded_Xs 		= [X_shuffled[i:i+target_fold_size]   for i in range(0, n, target_fold_size)]
+	folded_ys 		= [y_shuffled[i:i+target_fold_size]   for i in range(0, n, target_fold_size)]
 
 	logging.info('Split data into {} folds'.format(folds))
+
+	# reset np random seed to avoid side-effect on other methods
+	# relying on np.random
+	if shuffle_seed is not None:
+		np.random.seed()
+
 	return (folded_Xs, folded_ys)
 
 
@@ -76,5 +93,10 @@ def prepare_data_one_fold(folded_Xs, folded_ys, current_fold=0,
 	logging.info('Total training: {}'.format(len(X_train)))
 	logging.info('Total validation: {}'.format(len(X_val)))
 	logging.info('Total testing: {}'.format(len(X_test)))
+
+	# reset np random seed to avoid side-effect on other methods
+	# relying on np.random
+	if shuffle_seed is not None:
+		np.random.seed()
 
 	return (X_train, X_val, X_test, y_train, y_val, y_test)
