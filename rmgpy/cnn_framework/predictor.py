@@ -45,13 +45,13 @@ class Predictor(object):
 		(X, y) = get_data_from_db('sdata134k', 'polycyclic_ff_table',
 									self.add_extra_atom_attribute,
 									self.add_extra_bond_attribute)
-		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds)
+		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds, shuffle_seed=0)
 
 		losses = []
 		val_losses = []
 		test_losses = []
 		for fold in range(folds):
-			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold)
+			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold, shuffle_seed=4)
 
 			# execute train_model
 			(model, loss, val_loss, mean_test_loss) = train_model(self.model, data, 
