@@ -684,12 +684,13 @@ class GaussianTS(QMReaction, Gaussian):
 
     def checkComplete(self, filePath):
         """
-        Check that an IRC output file is complete.
+        Check that a output file is complete.
 
         Incomplete IRC files may exist from previous runs, due to the job being prematurely terminated.
-        This checks to ensure the job has been completed.
+        This checks to ensure the job has been completed without interruption,
+        irrespective of whether or not it successfully converged.
         """
-        logging.info("Checking IRC file is complete")
+        logging.info("Checking file {} is complete".format(filePath))
         convergenceFailure = False
         complete = False
 
