@@ -19,22 +19,44 @@ class Test_Data(unittest.TestCase):
 	def test_prepare_folded_data(self):
 
 		folds = 5
-		(folded_Xs, folded_ys) = prepare_folded_data(self.X, self.y, folds)
+		shuffle_seed = 4
+		(folded_Xs, folded_ys) = prepare_folded_data(self.X, self.y, folds, shuffle_seed)
 		self.assertEqual(len(folded_Xs), folds)
 		self.assertEqual(len(folded_ys), folds)
 
+		# test shuffle is expected
+		import numpy as np
+		all_indices = range(len(self.X))
+		np.random.seed(shuffle_seed)
+		np.random.shuffle(all_indices)
+
+		first_X = folded_Xs[0][0]
+		expected_first_X = self.X[all_indices[0]]
+
+		self.assertTrue(np.all(np.equal(first_X, expected_first_X)))
+
 	def test_prepare_data_one_fold(self):
+
+		import numpy as np
 
 		folds = 5
 		training_ratio=0.9
-		(folded_Xs, folded_ys) = prepare_folded_data(self.X, self.y, folds)
-		data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=0, training_ratio=training_ratio)
+
+		n = len(self.X)
+		target_fold_size = int(np.ceil(float(n) / folds))
+		folded_Xs 		= [self.X[i:i+target_fold_size]   for i in range(0, n, target_fold_size)]
+		folded_ys 		= [self.y[i:i+target_fold_size]   for i in range(0, n, target_fold_size)]
+
+		shuffle_seed = 4 # seed for method `prepare_data_one_fold()`
+		data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=0, training_ratio=training_ratio,\
+									shuffle_seed=shuffle_seed)
 
 		self.assertEqual(len(data), 6)
 
 		X_train = data[0]
 		X_val = data[1]
 		X_test = data[2]
+
 		self.assertAlmostEqual(len(X_train)/10.0, 
 							training_ratio*int(np.ceil(1.0*len(self.X)/folds))*(folds - 1)/10.0, 
 							0)
@@ -44,5 +66,16 @@ class Test_Data(unittest.TestCase):
 		self.assertAlmostEqual(len(X_test)/10.0, 
 							int(np.ceil(1.0*len(self.X)/folds))/10.0, 
 							0)
-		
+
+
+		# test shuffle is expected
+		testset_size = len(folded_Xs[0])
+		training_val_indices = range(testset_size, len(self.X))
+		np.random.seed(shuffle_seed)
+		np.random.shuffle(training_val_indices)
+
+		first_X_in_train = X_train[0]
+		expected_first_X_in_train = self.X[training_val_indices[0]]
+
+		self.assertTrue(np.all(np.equal(first_X_in_train, expected_first_X_in_train)))
 
