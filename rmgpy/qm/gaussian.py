@@ -539,40 +539,45 @@ class GaussianTS(QMReaction, Gaussian):
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
 
         if os.path.exists(outputFilePath):
-            logging.info("Output file {} exists. Using that instead of re-running.".format(outputFilePath))
-            return outputFilePath
-        else:
-            attempt = 1
-
-            output = ['', self.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-
-            # molfile = self.reactantGeom.getRefinedMolFilePath()
-            molfile = self.reactantGeom.getCrudeMolFilePath()
-
-            assert os.path.exists(molfile)
-            atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
-
-            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-            assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-            output.append('')
-
-            if self.basisSet:
-                top_keys = '# {0}/{1} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method, self.basisSet)
+            logging.info("Output file {} exists.".format(outputFilePath))
+            if self.checkComplete(outputFilePath):
+                logging.info("Existing output file looks complete, so using it instead of re-running.")
+                return outputFilePath
             else:
-                top_keys = '# {0} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method)
+                logging.info("Existing output file looks like it was interrupted, so deleting and retrying.")
+                os.remove(outputFilePath)
 
-            dist_combo_it = itertools.combinations(labels, 2)
-            dist_combo_l = list(dist_combo_it)
-            bottomKeys = ''
-            for combo in dist_combo_l:
-                bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+        attempt = 1
 
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+        output = ['', self.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity))
 
-            outputFilePath = self.runAlt(inputFilePath)
+        # molfile = self.reactantGeom.getRefinedMolFilePath()
+        molfile = self.reactantGeom.getCrudeMolFilePath()
+
+        assert os.path.exists(molfile)
+        atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
+
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
+
+        output.append('')
+
+        if self.basisSet:
+            top_keys = '# {0}/{1} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method, self.basisSet)
+        else:
+            top_keys = '# {0} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method)
+
+        dist_combo_it = itertools.combinations(labels, 2)
+        dist_combo_l = list(dist_combo_it)
+        bottomKeys = ''
+        for combo in dist_combo_l:
+            bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+
+        self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+
+        outputFilePath = self.runAlt(inputFilePath)
 
         return outputFilePath
 
@@ -589,48 +594,53 @@ class GaussianTS(QMReaction, Gaussian):
         outputFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
 
         if os.path.exists(outputFilePath):
-            logging.info("Output file {} exists. Using that instead of re-running.".format(outputFilePath))
-            return outputFilePath
-        else:
-            # Get the geometry from the OptEst file
-            readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-            assert os.path.exists(readFilePath), "Expected gaussian output file {} doesn't exist".format(readFilePath)
-            atomsymbols, atomcoords = self.reactantGeom.parseLOG(readFilePath)
-
-            attempt = 1
-
-            output = ['', self.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-
-            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-            assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-            output.append('')
-
-            if self.basisSet:
-                top_keys = '# {0}/{1} opt=(ts,calcfc,noeigentest)'.format(self.method, self.basisSet)
+            logging.info("Output file {} exists.".format(outputFilePath))
+            if self.checkComplete(outputFilePath):
+                logging.info("Existing output file looks complete, so using it instead of re-running.")
+                return outputFilePath
             else:
-                top_keys = '# {0} opt=(ts,calcfc,noeigentest)'.format(self.method)
+                logging.info("Existing output file looks like it was interrupted, so deleting and retrying.")
+                os.remove(outputFilePath)
 
-            # Get list of all distances
-            dist_combo_it = itertools.combinations(range(atomCount), 2)
-            dist_combo_all = list(dist_combo_it)
+        # Get the geometry from the OptEst file
+        readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+        assert os.path.exists(readFilePath), "Expected gaussian output file {} doesn't exist".format(readFilePath)
+        atomsymbols, atomcoords = self.reactantGeom.parseLOG(readFilePath)
 
-            # Get list of things we want unfrozen
-            dist_combo_it = itertools.combinations(labels, 2)
-            dist_combo_part = list(dist_combo_it)
+        attempt = 1
 
-            # Get list of things we want frozen
-            freezeList = [x for x in dist_combo_all if x not in dist_combo_part]
+        output = ['', self.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity))
 
-            bottomKeys = ''
-            for combo in freezeList:
-                bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
 
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
 
-            outputFilePath = self.runAlt(inputFilePath)
+        output.append('')
+
+        if self.basisSet:
+            top_keys = '# {0}/{1} opt=(ts,calcfc,noeigentest)'.format(self.method, self.basisSet)
+        else:
+            top_keys = '# {0} opt=(ts,calcfc,noeigentest)'.format(self.method)
+
+        # Get list of all distances
+        dist_combo_it = itertools.combinations(range(atomCount), 2)
+        dist_combo_all = list(dist_combo_it)
+
+        # Get list of things we want unfrozen
+        dist_combo_it = itertools.combinations(labels, 2)
+        dist_combo_part = list(dist_combo_it)
+
+        # Get list of things we want frozen
+        freezeList = [x for x in dist_combo_all if x not in dist_combo_part]
+
+        bottomKeys = ''
+        for combo in freezeList:
+            bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+
+        self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+
+        outputFilePath = self.runAlt(inputFilePath)
 
         return outputFilePath
 
