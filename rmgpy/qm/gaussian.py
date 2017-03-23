@@ -21,7 +21,6 @@ from reaction import QMReaction
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics import saveEntry
 from rmgpy.data.kinetics.transitionstates import DistanceData
-from pybel import Outputfile
 
 class Gaussian:
     """
