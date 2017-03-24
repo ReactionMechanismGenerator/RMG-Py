@@ -2007,6 +2007,59 @@ multiplicity 2
         mol = Molecule(SMILES='[CH2]c1c[c]ccc1')
         self.assertFalse(mol.isArylRadical())
 
+    def testIdenticalTrue(self):
+        """Test that the isIdentical method works properly"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertTrue(mol.isIdentical(molCopy))
+
+    def testIdenticalFalse(self):
+        """Test that the isIdentical method works properly"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        # Remove a hydrogen from mol
+        a = mol.atoms[-1]
+        self.assertEquals(a.id, 13)
+        mol.removeAtom(a)
+        # Remove a different hydrogen from molCopy
+        b = molCopy.atoms[-2]
+        self.assertEquals(b.id, 12)
+        molCopy.removeAtom(b)
+
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertFalse(mol.isIdentical(molCopy))
+
+    def testIdenticalFalse2(self):
+        """Test that the isIdentical method works properly"""
+        # Manually test addition of H radical to ethene
+        reactant1 = Molecule(SMILES='C=C')
+        carbons = [atom for atom in reactant1.atoms if atom.symbol == 'C']
+        carbons[0].label = '*1'
+        carbons[1].label = '*2'
+        reactant2 = Molecule(SMILES='[H]')
+        reactant2.atoms[0].label = '*3'
+        # Merge reactants
+        mol = reactant1.merge(reactant2)
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        # Manually perform R_Addition_MultipleBond of *3 to *1
+        labeledAtoms = mol.getLabeledAtoms()
+        mol.getBond(labeledAtoms['*1'], labeledAtoms['*2']).decrementOrder()
+        mol.addBond(Bond(labeledAtoms['*1'], labeledAtoms['*3'], order='S'))
+        labeledAtoms['*2'].incrementRadical()
+        labeledAtoms['*3'].decrementRadical()
+        # Manually perform R_Addition_MultipleBond of *3 to *2
+        labeledAtoms = molCopy.getLabeledAtoms()
+        molCopy.getBond(labeledAtoms['*1'], labeledAtoms['*2']).decrementOrder()
+        molCopy.addBond(Bond(labeledAtoms['*2'], labeledAtoms['*3'], order='S'))
+        labeledAtoms['*1'].incrementRadical()
+        labeledAtoms['*3'].decrementRadical()
+
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertFalse(mol.isIdentical(molCopy))
 
 ################################################################################
 
