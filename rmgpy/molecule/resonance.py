@@ -47,6 +47,7 @@ Currently supported resonance types:
 """
 
 import cython
+import itertools
 
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.parser as parser
@@ -428,8 +429,9 @@ def generateAromaticResonanceStructures(mol, features=None):
     In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, rings=list, aromaticBonds=list, kekuleList=list,
-                   maxNum=cython.int, molList=list, newMolList=list, ring=list, bond=Bond)
+    cython.declare(molecule=Molecule, rings=list, aromaticBonds=list, kekuleList=list, maxNum=cython.int, molList=list,
+                   newMolList=list, ring=list, bond=Bond, order=float, originalBonds=list, originalOrder=list,
+                   i=cython.int, counter=cython.int)
 
     if features is None:
         features = analyzeMolecule(mol)
@@ -476,6 +478,14 @@ def generateAromaticResonanceStructures(mol, features=None):
     for mol0, aromaticBonds in molList:
         if not aromaticBonds:
             continue
+        # Save original bond orders in case this doesn't work out
+        originalBonds = []
+        for ring in aromaticBonds:
+            originalOrder = []
+            for bond in ring:
+                originalOrder.append(bond.order)
+            originalBonds.append(originalOrder)
+        # Change bond types to benzene bonds for all aromatic rings
         for ring in aromaticBonds:
             for bond in ring:
                 bond.order = 1.5
@@ -483,7 +493,37 @@ def generateAromaticResonanceStructures(mol, features=None):
         try:
             mol0.updateAtomTypes(logSpecies=False)
         except AtomTypeError:
-            continue
+            # If this didn't work the first time, then there might be a ring that is not actually aromatic
+            # Reset our changes
+            for ring, originalOrder in itertools.izip(aromaticBonds, originalBonds):
+                for bond, order in itertools.izip(ring, originalOrder):
+                    bond.order = order
+            # Try to make each ring aromatic, one by one
+            i = 0
+            counter = 0
+            while i < len(aromaticBonds) and counter < 2*len(aromaticBonds):
+                counter += 1
+                originalOrder = []
+                for bond in aromaticBonds[i]:
+                    originalOrder.append(bond.order)
+                    bond.order = 1.5
+                try:
+                    mol0.updateAtomTypes(logSpecies=False)
+                except AtomTypeError:
+                    # This ring could not be made aromatic, possibly because it depends on other rings
+                    # Undo changes
+                    for bond, order in itertools.izip(aromaticBonds[i], originalOrder):
+                        bond.order = order
+                    # Move it to the end of the list, and go on to the next ring
+                    aromaticBonds.append(aromaticBonds.pop(i))
+                    continue
+                else:
+                    # We're done with this ring, so go on to the next ring
+                    i += 1
+            # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
+            if i == 0:
+                # Move onto next molecule in the list
+                continue
 
         for mol1 in newMolList:
             if mol1.isIsomorphic(mol0):
