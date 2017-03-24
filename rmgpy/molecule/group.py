@@ -685,8 +685,16 @@ class GroupBond(Edge):
         newOrder = [value + order for value in self.order]
         if any([value < 0 or value > 3 for value in newOrder]):
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(newOrder))
-        # Set the new bond orders, removing any duplicates
-        self.order = list(set(newOrder))
+        # Change any modified benzene orders to the appropriate stable order
+        newOrder = set(newOrder)
+        if 0.5 in newOrder:
+            newOrder.remove(0.5)
+            newOrder.add(1)
+        if 2.5 in newOrder:
+            newOrder.remove(2.5)
+            newOrder.add(2)
+        # Set the new bond orders
+        self.order = list(newOrder)
 
     def applyAction(self, action):
         """
