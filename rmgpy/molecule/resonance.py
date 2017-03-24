@@ -113,13 +113,13 @@ def analyzeMolecule(mol):
                 }
 
     if features['isCyclic']:
-        ASSSR = mol.getAromaticSSSR()[0]
-        if len(ASSSR) > 0:
+        aromaticRings = mol.getAromaticRings()[0]
+        if len(aromaticRings) > 0:
             features['isAromatic'] = True
-        if len(ASSSR) > 1:
+        if len(aromaticRings) > 1:
             features['isPolycyclicAromatic'] = True
         if features['isRadical'] and features['isAromatic']:
-            features['isArylRadical'] = mol.isArylRadical(ASSSR)
+            features['isArylRadical'] = mol.isArylRadical(aromaticRings)
     for atom in mol.vertices:
         if atom.isNitrogen():
             features['hasNitrogen'] = True
@@ -428,7 +428,7 @@ def generateAromaticResonanceStructures(mol, features=None):
     In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, SSSR=list, rings=list, aromaticBonds=list, kekuleList=list,
+    cython.declare(molecule=Molecule, rings=list, aromaticBonds=list, kekuleList=list,
                    maxNum=cython.int, molList=list, newMolList=list, ring=list, bond=Bond)
 
     if features is None:
@@ -440,11 +440,10 @@ def generateAromaticResonanceStructures(mol, features=None):
     molecule = mol.copy(deep=True)
 
     # First get all rings in the molecule
-    SSSR = molecule.getSmallestSetOfSmallestRings()
-    rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
+    rings = molecule.getAllCyclesOfSize(6)
 
     # Then determine which ones are aromatic
-    aromaticBonds = molecule.getAromaticSSSR(SSSR)[1]
+    aromaticBonds = molecule.getAromaticRings(rings)[1]
 
     # If the species is a radical and the number of aromatic rings is less than the number of total rings,
     # then there is a chance that the radical can be shifted to a location that increases the number of aromatic rings.
@@ -460,7 +459,7 @@ def generateAromaticResonanceStructures(mol, features=None):
 
         # Iterate through the adjacent resonance structures and keep the structures with the most aromatic rings
         for mol0 in kekuleList:
-            aromaticBonds = mol0.getAromaticSSSR()[1]
+            aromaticBonds = mol0.getAromaticRings()[1]
             if len(aromaticBonds) > maxNum:
                 maxNum = len(aromaticBonds)
                 molList = [(mol0, aromaticBonds)]
@@ -531,7 +530,7 @@ def generateOppositeKekuleStructure(mol):
 
     molecule = mol.copy(deep=True)
 
-    aromaticBonds = molecule.getAromaticSSSR()[1]
+    aromaticBonds = molecule.getAromaticRings()[1]
 
     # We can only do this for single ring aromatics for now
     if len(aromaticBonds) != 1:
@@ -616,7 +615,7 @@ def generateClarStructures(mol):
 
     Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    cython.declare(output=list, molList=list, newmol=Molecule, asssr=list, bonds=list, solution=list,
+    cython.declare(output=list, molList=list, newmol=Molecule, aromaticRings=list, bonds=list, solution=list,
                    y=list, x=list, index=cython.int, bond=Bond, ring=list)
 
     if not mol.isCyclic():
@@ -626,13 +625,13 @@ def generateClarStructures(mol):
 
     molList = []
 
-    for newmol, asssr, bonds, solution in output:
+    for newmol, aromaticRings, bonds, solution in output:
 
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(asssr)]
-        x = solution[len(asssr):]
+        y = solution[0:len(aromaticRings)]
+        x = solution[len(aromaticRings):]
 
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
@@ -644,7 +643,7 @@ def generateClarStructures(mol):
                 raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
-        for index, ring in enumerate(asssr):
+        for index, ring in enumerate(aromaticRings):
             if y[index] == 1:
                 _clarTransformation(newmol, ring)
 
@@ -676,7 +675,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Molecule, asssr=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+    cython.declare(molecule=Molecule, aromaticRings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
                    a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
     from lpsolve55 import lpsolve
@@ -688,14 +687,14 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    asssr = molecule.getAromaticSSSR()[0]
+    aromaticRings = molecule.getAromaticRings()[0]
 
-    if not asssr:
+    if not aromaticRings:
         return []
 
     # Get list of atoms that are in rings
     atoms = set()
-    for ring in asssr:
+    for ring in aromaticRings:
         atoms.update(ring)
     atoms = list(atoms)
 
@@ -717,7 +716,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
             exo.append(None)
 
     # Dimensions
-    l = len(asssr)
+    l = len(aromaticRings)
     m = len(atoms)
     n = l + len(bonds)
 
@@ -725,7 +724,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     # Part of equality constraint Ax=b
     a = []
     for atom in atoms:
-        inRing = [1 if atom in ring else 0 for ring in asssr]
+        inRing = [1 if atom in ring else 0 for ring in aromaticRings]
         inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
         a.append(inRing + inBond)
 
@@ -792,7 +791,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     except ILPSolutionError:
         innerSolutions = []
 
-    return innerSolutions + [(molecule, asssr, bonds, solution)]
+    return innerSolutions + [(molecule, aromaticRings, bonds, solution)]
 
 
 def _clarTransformation(mol, aromaticRing):

@@ -1555,17 +1555,17 @@ class Molecule(Graph):
                 return True
         return False
 
-    def isArylRadical(self, ASSSR=None):
+    def isArylRadical(self, aromaticRings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,
         ie. radical on an aromatic ring, or ``False`` otherwise.
         """
         cython.declare(atom=Atom, radList=list)
-        if ASSSR is None:
-            ASSSR = self.getAromaticSSSR()[0]
+        if aromaticRings is None:
+            aromaticRings = self.getAromaticRings()[0]
 
         total = self.getRadicalCount()
-        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(ASSSR)])
+        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(aromaticRings)])
         aryl = sum([atom.radicalElectrons for atom in aromaticAtoms])
 
         return total == aryl
@@ -1672,9 +1672,9 @@ class Molecule(Graph):
         
         return group
 
-    def getAromaticSSSR(self, SSSR=None):
+    def getAromaticRings(self, rings=None):
         """
-        Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds
+        Returns all aromatic rings as a list of atoms and a list of bonds.
 
         Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
@@ -1684,16 +1684,14 @@ class Molecule(Graph):
         by RMG, and not by RDKit.
         """
         cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
-        cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
+        cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
         from rdkit.Chem.rdchem import BondType
 
         AROMATIC = BondType.AROMATIC
 
-        if SSSR is None:
-            SSSR = self.getSmallestSetOfSmallestRings()
-
-        rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
+        if rings is None:
+            rings = self.getAllCyclesOfSize(6)
         if not rings:
             return [], []
 
