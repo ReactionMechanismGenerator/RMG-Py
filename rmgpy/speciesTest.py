@@ -147,7 +147,7 @@ class TestSpecies(unittest.TestCase):
         exec('spec2 = {0!r}'.format(spec))
         self.assertEqual(len(spec.molecule), len(spec2.molecule))
         for i, j in zip(spec.molecule, spec2.molecule):
-            self.assertTrue(i.isIsomorphic(j))
+            self.assertTrue(j.isIsomorphic(i), msg='i is not isomorphic with j, where i is {} and j is {}'.format(i.toSMILES(), j.toSMILES()))
 
     def testGetResonanceHybrid(self):
         """
