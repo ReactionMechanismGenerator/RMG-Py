@@ -785,16 +785,17 @@ class Group(Graph):
     Corresponding alias methods have also been provided.
     """
 
-    def __init__(self, atoms=None, multiplicity=None):
+    def __init__(self, atoms=None, props=None, multiplicity=None):
         Graph.__init__(self, atoms)
-        self.multiplicity = multiplicity if multiplicity else []
+        self.props = props or {}
+        self.multiplicity = multiplicity or []
         self.update()
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Group, (self.vertices,))
+        return (Group, (self.vertices, self.props))
 
     def _repr_png_(self):
         """
