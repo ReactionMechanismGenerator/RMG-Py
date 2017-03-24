@@ -1875,3 +1875,36 @@ class Molecule(Graph):
         """
         for i, atom in enumerate(self.atoms):
             atom.id = i
+
+    def isIdentical(self, other):
+        """
+        Performs isomorphism checking, with the added constraint that atom IDs must match.
+
+        Primary use case is tracking atoms in reactions for reaction degeneracy determination.
+
+        Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+        """
+        cython.declare(atomIndicies=set, otherIndices=set, atomList=list, otherList=list, mapping = dict)
+
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+
+        # Get a set of atom indices for each molecule
+        atomIDs = set([atom.id for atom in self.atoms])
+        otherIDs = set([atom.id for atom in other.atoms])
+
+        if atomIDs == otherIDs:
+            # If the two molecules have the same indices, then they might be identical
+            # Sort the atoms by ID
+            atomList = sorted(self.atoms, key=lambda x: x.id)
+            otherList = sorted(other.atoms, key=lambda x: x.id)
+
+            # If matching atom indices gives a valid mapping, then the molecules are fully identical
+            mapping = {}
+            for atom1, atom2 in itertools.izip(atomList, otherList):
+                mapping[atom1] = atom2
+
+            return self.isMappingValid(other, mapping)
+        else:
+            # The molecules don't have the same set of indices, so they are not identical
+            return False
