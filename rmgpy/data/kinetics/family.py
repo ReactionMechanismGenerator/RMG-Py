@@ -203,6 +203,7 @@ class ReactionRecipe:
         """
 
         pattern = isinstance(struct, Group)
+        struct.props['validAromatic'] = True
 
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
@@ -224,6 +225,8 @@ class ReactionRecipe:
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
                     bond = struct.getBond(atom1, atom2)
+                    if bond.isBenzene():
+                        struct.props['validAromatic'] = False
                     if doForward:
                         atom1.applyAction(['CHANGE_BOND', label1, info, label2])
                         atom2.applyAction(['CHANGE_BOND', label1, info, label2])
@@ -848,7 +851,8 @@ class KineticsFamily(Database):
         productStructures = []
         for reactantStructure in reactantStructures:
             productStructure = self.applyRecipe(reactantStructure, forward=True, unique=False)
-            productStructures.append(productStructure)
+            if productStructure:
+                productStructures.append(productStructure)
 
         # Fourth, remove duplicates from the lists
         productStructureList = [[] for i in range(len(productStructures[0]))]
@@ -1094,6 +1098,15 @@ class KineticsFamily(Database):
             self.forwardRecipe.applyForward(reactantStructure, unique)
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
+        if not reactantStructure.props['validAromatic']:
+            if isinstance(reactantStructure, Molecule):
+                # For molecules, kekulize the product to redistribute bonds appropriately
+                reactantStructure.kekulize()
+            else:
+                # For groups, we ignore the product template for a purely aromatic group
+                # If there is an analagous aliphatic group in the family, then the product template will be identical
+                # There should NOT be any families that consist solely of aromatic reactant templates
+                return []
         productStructure = reactantStructure
 
         # Hardcoding of reaction family for reverse of radical recombination
