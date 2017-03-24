@@ -1947,45 +1947,45 @@ multiplicity 2
         self.assertTrue(exp.isIsomorphic(calc))
 
     def testAromaticityPerceptionBenzene(self):
-        """Test aromaticity perception via getAromaticSSSR for benzene."""
+        """Test aromaticity perception via getAromaticRings for benzene."""
         mol = Molecule(SMILES='c1ccccc1')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 1)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 1)
         self.assertEqual(len(aromaticBonds), 1)
         for bond in aromaticBonds[0]:
-            self.assertTrue(bond.atom1 in asssr[0] and bond.atom2 in asssr[0])
+            self.assertTrue(bond.atom1 in aromaticAtoms[0] and bond.atom2 in aromaticAtoms[0])
 
     def testAromaticityPerceptionTetralin(self):
-        """Test aromaticity perception via getAromaticSSSR for tetralin."""
+        """Test aromaticity perception via getAromaticRings for tetralin."""
         mol = Molecule(SMILES='c1ccc2c(c1)CCCC2')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 1)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 1)
         self.assertEqual(len(aromaticBonds), 1)
         for bond in aromaticBonds[0]:
-            self.assertTrue(bond.atom1 in asssr[0] and bond.atom2 in asssr[0])
+            self.assertTrue(bond.atom1 in aromaticAtoms[0] and bond.atom2 in aromaticAtoms[0])
 
     def testAromaticityPerceptionBiphenyl(self):
-        """Test aromaticity perception via getAromaticSSSR for biphenyl."""
+        """Test aromaticity perception via getAromaticRings for biphenyl."""
         mol = Molecule(SMILES='c1ccc(cc1)c2ccccc2')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 2)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 2)
         self.assertEqual(len(aromaticBonds), 2)
-        for index in range(len(asssr)):
+        for index in range(len(aromaticAtoms)):
             for bond in aromaticBonds[index]:
-                self.assertTrue(bond.atom1 in asssr[index] and bond.atom2 in asssr[index])
+                self.assertTrue(bond.atom1 in aromaticAtoms[index] and bond.atom2 in aromaticAtoms[index])
 
     def testAromaticityPerceptionAzulene(self):
-        """Test aromaticity perception via getAromaticSSSR for azulene."""
+        """Test aromaticity perception via getAromaticRings for azulene."""
         mol = Molecule(SMILES='c1cccc2cccc2c1')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 0)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 0)
         self.assertEqual(len(aromaticBonds), 0)
 
     def testAromaticityPerceptionFuran(self):
-        """Test aromaticity perception via getAromaticSSSR for furan."""
+        """Test aromaticity perception via getAromaticRings for furan."""
         mol = Molecule(SMILES='c1ccoc1')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 0)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 0)
         self.assertEqual(len(aromaticBonds), 0)
 
     def testArylRadicalTrue(self):
