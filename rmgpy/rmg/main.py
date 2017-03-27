@@ -579,7 +579,8 @@ class RMG(util.Subject):
                     # Turn pruning off if we haven't reached minimum core size.
                     prune = False
                     
-                try: terminated, obj = reactionSystem.simulate(
+
+                try: terminated, obj,surfaceSpecies,surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,

@@ -721,7 +721,7 @@ cdef class ReactionSystem(DASx):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, invalidObject
+        return terminated, invalidObject, surfaceSpecies, surfaceReactions
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """
