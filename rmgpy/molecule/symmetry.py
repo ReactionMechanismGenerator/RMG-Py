@@ -125,49 +125,48 @@ def calculateBondSymmetryNumber(molecule, atom1, atom2):
     """
     bond = atom1.edges[atom2]
     symmetryNumber = 1
-    if bond.isSingle() or bond.isDouble() or bond.isTriple():
-        if atom1.equivalent(atom2):
-            # An O-O bond is considered to be an "optical isomer" and so no
-            # symmetry correction will be applied
-            if atom1.atomType.label == 'Os' and atom2.atomType.label == 'Os' and atom1.radicalElectrons == atom2.radicalElectrons == 0:
-                return symmetryNumber
-            # If the molecule is diatomic, then we don't have to check the
-            # ligands on the two atoms in this bond (since we know there
-            # aren't any)
-            elif len(molecule.vertices) == 2:
-                symmetryNumber = 2
-            else:
-                molecule.removeBond(bond)
-                structure = molecule.copy(True)
-                molecule.addBond(bond)
+    if atom1.equivalent(atom2):
+        # An O-O bond is considered to be an "optical isomer" and so no
+        # symmetry correction will be applied
+        if atom1.atomType.label == 'Os' and atom2.atomType.label == 'Os' and atom1.radicalElectrons == atom2.radicalElectrons == 0:
+            return symmetryNumber
+        # If the molecule is diatomic, then we don't have to check the
+        # ligands on the two atoms in this bond (since we know there
+        # aren't any)
+        elif len(molecule.vertices) == 2:
+            symmetryNumber = 2
+        else:
+            molecule.removeBond(bond)
+            structure = molecule.copy(True)
+            molecule.addBond(bond)
 
-                atom1 = structure.atoms[molecule.atoms.index(atom1)]
-                atom2 = structure.atoms[molecule.atoms.index(atom2)]
-                fragments = structure.split()
-                
-                if len(fragments) != 2: return symmetryNumber
+            atom1 = structure.atoms[molecule.atoms.index(atom1)]
+            atom2 = structure.atoms[molecule.atoms.index(atom2)]
+            fragments = structure.split()
 
-                fragment1, fragment2 = fragments
-                if atom1 in fragment1.atoms: fragment1.removeAtom(atom1)
-                if atom2 in fragment1.atoms: fragment1.removeAtom(atom2)
-                if atom1 in fragment2.atoms: fragment2.removeAtom(atom1)
-                if atom2 in fragment2.atoms: fragment2.removeAtom(atom2)
-                groups1 = fragment1.split()
-                groups2 = fragment2.split()
+            if len(fragments) != 2: return symmetryNumber
 
-                # Test functional groups for symmetry
-                if len(groups1) == len(groups2) == 1:
-                    if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
-                elif len(groups1) == len(groups2) == 2:
-                    if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                    elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                elif len(groups1) == len(groups2) == 3:
-                    if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
-                    elif groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                    elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
-                    elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
-                    elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                    elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
+            fragment1, fragment2 = fragments
+            if atom1 in fragment1.atoms: fragment1.removeAtom(atom1)
+            if atom2 in fragment1.atoms: fragment1.removeAtom(atom2)
+            if atom1 in fragment2.atoms: fragment2.removeAtom(atom1)
+            if atom2 in fragment2.atoms: fragment2.removeAtom(atom2)
+            groups1 = fragment1.split()
+            groups2 = fragment2.split()
+
+            # Test functional groups for symmetry
+            if len(groups1) == len(groups2) == 1:
+                if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
+            elif len(groups1) == len(groups2) == 2:
+                if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
+            elif len(groups1) == len(groups2) == 3:
+                if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
+                elif groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
+                elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
+                elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
+                elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
                 
                 
     return symmetryNumber
@@ -211,7 +210,8 @@ def calculateAxisSymmetryNumber(molecule):
     doubleBonds = []
     for atom1 in molecule.vertices:
         for atom2 in atom1.edges:
-            if atom1.edges[atom2].isDouble() and molecule.vertices.index(atom1) < molecule.vertices.index(atom2):
+            if (atom1.edges[atom2].isDouble() or atom1.edges[atom2].order > 2) \
+                and molecule.vertices.index(atom1) < molecule.vertices.index(atom2):
                 doubleBonds.append((atom1, atom2))
 
     # Search for adjacent double bonds

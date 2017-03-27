@@ -272,6 +272,14 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 12)
 
+    def testTotalSymmetryNumberbute_di_yl(self):
+        """
+        Test the Species.getSymmetryNumber() (total symmetry) on [CH2][CH]C=C
+        """
+        species = Species().fromSMILES('[CH2][CH]C=C')
+        symmetryNumber = species.getSymmetryNumber()
+        self.assertEqual(symmetryNumber, 2)
+
     def testTotalSymmetryNumberAllyl(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) on Allyl, [CH2]C=C
