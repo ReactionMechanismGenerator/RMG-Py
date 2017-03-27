@@ -11,7 +11,7 @@ import os.path
 
 from rmgpy.molecule import  Molecule
 from rmgpy.molecule.draw import MoleculeDrawer
-
+from rmgpy.species import Species
 ################################################################################
 
 class TestMoleculeDrawer(unittest.TestCase):
@@ -86,6 +86,17 @@ class TestMoleculeDrawer(unittest.TestCase):
         surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf')
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
+
+    def testDrawNonStandardBonds(self):
+        
+        spec = Species().fromSMILES('[CH2]C=C[CH2]')
+        hybrid = spec.getResonanceHybrid()
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        surface, cr, (xoff, yoff, width, height) = self.drawer.draw(hybrid, format='pdf')
+        self.assertIsInstance(surface, PDFSurface)
 
 ################################################################################
 
