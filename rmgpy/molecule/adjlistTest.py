@@ -574,6 +574,45 @@ class TestMoleculeAdjLists(unittest.TestCase):
         newMolecule = Molecule().fromAdjacencyList(adjlist_1)
         self.assertTrue(molecule.isIsomorphic(newMolecule))
         
+    def testToAdjacencyListForNonIntegerBonds(self):
+        """
+        Test the adjacency list can be created for molecules with bond orders
+        that don't fit into single, double, triple, or benzene
+        """
+        from rmgpy.molecule.molecule import Atom, Bond, Molecule
+        atom1 = Atom(element='H',lonePairs=0)
+        atom2 = Atom(element='H',lonePairs=0)
+        bond = Bond(atom1, atom2, 0.5)
+        mol = Molecule(multiplicity=1)
+        mol.addAtom(atom1)
+        mol.addAtom(atom2)
+        mol.addBond(bond)
+        adjlist = mol.toAdjacencyList()
+        self.assertIn('H', adjlist)
+        self.assertIn('{1,0.5}',adjlist)
+
+    @work_in_progress
+    def testFromAdjacencyListForNonIntegerBonds(self):
+        """
+        Test molecule can be created from the adjacency list for molecules with bond orders
+        that don't fit into single, double, triple, or benzene.
+
+        This test is a work in progress since currently reading one of these
+        objects thows an `InvalidAdjacencyListError`. Since the number radical
+        electrons is an integer, having fractional bonds leads to this error.
+        Fixing it would require switching radical electrons to floats.
+        """
+        from rmgpy.molecule.molecule import Molecule
+        adjlist = """
+        1 H u1 p2 c0 {2,0.5}
+        2 H u1 p2 c0 {1,0.5}
+        """
+        mol = Molecule().fromAdjacencyList(adjlist)
+        atom0 = mol.atoms[0]
+        atoms, bonds = atom0.bonds.items()
+
+        self.assertAlmostEqual(bonds[0].getOrderNum(), 0.5)
+
     def testFromIntermediateAdjacencyList1(self):
         """
         Test we can read an intermediate style adjacency list with implicit hydrogens 1
