@@ -529,7 +529,11 @@ class Bond(Edge):
         elif newOrder == 'B':
             self.order = 1.5
         else:
-            raise TypeError('Bond order {} is not hardcoded into this method'.format(newOrder))
+            # try to see if an float disguised as a string was input by mistake
+            try:
+                self.order = float(newOrder)
+            except ValueError:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(newOrder))
             
             
     def getOrderNum(self):
@@ -712,9 +716,15 @@ class Molecule(Graph):
         """
         cython.declare(multiplicity=cython.int)
         multiplicity = self.multiplicity
-        if multiplicity != self.getRadicalCount() + 1:
-            return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
-        return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
+        try:
+            if multiplicity != self.getRadicalCount() + 1:
+                return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
+            return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
+        except KeyError:
+            logging.warning('Could not generate SMILES for this molecule object.'+\
+                        ' Likely due to a keyerror when converting to RDKit'+\
+                        ' Here is molecules AdjList: {}'.format(self.toAdjacencyList()))
+            return 'Molecule().fromAdjacencyList"""{}"""'.format(self.toAdjacencyList())
 
     def __reduce__(self):
         """
