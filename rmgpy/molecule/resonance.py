@@ -48,6 +48,7 @@ Currently supported resonance types:
 
 import cython
 import itertools
+import logging
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
