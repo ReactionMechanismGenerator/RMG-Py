@@ -278,11 +278,9 @@ class ParserTest(unittest.TestCase):
         # of methylidyne exists as a mixture of electronic states even at
         # room temperature, giving rise to complex reactions.
         #
-        # Should we make the doublet? For now, this is a regression test,
-        # because we currently make the quartet.
         adjlist = '''
-        multiplicity 4
-        1 C u3 p0 c0 {2,S}
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
         2 H u0 p0 c0 {1,S}
         '''
         smiles = '[CH]'
