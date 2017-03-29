@@ -15,8 +15,11 @@ def parseCommandLineArguments():
 	"""
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('file', metavar='FILE', type=str, nargs=1,
-		help='a predictor training input file')
+	parser.add_argument('-i', '--input', metavar='FILE', type=str, 
+		nargs=1, help='a predictor training input file')
+
+	parser.add_argument('-d', '--datasets', metavar='FILE', type=str, 
+		nargs='+', help='a file specifies on which datasets to train')
 
 	parser.add_argument('-f', '--folds', type=int, 
 		help='number of folds for training')
@@ -80,17 +83,19 @@ def initializeLog(verbose, log_file_name):
 if __name__ == '__main__':
 
 	# to run the script
-	# type: python train_cnn.py input.py -f some_number
+	# example command: 
+	# python train_cnn.py -i input.py -d datasets.txt -f 5
 
 	args = parseCommandLineArguments()
-	input_file = args.file[0]
+	input_file = args.input[0]
+	datasets_file = args.datasets[0]
 	folds = args.folds
 	input_directory = os.path.abspath(os.path.dirname(input_file))
 	
 	level = logging.INFO
 	initializeLog(level, os.path.join(input_directory, 'train.log'))
 
-	h298_predictor = Predictor()
+	h298_predictor = Predictor(datasets_file=datasets_file)
 	h298_predictor.load_input(input_file)
 
 	lr_func = "float(0.0007 * np.exp(- epoch / 30.0))"
