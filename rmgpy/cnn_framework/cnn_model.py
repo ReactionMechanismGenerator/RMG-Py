@@ -64,7 +64,7 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 	"""
 	inputs:
 		model - a Keras model
-		data - X_train, X_val, X_test, y_train, y_val, y_test
+		data - X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val, X_test, y_test
 		nb_epoch - number of epochs to train for
 		lr_func - string which is evaluated with 'epoch' to produce the learning 
 				rate at each epoch 
@@ -74,11 +74,11 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 	outputs:
 		model - a trained Keras model
 		loss - list of training losses corresponding to each epoch 
-		val_loss - list of validation losses corresponding to each epoch
+		inner_val_loss - list of validation losses corresponding to each epoch
 	"""
 
 	# Get data from helper function
-	(X_train, X_val, X_test, y_train, y_val, y_test) = data
+	(X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val, X_test, y_test) = data
 
 	# Create learning rate function
 	lr_func_string = 'def lr(epoch):\n    return {}\n'.format(lr_func)
@@ -89,14 +89,14 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 	# (alternative is to pad with zeros and try to add some masking feature to GraphFP)
 	try:
 		loss = []
-		val_loss = []
+		inner_val_loss = []
 
 		wait = 0
-		prev_best_val_loss = 99999999
+		prev_best_inner_val_loss = 99999999
 		for i in range(nb_epoch):
 			logging.info('Epoch {}/{}, lr = {}'.format(i + 1, nb_epoch, lr(i)))
 			this_loss = []
-			this_val_loss = []
+			this_inner_val_loss = []
 			model.optimizer.lr.set_value(lr(i))
 			
 			# Run through training set
@@ -110,39 +110,40 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 				this_loss.append(sloss)
 			
 			# Run through testing set
-			logging.info('Validating..')
-			for j in range(len(X_val)):
-				single_mol_as_array = np.array(X_val[j:j+1])
-				single_y_as_array = np.reshape(y_val[j], (1, -1))
+			logging.info('Inner Validating..')
+			for j in range(len(X_inner_val)):
+				single_mol_as_array = np.array(X_inner_val[j:j+1])
+				single_y_as_array = np.reshape(y_inner_val[j], (1, -1))
 				sloss = model.test_on_batch(single_mol_as_array, single_y_as_array)
-				this_val_loss.append(sloss)
+				this_inner_val_loss.append(sloss)
 			
 			loss.append(np.mean(this_loss))
-			val_loss.append(np.mean(this_val_loss))
-			logging.info('mse loss: {}\tmse val_loss: {}'.format(loss[i], val_loss[i]))
+			inner_val_loss.append(np.mean(this_inner_val_loss))
+			logging.info('mse loss: {}\tmse inner_val_loss: {}'.format(loss[i], inner_val_loss[i]))
 
 			# Check progress
-			if np.mean(this_val_loss) < prev_best_val_loss:
+			if np.mean(this_inner_val_loss) < prev_best_inner_val_loss:
 				wait = 0
-				prev_best_val_loss = np.mean(this_val_loss)
+				prev_best_inner_val_loss = np.mean(this_inner_val_loss)
 				if patience == -1:
 					model.save_weights('train_cnn_results/best.h5', overwrite=True)
 			else:
 				wait = wait + 1
-				logging.info('{} epochs without val_loss progress'.format(wait))
+				logging.info('{} epochs without inner_val_loss progress'.format(wait))
 				if wait == patience:
 					logging.info('stopping early!')
 					break
 		if patience == -1:
 			model.load_weights('train_cnn_results/best.h5')
 
-		# evaluate test loss upon final model
+		# evaluate outer validation loss and test loss upon final model
+		mean_outer_val_loss = evaluate_mean_tst_loss(model, X_outer_val, y_outer_val)
 		mean_test_loss = evaluate_mean_tst_loss(model, X_test, y_test)
 
 	except KeyboardInterrupt:
 		logging.info('User terminated training early (intentionally)')
 
-	return (model, loss, val_loss, mean_test_loss)
+	return (model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss)
 
 def evaluate_mean_tst_loss(model, X_test, y_test):
 
@@ -195,14 +196,15 @@ def reset_model(model):
 	logging.info('Reset model weights')
 	return model
 
-def save_model(model, loss, val_loss, mean_test_loss, fpath):
+def save_model(model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath):
 	'''Saves NN model object and associated information.
 
 	inputs:
 		model - a Keras model
 		loss - list of training losses 
-		val_loss - list of validation losses
-		mean_test_loss - test loss on test set
+		inner_val_loss - list of inner validation losses
+		mean_test_loss - mean loss on outer validation set
+		mean_test_loss - mean loss on test set
 		fpath - root filepath to save everything to (with .json, h5, png, info 
 		config - the configuration dictionary that defined this model 
 		tstamp - current timestamp to log in info file'''
@@ -221,11 +223,11 @@ def save_model(model, loss, val_loss, mean_test_loss, fpath):
 	logging.info('...saved image')
 
 	# Dump history
-	save_model_history_manual(loss, val_loss, fpath + '.hist')
+	save_model_history_manual(loss, inner_val_loss, fpath + '.hist')
 
 	mean_loss = loss[-1]
-	mean_val_loss = val_loss[-1]
-	write_loss_report(mean_loss, mean_val_loss, mean_test_loss, fpath + '_loss_report.txt')
+	mean_inner_val_loss = inner_val_loss[-1]
+	write_loss_report(mean_loss, mean_inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath + '_loss_report.txt')
 	logging.info ('...saved history')
 
 	logging.info('...saved model to {}.[json, h5, png]'.format(fpath))
@@ -251,14 +253,15 @@ def save_model_history_manual(loss, val_loss, fpath):
 	# Close file
 	fid.close()
 
-def write_loss_report(mean_loss, mean_val_loss, mean_test_loss, fpath):
+def write_loss_report(mean_loss, mean_inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath):
 
 	"""
 	Write training, validation and test mean loss
 	"""
 	loss_report = open(fpath, 'a')
 	print("{:50} {}".format("Training loss (mse):", mean_loss), file=loss_report)
-	print("{:50} {}".format("Validation loss (mse):", mean_val_loss), file=loss_report)
+	print("{:50} {}".format("Inner Validation loss (mse):", mean_inner_val_loss), file=loss_report)
+	print("{:50} {}".format("Outer Validation loss (mse):", mean_outer_val_loss), file=loss_report)
 	print("{:50} {:.4f}".format("Test loss (mse):", mean_test_loss), file=loss_report)
 
 	# Close file

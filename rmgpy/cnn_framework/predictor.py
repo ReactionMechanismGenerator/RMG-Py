@@ -69,39 +69,43 @@ class Predictor(object):
 										self.add_extra_bond_attribute)
 
 		losses = []
-		val_losses = []
+		inner_val_losses = []
+		outer_val_losses = []
 		test_losses = []
 		for fold in range(folds):
 			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold, \
 											shuffle_seed=4)
+			data = data + (X_test, y_test)
 
 			# execute train_model
-			(model, loss, val_loss, mean_test_loss) = train_model(self.model, data, 
+			model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss = train_model(self.model, data, 
 												nb_epoch=150, lr_func=lr_func, 
 												patience=10)
 
-			# loss and val_loss each is a list
+			# loss and inner_val_loss each is a list
 			# containing loss for each epoch
 			losses.append(loss)
-			val_losses.append(val_loss)
+			inner_val_losses.append(inner_val_loss)
+			outer_val_losses.append(mean_outer_val_loss)
 			test_losses.append(mean_test_loss)
 			
 			# save model and write fold report
 			fpath = os.path.join(save_model_path, 'fold_{0}'.format(fold))
-			self.save_model(loss, val_loss, mean_test_loss, fpath)
+			self.save_model(loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath)
 
 			# once finish training one fold, reset the model
 			self.reset_model()
 
-		# mean loss and val_loss used for selecting parameters, 
+		# mean inner_val_loss and outer_val_loss used for selecting parameters, 
 		# e.g., lr, epoch, attributes, etc
 		full_folds_mean_loss = np.mean([l[-1] for l in losses if len(l) > 0 ])
-		full_folds_mean_val_loss = np.mean([l[-1] for v_l in val_losses if len(l) > 0 ])
+		full_folds_mean_inner_val_loss = np.mean([l[-1] for v_l in inner_val_losses if len(l) > 0 ])
+		full_folds_mean_outer_val_loss = np.mean(outer_val_losses)
 		full_folds_mean_test_loss = np.mean(test_losses)
 
 		full_folds_loss_report_path = os.path.join(save_model_path, 'full_folds_loss_report.txt')
-		write_loss_report(full_folds_mean_loss, full_folds_mean_val_loss, \
-			full_folds_mean_test_loss, full_folds_loss_report_path)
+		write_loss_report(full_folds_mean_loss, full_folds_mean_inner_val_loss, full_folds_mean_outer_val_loss, \
+							full_folds_mean_test_loss, full_folds_loss_report_path)
 
 	def load_parameters(self, param_path=None):
 
@@ -119,9 +123,9 @@ class Predictor(object):
 
 		self.model = reset_model(self.model)
 
-	def save_model(self, loss, val_loss, mean_test_loss, fpath):
+	def save_model(self, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath):
 
-		save_model(self.model, loss, val_loss, mean_test_loss, fpath)
+		save_model(self.model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath)
 
 	def predict(self, molecule):
 
