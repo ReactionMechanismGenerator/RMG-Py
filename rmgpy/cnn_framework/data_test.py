@@ -88,12 +88,26 @@ class Test_Data(unittest.TestCase):
 					]
 
 
-		(folded_Xs, folded_ys) = prepare_folded_data_from_multiple_datasets(
+		X_test, y_test, folded_Xs, folded_ys = prepare_folded_data_from_multiple_datasets(
 										datasets=datasets, 
 										folds=5, add_extra_atom_attribute=True, 
 										add_extra_bond_attribute=True)
 		self.assertEqual(len(folded_Xs), 5)
 		self.assertEqual(len(folded_ys), 5)
 
-		self.assertEqual(len(folded_Xs[0]), 108)
-		self.assertEqual(len(folded_Xs[0]), 108)
+		self.assertEqual(len(X_test), 54)
+		self.assertEqual(len(y_test), 54)
+		self.assertEqual(len(folded_Xs[0]), 99)
+		self.assertEqual(len(folded_Xs[0]), 99)
+
+	def test_split_tst_from_train_and_val(self):
+
+		X_test, y_test, X_train_and_val, y_train_and_val = split_tst_from_train_and_val(\
+															self.X, self.y, 
+															shuffle_seed=None, 
+															testing_ratio=0.1)
+
+		self.assertEqual(len(X_test), 295)
+		self.assertEqual(len(y_test), 295)
+		self.assertEqual(len(X_train_and_val), 2659)
+		self.assertEqual(len(y_train_and_val), 2659)
