@@ -432,25 +432,25 @@ cdef class ReactionSystem(DASx):
             else:
                 return
         
-        
         numCoreSpecies = self.numCoreSpecies
         numCoreReactions = self.numCoreReactions
         productIndices= self.productIndices
         reactantIndices = self.reactantIndices
         
         sortedIndices = getReverseSortedIndices(arr)
-        
+
         for i in xrange(len(sortedIndices)):
             index = sortedIndices[i]
             boo = True
             for j in productIndices[index+numCoreReactions]:
-                if j in surfSpeciesIndices or j > numCoreSpecies:
+                
+                if j in surfSpeciesIndices or j >= numCoreSpecies:
                     boo = False
             if boo:
                 return index
             boo = True
             for j in reactantIndices[index+numCoreReactions]:
-                if j in surfSpeciesIndices or j > numCoreSpecies:
+                if j in surfSpeciesIndices or j >= numCoreSpecies:
                     boo = False
             if boo:
                 return index
