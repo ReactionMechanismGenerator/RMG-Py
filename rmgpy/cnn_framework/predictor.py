@@ -10,7 +10,7 @@ import logging
 
 class Predictor(object):
 
-	def __init__(self, input_file=None):
+	def __init__(self, input_file=None, datasets_file=None):
 
 		self.model = None
 		if input_file:
@@ -22,6 +22,15 @@ class Predictor(object):
 										'predictor_input.py'
 										)
 
+		if datasets_file:
+			self.datasets_file = datasets_file
+		else:
+			self.datasets_file = os.path.join(os.path.dirname(rmgpy.__file__),
+										'cnn_framework',
+										'data',  
+										'datasets.txt'
+										)
+		self.specify_datasets(self.datasets_file)
 	def build_model(self):
 		"""
 		This method is intended to provide a way to build default model 
@@ -38,6 +47,18 @@ class Predictor(object):
 			path = self.input_file
 			print path
 		read_input_file(path, self)
+
+	def specify_datasets(self, datasets_file_path=None):
+		"""
+		This method specify which datasets to use for training
+		"""
+		self.datasets = []
+		with open(datasets_file_path, 'r') as f_in:
+			for line in f_in:
+				line = line.strip()
+				if line and not line.startswith('#'):
+					db, table = [token.strip() for token in line.split('.')]
+					self.datasets.append((db, table))
 
 	def kfcv_train(self, dataset, folds, lr_func, save_model_path):
 
