@@ -414,8 +414,8 @@ cdef class ReactionSystem(DASx):
             for l, spec in enumerate(network.source):
                 i = self.get_species_index(spec)
                 self.networkIndices[j,l] = i
-                                   
-    #@cython.boundscheck(False)                               
+   
+    @cython.boundscheck(False)                               
     cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,numpy.ndarray[numpy.int_t,ndim=1] surfSpeciesIndices):
         """
         determines the "surface index" maximizing arr value under the surface layering constraint, all of the reactants or all of the products must be in the
@@ -665,9 +665,6 @@ cdef class ReactionSystem(DASx):
                             zeroConsumption = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
-                if zeroConsumption:
-                    logging.warn('zero Consumption') #reversibility issues
-                    break
                 for spcIndex in self.productIndices[index+numCoreReactions,:]:
                     if spcIndex != -1 and spcIndex<numCoreSpecies:
                         production = coreSpeciesProductionRates[spcIndex]
@@ -679,9 +676,6 @@ cdef class ReactionSystem(DASx):
                             zeroProduction = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
-                if zeroProduction:
-                    logging.warn('zero Production') #reversibility issues
-                    break
                 
             #Get edge reaction with greatest total difference in Ln(accumulation number)
             
@@ -756,9 +750,6 @@ cdef class ReactionSystem(DASx):
                             zeroConsumption = True #otherwise include edge reaction with most flux
                             surfaceInfAccumNumIndex = spcIndex
                             break
-                if zeroConsumption:
-                    logging.warn('zero Consumption') #reversibility issues
-                    break
                 for spcIndex in productIndices[index,:]:
                     if spcIndex != -1 and spcIndex<numCoreSpecies:
                         production = coreSpeciesProductionRates[spcIndex]
@@ -770,9 +761,7 @@ cdef class ReactionSystem(DASx):
                             zeroProduction = True #otherwise include edge reaction with most flux
                             infAccumNumIndex = spcIndex
                             break
-                if zeroProduction:
-                    logging.warn('zero Production') #reversibility issues
-                    break
+
                 
             #Get surface reaction with greatest total difference in Ln(accumulation number)
             
@@ -787,7 +776,7 @@ cdef class ReactionSystem(DASx):
                             if reactionRate > maxEdgeReactionAccum:
                                 maxSurfaceReactionAccum = reactionRate
                                 maxSurfaceAccumReactionIndex = index
-                    maxSurfaceAccumReaction = edgeReactions[maxAccumReactionIndex]
+                    maxSurfaceAccumReaction = edgeReactions[maxSurfaceAccumReactionIndex]
                 elif zeroProduction:
                     for index in xrange(numEdgeReactions):
                         maxSurfaceReactionAccum = 0.0
