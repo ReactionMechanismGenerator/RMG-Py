@@ -79,3 +79,21 @@ class Test_Data(unittest.TestCase):
 
 		self.assertTrue(np.all(np.equal(first_X_in_train, expected_first_X_in_train)))
 
+	def test_prepare_folded_data_from_multiple_datasets(self):
+
+		datasets =  [
+					('sdata134k', 'kh_tricyclic_table'), 
+					('sdata134k', 'kh_tricyclic_table'),
+					('sdata134k', 'kh_tricyclic_table')
+					]
+
+
+		(folded_Xs, folded_ys) = prepare_folded_data_from_multiple_datasets(
+										datasets=datasets, 
+										folds=5, add_extra_atom_attribute=True, 
+										add_extra_bond_attribute=True)
+		self.assertEqual(len(folded_Xs), 5)
+		self.assertEqual(len(folded_ys), 5)
+
+		self.assertEqual(len(folded_Xs[0]), 108)
+		self.assertEqual(len(folded_Xs[0]), 108)
