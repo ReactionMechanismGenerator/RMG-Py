@@ -5,7 +5,7 @@ from .molecule_tensor import get_molecule_tensor
 import os
 import rmgpy
 import numpy as np
-from .data import get_data_from_db, prepare_folded_data, prepare_data_one_fold
+from .data import prepare_data_one_fold, prepare_folded_data_from_multiple_datasets
 import logging
 
 class Predictor(object):
@@ -60,18 +60,20 @@ class Predictor(object):
 					db, table = [token.strip() for token in line.split('.')]
 					self.datasets.append((db, table))
 
-	def kfcv_train(self, dataset, folds, lr_func, save_model_path):
+	def kfcv_train(self, folds, lr_func, save_model_path):
 
 		# prepare data for training
-		[db, data_table] = dataset.split('.')
-		(X, y) = get_data_from_db(db, data_table, self.add_extra_atom_attribute, self.add_extra_bond_attribute)
-		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds, shuffle_seed=0)
+		(folded_Xs, folded_ys) = prepare_folded_data_from_multiple_datasets(
+										self.datasets, folds, 
+										self.add_extra_atom_attribute, 
+										self.add_extra_bond_attribute)
 
 		losses = []
 		val_losses = []
 		test_losses = []
 		for fold in range(folds):
-			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold, shuffle_seed=4)
+			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold, \
+											shuffle_seed=4)
 
 			# execute train_model
 			(model, loss, val_loss, mean_test_loss) = train_model(self.model, data, 
