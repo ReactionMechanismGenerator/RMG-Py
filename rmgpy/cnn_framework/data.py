@@ -32,14 +32,18 @@ def get_data_from_db(db_name, collection_name,
 	return (X, y)
 
 def prepare_folded_data_from_multiple_datasets(datasets, folds, add_extra_atom_attribute, 
-											add_extra_bond_attribute, shuffle_seed=None):
+												add_extra_bond_attribute):
 
 	folded_datasets = []
+	test_data_datasets = []
 	for db, table in datasets:
 		(X, y) = get_data_from_db(db, table, add_extra_atom_attribute, \
 									add_extra_bond_attribute)
-		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds, shuffle_seed=0)
 
+		(X_test, y_test, X_train_and_val, y_train_and_val) = split_tst_from_train_and_val(X, y, shuffle_seed=0)
+		test_data_datasets.append((X_test, y_test))
+
+		(folded_Xs, folded_ys) = prepare_folded_data(X_train_and_val, y_train_and_val, folds, shuffle_seed=2)
 		folded_datasets.append((folded_Xs, folded_ys))
 
 	# merge into one folded_Xs and folded_ys
@@ -60,7 +64,38 @@ def prepare_folded_data_from_multiple_datasets(datasets, folds, add_extra_atom_a
 			folded_Xs = folded_Xs_ext
 			folded_ys = folded_ys_ext
 
-	return folded_Xs, folded_ys
+	# merge into one X_test and y_test
+	(X_test, y_test) = test_data_datasets[0]
+	if len(test_data_datasets) > 1:
+		for X_test_1, y_test_1 in test_data_datasets[1:]:
+			X_test.extend(X_test_1)
+			y_test.extend(y_test_1)
+
+	return X_test, y_test, folded_Xs, folded_ys
+def split_tst_from_train_and_val(X, y, shuffle_seed=None, testing_ratio=0.1):
+
+	n = len(X)
+	# Feed shuffle seed
+	if shuffle_seed is not None:
+		np.random.seed(shuffle_seed)
+
+	all_indices = range(n)
+	np.random.shuffle(all_indices)
+
+	# shuffle X and y
+	X_shuffled = [X[i] for i in all_indices]
+	y_shuffled = [y[i] for i in all_indices]
+
+	split = int(len(all_indices) * testing_ratio)
+	X_test, X_train_and_val = [X_shuffled[i] for i in all_indices[:split]],   [X_shuffled[i] for i in all_indices[split:]]
+	y_test, y_train_and_val = [y_shuffled[i] for i in all_indices[:split]],   [y_shuffled[i] for i in all_indices[split:]]
+
+	# reset np random seed to avoid side-effect on other methods
+	# relying on np.random
+	if shuffle_seed is not None:
+		np.random.seed()
+
+	return (X_test, y_test, X_train_and_val, y_train_and_val)
 
 def prepare_folded_data(X, y, folds, shuffle_seed=None):
 

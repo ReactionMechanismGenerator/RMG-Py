@@ -63,7 +63,7 @@ class Predictor(object):
 	def kfcv_train(self, folds, lr_func, save_model_path):
 
 		# prepare data for training
-		(folded_Xs, folded_ys) = prepare_folded_data_from_multiple_datasets(
+		X_test, y_test, folded_Xs, folded_ys = prepare_folded_data_from_multiple_datasets(
 										self.datasets, folds, 
 										self.add_extra_atom_attribute, 
 										self.add_extra_bond_attribute)
