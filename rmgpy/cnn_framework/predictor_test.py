@@ -65,6 +65,15 @@ class Test_Predictor(unittest.TestCase):
 		self.assertEqual(dense2.W.shape.eval()[1], 1)
 		self.assertEqual(dense2.b.shape.eval()[0], 1)
 
+	def test_specify_datasets(self):
+		"""
+		Test the datasets specification is done properly
+		"""
+		expected_datasets = [('sdata134k', 'polycyclic_2954_table'),
+							('sdata134k', 'cyclic_O_only_table')]
+
+		self.assertEqual(self.predictor.datasets, expected_datasets)
+
 	def test_load_parameters(self):
 
 		test_predictor_input = os.path.join(os.path.dirname(rmgpy.__file__),
