@@ -113,7 +113,7 @@ def is_atom_in_ring(molecule, atom):
 	atom_in_rings = [0]*6
 	for ring in SSSR:
 		if atom in ring:
-			idx = len(ring) - 3
+			idx = min(len(ring) - 3, 5)
 			atom_in_rings[idx] = atom_in_rings[idx] + 1
 
 	return atom_in_rings
@@ -202,7 +202,7 @@ def is_bond_in_ring(molecule, bond):
 	atom2 = bond.atom2
 	for ring in SSSR:
 		if atom1 in ring and atom1 in ring :
-			idx = len(ring) - 3
+			idx = min(len(ring) - 3, 5)
 			bond_in_rings[idx] = bond_in_rings[idx] + 1
 
 	return bond_in_rings
