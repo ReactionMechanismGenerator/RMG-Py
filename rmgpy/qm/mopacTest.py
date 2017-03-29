@@ -61,7 +61,7 @@ class TestMopacMolPM3(unittest.TestCase):
 
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
-
+        self.assertTrue(self.qmmol1.verifyOutputFile())
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM3 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
@@ -124,7 +124,8 @@ class TestMopacMolPM6(unittest.TestCase):
 
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
-
+        self.assertTrue(self.qmmol1.verifyOutputFile())
+        
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM6 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
@@ -188,7 +189,8 @@ class TestMopacMolPM7(unittest.TestCase):
 
         self.qmmol1.generateThermoData()
         result = self.qmmol1.qmData
-
+        self.assertTrue(self.qmmol1.verifyOutputFile())
+        
         self.assertTrue(self.qmmol1.thermo.comment.startswith('QM MopacMolPM7 calculation'))
         self.assertEqual(result.numberOfAtoms, 18)
         self.assertIsInstance(result.atomicNumbers, np.ndarray)
@@ -197,7 +199,7 @@ class TestMopacMolPM7(unittest.TestCase):
 
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.9863, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
-
+        
     def testLoadThermoData(self):
         """
         Test that generateThermoData() can load thermo from the previous MOPAC PM7 run.
@@ -216,8 +218,7 @@ class TestMopacMolPM7(unittest.TestCase):
 
         self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.8571, 0)  # to 1 decimal place
         self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
-
-
+        
 ################################################################################
 
 if __name__ == '__main__':
