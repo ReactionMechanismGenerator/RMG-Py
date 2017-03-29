@@ -31,6 +31,37 @@ def get_data_from_db(db_name, collection_name,
 	
 	return (X, y)
 
+def prepare_folded_data_from_multiple_datasets(datasets, folds, add_extra_atom_attribute, 
+											add_extra_bond_attribute, shuffle_seed=None):
+
+	folded_datasets = []
+	for db, table in datasets:
+		(X, y) = get_data_from_db(db, table, add_extra_atom_attribute, \
+									add_extra_bond_attribute)
+		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds, shuffle_seed=0)
+
+		folded_datasets.append((folded_Xs, folded_ys))
+
+	# merge into one folded_Xs and folded_ys
+	logging.info('Merging {} datasets for training...'.format(len(datasets)))
+	(folded_Xs, folded_ys) = folded_datasets[0]
+	if len(folded_datasets) > 1:
+		for folded_Xs_1, folded_ys_1 in folded_datasets[1:]:
+			folded_Xs_ext = []
+			folded_ys_ext = []
+			for idx, folded_X in enumerate(folded_Xs):
+				folded_X.extend(folded_Xs_1[idx])
+				folded_Xs_ext.append(folded_X)
+
+				folded_y = folded_ys[idx]
+				folded_y.extend(folded_ys_1[idx])
+				folded_ys_ext.append(folded_y)
+
+			folded_Xs = folded_Xs_ext
+			folded_ys = folded_ys_ext
+
+	return folded_Xs, folded_ys
+
 def prepare_folded_data(X, y, folds, shuffle_seed=None):
 
 	# Get target size of each fold
