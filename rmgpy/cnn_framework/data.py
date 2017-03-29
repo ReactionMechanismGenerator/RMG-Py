@@ -133,8 +133,8 @@ def prepare_data_one_fold(folded_Xs, folded_ys, current_fold=0,
 						shuffle_seed=None, training_ratio=0.9):
 
 	"""
-	this method prepares X_train, y_train, X_val, y_val,
-	and X_test, y_test
+	this method prepares X_train, y_train, X_inner_val, y_inner_val,
+	and X_outer_val, y_outer_val
 	"""
 	logging.info('...using fold {}'.format(current_fold+1))
 
@@ -143,8 +143,8 @@ def prepare_data_one_fold(folded_Xs, folded_ys, current_fold=0,
 	y_train   = [y for folded_y in (folded_ys[:current_fold] + folded_ys[(current_fold + 1):])  for y in folded_y]
 
 	# Test is current_fold
-	X_test    = folded_Xs[current_fold]
-	y_test    = folded_ys[current_fold]
+	X_outer_val    = folded_Xs[current_fold]
+	y_outer_val    = folded_ys[current_fold]
 
 	# Define validation set as random 10% of training
 	if shuffle_seed is not None:
@@ -153,16 +153,16 @@ def prepare_data_one_fold(folded_Xs, folded_ys, current_fold=0,
 	training_indices = range(len(X_train))
 	np.random.shuffle(training_indices)
 	split = int(len(training_indices) * training_ratio)
-	X_train,   X_val  = [X_train[i] for i in training_indices[:split]],   [X_train[i] for i in training_indices[split:]]
-	y_train,   y_val  = [y_train[i] for i in training_indices[:split]],   [y_train[i] for i in training_indices[split:]]
+	X_train,   X_inner_val  = [X_train[i] for i in training_indices[:split]],   [X_train[i] for i in training_indices[split:]]
+	y_train,   y_inner_val  = [y_train[i] for i in training_indices[:split]],   [y_train[i] for i in training_indices[split:]]
 
 	logging.info('Total training: {}'.format(len(X_train)))
-	logging.info('Total validation: {}'.format(len(X_val)))
-	logging.info('Total testing: {}'.format(len(X_test)))
+	logging.info('Total inner validation: {}'.format(len(X_inner_val)))
+	logging.info('Total outer validation: {}'.format(len(X_outer_val)))
 
 	# reset np random seed to avoid side-effect on other methods
 	# relying on np.random
 	if shuffle_seed is not None:
 		np.random.seed()
 
-	return (X_train, X_val, X_test, y_train, y_val, y_test)
+	return (X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val)
