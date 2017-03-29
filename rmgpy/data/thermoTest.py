@@ -15,6 +15,17 @@ import rmgpy
 
 ################################################################################
 
+def setUpModule():
+    """A function that is run ONCE before all unit tests in this module."""
+    global database
+    database = RMGDatabase()
+    database.loadThermo(os.path.join(settings['database.directory'], 'thermo'))
+
+def tearDownModule():
+    """A function that is run ONCE after all unit tests in this module."""
+    from rmgpy.data import rmg
+    rmg.database = None
+
 class TestThermoDatabaseLoading(unittest.TestCase):
 
     def testFailingLoadsThermoLibraries(self):
@@ -30,19 +41,16 @@ class TestThermoDatabase(unittest.TestCase):
     """
     Contains unit tests of the ThermoDatabase class.
     """
-    # Only load these once to save time
-    database = ThermoDatabase()
-    database.load(os.path.join(settings['database.directory'], 'thermo'))
-
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database.thermo
     
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
-        
-        self.database = self.__class__.database
-#        self.oldDatabase = self.__class__.oldDatabase
-
         self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         
         self.testCases = [
@@ -111,24 +119,25 @@ class TestThermoDatabase(unittest.TestCase):
         
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-            molecule=Molecule(SMILES=smiles)
-            species = Species(molecule=molecule)
+            species = Species().fromSMILES(smiles)
             species.generateResonanceIsomers()
-            species.molecule[0]
             thermoData = self.database.getThermoDataFromGroups(species)
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
                 thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
                 for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data
+                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data[0]
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
                     thermoData = thermoData0
                     molecule = mol
-            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
+            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1,
+                                   msg="H298 error for {0}. Expected {1}, but calculated {2}.".format(smiles, H298, thermoData.getEnthalpy(298) / 4184))
+            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1,
+                                   msg="S298 error for {0}. Expected {1}, but calculated {2}.".format(smiles, S298, thermoData.getEntropy(298) / 4.184))
             for T, Cp in zip(self.Tlist, Cplist):
-                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles,T))
+                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1,
+                                       msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(smiles, Cp, thermoData.getHeatCapacity(T) / 4.184, T))
 
     def testSymmetryContributionRadicals(self):
         """
@@ -152,48 +161,21 @@ class TestThermoDatabase(unittest.TestCase):
         to select the stablest resonance isomer.
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
-            molecule=Molecule(SMILES=smiles)
-            species = Species(molecule=molecule)
+            species = Species().fromSMILES(smiles)
             species.generateResonanceIsomers()
-            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
+            thermoData = self.database.getThermoDataFromGroups(species)
             # pick the molecule with lowest H298
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
                 thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
                 for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data
+                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data[0]
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
                     thermoData = thermoData0
                     molecule = mol
-            self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
-
-#    @work_in_progress
-#    def testOldThermoGeneration(self):
-#        """
-#        Test that the old ThermoDatabase generates relatively accurate thermo data.
-#        """
-#        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
-#            Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-#            species = Species(molecule=[Molecule(SMILES=smiles)])
-#            species.generateResonanceIsomers()
-#            thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
-#            molecule = species.molecule[0]
-#            for mol in species.molecule[1:]:
-#                thermoData0 = self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[0][0]
-#                for data in self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[1:]:
-#                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-#                        thermoData0 = data
-#                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
-#                    thermoData = thermoData0
-#                    molecule = mol
-#            
-#            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-#            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
-#            for T, Cp in zip(self.Tlist, Cplist):
-#                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
-
-
+            self.assertEqual(symm, molecule.calculateSymmetryNumber(),
+                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, molecule.calculateSymmetryNumber()))
 
     def testParseThermoComments(self):
         """
@@ -303,8 +285,14 @@ class TestThermoDatabaseAromatics(TestThermoDatabase):
     
     A copy of the above class, but with different test compounds
     """
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database.thermo
+
     def setUp(self):
-        TestThermoDatabase.setUp(self)
+        self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         self.testCases = [
             # SMILES            symm  H298     S298     Cp300  Cp400  Cp500  Cp600  Cp800  Cp1000 Cp1500
             ['c1ccccc1', 12, 19.80, 64.24, 19.44, 26.64, 32.76, 37.80, 45.24, 50.46, 58.38],
@@ -319,16 +307,12 @@ class TestCyclicThermo(unittest.TestCase):
     """
     Contains unit tests of the ThermoDatabase class.
     """
-    database = ThermoDatabase()
-    database.load(os.path.join(settings['database.directory'], 'thermo'))
-    
-    def setUp(self):
-        """
-        A function run before each unit test in this class.
-        """
-        
-        self.database = self.__class__.database
-    
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database.thermo
+
     def testComputeGroupAdditivityThermoForTwoRingMolecule(self):
         """
         The molecule being tested has two rings, one is 13cyclohexadiene5methylene
@@ -374,26 +358,12 @@ class TestCyclicThermo(unittest.TestCase):
         """
         from rmgpy.thermo.thermoengine import generateThermoData
         
-        # set-up RMG object
-        rmg = RMG()
-
-        # load kinetic database and forbidden structures
-        rmg.database = RMGDatabase()
-        path = os.path.join(settings['database.directory'])
-
-        # forbidden structure loading
-        rmg.database.loadThermo(os.path.join(path, 'thermo'))
-
         smi = 'C12C(C3CCC2C3)C4CCC1C4'#two norbornane rings fused together
         spc = Species().fromSMILES(smi)
 
         spc.thermo = generateThermoData(spc)
 
-        thermodb = rmg.database.thermo
-        thermodb.getRingGroupsFromComments(spc.thermo)
-
-        import rmgpy.data.rmg
-        rmgpy.data.rmg.database = None
+        self.database.getRingGroupsFromComments(spc.thermo)
 
     def testRemoveGroup(self):
         """
