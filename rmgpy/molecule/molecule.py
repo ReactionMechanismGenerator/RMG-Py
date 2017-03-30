@@ -1692,7 +1692,7 @@ class Molecule(Graph):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.getAllCyclesOfSize(6)
+            rings = self.getAllSimpleCyclesOfSize(6)
         if not rings:
             return [], []
 

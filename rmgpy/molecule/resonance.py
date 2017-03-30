@@ -441,7 +441,7 @@ def generateAromaticResonanceStructures(mol, features=None):
     molecule = mol.copy(deep=True)
 
     # First get all rings in the molecule
-    rings = molecule.getAllCyclesOfSize(6)
+    rings = molecule.getAllSimpleCyclesOfSize(6)
 
     # Then determine which ones are aromatic
     aromaticBonds = molecule.getAromaticRings(rings)[1]
