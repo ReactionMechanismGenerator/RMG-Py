@@ -48,9 +48,9 @@ cpdef kekulize(Molecule mol):
     """Kekulize an aromatic molecule."""
     cdef list ring, rings, aromaticRings, resolvedRings
     cdef set endoBonds, exoBonds
-    cdef Atom atom1, atom2
+    cdef Atom atom1, atom2, atom
     cdef Bond bond
-    cdef bint aromatic, successful
+    cdef bint aromatic, successful, bridged
     cdef int itercount, maxiter
     cdef AromaticRing aromaticRing
 
@@ -64,8 +64,14 @@ cpdef kekulize(Molecule mol):
         exoBonds = set()
         aromatic = True
         for atom1 in ring:
+            # Check if this is a bridged ring
+            bridged = sum([1 if atom in ring else 0 for atom in atom1.bonds.iterkeys()]) > 2
             for atom2, bond in atom1.bonds.iteritems():
-                if atom2 in ring:
+                if bridged and sum([1 if atom in ring else 0 for atom in atom2.bonds.iterkeys()]) > 2:
+                    # This atom2 is the other end of the bridging bond, so don't consider it as a part of the ring
+                    exoBonds.add(bond)
+                    continue
+                elif atom2 in ring:
                     if abs(round(bond.order) - bond.order) < 1e-9:
                         aromatic = False
                         break
