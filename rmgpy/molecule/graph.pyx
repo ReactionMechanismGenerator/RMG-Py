@@ -807,6 +807,30 @@ cdef class Graph:
 
         return cycleSetList
 
+    cpdef list getAllSimpleCyclesOfSize(self, int size):
+        """
+        Return a list of all non-duplicate monocyclic rings with length 'size'.
+
+        Naive approach by eliminating polycyclic rings that are returned by
+        ``getAllCyclicsOfSize``.
+        """
+        cdef list cycleList
+        cdef int i
+        cdef Vertex vertex
+
+        cycleList = self.getAllCyclesOfSize(size)
+
+        i = 0
+        while i < len(cycleList):
+            for vertex in cycleList[i]:
+                internalConnectivity = sum([1 if vertex2 in cycleList[i] else 0 for vertex2 in vertex.edges.iterkeys()])
+                if internalConnectivity > 2:
+                    del cycleList[i]
+                    break
+            else:
+                i += 1
+
+        return cycleList
 
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles):
         """
