@@ -219,8 +219,11 @@ def save_model(model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss,
 	logging.info('...saved weights')
 
 	# Dump image
-	plot(model, to_file = fpath + '.png')
-	logging.info('...saved image')
+	try:
+		plot(model, to_file = fpath + '.png')
+		logging.info('...saved image')
+	except:
+		pass
 
 	# Dump history
 	save_model_history_manual(loss, inner_val_loss, fpath + '.hist')
