@@ -35,6 +35,7 @@ install:
   - source activate rmg_env
   - conda list
   - pip install codecov
+  - export KERAS_BACKEND=theano
   - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
   - make
 
