@@ -29,6 +29,7 @@ before_install:
 install:
   - conda env create -f environment_linux.yml
   - source activate rmg_env
+  - export KERAS_BACKEND=theano
   - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
   - make
 
