@@ -121,18 +121,18 @@ O(2)+H2O2(8)=OH(5)+HO2(6)                           9.630e+06 2.000     4.000
 ! Reaction index: Chemkin #2; RMG #211
 ! Template reaction: Disproportionation
 ! Flux pairs: OH(5), H2O(28); C2H5(27), C2H4(26); 
-! Exact match found for rate rule (O_pri_rad;Cmethyl_Csrad)
+! Exact match found for rate rule [O_pri_rad;Cmethyl_Csrad]
 ! Multiplied by reaction path degeneracy 3
 OH(5)+C2H5(27)=H2O(28)+C2H4(26)                     7.230e+13 0.000     0.000    
 
 ! Reaction index: Chemkin #3; RMG #243
 ! Template reaction: Disproportionation
 ! Flux pairs: CH(9), CH2(11); CH2OH(18), CH2O(15); 
-! Average of (Average of (O2b;O_Csrad) + Average of (O_atom_triplet;O_Csrad + CH2_triplet;O_Csrad) + Average of (Average of (Ct_rad/Ct;O_Csrad from
-! training reaction 1) + Average of (O_pri_rad;O_Csrad + Average of (O_rad/NonDeC;O_Csrad + O_rad/NonDeO;O_Csrad)) + Average of (Cd_pri_rad;O_Csrad) +
-! Average of (CO_pri_rad;O_Csrad) + Average of (C_methyl;O_Csrad + Average of (C_rad/H2/Cs;O_Csrad + C_rad/H2/Cd;O_Csrad + C_rad/H2/O;O_Csrad) + Average
-! of (C_rad/H/NonDeC;O_Csrad) + Average of (Average of (C_rad/Cs3;O_Csrad))) + H_rad;O_Csrad))
-! Estimated using template (Y_rad_birad_trirad_quadrad;O_Csrad) for rate rule (CH_quartet;O_Csrad)
+! Average of [Average of [O2b;O_Csrad] + Average of [O_atom_triplet;O_Csrad + CH2_triplet;O_Csrad] + Average of [Average of [Ct_rad/Ct;O_Csrad from
+! training reaction 1] + Average of [O_pri_rad;O_Csrad + Average of [O_rad/NonDeC;O_Csrad + O_rad/NonDeO;O_Csrad]] + Average of [Cd_pri_rad;O_Csrad] +
+! Average of [CO_pri_rad;O_Csrad] + Average of [C_methyl;O_Csrad + Average of [C_rad/H2/Cs;O_Csrad + C_rad/H2/Cd;O_Csrad + C_rad/H2/O;O_Csrad] + Average
+! of [C_rad/H/NonDeC;O_Csrad] + Average of [Average of [C_rad/Cs3;O_Csrad]]] + H_rad;O_Csrad]]
+! Estimated using template [Y_rad_birad_trirad_quadrad;O_Csrad] for rate rule [CH_quartet;O_Csrad]
 CH(9)+CH2OH(18)=CH2(11)+CH2O(15)                    1.286e+13 -0.010    0.000    
 
 ! Reaction index: Chemkin #4; RMG #303
