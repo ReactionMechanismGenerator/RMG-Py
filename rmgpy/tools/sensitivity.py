@@ -38,9 +38,10 @@ from .loader import loadRMGJob
 import rmgpy.util as util 
 from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
 
-def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList):
+def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
-    A function for plotting the top 10 reaction and top 10 thermo sensitivities in bar plot format.
+    A function for plotting the top reaction thermo sensitivities (the number is 
+    inputted as the variable `number`) in bar plot format.
     To be called after running a simulation on a particular reactionSystem.
     """
     
@@ -56,21 +57,21 @@ def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList):
         reactionPlotFile = os.path.join(
             outputDirectory,
             'solver',
-            'sensitivity_{0}_SPC_{1}_reactions.png'.format(
+            'sensitivity_{0}_SPC_{1}_reactions'.format(
                 reactionSystemIndex + 1, species.index
-                )
+                ) + fileformat
             )
         
         thermoPlotFile = os.path.join(
             outputDirectory,
             'solver',
-            'sensitivity_{0}_SPC_{1}_thermo.png'.format(
+            'sensitivity_{0}_SPC_{1}_thermo'.format(
                 reactionSystemIndex + 1, species.index
-                )
+                ) + fileformat
             )
 
-        ReactionSensitivityPlot(csvFile=csvFile, numReactions=10).barplot(reactionPlotFile)
-        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=10).barplot(thermoPlotFile)
+        ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
+        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
 
 
 
