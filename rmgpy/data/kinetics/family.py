@@ -563,7 +563,11 @@ class KineticsFamily(Database):
         if not already entered with the value from treeDistances associated
         with the tree the entry comes from
         """
+        treeDistances = self.treeDistances
         toplabels = [i.label for i in self.groups.top]
+        
+        assert len(toplabels) == len(treeDistances), 'treeDistances does not have the same number of entries as there are top nodes in the family'
+        
         for entryName,entry in self.groups.entries.iteritems():
             topentry = entry
             while not (topentry.parent is None): #get the top for the tree entry is in
@@ -571,7 +575,7 @@ class KineticsFamily(Database):
             if topentry.label in toplabels: #not exactly sure where the ones that don't match come from, they aren't in the trees, so this should be ok
                 ind = toplabels.index(topentry.label)
                 if entry.nodalDistance is None:
-                    entry.nodalDistance = self.treeDistances[ind]
+                    entry.nodalDistance = treeDistances[ind]
                 
     def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
