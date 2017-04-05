@@ -231,16 +231,18 @@ cdef class ReactionSystem(DASx):
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
     
-    def initialize_surface(self,coreSpecies,coreReactions,surfaceSpecies,surfaceReactions):
+    @cython.boundscheck(False)
+    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions):
         """
         removes surfaceSpecies and surfaceReactions from  until they are self consistent: 
             1) every reaction has one species in the surface
             2) every species participates in a surface reaction
         """
-#        cdef list productIndices,reactantIndices, surfaceSpeciesIndices, surfaceReationIndices
-#        cdef set possibleSpeciesIndices
-#        cdef int i,j
-#        cdef bool notInSurface
+        cdef numpy.ndarray[numpy.int_t,ndim=2] productIndices,reactantIndices
+        cdef list surfaceSpeciesIndices, surfaceReationIndices
+        cdef set possibleSpeciesIndices
+        cdef int i,j
+        cdef bool notInSurface
         
         logging.info('initializing surface ...')
         
@@ -278,11 +280,8 @@ cdef class ReactionSystem(DASx):
                 surfaceSpecies.remove(coreSpecies[i])
                 surfaceSpeciesIndices.remove(i)
         
-        surfaceSpeciesIndices = numpy.array(surfaceSpeciesIndices,dtype=numpy.int)
-        surfaceReactionIndices = numpy.array(surfaceReactionIndices,dtype=numpy.int)
-        
-        self.surfaceSpeciesIndices = surfaceSpeciesIndices
-        self.surfaceReactionIndices = surfaceReactionIndices
+        self.surfaceSpeciesIndices = numpy.array(surfaceSpeciesIndices,dtype=numpy.int)
+        self.surfaceReactionIndices = numpy.array(surfaceReactionIndices,dtype=numpy.int)
         
         surfaceSpecies = [coreSpecies[i] for i in surfaceSpeciesIndices]
         surfaceReactions = [coreReactions[i] for i in surfaceReactionIndices]
@@ -457,7 +456,7 @@ cdef class ReactionSystem(DASx):
         
         return
     
-    #@cython.boundscheck(False)
+    @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,list surfaceSpecies, list surfaceReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         double toleranceMoveEdgeReactionToCore=numpy.inf,double toleranceMoveEdgeReactionToCoreInterrupt=numpy.inf,

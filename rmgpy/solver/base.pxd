@@ -124,4 +124,4 @@ cdef class ReactionSystem(DASx):
     
     cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,numpy.ndarray[numpy.int_t,ndim=1] surfSpeciesIndices)
     
-    #cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions)
+    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions)
