@@ -73,7 +73,7 @@ ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+	nosetests -a '!helper' --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test-unittests:
 ifneq ($(OS),Windows_NT)
