@@ -201,7 +201,7 @@ class GraphFP(Layer):
 
 class MoleculeConv(Layer):
 	
-	def __init__(self, output_dim, inner_dim, depth = 2, init_output='uniform', 
+	def __init__(self, units, inner_dim, depth = 2, init_output='uniform', 
 			activation_output='softmax', init_inner='identity',
 			activation_inner='linear', scale_output=0.01, padding=False, **kwargs):
 		if depth < 1:
@@ -210,7 +210,7 @@ class MoleculeConv(Layer):
 		self.activation_output = activations.get(activation_output)
 		self.init_inner = initializations.get(init_inner)
 		self.activation_inner = activations.get(activation_inner)
-		self.output_dim = output_dim
+		self.units = units
 		self.inner_dim = inner_dim
 		self.depth = depth
 		self.scale_output = scale_output
@@ -244,8 +244,8 @@ class MoleculeConv(Layer):
 		# # weight matrix for layer/depth #.
 
 		# Define template weights for output FxL
-		W_output = self.init_output((self.inner_dim, self.output_dim), scale = self.scale_output)
-		b_output = K.zeros((1, self.output_dim))
+		W_output = self.init_output((self.inner_dim, self.units), scale = self.scale_output)
+		b_output = K.zeros((1, self.units))
 		# Initialize weights tensor
 		self.W_output = K.variable(T.tile(W_output, (self.depth + 1, 1, 1)).eval())
 		self.W_output.name = 'T:W_output'
@@ -262,7 +262,7 @@ class MoleculeConv(Layer):
 					   self.b_output]
 
 	def get_output_shape_for(self, input_shape):
-		return (input_shape[0], self.output_dim)
+		return (input_shape[0], self.units)
 
 	def call(self, x, mask=None):
 		(output, updates) = theano.scan(lambda x_one: self.get_output_singlesample(x_one), sequences = x)
@@ -381,7 +381,7 @@ class MoleculeConv(Layer):
 		return output_activated
 
 	def get_config(self):
-		config = {'output_dim': self.output_dim,
+		config = {'units': self.units,
 				  'inner_dim' : self.inner_dim,
 				  'init_output' : self.init_output.__name__,
 				  'init_inner' : self.init_inner.__name__,
