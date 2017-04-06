@@ -22,7 +22,7 @@ class Test_CNN_Model(unittest.TestCase):
 		self.assertTrue(isinstance(test_model.layers[1], Dense))
 
 		self.assertEqual(test_model.layers[0].inner_dim, attribute_vector_size-1)
-		self.assertEqual(test_model.layers[0].output_dim, embedding_size)
+		self.assertEqual(test_model.layers[0].units, embedding_size)
 
 	def test_save_model(self):
 
