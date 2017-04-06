@@ -1,6 +1,6 @@
 
 from .cnn_model import *
-from .layers import GraphFP
+from .layers import MoleculeConv
 from keras.layers.core import Dense
 import unittest
 import rmgpy
@@ -18,7 +18,7 @@ class Test_CNN_Model(unittest.TestCase):
 								hidden=hidden
 								)
 		self.assertEqual(len(test_model.layers), 2)
-		self.assertTrue(isinstance(test_model.layers[0], GraphFP))
+		self.assertTrue(isinstance(test_model.layers[0], MoleculeConv))
 		self.assertTrue(isinstance(test_model.layers[1], Dense))
 
 		self.assertEqual(test_model.layers[0].inner_dim, attribute_vector_size-1)
