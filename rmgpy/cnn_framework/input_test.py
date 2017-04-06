@@ -26,5 +26,5 @@ class Test_Input(unittest.TestCase):
 		self.assertTrue(isinstance(predictor_model.layers[1], Dense))
 
 		self.assertEqual(predictor_model.layers[0].inner_dim, 38)
-		self.assertEqual(predictor_model.layers[0].output_dim, 512)
+		self.assertEqual(predictor_model.layers[0].units, 512)
 

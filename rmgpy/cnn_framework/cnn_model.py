@@ -25,7 +25,7 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 	
 	model = Sequential()
 
-	model.add(MoleculeConv(output_dim=embedding_size, 
+	model.add(MoleculeConv(units=embedding_size, 
 		inner_dim=attribute_vector_size-1, 
 		depth=depth,
 		scale_output=scale_output,
