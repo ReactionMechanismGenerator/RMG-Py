@@ -102,10 +102,8 @@ class ConsistencyChecker(object):
     @staticmethod
     def check_multiplicity(nRad, multiplicity):
         '''
-        Check if the parameter multiplicity is an odd number,
-        since the multiplicity should comply with the formula
-        
-        m = 2s + 1, with s the sum of the spin [+/- 1/2) ] of the unpaired electrons
+        Check that the multiplicity complies with the formula: m = 2s + 1,
+        where s is the sum of the spin [+/- (1/2) ] of the unpaired electrons
         
         For a simple radical (nRad = 1): 
         s = +1/2 , m = 2 (doublet)
@@ -114,11 +112,15 @@ class ConsistencyChecker(object):
         and m = 1 (singlet) or m = 3 (triplet).
         '''
         if nRad in [0,1]:
-            if multiplicity != (2*nRad/2 + 1):
+            if multiplicity != (nRad + 1):
                 raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
         elif nRad == 2:
             if not int(multiplicity) in [1,3]: raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
-        else: logging.debug("Consistency checking of multiplicity of molecules with more than 2 unpaired electrons is not implemented yet!")
+        elif nRad == 3:
+            if not int(multiplicity) in [4,2]: raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
+        elif nRad == 4:
+            if not int(multiplicity) in [5,3,1]: raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
+        else: logging.warning("Consistency checking of multiplicity of molecules with more than 4 unpaired electrons is not implemented yet!")
     
     @staticmethod
     def check_hund_rule(atom, multiplicity):
