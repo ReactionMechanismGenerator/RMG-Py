@@ -7,8 +7,11 @@ database(
     thermoLibraries = ['BurkeH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
 	#overrides RMG kinetics estimation if needed in the core of RMG. 
 	#list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
-	#input each library as a ('library_name',True/False) where a True means that all 
-	#unused reactions will be automatically added to the chemkin file
+	#libraries can be input as either a string or tuple of form ('library_name',True/False) 
+     #where a `True` indicates that all unused reactions will be automatically added 
+	#to the chemkin file at the end of the simulation. Placing just string values
+     #defaults the tuple to `False`. The string input is sufficient in almost
+     #all situations
     reactionLibraries = [],
 	#seed mechanisms are reactionLibraries that are forced into the initial mechanism 
 	#in addition to species listed in this input file.  
