@@ -3,7 +3,7 @@ import unittest
 import rmgpy
 from .predictor import Predictor
 from .input import *
-from .layers import GraphFP
+from .layers import MoleculeConv
 from keras.layers.core import Dense
 
 class Test_Input(unittest.TestCase):
@@ -22,7 +22,7 @@ class Test_Input(unittest.TestCase):
 
 		predictor_model = predictor_test.model
 		self.assertEqual(len(predictor_model.layers), 3)
-		self.assertTrue(isinstance(predictor_model.layers[0], GraphFP))
+		self.assertTrue(isinstance(predictor_model.layers[0], MoleculeConv))
 		self.assertTrue(isinstance(predictor_model.layers[1], Dense))
 
 		self.assertEqual(predictor_model.layers[0].inner_dim, 38)
