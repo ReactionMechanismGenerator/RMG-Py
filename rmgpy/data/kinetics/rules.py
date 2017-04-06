@@ -591,6 +591,10 @@ class KineticsRules(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
+        
+        Returns a tuple (kinetics, entry) where `entry` is the database
+        entry used to determine the kinetics only if it is an exact match,
+        and is None if some averaging or use of a parent node took place.
         """
         def getTemplateLabel(template):
             # Get string format of the template in the form "(leaf1,leaf2)"

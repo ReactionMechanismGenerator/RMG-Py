@@ -1736,8 +1736,14 @@ class KineticsFamily(Database):
         """
         Return an estimate of the kinetics for a reaction with the given
         `template` and reaction-path `degeneracy`. There are two possible methods
-        to use: 'group additivity' (new RMG-Py behavior) and 'rate rules' (old
-        RMG-Java behavior).
+        to use: 'group additivity' (new possible RMG-Py behavior) and 'rate rules' (old
+        RMG-Java behavior, and default RMG-Py behavior).
+        
+        Returns a tuple (kinetics, entry):
+        If it's estimated via 'rate rules' and an exact match is found in the tree,
+        then the entry is returned as the second element of the tuple.
+        But if an average is used, or the 'group additivity' method, then the tuple
+        returned is (kinetics, None).
         """
         if method.lower() == 'group additivity':
             return self.estimateKineticsUsingGroupAdditivity(template, degeneracy), None
@@ -1768,7 +1774,7 @@ class KineticsFamily(Database):
         """
         For a given set of kinetics `kineticsList`, return the kinetics deemed
         to be the "best". This is determined to be the one with the lowest
-        non-zero rank that occurs first.
+        non-zero rank that occurs first (has the lowest index).
         """
         if any([x[1].rank == 0 for x in kineticsList]) and not all([x[1].rank == 0 for x in kineticsList]):
             kineticsList = [x for x in kineticsList if x[1].rank != 0]
@@ -1781,9 +1787,11 @@ class KineticsFamily(Database):
         depositories as well as generating a result using the user-specified `estimator`
         of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
-        results, with each result comprising the kinetics, the source, and
-        the entry. If it came from a template estimate, the source and entry
-        will both be `None`.
+        results, with each result comprising the kinetics, the source,
+        the entry, and whether it's in the forward direction.
+        The source will be the depository name or estimator method.
+        If it came from a template estimated with averaging then the
+        entry will be `None`.
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
@@ -1844,6 +1852,8 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
+        
+        Returns just the kinetics, or None.
         """
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
@@ -1860,6 +1870,10 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
+        
+        Returns a tuple (kinetics, entry) where `entry` is the database
+        entry used to determine the kinetics only if it is an exact match,
+        and is None if some averaging or use of a parent node took place.
         """    
         kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
                 
