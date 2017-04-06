@@ -5,6 +5,7 @@ import theano.tensor as T # should write custom back-end eventually, but this is
 import theano
 from keras import activations, initializations
 from keras.engine.topology import Layer
+from keras.layers import merge
 
 class MoleculeConv(Layer):
 	
@@ -40,18 +41,17 @@ class MoleculeConv(Layer):
 		W_inner = self.init_inner((self.inner_dim, self.inner_dim))
 		b_inner = K.zeros((1, self.inner_dim))
 		# Initialize weights tensor 
-		self.W_inner = K.variable(T.tile(W_inner, (self.depth + 1, 1, 1)).eval() + \
-			initializations.uniform((self.depth + 1, self.inner_dim, self.inner_dim)).eval())
+		self.W_inner = K.variable(T.tile(W_inner, (self.depth + 1, 1, 1)).eval())
 		self.W_inner.name = 'T:W_inner'
-		self.b_inner = K.variable(T.tile(b_inner, (self.depth + 1, 1, 1)).eval()  + \
-			initializations.uniform((self.depth + 1, 1, self.inner_dim)).eval())
+		self.b_inner = K.variable(T.tile(b_inner, (self.depth + 1, 1, 1)).eval())
 		self.b_inner.name = 'T:b_inner'
 		# # Concatenate third dimension (depth) so different layers can have 
 		# # different weights. Now, self.W_inner[#,:,:] corresponds to the 
 		# # weight matrix for layer/depth #.
 
 		# Define template weights for output FxL
-		W_output = self.init_output((self.inner_dim, self.units), scale = self.scale_output)
+		# W_output = self.init_output((self.inner_dim, self.units), scale = self.scale_output)
+		W_output = self.init_output((self.inner_dim, self.units))
 		b_output = K.zeros((1, self.units))
 		# Initialize weights tensor
 		self.W_output = K.variable(T.tile(W_output, (self.depth + 1, 1, 1)).eval())
@@ -96,82 +96,41 @@ class MoleculeConv(Layer):
 		# Want to loop over third dimension, so need to dimshuffle
 		(attributes, updates) = theano.scan(lambda x: x.diagonal(), sequences = original_graph.dimshuffle((2, 0, 1)))
 		attributes.name = 'attributes'
-		# Now the attributes is (N_features x N_nodes), so we need to transpose
+		# Now the attributes is (N_features x N_atom), so we need to transpose
 		attributes = attributes.T
 		attributes.name = 'attributes post-transpose'
 
+		# get atom matrix: N_atom * (N_features-1)
+		A = attributes[:, :-1]
+
+		# get connectivity matrix: N_atom * N_atom
+		C = original_graph[:, :, -1] + T.identity_like(original_graph[:, :, -1])
+
+		# get bond tensor: N_atom * N_atom * (N_features-1) 
+		B_tmp = original_graph[:, :, :-1] - A
+
+		coeff = K.concatenate([original_graph[:, :, -1:]]*self.inner_dim, axis = 2)
+
+		B = merge([B_tmp, coeff], mode="mul")
+
+		A_new = A
+
 		# Get initial fingerprint
-		presum_fp = self.attributes_to_fp_contribution(attributes, 0)
+		presum_fp = self.attributes_to_fp_contribution(A, 0)
 		fp = K.sum(presum_fp, axis = 0) # sum across atom contributions
 		fp.name = 'initial fingerprint'
 
-		# Get bond matrix
-		bonds = original_graph[:, :, -1] # flag if the bond is present, (N_atom x N_atom)
-		bonds.name = 'bonds'
-
 		# Iterate through different depths, updating attributes each time
-		graph = original_graph
 		for depth in range(self.depth):
-			(attributes, graph) = self.attributes_update(attributes, depth + 1, graph, original_graph, bonds)
-			presum_fp_new = self.attributes_to_fp_contribution(attributes, depth + 1)
+			A_new = self.activation_inner(K.dot(K.dot(C, A_new) + K.sum(B, axis=1), 
+												self.W_inner[depth+1, :, :]) 
+										+ self.b_inner[depth+1, 0, :])
+
+			presum_fp_new = self.attributes_to_fp_contribution(A_new, depth + 1)
 			presum_fp_new.name = 'presum_fp_new contribution'
 			fp = fp + K.sum(presum_fp_new, axis = 0) 
 
 		return fp
-
-	def attributes_update(self, attributes, depth, graph, original_graph, bonds):
-		'''Given the current attributes, the current depth, and the graph that the attributes
-		are based on, this function will update the 2D attributes tensor'''
-		
-		############# GET NEW ATTRIBUTE MATRIX #########################
-		# New pre-activated attribute matrix v = M_i,j,: x ones((N_atom, 1)) -> (N_atom, N_features) 
-		# as long as dimensions are appropriately shuffled
-		shuffled_graph = graph.copy().dimshuffle((2, 0, 1)) # (N_feature x N_atom x N_atom)
-		shuffled_graph.name = 'shuffled_graph'
-
-		ones_vec = K.ones_like(attributes[:, 0]) # (N_atom x 1)
-		ones_vec.name = 'ones_vec'
-		(new_preactivated_attributes, updates) = theano.scan(lambda x: K.dot(x, ones_vec), sequences = shuffled_graph) # (N_features x N_atom)
-
-		# Need to pass through an activation function still
-		# Final attribute = bond flag = is not part of W_inner or b_inner
-		(new_attributes, updates) = theano.scan(lambda x: self.activation_inner(
-			K.dot(x, self.W_inner[depth, :, :]) + self.b_inner[depth, 0, :]), sequences = new_preactivated_attributes[:-1, :].T) # (N_atom x N_features -1)
-		
-		# Append last feature (bond flag) after the loop
-		new_attributes = K.concatenate((new_attributes, attributes[:, -1:]), axis = 1)
-		new_attributes.name = 'new_attributes'
-
-
-		############ UPDATE GRAPH TENSOR WITH NEW ATOM ATTRIBUTES ###################
-		### Node attribute contribution is located in every entry of graph[i,j,:] where
-		### there is a bond @ ij or when i = j (self)
-		# Get atoms matrix (identity)
-		atoms = T.identity_like(bonds) # (N_atom x N_atom)
-		atoms.name = 'atoms_identity'
-		# Combine
-		bonds_or_atoms = bonds + atoms # (N_atom x N_atom)
-		bonds_or_atoms.name = 'bonds_or_atoms'
-
-		atom_indeces = T.arange(ones_vec.shape[0]) # 0 to N_atoms - 1 (indeces)
-		atom_indeces.name = 'atom_indeces vector'
-		### Subtract previous node attribute contribution
-		# Multiply each entry in bonds_or_atoms by the previous atom features for that column
-		(old_features_to_sub, updates) = theano.scan(lambda i: T.outer(bonds_or_atoms[:, i], attributes[i, :]), 
-			sequences = T.arange(ones_vec.shape[0]))
-		old_features_to_sub.name = 'old_features_to_sub'
-
-		### Add new node attribute contribution
-		# Multiply each entry in bonds_or_atoms by the previous atom features for that column
-		(new_features_to_add, updates) = theano.scan(lambda i: T.outer(bonds_or_atoms[:, i], new_attributes[i, :]),
-			sequences = T.arange(ones_vec.shape[0]))
-		new_features_to_add.name = 'new_features_to_add'
-
-		# Update new graph
-		new_graph = graph - old_features_to_sub + new_features_to_add
-		new_graph.name = 'new_graph'
-
-		return (new_attributes, new_graph)
 
 
 	def attributes_to_fp_contribution(self, attributes, depth):
@@ -179,7 +138,7 @@ class MoleculeConv(Layer):
 		node, this method will apply the output sparsifying (often softmax) function and return
 		the contribution to the fingerprint'''
 		# Apply output activation function
-		output_dot = K.dot(attributes[:, :-1], self.W_output[depth, :, :]) # ignore last attribute (bond flag)
+		output_dot = K.dot(attributes, self.W_output[depth, :, :]) # ignore last attribute (bond flag)
 		output_dot.name = 'output_dot'
 		output_bias = self.b_output[depth, 0, :]
 		output_bias.name = 'output_bias'
