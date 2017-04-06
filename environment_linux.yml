@@ -40,4 +40,4 @@ dependencies:
   - networkx
   - mock
   - pymongo
-  - keras
+  - rmg::keras
