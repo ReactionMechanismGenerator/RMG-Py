@@ -42,4 +42,4 @@ dependencies:
   - mock
   - muq
   - pymongo
-  - keras
+  - rmg::keras=1.2.2
