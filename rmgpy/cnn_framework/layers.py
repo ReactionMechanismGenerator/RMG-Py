@@ -67,10 +67,6 @@ class GraphFP(Layer):
 					   self.b_inner,
 					   self.W_output,
 					   self.b_output]
-		self.params = [self.W_inner, 
-					   self.b_inner,
-					   self.W_output,
-					   self.b_output]
 
 	def get_output_shape_for(self, input_shape):
 		return (input_shape[0], self.output_dim)
