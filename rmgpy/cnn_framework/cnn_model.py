@@ -1,5 +1,5 @@
 from __future__ import print_function
-from .layers import GraphFP
+from .layers import MoleculeConv
 from keras.models import Sequential
 from keras.layers.core import Dense
 from keras.optimizers import RMSprop, Adam
@@ -25,14 +25,14 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 	
 	model = Sequential()
 
-	model.add(GraphFP(output_dim=embedding_size, 
+	model.add(MoleculeConv(output_dim=embedding_size, 
 		inner_dim=attribute_vector_size-1, 
 		depth=depth,
 		scale_output=scale_output,
 		padding=padding,
 		activation_inner='tanh'))
 	
-	logging.info('cnn_model: added GraphFP layer ({} -> {})'.format('mol', embedding_size))
+	logging.info('cnn_model: added MoleculeConv layer ({} -> {})'.format('mol', embedding_size))
 	if hidden > 0:
 		
 		model.add(Dense(hidden, activation=hidden_activation))
@@ -86,7 +86,7 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 
 	# Fit (allows keyboard interrupts in the middle)
 	# Because molecular graph tensors are different sizes based on N_atoms, can only do one at a time
-	# (alternative is to pad with zeros and try to add some masking feature to GraphFP)
+	# (alternative is to pad with zeros and try to add some masking feature to MoleculeConv)
 	try:
 		loss = []
 		inner_val_loss = []
@@ -162,12 +162,12 @@ def evaluate_mean_tst_loss(model, X_test, y_test):
 	return mean_test_loss
 
 def reset_model(model):
-	'''Given a Keras model consisting only of GraphFP, Dense, and Dropout layers,
+	'''Given a Keras model consisting only of MoleculeConv, Dense, and Dropout layers,
 	this function will reset the trainable weights to save time for CV tests.'''
 
 	for layer in model.layers:
 		# Note: these are custom depending on the layer type
-		if '.GraphFP' in str(layer):
+		if '.MoleculeConv' in str(layer):
 			W_inner = layer.init_inner((layer.inner_dim, layer.inner_dim))
 			b_inner = np.zeros((1, layer.inner_dim))
 			# Inner weights
