@@ -1,7 +1,7 @@
 
 from cnn_model import build_model, train_model, reset_model, save_model, write_loss_report
 from .input import read_input_file
-from .molecule_tensor import get_molecule_tensor
+from .molecule_tensor import get_molecule_tensor, pad_molecule_tensor
 import os
 import rmgpy
 import numpy as np
@@ -63,24 +63,33 @@ class Predictor(object):
 	def kfcv_train(self, folds, lr_func, save_model_path):
 
 		# prepare data for training
-		X_test, y_test, folded_Xs, folded_ys = prepare_folded_data_from_multiple_datasets(
-										self.datasets, folds, 
-										self.add_extra_atom_attribute, 
-										self.add_extra_bond_attribute)
+		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
+																self.add_extra_atom_attribute, 
+																self.add_extra_bond_attribute,
+																self.padding,
+																self.padding_final_size)
+
+		X_test, y_test, folded_Xs, folded_ys = folded_data
 
 		losses = []
 		inner_val_losses = []
 		outer_val_losses = []
 		test_losses = []
 		for fold in range(folds):
-			data = prepare_data_one_fold(folded_Xs, folded_ys, current_fold=fold, \
-											shuffle_seed=4)
+			data = prepare_data_one_fold(folded_Xs, 
+										folded_ys, 
+										current_fold=fold, 
+										shuffle_seed=4)
 			data = data + (X_test, y_test)
 
 			# execute train_model
-			model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss = train_model(self.model, data, 
-												nb_epoch=150, lr_func=lr_func, 
-												patience=10)
+			train_model_output = train_model(self.model, 
+											data, 
+											nb_epoch=150, 
+											lr_func=lr_func, 
+											patience=10)
+
+			model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss = train_model_output
 
 			# loss and inner_val_loss each is a list
 			# containing loss for each epoch
@@ -104,8 +113,12 @@ class Predictor(object):
 		full_folds_mean_test_loss = np.mean(test_losses)
 
 		full_folds_loss_report_path = os.path.join(save_model_path, 'full_folds_loss_report.txt')
-		write_loss_report(full_folds_mean_loss, full_folds_mean_inner_val_loss, full_folds_mean_outer_val_loss, \
-							full_folds_mean_test_loss, full_folds_loss_report_path)
+
+		write_loss_report(full_folds_mean_loss, 
+						full_folds_mean_inner_val_loss, 
+						full_folds_mean_outer_val_loss,
+						full_folds_mean_test_loss, 
+						full_folds_loss_report_path)
 
 	def load_parameters(self, param_path=None):
 
@@ -131,6 +144,7 @@ class Predictor(object):
 
 		molecule_tensor = get_molecule_tensor(molecule, \
 							self.add_extra_atom_attribute, self.add_extra_bond_attribute)
-
+		if self.padding:
+			molecule_tensor = pad_molecule_tensor(molecule_tensor, self.padding_final_size)
 		molecule_tensor_array = np.array([molecule_tensor])
 		return self.model.predict(molecule_tensor_array)[0][0]
