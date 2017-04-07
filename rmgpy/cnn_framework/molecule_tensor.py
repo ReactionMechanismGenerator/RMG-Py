@@ -1,6 +1,21 @@
 
 import numpy as np
 
+def pad_molecule_tensor(molecule_tensor, final_size):
+	"""
+	this method takes a numpy tensor with dimension:
+	non_H_atom_num * non_H_atom_num * attribute_num
+
+	and pad it to final_size * final_size * attribute_num
+	using zeros
+	"""
+	padded_molecule_tensor = np.zeros((final_size, final_size, molecule_tensor.shape[2]))
+
+	padded_molecule_tensor[:molecule_tensor.shape[0], :molecule_tensor.shape[1], :] = molecule_tensor
+	return padded_molecule_tensor
+
+
+
 def get_molecule_tensor(molecule, add_extra_atom_attribute=True, add_extra_bond_attribute=True):
 
 	"""
