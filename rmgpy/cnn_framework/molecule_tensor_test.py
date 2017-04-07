@@ -3,6 +3,7 @@ import unittest
 from molecule_tensor import *
 from rmgpy.molecule.molecule import Molecule
 import numpy as np
+from numpy.testing import assert_allclose
 
 class Test_Molecule_Tensor(unittest.TestCase):
 
@@ -286,5 +287,59 @@ class Test_Molecule_Tensor(unittest.TestCase):
 		self.assertEqual(len(mol_tensor_test), 2)
 		self.assertEqual(len(mol_tensor_test[0]), 2)
 		self.assertEqual(len(mol_tensor_test[0][0]), get_attribute_vector_size())
+
+
+	def test_pad_molecule_tensor(self):
+
+		# molecule tensor before padding
+		M = np.array([
+					[[ 1.,  0.,  0.],[ 2.,  2.,  1.], [ 0.,  0.,  0.]],
+
+					[[ 1.,  2.,  1.], [ 2.,  0.,  0.], [ 3.,  1.,  1.]],
+
+					[[ 0.,  0.,  0.], [ 2.,  1.,  1.], [ 3.,  0.,  0.]]
+					])
+
+		X = [M]
+
+		# padding setting setup
+		final_size = 10
+
+		padded_X = []
+		for x in X:
+			padded_X.append(pad_molecule_tensor(x, final_size=final_size))
+
+		# check padding gives tensors of desired final size
+		for x, padded_x in zip(X, padded_X):
+			self.assertEqual(padded_x.shape[0], final_size)
+			self.assertEqual(padded_x.shape[1], final_size)
+			self.assertEqual(padded_x.shape[2], x.shape[2])
+
+		# compare atom numbers not changed
+		# before and after padding
+		# as well check padded are all zeros
+		expected_atom_nums_X = [x.shape[0] for x in X]
+
+		atom_nums_padded_X = []
+		for padded_x in padded_X:
+
+			zero_indices = np.where(np.sum(padded_x, axis=0)[:,-1] == 0)[0]
+			
+			if len(zero_indices) > 0:
+				atom_nums_padded_X.append(zero_indices[0])
+			else:
+				atom_nums_padded_X.append(padded_x.shape[0])
+
+			zero_num = final_size - atom_nums_padded_X[-1]
+			self.assertEqual(zero_num, zero_indices.shape[0])
+
+		self.assertEqual(expected_atom_nums_X, atom_nums_padded_X)
+
+		# check padded tensor contains the original information
+		# contained in the original tensor
+		for idx, x in enumerate(X):
+			atom_num = atom_nums_padded_X[idx]
+			padded_x = padded_X[idx]
+			assert_allclose(x, padded_x[:atom_num, :atom_num, :])
 
 
