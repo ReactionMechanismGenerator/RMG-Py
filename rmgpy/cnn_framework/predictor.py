@@ -120,6 +120,43 @@ class Predictor(object):
 						full_folds_mean_test_loss, 
 						full_folds_loss_report_path)
 
+	def kfcv_batch_train(self, folds):
+
+		# prepare data for training
+		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
+																self.add_extra_atom_attribute, 
+																self.add_extra_bond_attribute,
+																self.padding,
+																self.padding_final_size)
+
+		X_test, y_test, folded_Xs, folded_ys = folded_data
+
+		losses = []
+		inner_val_losses = []
+		outer_val_losses = []
+		test_losses = []
+		for fold in range(folds):
+			data = prepare_data_one_fold(folded_Xs, 
+										folded_ys, 
+										current_fold=fold, 
+										shuffle_seed=4)
+
+			X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val = data
+			self.model.fit(np.array(X_train), np.array(y_train), nb_epoch=3, batch_size=50, validation_split=0.1)
+
+			# evaluate outer valiation loss
+			outer_val_loss = self.model.evaluate(np.array(X_outer_val), 
+											np.array(y_outer_val), 
+											batch_size=50)
+			logging.info("\nOuter val loss: {0}".format(outer_val_loss))
+
+			test_loss = self.model.evaluate(np.array(X_test), np.array(y_test), batch_size=50)
+			logging.info("\nTest loss: {0}".format(test_loss))
+
+			# once finish training one fold, reset the model
+			self.reset_model()
+
+
 	def load_parameters(self, param_path=None):
 
 		if not param_path:
