@@ -121,6 +121,12 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 			inner_val_loss.append(np.mean(this_inner_val_loss))
 			logging.info('mse loss: {}\tmse inner_val_loss: {}'.format(loss[i], inner_val_loss[i]))
 
+			# report outer_val and test loss
+			if i % 1 == 0:
+			   mean_outer_val_loss = evaluate_mean_tst_loss(model, X_outer_val, y_outer_val)
+			   mean_test_loss = evaluate_mean_tst_loss(model, X_test, y_test)
+			   logging.info('mse outer_val_loss: {}\tmse test_loss: {}'.format(mean_outer_val_loss, mean_test_loss))
+
 			# Check progress
 			if np.mean(this_inner_val_loss) < prev_best_inner_val_loss:
 				wait = 0
