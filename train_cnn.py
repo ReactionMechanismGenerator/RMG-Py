@@ -104,4 +104,5 @@ if __name__ == '__main__':
 	if not os.path.exists(save_model_path):
 		os.mkdir(save_model_path)
 	
-	h298_predictor.kfcv_train(folds=folds, lr_func=lr_func, save_model_path=save_model_path)
+	# h298_predictor.kfcv_train(folds=folds, lr_func=lr_func, save_model_path=save_model_path)
+	h298_predictor.kfcv_batch_train(folds=folds)
