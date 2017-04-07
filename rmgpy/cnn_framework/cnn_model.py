@@ -183,8 +183,8 @@ def reset_model(model):
 				initializations.uniform((layer.depth + 1, 1, layer.inner_dim)).eval()).astype(np.float32))
 
 			# Outer weights
-			W_output = layer.init_output((layer.inner_dim, layer.output_dim), scale = layer.scale_output)
-			b_output = np.zeros((1, layer.output_dim))
+			W_output = layer.init_output((layer.inner_dim, layer.units), scale = layer.scale_output)
+			b_output = np.zeros((1, layer.units))
 			# Initialize weights tensor
 			layer.W_output.set_value((T.tile(W_output, (layer.depth + 1, 1, 1)).eval()).astype(np.float32))
 			layer.b_output.set_value((T.tile(b_output, (layer.depth + 1, 1, 1)).eval()).astype(np.float32))
