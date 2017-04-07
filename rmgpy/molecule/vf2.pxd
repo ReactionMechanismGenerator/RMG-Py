@@ -29,6 +29,8 @@ from graph cimport Vertex, Edge, Graph
 cdef class VF2:
 
     cdef Graph graph1, graph2
+
+    cpdef Graph graphA, graphB
     
     cdef dict initialMapping
     cdef bint subgraph
@@ -49,7 +51,7 @@ cdef class VF2:
 
     cdef bint match(self, int callDepth) except -2
         
-    cdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2
+    cpdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2
     
     cdef addToMapping(self, Vertex vertex1, Vertex vertex2)
         
