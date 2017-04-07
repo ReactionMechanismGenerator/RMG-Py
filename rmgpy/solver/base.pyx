@@ -767,25 +767,27 @@ cdef class ReactionSystem(DASx):
             if len(surfaceTotalDivAccumNums) > 0:
                 maxSurfaceDifLnAccumNum = numpy.inf
                 if zeroConsumption:
-                    for index in xrange(numEdgeReactions):
+                    for i in xrange(len(surfaceReactionIndices)):
+                        index = surfaceReactionIndices[i]
                         maxSurfaceReactionAccum = 0.0 
                         maxSurfaceAccumReactionIndex = -1
                         if surfaceInfAccumNumIndex in reactantIndices[index]:
                             reactionRate = coreReactionRates[index]
                             if reactionRate > maxEdgeReactionAccum:
                                 maxSurfaceReactionAccum = reactionRate
-                                maxSurfaceAccumReactionIndex = index
-                    maxSurfaceAccumReaction = edgeReactions[maxSurfaceAccumReactionIndex]
+                                maxSurfaceAccumReactionIndex = i
+                    maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
                 elif zeroProduction:
-                    for index in xrange(numEdgeReactions):
+                    for i in xrange(len(surfaceReactionIndices)):
+                        index = surfaceReactionIndices[i]
                         maxSurfaceReactionAccum = 0.0
                         maxSurfaceAccumReactionIndex = -1
-                        if infAccumNumIndex in productIndices[index]:
+                        if surfaceInfAccumNumIndex in productIndices[index]:
                             reactionRate = coreReactionRates[index]
                             if reactionRate > maxEdgeReactionAccum:
                                 maxSurfaceReactionAccum = reactionRate
-                                maxSurfaceAccumReactionIndex = index
-                    maxSurfaceAccumReaction = edgeReactions[maxSurfaceAccumReactionIndex]
+                                maxSurfaceAccumReactionIndex = i
+                    maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
                 elif len(surfaceTotalDivAccumNums)>0: 
                     maxSurfaceAccumReactionIndex = numpy.argmax(surfaceTotalDivAccumNums)
                     maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
