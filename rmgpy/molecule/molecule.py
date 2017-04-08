@@ -2437,7 +2437,35 @@ class Molecule(Graph):
 
         if rings is None:
             rings = self.get_relevant_cycles()
-            rings = [ring for ring in rings if len(ring) == 6]
+
+        def filter_fused_rings(_rings):
+            """
+            Given a list of rings, remove ones which share more than 2 atoms.
+            """
+            cython.declare(toRemove=set, i=cython.int, j=cython.int, toRemoveSorted=list)
+
+            if len(_rings) < 2:
+                return _rings
+
+            to_remove = set()
+            for i, j in itertools.combinations(range(len(_rings)), 2):
+                if len(set(_rings[i]) & set(_rings[j])) > 2:
+                    to_remove.add(i)
+                    to_remove.add(j)
+
+            to_remove_sorted = sorted(to_remove, reverse=True)
+
+            for i in to_remove_sorted:
+                del _rings[i]
+
+            return _rings
+
+        # Remove rings that share more than 3 atoms, since they cannot be planar
+        rings = filter_fused_rings(rings)
+
+        # Only keep rings with exactly 6 atoms, since RMG can only handle aromatic benzene
+        rings = [ring for ring in rings if len(ring) == 6]
+
         if not rings:
             return [], []
 
