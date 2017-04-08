@@ -1698,6 +1698,31 @@ class Molecule(Graph):
         if not rings:
             return [], []
 
+        def _filterFusedRings(rings):
+            """
+            Given a list of rings, remove ones which share more than 2 atoms.
+            """
+            cython.declare(toRemove=set, i=cython.int, j=cython.int, toRemoveSorted=list)
+
+            if len(rings) == 1:
+                return rings
+
+            toRemove = set()
+            for i, j in itertools.combinations(range(len(rings)), 2):
+                if len(set(rings[i]) & set(rings[j])) > 2:
+                    toRemove.add(i)
+                    toRemove.add(j)
+
+            toRemoveSorted = sorted(toRemove, reverse=True)
+
+            for i in toRemoveSorted:
+                del rings[i]
+
+            return rings
+
+        # Remove rings that share more than 3 atoms, since they cannot be planar
+        rings = _filterFusedRings(rings)
+
         try:
             rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
@@ -1751,6 +1776,8 @@ class Molecule(Graph):
                         aromaticBonds.append(aromaticBondsInRing)
 
             return aromaticRings, aromaticBonds
+
+
 
     def getDeterministicSmallestSetOfSmallestRings(self):
         """
