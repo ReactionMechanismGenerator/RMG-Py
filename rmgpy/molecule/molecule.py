@@ -162,7 +162,7 @@ class Atom(Vertex):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise. If `other` is an :class:`Atom` object, then all
-        attributes except `label` must match exactly. If `other` is an
+        attributes except `label` and 'ID' must match exactly. If `other` is an
         :class:`GroupAtom` object, then the atom must match any of the
         combinations in the atom pattern.
         """
@@ -173,7 +173,8 @@ class Atom(Vertex):
                 self.element                is atom.element and
                 self.radicalElectrons       == atom.radicalElectrons   and
                 self.lonePairs              == atom.lonePairs           and
-                self.charge                 == atom.charge
+                self.charge                 == atom.charge and
+                self.atomType              is atom.atomType
                 )
         elif isinstance(other, gr.GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
