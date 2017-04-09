@@ -344,89 +344,78 @@ def calculateCyclicSymmetryNumber(molecule):
     Get the symmetry number correction for cyclic regions of a molecule.
     For complicated fused rings the smallest set of smallest rings is used.
     """
-    from rdkit.Chem.rdmolops import SanitizeMol
-    from rdkit.Chem.rdchem import Mol 
-
+    from rmgpy.molecule.vf2 import VF2
+    # setup isomorphism checker
+    vf2 = VF2(molecule, molecule)
+    
     symmetryNumber = 1
     
-    rings = molecule.getSmallestSetOfSmallestRings()
-
-    # Get symmetry number for each ring in structure
-    for ring0 in rings:
-
-        # Make another copy structure
-        structure = molecule.copy(True)
-        ring = [structure.atoms[molecule.atoms.index(atom)] for atom in ring0]
+    # for polycyclics, We should be getting the largest ring, not the smallest
+    singleRings, polycyclicRings = molecule.getDisparateRings()
+    for ring in polycyclicRings: singleRings.append(molecule.getLargestRing(ring[0]))
+    # Get symmetry number for each ring in structure & multiply
+    for ring in singleRings:
+        size = len(ring)
         
-        # Remove bonds of ring from structure
-        for i, atom1 in enumerate(ring):
-            for atom2 in ring[i+1:]:
-                if structure.hasBond(atom1, atom2):
-                    structure.removeBond(atom1.edges[atom2])
-
-        structures = structure.split()
-        groups = []
-        for struct in structures:
-            for atom in ring:
-                if struct.hasAtom(atom): struct.removeAtom(atom)
-            groups.append(struct.split())
-        # Find equivalent functional groups on ring
-        equivalentGroups = []; equivalentGroupCount = []
-        for group in groups:
-            found = False
-            for i, eqGroup in enumerate(equivalentGroups):
-                if not found and len(group) == len(eqGroup):
-                    for g, eg in zip(group, eqGroup):
-                        if not g.isIsomorphic(eg):
-                            # The groups do not match
+        # look for twisting rotation
+        # go through each possible number of symmetrical sets
+        for num_sections in range(size,0,-1):
+            # only go through if it can give symmetry (only factors of size)
+            if size % num_sections == 0:
+                # only check the minimum number of sections necessary
+                num_rotations = size / num_sections
+                # check rotation around the ring
+                all_the_same = True
+                starting_index = 0
+                while all_the_same and starting_index < size / 2: 
+                    for atom_index in range(num_rotations,size,num_rotations):
+                        if not vf2.feasible(ring[starting_index],ring[(starting_index + atom_index) % size]):
+                            all_the_same = False
                             break
-                    else:
-                        # The groups match
-                        found = True
-                if found:
-                    # We've found a matching group, so increment its count
-                    equivalentGroupCount[i] += 1        
+                    starting_index += 1
+                if all_the_same:
+                    symmetryNumber *= num_sections
                     break
-            else:
-                # No matching group found, so add it as a new group
-                equivalentGroups.append(group)
-                equivalentGroupCount.append(1)
 
-        # Find equivalent bonds on ring
-        equivalentBonds = []
-        for i, atom1 in enumerate(ring0):
-            for atom2 in ring0[i+1:]:
-                if molecule.hasBond(atom1, atom2):
-                    bond = molecule.getBond(atom1, atom2)
-                    found = False
-                    for eqBond in equivalentBonds:
-                        if not found:
-                            if bond.equivalent(eqBond[0]):
-                                eqBond.append(group)
-                                found = True
-                    if not found:
-                        equivalentBonds.append([bond])
-
-        # Find maximum number of equivalent groups and bonds
-        minEquivalentGroups = min(equivalentGroupCount)
-        maxEquivalentGroups = max(equivalentGroupCount)
-        minEquivalentBonds = None
-        maxEquivalentBonds = 0
-        for bonds in equivalentBonds:
-            N = len(bonds)
-            if minEquivalentBonds is None or N < minEquivalentBonds:
-                minEquivalentBonds = N
-            if N > maxEquivalentBonds:
-                maxEquivalentBonds = N
-
-        if maxEquivalentGroups == maxEquivalentBonds == len(ring):
-            symmetryNumber *= len(ring) * 2
+        # look for flipping rotation. 
+        if size % 2 == 0: # even length only has to go through half
+            flipping_atom_indexes = range(int(size/2))
         else:
-            symmetryNumber *= min(minEquivalentGroups, minEquivalentBonds)
+            flipping_atom_indexes = range(size)
 
+        for flipping_atom_index in flipping_atom_indexes:
+            
+            # check for flipping with across an axis containing atoms
+            all_the_same = True
+            min_index = flipping_atom_index + 1
+            max_index = flipping_atom_index + size - 1
+            while min_index <= max_index:
+                # ensure the two atoms are different. use mod size to loop to the start
+                # of the list when index out of bounds
+                if not vf2.feasible(ring[min_index % size], ring[max_index % size]):
+                    all_the_same = False
+                    break
+                min_index += 1
+                max_index += -1
 
+            # for even rings, check for flipping accross bonds too
+            if not all_the_same and size % 2 == 0:
+                all_the_same = True
+                min_index = flipping_atom_index 
+                max_index = flipping_atom_index + size - 1
+                while min_index < max_index:
+                    # ensure the two atoms are different. use mod size to loop to the start
+                    # of the list when index out of bounds
+                    if not vf2.feasible(ring[min_index % size], ring[max_index % size]):
+                        all_the_same = False
+                        break
+                    min_index += 1
+                    max_index += -1
+
+            if all_the_same:
+                symmetryNumber *= 2
+                break
     return symmetryNumber
-
 ################################################################################
 
 def calculateSymmetryNumber(molecule):
