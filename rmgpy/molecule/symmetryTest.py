@@ -272,7 +272,6 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 12)
 
-    @work_in_progress
     def testCyclicSymmetryNumberCyclohexanone(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() on C1CCCCC1=O
@@ -281,7 +280,6 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 2)
         
-    @work_in_progress
     def testCyclicSymmetryNumberCyclohexan_tri_one(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() on C1CCC(=O)C(=O)C1=O
@@ -417,7 +415,6 @@ class TestMoleculeSymmetry(unittest.TestCase):
                     symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
         self.assertEqual(symmetryNumber, 1)
 
-    @work_in_progress
     def testTotalSymmetryNumberToluene(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1C
@@ -447,7 +444,6 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 2)
 
-    @work_in_progress
     def testTotalSymmetryNumberPhenoxyKecle(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1[O]
@@ -478,7 +474,6 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 18)
 
-    @work_in_progress
     def testTotalSymmetryNumber14Dimethylbenzene(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccc(C)cc1
