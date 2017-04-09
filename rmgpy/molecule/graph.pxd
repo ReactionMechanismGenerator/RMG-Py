@@ -135,4 +135,6 @@ cdef class Graph:
 
     cpdef list getSmallestSetOfSmallestRings(self)
     
+    cpdef list getLargestRing(self, Vertex vertex)
+    
     cpdef bint isMappingValid(self, Graph other, dict mapping) except -2

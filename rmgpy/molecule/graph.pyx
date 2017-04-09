@@ -984,6 +984,21 @@ cdef class Graph:
 
         return cycleList
 
+    cpdef list getLargestRing(self, Vertex vertex):
+        """
+        returns the largest ring containing vertex. This is typically
+        useful for finding the longest path in a polycyclic ring, since
+        the polycyclic rings returned from getPolycyclicRings are not necessarily
+        in order in the ring structure.
+        """
+        all_cycles = self.getAllCycles(vertex)
+        longest_cycle = []
+        for cycle in all_cycles:
+            if len(cycle) > len(longest_cycle):
+                longest_cycle = cycle
+        return longest_cycle
+        
+        
     cpdef bint isMappingValid(self, Graph other, dict mapping) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
