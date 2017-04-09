@@ -1562,6 +1562,7 @@ class Molecule(Graph):
         includes both external and internal modes.
         """
         from rmgpy.molecule.symmetry import calculateSymmetryNumber
+        self.updateConnectivityValues() # for consistent results
         self.symmetryNumber = calculateSymmetryNumber(self)
         return self.symmetryNumber
     
