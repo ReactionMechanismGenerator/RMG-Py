@@ -167,18 +167,26 @@ def filterReactions(reactants, products, reactionList):
     not involve all the given `reactants` or whose products do not involve 
     all the given `products`. This method checks both forward and reverse
     directions, and only filters out reactions that don't match either.
+    
+    reactants and products can be either molecule or species objects
     """
     
     # Convert from molecules to species and generate resonance isomers.
     reactant_species = []
     for mol in reactants:
-        s = Species(molecule=[mol])
+        if isinstance(mol,Species):
+            s = mol
+        else:
+            s = Species(molecule=[mol])
         s.generateResonanceIsomers()
         reactant_species.append(s)
     reactants = reactant_species
     product_species = []
     for mol in products:
-        s = Species(molecule=[mol])
+        if isinstance(mol,Species):
+            s = mol
+        else:
+            s = Species(molecule=[mol])
         s.generateResonanceIsomers()
         product_species.append(s)
     products = product_species
