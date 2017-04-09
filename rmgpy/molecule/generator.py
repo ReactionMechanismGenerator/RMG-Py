@@ -348,14 +348,15 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
-    orders = {1: rdBonds.SINGLE, 2: rdBonds.DOUBLE, 3: rdBonds.TRIPLE, 1.5: rdBonds.AROMATIC}
+    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
-                order = orders[bond.order]
+                order_string = bond.getOrderStr()
+                order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
     
     # Make editable mol into a mol and rectify the molecule
