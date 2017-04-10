@@ -4,7 +4,7 @@ database(
 	#libraries found at http://rmg.mit.edu/database/thermo/libraries/
 	#if species exist in multiple libraries, the earlier libraries overwrite the 
 	#previous values
-    thermoLibraries = ['KlippensteinH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
+    thermoLibraries = ['BurkeH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
 	#overrides RMG kinetics estimation if needed in the core of RMG. 
 	#list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
 	#input each library as a ('library_name',True/False) where a True means that all 
@@ -14,7 +14,7 @@ database(
 	#in addition to species listed in this input file.  
 	#This is helpful for reducing run time for species you know will appear in 
 	#the mechanism.  
-    seedMechanisms = ['KlippensteinH2O2','ERC-FoundationFuelv0.9'],
+    seedMechanisms = ['BurkeH2O2inN2','ERC-FoundationFuelv0.9'],
 	#this is normally not changed in general RMG runs.  Usually used for testing with 
 	#outside kinetics databases
     kineticsDepositories = 'default', 

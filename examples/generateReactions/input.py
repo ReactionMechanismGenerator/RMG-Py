@@ -1,6 +1,6 @@
 # Data sources for kinetics
 database(
-    thermoLibraries = ['KlippensteinH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
+    thermoLibraries = ['BurkeH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
     reactionLibraries = [],  
     seedMechanisms = [],
     kineticsDepositories = 'default', 
