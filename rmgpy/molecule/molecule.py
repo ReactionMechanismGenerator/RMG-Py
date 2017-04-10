@@ -1799,9 +1799,7 @@ class Molecule(Graph):
                 # Keep the smallest of the cycles found above
                 cycleCandidate_tups = []
                 for cycle0 in cycles:
-                    tup = (cycle0, len(cycle0), -sum([originConnDict[v] for v in cycle0]), \
-                            -sum([v.element.number for v in cycle0]),\
-                            -sum([v.getBondOrdersForAtom() for v in cycle0]))
+                    tup = (cycle0, len(cycle0), -sum([originConnDict[v] for v in cycle0]), -sum([v.element.number for v in cycle0]))
                     cycleCandidate_tups.append(tup)
                 
                 cycle = sorted(cycleCandidate_tups, key=lambda tup0: tup0[1:])[0][0]
