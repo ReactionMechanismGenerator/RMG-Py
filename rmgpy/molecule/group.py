@@ -1959,7 +1959,12 @@ class Group(Graph):
 
         #Saturate up to expected valency
         for molAtom in newMolecule.atoms:
-            statedCharge = molAtom.charge
+            #Group atom had a explicit charge
+            if molAtom in molToGroup and molToGroup[molAtom].charge:
+                statedCharge = molToGroup[molAtom].charge[0]
+            #otherwise assume no charge (or implicit atoms we assume hvae no charge)
+            else:
+                statedCharge = 0
             molAtom.updateCharge()
             if molAtom.charge - statedCharge:
                 hydrogenNeeded = molAtom.charge - statedCharge
@@ -1975,25 +1980,34 @@ class Group(Graph):
                     newMolecule.addBond(newBond)
                 molAtom.updateCharge()
 
+
+
         newMolecule.update()
+
+        #hard-coded exception for carbonMonoxide with default (but incorrect) charges/lone pairs
+        #Not the best solution, but because solubility expects this we need to allow it for now
+        falseCarbonMonoxide = mol.Molecule().fromSMILES("C#[O-]")
+        if newMolecule.isIsomorphic(falseCarbonMonoxide):
+            return newMolecule
+
         #Check that the charge of atoms is expected
-        carbonMonoxide = mol.Molecule(SMILES="[C-]#[O+]")
-        carbonMonosulfide = mol.Molecule().fromAdjacencyList(
-"""
-1 S u0 p1 c+1 {2,T}
-2 C u0 p1 c-1 {1,T}
-"""
-        )
         for atom in newMolecule.atoms:
-            if abs(atom.charge) > 1: raise UnexpectedChargeError(graph = newMolecule)
-            elif abs(atom.charge) == 1:
-                if atom.atomType.isSpecificCaseOf(atomTypes['N']): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['O']): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['S']): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonoxide): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonosulfide): pass
+            if abs(atom.charge) > 0:
+                if atom in molToGroup:
+                    groupAtom = molToGroup[atom]
                 else:
                     raise UnexpectedChargeError(graph = newMolecule)
+                #check hardcoded atomtypes
+                if groupAtom.atomType[0] in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s', 'Ot']] and atom.charge == 1:
+                    pass
+                elif groupAtom.atomType[0] in [atomTypes[x] for x in ['N1d', 'N2s']] and atom.charge == -1:
+                    pass
+                #declared charge in original group is not same as new charge
+                elif atom.charge in groupAtom.charge:
+                    pass
+                else:
+                    raise UnexpectedChargeError(graph = newMolecule)
+
         return newMolecule
 
     def isBenzeneExplicit(self):
