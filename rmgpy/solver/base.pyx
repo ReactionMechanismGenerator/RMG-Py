@@ -231,7 +231,7 @@ cdef class ReactionSystem(DASx):
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
     
-    #@cython.boundscheck(False)
+    @cython.boundscheck(False)
     cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions):
         """
         removes surfaceSpecies and surfaceReactions from  until they are self consistent: 
@@ -414,7 +414,7 @@ cdef class ReactionSystem(DASx):
                 i = self.get_species_index(spec)
                 self.networkIndices[j,l] = i
    
-    #@cython.boundscheck(False)                               
+    @cython.boundscheck(False)                               
     cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,numpy.ndarray[numpy.int_t,ndim=1] surfSpeciesIndices):
         """
         determines the "surface index" maximizing arr value under the surface layering constraint, all of the reactants or all of the products must be in the
@@ -456,7 +456,7 @@ cdef class ReactionSystem(DASx):
         
         return
     
-    #@cython.boundscheck(False)
+    @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,list surfaceSpecies, list surfaceReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
         double toleranceMoveEdgeReactionToCore=numpy.inf,double toleranceMoveEdgeReactionToCoreInterrupt=numpy.inf,
