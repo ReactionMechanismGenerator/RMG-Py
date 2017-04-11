@@ -7,6 +7,8 @@ import rmgpy
 import numpy as np
 from .data import prepare_data_one_fold, prepare_folded_data_from_multiple_datasets
 import logging
+from keras.callbacks import EarlyStopping
+import json
 
 class Predictor(object):
 
@@ -85,7 +87,8 @@ class Predictor(object):
 			# execute train_model
 			train_model_output = train_model(self.model, 
 											data, 
-											nb_epoch=150, 
+											nb_epoch=150,
+											batch_size=1, 
 											lr_func=lr_func, 
 											patience=10)
 
@@ -142,7 +145,22 @@ class Predictor(object):
 										shuffle_seed=4)
 
 			X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val = data
-			self.model.fit(np.array(X_train), np.array(y_train), nb_epoch=3, batch_size=50, validation_split=0.1)
+
+			X_train.extend(X_inner_val)
+			y_train.extend(y_inner_val)
+
+			earlyStopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
+
+			history_callback = self.model.fit(np.array(X_train), 
+							np.array(y_train), 
+							callbacks=[earlyStopping], 
+							nb_epoch=150, 
+							batch_size=50, 
+							validation_split=0.1)
+
+			loss_history = history_callback.history
+			with open('history.json_fold_{0}'.format(fold), 'w') as f_in:
+				json.dump(loss_history, f_in, indent=2)
 
 			# evaluate outer valiation loss
 			outer_val_loss = self.model.evaluate(np.array(X_outer_val), 
