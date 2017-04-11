@@ -62,7 +62,7 @@ class Predictor(object):
 					db, table = [token.strip() for token in line.split('.')]
 					self.datasets.append((db, table))
 
-	def kfcv_train(self, folds, lr_func, save_model_path):
+	def kfcv_train(self, folds, lr_func, save_model_path, batch_size=1):
 
 		# prepare data for training
 		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
@@ -88,7 +88,7 @@ class Predictor(object):
 			train_model_output = train_model(self.model, 
 											data, 
 											nb_epoch=150,
-											batch_size=1, 
+											batch_size=batch_size, 
 											lr_func=lr_func, 
 											patience=10)
 
@@ -123,7 +123,7 @@ class Predictor(object):
 						full_folds_mean_test_loss, 
 						full_folds_loss_report_path)
 
-	def kfcv_batch_train(self, folds):
+	def kfcv_batch_train(self, folds, batch_size=50):
 
 		# prepare data for training
 		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
@@ -155,7 +155,7 @@ class Predictor(object):
 							np.array(y_train), 
 							callbacks=[earlyStopping], 
 							nb_epoch=150, 
-							batch_size=50, 
+							batch_size=batch_size, 
 							validation_split=0.1)
 
 			loss_history = history_callback.history
