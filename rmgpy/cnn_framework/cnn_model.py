@@ -10,6 +10,7 @@ from keras.utils.visualize_util import plot
 import json
 import datetime
 import logging
+import time
 
 
 def build_model(embedding_size=512, attribute_vector_size=33, depth=5, 
@@ -60,7 +61,7 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 
 	return model
 
-def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
+def train_model(model, data, nb_epoch=0, batch_size=50, lr_func='0.01', patience=10):
 	"""
 	inputs:
 		model - a Keras model
@@ -79,6 +80,9 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 
 	# Get data from helper function
 	(X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val, X_test, y_test) = data
+
+	X_train = np.array(X_train)
+	y_train = np.array(y_train)
 
 	# Create learning rate function
 	lr_func_string = 'def lr(epoch):\n    return {}\n'.format(lr_func)
@@ -100,15 +104,26 @@ def train_model(model, data, nb_epoch=0, lr_func='0.01', patience=10):
 			model.optimizer.lr.set_value(lr(i))
 			
 			# Run through training set
-			logging.info('Training...')
-			training_order = range(len(X_train))
+			logging.info('Training with batch size: {0}...'.format(batch_size))
+			epoch_training_start = time.time()
+			training_size = len(X_train)
+			batch_num = int(np.ceil(float(training_size) / batch_size))
+
+			training_order = range(training_size)
 			np.random.shuffle(training_order)
-			for j in training_order:
-				single_mol_as_array = np.array(X_train[j:j+1])
-				single_y_as_array = np.reshape(y_train[j], (1, -1))
+			for batch_idx in range(batch_num):
+
+				start = batch_idx * batch_size
+				end = min(start + batch_size, training_size)
+
+				single_mol_as_array = X_train[training_order[start:end]]
+				single_y_as_array = y_train[training_order[start:end]]
 				sloss = model.train_on_batch(single_mol_as_array, single_y_as_array)
 				this_loss.append(sloss)
+
+			epoch_training_end = time.time()
 			
+			logging.info('Training takes {0:0.1f} secs..'.format(epoch_training_end - epoch_training_start ))
 			# Run through testing set
 			logging.info('Inner Validating..')
 			for j in range(len(X_inner_val)):
