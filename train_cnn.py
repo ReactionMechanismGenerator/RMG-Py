@@ -24,6 +24,9 @@ def parseCommandLineArguments():
 	parser.add_argument('-f', '--folds', type=int, 
 		help='number of folds for training')
 
+	parser.add_argument('-t', '--train_mode', type=str, 
+		help='train mode: currently support in_house and keras')
+
 	return parser.parse_args()
 ################################################################################
 
@@ -84,12 +87,13 @@ if __name__ == '__main__':
 
 	# to run the script
 	# example command: 
-	# python train_cnn.py -i input.py -d datasets.txt -f 5
+	# python train_cnn.py -i input.py -d datasets.txt -f 5 -t in_house
 
 	args = parseCommandLineArguments()
 	input_file = args.input[0]
 	datasets_file = args.datasets[0]
 	folds = args.folds
+	train_mode = args.train_mode
 	input_directory = os.path.abspath(os.path.dirname(input_file))
 	
 	level = logging.INFO
@@ -104,5 +108,9 @@ if __name__ == '__main__':
 	if not os.path.exists(save_model_path):
 		os.mkdir(save_model_path)
 	
-	# h298_predictor.kfcv_train(folds=folds, lr_func=lr_func, save_model_path=save_model_path)
-	h298_predictor.kfcv_batch_train(folds=folds)
+	if train_mode == 'in_house':
+		h298_predictor.kfcv_train(folds=folds, lr_func=lr_func, save_model_path=save_model_path)
+	elif train_mode == 'keras':
+		h298_predictor.kfcv_batch_train(folds=folds)
+	else:
+		raise Exception('Currently not supporting train mode: {0}'.format(train_mode))
