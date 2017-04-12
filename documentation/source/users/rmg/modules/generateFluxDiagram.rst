@@ -14,5 +14,5 @@ To use this method, you just need a completed RMG run.  THe syntax is as follows
 where ``input.py`` is the input file for the completed RMG run.  The program will use the automatically
 generated file structure to find the other necessary files to create the movie.
 
-This method is also available to use with a web browser from the RMG website: `Generate Flux Diagram <http://rmg.mit.edu/simulate/flux>`_.
+This method is also available to use with a web browser from the RMG website: `Generate Flux Diagram <http://rmg.mit.edu/tools/flux>`_.
 

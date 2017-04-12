@@ -513,6 +513,8 @@ plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation.
 The number of pressures and temperature coefficents should always be smaller 
 than the respective number of user-specified temperatures and pressures. 
 
+.. _miscellaneousoptions:
+
 Miscellaneous Options
 ===================== 
 
