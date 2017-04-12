@@ -323,30 +323,38 @@ cdef class Conformer:
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1) except -1:
+    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1, option=1) except -1:
         """
         Calculate and return the reduced moment of inertia for an internal
         torsional rotation around the axis defined by the two atoms in 
         `pivots`. The list `top1` contains the atoms that should be considered
         as part of the rotating top; this list should contain the pivot atom
         connecting the top to the rest of the molecule.    The procedure used is
-        that of Pitzer [1]_, which is described as :math:`I^{(2,3)}` by East
+        that of Pitzer [1]_, which is described as :math:`I^{(2,option)}` by East
         and Radom [2]_. In this procedure, the molecule is divided into two
         tops: those at either end of the hindered rotor bond. The moment of
-        inertia of each top is evaluated using an axis passing through the
-        center of mass of both tops. Finally, the reduced moment of inertia is
-        evaluated from the moment of inertia of each top via the formula
-
-        .. math:: \\frac{1}{I^{(2,3)}} = \\frac{1}{I_1} + \\frac{1}{I_2}
+        inertia of each top is evaluated using an axis determined by option. 
+        Finally, the reduced moment of inertia is evaluated from the moment of inertia 
+        of each top via the formula (I1*I2)/(I1+I2).  
+        
+        option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
+        as discussed in East and Radom [2]
+        
+        option = 1 -> moments of inertia of each rotating group calculated about the axis containing the twisting bond
+        option = 2 (unimplemented) -> each moment of inertia of each rotating group is calculated about an axis parallel to the 
+            twisting bond and passing through its center of mass
+        option = 3 -> moments of inertia of each rotating group calculated about the axis passing through the
+            centers of mass of both groups
+        
+        .. math:: \\frac{1}{I^{(2,option)}} = \\frac{1}{I_1} + \\frac{1}{I_2}
         
         .. [1] Pitzer, K. S. *J. Chem. Phys.* **14**, p. 239-243 (1946).
         
         .. [2] East, A. L. L. and Radom, L. *J. Chem. Phys.* **106**, p. 6655-6674 (1997).
-        
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=1] mass
         cdef numpy.ndarray[numpy.float64_t,ndim=2] coordinates
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] top1CenterOfMass, top2CenterOfMass, axis
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] top1CenterOfMass, top2CenterOfMass, coordPivot1, coordPivot2, axis
         cdef double I1, I2
         cdef int Natoms, atom
         
@@ -365,27 +373,73 @@ cdef class Conformer:
         # Enumerate atoms in other top
         top2 = [i+1 for i in range(Natoms) if i+1 not in top1]
         
-        # Determine centers of mass of each top
-        top1CenterOfMass = self.getCenterOfMass(top1)
-        top2CenterOfMass = self.getCenterOfMass(top2)
+        #determine the axis/axes to calculate the moment of inertia about
+        if option == 3:
+            
+            # Determine centers of mass of each top
+            top1CenterOfMass = self.getCenterOfMass(top1)
+            top2CenterOfMass = self.getCenterOfMass(top2)
+            
+            axis = (top1CenterOfMass - top2CenterOfMass)
+            axis /= numpy.linalg.norm(axis)
+            # Determine moments of inertia of each top
+            I1 = 0.0
+            for atom in top1:
+                r1 = coordinates[atom-1,:] - top1CenterOfMass
+                r1 -= numpy.dot(r1, axis) * axis
+                I1 += mass[atom-1] * numpy.linalg.norm(r1)**2
+            I2 = 0.0
+            for atom in top2:
+                r2 = coordinates[atom-1,:] - top2CenterOfMass
+                r2 -= numpy.dot(r2, axis) * axis
+                I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
+                          
+        elif option == 2:
+            
+            # Determine centers of mass of each top
+            top1CenterOfMass = self.getCenterOfMass(top1)
+            top2CenterOfMass = self.getCenterOfMass(top2)
+            coordPivot1 = coordinates[pivots[0]-1,:]
+            coordPivot2 = coordinates[pivots[1]-1,:]
+            
+            axis = coordPivot1-coordPivot2
+            axis /= numpy.linalg.norm(axis)
+            # Determine moments of inertia of each top
+            I1 = 0.0
+            for atom in top1:
+                r1 = coordinates[atom-1,:] - top1CenterOfMass #shift to the center of mass (goes through center of mass)
+                r1 -= numpy.dot(r1, axis) * axis #remove components parallel to the bond axis
+                I1 += mass[atom-1] * numpy.linalg.norm(r1)**2
+            I2 = 0.0
+            for atom in top2:
+                r2 = coordinates[atom-1,:] - top2CenterOfMass
+                r2 -= numpy.dot(r2, axis) * axis
+                I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
+            
+        elif option == 1:
+            
+            coordPivot1 = coordinates[pivots[0]-1,:]
+            coordPivot2 = coordinates[pivots[1]-1,:]
+            axis = coordPivot1-coordPivot2
+            axis /= numpy.linalg.norm(axis)
+            
+            # Determine moments of inertia of each top
+            I1 = 0.0
+            for atom in top1:
+                r1 = coordinates[atom-1,:] - coordPivot1
+                r1 -= numpy.dot(r1, axis) * axis
+                I1 += mass[atom-1] * numpy.linalg.norm(r1)**2
+            I2 = 0.0
+            for atom in top2:
+                r2 = coordinates[atom-1,:] - coordPivot2
+                r2 -= numpy.dot(r2, axis) * axis
+                I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
+                          
+        else:
+            
+            raise ValueError("option {0} unimplemented or non-existant".format(option))
         
-        # Determine axis of rotation
-        axis = (top1CenterOfMass - top2CenterOfMass)
-        axis /= numpy.linalg.norm(axis)
-        
-        # Determine moments of inertia of each top
-        I1 = 0.0
-        for atom in top1:
-            r1 = coordinates[atom-1,:] - top1CenterOfMass
-            r1 -= numpy.dot(r1, axis) * axis
-            I1 += mass[atom-1] * numpy.linalg.norm(r1)**2
-        I2 = 0.0
-        for atom in top2:
-            r2 = coordinates[atom-1,:] - top2CenterOfMass
-            r2 -= numpy.dot(r2, axis) * axis
-            I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
-        
-        return 1.0 / (1.0 / I1 + 1.0 / I2)
+        return I1*I2/(I1+I2)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
