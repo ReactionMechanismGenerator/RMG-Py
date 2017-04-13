@@ -30,6 +30,9 @@ def parseCommandLineArguments():
 	parser.add_argument('-bs', '--batch_size', type=int, 
 		help='batch training size')
 
+	parser.add_argument('-lr', '--learning_rate', type=str, 
+		default='0.0007_30.0', help='two parameters for learning rate')
+
 	return parser.parse_args()
 ################################################################################
 
@@ -90,7 +93,7 @@ if __name__ == '__main__':
 
 	# to run the script
 	# example command: 
-	# python train_cnn.py -i input.py -d datasets.txt -f 5 -t in_house -bs 1
+	# python train_cnn.py -i input.py -d datasets.txt -f 5 -t in_house -bs 1 -lr 0.0007_30.0
 
 	args = parseCommandLineArguments()
 	input_file = args.input[0]
@@ -98,6 +101,8 @@ if __name__ == '__main__':
 	folds = args.folds
 	train_mode = args.train_mode
 	batch_size = args.batch_size
+	lr0, lr1 = [float(i) for i in args.learning_rate.split('_')]
+
 	input_directory = os.path.abspath(os.path.dirname(input_file))
 	
 	level = logging.INFO
@@ -106,8 +111,7 @@ if __name__ == '__main__':
 	h298_predictor = Predictor(datasets_file=datasets_file)
 	h298_predictor.load_input(input_file)
 
-	lr_func = "float(0.0007 * np.exp(- epoch / 30.0))"
-		
+	lr_func = "float({0} * np.exp(- epoch / {1}))".format(lr0, lr1)
 	save_model_path = os.path.join(input_directory, 'saved_model')
 	if not os.path.exists(save_model_path):
 		os.mkdir(save_model_path)
