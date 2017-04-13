@@ -8,7 +8,10 @@ predictor = None
 
 def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2, 
                 add_extra_atom_attribute=True, add_extra_bond_attribute=True,
-                scale_output=0.05, padding=False, padding_final_size=20,
+                scale_output=0.05, 
+                padding=False, padding_final_size=20,
+                mol_conv_inner_activation='tanh',
+                mol_conv_outer_activation='softmax',
                 hidden=0, hidden_activation='tanh',
                 output_activation='linear', output_size=1, 
                 lr=0.01, optimizer='adam', loss='mse'):
@@ -18,7 +21,10 @@ def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2,
                                     add_extra_atom_attribute, add_extra_bond_attribute)
     
     model = build_model(embedding_size, attribute_vector_size, depth,
-                scale_output, padding, 
+                scale_output, 
+                padding, 
+                mol_conv_inner_activation,
+                mol_conv_outer_activation,
                 hidden, hidden_activation,
                 output_activation, output_size, 
                 lr, optimizer, loss)
