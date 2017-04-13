@@ -15,6 +15,8 @@ import time
 
 def build_model(embedding_size=512, attribute_vector_size=33, depth=5, 
 				scale_output=0.05, padding=False, 
+				mol_conv_inner_activation='tanh',
+                mol_conv_outer_activation='softmax',
 				hidden=50, hidden_activation='tanh',
 				output_activation='linear', output_size=1, 
 				lr=0.01, optimizer='adam', loss='mse'):
@@ -31,7 +33,8 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 		depth=depth,
 		scale_output=scale_output,
 		padding=padding,
-		activation_inner='tanh'))
+		activation_inner=mol_conv_inner_activation,
+		activation_output=mol_conv_outer_activation))
 	
 	logging.info('cnn_model: added MoleculeConv layer ({} -> {})'.format('mol', embedding_size))
 	if hidden > 0:
