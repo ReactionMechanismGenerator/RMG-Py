@@ -6,6 +6,7 @@ import rmgpy
 import logging
 import argparse
 import shutil
+import time
 
 def parseCommandLineArguments():
 	"""
@@ -107,6 +108,13 @@ if __name__ == '__main__':
 	
 	level = logging.INFO
 	initializeLog(level, os.path.join(input_directory, 'train.log'))
+
+	# Log start timestamp
+	logging.info('CNN training initiated at ' + time.asctime() + '\n')
+
+	from rmgpy.rmg.main import RMG
+	rmg = RMG()
+	rmg.logHeader()
 
 	h298_predictor = Predictor(datasets_file=datasets_file)
 	h298_predictor.load_input(input_file)
