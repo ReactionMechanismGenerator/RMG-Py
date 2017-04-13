@@ -260,19 +260,23 @@ def toSMILES(mol):
         return Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
     return Chem.MolToSmiles(rdkitmol)
 
-def toOBMol(mol):
+def toOBMol(mol, returnMapping=False):
     """
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
 
+    # Sort the atoms to ensure consistent output
+    mol.sortAtoms()
     atoms = mol.vertices
 
+    obAtomIds = {}  # dictionary of OB atom IDs
     obmol = openbabel.OBMol()
     for atom in atoms:
         a = obmol.NewAtom()
         a.SetAtomicNum(atom.number)
         a.SetFormalCharge(atom.charge)
+        obAtomIds[atom] = a.GetId()
     orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
@@ -283,6 +287,9 @@ def toOBMol(mol):
                 obmol.AddBond(index1+1, index2+1, order)
 
     obmol.AssignSpinMultiplicity(True)
+
+    if returnMapping:
+        return obmol, obAtomIds
 
     return obmol
 
