@@ -1683,11 +1683,10 @@ class Molecule(Graph):
         The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
         by RMG, and not by RDKit.
         """
-        cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
+        cython.declare(rdAtomIndices=dict, obAtomIds=dict, aromaticRings=list, aromaticBonds=list)
         cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
         from rdkit.Chem.rdchem import BondType
-
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
@@ -1698,28 +1697,56 @@ class Molecule(Graph):
         try:
             rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
+            logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
+                                                            rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
+
+            return aromaticRings, aromaticBonds
+
+        logging.info('Trying to use OpenBabel to check aromaticity.')
+        try:
+            obmol, obAtomIds = generator.toOBMol(self, returnMapping=True)
+        except ImportError:
+            logging.warning('Unable to check aromaticity by converting for OB Mol.')
             return [], []
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if obmol.GetBond(obmol.GetAtomById(obAtomIds[atom1]),
+                                             obmol.GetAtomById(obAtomIds[atom2])).IsAromatic():
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
 
-        aromaticRings = []
-        aromaticBonds = []
-        for ring0 in rings:
-            aromaticBondsInRing = []
-            # Figure out which atoms and bonds are aromatic and reassign appropriately:
-            for i, atom1 in enumerate(ring0):
-                if not atom1.isCarbon():
-                    # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                    break
-                for atom2 in ring0[i + 1:]:
-                    if self.hasBond(atom1, atom2):
-                        if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
-                                                        rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                            aromaticBondsInRing.append(self.getBond(atom1, atom2))
-            else:  # didn't break so all atoms are carbon
-                if len(aromaticBondsInRing) == 6:
-                    aromaticRings.append(ring0)
-                    aromaticBonds.append(aromaticBondsInRing)
-
-        return aromaticRings, aromaticBonds
+            return aromaticRings, aromaticBonds
 
     def getDeterministicSmallestSetOfSmallestRings(self):
         """
