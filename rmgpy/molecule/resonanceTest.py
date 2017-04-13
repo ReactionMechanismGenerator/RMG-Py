@@ -81,6 +81,11 @@ class ResonanceTest(unittest.TestCase):
         molList = generateResonanceStructures(Molecule(SMILES="c1ccccc1CCN=[N+]=[N-]"))
         self.assertEqual(len(molList), 6)
 
+    def testNoClarStructures(self):
+        """Test that we can turn off Clar structure generation."""
+        molList = generateResonanceStructures(Molecule(SMILES='C1=CC=CC2C3=CC=CC=C3C=CC=21'), clarStructures=False)
+        self.assertEqual(len(molList), 2)
+
     def testC13H11Rad(self):
         """Test resonance structure generation for p-methylbenzylbenzene radical
 
