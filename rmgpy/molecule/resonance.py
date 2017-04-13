@@ -47,6 +47,7 @@ Currently supported resonance types:
 """
 
 import cython
+import logging
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
@@ -751,7 +752,13 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     # Add constraints to problem if provided
     if constraints is not None:
         for constraint in constraints:
-            lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+            try:
+                lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+            except:
+                logging.error('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
+                logging.error('Cannot complete Clar optimization for {0}.'.format(str(mol)))
+                logging.error(mol.toAdjacencyList())
+                raise
 
     status = lpsolve('solve', lp)
     objVal, solution = lpsolve('get_solution', lp)[0:2]
