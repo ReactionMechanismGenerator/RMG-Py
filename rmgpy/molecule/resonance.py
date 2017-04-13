@@ -126,7 +126,7 @@ def analyzeMolecule(mol):
 
     return features
 
-def generateResonanceStructures(mol):
+def generateResonanceStructures(mol, clarStructures=True):
     """
     Generate and return all of the resonance structures for the input molecule.
 
@@ -170,17 +170,23 @@ def generateResonanceStructures(mol):
     if len(newMolList) > 0:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
-                _generateResonanceStructures(newMolList, [generateKekuleStructure])
-                _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
-                _generateResonanceStructures(newMolList, [generateClarStructures])
-                # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
-                newMolList = [m for m in newMolList if m.isAromatic()]
+                if clarStructures:
+                    _generateResonanceStructures(newMolList, [generateKekuleStructure])
+                    _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
+                    _generateResonanceStructures(newMolList, [generateClarStructures])
+                    # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
+                    newMolList = [m for m in newMolList if m.isAromatic()]
+                else:
+                    pass
             else:
                 _generateResonanceStructures(newMolList, [generateKekuleStructure,
                                                           generateOppositeKekuleStructure])
                 _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
         elif features['isPolycyclicAromatic']:
-            _generateResonanceStructures(newMolList, [generateClarStructures])
+            if clarStructures:
+                _generateResonanceStructures(newMolList, [generateClarStructures])
+            else:
+                pass
         else:
             # The molecule is an aryl radical or stable mono-ring aromatic
             # In this case, generate the kekulized form
