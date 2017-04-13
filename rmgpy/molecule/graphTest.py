@@ -515,6 +515,23 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(len(cycleList[0]), 4)
         self.assertEqual(len(cycleList[1]), 4)
         
+    def test_getAllSimpleCyclesOfSize(self):
+        """
+        Test the Graph.getAllSimpleCyclesOfSize() method.
+        """
+        cycleList = self.graph.getAllCyclesOfSize(6)
+        self.assertEqual(len(cycleList), 0)
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
+        self.graph.addEdge(edge)  # To create a cycle of length 4
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge)  # To create a cycle of length 6 and another cycle of length 4
+        cycleList = self.graph.getAllSimpleCyclesOfSize(4)
+        self.assertEqual(len(cycleList), 2)
+        self.assertEqual(len(cycleList[0]), 4)
+        self.assertEqual(len(cycleList[1]), 4)
+        cycleList = self.graph.getAllSimpleCyclesOfSize(6)
+        self.assertEqual(len(cycleList), 0)
+
     def test_getSmallestSetOfSmallestRings(self):
         """
         Test the Graph.getSmallestSetOfSmallestRings() method.
