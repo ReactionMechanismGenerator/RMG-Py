@@ -78,14 +78,10 @@ def populateResonanceAlgorithms(features=None):
             generateClarStructures,
         ]
     else:
-        if features['isAromatic']:
-            methodList.append(generateAromaticResonanceStructures)
-            methodList.append(generateKekuleStructure)
-            if features['isPolycyclicAromatic']:
-                methodList.append(generateClarStructures)
-            else:
-                methodList.append(generateOppositeKekuleStructure)
-        if features['isRadical'] and not features['isArylRadical']:
+        # If the molecule is aromatic, then radical resonance has already been considered
+        # If the molecule was falsely identified as aromatic, then isArylRadical will still accurately capture
+        # cases where the radical is in an orbital that is orthogonal to the pi orbitals.
+        if features['isRadical'] and not features['isAromatic'] and not features['isArylRadical']:
             methodList.append(generateAdjacentResonanceStructures)
         if features['hasNitrogen']:
             methodList.append(generateN5dd_N5tsResonanceStructures)
@@ -170,6 +166,7 @@ def generateResonanceStructures(mol):
     else:
         newMolList = []
 
+    # Special handling for aromatic species
     if len(newMolList) > 0:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
@@ -200,9 +197,10 @@ def generateResonanceStructures(mol):
         # Add the newly generated structures to the original list
         # This is not optimal, but is a temporary measure to ensure compatability until other issues are fixed
         molList.extend(newMolList)
-    else:
-        methodList = populateResonanceAlgorithms(features)
-        _generateResonanceStructures(molList, methodList)
+
+    # Generate remaining resonance structures
+    methodList = populateResonanceAlgorithms(features)
+    _generateResonanceStructures(molList, methodList)
 
     return molList
 
