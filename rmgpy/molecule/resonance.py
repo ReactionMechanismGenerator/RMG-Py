@@ -660,7 +660,11 @@ def generateClarStructures(mol):
     if not mol.isCyclic():
         return []
 
-    output = _clarOptimization(mol)
+    try:
+        output = _clarOptimization(mol)
+    except ILPSolutionError:
+        # The optimization algorithm did not work on the first iteration
+        return []
 
     molList = []
 
