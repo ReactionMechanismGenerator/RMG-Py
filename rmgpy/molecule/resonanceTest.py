@@ -25,7 +25,7 @@ class ResonanceTest(unittest.TestCase):
         """Test resonance structure generation for ethyl azide
 
         Simple case for N5dd <=> N5t resonance"""
-        molList = generateResonanceStructures(Molecule(SMILES="CCN=N=[N-]"))
+        molList = generateResonanceStructures(Molecule(SMILES="CCN=[N+]=[N-]"))
         self.assertEqual(len(molList), 3)
         self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
 
@@ -70,6 +70,16 @@ class ResonanceTest(unittest.TestCase):
         Example radical polycyclic aromatic species where the radical can delocalize"""
         molList = generateResonanceStructures(Molecule(SMILES="[CH2]C1=CC=CC2C3=CC=CC=C3C=CC=21"))
         self.assertEqual(len(molList), 9)
+
+    def testAromaticWithLonePairResonance(self):
+        """Test resonance structure generation for aromatic species with lone pair <=> radical resonance"""
+        molList = generateResonanceStructures(Molecule(SMILES="c1ccccc1CC=N[O]"))
+        self.assertEqual(len(molList), 6)
+
+    def testAromaticWithNResonance(self):
+        """Test resonance structure generation for aromatic species with N5dd <=> N5t resonance"""
+        molList = generateResonanceStructures(Molecule(SMILES="c1ccccc1CCN=[N+]=[N-]"))
+        self.assertEqual(len(molList), 6)
 
     def testC13H11Rad(self):
         """Test resonance structure generation for p-methylbenzylbenzene radical
