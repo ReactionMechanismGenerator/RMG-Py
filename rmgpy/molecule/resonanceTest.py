@@ -336,6 +336,122 @@ multiplicity 2
         self.assertTrue(result1[0].isIsomorphic(result2[0]))
         self.assertTrue(result1[0].isIsomorphic(result3[0]))
 
+    def testBridgedAromatic(self):
+        """Test that we can handle bridged aromatics.
+
+        This is affected by how we perceive rings. Using getSmallestSetOfSmallestRings gives
+        non-deterministic output, so using getAllCyclesOfSize allows this test to pass."""
+        mol = Molecule(SMILES='c12c3cccc1c3ccc2')
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {2,B} {3,B} {8,B}
+2  C u0 p0 c0 {1,B} {4,B} {5,B}
+3  C u0 p0 c0 {1,B} {4,S} {6,B}
+4  C u0 p0 c0 {2,B} {3,S} {7,B}
+5  C u0 p0 c0 {2,B} {9,B} {11,S}
+6  C u0 p0 c0 {3,B} {9,B} {13,S}
+7  C u0 p0 c0 {4,B} {10,B} {14,S}
+8  C u0 p0 c0 {1,B} {10,B} {16,S}
+9  C u0 p0 c0 {5,B} {6,B} {12,S}
+10 C u0 p0 c0 {7,B} {8,B} {15,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {9,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {10,S}
+16 H u0 p0 c0 {8,S}
+""")
+
+        out = generateResonanceStructures(mol)
+
+        self.assertEqual(len(out), 3)
+        self.assertTrue(arom.isIsomorphic(out[1]))
+
+    def testPolycyclicAromaticWithNonAromaticRing(self):
+        """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
+
+        This applies in cases where RDKit misidentifies one ring as aromatic, but there are other
+        rings in the molecule that are actually aromatic."""
+        mol = Molecule(SMILES='c1c2cccc1C(=C)C=[C]2')
+        arom = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  C u0 p0 c0 {2,S} {4,B} {5,B}
+2  C u0 p0 c0 {1,S} {8,S} {9,D}
+3  C u0 p0 c0 {4,B} {6,B} {10,S}
+4  C u0 p0 c0 {1,B} {3,B} {11,S}
+5  C u0 p0 c0 {1,B} {7,B} {14,S}
+6  C u0 p0 c0 {3,B} {7,B} {12,S}
+7  C u0 p0 c0 {5,B} {6,B} {13,S}
+8  C u0 p0 c0 {2,S} {10,D} {15,S}
+9  C u0 p0 c0 {2,D} {16,S} {17,S}
+10 C u1 p0 c0 {3,S} {8,D}
+11 H u0 p0 c0 {4,S}
+12 H u0 p0 c0 {6,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {8,S}
+16 H u0 p0 c0 {9,S}
+17 H u0 p0 c0 {9,S}
+""")
+
+        out = generateResonanceStructures(mol)
+
+        self.assertEqual(len(out), 2)
+        self.assertTrue(arom.isIsomorphic(out[1]))
+
+    def testPolycyclicAromaticWithNonAromaticRing2(self):
+        """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
+
+        This applies in cases where RDKit misidentifies one ring as aromatic, but there are other
+        rings in the molecule that are actually aromatic."""
+        mol = Molecule(SMILES='C=C(C1=CC2=C(C=C1C=C3)C4=CC5=CC=CC=C5C=C4C=C2)C3=C')
+        arom = Molecule().fromAdjacencyList("""
+1  C u0 p0 c0 {4,S} {6,B} {11,B}
+2  C u0 p0 c0 {3,B} {5,B} {12,B}
+3  C u0 p0 c0 {2,B} {9,B} {13,B}
+4  C u0 p0 c0 {1,S} {10,S} {23,D}
+5  C u0 p0 c0 {2,B} {11,B} {20,B}
+6  C u0 p0 c0 {1,B} {12,B} {15,S}
+7  C u0 p0 c0 {8,B} {13,B} {17,B}
+8  C u0 p0 c0 {7,B} {14,B} {18,B}
+9  C u0 p0 c0 {3,B} {14,B} {19,B}
+10 C u0 p0 c0 {4,S} {16,S} {24,D}
+11 C u0 p0 c0 {1,B} {5,B} {25,S}
+12 C u0 p0 c0 {2,B} {6,B} {26,S}
+13 C u0 p0 c0 {3,B} {7,B} {29,S}
+14 C u0 p0 c0 {8,B} {9,B} {34,S}
+15 C u0 p0 c0 {6,S} {16,D} {27,S}
+16 C u0 p0 c0 {10,S} {15,D} {28,S}
+17 C u0 p0 c0 {7,B} {21,B} {30,S}
+18 C u0 p0 c0 {8,B} {22,B} {33,S}
+19 C u0 p0 c0 {9,B} {20,B} {35,S}
+20 C u0 p0 c0 {5,B} {19,B} {36,S}
+21 C u0 p0 c0 {17,B} {22,B} {31,S}
+22 C u0 p0 c0 {18,B} {21,B} {32,S}
+23 C u0 p0 c0 {4,D} {37,S} {38,S}
+24 C u0 p0 c0 {10,D} {39,S} {40,S}
+25 H u0 p0 c0 {11,S}
+26 H u0 p0 c0 {12,S}
+27 H u0 p0 c0 {15,S}
+28 H u0 p0 c0 {16,S}
+29 H u0 p0 c0 {13,S}
+30 H u0 p0 c0 {17,S}
+31 H u0 p0 c0 {21,S}
+32 H u0 p0 c0 {22,S}
+33 H u0 p0 c0 {18,S}
+34 H u0 p0 c0 {14,S}
+35 H u0 p0 c0 {19,S}
+36 H u0 p0 c0 {20,S}
+37 H u0 p0 c0 {23,S}
+38 H u0 p0 c0 {23,S}
+39 H u0 p0 c0 {24,S}
+40 H u0 p0 c0 {24,S}
+""")
+
+        out = generateResonanceStructures(mol)
+
+        self.assertEqual(len(out), 4)
+        self.assertTrue(arom.isIsomorphic(out[1]))
+
     def testKekulizeBenzene(self):
         """Test that we can kekulize benzene."""
         arom = Molecule().fromAdjacencyList("""
