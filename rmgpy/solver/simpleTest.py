@@ -43,6 +43,7 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 import rmgpy.constants as constants
 from rmgpy.chemkin import loadChemkinFile
+from rmgpy.rmg.RMGSettings import ModelSettings, SimulatorSettings
 
 ################################################################################
 
@@ -193,7 +194,9 @@ class SimpleReactorCheck(unittest.TestCase):
         
         integrationTime = 1e-8
         rxnSystem0.termination.append(TerminationTime((integrationTime,'s')))
-        rxnSystem0.simulate(coreSpecies, coreReactions, [], [], [],[], 0, 1, 0)
+        modelSettings = ModelSettings(toleranceKeepInEdge = 0,toleranceMoveToCore=1,toleranceInterruptSimulation=0)
+        simulatorSettings = SimulatorSettings()
+        rxnSystem0.simulate(coreSpecies, coreReactions, [], [], [],[], modelSettings = modelSettings, simulatorSettings=simulatorSettings)
 
         y0 = rxnSystem0.y
         
@@ -212,7 +215,10 @@ class SimpleReactorCheck(unittest.TestCase):
             
             
             rxnSystem.termination.append(TerminationTime((integrationTime,'s')))
-            rxnSystem.simulate(coreSpecies, coreReactions, [], [], [], [], 0, 1, 0)
+            modelSettings = ModelSettings(toleranceKeepInEdge=0,toleranceMoveToCore=1,toleranceInterruptSimulation=0)
+            simulatorSettings = SimulatorSettings()
+            
+            rxnSystem.simulate(coreSpecies, coreReactions, [], [], [], [], modelSettings=modelSettings, simulatorSettings=simulatorSettings)
             
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si/(1+1e-3)  # reset A factor
             

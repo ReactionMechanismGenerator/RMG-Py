@@ -31,7 +31,7 @@ import os.path
 import numpy
 from rmgpy.tools.loader import loadRMGPyJob
 import rmgpy
-
+from rmgpy.rmg.RMGSettings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import *
 
 class ConcentrationPrinter:
@@ -159,6 +159,9 @@ class ReactionSystemTest(unittest.TestCase):
 
         self.assertEqual(self.listener.data, [])
         
+        modelSettings = ModelSettings(toleranceMoveToCore=1,toleranceKeepInEdge=0,toleranceInterruptSimulation=1)
+        simulatorSettings = SimulatorSettings()
+        
         # run simulation:
         terminated, obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = reactionModel.core.species,
@@ -167,9 +170,8 @@ class ReactionSystemTest(unittest.TestCase):
             edgeReactions = reactionModel.edge.reactions,
             surfaceSpecies = [],
             surfaceReactions = [],
-            toleranceKeepInEdge = 0,
-            toleranceMoveToCore = 1,
-            toleranceInterruptSimulation = 1,
+            modelSettings = modelSettings,
+            simulatorSettings = simulatorSettings,
         ) 
 
         self.assertNotEqual(self.listener.data, [])
