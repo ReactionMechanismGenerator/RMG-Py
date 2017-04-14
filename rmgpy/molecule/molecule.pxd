@@ -225,4 +225,6 @@ cdef class Molecule(Graph):
 
     cpdef assignAtomIDs(self)
 
+    cpdef bint atomIDValid(self)
+
     cpdef bint isIdentical(self, Molecule other) except -2

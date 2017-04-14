@@ -169,7 +169,8 @@ class Species(object):
         resonance isomers have already been generated.
         """
         if len(self.molecule) == 1:
-            self.molecule[0].assignAtomIDs()
+            if not self.molecule[0].atomIDValid():
+                self.molecule[0].assignAtomIDs()
             self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic)
     
     def isIsomorphic(self, other):

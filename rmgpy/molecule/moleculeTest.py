@@ -2061,6 +2061,32 @@ multiplicity 2
         self.assertTrue(mol.isIsomorphic(molCopy))
         self.assertFalse(mol.isIdentical(molCopy))
 
+    def testatomidvalid(self):
+        """see if the atomIDVvalid method properly returns True"""
+        mol = Molecule(SMILES='CCCC')
+        for index, atom in enumerate(mol.atoms):
+            atom.id =index
+        self.assertTrue(mol.atomIDValid())
+
+    def testatomidvalid2(self):
+        """see if the atomIDVvalid method properly returns False"""
+        mol = Molecule(SMILES='CCCC')
+        for index, atom in enumerate(mol.atoms):
+            atom.index =index
+        mol.atoms[3].index = 4
+        self.assertFalse(mol.atomIDValid())
+
+    def testatomidvalid2(self):
+        """see if the atomIDVvalid method properly returns False"""
+        mol = Molecule(SMILES='CCCC')
+        self.assertFalse(mol.atomIDValid())
+
+    def testassignatomid(self):
+        """see if the assignAtomID method properly labels molecule"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        self.assertTrue(mol.atomIDValid())
+
 ################################################################################
 
 if __name__ == '__main__':
