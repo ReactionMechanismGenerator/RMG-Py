@@ -38,6 +38,7 @@ import csv
 from .loader import loadRMGJob
 import rmgpy.util as util 
 from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
+from rmgpy.rmg.RMGSettings import ModelSettings
 
 def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
@@ -107,7 +108,10 @@ def simulate(rmg):
         pdepNetworks = []
         for source, networks in rmg.reactionModel.networkDict.items():
             pdepNetworks.extend(networks)
-            
+        
+        modelSettings = ModelSettings(toleranceKeepInEdge = 0, toleranceMoveToCore = 1, toleranceInterruptSimulation = 1)
+        simulatorSettings = rmg.simulatorSettingsList[-1]
+        
         terminated, obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = rmg.reactionModel.core.species,
             coreReactions = rmg.reactionModel.core.reactions,
@@ -115,16 +119,11 @@ def simulate(rmg):
             edgeReactions = rmg.reactionModel.edge.reactions,
             surfaceSpecies = [],
             surfaceReactions = [],
-            toleranceKeepInEdge = 0,
-            toleranceMoveToCore = 1,
-            toleranceInterruptSimulation = 1,
             pdepNetworks = pdepNetworks,
-            absoluteTolerance = rmg.absoluteTolerance,
-            relativeTolerance = rmg.relativeTolerance,
             sensitivity = True if reactionSystem.sensitiveSpecies else False,
-            sensitivityAbsoluteTolerance = rmg.sensitivityAbsoluteTolerance,
-            sensitivityRelativeTolerance = rmg.sensitivityRelativeTolerance,
             sensWorksheet = sensWorksheet,
+            modelSettings = modelSettings,
+            simulatorSettings = simulatorSettings,
         )
         
         if reactionSystem.sensitiveSpecies:
