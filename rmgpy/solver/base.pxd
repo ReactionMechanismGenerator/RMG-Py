@@ -110,13 +110,10 @@ cdef class ReactionSystem(DASx):
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=?,
         list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
 
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list surfaceSpecies, list edgeReactions,list surfaceReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,double toleranceMoveEdgeReactionToCore=?,double toleranceMoveEdgeReactionToCoreInterrupt=?,
-        double toleranceMoveEdgeReactionToSurface=?, double toleranceMoveSurfaceSpeciesToCore=?, double toleranceMoveSurfaceReactionToCore=?,
-        double toleranceMoveEdgeReactionToSurfaceInterrupt=?, 
-        list pdepNetworks=?,ignoreOverallFluxCriterion=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
-        sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?,
-        filterReactions=?)
+    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
+        list edgeReactions,list surfaceSpecies, list surfaceReactions,
+        list pdepNetworks=?, prune=?, sensitivity=?, sensWorksheet=?, modelSettings=?,
+        simulatorSettings=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
      

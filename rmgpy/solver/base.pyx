@@ -485,15 +485,10 @@ cdef class ReactionSystem(DASx):
         return surfaceSpecies,surfaceReactions
 
     @cython.boundscheck(False)
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        double toleranceMoveEdgeReactionToCore=numpy.inf,double toleranceMoveEdgeReactionToCoreInterrupt=numpy.inf,
-        double toleranceMoveEdgeReactionToSurface=numpy.inf, double toleranceMoveSurfaceSpeciesToCore=numpy.inf,
-        double toleranceMoveSurfaceReactionToCore=numpy.inf,
-        double toleranceMoveEdgeReactionToSurfaceInterrupt=numpy.inf,
-        list pdepNetworks=None, ignoreOverallFluxCriterion=False, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
-        sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
-        filterReactions=False):
+    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
+        list edgeReactions,list surfaceSpecies, list surfaceReactions,
+        list pdepNetworks=None, prune=False, sensitivity=False, sensWorksheet=None, modelSettings=None,
+        simulatorSettings=None):
         
         """
         Simulate the reaction system with the provided reaction model,
@@ -505,7 +500,13 @@ cdef class ReactionSystem(DASx):
         the desired termination criteria and the model remains valid throughout,
         ``None`` is returned.
         """
-
+        cdef double toleranceKeepInEdge,toleranceMoveToCore,toleranceMoveEdgeReactionToCore,toleranceInterruptSimulation
+        cdef double toleranceMoveEdgeReactionToCoreInterrupt,toleranceMoveEdgeReactionToSurface
+        cdef double toleranceMoveSurfaceSpeciesToCore,toleranceMoveSurfaceReactionToCore
+        cdef double toleranceMoveEdgeReactionToSurfaceInterrupt
+        cdef bool ignoreOverallFluxCriterion, filterReactions
+        cdef double absoluteTolerance, relativeTolerance, sensitivityAbsoluteTolerance, sensitivityRelativeTolerance
+        
         cdef dict speciesIndex
         cdef list row
         cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex, infAccumNumIndex
@@ -544,6 +545,22 @@ cdef class ReactionSystem(DASx):
         
         assert set(coreReactions) >= set(surfaceReactions), 'given surface reactions are not a subset of core reactions'
         assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species' 
+
+        toleranceKeepInEdge = modelSettings.fluxToleranceKeepInEdge if prune else 0
+        toleranceMoveToCore = modelSettings.fluxToleranceMoveToCore
+        toleranceMoveEdgeReactionToCore = modelSettings.toleranceMoveEdgeReactionToCore
+        toleranceInterruptSimulation =  modelSettings.toleranceInterruptSimulation if prune else modelSettings.fluxToleranceMoveToCore
+        toleranceMoveEdgeReactionToCoreInterrupt=  modelSettings.toleranceMoveEdgeReactionToCore if prune else modelSettings.toleranceMoveEdgeReactionToCore
+        toleranceMoveEdgeReactionToSurface = modelSettings.toleranceMoveEdgeReactionToSurface
+        toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
+        toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
+        toleranceMoveEdgeReactionToSurfaceInterrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
+        ignoreOverallFluxCriterion=modelSettings.ignoreOverallFluxCriterion
+        absoluteTolerance = simulatorSettings.absoluteTolerance
+        relativeTolerance = simulatorSettings.relativeTolerance
+        sensitivityAbsoluteTolerance = simulatorSettings.sensitivityAbsoluteTolerance
+        sensitivityRelativeTolerance = simulatorSettings.sensitivityRelativeTolerance
+        filterReactions = modelSettings.filterReactions
         
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
