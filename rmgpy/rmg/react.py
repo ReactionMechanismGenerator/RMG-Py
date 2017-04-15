@@ -70,6 +70,25 @@ def reactSpecies(speciesTuple):
     from them.
     """
 
+    # assert that all species' atomlabels are different
+    def independentIDs():
+        num_atoms = 0
+        IDs = []
+        for species in speciesTuple:
+            num_atoms += len([species.molecule[0].atoms ])
+            IDs = IDs + [atom.id for atom in species.molecule[0].atoms ]
+        num_ID = sum(set(IDs))
+        return num_ID == num_atoms
+    # if they are different, relabel and remake atomIDs
+    while independentIDs():
+        logging.info('identical')
+        for species in speciesTuple:
+            mol = species.molecule[0]
+            mol.assignAtomIDs()
+            # remake resonance isomers with new labeles
+            species.molecule = [mol]
+            species.generateResonanceIsomers(keepIsomorphic = True)
+
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
     combos = getMoleculeTuples(speciesTuple)
