@@ -1884,13 +1884,22 @@ class Molecule(Graph):
         """
         kekulize(self)
 
-    def assignAtomIDs(self):
+    def assignAtomIDs(self, start=-1):
         """
-        Assigns an ID number to every atom in the molecule for tracking purposes.
+        Assigns an index to every atom in the molecule for tracking purposes.
+        If start is not specified, the system will use random integers for each index
+        Otherwise the system will start at `start` and increment one each time.
         """
 
+        from random import randint
         for i, atom in enumerate(self.atoms):
-            atom.id = i
+            if start == -1:
+                # use entire range of integers to label atoms
+                atom.id = randint(-2**15,2**15)
+            else:
+                atom.id = i + start
+        if not self.atomIDValid():
+            self.assignAtomIDs(start=randint(-2**15,2**14))
 
     def atomIDValid(self):
         """

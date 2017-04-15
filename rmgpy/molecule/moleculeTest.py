@@ -2022,11 +2022,11 @@ multiplicity 2
         molCopy = mol.copy(deep=True)
         # Remove a hydrogen from mol
         a = mol.atoms[-1]
-        self.assertEquals(a.id, 13)
+
         mol.removeAtom(a)
         # Remove a different hydrogen from molCopy
         b = molCopy.atoms[-2]
-        self.assertEquals(b.id, 12)
+
         molCopy.removeAtom(b)
 
         self.assertTrue(mol.isIsomorphic(molCopy))
