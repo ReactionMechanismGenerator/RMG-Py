@@ -355,8 +355,8 @@ class Reaction:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(reactants)))
         # If we're here then neither direction matched, so return false
         return False
-        
-    def isIsomorphic(self, other, eitherDirection=True):
+
+    def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -365,41 +365,62 @@ class Reaction:
 
         If `eitherDirection=False` then the directions must match.
         """
+        def comparison_method(other1, other2, eitherDirection=eitherDirection, checkIdentical=checkIdentical):
+            if checkIdentical:
+                return other1.isIdentical(other2)
+            else:
+                return other1.isIsomorphic(other2)
+
+        #comparison_method = cython.typedef(cython.bint )
+        # find the proper comparison method to use for checking isomorphism
+        # of the reactants and products
+        #if checkIdentical:
+        #    if isinstance(self.reactants[0],Species):
+        #        return Species.isIdentical
+        #    else:
+        #        comparison_method = Molecule.isIdentical
+        #else:
+        #    if isinstance(self.reactants[0],Species):
+        #        comparison_method = Species.isIsomorphic
+        #    else:
+        #        comparison_method = Molecule.isIsomorphic
         
         # Compare reactants to reactants
         forwardReactantsMatch = False
         if len(self.reactants) == len(other.reactants) == 1:
-            if self.reactants[0].isIsomorphic(other.reactants[0]):
+            if comparison_method(self.reactants[0], other.reactants[0]):
                 forwardReactantsMatch = True
         elif len(self.reactants) == len(other.reactants) == 2:
-            if self.reactants[0].isIsomorphic(other.reactants[0]) and self.reactants[1].isIsomorphic(other.reactants[1]):
+            if comparison_method(self.reactants[0], other.reactants[0]) \
+                        and comparison_method(self.reactants[1], other.reactants[1]):
                 forwardReactantsMatch = True
-            elif self.reactants[0].isIsomorphic(other.reactants[1]) and self.reactants[1].isIsomorphic(other.reactants[0]):
+            elif comparison_method(self.reactants[0], other.reactants[1]) \
+                        and comparison_method(self.reactants[1], other.reactants[0]):
                 forwardReactantsMatch = True
         elif len(self.reactants) == len(other.reactants) == 3:
-            if (    self.reactants[0].isIsomorphic(other.reactants[0]) and
-                    self.reactants[1].isIsomorphic(other.reactants[1]) and
-                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
+            if (    comparison_method(self.reactants[0], other.reactants[0]) and
+                    comparison_method(self.reactants[1], other.reactants[1]) and
+                    comparison_method(self.reactants[2], other.reactants[2]) ):
                 forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[0]) and
-                    self.reactants[1].isIsomorphic(other.reactants[2]) and
-                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
+            elif (  comparison_method(self.reactants[0], other.reactants[0]) and
+                    comparison_method(self.reactants[1], other.reactants[2]) and
+                    comparison_method(self.reactants[2], other.reactants[1]) ):
                 forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
-                    self.reactants[1].isIsomorphic(other.reactants[0]) and
-                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
+            elif (  comparison_method(self.reactants[0], other.reactants[1]) and
+                    comparison_method(self.reactants[1], other.reactants[0]) and
+                    comparison_method(self.reactants[2], other.reactants[2]) ):
                 forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
-                    self.reactants[1].isIsomorphic(other.reactants[0]) and
-                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
+            elif (  comparison_method(self.reactants[0], other.reactants[2]) and
+                    comparison_method(self.reactants[1], other.reactants[0]) and
+                    comparison_method(self.reactants[2], other.reactants[1]) ):
                 forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
-                    self.reactants[1].isIsomorphic(other.reactants[2]) and
-                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
+            elif (  comparison_method(self.reactants[0], other.reactants[1]) and
+                    comparison_method(self.reactants[1], other.reactants[2]) and
+                    comparison_method(self.reactants[2], other.reactants[0]) ):
                 forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
-                    self.reactants[1].isIsomorphic(other.reactants[1]) and
-                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
+            elif (  comparison_method(self.reactants[0], other.reactants[2]) and
+                    comparison_method(self.reactants[1], other.reactants[1]) and
+                    comparison_method(self.reactants[2], other.reactants[0]) ):
                 forwardReactantsMatch = True
         elif len(self.reactants) == len(other.reactants):
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
@@ -407,37 +428,39 @@ class Reaction:
         # Compare products to products
         forwardProductsMatch = False
         if len(self.products) == len(other.products) == 1:
-            if self.products[0].isIsomorphic(other.products[0]):
+            if comparison_method(self.products[0], other.products[0]):
                 forwardProductsMatch = True
         elif len(self.products) == len(other.products) == 2:
-            if self.products[0].isIsomorphic(other.products[0]) and self.products[1].isIsomorphic(other.products[1]):
+            if comparison_method(self.products[0], other.products[0]) \
+                    and comparison_method(self.products[1], other.products[1]):
                 forwardProductsMatch = True
-            elif self.products[0].isIsomorphic(other.products[1]) and self.products[1].isIsomorphic(other.products[0]):
+            elif comparison_method(self.products[0], other.products[1]) \
+                    and comparison_method(self.products[1], other.products[0]):
                 forwardProductsMatch = True
         elif len(self.products) == len(other.products) == 3:
-            if (    self.products[0].isIsomorphic(other.products[0]) and
-                    self.products[1].isIsomorphic(other.products[1]) and
-                    self.products[2].isIsomorphic(other.products[2]) ):
+            if (    comparison_method(self.products[0], other.products[0]) and
+                    comparison_method(self.products[1], other.products[1]) and
+                    comparison_method(self.products[2], other.products[2]) ):
                 forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[0]) and
-                    self.products[1].isIsomorphic(other.products[2]) and
-                    self.products[2].isIsomorphic(other.products[1]) ):
+            elif (  comparison_method(self.products[0], other.products[0]) and
+                    comparison_method(self.products[1], other.products[2]) and
+                    comparison_method(self.products[2], other.products[1]) ):
                 forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[1]) and
-                    self.products[1].isIsomorphic(other.products[0]) and
-                    self.products[2].isIsomorphic(other.products[2]) ):
+            elif (  comparison_method(self.products[0], other.products[1]) and
+                    comparison_method(self.products[1], other.products[0]) and
+                    comparison_method(self.products[2], other.products[2]) ):
                 forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[2]) and
-                    self.products[1].isIsomorphic(other.products[0]) and
-                    self.products[2].isIsomorphic(other.products[1]) ):
+            elif (  comparison_method(self.products[0], other.products[2]) and
+                    comparison_method(self.products[1], other.products[0]) and
+                    comparison_method(self.products[2], other.products[1]) ):
                 forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[1]) and
-                    self.products[1].isIsomorphic(other.products[2]) and
-                    self.products[2].isIsomorphic(other.products[0]) ):
+            elif (  comparison_method(self.products[0], other.products[1]) and
+                    comparison_method(self.products[1], other.products[2]) and
+                    comparison_method(self.products[2], other.products[0]) ):
                 forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[2]) and
-                    self.products[1].isIsomorphic(other.products[1]) and
-                    self.products[2].isIsomorphic(other.products[0]) ):
+            elif (  comparison_method(self.products[0], other.products[2]) and
+                    comparison_method(self.products[1], other.products[1]) and
+                    comparison_method(self.products[2], other.products[0]) ):
                 forwardProductsMatch = True
         elif len(self.products) == len(other.products):
             raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(self.products)))
@@ -451,37 +474,39 @@ class Reaction:
         # Compare reactants to products
         reverseReactantsMatch = False
         if len(self.reactants) == len(other.products) == 1:
-            if self.reactants[0].isIsomorphic(other.products[0]):
+            if comparison_method(self.reactants[0], other.products[0]):
                 reverseReactantsMatch = True
         elif len(self.reactants) == len(other.products) == 2:
-            if self.reactants[0].isIsomorphic(other.products[0]) and self.reactants[1].isIsomorphic(other.products[1]):
+            if comparison_method(self.reactants[0], other.products[0]) \
+                    and comparison_method(self.reactants[1], other.products[1]):
                 reverseReactantsMatch = True
-            elif self.reactants[0].isIsomorphic(other.products[1]) and self.reactants[1].isIsomorphic(other.products[0]):
+            elif comparison_method(self.reactants[0], other.products[1]) \
+                    and comparison_method(self.reactants[1], other.products[0]):
                 reverseReactantsMatch = True
         elif len(self.reactants) == len(other.products) == 3:
-            if (    self.reactants[0].isIsomorphic(other.products[0]) and
-                    self.reactants[1].isIsomorphic(other.products[1]) and
-                    self.reactants[2].isIsomorphic(other.products[2]) ):
+            if (    comparison_method(self.reactants[0], other.products[0]) and
+                    comparison_method(self.reactants[1], other.products[1]) and
+                    comparison_method(self.reactants[2], other.products[2]) ):
                 reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[0]) and
-                    self.reactants[1].isIsomorphic(other.products[2]) and
-                    self.reactants[2].isIsomorphic(other.products[1]) ):
+            elif (  comparison_method(self.reactants[0], other.products[0]) and
+                    comparison_method(self.reactants[1], other.products[2]) and
+                    comparison_method(self.reactants[2], other.products[1]) ):
                 reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
-                    self.reactants[1].isIsomorphic(other.products[0]) and
-                    self.reactants[2].isIsomorphic(other.products[2]) ):
+            elif (  comparison_method(self.reactants[0], other.products[1]) and
+                    comparison_method(self.reactants[1], other.products[0]) and
+                    comparison_method(self.reactants[2], other.products[2]) ):
                 reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
-                    self.reactants[1].isIsomorphic(other.products[0]) and
-                    self.reactants[2].isIsomorphic(other.products[1]) ):
+            elif (  comparison_method(self.reactants[0], other.products[2]) and
+                    comparison_method(self.reactants[1], other.products[0]) and
+                    comparison_method(self.reactants[2], other.products[1]) ):
                 reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
-                    self.reactants[1].isIsomorphic(other.products[2]) and
-                    self.reactants[2].isIsomorphic(other.products[0]) ):
+            elif (  comparison_method(self.reactants[0], other.products[1]) and
+                    comparison_method(self.reactants[1], other.products[2]) and
+                    comparison_method(self.reactants[2], other.products[0]) ):
                 reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
-                    self.reactants[1].isIsomorphic(other.products[1]) and
-                    self.reactants[2].isIsomorphic(other.products[0]) ):
+            elif (  comparison_method(self.reactants[0], other.products[2]) and
+                    comparison_method(self.reactants[1], other.products[1]) and
+                    comparison_method(self.reactants[2], other.products[0]) ):
                 reverseReactantsMatch = True
         elif len(self.reactants) == len(other.products):
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
@@ -489,37 +514,39 @@ class Reaction:
         # Compare products to reactants
         reverseProductsMatch = False
         if len(self.products) == len(other.reactants) == 1:
-            if self.products[0].isIsomorphic(other.reactants[0]):
+            if comparison_method(self.products[0], other.reactants[0]):
                 reverseProductsMatch = True
         elif len(self.products) == len(other.reactants) == 2:
-            if self.products[0].isIsomorphic(other.reactants[0]) and self.products[1].isIsomorphic(other.reactants[1]):
+            if comparison_method(self.products[0], other.reactants[0]) and \
+                    comparison_method(self.products[1], other.reactants[1]):
                 reverseProductsMatch = True
-            elif self.products[0].isIsomorphic(other.reactants[1]) and self.products[1].isIsomorphic(other.reactants[0]):
+            elif comparison_method(self.products[0], other.reactants[1]) and \
+                    comparison_method(self.products[1], other.reactants[0]):
                 reverseProductsMatch = True
         elif len(self.products) == len(other.reactants) == 3:
-            if (    self.products[0].isIsomorphic(other.reactants[0]) and
-                    self.products[1].isIsomorphic(other.reactants[1]) and
-                    self.products[2].isIsomorphic(other.reactants[2]) ):
+            if (    comparison_method(self.products[0], other.reactants[0]) and
+                    comparison_method(self.products[1], other.reactants[1]) and
+                    comparison_method(self.products[2], other.reactants[2]) ):
                 reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[0]) and
-                    self.products[1].isIsomorphic(other.reactants[2]) and
-                    self.products[2].isIsomorphic(other.reactants[1]) ):
+            elif (  comparison_method(self.products[0], other.reactants[0]) and
+                    comparison_method(self.products[1], other.reactants[2]) and
+                    comparison_method(self.products[2], other.reactants[1]) ):
                 reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[1]) and
-                    self.products[1].isIsomorphic(other.reactants[0]) and
-                    self.products[2].isIsomorphic(other.reactants[2]) ):
+            elif (  comparison_method(self.products[0], other.reactants[1]) and
+                    comparison_method(self.products[1], other.reactants[0]) and
+                    comparison_method(self.products[2], other.reactants[2]) ):
                 reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[2]) and
-                    self.products[1].isIsomorphic(other.reactants[0]) and
-                    self.products[2].isIsomorphic(other.reactants[1]) ):
+            elif (  comparison_method(self.products[0], other.reactants[2]) and
+                    comparison_method(self.products[1], other.reactants[0]) and
+                    comparison_method(self.products[2], other.reactants[1]) ):
                 reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[1]) and
-                    self.products[1].isIsomorphic(other.reactants[2]) and
-                    self.products[2].isIsomorphic(other.reactants[0]) ):
+            elif (  comparison_method(self.products[0], other.reactants[1]) and
+                    comparison_method(self.products[1], other.reactants[2]) and
+                    comparison_method(self.products[2], other.reactants[0]) ):
                 reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[2]) and
-                    self.products[1].isIsomorphic(other.reactants[1]) and
-                    self.products[2].isIsomorphic(other.reactants[0]) ):
+            elif (  comparison_method(self.products[0], other.reactants[2]) and
+                    comparison_method(self.products[1], other.reactants[1]) and
+                    comparison_method(self.products[2], other.reactants[0]) ):
                 reverseProductsMatch = True
         elif len(self.products) == len(other.reactants):
             raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(self.products)))
