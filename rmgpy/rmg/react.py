@@ -156,14 +156,20 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
             # ensure same family and structure
             # (template can be added later after multiple TS's are enabled with all([template0 in reaction.template for template0 in reaction0.template]))
             if reaction.family == reaction0.family and \
-                 reaction0.isIsomorphic(reaction): 
-                reaction0.degeneracy += reaction.degeneracy
-                try:
-                    reaction0.reverse.degeneracy += reaction.reverse.degeneracy
-                except AttributeError:
-                    pass
-                rxnList.remove(reaction)
+                     reaction0.isIsomorphic(reaction):
                 
+                if reaction0.isIsomorphic(reaction, checkIdentical=True):
+                    rxnList.remove(reaction)
+                    break
+                else:
+                    reaction0.degeneracy += reaction.degeneracy
+                    try:
+                        reaction0.reverse.degeneracy += reaction.reverse.degeneracy
+                    except AttributeError:
+                        pass
+
+                    rxnList.remove(reaction)
+
             else:
                 index += 1
 
