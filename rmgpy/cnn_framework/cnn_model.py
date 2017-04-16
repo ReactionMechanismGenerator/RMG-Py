@@ -64,7 +64,19 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 
 	return model
 
-def train_model(model, data, nb_epoch=0, batch_size=50, lr_func='0.01', patience=10):
+def train_model(model, 
+				X_train,
+				y_train,
+				X_inner_val,
+				y_inner_val,
+				X_test,
+				y_test,
+				X_outer_val=None,
+				y_outer_val=None,
+				nb_epoch=0, 
+				batch_size=50, 
+				lr_func='0.01', 
+				patience=10):
 	"""
 	inputs:
 		model - a Keras model
@@ -80,10 +92,6 @@ def train_model(model, data, nb_epoch=0, batch_size=50, lr_func='0.01', patience
 		loss - list of training losses corresponding to each epoch 
 		inner_val_loss - list of validation losses corresponding to each epoch
 	"""
-
-	# Get data from helper function
-	(X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val, X_test, y_test) = data
-
 	X_train = np.array(X_train)
 	y_train = np.array(y_train)
 
@@ -101,7 +109,7 @@ def train_model(model, data, nb_epoch=0, batch_size=50, lr_func='0.01', patience
 		wait = 0
 		prev_best_inner_val_loss = 99999999
 		for i in range(nb_epoch):
-			logging.info('Epoch {}/{}, lr = {}'.format(i + 1, nb_epoch, lr(i)))
+			logging.info('\nEpoch {}/{}, lr = {}'.format(i + 1, nb_epoch, lr(i)))
 			this_loss = []
 			this_inner_val_loss = []
 			model.optimizer.lr.set_value(lr(i))
@@ -141,9 +149,12 @@ def train_model(model, data, nb_epoch=0, batch_size=50, lr_func='0.01', patience
 
 			# report outer_val and test loss
 			if i % 1 == 0:
-			   mean_outer_val_loss = evaluate_mean_tst_loss(model, X_outer_val, y_outer_val)
-			   mean_test_loss = evaluate_mean_tst_loss(model, X_test, y_test)
-			   logging.info('mse outer_val_loss: {}\tmse test_loss: {}'.format(mean_outer_val_loss, mean_test_loss))
+				if X_outer_val:
+					mean_outer_val_loss = evaluate_mean_tst_loss(model, X_outer_val, y_outer_val)
+					logging.info('mse outer_val_loss: {}'.format(mean_outer_val_loss))
+
+				mean_test_loss = evaluate_mean_tst_loss(model, X_test, y_test)
+				logging.info('mse test_loss: {}'.format(mean_test_loss))
 
 			# Check progress
 			if np.mean(this_inner_val_loss) < prev_best_inner_val_loss:
@@ -161,7 +172,10 @@ def train_model(model, data, nb_epoch=0, batch_size=50, lr_func='0.01', patience
 			model.load_weights('train_cnn_results/best.h5')
 
 		# evaluate outer validation loss and test loss upon final model
-		mean_outer_val_loss = evaluate_mean_tst_loss(model, X_outer_val, y_outer_val)
+		if X_outer_val:
+			mean_outer_val_loss = evaluate_mean_tst_loss(model, X_outer_val, y_outer_val)
+		else:
+			mean_outer_val_loss = None
 		mean_test_loss = evaluate_mean_tst_loss(model, X_test, y_test)
 
 	except KeyboardInterrupt:
