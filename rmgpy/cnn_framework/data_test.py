@@ -127,6 +127,25 @@ class Test_Data(unittest.TestCase):
 		self.assertEqual(len(folded_Xs[0]), 99)
 		self.assertEqual(len(folded_Xs[0]), 99)
 
+	def test_prepare_full_train_data_from_multiple_datasets(self):
+
+		datasets =  [
+					('sdata134k', 'kh_tricyclic_table'), 
+					('sdata134k', 'kh_tricyclic_table'),
+					('sdata134k', 'kh_tricyclic_table')
+					]
+
+
+		X_test, y_test, X_train, y_train = prepare_full_train_data_from_multiple_datasets(
+												datasets=datasets, 
+												add_extra_atom_attribute=True, 
+												add_extra_bond_attribute=True)
+		self.assertEqual(len(X_train), 486)
+		self.assertEqual(len(y_train), 486)
+
+		self.assertEqual(len(X_test), 54)
+		self.assertEqual(len(y_test), 54)
+
 	def test_split_tst_from_train_and_val(self):
 
 		X_test, y_test, X_train_and_val, y_train_and_val = split_tst_from_train_and_val(\
