@@ -5,7 +5,8 @@ from .molecule_tensor import get_molecule_tensor, pad_molecule_tensor
 import os
 import rmgpy
 import numpy as np
-from .data import prepare_data_one_fold, prepare_folded_data_from_multiple_datasets
+from .data import (prepare_data_one_fold, prepare_folded_data_from_multiple_datasets, 
+	prepare_full_train_data_from_multiple_datasets, split_inner_val_from_train_data)
 import logging
 from keras.callbacks import EarlyStopping
 import json
@@ -129,6 +130,56 @@ class Predictor(object):
 						full_folds_mean_outer_val_loss,
 						full_folds_mean_test_loss, 
 						full_folds_loss_report_path)
+
+	def full_train(self, lr_func, save_model_path, batch_size=1):
+
+		# prepare data for training
+		folded_data = prepare_full_train_data_from_multiple_datasets(self.datasets, 
+																self.add_extra_atom_attribute, 
+																self.add_extra_bond_attribute,
+																self.padding,
+																self.padding_final_size)
+
+		X_test, y_test, X_train, y_train = folded_data
+
+		losses = []
+		inner_val_losses = []
+		test_losses = []
+		data = split_inner_val_from_train_data(X_train, y_train)
+
+		X_train, X_inner_val, y_train, y_inner_val = data
+
+		# execute train_model
+		logging.info('\nStart full training...')
+		logging.info('Training data: {} points'.format(len(X_train)))
+		logging.info('Inner val data: {} points'.format(len(X_inner_val)))
+		logging.info('Test data: {} points'.format(len(X_test)))
+		train_model_output = train_model(self.model, 
+										X_train,
+										y_train,
+										X_inner_val,
+										y_inner_val,
+										X_test,
+										y_test,
+										X_outer_val=None,
+										y_outer_val=None, 
+										nb_epoch=150,
+										batch_size=batch_size, 
+										lr_func=lr_func, 
+										patience=10)
+
+		model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss = train_model_output
+
+		# loss and inner_val_loss each is a list
+		# containing loss for each epoch
+		losses.append(loss)
+		inner_val_losses.append(inner_val_loss)
+		test_losses.append(mean_test_loss)
+		
+		# save model and write report
+		fpath = os.path.join(save_model_path, 'full_train')
+		self.save_model(loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath)
+
 
 	def kfcv_batch_train(self, folds, batch_size=50):
 
