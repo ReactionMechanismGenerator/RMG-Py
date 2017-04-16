@@ -35,6 +35,33 @@ class Test_Data(unittest.TestCase):
 
 		self.assertTrue(np.all(np.equal(first_X, expected_first_X)))
 
+	def test_split_inner_val_from_train_data(self):
+
+		import numpy as np
+
+		shuffle_seed = 4
+		training_ratio=0.9
+		data = split_inner_val_from_train_data(self.X, 
+											self.y, 
+											shuffle_seed, 
+											training_ratio)
+
+		X_train = data[0]
+		X_inner_val = data[1]
+
+		self.assertAlmostEqual(len(X_train)*.1/len(X_inner_val), training_ratio, 1)
+
+		# test shuffle is expected
+		training_indices = range(len(self.X))
+		np.random.seed(shuffle_seed)
+		np.random.shuffle(training_indices)
+
+		first_X_in_train = X_train[0]
+		expected_first_X_in_train = self.X[training_indices[0]]
+
+		self.assertTrue(np.all(np.equal(first_X_in_train, expected_first_X_in_train)))
+
+
 	def test_prepare_data_one_fold(self):
 
 		import numpy as np
