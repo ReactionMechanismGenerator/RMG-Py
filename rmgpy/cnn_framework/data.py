@@ -93,6 +93,45 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 			y_test.extend(y_test_1)
 
 	return X_test, y_test, folded_Xs, folded_ys
+
+def prepare_full_train_data_from_multiple_datasets(datasets, 
+													add_extra_atom_attribute, 
+													add_extra_bond_attribute,
+													padding=True,
+													padding_final_size=20):
+
+	test_data_datasets = []
+	train_datasets = []
+	for db, table in datasets:
+		(X, y) = get_data_from_db(db, 
+								table, 
+								add_extra_atom_attribute, 
+								add_extra_bond_attribute,
+								padding,
+								padding_final_size)
+
+		(X_test, y_test, X_train, y_train) = split_tst_from_train_and_val(X, y, shuffle_seed=0)
+		test_data_datasets.append((X_test, y_test))
+
+		train_datasets.append((X_train, y_train))
+
+	# merge into one folded_Xs and folded_ys
+	logging.info('Merging {} datasets for training...'.format(len(datasets)))
+	(X_train, y_train) = train_datasets[0]
+	if len(train_datasets) > 1:
+		for X_train_1, y_train_1 in train_datasets[1:]:
+			X_train.extend(X_train_1)
+			y_train.extend(y_train_1)
+
+	# merge into one X_test and y_test
+	(X_test, y_test) = test_data_datasets[0]
+	if len(test_data_datasets) > 1:
+		for X_test_1, y_test_1 in test_data_datasets[1:]:
+			X_test.extend(X_test_1)
+			y_test.extend(y_test_1)
+
+	return X_test, y_test, X_train, y_train
+
 def split_tst_from_train_and_val(X, y, shuffle_seed=None, testing_ratio=0.1):
 
 	n = len(X)
