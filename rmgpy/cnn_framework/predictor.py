@@ -82,11 +82,18 @@ class Predictor(object):
 										folded_ys, 
 										current_fold=fold, 
 										shuffle_seed=4)
-			data = data + (X_test, y_test)
 
 			# execute train_model
+			X_train, X_inner_val, X_outer_val, y_train, y_inner_val, y_outer_val = data
 			train_model_output = train_model(self.model, 
-											data, 
+											X_train,
+											y_train,
+											X_inner_val,
+											y_inner_val,
+											X_test,
+											y_test,
+											X_outer_val,
+											y_outer_val, 
 											nb_epoch=150,
 											batch_size=batch_size, 
 											lr_func=lr_func, 
