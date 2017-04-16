@@ -23,7 +23,7 @@ def parseCommandLineArguments():
 		nargs='+', help='a file specifies on which datasets to train')
 
 	parser.add_argument('-f', '--folds', type=int, 
-		help='number of folds for training')
+		default=5, help='number of folds for training')
 
 	parser.add_argument('-t', '--train_mode', type=str, 
 		help='train mode: currently support in_house and keras')
@@ -131,5 +131,9 @@ if __name__ == '__main__':
 								save_model_path=save_model_path)
 	elif train_mode == 'keras':
 		h298_predictor.kfcv_batch_train(folds=folds, batch_size=batch_size)
+	elif train_mode == 'full_train':
+		h298_predictor.full_train(batch_size=batch_size, 
+								lr_func=lr_func, 
+								save_model_path=save_model_path)
 	else:
 		raise Exception('Currently not supporting train mode: {0}'.format(train_mode))
