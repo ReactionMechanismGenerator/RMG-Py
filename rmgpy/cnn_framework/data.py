@@ -132,7 +132,7 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 
 	return X_test, y_test, X_train, y_train
 
-def split_tst_from_train_and_val(X, y, shuffle_seed=None, testing_ratio=0.1):
+def split_tst_from_train_and_val(X, y, extra_data=None, shuffle_seed=None, testing_ratio=0.1):
 
 	n = len(X)
 	# Feed shuffle seed
@@ -145,17 +145,26 @@ def split_tst_from_train_and_val(X, y, shuffle_seed=None, testing_ratio=0.1):
 	# shuffle X and y
 	X_shuffled = [X[i] for i in all_indices]
 	y_shuffled = [y[i] for i in all_indices]
+	if extra_data is not None:
+		extra_data_shuffled = [extra_data[i] for i in all_indices]
 
 	split = int(len(all_indices) * testing_ratio)
 	X_test, X_train_and_val = [X_shuffled[i] for i in all_indices[:split]],   [X_shuffled[i] for i in all_indices[split:]]
 	y_test, y_train_and_val = [y_shuffled[i] for i in all_indices[:split]],   [y_shuffled[i] for i in all_indices[split:]]
+	
+	if extra_data is not None:
+		extra_data_shuffled = [extra_data[i] for i in all_indices]
+		extra_data_test, extra_data_train_and_val = [extra_data_shuffled[i] for i in all_indices[:split]],   [extra_data_shuffled[i] for i in all_indices[split:]]
 
 	# reset np random seed to avoid side-effect on other methods
 	# relying on np.random
 	if shuffle_seed is not None:
 		np.random.seed()
 
-	return (X_test, y_test, X_train_and_val, y_train_and_val)
+	if extra_data:
+		return X_test, y_test, X_train_and_val, y_train_and_val, extra_data_test, extra_data_train_and_val
+	else:
+		return (X_test, y_test, X_train_and_val, y_train_and_val)
 
 def prepare_folded_data(X, y, folds, shuffle_seed=None):
 
