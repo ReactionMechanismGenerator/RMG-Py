@@ -21,6 +21,7 @@ def get_data_from_db(db_name, collection_name,
 	logging.info('Collecting polycyclic data: {0}.{1}...'.format(db_name, collection_name))
 	X = []
 	y = []
+	smis = []
 	db_mols = []
 	for db_mol in db_cursor:
 		db_mols.append(db_mol)
@@ -39,10 +40,11 @@ def get_data_from_db(db_name, collection_name,
 		hf298_qm = float(db_mol["Hf298"])
 		X.append(mol_tensor)
 		y.append(hf298_qm)
+		smis.append(smile)
 
 	logging.info('Done: generated {0} tensors with padding={1}'.format(len(X), padding))
 
-	return (X, y)
+	return (X, y, smis)
 
 def prepare_folded_data_from_multiple_datasets(datasets, 
 												folds, 
@@ -54,7 +56,7 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 	folded_datasets = []
 	test_data_datasets = []
 	for db, table in datasets:
-		(X, y) = get_data_from_db(db, 
+		X, y, _ = get_data_from_db(db, 
 								table, 
 								add_extra_atom_attribute, 
 								add_extra_bond_attribute,
@@ -98,22 +100,31 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 													add_extra_atom_attribute, 
 													add_extra_bond_attribute,
 													padding=True,
-													padding_final_size=20):
+													padding_final_size=20,
+													save_meta=True):
 
 	test_data_datasets = []
 	train_datasets = []
 	for db, table in datasets:
-		(X, y) = get_data_from_db(db, 
+		(X, y, smis) = get_data_from_db(db, 
 								table, 
 								add_extra_atom_attribute, 
 								add_extra_bond_attribute,
 								padding,
 								padding_final_size)
 
-		(X_test, y_test, X_train, y_train) = split_tst_from_train_and_val(X, y, shuffle_seed=0)
+		(X_test, y_test, X_train, y_train, smis_test, smis_train) = split_tst_from_train_and_val(X, y, smis, shuffle_seed=0)
+		
 		test_data_datasets.append((X_test, y_test))
-
 		train_datasets.append((X_train, y_train))
+
+		if save_meta:
+			smis_test_string = '\n'.join(smis_test)
+			smis_train_string = '\n'.join(smis_train)
+			with open('{0}.{1}_smis_test.txt'.format(db, table), 'w') as f_in:
+				f_in.write(smis_test_string)
+			with open('{0}.{1}_smis_train.txt'.format(db, table), 'w') as f_in:
+				f_in.write(smis_train_string)
 
 	# merge into one folded_Xs and folded_ys
 	logging.info('Merging {} datasets for training...'.format(len(datasets)))

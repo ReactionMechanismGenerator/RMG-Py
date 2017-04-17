@@ -5,7 +5,7 @@ class Test_Data(unittest.TestCase):
 
 	def setUp(self):
 
-		(X, y) = get_data_from_db('sdata134k', 'polycyclic_2954_table')
+		X, y, _ = get_data_from_db('sdata134k', 'polycyclic_2954_table')
 		
 		self.X = X
 		self.y = y
@@ -139,7 +139,8 @@ class Test_Data(unittest.TestCase):
 		X_test, y_test, X_train, y_train = prepare_full_train_data_from_multiple_datasets(
 												datasets=datasets, 
 												add_extra_atom_attribute=True, 
-												add_extra_bond_attribute=True)
+												add_extra_bond_attribute=True,
+												save_meta=False)
 		self.assertEqual(len(X_train), 486)
 		self.assertEqual(len(y_train), 486)
 
