@@ -109,9 +109,9 @@ class Test_Data(unittest.TestCase):
 	def test_prepare_folded_data_from_multiple_datasets(self):
 
 		datasets =  [
-					('sdata134k', 'kh_tricyclic_table'), 
-					('sdata134k', 'kh_tricyclic_table'),
-					('sdata134k', 'kh_tricyclic_table')
+					('sdata134k', 'kh_tricyclic_table', 0.1), 
+					('sdata134k', 'kh_tricyclic_table', 0.1),
+					('sdata134k', 'kh_tricyclic_table', 0.1)
 					]
 
 
@@ -130,9 +130,9 @@ class Test_Data(unittest.TestCase):
 	def test_prepare_full_train_data_from_multiple_datasets(self):
 
 		datasets =  [
-					('sdata134k', 'kh_tricyclic_table'), 
-					('sdata134k', 'kh_tricyclic_table'),
-					('sdata134k', 'kh_tricyclic_table')
+					('sdata134k', 'kh_tricyclic_table', 0.1), 
+					('sdata134k', 'kh_tricyclic_table', 0.1),
+					('sdata134k', 'kh_tricyclic_table', 0.1)
 					]
 
 

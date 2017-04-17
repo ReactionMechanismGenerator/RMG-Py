@@ -55,7 +55,7 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 
 	folded_datasets = []
 	test_data_datasets = []
-	for db, table in datasets:
+	for db, table, testing_ratio in datasets:
 		X, y, _ = get_data_from_db(db, 
 								table, 
 								add_extra_atom_attribute, 
@@ -63,9 +63,15 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 								padding,
 								padding_final_size)
 
-		(X_test, y_test, X_train_and_val, y_train_and_val) = split_tst_from_train_and_val(X, y, shuffle_seed=0)
-		test_data_datasets.append((X_test, y_test))
+		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
+		split_data = split_tst_from_train_and_val(X, 
+												y, 
+												shuffle_seed=0, 
+												testing_ratio=testing_ratio)
 
+		(X_test, y_test, X_train_and_val, y_train_and_val) = split_data
+
+		test_data_datasets.append((X_test, y_test))
 		(folded_Xs, folded_ys) = prepare_folded_data(X_train_and_val, y_train_and_val, folds, shuffle_seed=2)
 		folded_datasets.append((folded_Xs, folded_ys))
 
@@ -105,15 +111,21 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 
 	test_data_datasets = []
 	train_datasets = []
-	for db, table in datasets:
+	for db, table, testing_ratio in datasets:
 		(X, y, smis) = get_data_from_db(db, 
 								table, 
 								add_extra_atom_attribute, 
 								add_extra_bond_attribute,
 								padding,
 								padding_final_size)
+		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
+		split_data = split_tst_from_train_and_val(X, 
+												y, 
+												smis, 
+												shuffle_seed=0, 
+												testing_ratio=testing_ratio)
 
-		(X_test, y_test, X_train, y_train, smis_test, smis_train) = split_tst_from_train_and_val(X, y, smis, shuffle_seed=0)
+		(X_test, y_test, X_train, y_train, smis_test, smis_train) = split_data
 		
 		test_data_datasets.append((X_test, y_test))
 		train_datasets.append((X_train, y_train))
