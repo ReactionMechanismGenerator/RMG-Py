@@ -343,7 +343,7 @@ class TransportDatabase(object):
             try:                
                 #Transport not found in any loaded libraries, so estimate
                 transport = self.getTransportPropertiesViaGroupEstimates(species)
-            except:
+            except (KeyError, AssertionError):
                 transport = self.getTransportPropertiesViaLennardJonesParameters(species)
 
         return transport
@@ -363,7 +363,10 @@ class TransportDatabase(object):
                 data[0].comment = label
                 transport.append(data)
         # Last entry is always the estimate from group additivity
-        transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+        try:
+            transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+        except (KeyError, AssertionError):
+            transport.append(self.getTransportPropertiesViaLennardJonesParameters(species))
             
         # Return all of the resulting transport parameters
         return transport
