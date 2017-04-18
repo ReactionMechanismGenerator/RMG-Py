@@ -617,7 +617,7 @@ class RMG(util.Subject):
                     
                     # If simulation is invalid, note which species should be added to
                     # the core
-                    if obj:
+                    if obj != [] and not (obj is None):
                         objectsToEnlarge = processToSpeciesNetworks(obj,reactionSystem,self.reactionModel.core.species)
                         if isinstance(objectsToEnlarge[0],PDepNetwork):
                             assert False

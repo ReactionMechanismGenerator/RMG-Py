@@ -561,6 +561,7 @@ cdef class ReactionSystem(DASx):
         sensitivityAbsoluteTolerance = simulatorSettings.sensitivityAbsoluteTolerance
         sensitivityRelativeTolerance = simulatorSettings.sensitivityRelativeTolerance
         filterReactions = modelSettings.filterReactions
+        maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
         
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
@@ -573,7 +574,7 @@ cdef class ReactionSystem(DASx):
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
 
-        invalidObject = None
+        invalidObjects = []
         newSurfaceReactions = []
         newSurfaceReactionInds = []
         terminated = False
@@ -691,7 +692,7 @@ cdef class ReactionSystem(DASx):
                 logging.info('At time {0:10.4e} s, species {1} was added to model core to avoid singularity'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, numpy.inf, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
-                invalidObject = maxSpecies
+                invalidObjects.append(maxSpecies)
                 break
             
             #get abs(delta(Ln(total accumulation numbers))) (accumulation number=Production/Consumption)
@@ -904,13 +905,13 @@ cdef class ReactionSystem(DASx):
                                 bimolecularThreshold[i,j] = True
             
                 # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
-            if (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject):
+            if not (maxSpecies in invalidObjects) and (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceMoveToCore * charRate) and len(invalidObjects) < maxNumObjsPerIter:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
                 self.logConversions(speciesIndex, y0)
-                invalidObject = maxSpecies
-            if (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceInterruptSimulation * charRate):
+                invalidObjects.append(maxSpecies)
+            if len(invalidObjects) >= maxNumObjsPerIter and (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceInterruptSimulation * charRate):
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for simulation interruption'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
@@ -918,13 +919,13 @@ cdef class ReactionSystem(DASx):
             
             #Interrupt simulation if the difference in natural log of total accumulation number exceeds tolerance
             #large tolerance case
-            if maxDifLnAccumNum > toleranceMoveEdgeReactionToCore and not invalidObject:
+            if not (maxAccumReaction in invalidObjects) and maxDifLnAccumNum > toleranceMoveEdgeReactionToCore and len(invalidObjects) < maxNumObjsPerIter:
                 logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for moving to model core'.format(self.t, maxAccumReaction))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
                 self.logConversions(speciesIndex, y0)
-                invalidObject = maxAccumReaction
-            if maxDifLnAccumNum > toleranceMoveEdgeReactionToCoreInterrupt:
+                invalidObjects.append(maxAccumReaction)
+            if len(invalidObjects) >= maxNumObjsPerIter and maxDifLnAccumNum > toleranceMoveEdgeReactionToCoreInterrupt:
                 logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                 self.logConversions(speciesIndex, y0)
@@ -932,19 +933,17 @@ cdef class ReactionSystem(DASx):
             
             #move species to surface and interrupt if the difference in natural log of total accumulation number exceeds tolerance
             #small tolerance case
-            
-            if not invalidObject and maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurface:
-                invalidObject = maxLayeringReaction
+            if not (maxLayeringReaction in invalidObjects) and maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurface and len(invalidObjects) < maxNumObjsPerIter:
+                invalidObjects.append(maxLayeringReaction)
                 newSurfaceReactions.append(maxLayeringReaction)
                 newSurfaceReactionInds.append(maxLayeringReactionIndex)
-
                 
                 logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for moving from edge to model surface'.format(self.t, maxAccumReaction))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
                 logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
                 self.logConversions(speciesIndex, y0)
                 
-                if maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurfaceInterrupt: 
+                if len(invalidObjects) >= maxNumObjsPerIter and maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurfaceInterrupt: 
                     logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
                     self.logConversions(speciesIndex, y0)
@@ -952,13 +951,13 @@ cdef class ReactionSystem(DASx):
 
             # If pressure dependence, also check the network leak fluxes
             if pdepNetworks:
-                if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
+                if not (maxNetwork in invalidObjects) and maxNetworkRate > toleranceMoveToCore * charRate and len(invalidObjects) < maxNumObjsPerIter:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for exploring'.format(self.t, maxNetwork.index))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                     logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
                     self.logConversions(speciesIndex, y0)
-                    invalidObject = maxNetwork
-                if maxNetworkRate > toleranceInterruptSimulation * charRate:
+                    invalidObjects.append(maxNetwork)
+                if len(invalidObjects) >= maxNumObjsPerIter and maxNetworkRate > toleranceInterruptSimulation * charRate:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for simulation interruption'.format(self.t, maxNetwork.index))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
                     logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
@@ -1023,7 +1022,7 @@ cdef class ReactionSystem(DASx):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, invalidObject, surfaceSpecies, surfaceReactions
+        return terminated, invalidObjects, surfaceSpecies, surfaceReactions
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """
