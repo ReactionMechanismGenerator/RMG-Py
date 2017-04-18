@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import itertools
+cimport numpy as np
 
 from rmgpy.display import display
 #import rmgpy.chemkin
@@ -925,41 +926,54 @@ class CoreEdgeReactionModel:
         logging.info('    The model core has {0:d} species and {1:d} reactions'.format(coreSpeciesCount, coreReactionCount))
         logging.info('    The model edge has {0:d} species and {1:d} reactions'.format(edgeSpeciesCount, edgeReactionCount))
         logging.info('')
-
-    def addSpeciesToCore(self, spec):
+        
+    @cython.boundscheck(False)     
+    cpdef addSpeciesToCore(self, object spec):
         """
         Add a species `spec` to the reaction model core (and remove from edge if
         necessary). This function also moves any reactions in the edge that gain
         core status as a result of this change in status to the core.
         If this are any such reactions, they are returned in a list.
         """
-
+        cdef list rxnList, reactants,products,edgeReactions, coreSpecies, edgeSpecies
+        cdef object reactant, product, rxn
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
-        # Add the species to the core
-        self.core.species.append(spec)
+        
+        coreSpecies = self.core.species
+        edgeSpecies = self.edge.species
+        edgeReactions = self.edge.reactions
+        
+        coreSpecies.append(spec)
         
         rxnList = []
-        if spec in self.edge.species:
+        if spec in edgeSpecies:
 
             # If species was in edge, remove it
             logging.debug("Removing species {0} from edge.".format(spec))
-            self.edge.species.remove(spec)
+            edgeSpecies.remove(spec)
 
             # Search edge for reactions that now contain only core species;
             # these belong in the model core and will be moved there
-            for rxn in self.edge.reactions:
+            for rxn in edgeReactions:
                 allCore = True
-                for reactant in rxn.reactants:
-                    if reactant not in self.core.species: allCore = False
-                for product in rxn.products:
-                    if product not in self.core.species: allCore = False
+                reactants = rxn.reactants
+                products = rxn.products
+                for reactant in reactants:
+                    if reactant not in coreSpecies: allCore = False
+                for product in products:
+                    if product not in coreSpecies: allCore = False
                 if allCore: rxnList.append(rxn)
 
             # Move any identified reactions to the core
             for rxn in rxnList:
                 self.addReactionToCore(rxn)
                 logging.debug("Moving reaction from edge to core: {0}".format(rxn))
+            
+            self.core.species = coreSpecies
+            self.edge.species = edgeSpecies
+            self.edge.reactions = edgeReactions
+            
         return rxnList
 
     def addSpeciesToEdge(self, spec):
