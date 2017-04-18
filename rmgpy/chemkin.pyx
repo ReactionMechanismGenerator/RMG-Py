@@ -1661,12 +1661,14 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
 
 ################################################################################
 
-def markDuplicateReaction(test_reaction, reaction_list):
+cpdef markDuplicateReaction(object test_reaction, list reaction_list):
     """
     If the test_reaction is a duplicate (in Chemkin terms) of one in reaction_list, then set `duplicate=True` on both instances.
     `reaction_list` can be any iterator.
     It does not add the testReaction to the reactionList - you probably want to do this yourself afterwards.
     """
+    cdef object reaction1,reaction2
+    
     reaction1 = test_reaction
     for reaction2 in reaction_list:
         if reaction1.__class__ != reaction2.__class__:
