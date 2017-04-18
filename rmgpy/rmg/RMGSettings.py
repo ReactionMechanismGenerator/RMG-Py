@@ -40,7 +40,7 @@ class ModelSettings:
     def __init__(self,toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None):
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
         self.fluxToleranceMoveToCore = toleranceMoveToCore
@@ -54,7 +54,7 @@ class ModelSettings:
         self.toleranceMoveEdgeReactionToSurface = toleranceMoveEdgeReactionToSurface
         self.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
         self.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
-        
+
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation
         else:
@@ -69,7 +69,12 @@ class ModelSettings:
             self.toleranceMoveEdgeReactionToCoreInterrupt = toleranceMoveEdgeReactionToCoreInterrupt
         else:
             self.toleranceMoveEdgeReactionToCoreInterrupt = toleranceMoveEdgeReactionToCore
-
+            
+        if maxNumSpecies:
+            self.maxNumSpecies = maxNumSpecies
+        else:
+            self.maxNumSpecies = numpy.inf
+            
 class SimulatorSettings:
     """
     class for holding the parameters affecting the behavior of the solver
