@@ -12,7 +12,7 @@ database(
 	#to the chemkin file at the end of the simulation. Placing just string values
      #defaults the tuple to `False`. The string input is sufficient in almost
      #all situations
-    reactionLibraries = [],
+    reactionLibraries = [('C3', False)],
 	#seed mechanisms are reactionLibraries that are forced into the initial mechanism 
 	#in addition to species listed in this input file.  
 	#This is helpful for reducing run time for species you know will appear in 
