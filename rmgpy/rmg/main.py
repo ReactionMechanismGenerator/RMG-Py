@@ -623,25 +623,11 @@ class RMG(util.Subject):
                 # If simulation is invalid, note which species should be added to
                 # the core
                 if obj:
-                    if isinstance(obj, PDepNetwork):
-                        # Determine which species in that network has the highest leak rate
-                        # We do this here because we need a temperature and pressure
-                        # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                        objectsToEnlarge.append(obj)
-                    elif isinstance(obj, Species):
-                        objectsToEnlarge.append(obj)
-                        assert len(objectsToEnlarge)>0
-                    elif isinstance(obj,Reaction):
-                        potentialSpcs = obj.reactants+obj.products
-                        filterFcn = lambda x: not ((x in self.reactionModel.core.species)) #remove species already in core
-                        neededSpcs = filter(filterFcn,potentialSpcs)
-                        for i in range(len(neededSpcs)): #remove duplicate species
-                            if neededSpcs.index(neededSpcs[i]) != i:
-                                del neededSpcs[i]
-                        objectsToEnlarge.extend(neededSpcs)
+                    objectsToEnlarge = processToSpeciesNetworks(obj,reactionSystem,self.reactionModel.core.species)
+                    print(objectsToEnlarge)
+                    if isinstance(objectsToEnlarge[0],PDepNetwork):
+                        assert False
                     self.done = False
-    
     
             if not self.done: # There is something that needs exploring/enlarging
                 
@@ -1032,7 +1018,7 @@ class RMG(util.Subject):
         if self.filterReactions:
             self.unimolecularThreshold = rmg_restart.unimolecularThreshold
             self.bimolecularThreshold = rmg_restart.bimolecularThreshold
-        
+    
     def loadRMGJavaInput(self, path):
         """
         Load an RMG-Java job from the input file located at `inputFile`, or
@@ -1210,6 +1196,57 @@ class RMG(util.Subject):
         return line
     
 ################################################################################
+def processToSpeciesNetworks(obj,reactionSystem,coreSpecies):
+    """
+    breaks down the objects returned by simulate into Species and PDepNetwork
+    components
+    """
+    if isinstance(obj, PDepNetwork):
+        out = [processPdepNetworks(obj,reactionSystem)]
+        return out
+    elif isinstance(obj, Species):
+        return [obj]
+    elif isinstance(obj,Reaction):
+        return list(processReactionsToSpecies(obj,coreSpecies))
+    elif isinstance(obj,list): #list of species
+        rspcs = processReactionsToSpecies([k for k in obj if isinstance(k,Reaction)],coreSpecies)
+        spcs = list({k for k in obj if isinstance(k,Species)} | rspcs)
+        nworks = list(set(processPdepNetworks([k for k in obj if isinstance(k,PDepNetwork)],reactionSystem)))
+        return spcs+nworks
+    else:
+        assert False, "improper call, obj input was incorrect"
+            
+def processPdepNetworks(obj,reactionSystem):
+    """
+    properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate
+    """
+    if isinstance(obj, PDepNetwork):
+        # Determine which species in that network has the highest leak rate
+        # We do this here because we need a temperature and pressure
+        # Store the maximum leak species along with the associated network
+        ob = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
+        return ob
+    elif isinstance(obj,list):
+        return [(ob, ob.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si)) for ob in obj]
+    else:
+        assert False, "improper call, obj input was incorrect"
+        
+def processReactionsToSpecies(obj,coreSpecies):
+    """
+    properly processes Reaction objects and lists of Reaction objects returned from simulate
+    """
+    filterFcn = lambda x: not ((x in coreSpecies)) #remove species already in core
+    if isinstance(obj,Reaction):
+        potentialSpcs = obj.reactants+obj.products
+        potentialSpcs = filter(filterFcn,potentialSpcs)
+    elif isinstance(obj,list) or isinstance(obj,set):
+        potentialSpcs = set()
+        for ob in obj:
+            potentialSpcs = potentialSpcs | set(ob.reactants+ob.products)
+        potentialSpcs = {sp for sp in potentialSpcs if filterFcn(sp)}
+    else:
+        assert False, "improper call, obj input was incorrect"
+    return potentialSpcs
 
 def initializeLog(verbose, log_file_name):
     """
