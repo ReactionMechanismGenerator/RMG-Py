@@ -37,6 +37,7 @@ import math
 import numpy
 import itertools
 cimport numpy as np
+import cython
 
 from rmgpy.display import display
 #import rmgpy.chemkin
@@ -89,7 +90,7 @@ class ReactionModel:
     Represent a generic reaction model. A reaction model consists of `species`,
     a list of species, and `reactions`, a list of reactions.
     """
-
+    
     def __init__(self, species=None, reactions=None):
         self.species = species or []
         self.reactions = reactions or []
@@ -179,8 +180,9 @@ class ReactionModel:
         return finalModel
 
 ################################################################################
+from cpython cimport bool
 
-class CoreEdgeReactionModel:
+cdef class CoreEdgeReactionModel:
     """
     Represent a reaction model constructed using a rate-based screening
     algorithm. The species and reactions in the model itself are called the
@@ -200,7 +202,27 @@ class CoreEdgeReactionModel:
 
 
     """
-
+    cdef public object core
+    cdef public object edge
+    cdef public dict networkDict
+    cdef public list networkList
+    cdef public int networkCount
+    cdef public dict speciesDict
+    cdef public dict reactionDict
+    cdef public list speciesCache
+    cdef public int speciesCounter
+    cdef public int reactionCounter
+    cdef public list newSpeciesList
+    cdef public list newReactionList
+    cdef public list outputSpeciesList
+    cdef public list outputReactionList
+    cdef public object pressureDependence
+    cdef public object quantumMechanics
+    cdef public bool verboseComments
+    cdef public str kineticsEstimator
+    cdef public dict indexSpeciesDict
+    cdef public bool saveEdgeSpecies
+    
     def __init__(self, core=None, edge=None):
         if core is None:
             self.core = ReactionModel()
