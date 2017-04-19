@@ -73,6 +73,10 @@ simpleReactor(
     },
     terminationTime=(1e6,'s'),
 )
+simulator(
+atol=1e-16,
+rtol=1e-8
+)
 model(
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.2,
