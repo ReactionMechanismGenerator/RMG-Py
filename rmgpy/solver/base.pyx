@@ -549,7 +549,7 @@ cdef class ReactionSystem(DASx):
         toleranceKeepInEdge = modelSettings.fluxToleranceKeepInEdge if prune else 0
         toleranceMoveToCore = modelSettings.fluxToleranceMoveToCore
         toleranceMoveEdgeReactionToCore = modelSettings.toleranceMoveEdgeReactionToCore
-        toleranceInterruptSimulation =  modelSettings.toleranceInterruptSimulation if prune else modelSettings.fluxToleranceMoveToCore
+        toleranceInterruptSimulation =  modelSettings.fluxToleranceInterrupt if prune else modelSettings.fluxToleranceMoveToCore
         toleranceMoveEdgeReactionToCoreInterrupt=  modelSettings.toleranceMoveEdgeReactionToCore if prune else modelSettings.toleranceMoveEdgeReactionToCore
         toleranceMoveEdgeReactionToSurface = modelSettings.toleranceMoveEdgeReactionToSurface
         toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
