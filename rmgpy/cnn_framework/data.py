@@ -46,6 +46,43 @@ def get_data_from_db(db_name, collection_name,
 
 	return (X, y, smis)
 
+def get_data_from_db_using_ecfp(db_name, collection_name):
+
+	from rdkit import Chem
+	from rdkit.Chem import AllChem
+	import numpy as np
+
+	# connect to db and query
+	client = MongoClient('mongodb://user:user@rmg.mit.edu/admin', 27018)
+	db =  getattr(client, db_name)
+	collection = getattr(db, collection_name)
+	db_cursor = collection.find()
+
+	# collect data
+	logging.info('Collecting polycyclic data: {0}.{1}...'.format(db_name, collection_name))
+	X = []
+	y = []
+	smis = []
+	db_mols = []
+	for db_mol in db_cursor:
+		db_mols.append(db_mol)
+
+	logging.info('Done collecting data: {0} points...'.format(len(db_mols)))
+
+	logging.info('Generating molecular ecfp...')
+
+	for db_mol in db_mols:
+		smile = str(db_mol["SMILES_input"])
+		mol = Chem.MolFromSmiles(smile)
+		ecfp = np.array(AllChem.GetMorganFingerprintAsBitVect(mol=mol,radius=4,nBits=512))
+
+		hf298_qm = float(db_mol["Hf298"])
+		X.append(ecfp)
+		y.append(hf298_qm)
+		smis.append(smile)
+
+	return (X, y, smis)
+
 def prepare_folded_data_from_multiple_datasets(datasets, 
 												folds, 
 												add_extra_atom_attribute, 
@@ -103,21 +140,26 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 	return X_test, y_test, folded_Xs, folded_ys
 
 def prepare_full_train_data_from_multiple_datasets(datasets, 
-													add_extra_atom_attribute, 
-													add_extra_bond_attribute,
+													add_extra_atom_attribute=True, 
+													add_extra_bond_attribute=True,
 													padding=True,
 													padding_final_size=20,
-													save_meta=True):
+													save_meta=True,
+													using_ecfp=False):
 
 	test_data_datasets = []
 	train_datasets = []
 	for db, table, testing_ratio in datasets:
-		(X, y, smis) = get_data_from_db(db, 
-								table, 
-								add_extra_atom_attribute, 
-								add_extra_bond_attribute,
-								padding,
-								padding_final_size)
+		if not using_ecfp:
+			(X, y, smis) = get_data_from_db(db, 
+									table, 
+									add_extra_atom_attribute, 
+									add_extra_bond_attribute,
+									padding,
+									padding_final_size)
+		else:
+			(X, y, smis) = get_data_from_db_using_ecfp(db, table)
+
 		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
 		split_data = split_tst_from_train_and_val(X, 
 												y, 
