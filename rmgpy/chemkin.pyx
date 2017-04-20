@@ -37,6 +37,7 @@ import logging
 import textwrap
 import os.path
 import numpy
+import cython 
 
 import rmgpy.kinetics as _kinetics
 from rmgpy.molecule.element import getElement
@@ -1660,13 +1661,14 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     return string
 
 ################################################################################
-
-def markDuplicateReaction(test_reaction, reaction_list):
+cpdef markDuplicateReaction(object test_reaction, list reaction_list):
     """
     If the test_reaction is a duplicate (in Chemkin terms) of one in reaction_list, then set `duplicate=True` on both instances.
     `reaction_list` can be any iterator.
     It does not add the testReaction to the reactionList - you probably want to do this yourself afterwards.
     """
+    cdef object reaction1, reaction2
+    
     reaction1 = test_reaction
     for reaction2 in reaction_list:
         if reaction1.__class__ != reaction2.__class__:
@@ -1689,7 +1691,8 @@ def markDuplicateReaction(test_reaction, reaction_list):
                     reaction1.duplicate = True
                     reaction2.duplicate = True
 
-def markDuplicateReactions(reactions):
+@cython.boundscheck(False)
+cpdef markDuplicateReactions(list reactions):
     """
     For a given list of `reactions`, mark all of the duplicate reactions as
     understood by Chemkin.
@@ -1697,11 +1700,10 @@ def markDuplicateReactions(reactions):
     This is pretty slow (quadratic in size of reactions list) so only call it if you're really worried
     you may have undetected duplicate reactions.
     """
+    cdef int index1
+    
     for index1 in range(len(reactions)):
-        reaction1 = reactions[index1]
-        remainingList = reactions[index1+1:]
-        markDuplicateReaction(reaction1, remainingList)
- 
+        markDuplicateReaction(reactions[index1], reactions[index1+1:])
 
 def saveSpeciesDictionary(path, species, oldStyle=False):
     """
