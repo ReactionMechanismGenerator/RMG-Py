@@ -313,15 +313,16 @@ class StatMechJob:
         else:
             E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
         E0 = applyEnergyCorrections(E0, self.modelChemistry, atoms, bonds if self.applyBondEnergyCorrections else {})
+        #raise Exception('{0:f}'.format(E0))
         ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-        
+
         # The E0_withZPE at this stage contains the ZPE
         E0_withZPE = E0 + ZPE
         
         logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
         logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
-       
+
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
@@ -434,7 +435,7 @@ class StatMechJob:
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
     
-        numbers = {1: 'H', 6: 'C', 7: 'N', 8: 'O', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl'}
+        numbers = {1: 'H', 6: 'C', 7: 'N', 8: 'O', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 53: 'I'}
         
         conformer = self.species.conformer
             
@@ -522,9 +523,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # Step 1: Reference all energies to a model chemistry-independent basis
     # by subtracting out that model chemistry's atomic energies
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
-    if modelChemistry == 'CBS-QB3':
-        atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360+ SOC['S']}
-    elif modelChemistry == 'G3':
+    if modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
     elif modelChemistry == 'M08SO/MG3S*': # * indicates that the grid size used in the [QChem} electronic 
         #structure calculation utilized 75 radial points and 434 angular points 
@@ -550,10 +549,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     
     # We are assuming that SOC is included in the Bond Energy Corrections  
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
-#        atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
+       # atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
         atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235, 'S':-397.663040369707}
+       # atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360 + SOC['S']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
         atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471, 'S':-397.675447487865}
+    #again modified for Iodine addition
+    elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12(-PP)':
+        atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471, 'S':-397.675447487865, 'I':-294.81781766}
+
     elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
         atomEnergies = {'H':-0.499994558325, 'N':-54.530515226371, 'O':-75.005600062003, 'C':-37.789961656228, 'S':-397.676719774973}
     elif modelChemistry == 'CCSD(T)-F12/cc-pCVDZ-F12':
@@ -569,8 +573,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499844820798 + SOC['H'], 'N':-54.527419359906 + SOC['N'], 'O':-75.000001429806+ SOC['O'], 'C':-37.788504810868+ SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/aug-cc-pVQZ':
         atomEnergies = {'H':-0.499949526073 + SOC['H'], 'N':-54.529569719016 + SOC['N'], 'O':-75.004026586610+ SOC['O'], 'C':-37.789387892348+ SOC['C']}
-
-
+#This model chemistry is a mixture of basis sets to test Iodine atoms in Cantherm. aug-cc-pVTZ-PP is for I, aug-cc-pVTZ is for the remaining atoms
+    elif modelChemistry == 'CCSD(T)-F12/aug-cc-pVTZ(-PP)':
+        atomEnergies = {'H':-0.499844820798 + SOC['H'], 'N':-54.527419359906 + SOC['N'], 'O':-75.000001429806+ SOC['O'], 'C':-37.788504810868+ SOC['C'], 'S':-397.615032078484, 'I':-294.816178186847}
+###################################################################################################################################
+    elif modelChemistry == 'CBS-QB3':
+        atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360 + SOC['S']}
+    elif modelChemistry == 'CCSD(T)/aug-cc-pVTZ(-PP)':
+        atomEnergies = {'H':-0.499821176024 + SOC['H'], 'N':-54.417460988701 + SOC['N'], 'O':-74.897947823400 + SOC['O'], 'C':-37.729456757559 + SOC['C'], 'S':-397.6511595 + SOC['S'], 'I':-294.799660617948}
+#######################################################################################################################################old S value... -397.607297047458
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVDZ-F12':
         atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.523269942190 + SOC['N'], 'O':-74.990725918500 + SOC['O'], 'C':-37.785409916465 + SOC['C'], 'S': -397.658155086033 + SOC['S']}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVTZ-F12':
@@ -629,10 +640,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
     for symbol, count in atoms.items():
+        #################################
+        #raise Exception('gets here')
         if symbol in atomEnergies: E0 -= count * atomEnergies[symbol] * 4.35974394e-18 * constants.Na
         else:
             logging.warning('Ignored unknown atom type "{0}".'.format(symbol))
-    
     # Step 2: Atom energy corrections to reach gas-phase reference state
     # Experimental enthalpy of formation at 0 K 
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
@@ -649,7 +661,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies[element] = atomHf[element] - atomThermal[element]
     for symbol, count in atoms.items():
         if symbol in atomEnergies: E0 += count * atomEnergies[symbol] * 4184.
-    
+
+    #raise Exception('{0:f}'.format(E0))
     # Step 3: Bond energy corrections
     bondEnergies = {}
     # 'S-H', 'C-S', 'C=S', 'S-S', 'O-S', 'O=S', 'O=S=O' taken from http://hdl.handle.net/1721.1/98155 (both for
@@ -691,11 +704,12 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         
         logging.warning('No bond energy correction found for model chemistry: {0}'.format(modelChemistry))
 
+    #raise Exception('{0:f}'.format(E0))
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
         else:
             logging.warning('Ignored unknown bond type {0!r}.'.format(symbol))
-    
+
     return E0
 
 def projectRotors(conformer, F, rotors, linear, TS):

@@ -117,7 +117,7 @@ class MoleProLog:
         line = f.readline()
         while line != '':
             # Automatically determine the number of atoms
-            if 'Atomic Coordinates' in line:
+            if 'Current geometry' in line:
                 number = []; coord = []
                 for i in range(4): line = f.readline()
                 #raise Exception('{0:s}'.format(line))
@@ -127,10 +127,10 @@ class MoleProLog:
                     #    raise Exception('{0:s}'.format(line))
                     data = line.split()
                     #raise Exception('{0:s}'.format(data[1]))
-                    symbol.append(str(data[1]))
+                    symbol.append(str(data[0]))
                     #raise Exception('gets here')
                     #raise Exception('{0:s}'.format(symbol))
-                    coord.append([float(data[3]), float(data[4]), float(data[5])])
+                    coord.append([float(data[1]), float(data[2]), float(data[3])])
                     #raise Exception('{0:s}'.format(coord))
                     #raise Exception('{0:d}'.format(count))
                     count += 1
@@ -243,16 +243,16 @@ class MoleProLog:
                             modes.append(vibration)
 
                     # Read ground-state energy
-                    elif 'Electronic Energy + Zero-Point correction:' in line:
-                        E0 = float(line.split()[5]) * 4.35974394e-18 * constants.Na
+                    #elif 'Electronic Energy + Zero-Point correction:' in line:
+                    #    E0 = float(line.split()[5]) * 4.35974394e-18 * constants.Na
 
-                    elif 'Log10(Z)' in line:
+                    #elif 'Log10(Z)' in line:
                         inPartitionFunctions = True
 
                     # Read spin multiplicity if not explicitly given
-                    elif 'Partition Function' in line and inPartitionFunctions and spinMultiplicity is None:
-                        line = f.readline()
-                        spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
+                    #elif 'Partition Function' in line and inPartitionFunctions and spinMultiplicity is None:
+                    #    line = f.readline()
+                    #    spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
 
                     # Read the next line in the file
                     line = f.readline()
