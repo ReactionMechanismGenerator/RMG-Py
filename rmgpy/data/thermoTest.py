@@ -882,14 +882,125 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
     def testConnectSuccess(self):
 
-        host, port, username, password = getTCDAuthenticationInfo()
+        host, port, username, password = getTestingTCDAuthenticationInfo()
         application = 'test'
 
         tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         self.assertTrue(tcdi.client is not None)
 
-def getTCDAuthenticationInfo():
+    def testRegisterInCentralThermoDB1(self):
+        """
+        Test situation where both registration_table and results_table have no
+        species as the one going to be registered
+        """
+        # connect to thermo central database
+        host, port, username, password = getTestingTCDAuthenticationInfo()
+        application = 'test'
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
+
+        # prepare species to register
+        species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
+        expected_aug_inchi = "InChI=1S/C10H6/c1-2-9-7-10(9)5-3-8(1)4-6-10/h3-6H,7H2"
+
+        # select registration table
+        # and clean previous data
+        db =  getattr(tcdi.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
+        registration_table.delete_many({"aug_inchi": expected_aug_inchi})
+        results_table.delete_many({"aug_inchi": expected_aug_inchi})
+
+        tcdi.registerInCentralThermoDB(species)
+        registered_species_entries = list(registration_table.find({"aug_inchi": expected_aug_inchi}))
+
+        # should expect only one registered such species
+        self.assertEqual(len(registered_species_entries), 1)
+        registered_species_entry = registered_species_entries[0]
+
+        # check all the columns are expected
+        registered_species = Species().fromSMILES(str(registered_species_entry['SMILES_input']))
+        self.assertEqual(registered_species_entry['aug_inchi'], expected_aug_inchi)
+        self.assertTrue(registered_species.isIsomorphic(species))
+        self.assertIn(registered_species_entry['status'], ['pending', 'submitted'])
+
+        # clean up the table
+        registration_table.delete_many({"aug_inchi": expected_aug_inchi})
+
+    def testRegisterInCentralThermoDB2(self):
+        """
+        Test situation where registration_table has species as the one going 
+        to be registered
+        """
+
+        # connect to thermo central database
+        host, port, username, password = getTestingTCDAuthenticationInfo()
+        application = 'test'
+
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
+
+        # prepare species to register
+        species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
+        expected_aug_inchi = "InChI=1S/C10H6/c1-2-9-7-10(9)5-3-8(1)4-6-10/h3-6H,7H2"
+
+        # select registration table
+        # and clean previous data
+        db =  getattr(tcdi.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
+        registration_table.delete_many({"aug_inchi": expected_aug_inchi})
+        registration_table.insert_one({"aug_inchi": expected_aug_inchi})
+        results_table.delete_many({"aug_inchi": expected_aug_inchi})
+
+        tcdi.registerInCentralThermoDB(species)
+        registered_species_entries = list(registration_table.find({"aug_inchi": expected_aug_inchi}))
+
+        # should expect only one registered such species
+        self.assertEqual(len(registered_species_entries), 1)
+        registered_species_entry = registered_species_entries[0]
+
+        # check all the columns are expected
+        self.assertEqual(registered_species_entry['aug_inchi'], expected_aug_inchi)
+        self.assertTrue(len(registered_species_entry), 2)
+
+        # clean up the table
+        registration_table.delete_many({"aug_inchi": expected_aug_inchi})
+
+    def testRegisterInCentralThermoDB3(self):
+        """
+        Test situation where results_table has species as the one going 
+        to be registered
+        """
+
+        # connect to thermo central database
+        host, port, username, password = getTestingTCDAuthenticationInfo()
+        application = 'test'
+        
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
+
+        # prepare species to register
+        species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
+        expected_aug_inchi = "InChI=1S/C10H6/c1-2-9-7-10(9)5-3-8(1)4-6-10/h3-6H,7H2"
+
+        # select registration table
+        # and clean previous data
+        db =  getattr(tcdi.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
+        registration_table.delete_many({"aug_inchi": expected_aug_inchi})
+        results_table.delete_many({"aug_inchi": expected_aug_inchi})
+        results_table.insert_one({"aug_inchi": expected_aug_inchi})
+
+        tcdi.registerInCentralThermoDB(species)
+        registered_species_entries = list(registration_table.find({"aug_inchi": expected_aug_inchi}))
+
+        # should expect only one registered such species
+        self.assertEqual(len(registered_species_entries), 0)
+
+        # clean up the table
+        results_table.delete_many({"aug_inchi": expected_aug_inchi})
+
+def getTestingTCDAuthenticationInfo():
 
     try:
         host = os.environ['TCD_HOST']
