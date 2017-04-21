@@ -874,16 +874,18 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         port = 27017
         username = 'me'
         password = 'pswd'
+        application = 'test'
 
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         self.assertTrue(tcdi.client is None)
 
     def testConnectSuccess(self):
 
         host, port, username, password = getTCDAuthenticationInfo()
+        application = 'test'
 
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         self.assertTrue(tcdi.client is not None)
 
