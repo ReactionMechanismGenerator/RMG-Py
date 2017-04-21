@@ -1787,6 +1787,31 @@ class ThermoDatabase(object):
         
         return source
 
+class ThermoCentralDatabaseInterface(object):
+    """
+    A class for interfacing with RMG online thermo central database.
+    """
+
+    def __init__(self, host, port, username, password):
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+        self.client = self.connect()
+
+    def connect(self):
+        return client
+
+    def registerInCentralThermoDB(self, species):
+
+        # define host and credentials
+
+        # define insertion columns
+
+        # do the insertion
+        
+        self.client.insert
+
 def findCp0andCpInf(species, heatCap):
     """
     Calculate the Cp0 and CpInf values, and add them to the HeatCapacityModel object.
