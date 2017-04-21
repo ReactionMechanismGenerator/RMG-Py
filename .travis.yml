@@ -28,7 +28,9 @@ before_install:
   - conda update --yes conda
   - cd ..
   - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-  - cd RMG-Py
+  - cd RMG-database
+  - git checkout sulfur
+  - cd ../RMG-Py
 
 install:
   - conda env create -f environment_linux.yml
