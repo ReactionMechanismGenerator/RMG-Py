@@ -196,6 +196,8 @@ class RMG(util.Subject):
         self.initializationTime = 0
         self.kineticsdatastore = None
 
+        self.thermoCentralDatabase = None
+
         self.execTime = []
     
     def loadInput(self, path=None):
