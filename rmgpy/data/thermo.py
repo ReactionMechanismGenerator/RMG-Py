@@ -1800,7 +1800,22 @@ class ThermoCentralDatabaseInterface(object):
         self.client = self.connect()
 
     def connect(self):
-        return client
+        
+        import pymongo
+
+        remote_address = 'mongodb://{0}:{1}@{2}/thermoCentralDB'.format(self.username, 
+                                                            self.password,
+                                                            self.host)
+        client = pymongo.MongoClient(remote_address, 
+                                    self.port, 
+                                    serverSelectionTimeoutMS=2000)
+        try:
+            client.server_info()
+            return client
+        
+        except (pymongo.errors.ServerSelectionTimeoutError,
+                pymongo.errors.OperationFailure):
+            return None
 
     def registerInCentralThermoDB(self, species):
 

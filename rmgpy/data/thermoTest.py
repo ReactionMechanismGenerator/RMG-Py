@@ -863,6 +863,42 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         joinedCycle=combineCycles(testCycle1,testCycle2)
         self.assertTrue(sorted(mainCycle)==sorted(joinedCycle))
 
+class TestThermoCentralDatabaseInterface(unittest.TestCase):
+    """
+    Contains unit tests for methods of ThermoCentralDatabaseInterface
+    """
+
+    def testConnectFailure(self):
+
+        host = 'somehost'
+        port = 27017
+        username = 'me'
+        password = 'pswd'
+
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+
+        self.assertTrue(tcdi.client is None)
+
+    def testConnectSuccess(self):
+
+        host, port, username, password = getTCDAuthenticationInfo()
+
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+
+        self.assertTrue(tcdi.client is not None)
+
+def getTCDAuthenticationInfo():
+
+    try:
+        host = os.environ['TCD_HOST']
+        port = int(os.environ['TCD_PORT'])
+        username = os.environ['TCD_USER']
+        password = os.environ['TCD_PW']
+    except KeyError:
+        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
+        return 'None', 0, 'None', 'None'
+
+    return host, port, username, password
 
 ################################################################################
 
