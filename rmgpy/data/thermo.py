@@ -736,6 +736,9 @@ class ThermoDatabase(object):
             self.depository = {}
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
+
+        self.recordRingGenericNodes()
+        self.recordPolycylicGenericNodes()
         
     def loadDepository(self, path):
         """
