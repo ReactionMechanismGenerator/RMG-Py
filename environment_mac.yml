@@ -38,3 +38,4 @@ dependencies:
   - networkx
   - mock
   # - muq
+  - pymongo
