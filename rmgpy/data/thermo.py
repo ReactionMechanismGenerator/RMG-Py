@@ -1000,6 +1000,14 @@ class ThermoDatabase(object):
                 continue
             self.groups['polycyclic'].genericNodes.append(label)
 
+    def recordRingGenericNodes(self):
+
+        self.groups['ring'].genericNodes = ['Ring']
+        for label, entry in self.groups['ring'].entries.iteritems():
+
+            if isinstance(entry.data, ThermoData): 
+                continue
+            self.groups['ring'].genericNodes.append(label)
     def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
