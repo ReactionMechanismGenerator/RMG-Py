@@ -101,6 +101,22 @@ def generateThermoData(spc, thermoClass=NASA):
         return None
     
     thermo0 = thermodb.getThermoData(spc) 
+
+    # 1. maybe only submit cyclic core
+    # 2. to help radical prediction, HBI should also
+    #    look up centrailThermoDB for its saturated version
+    #    currently it only looks up libraries or estimates via GAV 
+    from rmgpy.rmg.input import getInput
+    
+    try:
+        thermoCentralDatabase = getInput('thermoCentralDatabase')
+    except Exception, e:
+        logging.debug('thermoCentralDatabase could not be found.')
+        thermoCentralDatabase = None
+    
+    if thermoCentralDatabase and thermoCentralDatabase.client and satisfyRegistrationRequirements(spc, thermo0, thermodb):
+        
+        thermoCentralDatabase.registerInCentralThermoDB(spc)
         
     return processThermoData(spc, thermo0, thermoClass)    
 
@@ -134,3 +150,36 @@ def submit(spc):
 
     """
     spc.thermo = submit_(evaluator, spc)
+
+def satisfyRegistrationRequirements(species, thermo, thermodb):
+    """
+    Given a species, check if it's allowed to register in 
+    central thermo database.
+
+    Requirements for now:
+    non-radical, 
+    cyclic, 
+    its thermo is estimated by GAV and no exact match/use heuristics
+    """
+    if species.molecule[0].getRadicalCount() > 0:
+        return False
+
+    if not species.molecule[0].isCyclic():
+        return False
+
+    GAV_keywords = 'Thermo group additivity estimation'
+    if isinstance(thermo, ThermoData) and thermo.comment.startswith(GAV_keywords):
+        ringGroups, polycyclicGroups = thermodb.getRingGroupsFromComments(thermo)
+        
+        # use GAV generic node to estimate thermo
+        for group in ringGroups + polycyclicGroups:
+            if group.label in thermodb.groups['ring'].genericNodes + thermodb.groups['polycyclic'].genericNodes:
+                return True
+        
+        # used some heuristic way to estimate thermo
+        if ") - ring(" in thermo.comment:
+            return True
+        else:
+            return False
+    else:
+        return False
