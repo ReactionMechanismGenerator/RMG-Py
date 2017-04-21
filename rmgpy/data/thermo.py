@@ -993,7 +993,7 @@ class ThermoDatabase(object):
 
     def recordPolycylicGenericNodes(self):
 
-        self.groups['polycyclic'].genericNodes = []
+        self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
         for label, entry in self.groups['polycyclic'].entries.iteritems():
 
             if isinstance(entry.data, ThermoData): 
