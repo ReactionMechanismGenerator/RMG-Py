@@ -1819,13 +1819,30 @@ class ThermoCentralDatabaseInterface(object):
 
     def registerInCentralThermoDB(self, species):
 
-        # define host and credentials
-
-        # define insertion columns
-
-        # do the insertion
+        # choose registration table
+        db =  getattr(self.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
         
-        self.client.insert
+        # prepare registration entry
+        aug_inchi = species.getAugmentedInChI()
+
+        # check if it's registered before or
+        # already have available data in results_table
+        registered_entries = list(registration_table.find({"aug_inchi": aug_inchi}))
+        finished_entries = list(results_table.find({"aug_inchi": aug_inchi}))
+        
+        if len(registered_entries) + len(finished_entries) > 0 :
+            return
+
+        SMILES_input = species.molecule[0].toSMILES()
+        status = 'pending'
+        species_registration_entry = {'aug_inchi': aug_inchi,
+                                    'SMILES_input': SMILES_input,
+                                    'status': status 
+                                    }
+
+        registration_table.insert(species_registration_entry)
 
 def findCp0andCpInf(species, heatCap):
     """
