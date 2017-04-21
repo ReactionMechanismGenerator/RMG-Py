@@ -1555,17 +1555,17 @@ class Molecule(Graph):
                 return True
         return False
 
-    def isArylRadical(self, ASSSR=None):
+    def isArylRadical(self, aromaticRings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,
         ie. radical on an aromatic ring, or ``False`` otherwise.
         """
         cython.declare(atom=Atom, radList=list)
-        if ASSSR is None:
-            ASSSR = self.getAromaticSSSR()[0]
+        if aromaticRings is None:
+            aromaticRings = self.getAromaticRings()[0]
 
         total = self.getRadicalCount()
-        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(ASSSR)])
+        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(aromaticRings)])
         aryl = sum([atom.radicalElectrons for atom in aromaticAtoms])
 
         return total == aryl
@@ -1672,9 +1672,9 @@ class Molecule(Graph):
         
         return group
 
-    def getAromaticSSSR(self, SSSR=None):
+    def getAromaticRings(self, rings=None):
         """
-        Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds
+        Returns all aromatic rings as a list of atoms and a list of bonds.
 
         Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
@@ -1683,45 +1683,70 @@ class Molecule(Graph):
         The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
         by RMG, and not by RDKit.
         """
-        cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
-        cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
+        cython.declare(rdAtomIndices=dict, obAtomIds=dict, aromaticRings=list, aromaticBonds=list)
+        cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
         from rdkit.Chem.rdchem import BondType
-
         AROMATIC = BondType.AROMATIC
 
-        if SSSR is None:
-            SSSR = self.getSmallestSetOfSmallestRings()
-
-        rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
+        if rings is None:
+            rings = self.getAllSimpleCyclesOfSize(6)
         if not rings:
             return [], []
 
         try:
             rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
+            logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
+                                                            rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
+
+            return aromaticRings, aromaticBonds
+
+        logging.info('Trying to use OpenBabel to check aromaticity.')
+        try:
+            obmol, obAtomIds = generator.toOBMol(self, returnMapping=True)
+        except ImportError:
+            logging.warning('Unable to check aromaticity by converting for OB Mol.')
             return [], []
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if obmol.GetBond(obmol.GetAtomById(obAtomIds[atom1]),
+                                             obmol.GetAtomById(obAtomIds[atom2])).IsAromatic():
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
 
-        aromaticRings = []
-        aromaticBonds = []
-        for ring0 in rings:
-            aromaticBondsInRing = []
-            # Figure out which atoms and bonds are aromatic and reassign appropriately:
-            for i, atom1 in enumerate(ring0):
-                if not atom1.isCarbon():
-                    # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                    break
-                for atom2 in ring0[i + 1:]:
-                    if self.hasBond(atom1, atom2):
-                        if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
-                                                        rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                            aromaticBondsInRing.append(self.getBond(atom1, atom2))
-            else:  # didn't break so all atoms are carbon
-                if len(aromaticBondsInRing) == 6:
-                    aromaticRings.append(ring0)
-                    aromaticBonds.append(aromaticBondsInRing)
-
-        return aromaticRings, aromaticBonds
+            return aromaticRings, aromaticBonds
 
     def getDeterministicSmallestSetOfSmallestRings(self):
         """
