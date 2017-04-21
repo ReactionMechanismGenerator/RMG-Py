@@ -182,30 +182,139 @@ class TestGetAtomType(unittest.TestCase):
                                                      10 H u0 p0 {4,S}
                                                      11 H u0 p0 {5,S}''')
 
-        self.mol19 = Molecule().fromAdjacencyList('''1 C u0 p0 c0 {2,D} {3,S} {4,S}
-                                                     2 S u0 p2 c0 {1,D}
-                                                     3 H u0 p0 c0 {1,S}
-                                                     4 H u0 p0 c0 {1,S}''')
+        self.mol19 = Molecule().fromSMILES('C=S')
 
         self.mol20 = Molecule().fromSMILES('[C-]#[O+]')
 
-        self.mol21 = Molecule().fromSMILES('[C-]#[S+]')
+        self.mol21 = Molecule().fromAdjacencyList('''1 S u0 p3 c-1 {2,S}
+                                                     2 S u0 p2 c+1 {1,S}''')
 
+        self.mol22 = Molecule().fromAdjacencyList('''1 S u0 p3 c0''')
 
-        self.mol22 = Molecule().fromAdjacencyList('''1 N u0 p2 c-1 {2,S} {3,S}
+        self.mol23 = Molecule().fromAdjacencyList('''1 S u0 p2 c0 {2,S} {5,S}
+                                                     2 S u0 p1 c+1 {1,S} {3,S} {4,S}
+                                                     3 C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+                                                     4 O u0 p3 c-1 {2,S}
+                                                     5 H u0 p0 c0 {1,S}
+                                                     6 H u0 p0 c0 {3,S}
+                                                     7 H u0 p0 c0 {3,S}
+                                                     8 H u0 p0 c0 {3,S}''')
+
+        self.mol24 = Molecule().fromAdjacencyList('''1 C u0 p0 c0 {2,D} {4,S} {5,S}
+                                                     2 S u0 p2 c-1 {1,D} {3,S}
+                                                     3 O u0 p2 c+1 {2,S}
+                                                     4 H u0 p0 c0 {1,S}
+                                                     5 H u0 p0 c0 {1,S}''')
+
+        self.mol25 = Molecule().fromAdjacencyList('''1 S u0 p1 c0 {2,S} {5,S} {7,S} {8,S}
+                                                     2 O u0 p2 c0 {1,S} {3,S}
+                                                     3 S u0 p1 c0 {2,S} {4,S} {9,D}
+                                                     4 O u0 p2 c0 {3,S} {6,S}
+                                                     5 H u0 p0 c0 {1,S}
+                                                     6 H u0 p0 c0 {4,S}
+                                                     7 H u0 p0 c0 {1,S}
+                                                     8 H u0 p0 c0 {1,S}
+                                                     9 O u0 p2 c0 {3,D}''')
+
+        self.mol26 = Molecule().fromAdjacencyList('''1 O u0 p3 c-1 {2,S}
+                                                     2 S u0 p1 c+1 {1,S} {3,D}
+                                                     3 O u0 p2 c0 {2,D}''')
+
+        #self.mol27 = Molecule().fromAdjacencyList('''1 S u0 p1 c0 {2,B} {5,B}
+        #                                             2 C u0 p0 c0 {1,B} {3,B} {6,S}
+        #                                             3 C u0 p0 c0 {2,B} {4,B} {7,S}
+        #                                             4 C u0 p0 c0 {3,B} {5,B} {8,S}
+        #                                             5 C u0 p0 c0 {1,B} {4,B} {9,S}
+        #                                             6 H u0 p0 c0 {2,S}
+        #                                             7 H u0 p0 c0 {3,S}
+        #                                             8 H u0 p0 c0 {4,S}
+        #                                             9 H u0 p0 c0 {5,S}''')
+
+        self.mol28 = Molecule().fromAdjacencyList('''1  O u0 p2 c0 {2,D}
+                                                     2  S u0 p1 c0 {1,D} {3,D}
+                                                     3  C u0 p0 c0 {2,D} {4,S} {7,S}
+                                                     4  C u0 p0 c0 {3,S} {5,T}
+                                                     5  S u0 p1 c0 {4,T} {6,S}
+                                                     6  S u0 p0 c0 {5,S} {8,S} {9,S} {10,S} {11,S} {12,S}
+                                                     7  H u0 p0 c0 {3,S}
+                                                     8  H u0 p0 c0 {6,S}
+                                                     9  H u0 p0 c0 {6,S}
+                                                     10 H u0 p0 c0 {6,S}
+                                                     11 H u0 p0 c0 {6,S}
+                                                     12 H u0 p0 c0 {6,S}''')
+
+        self.mol29 = Molecule().fromAdjacencyList('''1 C u0 p1 c-1 {2,T}
+                                                     2 S u0 p1 c+1 {1,T}''')
+
+        self.mol30 = Molecule().fromAdjacencyList('''1 S u0 p0 c0 {2,D} {3,S} {4,S} {5,S} {6,S}
+                                                     2 O u0 p2 c0 {1,D}
+                                                     3 H u0 p0 c0 {1,S}
+                                                     4 H u0 p0 c0 {1,S}
+                                                     5 H u0 p0 c0 {1,S}
+                                                     6 H u0 p0 c0 {1,S}''')
+
+        self.mol31 = Molecule().fromAdjacencyList('''1 O u0 p3 c-1 {2,S}
+                                                     2 S u0 p0 c+2 {1,S} {3,S} {4,D}
+                                                     3 O u0 p3 c-1 {2,S}
+                                                     4 O u0 p2 c0  {2,D}''')
+
+        self.mol32 = Molecule().fromAdjacencyList('''1 O u0 p2 c0 {2,D}
+                                                     2 S u0 p0 c0 {1,D} {3,D} {4,S} {5,S}
+                                                     3 O u0 p2 c0 {2,D}
+                                                     4 O u0 p2 c0 {2,S} {6,S}
+                                                     5 O u0 p2 c0 {2,S} {7,S}
+                                                     6 H u0 p0 c0 {4,S}
+                                                     7 H u0 p0 c0 {5,S}''')
+
+        self.mol33 = Molecule().fromAdjacencyList('''1 O u0 p3 c-1 {2,S}
+                                                     2 S u0 p0 c+1 {1,S} {3,D} {4,D}
+                                                     3 O u0 p2 c0 {2,D}
+                                                     4 O u0 p2 c0 {2,D}''')
+
+        self.mol34 = Molecule().fromAdjacencyList('''1 O u0 p2 c0 {2,D}
+                                                     2 S u0 p0 c0 {1,D} {3,D} {4,D}
+                                                     3 O u0 p2 c0 {2,D}
+                                                     4 O u0 p2 c0 {2,D}''')
+
+        self.mol35 = Molecule().fromAdjacencyList('''1 S u0 p0 c0 {2,T} {3,S} {4,S} {5,S}
+                                                     2 N u0 p1 c0 {1,T}
+                                                     3 H u0 p0 c0 {1,S}
+                                                     4 H u0 p0 c0 {1,S}
+                                                     5 H u0 p0 c0 {1,S}''')
+
+        self.mol36 = Molecule().fromAdjacencyList('''1 S u0 p0 c0 {2,T} {3,D} {4,S}
+                                                     2 N u0 p1 c0 {1,T}
+                                                     3 O u0 p2 c0 {1,D}
+                                                     4 H u0 p0 c0 {1,S}''')
+
+        self.mol37 = Molecule().fromAdjacencyList('''1 N u0 p1 c0 {2,T}
+                                                     2 S u0 p0 c0 {1,T} {3,T}
+                                                     3 N u0 p1 c0 {2,T}''')
+
+        self.mol38 = Molecule().fromSMILES('O=S=O')
+
+        self.mol39 = Molecule().fromAdjacencyList('''1 N u0 p2 c-1 {2,S} {3,S}
                                                      2 H u0 p0 c0 {1,S}
                                                      3 N u0 p0 c+1 {1,S} {4,T}
                                                      4 C u0 p0 c0 {3,T} {5,S}
                                                      5 H u0 p0 c0 {4,S}''')
 
-        self.mol23 = Molecule().fromAdjacencyList('''1 N u0 p0 c+1 {2,S} {3,T}
+        self.mol40 = Molecule().fromAdjacencyList('''1 N u0 p0 c+1 {2,S} {3,T}
                                                      2 H u0 p0 c0 {1,S}
                                                      3 N u0 p0 c+1 {1,T} {4,S}
                                                      4 N u0 p3 c-2 {3,S}''')
 
 
-        self.mol24 = Molecule().fromAdjacencyList('''1 N u0 p2 c0 {2,S}
+        self.mol41 = Molecule().fromAdjacencyList('''1 N u0 p2 c0 {2,S}
                                                      2 H u0 p0 c0 {1,S}''')
+
+
+        self.mol42 = Molecule().fromAdjacencyList('''1 N u0 p1 c0 {2,T}
+                                                     2 N u0 p0 c+1 {1,T} {3,S}
+                                                     3 S u0 p2 c-1 {2,S} {4,S} {5,S}
+                                                     4 O u1 p2 c0 {3,S}
+                                                     5 O u1 p2 c0 {3,S}''')
+
 
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
@@ -237,10 +346,10 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that getAtomType() returns appropriate nitrogen atom types.
         """
-        self.assertEqual(self.atomType(self.mol23, 3), 'N1sc')
-        self.assertEqual(self.atomType(self.mol24, 0), 'N1s')
+        self.assertEqual(self.atomType(self.mol40, 3), 'N1sc')
+        self.assertEqual(self.atomType(self.mol41, 0), 'N1s')
         self.assertEqual(self.atomType(self.mol5, 3), 'N1d')
-        self.assertEqual(self.atomType(self.mol22, 0), 'N2s')
+        self.assertEqual(self.atomType(self.mol39, 0), 'N2s')
         self.assertEqual(self.atomType(self.mol9, 0), 'N3s')
         self.assertEqual(self.atomType(self.mol10, 0), 'N3s')
         self.assertEqual(self.atomType(self.mol11, 0), 'N3s')
@@ -252,6 +361,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol5, 2), 'N5d')
         self.assertEqual(self.atomType(self.mol14, 1), 'N5dd')
         self.assertEqual(self.atomType(self.mol15, 1), 'N5t')
+        self.assertEqual(self.atomType(self.mol39, 2), 'N5t')
         self.assertEqual(self.atomType(self.mol18, 0), 'N5b')
         
     def testOxygenTypes(self):
@@ -276,9 +386,31 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that getAtomType() returns appropriate sulfur atom types.
         """
-        self.assertEqual(self.atomType(self.mol4, 8), 'S2s')
-        self.assertEqual(self.atomType(self.mol4, 10), 'S2d')
-        self.assertEqual(self.atomType(self.mol21, 1), 'St')
+        self.assertEqual(self.atomType(self.mol21, 0), 'S0s')
+        self.assertEqual(self.atomType(self.mol22, 0), 'Sa')
+        self.assertEqual(self.atomType(self.mol23, 0), 'S2s')
+        #self.assertEqual(self.atomType(self.mol21, 1), 'S2sp')
+        #self.assertEqual(self.atomType(self.mol42, 2), 'S2sn')
+        self.assertEqual(self.atomType(self.mol19, 1), 'S2d')
+        #self.assertEqual(self.atomType(self.mol24, 1), 'S2dc')
+        self.assertEqual(self.atomType(self.mol25, 0), 'S4s')
+        #self.assertEqual(self.atomType(self.mol23, 1), 'S4sc')
+        self.assertEqual(self.atomType(self.mol25, 2), 'S4d')
+        #self.assertEqual(self.atomType(self.mol26, 1), 'S4dc')
+        #self.assertEqual(self.atomType(self.mol27, 0), 'S4b') # RMG correctly can't represent heteroatoms in aromatics. See RMG-Py issue #982 
+        self.assertEqual(self.atomType(self.mol28, 1), 'S4dd')
+        self.assertEqual(self.atomType(self.mol38, 1), 'S4dd')
+        self.assertEqual(self.atomType(self.mol28, 4), 'S4t')
+        #self.assertEqual(self.atomType(self.mol29, 1), 'S4tc')
+        self.assertEqual(self.atomType(self.mol28, 5), 'S6s')
+        self.assertEqual(self.atomType(self.mol30, 0), 'S6d')
+        #self.assertEqual(self.atomType(self.mol31, 1), 'S6dc')
+        self.assertEqual(self.atomType(self.mol32, 1), 'S6dd')
+        #self.assertEqual(self.atomType(self.mol33, 1), 'S6ddc')
+        self.assertEqual(self.atomType(self.mol34, 1), 'S6ddd')
+        self.assertEqual(self.atomType(self.mol35, 0), 'S6t')
+        self.assertEqual(self.atomType(self.mol36, 0), 'S6td')
+        self.assertEqual(self.atomType(self.mol37, 1), 'S6tt')
     
     def testOtherTypes(self):
         """
@@ -292,3 +424,4 @@ class TestGetAtomType(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
+
