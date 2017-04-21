@@ -37,6 +37,7 @@ import re
 import math
 import logging
 import numpy
+import time
 from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
@@ -1936,11 +1937,12 @@ class ThermoCentralDatabaseInterface(object):
     A class for interfacing with RMG online thermo central database.
     """
 
-    def __init__(self, host, port, username, password):
+    def __init__(self, host, port, username, password, application):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
+        self.application = application
         self.client = self.connect()
 
     def connect(self):
@@ -1963,13 +1965,38 @@ class ThermoCentralDatabaseInterface(object):
 
     def registerInCentralThermoDB(self, species):
 
-        # define host and credentials
-
-        # define insertion columns
-
-        # do the insertion
+        # choose registration table
+        db =  getattr(self.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
         
-        self.client.insert
+        # prepare registration entry
+        try:
+            aug_inchi = species.getAugmentedInChI()
+
+            # check if it's registered before or
+            # already have available data in results_table
+            registered_entries = list(registration_table.find({"aug_inchi": aug_inchi}))
+            finished_entries = list(results_table.find({"aug_inchi": aug_inchi}))
+            
+            if len(registered_entries) + len(finished_entries) > 0 :
+                return
+
+            SMILES_input = species.molecule[0].toSMILES()
+            status = 'pending'
+            species_registration_entry = {'aug_inchi': aug_inchi,
+                                        'SMILES_input': SMILES_input,
+                                        'radical_number': species.molecule[0].getRadicalCount(),
+                                        'status': status,
+                                        'user': self.username,
+                                        'application': self.application,
+                                        'timestamp': time.time()
+                                        }
+
+            registration_table.insert(species_registration_entry)
+
+        except ValueError:
+            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
 
 def findCp0andCpInf(species, heatCap):
     """
