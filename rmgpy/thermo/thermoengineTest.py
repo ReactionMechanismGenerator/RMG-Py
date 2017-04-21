@@ -17,7 +17,7 @@ from rmgpy.rmg.main import RMG
 from rmgpy.scoop_framework.framework import TestScoopCommon
 
 from rmgpy.species import Species
-from rmgpy.thermo.thermoengine import submit
+from rmgpy.thermo.thermoengine import submit, satisfyRegistrationRequirements
 
 try:
     from scoop import futures, _control, shared
@@ -25,6 +25,16 @@ except ImportError, e:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
 
+def setUpModule():
+    """A function that is run ONCE before all unit tests in this module."""
+    global database
+    database = RMGDatabase()
+    database.loadThermo(os.path.join(settings['database.directory'], 'thermo'))
+
+def tearDownModule():
+    """A function that is run ONCE after all unit tests in this module."""
+    from rmgpy.data import rmg
+    rmg.database = None
 
 def load():
     tearDown()
@@ -139,6 +149,95 @@ class AsyncThermoTest(TestScoopCommon):
         """
         result = futures._startup(funcGet)
         self.assertEquals(result, True)
+
+class TestThermoCentralDatabase(unittest.TestCase):
+    """
+    Contains unit tests for methods related to thermo central database
+    """
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database.thermo
+
+    def testSatisfyRegistrationRequirements1(self):
+        """
+        the species is radical, currently not allowed to register 
+        in thermo central database
+        """
+
+        species = Species().fromSMILES('C[CH2]')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertFalse(satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements2(self):
+        """
+        the species is for non-cyclic, so no need to register in 
+        thermo central database
+        """
+
+        species = Species().fromSMILES('CC')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertFalse(satisfyRegistrationRequirements(species, thermoData, self.database))
+
+
+    def testSatisfyRegistrationRequirements3(self):
+        """
+        the thermo is exact match, so no need to register in 
+        thermo central database
+        """
+
+        species = Species().fromSMILES('C1CC1')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertFalse(satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements4(self):
+        """
+        the thermo is from library, so no need to register in 
+        thermo central database
+        """
+
+        species = Species().fromSMILES('[H][H]')
+
+        thermoData = self.database.getThermoDataFromLibraries(species)
+
+        self.assertFalse(satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements5(self):
+        """
+        the thermo is matching generic node, so it needs to register in 
+        thermo central database
+
+        In the future, if RMG-database includes corresponding exact match
+        this test should be modified.
+        """
+
+        species = Species().fromSMILES('C1C=CC2C=CC2=C1')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertTrue(satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements6(self):
+        """
+        the thermo is matching generic node, so it needs to register in 
+        thermo central database
+
+        In the future, if RMG-database includes corresponding exact match
+        this test should be modified.
+        """
+
+        species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertTrue(satisfyRegistrationRequirements(species, thermoData, self.database))
 
 if __name__ == '__main__' and os.environ.get('IS_ORIGIN', "1") == "1":
     unittest.main()
