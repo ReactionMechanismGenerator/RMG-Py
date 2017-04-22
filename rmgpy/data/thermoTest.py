@@ -874,16 +874,18 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         port = 27017
         username = 'me'
         password = 'pswd'
+        application = 'test'
 
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         self.assertTrue(tcdi.client is None)
 
     def testConnectSuccess(self):
 
         host, port, username, password = getTCDAuthenticationInfo()
+        application = 'test'
 
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         self.assertTrue(tcdi.client is not None)
 
@@ -894,7 +896,8 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         """
         # connect to thermo central database
         host, port, username, password = getTCDAuthenticationInfo()
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        application = 'test'
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         # prepare species to register
         species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
@@ -932,7 +935,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         # connect to thermo central database
         host, port, username, password = getTCDAuthenticationInfo()
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        application = 'test'
+
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         # prepare species to register
         species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
@@ -969,7 +974,9 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         # connect to thermo central database
         host, port, username, password = getTCDAuthenticationInfo()
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password)
+        application = 'test'
+        
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
 
         # prepare species to register
         species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
