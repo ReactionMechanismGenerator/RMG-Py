@@ -37,6 +37,7 @@ import re
 import math
 import logging
 import numpy
+import time
 from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
@@ -1987,6 +1988,7 @@ class ThermoCentralDatabaseInterface(object):
                                     'status': status,
                                     'user': self.username,
                                     'application': self.application,
+                                    'timestamp': time.time()
                                     }
 
         registration_table.insert(species_registration_entry)
