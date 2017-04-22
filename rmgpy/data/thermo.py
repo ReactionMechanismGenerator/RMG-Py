@@ -1842,6 +1842,7 @@ class ThermoCentralDatabaseInterface(object):
             status = 'pending'
             species_registration_entry = {'aug_inchi': aug_inchi,
                                         'SMILES_input': SMILES_input,
+                                        'radical_number': species.molecule[0].getRadicalCount(),
                                         'status': status,
                                         'user': self.username,
                                         'application': self.application,
