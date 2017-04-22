@@ -161,9 +161,6 @@ def satisfyRegistrationRequirements(species, thermo, thermodb):
     cyclic, 
     its thermo is estimated by GAV and no exact match/use heuristics
     """
-    if species.molecule[0].getRadicalCount() > 0:
-        return False
-
     if not species.molecule[0].isCyclic():
         return False
 

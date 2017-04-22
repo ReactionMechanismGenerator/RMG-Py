@@ -162,8 +162,8 @@ class TestThermoCentralDatabase(unittest.TestCase):
 
     def testSatisfyRegistrationRequirements1(self):
         """
-        the species is radical, currently not allowed to register 
-        in thermo central database
+        the species is non-cyclic, currently regarded no need to 
+        register in thermo central database
         """
 
         species = Species().fromSMILES('C[CH2]')
