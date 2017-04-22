@@ -1936,11 +1936,12 @@ class ThermoCentralDatabaseInterface(object):
     A class for interfacing with RMG online thermo central database.
     """
 
-    def __init__(self, host, port, username, password):
+    def __init__(self, host, port, username, password, application):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
+        self.application = application
         self.client = self.connect()
 
     def connect(self):
@@ -1983,7 +1984,9 @@ class ThermoCentralDatabaseInterface(object):
         status = 'pending'
         species_registration_entry = {'aug_inchi': aug_inchi,
                                     'SMILES_input': SMILES_input,
-                                    'status': status 
+                                    'status': status,
+                                    'user': self.username,
+                                    'application': self.application,
                                     }
 
         registration_table.insert(species_registration_entry)

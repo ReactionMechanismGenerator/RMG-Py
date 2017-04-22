@@ -348,13 +348,15 @@ def generatedSpeciesConstraints(**kwargs):
 def thermoCentralDatabase(host,
                         port,
                         username,
-                        password):
+                        password,
+                        application):
     
     from rmgpy.data.thermo import ThermoCentralDatabaseInterface
     rmg.thermoCentralDatabase = ThermoCentralDatabaseInterface(host,
                                                             port,
                                                             username,
-                                                            password)
+                                                            password,
+                                                            application)
                     
 
 ################################################################################
@@ -404,6 +406,7 @@ def readInputFile(path, rmg0):
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
+        'thermoCentralDatabase': thermoCentralDatabase
     }
 
     try:
