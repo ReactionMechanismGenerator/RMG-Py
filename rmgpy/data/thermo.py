@@ -1827,27 +1827,31 @@ class ThermoCentralDatabaseInterface(object):
         results_table = getattr(db, 'results_table')
         
         # prepare registration entry
-        aug_inchi = species.getAugmentedInChI()
+        try:
+            aug_inchi = species.getAugmentedInChI()
 
-        # check if it's registered before or
-        # already have available data in results_table
-        registered_entries = list(registration_table.find({"aug_inchi": aug_inchi}))
-        finished_entries = list(results_table.find({"aug_inchi": aug_inchi}))
-        
-        if len(registered_entries) + len(finished_entries) > 0 :
-            return
+            # check if it's registered before or
+            # already have available data in results_table
+            registered_entries = list(registration_table.find({"aug_inchi": aug_inchi}))
+            finished_entries = list(results_table.find({"aug_inchi": aug_inchi}))
+            
+            if len(registered_entries) + len(finished_entries) > 0 :
+                return
 
-        SMILES_input = species.molecule[0].toSMILES()
-        status = 'pending'
-        species_registration_entry = {'aug_inchi': aug_inchi,
-                                    'SMILES_input': SMILES_input,
-                                    'status': status,
-                                    'user': self.username,
-                                    'application': self.application,
-                                    'timestamp': time.time()
-                                    }
+            SMILES_input = species.molecule[0].toSMILES()
+            status = 'pending'
+            species_registration_entry = {'aug_inchi': aug_inchi,
+                                        'SMILES_input': SMILES_input,
+                                        'status': status,
+                                        'user': self.username,
+                                        'application': self.application,
+                                        'timestamp': time.time()
+                                        }
 
-        registration_table.insert(species_registration_entry)
+            registration_table.insert(species_registration_entry)
+
+        except ValueError:
+            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
 
 def findCp0andCpInf(species, heatCap):
     """
