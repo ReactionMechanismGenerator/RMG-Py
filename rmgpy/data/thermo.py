@@ -1813,10 +1813,13 @@ class ThermoCentralDatabaseInterface(object):
                                     serverSelectionTimeoutMS=2000)
         try:
             client.server_info()
+            logging.info("\nConnection success to RMG Thermo Central Database!\n")
             return client
         
         except (pymongo.errors.ServerSelectionTimeoutError,
                 pymongo.errors.OperationFailure):
+            logging.info("\nConnection failure to RMG Thermo Central Database...")
+            logging.info("This RMG job still can run but cannot utilize data from central database.\n")
             return None
 
     def registerInCentralThermoDB(self, species):
