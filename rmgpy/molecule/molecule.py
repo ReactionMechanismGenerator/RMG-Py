@@ -81,6 +81,7 @@ class Atom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     `lonePairs`         ``short``           The number of lone electron pairs
+    `id`                ``int``             Number assignment for atom tracking purposes
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -88,7 +89,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([])):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -100,6 +101,7 @@ class Atom(Vertex):
         self.atomType = None
         self.lonePairs = lonePairs
         self.coords = coords
+        self.id = id
 
     def __str__(self):
         """
@@ -256,6 +258,7 @@ class Atom(Vertex):
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
         a.coords = self.coords[:]
+        a.id = self.id
         return a
 
     def isHydrogen(self):
@@ -1865,3 +1868,10 @@ class Molecule(Graph):
             kekulize(self)
         except AtomTypeError:
             logging.error('Unable to kekulize molecule:/n{0}'.format(self.toAdjacencyList()))
+
+    def assignAtomIDs(self):
+        """
+        Assigns an ID number to every atom in the molecule for tracking purposes.
+        """
+        for i, atom in enumerate(self.atoms):
+            atom.id = i
