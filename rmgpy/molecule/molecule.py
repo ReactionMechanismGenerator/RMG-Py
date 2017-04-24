@@ -1864,10 +1864,7 @@ class Molecule(Graph):
         """
         Kekulizes an aromatic molecule.
         """
-        try:
-            kekulize(self)
-        except AtomTypeError:
-            logging.error('Unable to kekulize molecule:/n{0}'.format(self.toAdjacencyList()))
+        kekulize(self)
 
     def assignAtomIDs(self):
         """

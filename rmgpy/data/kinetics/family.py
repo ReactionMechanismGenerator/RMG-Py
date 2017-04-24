@@ -44,6 +44,7 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
+from rmgpy.molecule.kekulize import KekulizationError
 from rmgpy.species import Species
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
@@ -1218,7 +1219,7 @@ class KineticsFamily(Database):
         try:
             productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
-        except InvalidActionError:
+        except (InvalidActionError, KekulizationError):
 #            logging.error('Unable to apply reaction recipe!')
 #            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
 #            logging.error('Reactant structures are:')

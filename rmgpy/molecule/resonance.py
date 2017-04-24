@@ -52,7 +52,7 @@ import itertools
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
-from .kekulize import kekulize
+from .kekulize import kekulize, KekulizationError
 from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
 
@@ -563,7 +563,7 @@ def generateKekuleStructure(mol):
 
     try:
         kekulize(molecule)
-    except AtomTypeError:
+    except KekulizationError:
         return []
 
     return [molecule]
