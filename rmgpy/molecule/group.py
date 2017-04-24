@@ -852,22 +852,30 @@ class GroupBond(Edge):
 class Group(Graph):
     """
     A representation of a molecular substructure group using a graph data
-    type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
-    are aliases for the `vertices` and `edges` attributes, and store 
-    :class:`GroupAtom` and :class:`GroupBond` objects, respectively.
-    Corresponding alias methods have also been provided.
+    type, extending the :class:`Graph` class. The attributes are:
+    
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
+    `multiplicity`      ``list``            Range of multiplicities accepted for the group
+    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    =================== =================== ====================================
+
+    Corresponding alias methods to Molecule have also been provided.
     """
 
-    def __init__(self, atoms=None, multiplicity=None):
+    def __init__(self, atoms=None, props=None, multiplicity=None):
         Graph.__init__(self, atoms)
-        self.multiplicity = multiplicity if multiplicity else []
+        self.props = props or {}
+        self.multiplicity = multiplicity or []
         self.update()
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Group, (self.vertices,))
+        return (Group, (self.vertices, self.props))
 
     def _repr_png_(self):
         """
