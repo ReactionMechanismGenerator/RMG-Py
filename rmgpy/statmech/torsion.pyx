@@ -511,30 +511,45 @@ cdef class HinderedRotor(Torsion):
         should begin at zero and end at :math:`2 \pi`, with the minimum energy
         conformation having a potential of zero be placed at zero angle.
         """
-        cdef numpy.ndarray[numpy.float64_t,ndim=2] A
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] b
-        cdef double phi
-        cdef int N, i, m
+        cdef numpy.ndarray[numpy.float64_t,ndim=2] A, fourier
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] b, fit
+        cdef double phi, value, V0
+        cdef int N, i, m, numterms
+        numterms = 6
+        cdef bint NegativeBarrier
+        NegativeBarrier=True
+        # numterms is actually half the number of terms. It is called numterms 
+        # because it is the number of terms of either the cosine or sine fit
         
-        # Fit Fourier series potential
-        N = V.shape[0]
-        A = numpy.zeros((N+1,12), numpy.float64)
-        b = numpy.zeros(N+1, numpy.float64)
-        for i in range(N):
-            phi = angle[i]
-            for m in range(6):
-                A[i,m] = cos(m * phi)
-                A[i,6+m] = sin(m * phi)
-                b[i] = V[i]
-        # This row forces dV/dangle = 0 at angle = 0
-        for m in range(6):
-            A[N,m+6] = m
-        x, residues, rank, s = numpy.linalg.lstsq(A, b)
-        x *= 0.001
-        
-        self.fourier = ([x[1:6], x[7:12]], "kJ/mol")
+        while NegativeBarrier and numterms<18:
+            # Fit Fourier series potential
+            N = V.shape[0]
+            A = numpy.zeros((N+1,2*numterms), numpy.float64)
+            b = numpy.zeros(N+1, numpy.float64)
+            for i in range(N):
+                phi = angle[i]
+                for m in range(numterms):
+                    A[i,m] = cos(m * phi)
+                    A[i,numterms+m] = sin(m * phi)
+                    b[i] = V[i]
+            # This row forces dV/dangle = 0 at angle = 0
+            for m in range(numterms):
+                A[N,m+numterms] = 1
+            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            fit = numpy.dot(A,x)
+            x *= 0.001
+            # This checks if there are any negative values in the forier fit.
+            # This part of the algorithm is replicated from the fucntion HinderedRotor(Torsion)
+            NegativeBarrier=False
+            V0 = 0.0
+            self.fourier = ([x[1:numterms], x[numterms+1:2*numterms]], "kJ/mol")
+            fourier = self._fourier.value_si
+            for k in range(fourier.shape[1]):
+                V0 -= fourier[0,k] * (k+1) * (k+1)
+            if V0 < 0:
+                NegativeBarrier=True
+                numterms = numterms+2;
         self.barrier = None
-        
         return self
 
     cpdef fitCosinePotentialToData(self, numpy.ndarray angle, numpy.ndarray V):
