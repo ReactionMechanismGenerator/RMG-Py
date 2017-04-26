@@ -636,7 +636,7 @@ cdef class FreeRotor(Torsion):
         Return the value of the partition function :math:`Q(T)` at the
         specified temperature `T` in K.
         """
-        return numpy.sqrt(8*numpy.pi**3*constants.kb*T*self._inertia.value_si)/(self.symmetry*constants.h)
+        return numpy.sqrt(8*numpy.pi**3*constants.kB*T*self._inertia.value_si)/(self.symmetry*constants.h)
         
   
     cpdef double getHeatCapacity(self, double T) except -100000000:

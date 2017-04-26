@@ -51,7 +51,7 @@ from rmgpy.species import TransitionState, Species
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
 
 ################################################################################
@@ -156,6 +156,8 @@ class ScanLog:
 
 def hinderedRotor(scanLog, pivots, top, symmetry, fit='best'):
     return [scanLog, pivots, top, symmetry, fit]
+def freeRotor(pivots,top,symmetry):
+    return [pivots,top,symmetry]
 
 class StatMechJob:
     """
@@ -202,6 +204,7 @@ class StatMechJob:
             'True': True,
             'False': False,
             'HinderedRotor': hinderedRotor,
+            'FreeRotor': freeRotor,
             # File formats
             'GaussianLog': GaussianLog,
             'QchemLog': QchemLog,
@@ -336,60 +339,67 @@ class StatMechJob:
             
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
-            for scanLog, pivots, top, symmetry, fit in rotors:
-                
-                # Load the hindered rotor scan energies
-                if isinstance(scanLog, GaussianLog):
-                    scanLog.path = os.path.join(directory, scanLog.path)
-                    Vlist, angle = scanLog.loadScanEnergies()
-                    scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
-                    scanLogOutput.save(angle, Vlist)
-                elif isinstance(scanLog, QchemLog):
-                    scanLog.path = os.path.join(directory, scanLog.path)
-                    Vlist, angle = scanLog.loadScanEnergies()
-                    scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
-                    scanLogOutput.save(angle, Vlist)
-                elif isinstance(scanLog, ScanLog):
-                    scanLog.path = os.path.join(directory, scanLog.path)
-                    angle, Vlist = scanLog.load()
-                else:
-                    raise Exception('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
-                    
-                inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
-                
-                cosineRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                cosineRotor.fitCosinePotentialToData(angle, Vlist)
-                fourierRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                fourierRotor.fitFourierPotentialToData(angle, Vlist)
-                
-                Vlist_cosine = numpy.zeros_like(angle)
-                Vlist_fourier = numpy.zeros_like(angle)
-                for i in range(angle.shape[0]):
-                    Vlist_cosine[i] = cosineRotor.getPotential(angle[i])
-                    Vlist_fourier[i] = fourierRotor.getPotential(angle[i])
-                
-                if fit=='cosine':
-                    rotor=cosineRotor
-                elif fit =='fourier':
-                    rotor=fourierRotor
-                elif fit =='best':
-                
-                    rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
-                    rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
-                
-                    # Keep the rotor with the most accurate potential
-                    rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
-                    # However, keep the cosine rotor if it is accurate enough, the
-                    # fourier rotor is not significantly more accurate, and the cosine
-                    # rotor has the correct symmetry 
-                    if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 and symmetry == cosineRotor.symmetry:
-                        rotor = cosineRotor
-                    
+            for q in rotors:
+                if len(q) == 3:
+                    pivots, top, symmetry = q
+                    inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
+                    rotor = FreeRotor(inertia=(inertia,"amu*angstrom^2"),symmetry=symmetry)
                     conformer.modes.append(rotor)
-                    
-                    self.plotHinderedRotor(angle, Vlist, cosineRotor, fourierRotor, rotor, rotorCount, directory)
-                    
                     rotorCount += 1
+                elif len(q) == 5:
+                    scanLog, pivots, top, symmetry, fit  = q
+                    # Load the hindered rotor scan energies
+                    if isinstance(scanLog, GaussianLog):
+                        scanLog.path = os.path.join(directory, scanLog.path)
+                        Vlist, angle = scanLog.loadScanEnergies()
+                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
+                        scanLogOutput.save(angle, Vlist)
+                    elif isinstance(scanLog, QchemLog):
+                        scanLog.path = os.path.join(directory, scanLog.path)
+                        Vlist, angle = scanLog.loadScanEnergies()
+                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
+                        scanLogOutput.save(angle, Vlist)
+                    elif isinstance(scanLog, ScanLog):
+                        scanLog.path = os.path.join(directory, scanLog.path)
+                        angle, Vlist = scanLog.load()
+                    else:
+                        raise Exception('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
+                        
+                    inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
+                    
+                    cosineRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                    cosineRotor.fitCosinePotentialToData(angle, Vlist)
+                    fourierRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                    fourierRotor.fitFourierPotentialToData(angle, Vlist)
+                    
+                    Vlist_cosine = numpy.zeros_like(angle)
+                    Vlist_fourier = numpy.zeros_like(angle)
+                    for i in range(angle.shape[0]):
+                        Vlist_cosine[i] = cosineRotor.getPotential(angle[i])
+                        Vlist_fourier[i] = fourierRotor.getPotential(angle[i])
+                    
+                    if fit=='cosine':
+                        rotor=cosineRotor
+                    elif fit =='fourier':
+                        rotor=fourierRotor
+                    elif fit =='best':
+                    
+                        rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
+                        rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
+                    
+                        # Keep the rotor with the most accurate potential
+                        rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
+                        # However, keep the cosine rotor if it is accurate enough, the
+                        # fourier rotor is not significantly more accurate, and the cosine
+                        # rotor has the correct symmetry 
+                        if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 and symmetry == cosineRotor.symmetry:
+                            rotor = cosineRotor
+                        
+                        conformer.modes.append(rotor)
+                        
+                        self.plotHinderedRotor(angle, Vlist, cosineRotor, fourierRotor, rotor, rotorCount, directory)
+                        
+                        rotorCount += 1
                        
             logging.debug('    Determining frequencies from reduced force constant matrix...')
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
@@ -829,7 +839,10 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     counter=0
     for i, rotor in enumerate(rotors):
-        scanLog, pivots, top, symmetry, fit = rotor
+        if len(rotor) == 5:
+            scanLog, pivots, top, symmetry, fit = rotor
+        elif len(rotor) == 3:
+            pivots, top, symmetry = rotor
         # Determine pivot atom
         if pivots[0] in top:
             pivot1 = pivots[0]
