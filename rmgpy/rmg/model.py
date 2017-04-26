@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import itertools
+from numba import jit
 
 from rmgpy.display import display
 #import rmgpy.chemkin
@@ -179,7 +180,7 @@ class ReactionModel:
 
 ################################################################################
 
-class CoreEdgeReactionModel:
+class CoreEdgeReactionModel(object):
     """
     Represent a reaction model constructed using a rate-based screening
     algorithm. The species and reactions in the model itself are called the
@@ -925,7 +926,8 @@ class CoreEdgeReactionModel:
         logging.info('    The model core has {0:d} species and {1:d} reactions'.format(coreSpeciesCount, coreReactionCount))
         logging.info('    The model edge has {0:d} species and {1:d} reactions'.format(edgeSpeciesCount, edgeReactionCount))
         logging.info('')
-
+    
+    @jit
     def addSpeciesToCore(self, spec):
         """
         Add a species `spec` to the reaction model core (and remove from edge if
@@ -934,7 +936,9 @@ class CoreEdgeReactionModel:
         If this are any such reactions, they are returned in a list.
         """
 
-        assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
+        if spec not in self.core.species:
+            logging.info("Tried to add species {0} to core, but it's already there".format(spec.label))
+            assert False
 
         # Add the species to the core
         self.core.species.append(spec)
