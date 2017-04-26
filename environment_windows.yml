@@ -14,6 +14,7 @@ dependencies:
   - lpsolve55
   - quantities
   - scipy
+  - numba
   - xlwt
   - markupsafe
   - jinja2
