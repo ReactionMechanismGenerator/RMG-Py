@@ -108,6 +108,7 @@ cdef class GroupBond(Edge):
 
 cdef class Group(Graph):
 
+    cdef public dict props
     cdef public list multiplicity
 
     # These read-only attribues act as a "fingerprint" for accelerating

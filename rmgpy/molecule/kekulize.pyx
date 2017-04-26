@@ -51,8 +51,11 @@ Each ring or bond that is fixed reduces the DOF of adjacent rings and bonds,
 and the process continues until the entire molecule can be solved.
 """
 
+import logging
+
 from .molecule cimport Atom, Bond, Molecule
 from .element import PeriodicSystem
+from .atomtype import AtomTypeError
 
 
 cpdef kekulize(Molecule mol):
@@ -119,7 +122,11 @@ cpdef kekulize(Molecule mol):
             aromaticRings.append(aromaticRing)
         itercount += 1
 
-    mol.updateAtomTypes(logSpecies=False)
+    try:
+        mol.updateAtomTypes(logSpecies=False)
+    except AtomTypeError:
+        logging.debug('Unable to kekulize molecule, final result was invalid:/n{0}'.format(mol.toAdjacencyList()))
+        raise KekulizationError('Unable to kekulize molecule, final result was invalid.')
 
 cdef list prioritizeRings(list aromaticList):
     """Update list of AromaticRing objects, then sort by DOF."""
@@ -319,14 +326,14 @@ cdef class AromaticBond(object):
                         else:
                             exoDOF += 1
                 else:
-                    ValueError('Unexpected bond order {0}.'.format(bond.order))
+                    raise KekulizationError('Unexpected bond order {0}.'.format(bond.order))
             # Count radicals and lone pairs
             occupied += atom.radicalElectrons
             occupied += 2 * atom.lonePairs
             # Valence calculation to determine available electrons
             available = valences[atom.element.symbol] - occupied
             if available < 0:
-                ValueError('Atom {0} cannot have negative available valence.'.format(atom))
+                raise KekulizationError('Atom {0} cannot have negative available valence.'.format(atom))
             elif available == 0:
                 # There are no extra electrons available, so this bond cannot be a double bond
                 self.doublePossible = False
@@ -338,3 +345,9 @@ cdef class AromaticBond(object):
         self.endoDOF = endoDOF
         self.exoDOF = exoDOF
 
+class KekulizationError(Exception):
+    """
+    An exception to be raised when encountering an error while kekulizing an aromatic molecule.
+    Can pass a string to indicate the reason for failure.
+    """
+    pass

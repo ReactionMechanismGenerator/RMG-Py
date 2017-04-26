@@ -758,8 +758,16 @@ class GroupBond(Edge):
         newOrder = [value + order for value in self.order]
         if any([value < 0 or value > 3 for value in newOrder]):
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(newOrder))
-        # Set the new bond orders, removing any duplicates
-        self.order = list(set(newOrder))
+        # Change any modified benzene orders to the appropriate stable order
+        newOrder = set(newOrder)
+        if 0.5 in newOrder:
+            newOrder.remove(0.5)
+            newOrder.add(1)
+        if 2.5 in newOrder:
+            newOrder.remove(2.5)
+            newOrder.add(2)
+        # Set the new bond orders
+        self.order = list(newOrder)
 
     def applyAction(self, action):
         """
@@ -844,22 +852,30 @@ class GroupBond(Edge):
 class Group(Graph):
     """
     A representation of a molecular substructure group using a graph data
-    type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
-    are aliases for the `vertices` and `edges` attributes, and store 
-    :class:`GroupAtom` and :class:`GroupBond` objects, respectively.
-    Corresponding alias methods have also been provided.
+    type, extending the :class:`Graph` class. The attributes are:
+    
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
+    `multiplicity`      ``list``            Range of multiplicities accepted for the group
+    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    =================== =================== ====================================
+
+    Corresponding alias methods to Molecule have also been provided.
     """
 
-    def __init__(self, atoms=None, multiplicity=None):
+    def __init__(self, atoms=None, props=None, multiplicity=None):
         Graph.__init__(self, atoms)
-        self.multiplicity = multiplicity if multiplicity else []
+        self.props = props or {}
+        self.multiplicity = multiplicity or []
         self.update()
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Group, (self.vertices,))
+        return (Group, (self.vertices, self.props))
 
     def _repr_png_(self):
         """

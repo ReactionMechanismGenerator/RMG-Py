@@ -57,6 +57,7 @@ import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
+from .kekulize import kekulize
 
 ################################################################################
 
@@ -80,6 +81,7 @@ class Atom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     `lonePairs`         ``short``           The number of lone electron pairs
+    `id`                ``int``             Number assignment for atom tracking purposes
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -87,7 +89,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([])):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -99,6 +101,7 @@ class Atom(Vertex):
         self.atomType = None
         self.lonePairs = lonePairs
         self.coords = coords
+        self.id = id
 
     def __str__(self):
         """
@@ -255,6 +258,7 @@ class Atom(Vertex):
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
         a.coords = self.coords[:]
+        a.id = self.id
         return a
 
     def isHydrogen(self):
@@ -1570,8 +1574,8 @@ class Molecule(Graph):
 
         return total == aryl
 
-    def generateResonanceIsomers(self):
-        return resonance.generateResonanceStructures(self)
+    def generateResonanceIsomers(self, keepIsomorphic=False):
+        return resonance.generateResonanceStructures(self, keepIsomorphic=keepIsomorphic)
 
     def getURL(self):
         """
@@ -1855,3 +1859,49 @@ class Molecule(Graph):
             cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
 
         return cycleList
+
+    def kekulize(self):
+        """
+        Kekulizes an aromatic molecule.
+        """
+        kekulize(self)
+
+    def assignAtomIDs(self):
+        """
+        Assigns an ID number to every atom in the molecule for tracking purposes.
+        """
+        for i, atom in enumerate(self.atoms):
+            atom.id = i
+
+    def isIdentical(self, other):
+        """
+        Performs isomorphism checking, with the added constraint that atom IDs must match.
+
+        Primary use case is tracking atoms in reactions for reaction degeneracy determination.
+
+        Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+        """
+        cython.declare(atomIndicies=set, otherIndices=set, atomList=list, otherList=list, mapping = dict)
+
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+
+        # Get a set of atom indices for each molecule
+        atomIDs = set([atom.id for atom in self.atoms])
+        otherIDs = set([atom.id for atom in other.atoms])
+
+        if atomIDs == otherIDs:
+            # If the two molecules have the same indices, then they might be identical
+            # Sort the atoms by ID
+            atomList = sorted(self.atoms, key=lambda x: x.id)
+            otherList = sorted(other.atoms, key=lambda x: x.id)
+
+            # If matching atom indices gives a valid mapping, then the molecules are fully identical
+            mapping = {}
+            for atom1, atom2 in itertools.izip(atomList, otherList):
+                mapping[atom1] = atom2
+
+            return self.isMappingValid(other, mapping)
+        else:
+            # The molecules don't have the same set of indices, so they are not identical
+            return False
