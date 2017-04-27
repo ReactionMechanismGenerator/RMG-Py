@@ -380,8 +380,12 @@ class StatMechJob:
                     
                     if fit=='cosine':
                         rotor=cosineRotor
+                        rotorCount += 1
+                        conformer.modes.append(rotor)
                     elif fit =='fourier':
                         rotor=fourierRotor
+                        rotorCount += 1
+                        conformer.modes.append(rotor)
                     elif fit =='best':
                     
                         rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
