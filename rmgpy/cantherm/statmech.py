@@ -295,11 +295,11 @@ class StatMechJob:
             rotors = local_context['rotors']
         except KeyError:
             rotors = []
-        
+
         # But don't consider hindered rotors if flag is not set
         if not self.includeHinderedRotors:
             rotors = []
-        
+
         logging.debug('    Reading molecular degrees of freedom...')
         conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         
@@ -334,7 +334,9 @@ class StatMechJob:
         # Read and fit the 1D hindered rotors if applicable
         # If rotors are found, the vibrational frequencies are also
         # recomputed with the torsional modes removed
+
         F = statmechLog.loadForceConstantMatrix()
+
         if F is not None and len(mass) > 1 and len(rotors) > 0:
             
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
@@ -409,17 +411,22 @@ class StatMechJob:
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
 
         elif len(conformer.modes) > 2:
+            if len(rotors) > 0:
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix')
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = numpy.array([])
         else:
+            if len(rotors) > 0:
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix')
             frequencies = numpy.array([])
             rotors = numpy.array([])
-    
+
         for mode in conformer.modes:
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor,"cm^-1")
         
         self.species.conformer = conformer
+
         
     def getZPEfromfrequencies(self, frequencies):
                 
