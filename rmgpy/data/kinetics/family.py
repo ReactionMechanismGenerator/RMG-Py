@@ -794,6 +794,10 @@ class KineticsFamily(Database):
             f.write('    {0!r},\n'.format(action))
         f.write('])\n\n')
 
+        if self.boundaryAtoms:
+            f.write('boundaryAtoms = ["{0}", "{1}"]'.format(self.boundaryAtoms[0], self.boundaryAtoms[1]))
+            f.write('\n\n')
+
         # Save the entries
         for entry in entries:
             self.saveEntry(f, entry)
