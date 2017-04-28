@@ -1686,9 +1686,9 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
-        elif self.label.lower() == 'disproportionation':
-            # Hardcoding for disproportionation: pair the reactant containing
-            # *1 with the product containing *1
+        elif self.label.lower() in ['disproportionation', 'co_disproportionation']:
+            # Hardcoding for disproportionation and co_disproportionation: pair
+            # the reactant containing *1 with the product containing *1
             assert len(reaction.reactants) == len(reaction.products) == 2
             if reaction.reactants[0].containsLabeledAtom('*1'):
                 if reaction.products[0].containsLabeledAtom('*1'):
