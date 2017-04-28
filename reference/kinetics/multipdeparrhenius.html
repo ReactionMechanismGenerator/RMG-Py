@@ -153,7 +153,7 @@ interpolated between on a logarithmic scale. The attributes are:</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.discrepancy">
-<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
@@ -173,14 +173,14 @@ suitable for setting the efficiencies in the following cantera reaction objects:
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.getEffectiveColliderEfficiencies">
-<code class="descname">getEffectiveColliderEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>list species</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.getEffectiveColliderEfficiencies" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEffectiveColliderEfficiencies</code><span class="sig-paren">(</span><em>self</em>, <em>list species</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.getEffectiveColliderEfficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective collider efficiencies for all species in the form of
 a numpy array.  This function helps assist rapid effective pressure calculations in the solver.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.getEffectivePressure">
-<code class="descname">getEffectivePressure</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em>, <em>list species</em>, <em>ndarray fractions</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.getEffectivePressure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEffectivePressure</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em>, <em>list species</em>, <em>ndarray fractions</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.getEffectivePressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective pressure in Pa for a system at a given pressure
 <cite>P</cite> in Pa composed of the given list of <cite>species</cite> (Species or Molecule objects) with the given
 <cite>fractions</cite>.</p>
@@ -188,7 +188,7 @@ a numpy array.  This function helps assist rapid effective pressure calculations
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.getRateCoefficient">
-<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0.0</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0.0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient in the appropriate combination of m^3, 
 mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.</p>
 </dd></dl>
@@ -201,7 +201,7 @@ mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.isIdenticalTo">
-<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if kinetics matches that of another kinetics model.  Each duplicate
 reaction must be matched and equal to that in the other MultiArrhenius model
 in the same order.  Otherwise returns <code class="docutils literal"><span class="pre">False</span></code></p>
@@ -209,14 +209,14 @@ in the same order.  Otherwise returns <code class="docutils literal"><span class
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.isPressureDependent">
-<code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.isPressureValid">
-<code class="descname">isPressureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isPressureValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isPressureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isPressureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
 pressure range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
 the minimum and maximum pressure are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
@@ -225,14 +225,14 @@ returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.isSimilarTo">
-<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiPDepArrhenius.isTemperatureValid">
-<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiPDepArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
@@ -356,7 +356,7 @@ ctReaction is a list of cantera reaction objects.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

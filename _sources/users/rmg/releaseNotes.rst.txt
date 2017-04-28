@@ -6,7 +6,7 @@ Release Notes
 
 RMG-Py Version 2.1.0
 ====================
-Date: February 26, 2017
+Date: March 07, 2017
 
 - Clar structure generation
     - optimizes the aromatic isomer representations in RMG
@@ -28,7 +28,7 @@ Date: February 26, 2017
 
 RMG-database Version 2.1.0
 ==========================
-Date: February 26, 2017
+Date: March 07, 2017
 
 - Several new kinetics libraries added
     - FFCM-1

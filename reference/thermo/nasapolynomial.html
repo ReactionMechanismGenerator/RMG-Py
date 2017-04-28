@@ -222,7 +222,7 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.discrepancy">
-<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.discrepancy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
 <p>The measure is arbitrary, but hopefully useful for sorting purposes.
 Discrepancy of 0 means they are identical</p>
@@ -230,33 +230,33 @@ Discrepancy of 0 means they are identical</p>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.getEnthalpy">
-<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.getEntropy">
-<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.getFreeEnergy">
-<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol at the specified temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.getHeatCapacity">
-<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified 
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isIdenticalTo">
-<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
@@ -264,7 +264,7 @@ range of temperatures, or <code class="docutils literal"><span class="pre">False
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isSimilarTo">
-<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
@@ -272,7 +272,7 @@ range of temperatures, or <code class="docutils literal"><span class="pre">False
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isTemperatureValid">
-<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
@@ -383,7 +383,7 @@ returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

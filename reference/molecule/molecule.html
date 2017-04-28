@@ -130,6 +130,12 @@ exist in the graph, or a <code class="xref py py-class docutils literal"><span c
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.assignAtomIDs">
+<code class="descname">assignAtomIDs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.assignAtomIDs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assigns an ID number to every atom in the molecule for tracking purposes.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.calculateCp0">
 <code class="descname">calculateCp0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.calculateCp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
@@ -175,6 +181,13 @@ Does not detect bond type.</p>
 is made: copies of the vertices and edges are used in the new graph.
 If <cite>deep</cite> is <code class="docutils literal"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
 original vertices and edges are used in the new graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.copyAndMap">
+<code class="descname">copyAndMap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.copyAndMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a deep copy of the current graph, and return the dict
+&#8216;mapping&#8217;. Method was modified from Graph.copy() method</p>
 </dd></dl>
 
 <dl class="method">
@@ -305,9 +318,17 @@ p. 657-662 (1993).</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.getAromaticSSSR">
-<code class="descname">getAromaticSSSR</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAromaticSSSR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds</p>
+<dt id="rmgpy.molecule.Molecule.getAllSimpleCyclesOfSize">
+<code class="descname">getAllSimpleCyclesOfSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAllSimpleCyclesOfSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all non-duplicate monocyclic rings with length &#8216;size&#8217;.</p>
+<p>Naive approach by eliminating polycyclic rings that are returned by
+<code class="docutils literal"><span class="pre">getAllCyclicsOfSize</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.getAromaticRings">
+<code class="descname">getAromaticRings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.getAromaticRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all aromatic rings as a list of atoms and a list of bonds.</p>
 <p>Identifies rings using <cite>Graph.getSmallestSetOfSmallestRings()</cite>, then uses RDKit to perceive aromaticity.
 RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel&#8217;s Rule.
 Therefore, this method identifies &#8220;true&#8221; aromaticity, rather than simply the RMG bond type.</p>
@@ -540,6 +561,14 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.isIdentical">
+<code class="descname">isIdentical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isIdentical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs isomorphism checking, with the added constraint that atom IDs must match.</p>
+<p>Primary use case is tracking atoms in reactions for reaction degeneracy determination.</p>
+<p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if two graphs are identical and <code class="xref py py-data docutils literal"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.isIsomorphic">
 <code class="descname">isIsomorphic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
@@ -593,6 +622,12 @@ cycles in the graph, or <code class="docutils literal"><span class="pre">False</
 <dt id="rmgpy.molecule.Molecule.is_equal">
 <code class="descname">is_equal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_equal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to test equality of two Molecule objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.kekulize">
+<code class="descname">kekulize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.kekulize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kekulizes an aromatic molecule.</p>
 </dd></dl>
 
 <dl class="method">
@@ -895,7 +930,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

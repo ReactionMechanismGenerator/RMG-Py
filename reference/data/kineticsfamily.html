@@ -208,6 +208,7 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 <code class="descname">estimateKineticsUsingGroupAdditivity</code><span class="sig-paren">(</span><em>template</em>, <em>degeneracy=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimateKineticsUsingGroupAdditivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate kinetics for a reaction with the given
 <cite>template</cite> using group additivity.</p>
+<p>Returns just the kinetics, or None.</p>
 </dd></dl>
 
 <dl class="method">
@@ -215,6 +216,9 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 <code class="descname">estimateKineticsUsingRateRules</code><span class="sig-paren">(</span><em>template</em>, <em>degeneracy=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimateKineticsUsingRateRules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate kinetics for a reaction with the given
 <cite>template</cite> using rate rules.</p>
+<p>Returns a tuple (kinetics, entry) where <cite>entry</cite> is the database
+entry used to determine the kinetics only if it is an exact match,
+and is None if some averaging or use of a parent node took place.</p>
 </dd></dl>
 
 <dl class="method">
@@ -228,7 +232,7 @@ Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_D
 <p>For a reaction from rate rules, the Source_Data is a tuple containing
 [Family_Label, {&#8216;template&#8217;: originalTemplate,</p>
 <div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/Users/kehang/code/rmgmaster/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 10)</p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/mark/RMG/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 10)</p>
 Unexpected indentation.</div>
 <blockquote>
 <div>&#8216;degeneracy&#8217;: degeneracy, 
@@ -237,7 +241,7 @@ Unexpected indentation.</div>
 &#8216;training&#8217;: a list of (original rate rule entry associated with training entry, original training entry, weight in average)
 }]</div></blockquote>
 <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/Users/kehang/code/rmgmaster/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 15)</p>
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/home/mark/RMG/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 15)</p>
 Block quote ends without a blank line; unexpected unindent.</div>
 <p>where TrainingReactions are ones that have created rules used in the estimate.</p>
 <p>where Exact is a boolean of whether the rate is an exact match, 
@@ -305,9 +309,11 @@ saved to the output file.</p>
 depositories as well as generating a result using the user-specified <cite>estimator</cite>
 of either &#8216;group additivity&#8217; or &#8216;rate rules&#8217;.  Unlike
 the regular <code class="xref py py-meth docutils literal"><span class="pre">getKinetics()</span></code> method, this returns a list of
-results, with each result comprising the kinetics, the source, and
-the entry. If it came from a template estimate, the source and entry
-will both be <cite>None</cite>.
+results, with each result comprising the kinetics, the source,
+the entry, and whether it&#8217;s in the forward direction.
+The source will be the depository name or estimator method.
+If it came from a template estimated with averaging then the
+entry will be <cite>None</cite>.
 If returnAllKinetics==False, only the first (best?) matching kinetics is returned.</p>
 </dd></dl>
 
@@ -316,8 +322,13 @@ If returnAllKinetics==False, only the first (best?) matching kinetics is returne
 <code class="descname">getKineticsForTemplate</code><span class="sig-paren">(</span><em>template</em>, <em>degeneracy=1</em>, <em>method='rate rules'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getKineticsForTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an estimate of the kinetics for a reaction with the given
 <cite>template</cite> and reaction-path <cite>degeneracy</cite>. There are two possible methods
-to use: &#8216;group additivity&#8217; (new RMG-Py behavior) and &#8216;rate rules&#8217; (old
-RMG-Java behavior).</p>
+to use: &#8216;group additivity&#8217; (new possible RMG-Py behavior) and &#8216;rate rules&#8217; (old
+RMG-Java behavior, and default RMG-Py behavior).</p>
+<p>Returns a tuple (kinetics, entry):
+If it&#8217;s estimated via &#8216;rate rules&#8217; and an exact match is found in the tree,
+then the entry is returned as the second element of the tuple.
+But if an average is used, or the &#8216;group additivity&#8217; method, then the tuple
+returned is (kinetics, None).</p>
 </dd></dl>
 
 <dl class="method">
@@ -763,7 +774,7 @@ for those reactions.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

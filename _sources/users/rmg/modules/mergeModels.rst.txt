@@ -20,5 +20,5 @@ Running this method will create a new species dictionary (species_dictionary.txt
 and chemkin input file (chem.inp) in the parent directory of the terminal.
 
 
-This method is also available to use with a web browser from the RMG website: `Model Merge Tool <http://rmg.mit.edu/simulate/merge_models>`_.
+This method is also available to use with a web browser from the RMG website: `Model Merge Tool <http://rmg.mit.edu/tools/merge_models>`_.
 

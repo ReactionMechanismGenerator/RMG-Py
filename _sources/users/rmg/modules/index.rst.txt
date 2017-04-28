@@ -11,6 +11,7 @@ otherwise.
 .. toctree::
     :maxdepth: 1
 
+    generateChemkinHTML
     diffModels
     mergeModels
     generateReactions

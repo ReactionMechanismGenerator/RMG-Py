@@ -152,20 +152,20 @@ are summed to obtain the overall rate. The attributes are:</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.discrepancy">
-<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">discrepancy</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.getRateCoefficient">
-<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0.0</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0.0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient in the appropriate combination of m^3, 
 mol, and s at temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.isIdenticalTo">
-<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if kinetics matches that of another kinetics model.  Each duplicate
 reaction must be matched and equal to that in the other MultiArrhenius model
 in the same order.  Otherwise returns <code class="docutils literal"><span class="pre">False</span></code></p>
@@ -173,21 +173,21 @@ in the same order.  Otherwise returns <code class="docutils literal"><span class
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.isPressureDependent">
-<code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">False</span></code> since, by default, all objects derived from KineticsModel
 represent pressure-independent kinetics.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.isSimilarTo">
-<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.isTemperatureValid">
-<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
@@ -203,7 +203,7 @@ Here, ctReaction must be a list rather than a single cantera reaction.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiArrhenius.toArrhenius">
-<code class="descname">toArrhenius</code><span class="sig-paren">(</span><em>self</em>, <em>double Tmin=-1</em>, <em>double Tmax=-1</em><span class="sig-paren">)</span> &rarr; Arrhenius<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.toArrhenius" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toArrhenius</code><span class="sig-paren">(</span><em>self</em>, <em>double Tmin=-1</em>, <em>double Tmax=-1</em><span class="sig-paren">)</span> &#x2192; Arrhenius<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.toArrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an <code class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></code> instance of the kinetics model</p>
 <p>Fit the Arrhenius parameters to a set of rate coefficient data generated
 from the MultiArrhenius kinetics, over the temperature range
@@ -324,7 +324,7 @@ data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

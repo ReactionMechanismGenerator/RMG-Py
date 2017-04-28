@@ -117,6 +117,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <td><code class="docutils literal"><span class="pre">short</span></code></td>
 <td>The number of lone electron pairs</td>
 </tr>
+<tr class="row-odd"><td><cite>id</cite></td>
+<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td>Number assignment for atom tracking purposes</td>
+</tr>
 </tbody>
 </table>
 <p>Additionally, the <code class="docutils literal"><span class="pre">mass</span></code>, <code class="docutils literal"><span class="pre">number</span></code>, and <code class="docutils literal"><span class="pre">symbol</span></code> attributes of the
@@ -209,7 +213,7 @@ not.</p>
 <dt id="rmgpy.molecule.Atom.isNonHydrogen">
 <code class="descname">isNonHydrogen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.isNonHydrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom does not represent a hydrogen atom or
-<code class="docutils literal"><span class="pre">False</span></code> if not.</p>
+<code class="docutils literal"><span class="pre">False</span></code> if it does.</p>
 </dd></dl>
 
 <dl class="method">
@@ -372,7 +376,7 @@ number and types of bonds, radicals, and lone pairs.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

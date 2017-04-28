@@ -105,6 +105,13 @@ original vertices and edges are used in the new graph.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.copyAndMap">
+<code class="descname">copyAndMap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.copyAndMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a deep copy of the current graph, and return the dict
+&#8216;mapping&#8217;. Method was modified from Graph.copy() method</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.findIsomorphism">
 <code class="descname">findIsomorphism</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.findIsomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal"><span class="pre">False</span></code>
@@ -151,6 +158,14 @@ p. 657-662 (1993).</p>
 <dt id="rmgpy.molecule.graph.Graph.getAllPolycyclicVertices">
 <code class="descname">getAllPolycyclicVertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllPolycyclicVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all vertices belonging to two or more cycles, fused or spirocyclic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getAllSimpleCyclesOfSize">
+<code class="descname">getAllSimpleCyclesOfSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllSimpleCyclesOfSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all non-duplicate monocyclic rings with length &#8216;size&#8217;.</p>
+<p>Naive approach by eliminating polycyclic rings that are returned by
+<code class="docutils literal"><span class="pre">getAllCyclicsOfSize</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -412,7 +427,7 @@ used to accelerate the isomorphism checking.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

@@ -82,7 +82,10 @@ are to be used in addition to the Glarborg C3 library::
 	reactionLibraries = [('Glarborg/C3',False)],
 	 	
 The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
-True means those reactions will be appended.
+True means those reactions will be appended. Using just the string inputs would lead to
+a default value of `False`. In the previous example, this would look like::
+
+	reactionLibraries = ['Glarborg/C3'],
 
 The reaction libraries are stored in :file:`$RMG-database/input/kinetics/libraries/`
 and the `Location:` should be specified relative to this path.
@@ -512,6 +515,8 @@ Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
 plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
 The number of pressures and temperature coefficents should always be smaller 
 than the respective number of user-specified temperatures and pressures. 
+
+.. _miscellaneousoptions:
 
 Miscellaneous Options
 ===================== 

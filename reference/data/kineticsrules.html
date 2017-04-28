@@ -121,6 +121,9 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 <code class="descname">estimateKinetics</code><span class="sig-paren">(</span><em>template</em>, <em>degeneracy=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.estimateKinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate kinetics for a reaction with the given
 <cite>template</cite> using rate rules.</p>
+<p>Returns a tuple (kinetics, entry) where <cite>entry</cite> is the database
+entry used to determine the kinetics only if it is an exact match,
+and is None if some averaging or use of a parent node took place.</p>
 </dd></dl>
 
 <dl class="method">
@@ -449,7 +452,7 @@ syntax.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

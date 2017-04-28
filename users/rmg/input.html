@@ -141,7 +141,11 @@ are to be used in addition to the Glarborg C3 library:</p>
 </pre></div>
 </div>
 <p>The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
-True means those reactions will be appended.</p>
+True means those reactions will be appended. Using just the string inputs would lead to
+a default value of <cite>False</cite>. In the previous example, this would look like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">],</span>
+</pre></div>
+</div>
 <p>The reaction libraries are stored in <code class="file docutils literal"><span class="pre">$RMG-database/input/kinetics/libraries/</span></code>
 and the <cite>Location:</cite> should be specified relative to this path.</p>
 <p>Because the units for the Arrhenius parameters are
@@ -528,7 +532,7 @@ than the respective number of user-specified temperatures and pressures.</p>
 </div>
 </div>
 <div class="section" id="miscellaneous-options">
-<h2>4.9. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
+<span id="miscellaneousoptions"></span><h2>4.9. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
@@ -717,7 +721,7 @@ forbidden groups.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

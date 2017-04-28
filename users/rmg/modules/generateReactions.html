@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>9.3. Generate Reactions &#8212; RMG Py 2.1.0 documentation</title>
+    <title>9.4. Generate Reactions &#8212; RMG Py 2.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="9.4. Sensitivity Analysis" href="sensitivity.html" />
-    <link rel="prev" title="9.2. Merging Models" href="mergeModels.html" />
+    <link rel="next" title="9.5. Sensitivity Analysis" href="sensitivity.html" />
+    <link rel="prev" title="9.3. Merging Models" href="mergeModels.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -58,10 +58,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sensitivity.html" title="9.4. Sensitivity Analysis"
+          <a href="sensitivity.html" title="9.5. Sensitivity Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="mergeModels.html" title="9.2. Merging Models"
+          <a href="mergeModels.html" title="9.3. Merging Models"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
@@ -72,7 +72,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
     </div>
             
   <div class="section" id="generate-reactions">
-<span id="generatereactions"></span><h1>9.3. Generate Reactions<a class="headerlink" href="#generate-reactions" title="Permalink to this headline">¶</a></h1>
+<span id="generatereactions"></span><h1>9.4. Generate Reactions<a class="headerlink" href="#generate-reactions" title="Permalink to this headline">¶</a></h1>
 <p>The script generateReactions.py generates reactions between all species mentioned in an input file.
 To call this method type:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateReactions</span><span class="o">.</span><span class="n">py</span> <span class="n">Input_File</span>
@@ -82,7 +82,7 @@ To call this method type:</p>
 for RMG to generate reactions between.  An example file is placed in <code class="docutils literal"><span class="pre">$RMGPy/examples/generateReactions/input.py</span></code></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources for kinetics</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;KlippensteinH2O2&#39;</span><span class="p">,</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s1">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;BurkeH2O2&#39;</span><span class="p">,</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s1">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>  
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span> 
@@ -151,7 +151,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
 </pre></div>
 </div>
 <p>This method will produce an <code class="docutils literal"><span class="pre">output.html</span></code> file in the directory of <code class="docutils literal"><span class="pre">input.py</span></code> which contains the all the reactions produced between the species.</p>
-<p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/simulate/populate_reactions">Populate Reactions</a>.</p>
+<p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/tools/populate_reactions">Populate Reactions</a>.</p>
 </div>
 
 
@@ -254,7 +254,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

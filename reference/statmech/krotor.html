@@ -125,7 +125,7 @@ for the linear rotor partition function in the classical limit:</p>
 <p>where <span class="math">\(\sigma\)</span> is the symmetry number of the K-rotor.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getDensityOfStates">
-<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray densStates0=None</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.KRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray densStates0=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.KRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>Elist</cite> in J/mol above the ground state. If an initial density
 of states <cite>densStates0</cite> is given, the rotor density of states will be
@@ -134,47 +134,47 @@ convoluted into these states.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getEnthalpy">
-<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getEntropy">
-<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getHeatCapacity">
-<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getLevelDegeneracy">
-<code class="descname">getLevelDegeneracy</code><span class="sig-paren">(</span><em>self</em>, <em>int J</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#rmgpy.statmech.KRotor.getLevelDegeneracy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getLevelDegeneracy</code><span class="sig-paren">(</span><em>self</em>, <em>int J</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#rmgpy.statmech.KRotor.getLevelDegeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the degeneracy of level <cite>J</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getLevelEnergy">
-<code class="descname">getLevelEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>int J</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getLevelEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getLevelEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>int J</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getLevelEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the energy of level <cite>J</cite> in kJ/mol.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getPartitionFunction">
-<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.KRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function <span class="math">\(Q(T)\)</span> at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.KRotor.getSumOfStates">
-<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray sumStates0=None</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.KRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray sumStates0=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.KRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
 in J/mol above the ground state. If an initial sum of states 
 <cite>sumStates0</cite> is given, the rotor sum of states will be convoluted into
@@ -309,7 +309,7 @@ these states.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

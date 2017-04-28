@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>9.8. Database Scripts &#8212; RMG Py 2.1.0 documentation</title>
+    <title>9.9. Database Scripts &#8212; RMG Py 2.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="9.9. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
-    <link rel="prev" title="9.7. Convert FAME to CanTherm Input File" href="convertFAME.html" />
+    <link rel="next" title="9.10. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
+    <link rel="prev" title="9.8. Convert FAME to CanTherm Input File" href="convertFAME.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -58,10 +58,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="standardizeModelSpeciesNames.html" title="9.9. Standardize Model Species Names"
+          <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="convertFAME.html" title="9.7. Convert FAME to CanTherm Input File"
+          <a href="convertFAME.html" title="9.8. Convert FAME to CanTherm Input File"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
@@ -72,10 +72,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
     </div>
             
   <div class="section" id="database-scripts">
-<span id="databasescripts"></span><h1>9.8. Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this headline">¶</a></h1>
+<span id="databasescripts"></span><h1>9.9. Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this headline">¶</a></h1>
 <p>This section details usage for scripts available in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code> folder.</p>
 <div class="section" id="evanspolanyi-py">
-<h2>9.8.1. evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.1. evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this headline">¶</a></h2>
 <p>This script will generate an Evans-Polanyi plot for a single kinetics
 depository.</p>
 <p>Usage:</p>
@@ -92,7 +92,7 @@ depository.</p>
 </div>
 </div>
 <div class="section" id="exportkineticslibrarytochemkin-py">
-<h2>9.8.2. exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.2. exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this headline">¶</a></h2>
 <p>This script exports an individual RMG-Py kinetics library to a chemkin
 and dictionary file.  Thermo is taken from RMG&#8217;s estimates and libraries.
 In order to use more specific thermo, you must tweak the thermoLibraries and
@@ -112,7 +112,7 @@ chem.inp and species_dictionary.txt files in the local directory.</p>
 </div>
 </div>
 <div class="section" id="exportolddatabase-py">
-<h2>9.8.3. exportOldDatabase.py<a class="headerlink" href="#exportolddatabase-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.3. exportOldDatabase.py<a class="headerlink" href="#exportolddatabase-py" title="Permalink to this headline">¶</a></h2>
 <p>This script exports the database to the old RMG-Java format. The script
 requires two command-line arguments: the path to the database to import, and
 the path to save the old RMG-Java database to.</p>
@@ -126,7 +126,7 @@ the path to save the old RMG-Java database to.</p>
 </div>
 </div>
 <div class="section" id="importchemkinlibrary-py">
-<h2>9.8.4. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.4. importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
 RMG-Py kinetics library and thermo library files.  These py files are automatically added to the
 input/kinetics/libraries and input/thermo/libraries folder under the user-specified <cite>name</cite> for the chemkin library.</p>
@@ -146,7 +146,7 @@ input/kinetics/libraries and input/thermo/libraries folder under the user-specif
 </div>
 </div>
 <div class="section" id="importjavakineticslibrary-py">
-<h2>9.8.5. importJavaKineticsLibrary.py<a class="headerlink" href="#importjavakineticslibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.5. importJavaKineticsLibrary.py<a class="headerlink" href="#importjavakineticslibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports an individual RMG-Java kinetics library from a local directory and saves the output
 kinetics library py file into a path of the user&#8217;s choosing.  This library will be automatically
 added to the &#8216;libraryname&#8217; folder in the input/kinetics/libraries directory and can
@@ -166,7 +166,7 @@ be used directly as an RMG-Py kinetics library.</p>
 </div>
 </div>
 <div class="section" id="importjavathermolibrary-py">
-<h2>9.8.6. importJavaThermoLibrary.py<a class="headerlink" href="#importjavathermolibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.6. importJavaThermoLibrary.py<a class="headerlink" href="#importjavathermolibrary-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports an individual RMG-Java themo library from a local directory and saves the output
 thermo library py file into a path of the user&#8217;s choosing.  This library will be automatically
 saved to libraryname.py in the input/thermo/libraries directory and can
@@ -186,7 +186,7 @@ be used directly as an RMG-Py thermo library.</p>
 </div>
 </div>
 <div class="section" id="importolddatabase-py">
-<h2>9.8.7. importOldDatabase.py<a class="headerlink" href="#importolddatabase-py" title="Permalink to this headline">¶</a></h2>
+<h2>9.9.7. importOldDatabase.py<a class="headerlink" href="#importolddatabase-py" title="Permalink to this headline">¶</a></h2>
 <p>This script imports an RMG-Java database from the output directory and saves
 it in the input directory. Only recommended for use in extreme circumstances.</p>
 <p>Usage:</p>
@@ -216,14 +216,14 @@ it in the input directory. Only recommended for use in extreme circumstances.</p
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9.8. Database Scripts</a><ul>
-<li><a class="reference internal" href="#evanspolanyi-py">9.8.1. evansPolanyi.py</a></li>
-<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">9.8.2. exportKineticsLibraryToChemkin.py</a></li>
-<li><a class="reference internal" href="#exportolddatabase-py">9.8.3. exportOldDatabase.py</a></li>
-<li><a class="reference internal" href="#importchemkinlibrary-py">9.8.4. importChemkinLibrary.py</a></li>
-<li><a class="reference internal" href="#importjavakineticslibrary-py">9.8.5. importJavaKineticsLibrary.py</a></li>
-<li><a class="reference internal" href="#importjavathermolibrary-py">9.8.6. importJavaThermoLibrary.py</a></li>
-<li><a class="reference internal" href="#importolddatabase-py">9.8.7. importOldDatabase.py</a></li>
+<li><a class="reference internal" href="#">9.9. Database Scripts</a><ul>
+<li><a class="reference internal" href="#evanspolanyi-py">9.9.1. evansPolanyi.py</a></li>
+<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">9.9.2. exportKineticsLibraryToChemkin.py</a></li>
+<li><a class="reference internal" href="#exportolddatabase-py">9.9.3. exportOldDatabase.py</a></li>
+<li><a class="reference internal" href="#importchemkinlibrary-py">9.9.4. importChemkinLibrary.py</a></li>
+<li><a class="reference internal" href="#importjavakineticslibrary-py">9.9.5. importJavaKineticsLibrary.py</a></li>
+<li><a class="reference internal" href="#importjavathermolibrary-py">9.9.6. importJavaThermoLibrary.py</a></li>
+<li><a class="reference internal" href="#importolddatabase-py">9.9.7. importOldDatabase.py</a></li>
 </ul>
 </li>
 </ul>
@@ -319,7 +319,7 @@ it in the input directory. Only recommended for use in extreme circumstances.</p
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

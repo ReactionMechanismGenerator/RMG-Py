@@ -127,14 +127,14 @@ molecular system.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getActiveModes">
-<code class="descname">getActiveModes</code><span class="sig-paren">(</span><em>self</em>, <em>bool activeJRotor=False</em>, <em>bool activeKRotor=True</em><span class="sig-paren">)</span> &rarr; list<a class="headerlink" href="#rmgpy.statmech.Conformer.getActiveModes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getActiveModes</code><span class="sig-paren">(</span><em>self</em>, <em>bool activeJRotor=False</em>, <em>bool activeKRotor=True</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.statmech.Conformer.getActiveModes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the active molecular degrees of freedom of the
 molecular system.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getCenterOfMass">
-<code class="descname">getCenterOfMass</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getCenterOfMass" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getCenterOfMass</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getCenterOfMass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the [three-dimensional] position of the center of
 mass of the conformer in m. If a list <cite>atoms</cite> of atoms is specified, 
 only those atoms will be used to calculate the center of mass. 
@@ -143,42 +143,42 @@ Otherwise, all atoms will be used.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getDensityOfStates">
-<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>Elist</cite> above the ground state.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getEnthalpy">
-<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getEntropy">
-<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getFreeEnergy">
-<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getHeatCapacity">
-<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia">
-<code class="descname">getInternalReducedMomentOfInertia</code><span class="sig-paren">(</span><em>self</em>, <em>pivots</em>, <em>top1</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getInternalReducedMomentOfInertia</code><span class="sig-paren">(</span><em>self</em>, <em>pivots</em>, <em>top1</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the reduced moment of inertia for an internal
 torsional rotation around the axis defined by the two atoms in 
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
@@ -208,7 +208,7 @@ evaluated from the moment of inertia of each top via the formula</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getMomentOfInertiaTensor">
-<code class="descname">getMomentOfInertiaTensor</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getMomentOfInertiaTensor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getMomentOfInertiaTensor</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getMomentOfInertiaTensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the moment of inertia tensor for the conformer 
 in kg*m^2. If the coordinates are not at the center of mass, they are
 temporarily shifted there for the purposes of this calculation.</p>
@@ -223,7 +223,7 @@ and raises an exception if it is not.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getPartitionFunction">
-<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function <span class="math">\(Q(T)\)</span> for the system at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
@@ -238,7 +238,7 @@ kg*m^2, while the principal axes have unit length.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getSumOfStates">
-<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
 in kJ/mol above the ground state.</p>
 </dd></dl>
@@ -257,7 +257,7 @@ constant and the J-rotor rotational constant.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getTotalMass">
-<code class="descname">getTotalMass</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em><span class="sig-paren">)</span> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getTotalMass" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getTotalMass</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getTotalMass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the total mass of the atoms in the conformer in 
 kg. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
 be used to calculate the center of mass. Otherwise, all atoms will be
@@ -398,7 +398,7 @@ used.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>

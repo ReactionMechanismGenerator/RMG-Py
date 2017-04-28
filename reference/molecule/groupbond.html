@@ -147,21 +147,27 @@ edge.</p>
 <dt id="rmgpy.molecule.GroupBond.isBenzene">
 <code class="descname">isBenzene</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isBenzene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a benzene bond or <code class="docutils literal"><span class="pre">False</span></code> if
-not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
+are benzene</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isDouble">
 <code class="descname">isDouble</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isDouble" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a double bond or <code class="docutils literal"><span class="pre">False</span></code> if
-not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
+are double.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isSingle">
 <code class="descname">isSingle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isSingle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal"><span class="pre">False</span></code> if
-not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
+are single.</p>
 <p>NOTE: we can replace the absolute value relation with math.isclose when
 we swtich to python 3.5+</p>
 </dd></dl>
@@ -178,7 +184,9 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 <dt id="rmgpy.molecule.GroupBond.isTriple">
 <code class="descname">isTriple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isTriple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal"><span class="pre">False</span></code> if
-not. Bonds with any wildcards will return  <code class="docutils literal"><span class="pre">False</span></code>.</p>
+not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
+are triple.</p>
 </dd></dl>
 
 <dl class="method">
@@ -311,7 +319,7 @@ atom2: Second :class: Atom the bond connects</div></blockquote>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
     </div>
   </body>
 </html>
