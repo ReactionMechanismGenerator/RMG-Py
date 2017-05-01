@@ -784,7 +784,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 
             # Charges
             if len(atom.charge) == 1: 
-                atomCharge[atom] = atom.charge[0]
+                atomCharge[atom] = '+' + str(atom.charge[0]) if atom.charge[0] > 0 else str(atom.charge[0])
             elif len(atom.charge) == 0:  
                 atomCharge[atom] = None   # Empty list indicates wildcard
             else:
