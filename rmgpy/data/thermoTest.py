@@ -287,7 +287,7 @@ class TestThermoDatabase(unittest.TestCase):
         # OH* species to test
         OH_excited = Species(molecule=[Molecule().fromAdjacencyList("""
                         multiplicity 2
-                        MolecularTermSymbol A^2S+
+                        molecularTermSymbol A^2S+
                         1 O u1 p2 c0 {2,S}
                         2 H u0 p0 c0 {1,S}
                         """)])
