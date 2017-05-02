@@ -31,7 +31,7 @@ class TestThermoDatabaseLoading(unittest.TestCase):
     def testFailingLoadsThermoLibraries(self):
 
         database = ThermoDatabase()
-        libraries = ['primaryThermoLibrary', 'GRI-Mech3.0', 'I am a library not existing in official RMG']
+        libraries = ['primaryThermoLibrary', 'GRI-Mech3.0', 'FFCM1(excited)', 'I am a library not existing in official RMG']
         path = os.path.join(settings['database.directory'], 'thermo')
         
         with self.assertRaises(Exception):
@@ -278,6 +278,30 @@ class TestThermoDatabase(unittest.TestCase):
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertTrue('group additivity' in thermo.comment, 'Thermo not found from GAV, test purpose not fulfilled.')
 
+    def testExcitedSpecies(self):
+        """
+        Test that thermo data for excited species is correct.
+        """
+        from rmgpy.thermo import NASA, NASAPolynomial
+
+        # OH* species to test
+        OH_excited = Species(molecule=[Molecule().fromAdjacencyList("""
+                        multiplicity 2
+                        MolecularTermSymbol A^2S+
+                        1 O u1 p2 c0 {2,S}
+                        2 H u0 p0 c0 {1,S}
+                        """)])
+
+        thermoData = self.database.getThermoDataFromLibraries(OH_excited)[0]
+
+        # FFCM1 library thermo for OH* (although SMILES here are simple [OH], the data came from the OH* species in the FFCM library)
+        OH_excited_FFCM1 = Species(index=1, label="OH*", thermo=
+        NASA(polynomials=[NASAPolynomial(coeffs=[3.46084,0.000501872,-2.00254e-06,3.18902e-09,-1.35452e-12,50734.9,1.73976], Tmin=(200,'K'), Tmax=(1000,'K')), 
+        NASAPolynomial(coeffs=[2.75583,0.00139849,-4.19428e-07,6.33453e-11,-3.56042e-15,50975.2,5.62581], Tmin=(1000,'K'), Tmax=(6000,'K'))],
+        Tmin=(200,'K'), Tmax=(6000,'K'), comment="""Thermo library: FFCM1(excited)"""), molecule=[Molecule(SMILES="[OH]")])
+
+        self.assertIsNotNone(thermoData, 'OH* thermo was not found in library!')
+        self.assertAlmostEqual(thermoData.getEntropy(298.), OH_excited_FFCM1.getEntropy(298.), 0, 'OH* thermo data from library does not match expected value for S298!')
 
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
