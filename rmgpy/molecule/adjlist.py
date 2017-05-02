@@ -427,6 +427,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     atomdict = {}
     bonds = {}
     multiplicity = None
+    molecularTermSymbol = ''
     
     adjlist = adjlist.strip()
     lines = adjlist.splitlines()
@@ -475,7 +476,16 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             multiplicity = int(line.split()[1])
         if len(lines) == 0:
             raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
-    
+
+    # Interpret the third line if it contains a molecularTermSymbol
+    if lines[0].split()[0] == 'molecularTermSymbol':
+        line = lines.pop(0)
+        match = re.match('\s*molecularTermSymbol\s+\S+\s*$', line)
+        assert match, "Invalid molecularTermSymbol line '{0}'. Should be a string like 'molecularTermSymbol A^2S+'".format(line)
+        molecularTermSymbol = line.split()[1]
+        if len(lines) == 0:
+            raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
+
     mistake1 = re.compile('\{[^}]*\s+[^}]*\}')
     # Iterate over the remaining lines, generating Atom or GroupAtom objects
     for line in lines:

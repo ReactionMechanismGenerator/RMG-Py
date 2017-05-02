@@ -663,16 +663,18 @@ class Molecule(Graph):
     ======================= =========== ========================================
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
+    `molecularTermSymbol`   ``string``  The molecular term symbol of this species, specifying the excited state
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `SMILES` or
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, props=None, SMILES=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, molecularTermSymbol='', props=None, SMILES=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
+        self.molecularTermSymbol = molecularTermSymbol
         self._fingerprint = None
         self.InChI = ''
         if SMILES != '': self.fromSMILES(SMILES)
