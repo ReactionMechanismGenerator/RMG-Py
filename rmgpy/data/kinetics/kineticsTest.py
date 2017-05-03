@@ -480,7 +480,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         
                     
         self.assertEqual(len(training),1)
-        self.assertEqual(training[0][1].index,1)  # Assert that the index of that training reaction is 1
+        self.assertEqual(training[0][1].index,0)  # Assert that the index of that training reaction is 1
         
         reconstructedKinetics = self.database.kinetics.reconstructKineticsFromSource(reactions[2],sources[2],fixBarrierHeight=True)
         A = reconstructedKinetics.A.value_si
