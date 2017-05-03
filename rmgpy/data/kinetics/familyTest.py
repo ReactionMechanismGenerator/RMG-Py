@@ -1,10 +1,12 @@
 import unittest
 import os.path
+import shutil
 
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import ReactionRecipe
 from rmgpy.molecule import Molecule
+import filecmp
 ###################################################
 
 class TestFamily(unittest.TestCase):
@@ -150,3 +152,24 @@ multiplicity 2
 
         self.assertEqual(len(products), 1)
         self.assertTrue(expectedProduct.isIsomorphic(products[0]))
+
+    def testSaveFamily(self):
+        """
+
+        This tests the the family.save method by writing a new temporary file and
+        comparing it to the original source.
+
+        """
+        os.makedirs(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+        self.family.save(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+        try:
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/groups.py'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/groups.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/rules.py'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/rules.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/reactions.py'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/reactions.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/dictionary.txt'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/dictionary.txt')))
+        finally:
+            shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
