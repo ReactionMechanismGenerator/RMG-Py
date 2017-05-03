@@ -1066,7 +1066,7 @@ class Molecule(Graph):
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
-        Also ensures multiplicities are also equal.
+        Also ensures multiplicities and molecularTermSymbols are also equal.
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -1079,6 +1079,9 @@ class Molecule(Graph):
             return False
         # check multiplicity
         if self.multiplicity != other.multiplicity:
+            return False
+        # check molecularTermSymbol
+        if self.molecularTermSymbol != other.molecularTermSymbol:
             return False
         # Do the full isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
