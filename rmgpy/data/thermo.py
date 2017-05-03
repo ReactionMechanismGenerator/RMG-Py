@@ -1006,6 +1006,10 @@ class ThermoDatabase(object):
         thermo0 = None
         
         thermo0 = self.getThermoDataFromLibraries(species)
+
+        if thermo0 == None and self.molecularTermSymbol != '' and self.molecularTermSymbol[0] != 'X':
+            raise DatabaseError('Unable to determine library thermo parameters for {0}: thermo data for excited species can currently only be obtained from libraries.'.format(self))
+
         try:
             quantumMechanics = getInput('quantumMechanics')
         except Exception, e:
