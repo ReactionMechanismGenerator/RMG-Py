@@ -246,6 +246,8 @@ class Database:
         """
         Return a sorted list of the entries in this database that should be
         saved to the output file.
+
+        Then renumber the entry indexes so that we never have any duplicate indexes.
         """
         entries = self.top[:]
         if len(self.top) > 0:
@@ -268,6 +270,10 @@ class Database:
             # Otherwise save the entries sorted by index, if defined
             entries = self.entries.values()
             entries.sort(key=lambda x: (x.index))
+
+        for index, entry in enumerate(entries):
+            entry.index = index
+
         return entries
     
     def getSpecies(self, path):
