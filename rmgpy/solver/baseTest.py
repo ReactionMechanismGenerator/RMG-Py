@@ -74,7 +74,6 @@ class ReactionSystemTest(unittest.TestCase):
         
         self.assertEquals(len(surfaceSpecies),1) #only H should be left
         self.assertEquals(len(surfaceReactions),2) #all the reactions with H should stay
-        
     
     def testSurfaceLayeringConstraint(self):
         """
@@ -106,6 +105,34 @@ class ReactionSystemTest(unittest.TestCase):
         ind = reactionSystem.maxIndUnderSurfaceLayeringConstraint(arr,reactionSystem.surfaceSpeciesIndices)
         
         self.assertEquals(ind,2) #maxIndUnderSurfaceLayeringConstraint worked correctly
+    
+    def testAddReactionsToSurface(self):
+        """
+        tests that addReactionsToSurface gives the correct surfaceSpecies and surfaceReactions lists after being called
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        species = reactionModel.core.species
+        reactions = reactionModel.core.reactions
+        
+        coreSpecies = species[0:6]
+        coreReactions = [reactions[0]]
+        surfaceSpecies = []
+        surfaceReactions = []
+        edgeSpecies = species[6:]
+        edgeReactions = reactions[1:]
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        newSurfaceReactions = edgeReactions
+        newSurfaceReactionInds = [edgeReactions.index(i) for i in newSurfaceReactions]
+        
+        surfaceSpecies,surfaceReactions=reactionSystem.addReactionsToSurface(newSurfaceReactions,newSurfaceReactionInds,surfaceSpecies,surfaceReactions,edgeSpecies)
+        
+        self.assertEqual(set(surfaceSpecies),set(edgeSpecies)) #all edge species should now be in the surface
+        self.assertEqual(set(surfaceReactions),set(edgeReactions)) #all edge reactions should now be in the surface
         
     def testAttachDetach(self):
         """
