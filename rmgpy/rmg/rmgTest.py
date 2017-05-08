@@ -11,39 +11,41 @@ from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react
 from rmgpy.restart import saveRestartFile
 import rmgpy
+from rmgpy.data.base import ForbiddenStructures
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
-
-    def setUp(self):
+    
+    @classmethod
+    def setUpClass(self):
         """
-        A method that is run before each unit test in this class.
+        A method that is run before all unit tests in this class.
         """
         # set-up RMG object
         self.rmg = RMG()
         self.rmg.reactionModel = CoreEdgeReactionModel()
 
-        self.rmg_dummy = RMG()
-        self.rmg_dummy.reactionModel = CoreEdgeReactionModel()
-
         # load kinetic database and forbidden structures
         self.rmg.database = RMGDatabase()
-        path = os.path.join(settings['database.directory'])
+        path = os.path.join(settings['test_data.directory'], 'testing_database')
 
-        # forbidden structure loading
-        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family Disproportionation loading
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
-                                       kineticsFamilies=['R_Addition_MultipleBond'],reactionLibraries=[])
+                                       kineticsFamilies=['H_Abstraction','R_Addition_MultipleBond'],reactionLibraries=[])
 
-    def tearDown(self):
+        #load empty forbidden structures 
+        for family in self.rmg.database.kinetics.families.values():
+            family.forbidden = ForbiddenStructures()
+        self.rmg.database.forbiddenStructures = ForbiddenStructures()
+
+    @classmethod
+    def tearDownClass(self):
         """
         Reset the loaded database
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
         
-    @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
@@ -51,6 +53,8 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         In this test, a change of molecules order in a reacting species should 
         not change the reaction template matched.
+        
+        H + C=C=C=O -> O=C[C]=C
         """
 
         # react
@@ -59,16 +63,12 @@ class TestRMGWorkFlow(unittest.TestCase):
         newReactions = []		
         newReactions.extend(react((spc,)))
 
-        # process newly generated reactions to make sure no duplicated reactions
-        self.rmg.reactionModel.processNewReactions(newReactions, spc, None)
-
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
         mol_C3H2O = Molecule().fromSMILES("C=C=C=O")
 
-        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, \
-                                               self.rmg.reactionModel.edge.reactions)
-        self.assertEqual(len(target_rxns), 1)
+        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions)
+        self.assertEqual(len(target_rxns), 2)
 
         # reverse the order of molecules in spc
         spc.molecule = list(reversed(spc.molecule))
@@ -77,16 +77,12 @@ class TestRMGWorkFlow(unittest.TestCase):
         newReactions_reverse = []
         newReactions_reverse.extend(react((spc,)))
 
-        # process newly generated reactions again to make sure no duplicated reactions
-        self.rmg_dummy.reactionModel.processNewReactions(newReactions_reverse, spc, None)
-
         # try to pick out the target reaction 
-        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, \
-                                                       self.rmg_dummy.reactionModel.edge.reactions)
-        self.assertEqual(len(target_rxns_reverse), 1)
+        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
+        self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
-        self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
+        self.assertEqual(target_rxns[0].template, target_rxns_reverse[-1].template)
 
     def testCheckForExistingSpeciesForBiAromatics(self):
         """
@@ -145,10 +141,6 @@ class TestRMGWorkFlow(unittest.TestCase):
 
     def testRestartFileGenerationAndParsing(self):
         
-        # load ownReverse family
-        db_path = os.path.join(settings['database.directory'])
-        self.rmg.database.loadKinetics(os.path.join(db_path, 'kinetics'), \
-                                       kineticsFamilies=['H_Abstraction'],reactionLibraries=[])
         # react
         spc1 = Species().fromSMILES("[H]")
         spc2 = Species().fromSMILES("C=C=C=O")

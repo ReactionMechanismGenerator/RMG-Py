@@ -44,6 +44,31 @@ entry(
 )
 
 entry(
+    index = 6,
+    label = "Ck_O",
+    group = 
+"""
+1 *1 Cdd u0 {2,D} {3,D}
+2 *2 Od  u0 {1,D}
+3    C   u0 {1,D}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 127,
+    label = "Ck_Ca",
+    group = 
+"""
+1 *1 Cdd u0 {2,D} {3,D}
+2 *2 Cdd u0 {1,D} {4,D}
+3    Od  u0 {1,D}
+4    C   u0 {2,D}
+""",
+    kinetics = None,
+)
+
+entry(
     index = 838,
     label = "Ct_R",
     group = 
@@ -411,6 +436,8 @@ tree(
 """
 L1: R_R
     L2: Cd_R
+        L3: Ck_O
+        L3: Ck_Ca
     L2: Ct_R
     L2: Od_R
     L2: Nd_R
