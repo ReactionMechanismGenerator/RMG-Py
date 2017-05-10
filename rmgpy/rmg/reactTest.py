@@ -79,6 +79,21 @@ class TestReact(unittest.TestCase):
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
+    def test_labelListofSpecies(self):
+        """
+        Ensure labelListofSpecies modifies atomlabels
+        """
+        from rmgpy.rmg.react import _labelListOfSpecies
+        s1 = Species().fromSMILES('CCC')
+        s2 = Species().fromSMILES('C=C[CH]C')
+        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+        
+        _labelListOfSpecies([s1, s2])
+        # checks atom id
+        self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
+        # checks second resonance structure id
+        self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
+
     def testReact(self):
         """
         Test that reaction generation from the available families works.

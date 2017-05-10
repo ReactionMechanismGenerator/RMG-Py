@@ -1452,7 +1452,7 @@ class KineticsFamily(Database):
             reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
 
         # remove degenerate reactions
-        findDegeneracies(reactions)
+        reactions = findDegeneracies(reactions)
         if not ignoreSameReactants:
             reduceSameReactantDegeneracy(reactions)
 

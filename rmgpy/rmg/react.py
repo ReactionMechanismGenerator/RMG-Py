@@ -69,25 +69,11 @@ def reactSpecies(speciesTuple):
     given one species tuple, will find the reactions and remove degeneracy
     from them.
     """
+    if len(speciesTuple) == 2 and speciesTuple[0] == speciesTuple[1]:
+        # replace one with a new reference so independent labeling can occur
+        speciesTuple = (speciesTuple[0], speciesTuple[1].copy(deep=True))
 
-    # assert that all species' atomlabels are different
-    def independentIDs():
-        num_atoms = 0
-        IDs = []
-        for species in speciesTuple:
-            num_atoms += len([species.molecule[0].atoms ])
-            IDs = IDs + [atom.id for atom in species.molecule[0].atoms ]
-        num_ID = sum(set(IDs))
-        return num_ID == num_atoms
-    # if they are different, relabel and remake atomIDs
-    while independentIDs():
-        logging.info('identical')
-        for species in speciesTuple:
-            mol = species.molecule[0]
-            mol.assignAtomIDs()
-            # remake resonance isomers with new labeles
-            species.molecule = [mol]
-            species.generateResonanceIsomers(keepIsomorphic = True)
+    _labelListOfSpecies(speciesTuple)
 
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
@@ -95,7 +81,7 @@ def reactSpecies(speciesTuple):
 
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
-    findDegeneracies(reactions)
+    reactions = findDegeneracies(reactions)
     reduceSameReactantDegeneracy(reactions)
 
     # get a molecule list with species indexes
@@ -112,6 +98,37 @@ def reactSpecies(speciesTuple):
 
     return reactions
 
+def _labelListOfSpecies(speciesTuple):
+    """
+    given a list or tuple of species' objects, ensure all their atoms' id are
+    independent.
+    
+    Modifies the speciesTuple in place, nothing returned.
+    """
+# assert that all species' atomlabels are different
+    def independentIDs():
+        num_atoms = 0
+        IDs = []
+        for species in speciesTuple:
+            num_atoms += len(species.molecule[0].atoms)
+            IDs.extend([atom.id for atom in species.molecule[0].atoms ])
+        num_ID = len(set(IDs))
+        return num_ID == num_atoms
+    # if they are different, relabel and remake atomIDs
+    counter = 100
+    while not independentIDs(speciesTuple):
+        counter -= 1
+        if counter < 0:
+            raise ArithmeticError('_labelListOfSpecies exceeded max counts')
+        logging.info('identical atom ids found between species. regenerating')
+        for species in speciesTuple:
+            mol = species.molecule[0]
+            mol.assignAtomIDs()
+            # remake resonance isomers with new labeles
+            species.molecule = [mol]
+            species.generateResonanceIsomers(keepIsomorphic = True)
+            
+    
 def getMoleculeTuples(speciesTuple):
     """
     returns a list of molule tuples from given speciesTuples.
@@ -162,37 +179,63 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
     This algorithm used to exist in family.__generateReactions, but was moved
     here because it didn't have any family dependence.
     """
-
-    index0 = 0
-    while index0 < len(rxnList):
-        reaction0 = rxnList[index0]
-        if useSpeciesReaction:
-            convertToSpeciesObjects(reaction0)
-        # Remove duplicates from the reaction list
-        index = index0 + 1
-        while index < len(rxnList):
-            reaction = rxnList[index]
-            # ensure same family and structure
-            # (template can be added later after multiple TS's are enabled with all([template0 in reaction.template for template0 in reaction0.template]))
-            if reaction.family == reaction0.family and \
-                     reaction0.isIsomorphic(reaction):
-                
-                if reaction0.isIsomorphic(reaction, checkIdentical=True):
-                    rxnList.remove(reaction)
-                    break
+    # These duplicates should be combined and the reaction degeneracy should be increased
+    # Reaction degeneracy is only increased if two reaction are isomorphic but resulted
+    # from different transition states.
+    # We want to sort all the reactions into sublists composed of isomorphic reactions
+    rxnSorted = []
+    for rxn0 in rxnList:
+        # find resonance structures for rxn0
+        convertToSpeciesObjects(rxn0)
+        if len(rxnSorted) == 0:
+            # This is the first reaction, so create a new sublist
+            rxnSorted.append([rxn0])
+        else:
+            # Loop through each sublist, which represents a unique reaction
+            for rxnList1 in rxnSorted:
+                # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
+                isomorphic = False
+                identical = False
+                sameTemplate = False
+                for rxn in rxnList1:
+                    isomorphic = rxn0.isIsomorphic(rxn,checkIdentical=False)
+                    identical = rxn0.isIsomorphic(rxn,checkIdentical=True)
+                    sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
+                    if not isomorphic:
+                        # a different product was found, go to next list
+                        break
+                    elif not sameTemplate:
+                        # a different transition state was found, mark as duplicate and
+                        # go to the next sublist
+                        rxn.duplicate = True
+                        rxn0.duplicate = True
+                        break
+                    elif identical:
+                        # An exact copy of rxn0 is already in our list, so we can move on to the next rxn
+                        break
+                    else: # sameTemplate and isomorphic but not identical
+                        # This is the right sublist for rxn0, but continue to see if there is an identical rxn
+                        continue
                 else:
-                    reaction0.degeneracy += reaction.degeneracy
-                    try:
-                        reaction0.reverse.degeneracy += reaction.reverse.degeneracy
-                    except AttributeError:
-                        pass
-
-                    rxnList.remove(reaction)
-
+                    # We did not break, so this is the right sublist, but there is no identical reaction
+                    # This means that we should add rxn0 to the sublist as a degenerate rxn
+                    rxnList1.append(rxn0)
+                if isomorphic and sameTemplate:
+                    # We already found the right sublist, so we can move on to the next rxn
+                    break
             else:
-                index += 1
+                # We did not break, which means that there was no isomorphic sublist, so create a new one
+                rxnSorted.append([rxn0])
 
-        index0 += 1
+    rxnList = []
+    for rxnList1 in rxnSorted:
+        # Collapse our sorted reaction list by taking one reaction from each sublist
+        rxn = rxnList1[0]
+        # The degeneracy of each reaction is the number of reactions that were in the sublist
+        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in rxnList1])
+        rxnList.append(rxn)
+        
+    return rxnList
 
 def convertToSpeciesObjects(reaction):
     """
@@ -203,11 +246,11 @@ def convertToSpeciesObjects(reaction):
     # obtain species with all resonance isomers
     for i, mol in enumerate(reaction.reactants):
         spec = Species(molecule = [mol])
-        spec.generateResonanceIsomers()
+        spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.reactants[i] = spec
     for i, mol in enumerate(reaction.products):
         spec = Species(molecule = [mol])
-        spec.generateResonanceIsomers()
+        spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.products[i] = spec
 
     # convert reaction.pairs object to species
@@ -272,7 +315,7 @@ def deflate(rxns, species, reactantIndices):
         deflateReaction(rxn, molDict)
         try:
             deflateReaction(rxn.reverse, molDict) 
-        except AttributeError, e:
+        except AttributeError:
             pass
 
 
