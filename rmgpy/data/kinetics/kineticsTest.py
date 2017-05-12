@@ -640,6 +640,37 @@ class TestReactionDegeneracy(unittest.TestCase):
         # test that the kinetics are correct
         self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
         
+        
+        
+    def test_reaction_degeneracy_independent_of_generatereactions_direction(self):
+        """
+        test_reaction_degeneracy_independent_of_generatereactions_direction
+        
+        Ensure the returned kinetics have the same degeneracy irrespective of
+        whether __generateReactions has forward = True or False
+        """
+        family = database.kinetics.families['Disproportionation']
+
+        molA = Molecule().fromSMILES('C[CH2]')
+        molB = Molecule().fromSMILES('C[CH2]')
+        molC = Molecule().fromSMILES('C=C')
+        molD = Molecule().fromSMILES('CC')
+        
+        molA.assignAtomIDs()
+        molB.assignAtomIDs()
+        molC.assignAtomIDs()
+        molD.assignAtomIDs()
+
+        # generate reactions in both directions
+        forward_reactions = family._KineticsFamily__generateReactions([molA, molB], products=[molC, molD], forward=True)
+        reverse_reactions = family._KineticsFamily__generateReactions([molC, molD], products=[molA, molB], forward=False)
+        
+        forward_reactions = findDegeneracies(forward_reactions)
+        reverse_reactions = findDegeneracies(reverse_reactions)
+        
+        self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
+                         'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))
+        
 class TestKineticsCommentsParsing(unittest.TestCase):
 
     @classmethod
