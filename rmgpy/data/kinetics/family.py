@@ -1427,7 +1427,7 @@ class KineticsFamily(Database):
     
     def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
         """
-        For a `reaction`  with `Molecule` objects given in the direction in which
+        For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
         the kinetics are defined, compute the reaction-path degeneracy.
 
         This method by default adjusts for double counting of identical reactants. 
@@ -1440,10 +1440,15 @@ class KineticsFamily(Database):
 
         # find combinations of resonance isomers
         specReactants = []
-        for mol in reaction.reactants:
-            spec = Species(molecule=[mol])
-            spec.generateResonanceIsomers(keepIsomorphic=True)
-            specReactants.append(spec)
+        if isinstance(reaction.reactants[0], Molecule):
+            for mol in reaction.reactants:
+                spec = Species(molecule=[mol])
+                spec.generateResonanceIsomers(keepIsomorphic=True)
+                specReactants.append(spec)
+        elif isinstance(reaction.reactants[0], Species):
+            specReactants = reaction.reactants
+        else:
+            raise TypeError('Reactants must be either Species or Molecule Objects')
         molecule_combos = getMoleculeTuples(specReactants)
 
         reactions = []
@@ -1575,8 +1580,12 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            
-            products = [product.generateResonanceIsomers() for product in products]
+            if isinstance(products[0],Molecule):
+                products = [product.generateResonanceIsomers() for product in products]
+            elif isinstance(products[0],Species):
+                products = [product.molecule for product in products]
+            else:
+                raise TypeError('products input to __generateReactions must be Species or Reaction Objects')
             
             rxnList0 = rxnList[:]
             rxnList = []
