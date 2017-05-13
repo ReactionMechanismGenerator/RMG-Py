@@ -273,7 +273,6 @@ def convertToSpeciesObjects(reaction):
     except AttributeError:
         pass
 
-<<<<<<< HEAD
 def reduceSameReactantDegeneracy(rxnList):
     """
     This method reduces the degeneracy of reactions with identical reactants,
@@ -287,8 +286,7 @@ def reduceSameReactantDegeneracy(rxnList):
             assert reaction.degeneracy % 2 == 0, 'Reaction with isomorphic reactants had an odd degeneracy of {0}. The reaction is {1}'.format(reaction.degeneracy, str(reaction))
             reaction.degeneracy /= 2
 
-    
-=======
+
 def correctDegeneracyOfReverseReactions(reactionList, reactants):
     """
     This method corrects the degeneracy of reactions found when the backwards
@@ -313,7 +311,6 @@ def correctDegeneracyOfReverseReactions(reactionList, reactants):
         else:
             # wrong reaction was sent here
             raise ReactionError('Reaction in reactionList did not match reactants. Reaction: {}, Reactants: {}'.format(rxn,reactants))
->>>>>>> 2dc14a8... corrected degeneracy of reverse reactions
 
 def deflate(rxns, species, reactantIndices):
     """
