@@ -102,4 +102,5 @@ cdef class Reaction:
     cpdef generatePairs(self)
     
     cpdef copy(self)
-    
+
+cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?)
