@@ -99,7 +99,10 @@ options(
         shutil.rmtree(self.dir_name)
         # go back to the main RMG-Py directory
         os.chdir('..')
-        
+        # remove modular level database
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
     def testRMGExecute(self):
         """
         This example is to test if RMG.execute increases the core reactions

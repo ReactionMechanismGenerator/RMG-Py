@@ -18,7 +18,20 @@ class TestSoluteDatabase(TestCase):
     def setUp(self):
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
-    
+
+    def tearDown(self):
+        """
+        Reset the database & liquid parameters for solution
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        
+        from rmgpy.rmg.model import Species as DifferentSpecies
+        DifferentSpecies.solventData = None
+        DifferentSpecies.solventName = None
+        DifferentSpecies.solventStructure = None
+        DifferentSpecies.solventViscosity = None
+        
     def runTest(self):
         pass
     
