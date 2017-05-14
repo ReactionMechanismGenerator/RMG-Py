@@ -37,6 +37,7 @@ from rmgpy.rmg.main import RMG
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.react import react
 from rmgpy.rmg.model import *
+from rmgpy.data.base import ForbiddenStructures
 
 ###################################################
 
@@ -45,20 +46,20 @@ class TestSpecies(unittest.TestCase):
     """
     Contains unit tests of the Species class.
     """
-
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         A method that is run before each unit test in this class.
         """
         # set-up RMG object
-        self.rmg = RMG()
+        cls.rmg = RMG()
 
         # load kinetic database and forbidden structures
-        self.rmg.database = RMGDatabase()
+        cls.rmg.database = RMGDatabase()
         path = os.path.join(settings['database.directory'])
 
         # forbidden structure loading
-        self.rmg.database.loadThermo(os.path.join(path, 'thermo'))
+        cls.rmg.database.loadThermo(os.path.join(path, 'thermo'))
         
 
     def testGetThermoData(self):
@@ -79,7 +80,8 @@ class TestSpecies(unittest.TestCase):
         spc.getThermoData()
         self.assertNotEquals(id(thermo), id(spc.thermo))
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """
         Reset the loaded database
         """
@@ -91,26 +93,31 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
     Contains unit tests of the CoreEdgeReactionModel class.
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         A method that is run before each unit test in this class.
         """
         TESTFAMILY = 'H_Abstraction'
 
         # set-up RMG object
-        self.rmg = RMG()
+        rmg = RMG()
 
         # load kinetic database and forbidden structures
-        self.rmg.database = RMGDatabase()
-        path = os.path.join(settings['database.directory'])
+        rmg.database = RMGDatabase()
+        path=os.path.join(settings['test_data.directory'], 'testing_database')
 
-        # forbidden structure loading
-        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+
         # kinetics family loading
-        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
+        rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
                                        kineticsFamilies=[TESTFAMILY],
                                        reactionLibraries=[]
                                        )
+        #load empty forbidden structures to avoid any dependence on forbidden structures
+        #for these tests
+        for family in rmg.database.kinetics.families.values():
+            family.forbidden = ForbiddenStructures()
+        rmg.database.forbiddenStructures = ForbiddenStructures()
 
     def testMakeNewSpecies(self):
         """
@@ -203,8 +210,8 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         for rxn in rxns:
             self.assertTrue(rxn.isBalanced())
 
-
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """
         Reset the loaded database
         """
