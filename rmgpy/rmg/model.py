@@ -386,20 +386,27 @@ class CoreEdgeReactionModel:
         for rxn0 in shortlist:
             rxn_id0 = generateReactionId(rxn0)
 
-            if (rxn_id == rxn_id0):
-                if isinstance(familyObj, KineticsLibrary):
-                    # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        if not rxn.duplicate:
-                            return True, rxn0
-                else:
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
+            if (rxn_id == rxn_id0) and isinstance(familyObj, KineticsLibrary):
+                # If the reaction comes from a kinetics library, then we can 
+                # retain duplicates if they are marked
+                if areIdenticalSpeciesReferences(rxn, rxn0) and not rxn.duplicate:
+                    return True, rxn0
+            elif ((rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1])) and \
+                        isinstance(familyObj, KineticsFamily):
+                # ensure TemplateReactions have the same templates and families in order
+                # to classify this as existing reaction. Also checks for reverse
+                # direction matching. Marks duplicate if identical species but not
+                # template and family
+                if areIdenticalSpeciesReferences(rxn, rxn0):
+                    if rxn.family == rxn0.family and \
+                            frozenset(rxn.template) == frozenset(rxn0.template):
                         return True, rxn0
-            if isinstance(familyObj, KineticsFamily):
-                
-                if (rxn_id == rxn_id0[::-1]):
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        return True, rxn0
+                    else:
+                        rxn.duplicate = True
+                        rxn0.duplicate = True
+            elif (rxn_id == rxn_id0):
+                if areIdenticalSpeciesReferences(rxn, rxn0):
+                    return True, rxn0
 
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
