@@ -152,11 +152,11 @@ class TemplateReaction(Reaction):
         other.products = []
         for product in self.products:
             other.products.append(product.copy(deep=True))
+        other.degeneracy = self.degeneracy
         other.kinetics = deepcopy(self.kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
-        other.degeneracy = self.degeneracy
         other.pairs = deepcopy(self.pairs)
         
         # added for TemplateReaction information
