@@ -81,7 +81,15 @@ def reactSpecies(speciesTuple):
 
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
+    # remove reverse reaction
     reactions = findDegeneracies(reactions)
+    # add reverse attribute to families with ownReverse
+    for rxn in reactions:
+        family = getDB('kinetics').families[rxn.family]
+        if family.ownReverse:
+            family.addReverseAttribute(rxn)
+    # fix the degneracy of (not ownReverse) reactions found in the backwards
+    # direction
     correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
     reduceSameReactantDegeneracy(reactions)
     # get a molecule list with species indexes
@@ -306,7 +314,8 @@ def correctDegeneracyOfReverseReactions(reactionList, reactants):
         elif _isomorphicSpeciesList(rxn.products, reactants):
             # was reverse reaction so should find degeneracy
             family = getDB('kinetics').families[rxn.family]
-            rxn.degeneracy = family.calculateDegeneracy(rxn)
+            if not family.ownReverse: 
+                rxn.degeneracy = family.calculateDegeneracy(rxn)
         else:
             # wrong reaction was sent here
             raise ReactionError('Reaction in reactionList did not match reactants. Reaction: {}, Reactants: {}'.format(rxn,reactants))

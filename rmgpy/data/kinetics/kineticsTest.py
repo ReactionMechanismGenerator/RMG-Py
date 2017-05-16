@@ -863,3 +863,74 @@ class TestKinetics(unittest.TestCase):
         self.assertIsNone(out)
         out = lib.convertDuplicatesToMulti()
         self.assertIsNone(out)
+
+    def testaddReverseAttribute(self):
+        """
+        tests that the addReverseAttribute method gets the reverse degeneracy correct
+        """
+        from rmgpy.data.rmg import getDB
+        from rmgpy.data.kinetics.family import TemplateReaction
+        adjlist = ['''
+        multiplicity 2
+        1 H u0 p0 c0 {7,S}
+        2 H u0 p0 c0 {4,S}
+        3 C u1 p0 c0 {5,S} {7,S} {8,S}
+        4 C u0 p0 c0 {2,S} {6,S} {7,D}
+        5 H u0 p0 c0 {3,S}
+        6 H u0 p0 c0 {4,S}
+        7 C u0 p0 c0 {1,S} {3,S} {4,D}
+        8 H u0 p0 c0 {3,S}
+        ''',
+          '''
+        1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+        2 C u0 p0 c0 i13 {1,S} {3,D} {7,S}
+        3 C u0 p0 c0 {2,D} {8,S} {9,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {1,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {3,S}
+        9 H u0 p0 c0 {3,S}
+        ''',
+                '''
+        multiplicity 2
+        1 H u0 p0 c0 {7,S}
+        2 H u0 p0 c0 {4,S}
+        3 C u1 p0 c0 {5,S} {7,S} {8,S}
+        4 C u0 p0 c0 {2,S} {6,S} {7,D}
+        5 H u0 p0 c0 {3,S}
+        6 H u0 p0 c0 {4,S}
+        7 C u0 p0 c0 i13 {1,S} {3,S} {4,D}
+        8 H u0 p0 c0 {3,S}
+        ''',
+          '''
+        1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+        2 C u0 p0 c0 {1,S} {3,D} {7,S}
+        3 C u0 p0 c0 {2,D} {8,S} {9,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {1,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {3,S}
+        9 H u0 p0 c0 {3,S}
+        '''
+          ]
+        family = getDB('kinetics').families['H_Abstraction']
+        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
+        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])
+        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
+        p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
+        r1.generateResonanceIsomers(keepIsomorphic=True)
+        p1.generateResonanceIsomers(keepIsomorphic=True)
+        
+        
+        rxn = TemplateReaction(reactants = [r1, r2], 
+                               products = [p1, p2]
+)
+        
+        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        self.assertEqual(rxn.degeneracy, 6)
+        
+        family.addReverseAttribute(rxn)
+        
+        self.assertEqual(rxn.reverse.degeneracy, 6)
