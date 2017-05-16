@@ -283,8 +283,7 @@ def reduceSameReactantDegeneracy(rxnList):
     """
     for reaction in rxnList:
         if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
-            assert reaction.degeneracy % 2 == 0, 'Reaction with isomorphic reactants had an odd degeneracy of {0}. The reaction is {1}'.format(reaction.degeneracy, str(reaction))
-            reaction.degeneracy /= 2
+            reaction.degeneracy *= 0.5
 
 
 def correctDegeneracyOfReverseReactions(reactionList, reactants):
