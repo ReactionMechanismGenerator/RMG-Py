@@ -635,24 +635,10 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in self.newReactionList:
-            family = getFamilyLibraryObject(reaction.family)
-
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
-                # Set the reaction kinetics
-                kinetics, source, entry, isForward = self.generateKinetics(reaction)
-                reaction.kinetics = kinetics
-                # Flip the reaction direction if the kinetics are defined in the reverse direction
-                if not isForward:
-                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                    if family.ownReverse and hasattr(reaction,'reverse'):
-                        if reaction.reverse:
-                            reaction.template = reaction.reverse.template
-                            reaction.degeneracy = reaction.reverse.degeneracy
-                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                        reaction.reverse = None
+                self.applyKineticsToReaction(reaction)
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
@@ -778,6 +764,28 @@ class CoreEdgeReactionModel:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
+
+    def applyKineticsToReaction(self, reaction):
+        """
+        retrieve the best kinetics for the reaction and apply it towards the forward 
+        or reverse direction (if reverse, flip the direaction).
+        """
+        from rmgpy.data.rmg import getDB
+        # Find the reaction kinetics
+        kinetics, source, entry, isForward = self.generateKinetics(reaction)
+        # Flip the reaction direction if the kinetics are defined in the reverse direction
+        if not isForward:
+            family = getDB('kinetics').families[reaction.family]
+            reaction.reactants, reaction.products = reaction.products, reaction.reactants
+            reaction.pairs = [(p,r) for r,p in reaction.pairs]
+            if family.ownReverse and hasattr(reaction,'reverse'):
+                if reaction.reverse:
+                    reaction.template = reaction.reverse.template
+                    # replace degeneracy
+                    reaction.degeneracy = reaction.reverse.degeneracy
+                # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                reaction.reverse = None
+        reaction.kinetics = kinetics
 
     def generateKinetics(self, reaction):
         """
