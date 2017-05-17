@@ -147,6 +147,8 @@ class Species(object):
         """
         Return a string representation of the species, in the form 'label(id)'.
         """
+        if not self.label:
+            self.label = self.molecule[0].toSMILES()
         if self.index == -1: return self.label
         else: return '{0}({1:d})'.format(self.label, self.index)
 
