@@ -151,7 +151,7 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 if tokens[0] == 'Mole' and tokens[1] == 'fraction':
                     if 'Soln' in tokens[-1]:
                         raise Exception("This function only supports ckcsv with one Soln!")
-                    species_string = label.split('Mole_fraction')[1]
+                    species_string = label.split('Mole_fraction_')[1]
                     contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
                     header = species_string + ' Mole_fraction'
                     if species_string not in spc_conc_dict:
