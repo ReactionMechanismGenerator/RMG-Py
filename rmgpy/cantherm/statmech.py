@@ -300,15 +300,34 @@ class StatMechJob:
         if not self.includeHinderedRotors:
             rotors = []
 
+        #If hindered/free rotors are included in Statmech job, ensure that the same (freq) log file is used for
+        # both the species's optimized geometry and Hessian. This approach guarantees that the geometry and Hessian
+        #will be defined in the same Cartesian coordinate system ("Input Orientation", as opposed to "Standard Orientation",
+        #or something else). Otherwise, if the geometry and Hessian are read from different log files, it is very easy
+        #for them to be defined in different coordinate systems, unless the user is very careful. The current implementation
+        #only performs this check for Gaussian logs. If QChem logs are used, only a warning is output reminding the user
+        #to ensure the geometry and Hessian are defined in consistent coordinates.
+        if len(rotors) > 0:
+            if isinstance(statmechLog, GaussianLog):
+                if statmechLog.path != geomLog.path:
+                    raise InputError('For {0!r}, the geometry log, {1!r}, and frequency log, {2!r}, are not the same.'
+                                     ' In order to ensure the geometry and Hessian of {0!r} are defined in consistent coordinate systems'
+                                     ' for hindered/free rotor projection, either use the frequency log for both geometry and frequency,'
+                                     ' or remove rotors.'.format(self.species.label,geomLog.path,statmechLog.path))
+            elif isinstance(statmechLog, QchemLog):
+                    logging.warning('Qchem log will be used for Hessian of {0!r}. '
+                                    'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
+
         logging.debug('    Reading molecular degrees of freedom...')
         conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geomLog.loadGeometry()
-        conformer.coordinates = (coordinates,"angstroms") 
+
+        conformer.coordinates = (coordinates,"angstroms")
         conformer.number = number
         conformer.mass = (mass,"amu")
-        
+
         logging.debug('    Reading energy...')
         # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
         if E0 is None:
@@ -455,11 +474,11 @@ class StatMechJob:
         coordinates = conformer.coordinates.value_si * 1e10
         number = conformer.number.value_si
         
-        f.write('# Coordinates for {0} (angstroms):\n'.format(self.species.label))
+        f.write('# Coordinates for {0} in Input Orientation (angstroms):\n'.format(self.species.label))
         for i in range(coordinates.shape[0]):
-            x = coordinates[i,0] - coordinates[0,0]
-            y = coordinates[i,1] - coordinates[0,1]
-            z = coordinates[i,2] - coordinates[0,2]
+            x = coordinates[i,0]
+            y = coordinates[i,1]
+            z = coordinates[i,2]
             f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(numbers[number[i]], x, y, z))
         
         string = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spinMultiplicity={3:d}, opticalIsomers={4:d}'.format(
@@ -725,7 +744,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
     mass = conformer.mass.value_si
-    coordinates = conformer.coordinates.getValue() 
+    coordinates = conformer.coordinates.getValue()
 
 
     # Put origin in center of mass
@@ -738,7 +757,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
         ym+=mass[i]*coordinates[i,1]
         zm+=mass[i]*coordinates[i,2]
         totmass+=mass[i]
-          
+
     xm/=totmass
     ym/=totmass
     zm/=totmass
@@ -757,7 +776,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
     external=6
     if linear:
         external=5
-    
+
     D = numpy.zeros((Natoms*3,external), numpy.float64)
 
     P = numpy.zeros((Natoms,3), numpy.float64)
@@ -810,7 +829,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
             for k in range(3*Natoms):
                 P[k,j]-=proj*P[k,i]
 
-    # Order D, there will be vectors that are 0.0  
+    # Order D, there will be vectors that are 0.0
     i=0
     while i < 3*Natoms:
         norm=0.0
