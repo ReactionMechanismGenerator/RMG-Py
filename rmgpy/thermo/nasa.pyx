@@ -136,6 +136,12 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         self.c5 += deltaH / constants.R
 
+    cpdef changeBaseEntropy(self, double deltaS):
+        """
+        Add deltaS in J/molK to the base entropy of formation S298.
+        """
+        self.c6 += deltaS / constants.R
+
     cdef double integral2_T0(self, double T):
         """
         Return the value of the dimensionless integral
@@ -350,7 +356,16 @@ cdef class NASA(HeatCapacityModel):
         for poly in self.polynomials:
             poly.changeBaseEnthalpy(deltaH)
         return self
-    
+
+    cpdef NASA changeBaseEntropy(self, double deltaS):
+        """
+        Add deltaS in J/molK to the base entropy of formation S298 and return the
+        modified NASA object
+        """
+        for poly in self.polynomials:
+            poly.changeBaseEntropy(deltaS)
+        return self
+
     def toCantera(self):
         """
         Return the cantera equivalent NasaPoly2 object from this NASA object.
