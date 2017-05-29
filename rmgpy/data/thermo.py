@@ -1822,6 +1822,35 @@ class ThermoCentralDatabaseInterface(object):
             logging.info("This RMG job still can run but cannot utilize data from central database.\n")
             return None
 
+    def satisfyRegistrationRequirements(self, species, thermo, thermodb):
+        """
+        Given a species, check if it's allowed to register in 
+        central thermo database.
+
+        Requirements for now: 
+        cyclic, 
+        its thermo is estimated by GAV and no exact match/use heuristics
+        """
+        if not species.molecule[0].isCyclic():
+            return False
+
+        GAV_keywords = 'Thermo group additivity estimation'
+        if isinstance(thermo, ThermoData) and thermo.comment.startswith(GAV_keywords):
+            ringGroups, polycyclicGroups = thermodb.getRingGroupsFromComments(thermo)
+            
+            # use GAV generic node to estimate thermo
+            for group in ringGroups + polycyclicGroups:
+                if group.label in thermodb.groups['ring'].genericNodes + thermodb.groups['polycyclic'].genericNodes:
+                    return True
+            
+            # used some heuristic way to estimate thermo
+            if ") - ring(" in thermo.comment:
+                return True
+            else:
+                return False
+        else:
+            return False
+
     def registerInCentralThermoDB(self, species):
 
         # choose registration table
