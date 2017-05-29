@@ -867,6 +867,12 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
     """
+    @classmethod
+    def setUpClass(self):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        self.database = database.thermo
+
     def connectToTestCentralDatabase(self):
 
         host, port, username, password = getTestingTCDAuthenticationInfo()
@@ -892,6 +898,91 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
         tcdi = self.connectToTestCentralDatabase()
 
         self.assertTrue(tcdi.client is not None)
+
+    def testSatisfyRegistrationRequirements1(self):
+        """
+        the species is non-cyclic, currently regarded no need to 
+        register in thermo central database
+        """
+        tcdi = self.connectToTestCentralDatabase()
+
+        species = Species().fromSMILES('C[CH2]')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements2(self):
+        """
+        the species is for non-cyclic, so no need to register in 
+        thermo central database
+        """
+        tcdi = self.connectToTestCentralDatabase()
+
+        species = Species().fromSMILES('CC')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermoData, self.database))
+
+
+    def testSatisfyRegistrationRequirements3(self):
+        """
+        the thermo is exact match, so no need to register in 
+        thermo central database
+        """
+        tcdi = self.connectToTestCentralDatabase()
+
+        species = Species().fromSMILES('C1CC1')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements4(self):
+        """
+        the thermo is from library, so no need to register in 
+        thermo central database
+        """
+        tcdi = self.connectToTestCentralDatabase()
+
+        species = Species().fromSMILES('[H][H]')
+
+        thermoData = self.database.getThermoDataFromLibraries(species)
+
+        self.assertFalse(tcdi.satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements5(self):
+        """
+        the thermo is matching generic node, so it needs to register in 
+        thermo central database
+
+        In the future, if RMG-database includes corresponding exact match
+        this test should be modified.
+        """
+        tcdi = self.connectToTestCentralDatabase()
+
+        species = Species().fromSMILES('C1C=CC2C=CC2=C1')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertTrue(tcdi.satisfyRegistrationRequirements(species, thermoData, self.database))
+
+    def testSatisfyRegistrationRequirements6(self):
+        """
+        the thermo is matching generic node, so it needs to register in 
+        thermo central database
+
+        In the future, if RMG-database includes corresponding exact match
+        this test should be modified.
+        """
+        tcdi = self.connectToTestCentralDatabase()
+
+        species = Species().fromSMILES('C1=C=C2CC23C=CC=1C=C3')
+
+        thermoData = self.database.getThermoDataFromGroups(species)
+
+        self.assertTrue(tcdi.satisfyRegistrationRequirements(species, thermoData, self.database))
 
     def testRegisterInCentralThermoDB1(self):
         """
