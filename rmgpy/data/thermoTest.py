@@ -867,6 +867,13 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
     """
+    def connectToTestCentralDatabase(self):
+
+        host, port, username, password = getTestingTCDAuthenticationInfo()
+        application = 'test'
+
+        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
+        return tcdi
 
     def testConnectFailure(self):
 
@@ -882,10 +889,7 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
     def testConnectSuccess(self):
 
-        host, port, username, password = getTestingTCDAuthenticationInfo()
-        application = 'test'
-
-        tcdi = ThermoCentralDatabaseInterface(host, port, username, password, application)
+        tcdi = self.connectToTestCentralDatabase()
 
         self.assertTrue(tcdi.client is not None)
 
