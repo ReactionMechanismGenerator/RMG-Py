@@ -101,6 +101,23 @@ def generateThermoData(spc, thermoClass=NASA):
         return None
     
     thermo0 = thermodb.getThermoData(spc) 
+
+    # 1. maybe only submit cyclic core
+    # 2. to help radical prediction, HBI should also
+    #    look up centrailThermoDB for its saturated version
+    #    currently it only looks up libraries or estimates via GAV 
+    from rmgpy.rmg.input import getInput
+    
+    try:
+        thermoCentralDatabase = getInput('thermoCentralDatabase')
+    except Exception, e:
+        logging.debug('thermoCentralDatabase could not be found.')
+        thermoCentralDatabase = None
+    
+    if thermoCentralDatabase and thermoCentralDatabase.client \
+        and thermoCentralDatabase.satisfyRegistrationRequirements(spc, thermo0, thermodb):
+        
+        thermoCentralDatabase.registerInCentralThermoDB(spc)
         
     return processThermoData(spc, thermo0, thermoClass)    
 

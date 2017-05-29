@@ -37,6 +37,7 @@ import re
 import math
 import logging
 import numpy
+import time
 from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
@@ -736,6 +737,9 @@ class ThermoDatabase(object):
             self.depository = {}
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
+
+        self.recordRingGenericNodes()
+        self.recordPolycylicGenericNodes()
         
     def loadDepository(self, path):
         """
@@ -991,7 +995,23 @@ class ThermoDatabase(object):
             libstr = os.path.join(groupsPath, 'Other_Library.txt'),
         )
 
+    def recordPolycylicGenericNodes(self):
 
+        self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
+        for label, entry in self.groups['polycyclic'].entries.iteritems():
+
+            if isinstance(entry.data, ThermoData): 
+                continue
+            self.groups['polycyclic'].genericNodes.append(label)
+
+    def recordRingGenericNodes(self):
+
+        self.groups['ring'].genericNodes = ['Ring']
+        for label, entry in self.groups['ring'].entries.iteritems():
+
+            if isinstance(entry.data, ThermoData): 
+                continue
+            self.groups['ring'].genericNodes.append(label)
     def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
@@ -1767,6 +1787,104 @@ class ThermoDatabase(object):
             raise Exception('Species {0} thermo appears to not be estimated using any methods.'.format(species))
         
         return source
+
+class ThermoCentralDatabaseInterface(object):
+    """
+    A class for interfacing with RMG online thermo central database.
+    """
+
+    def __init__(self, host, port, username, password, application):
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+        self.application = application
+        self.client = self.connect()
+
+    def connect(self):
+        
+        import pymongo
+
+        remote_address = 'mongodb://{0}:{1}@{2}/thermoCentralDB'.format(self.username, 
+                                                            self.password,
+                                                            self.host)
+        client = pymongo.MongoClient(remote_address, 
+                                    self.port, 
+                                    serverSelectionTimeoutMS=2000)
+        try:
+            client.server_info()
+            logging.info("\nConnection success to RMG Thermo Central Database!\n")
+            return client
+        
+        except (pymongo.errors.ServerSelectionTimeoutError,
+                pymongo.errors.OperationFailure):
+            logging.info("\nConnection failure to RMG Thermo Central Database...")
+            logging.info("This RMG job still can run but cannot utilize data from central database.\n")
+            return None
+
+    def satisfyRegistrationRequirements(self, species, thermo, thermodb):
+        """
+        Given a species, check if it's allowed to register in 
+        central thermo database.
+
+        Requirements for now: 
+        cyclic, 
+        its thermo is estimated by GAV and no exact match/use heuristics
+        """
+        if not species.molecule[0].isCyclic():
+            return False
+
+        GAV_keywords = 'Thermo group additivity estimation'
+        if isinstance(thermo, ThermoData) and thermo.comment.startswith(GAV_keywords):
+            ringGroups, polycyclicGroups = thermodb.getRingGroupsFromComments(thermo)
+            
+            # use GAV generic node to estimate thermo
+            for group in ringGroups + polycyclicGroups:
+                if group.label in thermodb.groups['ring'].genericNodes + thermodb.groups['polycyclic'].genericNodes:
+                    return True
+            
+            # used some heuristic way to estimate thermo
+            if ") - ring(" in thermo.comment:
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def registerInCentralThermoDB(self, species):
+
+        # choose registration table
+        db =  getattr(self.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
+        
+        # prepare registration entry
+        try:
+            aug_inchi = species.getAugmentedInChI()
+
+            # check if it's registered before or
+            # already have available data in results_table
+            registered_entries = list(registration_table.find({"aug_inchi": aug_inchi}))
+            finished_entries = list(results_table.find({"aug_inchi": aug_inchi}))
+            
+            if len(registered_entries) + len(finished_entries) > 0 :
+                return
+
+            SMILES_input = species.molecule[0].toSMILES()
+            status = 'pending'
+            species_registration_entry = {'aug_inchi': aug_inchi,
+                                        'SMILES_input': SMILES_input,
+                                        'radical_number': species.molecule[0].getRadicalCount(),
+                                        'status': status,
+                                        'user': self.username,
+                                        'application': self.application,
+                                        'timestamp': time.time()
+                                        }
+
+            registration_table.insert(species_registration_entry)
+
+        except ValueError:
+            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
 
 def findCp0andCpInf(species, heatCap):
     """

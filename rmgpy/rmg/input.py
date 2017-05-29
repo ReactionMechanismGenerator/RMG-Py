@@ -356,6 +356,20 @@ def generatedSpeciesConstraints(**kwargs):
         
         rmg.speciesConstraints[key] = value
 
+def thermoCentralDatabase(host,
+                        port,
+                        username,
+                        password,
+                        application):
+    
+    from rmgpy.data.thermo import ThermoCentralDatabaseInterface
+    rmg.thermoCentralDatabase = ThermoCentralDatabaseInterface(host,
+                                                            port,
+                                                            username,
+                                                            password,
+                                                            application)
+                    
+
 ################################################################################
 
 def setGlobalRMG(rmg0):
@@ -411,6 +425,7 @@ def readInputFile(path, rmg0):
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
+        'thermoCentralDatabase': thermoCentralDatabase
     }
 
     try:
@@ -669,6 +684,8 @@ def getInput(name):
             return rmg.speciesConstraints
         elif name == 'quantumMechanics':
             return rmg.quantumMechanics
+        elif name == 'thermoCentralDatabase':
+            return rmg.thermoCentralDatabase
         else:
             raise Exception('Unrecognized keyword: {}'.format(name))
     else:
