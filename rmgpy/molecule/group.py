@@ -59,6 +59,7 @@ class GroupAtom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `lonePairs`         ``list``            The number of lone electron pairs
     'charge'            ''list''            The partial charge of the atom
+    `props`             ``dict``            Dictionary for storing additional atom properties
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -68,7 +69,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None):
+    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, props=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -78,6 +79,7 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lonePairs = lonePairs or []
+        self.props = props or {}
 
     def __reduce__(self):
         """
@@ -125,7 +127,14 @@ class GroupAtom(Vertex):
         Return a deep copy of the :class:`GroupAtom` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.charge[:], self.label, self.lonePairs[:])
+        return GroupAtom(
+            self.atomType[:],
+            self.radicalElectrons[:],
+            self.charge[:],
+            self.label,
+            self.lonePairs[:],
+            deepcopy(self.props),
+        )
 
     def __changeBond(self, order):
         """

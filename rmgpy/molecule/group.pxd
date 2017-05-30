@@ -38,6 +38,7 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lonePairs
+    cdef public dict props
 
     cpdef Vertex copy(self)
 
