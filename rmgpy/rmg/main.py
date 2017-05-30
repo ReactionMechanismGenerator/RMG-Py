@@ -585,6 +585,13 @@ class RMG(util.Subject):
 
                 self.done = True
                 objectsToEnlarge = []
+                newSurfaceSpcsAdd = set()
+                newSurfaceRxnsAdd = set()
+                newSurfaceSpcsLoss = set()
+                newSurfaceRxnsLoss = set()
+                surfSpcs = set(self.reactionModel.surfaceSpecies)
+                surfRxns = set(self.reactionModel.surfaceReactions)
+                
                 allTerminated = True
                 numCoreSpecies = len(self.reactionModel.core.species)
                 for index, reactionSystem in enumerate(self.reactionSystems):
@@ -595,20 +602,19 @@ class RMG(util.Subject):
                     if numCoreSpecies < modelSettings.minCoreSizeForPrune:
                         # Turn pruning off if we haven't reached minimum core size.
                         prune = False
-    
-                    try: terminated, obj,surfaceSpecies,surfaceReactions = reactionSystem.simulate(
+                        
+                    try: terminated, obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
                         edgeSpecies = self.reactionModel.edge.species,
                         edgeReactions = self.reactionModel.edge.reactions,
-                        surfaceSpecies = self.reactionModel.surfaceSpecies,
-                        surfaceReactions = self.reactionModel.surfaceReactions,
+                        surfaceSpecies = list(surfSpcs),
+                        surfaceReactions = list(surfRxns),
                         pdepNetworks = self.reactionModel.networkList,
                         prune = prune,
                         modelSettings=modelSettings,
                         simulatorSettings = simulatorSettings,
                     )
-                    
                     except:
                         logging.error("Model core reactions:")
                         if len(self.reactionModel.core.reactions) > 5:
@@ -618,24 +624,51 @@ class RMG(util.Subject):
                             logging.error(prettify(repr(self.reactionModel.core.reactions)))
                         self.makeSeedMech()
                         raise
-    
-                    self.reactionModel.surfaceSpecies = surfaceSpecies
-                    self.reactionModel.surfaceReactions = surfaceReactions
-                    
+
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
                         
+                    newSurfaceSpecies = set(newSurfaceSpecies)
+                    newSurfaceReactions = set(newSurfaceReactions)
+                    
+                    addedRxns = {k for k in obj if isinstance(k,Reaction)}
+                    addedSurfaceRxns = newSurfaceReactions - surfRxns
+                    
+                    addedBulkRxns = addedRxns-addedSurfaceRxns
+                    lostSurfaceRxns = (surfRxns - newSurfaceReactions) | addedBulkRxns
+                    
+                    addedSpcs = {k for k in obj if isinstance(k,Species)} | {k.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si) for k in obj if isinstance(k,PDepNetwork)}
+                    lostSurfaceSpcs = (surfSpcs-newSurfaceSpecies) | addedSpcs
+                    addedSurfaceSpcs = newSurfaceSpecies - surfSpcs
+                    
+                    newSurfaceSpcsAdd = newSurfaceSpcsAdd | addedSurfaceSpcs
+                    newSurfaceRxnsAdd = newSurfaceRxnsAdd | addedSurfaceRxns
+                    newSurfaceSpcsLoss = newSurfaceSpcsLoss | lostSurfaceSpcs
+                    newSurfaceRxnsLoss = newSurfaceRxnsLoss | lostSurfaceRxns
+                    
                     allTerminated = allTerminated and terminated
                     logging.info('')
-                    
+                        
                     # If simulation is invalid, note which species should be added to
                     # the core
-                    if obj:
-                        objectsToEnlarge = self.processToSpeciesNetworks(obj)
+                    if obj != [] and not (obj is None):
+                        objects = self.processToSpeciesNetworks(obj)
+                        for ob in objects:
+                            if not (ob in objectsToEnlarge):
+                                if isinstance(ob,Species): #keep Species before PDepNetworks
+                                    objectsToEnlarge.insert(0,ob)
+                                elif isinstance(ob[0],PDepNetwork):
+                                    objectsToEnlarge.append(ob)
+                                else:
+                                    raise TypeError('processed object not recognized')
+
                         self.done = False
-        
+                        
+                    if newSurfaceRxnsAdd != set() or newSurfaceRxnsLoss != set() or newSurfaceSpcsLoss != set() or newSurfaceSpcsAdd != set():
+                        self.done = False
+                        
                 if not self.done: # There is something that needs exploring/enlarging
-                    
+
                     # If we reached our termination conditions, then try to prune
                     # species from the edge
                     if allTerminated:
@@ -647,21 +680,13 @@ class RMG(util.Subject):
                     # Enlarge objects identified by the simulation for enlarging
                     # These should be Species or Network objects
                     logging.info('')
+
                     objectsToEnlarge = list(set(objectsToEnlarge))
-    
-                    if len(objectsToEnlarge) == 0:
-                        raise Exception("Expected a species or pdep object to enlarge, but there wasn't one found.")
-                    
+
                     # Add objects to enlarge to the core first
                     for objectToEnlarge in objectsToEnlarge:
-                        if len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies:
-                            maxNumSpcsHit = True
-                            break
                         self.reactionModel.enlarge(objectToEnlarge)
                         
-                    if maxNumSpcsHit: #breaks the while loop 
-                        break
-                    
                     if len(self.reactionModel.core.species) > numCoreSpecies:
                         tempModelSettings = deepcopy(modelSettings)
                         tempModelSettings.toleranceKeepInEdge = 0
@@ -693,7 +718,19 @@ class RMG(util.Subject):
                         self.reactionModel.enlarge(reactEdge=True, 
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
-    
+                    
+                    #Adjust Surface
+                    #we add added species and remove any species moved out of the core
+                    #for now we remove reactions that become part of a PDepNetwork by intersecting with the core
+                    #thus the surface algorithm currently (June 2017) is not implemented for pdep networks
+                    self.reactionModel.surfaceSpecies = list(((surfSpcs | newSurfaceSpcsAdd)-newSurfaceSpcsLoss) & set(self.reactionModel.core.species))
+                    self.reactionModel.surfaceReactions = list(((surfRxns | newSurfaceRxnsAdd)-newSurfaceRxnsLoss) & set(self.reactionModel.core.reactions))
+                        
+                    maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
+
+                    if maxNumSpcsHit: #breaks the while loop 
+                        break
+                    
                 self.saveEverything()
     
                 # Consider stopping gracefully if the next iteration might take us
