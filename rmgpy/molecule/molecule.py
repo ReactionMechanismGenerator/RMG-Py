@@ -82,6 +82,7 @@ class Atom(Vertex):
     `lonePairs`         ``short``           The number of lone electron pairs
     `id`                ``int``             Number assignment for atom tracking purposes
     `bonds`             ``dict``            Dictionary of bond objects with keys being neighboring atoms
+    `props`             ``dict``            Dictionary for storing additional atom properties
     `mass`              ``int``             atomic mass of element (read only)
     `number`            ``int``             atomic number of element (read only)
     `symbol`            ``str``             atomic symbol of element (read only)
@@ -92,7 +93,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -105,6 +106,7 @@ class Atom(Vertex):
         self.lonePairs = lonePairs
         self.coords = coords
         self.id = id
+        self.props = props or {}
 
     def __str__(self):
         """
@@ -267,6 +269,7 @@ class Atom(Vertex):
         a.lonePairs = self.lonePairs
         a.coords = self.coords[:]
         a.id = self.id
+        a.props = deepcopy(self.props)
         return a
 
     def isHydrogen(self):

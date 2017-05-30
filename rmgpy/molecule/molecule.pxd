@@ -45,7 +45,7 @@ cdef class Atom(Vertex):
     cdef public numpy.ndarray coords
     cdef public short lonePairs
     cdef public int id
-
+    cdef public dict props
     
     cpdef bint equivalent(self, Vertex other) except -2
 
