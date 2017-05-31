@@ -613,20 +613,56 @@ cdef class ReactionSystem(DASx):
         stepTime = 1e-12
         prevTime = self.t
         
+        firstTime = True
+        
         while not terminated:
             # Integrate forward in time by one time step
-            try:
-                self.step(stepTime)
-            except DASxError as e:
-                logging.error("Trying to step from time {} to {}".format(prevTime, stepTime))
-                logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
-                logging.error("Core species moles: {!r}".format(self.y[:numCoreSpecies]))
-                logging.error("Volume: {!r}".format(self.V))
-                logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
-                logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
-                logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
-                raise e
-            
+            if not firstTime:
+                try:
+                    self.step(stepTime)
+                except DASxError as e:
+                    logging.error("Trying to step from time {} to {}".format(prevTime, stepTime))
+                    logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
+                    logging.error("Core species moles: {!r}".format(self.y[:numCoreSpecies]))
+                    logging.error("Volume: {!r}".format(self.V))
+                    logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
+                    logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
+                    logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
+                    logging.error("A DASPK Error Has Occurred")
+                    
+                    logging.info('Resurrecting Model...')
+                    if maxSpecies:
+                        logging.info('At time {0:10.4e} s, species {1} added to model bulk core based on flux to resurrect solver'.format(self.t, maxSpecies))
+                        self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
+                        logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                        self.logConversions(speciesIndex, y0)
+                        invalidObjects.append(maxSpecies)
+                    if maxAccumReaction:
+                        logging.info('At time {0:10.4e} s, Reaction {1} added to model bulk core based on minimum difference in total log(accumulation number) to resurrect solver'.format(self.t, maxAccumReaction))
+                        self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
+                        logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                        self.logConversions(speciesIndex, y0)
+                        invalidObjects.append(maxAccumReaction)
+                    if maxLayeringReaction:
+                        invalidObjects.append(maxLayeringReaction)
+                        newSurfaceReactions.append(maxLayeringReaction)
+                        newSurfaceReactionInds.append(maxLayeringReactionIndex)
+                        logging.info('At time {0:10.4e} s, Reaction {1} added to model surface based on minimum difference in total log(accumulation number) to resurrect solver'.format(self.t, maxAccumReaction))
+                        self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
+                        logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+    
+                    invalidObjects = list(set(invalidObjects))
+                        
+                    self.logConversions(speciesIndex, y0)
+                    
+                    if len(invalidObjects) == 0:
+                        logging.error('Model Resurrection failure: No available horcruxes (objects) for resurrection')
+                        raise e
+                    else:
+                        return False, invalidObjects, surfaceSpecies, surfaceReactions
+            else:
+                firstTime = False
+                
             y_coreSpecies = self.y[:numCoreSpecies]
             totalMoles = numpy.sum(y_coreSpecies)
             if sensitivity:
