@@ -536,6 +536,61 @@ multiplicity 2
                             family = 'H_Abstraction')
         self.assertFalse(compare_isotopomers(reaction2,magicReaction))
 
+    def testCorrectEntropy(self):
+        """
+        Tests that correctEntropy effectively makes the isotopomer have the same
+        thermo as isotopeless with the change in entropy corresponding to the
+        symmetry difference.
+
+        This example compares propane to a asymmetrically labeled propane. 
+        """
+        from rmgpy.thermo.nasa import NASA, NASAPolynomial
+        from copy import deepcopy
+        from rmgpy import constants
+        propanei = Species().fromAdjacencyList(
+        """
+1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3  C u0 p0 c0 i13 {2,S} {9,S} {10,S} {11,S}
+4  H u0 p0 c0 {1,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+        """)
+        propane = Species().fromAdjacencyList(
+        """
+1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+4  H u0 p0 c0 {1,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+        """)
+
+        # get thermo of propane
+        original_thermo = NASA(polynomials=[NASAPolynomial(
+                coeffs=[1.10564,0.0315339,-1.48274e-05,3.39621e-09,-2.97953e-13,-14351.9,18.775], 
+                       Tmin=(100,'K'), Tmax=(3370.6,'K')), NASAPolynomial(
+                coeffs=[-1.45473,0.0241202,-6.87667e-06,9.03634e-10,-4.48389e-14,-6688.59,43.0459], 
+                       Tmin=(3370.6,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'),
+                comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)""")
+        propane.thermo = deepcopy(original_thermo)
+        propanei.thermo = deepcopy(original_thermo)
+
+        correct_entropy(propanei,propane)
+
+        self.assertAlmostEqual(propane.getEnthalpy(298),propanei.getEnthalpy(298))
+        self.assertAlmostEqual(propanei.getEntropy(298)-propane.getEntropy(298),constants.R * np.log(2))
+
     def testGenerateIsotopomers(self):
         """
         Test that the generation of isotopomers with N isotopes works.
