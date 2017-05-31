@@ -126,7 +126,7 @@ def generate_isotope_model(outputDirectory, rmg0, isotopes, useOriginalReactions
     clusters = cluster(rmg.reactionModel.core.reactions)
     logging.info('isotope: fixing the directions of every reaction to a standard')
     for isotopomerRxnList in clusters:
-        ensureReactionDirection(isotopomerRxnList)
+        ensure_reaction_direction(isotopomerRxnList)
 
     consistent = True
     logging.info("isotope: checking symmetry is consistent among isotopomers")
@@ -410,6 +410,39 @@ def remove_isotope(labeledObj, inplace = False):
     else:
         raise TypeError('Only Reaction, Species, and Molecule objects are supported')
 
+def ensure_reaction_direction(isotopomerRxns):
+    """
+    given a list of reactions with varying isotope labels but identical structure,
+    obtained from the `cluster` method, this method remakes the kinetics so that 
+    they all face the same direction.
+    """
+
+    # find isotopeless reaction as standard
+    reference = isotopomerRxns[0]
+    family = getDB('kinetics').families[reference.family]
+    if family.ownReverse:
+        for rxn in isotopomerRxns:
+            if not compare_isotopomers(rxn, reference, eitherDirection=False):
+                # the reaction is in the oposite direction
+                logging.info('isotope: identified flipped reaction direction in reaction number {} of reaction {}. Altering the direction.'.format(rxn.index, str(rxn)))
+                # reverse reactants and products
+                rxn.reactants, rxn.products = rxn.products, rxn.reactants
+                rxn.pairs = [(p,r) for r,p in rxn.pairs]
+
+                # calculateDegeneracy
+                rxnMols = TemplateReaction(reactants = [spec.molecule[0] for spec in rxn.reactants],
+                                           products = [spec.molecule[0] for spec in rxn.products])
+                forwardDegen = family.calculateDegeneracy(rxnMols)
+
+                # set degeneracy to isotopeless reaction
+                rxn.degeneracy = reference.degeneracy
+                # make this reaction have kinetics of isotopeless reaction
+                newKinetics = deepcopy(reference.kinetics)
+                rxn.kinetics = newKinetics
+
+                # set degeneracy to new reaction
+                rxn.degeneracy = forwardDegen
+
 
 def redo_isotope(atomList):
     """
@@ -423,7 +456,7 @@ def compare_isotopomers(obj1, obj2, eitherDirection = True):
     """
     This method takes two species or reaction objects and returns true if
     they only differ in isotopic labeling, and false if they have other
-    differences.
+    differences. This also compares templates and families for TemplateReactions.
 
     The remove_isotope method can be slow, especially when comparing molecules
     and reactions. This was due to many copying of objects.
@@ -435,6 +468,7 @@ def compare_isotopomers(obj1, obj2, eitherDirection = True):
 
     atomlist = remove_isotope(obj1,inplace=True) + remove_isotope(obj2,inplace=True)
     if isinstance(obj1,Reaction):
+        # make sure isotomorphic
         comparisonBool = obj1.isIsomorphic(obj2, eitherDirection)
         if comparisonBool and isinstance(obj1, TemplateReaction):
             # ensure families are the same

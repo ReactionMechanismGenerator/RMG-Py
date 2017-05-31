@@ -304,6 +304,113 @@ class IsotopesTest(unittest.TestCase):
 
         self.assertTrue(storedLabeledRxn.isIsomorphic(labeledRxn))
 
+    def testEnsureReactionDirection(self):
+        """
+        Tests that the direction of the reaction is constant for every isotopomer
+        """
+
+        # get reactions
+        
+        methyl = Species().fromSMILES('[CH3]')
+        methyli = Species().fromAdjacencyList(
+        """
+multiplicity 2
+1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+        """)
+        methane = Species().fromSMILES('C')
+        methanei = Species().fromAdjacencyList(
+        """
+1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+        """)
+        
+        dipropyl = Species().fromSMILES('[CH2]C[CH2]')
+        dipropyli = Species().fromAdjacencyList("""
+multiplicity 3
+1 C u1 p0 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 C u0 p0 c0 {1,S} {5,S} {8,S} {9,S}
+5 C u1 p0 c0 i13 {4,S} {6,S} {7,S}
+6 H u0 p0 c0 {5,S}
+7 H u0 p0 c0 {5,S}
+8 H u0 p0 c0 {4,S}
+9 H u0 p0 c0 {4,S}
+        """)
+        
+        propyl = Species().fromSMILES('CC[CH2]')
+        propyli = Species().fromAdjacencyList("""
+multiplicity 2
+1  C u1 p0 c0 i13 {2,S} {3,S} {4,S}
+2  H u0 p0 c0 {1,S}
+3  H u0 p0 c0 {1,S}
+4  C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
+5  C u0 p0 c0 {4,S} {8,S} {9,S} {10,S}
+6  H u0 p0 c0 {4,S}
+7  H u0 p0 c0 {4,S}
+8  H u0 p0 c0 {5,S}
+9  H u0 p0 c0 {5,S}
+10 H u0 p0 c0 {5,S}
+        """)
+        propyl.label='propyl'
+        propyli.label='propyli'
+        dipropyl.label = 'dipropyl'
+        dipropyli.label = 'dipropyli'
+        methyl.label = 'methyl'
+        methyli.label = 'methyli'
+        methane.label = 'methane'
+        methanei.label = 'methanei'
+        # make reactions
+        rxn1 = TemplateReaction(reactants=[dipropyl, methane],
+                                products =[methyl, propyl],
+                                kinetics = Arrhenius(A=(1.,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                                family = 'H_Abstraction',
+                                template = ['a','c'],
+                                degeneracy = 8,
+                                pairs = [[methane,methyl],[dipropyl,propyl]])
+        rxn2 = TemplateReaction(reactants=[methyli, propyl],
+                                products =[methanei, dipropyl],
+                                kinetics = Arrhenius(A=(1e-20,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                                family = 'H_Abstraction',
+                                template = ['b','d'],
+                                degeneracy = 3,
+                                pairs = [[methyli,methanei],[propyl,dipropyl]])
+        rxn3 = TemplateReaction(reactants=[methane, dipropyli],
+                                products =[methyl, propyli],
+                                kinetics = Arrhenius(A=(0.5,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                                family = 'H_Abstraction',
+                                template = ['a','c'],
+                                degeneracy = 4,
+                                pairs = [[methane,methyl],[dipropyli,propyli]])
+        rxn4 = TemplateReaction(reactants=[methyli, propyli],
+                                products =[methanei, dipropyli],
+                                kinetics = Arrhenius(A=(1e-20,'cm^3/(mol*s)'), Ea = (2., 'kJ/mol'), n=0.),
+                                family = 'H_Abstraction',
+                                template = ['d','b'],
+                                degeneracy = 3,
+                                pairs = [[methyli,methanei],[propyli,dipropyli]])
+
+        rxns = [rxn1, rxn2, rxn3, rxn4]
+
+        # call method
+        ensure_reaction_direction(rxns)
+        
+        for rxn in rxns:
+            # ensure there is a methane in reactants for each reaction
+            self.assertTrue(any([compare_isotopomers(methane, reactant) for reactant in rxn.reactants]),msg='ensureReactionDirection didnt flip the proper reactants and products')
+            
+            # ensure kinetics is correct
+            if any([dipropyli.isIsomorphic(reactant) for reactant in rxn.reactants]):
+                self.assertAlmostEqual(rxn.kinetics.A.value, 0.5, msg= 'The A value returned, {0}, is incorrect. Check the reactions degeneracy and how A.value is obtained. The reaction is:{1}'.format(rxn.kinetics.A.value, rxn))
+            else:
+                self.assertAlmostEqual(rxn.kinetics.A.value, 1. , msg='The A value returned, {0}, is incorrect. Check the reactions degeneracy and how A.value is obtained. The reaction is:{1}'.format(rxn.kinetics.A.value, rxn))
+
     def testCompareIsotopomersWorksOnSpecies(self):
         """
         Test that compareIsotomers works on species objects
