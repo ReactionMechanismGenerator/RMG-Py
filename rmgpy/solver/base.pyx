@@ -542,6 +542,9 @@ cdef class ReactionSystem(DASx):
         numPdepNetworks = len(pdepNetworks)
         numCoreReactions = len(coreReactions)
         
+        assert set(coreReactions) >= set(surfaceReactions), 'given surface reactions are not a subset of core reactions'
+        assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species' 
+        
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
@@ -552,8 +555,6 @@ cdef class ReactionSystem(DASx):
         
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
-        
-       
 
         invalidObject = None
         newSurfaceReactions = []
@@ -833,7 +834,17 @@ cdef class ReactionSystem(DASx):
                 maxSurfaceAccumReactionIndex = -1
                 maxSurfaceAccumReaction = None
                 maxSurfaceDifLnAccumNum = 0.0
+                
+            #manage surface reaction movement "on the fly"
+            if maxSurfaceAccumReaction and maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
+                logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
+                surfaceReactions.remove(maxSurfaceAccumReaction)
+                surfaceSpecies,surfaceReactions =self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                surfaceReactionIndices = self.surfaceReactionIndices
+                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
             
+            #surface flux calculations
             surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
             surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
             surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
@@ -849,6 +860,15 @@ cdef class ReactionSystem(DASx):
                 maxSurfaceSpecies = None
                 maxSurfaceSpeciesRate = 0.0
             
+            #manage surface species movement "on the fly"
+            if maxSurfaceSpecies and maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore:
+                logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
+                surfaceSpecies.remove(maxSurfaceSpecies)
+                surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                surfaceReactionIndices = self.surfaceReactionIndices
+                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
                 # Set the maximum unimolecular rate to be kB*T/h
@@ -865,24 +885,7 @@ cdef class ReactionSystem(DASx):
                         if not bimolecularThreshold[i,j]:
                             if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
                                 bimolecularThreshold[i,j] = True
-                                                    
-            #manage surface movement "on the fly"
-            if maxSurfaceSpecies and maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore:
-                logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
-                surfaceSpecies.remove(maxSurfaceSpecies)
-                surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                surfaceSpeciesIndices = self.surfaceSpeciesIndices
-                surfaceReactionIndices = self.surfaceReactionIndices
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                
-            if maxSurfaceAccumReaction and maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
-                logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
-                surfaceReactions.remove(maxSurfaceAccumReaction)
-                surfaceSpecies,surfaceReactions =self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                surfaceSpeciesIndices = self.surfaceSpeciesIndices
-                surfaceReactionIndices = self.surfaceReactionIndices
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-              
+            
                 # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
             if (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject):
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
@@ -929,8 +932,7 @@ cdef class ReactionSystem(DASx):
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
                     self.logConversions(speciesIndex, y0)
                     break
-            
-            
+
             # If pressure dependence, also check the network leak fluxes
             if pdepNetworks:
                 if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
