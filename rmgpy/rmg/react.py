@@ -55,28 +55,53 @@ def react(*spcTuples):
 
     Returns a flat generator object containing the generated Reaction objects.
     """
-    
-    combos = []
-
-    for t in spcTuples:
-        t = tuple([spc.copy(deep=True) for spc in t])
-        if len(t) == 1:#unimolecular reaction
-            spc, = t
-            mols = [(mol, spc.index) for mol in spc.molecule]
-            combos.extend([(combo,) for combo in mols])
-        elif len(t) == 2:#bimolecular reaction
-            spcA, spcB = t
-            molsA = [(mol, spcA.index) for mol in spcA.molecule]
-            molsB = [(mol, spcB.index) for mol in spcB.molecule]
-            combos.extend(itertools.product(molsA, molsB))
 
     results = map_(
-                reactMolecules,
-                combos
-            )
+                reactSpecies,
+                spcTuples)
 
-    reactionList = itertools.chain.from_iterable(results)
-    return reactionList
+    reactions = itertools.chain.from_iterable(results)
+
+    return reactions
+
+def reactSpecies(speciesTuple):
+    """
+    given one species tuple, will find the reactions and remove degeneracy
+    from them.
+    """
+    speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
+
+    _labelListOfSpecies(speciesTuple)
+
+    combos = getMoleculeTuples(speciesTuple)
+
+    reactions = map(reactMolecules,combos)
+    reactions = list(itertools.chain.from_iterable(reactions))
+    # remove reverse reaction
+    reactions = findDegeneracies(reactions)
+    # add reverse attribute to families with ownReverse
+    for rxn in reactions:
+        family = getDB('kinetics').families[rxn.family]
+        if family.ownReverse:
+            family.addReverseAttribute(rxn)
+    # fix the degneracy of (not ownReverse) reactions found in the backwards
+    # direction
+    correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
+    reduceSameReactantDegeneracy(reactions)
+    # get a molecule list with species indexes
+    zippedList = []
+    for spec in speciesTuple:
+        for mol in spec.molecule:
+            zippedList.append((mol,spec.index))
+
+    molecules, reactantIndices = zip(*zippedList)
+
+    deflate(reactions,
+            [spec for spec in speciesTuple],
+            [spec.index for spec in speciesTuple])
+
+    return reactions
+
 def _labelListOfSpecies(speciesTuple):
     """
     given a list or tuple of species' objects, ensure all their atoms' id are
@@ -102,6 +127,26 @@ def _labelListOfSpecies(speciesTuple):
             # remake resonance isomers with new labeles
             species.molecule = [mol]
             species.generateResonanceIsomers(keepIsomorphic = True)
+            
+    
+def getMoleculeTuples(speciesTuple):
+    """
+    returns a list of molule tuples from given speciesTuples.
+
+    The species objects should already have resonance isomers
+    generated for the function to work
+    """
+    combos = []
+    if len(speciesTuple) == 1:#unimolecular reaction
+        spc, = speciesTuple
+        mols = [(mol, spc.index) for mol in spc.molecule]
+        combos.extend([(combo,) for combo in mols])
+    elif len(speciesTuple) == 2:#bimolecular reaction
+        spcA, spcB = speciesTuple
+        molsA = [(mol, spcA.index) for mol in spcA.molecule]
+        molsB = [(mol, spcB.index) for mol in spcB.molecule]
+        combos.extend(itertools.product(molsA, molsB))
+    return combos
 
 def getMoleculeTuples(speciesTuple):
     """
@@ -143,11 +188,8 @@ def reactMolecules(moleculeTuples):
     for reactant in molecules:
         reactant.clearLabeledAtoms()
 
-    deflate(reactionList, molecules, reactantIndices)
-
     return reactionList
 
-def deflate(rxns, molecules, reactantIndices):
 def findDegeneracies(rxnList, useSpeciesReaction = True):
     """
     given a list of Reaction object with Molecule objects, this method 
@@ -303,6 +345,7 @@ def correctDegeneracyOfReverseReactions(reactionList, reactants):
             # wrong reaction was sent here
             raise ReactionError('Reaction in reactionList did not match reactants. Reaction: {}, Reactants: {}'.format(rxn,reactants))
 
+def deflate(rxns, species, reactantIndices):
     """
     The purpose of this function is to replace the reactants and
     products of a reaction, stored as Molecule objects by 
@@ -323,13 +366,13 @@ def correctDegeneracyOfReverseReactions(reactionList, reactants):
 
     for i, coreIndex in enumerate(reactantIndices):
         if coreIndex != -1:
-            molDict[molecules[i]] = coreIndex 
+            molDict[species[i].molecule[0]] = coreIndex 
 
     for rxn in rxns:
         deflateReaction(rxn, molDict)
         try:
             deflateReaction(rxn.reverse, molDict) 
-        except AttributeError, e:
+        except AttributeError:
             pass
 
 
@@ -356,23 +399,22 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
 
 def deflateReaction(rxn, molDict):
     """
-    This function deflates a single reaction, and uses the provided 
+    This function deflates a single reaction holding speices objects, and uses the provided 
     dictionary to populate reactants/products/pairs with integer indices,
     if possible.
 
     If the Molecule object could not be found in the dictionary, a new
-    dictionary entry is created, creating a new Species object as the value
+    dictionary entry is created, using the Species object as the value
     for the entry.
 
     The reactants/products/pairs of both the forward and reverse reaction 
     object are populated with the value of the dictionary, either an
     integer index, or either a Species object.
     """
+    for spec in itertools.chain(rxn.reactants, rxn.products):
+        if not spec.molecule[0] in molDict:
+            molDict[spec.molecule[0]] = spec
 
-    for mol in itertools.chain(rxn.reactants, rxn.products):
-        if not mol in molDict:
-            molDict[mol] = Species(molecule=[mol])
-
-    rxn.reactants = [molDict[mol] for mol in rxn.reactants]
-    rxn.products = [molDict[mol] for mol in rxn.products]
-    rxn.pairs = [(molDict[reactant], molDict[product]) for reactant, product in rxn.pairs]
+    rxn.reactants = [molDict[spec.molecule[0]] for spec in rxn.reactants]
+    rxn.products = [molDict[spec.molecule[0]] for spec in rxn.products]
+    rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]
