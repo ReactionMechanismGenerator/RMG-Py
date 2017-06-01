@@ -77,6 +77,50 @@ def react(*spcTuples):
 
     reactionList = itertools.chain.from_iterable(results)
     return reactionList
+def _labelListOfSpecies(speciesTuple):
+    """
+    given a list or tuple of species' objects, ensure all their atoms' id are
+    independent.
+    
+    Modifies the speciesTuple in place, nothing returned.
+    """
+# assert that all species' atomlabels are different
+    def independentIDs():
+        num_atoms = 0
+        IDs = []
+        for species in speciesTuple:
+            num_atoms += len(species.molecule[0].atoms)
+            IDs.extend([atom.id for atom in species.molecule[0].atoms ])
+        num_ID = len(set(IDs))
+        return num_ID == num_atoms
+    # if they are different, relabel and remake atomIDs
+    if not independentIDs():
+        logging.debug('identical atom ids found between species. regenerating')
+        for species in speciesTuple:
+            mol = species.molecule[0]
+            mol.assignAtomIDs()
+            # remake resonance isomers with new labeles
+            species.molecule = [mol]
+            species.generateResonanceIsomers(keepIsomorphic = True)
+
+def getMoleculeTuples(speciesTuple):
+    """
+    returns a list of molule tuples from given speciesTuples.
+
+    The species objects should already have resonance isomers
+    generated for the function to work
+    """
+    combos = []
+    if len(speciesTuple) == 1:#unimolecular reaction
+        spc, = speciesTuple
+        mols = [(mol, spc.index) for mol in spc.molecule]
+        combos.extend([(combo,) for combo in mols])
+    elif len(speciesTuple) == 2:#bimolecular reaction
+        spcA, spcB = speciesTuple
+        molsA = [(mol, spcA.index) for mol in spcA.molecule]
+        molsB = [(mol, spcB.index) for mol in spcB.molecule]
+        combos.extend(itertools.product(molsA, molsB))
+    return combos
 
 def reactMolecules(moleculeTuples):
     """
