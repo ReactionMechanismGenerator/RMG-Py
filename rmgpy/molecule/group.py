@@ -373,13 +373,18 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        # Other properties must have an equivalent in other (and vice versa)
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
         # Otherwise the two atom groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
         """
-        Returns ``True`` if `other` is the same as `self` or is a more
-        specific case of `self`. Returns ``False`` if some of `self` is not
+        Returns ``True`` if `self` is the same as `other` or is a more
+        specific case of `other`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive. 
         """
         cython.declare(group=GroupAtom)
@@ -428,6 +433,13 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        # Other properties must have an equivalent in other
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
+        elif 'inRing' not in self.props and 'inRing' in group.props:
+            return False
         # Otherwise self is in fact a specific case of other
         return True
 

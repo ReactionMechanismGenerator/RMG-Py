@@ -207,6 +207,9 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if 'inRing' in self.props and 'inRing' in ap.props:
+                if self.props['inRing'] != ap.props['inRing']:
+                    return False
             return True
     
     def getDescriptor(self):
@@ -249,6 +252,11 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if 'inRing' in self.props and 'inRing' in atom.props:
+                if self.props['inRing'] != atom.props['inRing']:
+                    return False
+            elif 'inRing' not in self.props and 'inRing' in atom.props:
+                return False
             return True
 
     def copy(self):
