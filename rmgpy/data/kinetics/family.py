@@ -1370,60 +1370,72 @@ class KineticsFamily(Database):
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(self.__generateReactions(reactants, forward=True))
         
-        if self.ownReverse:
-            # for each reaction, make its reverse reaction and store in a 'reverse' attribute
-            for rxn in reactionList:
-                reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                if len(reactions) == 0:
-                    logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
-                    logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
-                    for reactant in rxn.reactants:
-                        logging.info("Reactant")
-                        logging.info(reactant.toAdjacencyList())
-                    for product in rxn.products:
-                        logging.info("Product")
-                        logging.info(product.toAdjacencyList())
-                    logging.error("Debugging why no reaction was found...")
-                    logging.error("Checking whether the family's forbidden species have affected reaction generation...")
-                    # Set family's forbidden structures to empty for now to see if reaction gets generated...
-                    # Note that it is not necessary to check global forbidden structures, because this reaction would not have
-                    # been formed in the first place.
-                    tempObject = self.forbidden
-                    self.forbidden = ForbiddenStructures()  # Initialize with empty one
-                    try:
-                        reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                    finally:
-                        self.forbidden = tempObject
-                    if len(reactions) != 1:
-                        logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                        raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                    else:
-                        logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
-                        # Delete this reaction, since it should probably also be forbidden in the initial direction
-                        # Hack fix for now
-                        del rxn
-                elif len(reactions) > 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                    logging.info("Found the following reverse reactions")
-                    for rxn0 in reactions:
-                        logging.info(str(rxn0))
-                        for reactant in rxn0.reactants:
-                            logging.info("Reactant")
-                            logging.info(reactant.toAdjacencyList())
-                        for product in rxn0.products:
-                            logging.info("Product")
-                            logging.info(product.toAdjacencyList())
-                    raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
-                else:
-                    rxn.reverse = reactions[0]
-
-
-            
-        else: # family is not ownReverse
+        if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(self.__generateReactions(reactants, forward=False))
-            
+
         return reactionList
+
+    def addReverseAttribute(self, rxn):
+        """
+        For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
+        attribute that contains the reverse reaction information (like degeneracy)
+        """
+        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+
+        if self.ownReverse:
+            # make sure to react all resonance structures.
+            tuples = getMoleculeTuples(rxn.products)
+            reactionList = []
+            for tup in tuples:
+                moltup = [mol_and_index[0] for mol_and_index in tup]
+                reactionList.extend(self.__generateReactions(moltup,
+                                                             products=rxn.reactants,
+                                                             forward=True))
+            reactions = findDegeneracies(reactionList)
+            if len(reactions) == 0:
+                logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
+                logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
+                for reactant in rxn.reactants:
+                    logging.info("Reactant")
+                    logging.info(reactant.toAdjacencyList())
+                for product in rxn.products:
+                    logging.info("Product")
+                    logging.info(product.toAdjacencyList())
+                logging.error("Debugging why no reaction was found...")
+                logging.error("Checking whether the family's forbidden species have affected reaction generation...")
+                # Set family's forbidden structures to empty for now to see if reaction gets generated...
+                # Note that it is not necessary to check global forbidden structures, because this reaction would not have
+                # been formed in the first place.
+                tempObject = self.forbidden
+                self.forbidden = ForbiddenStructures()  # Initialize with empty one
+                try:
+                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                finally:
+                    self.forbidden = tempObject
+                if len(reactions) != 1:
+                    logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
+                else:
+                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                    # Delete this reaction, since it should probably also be forbidden in the initial direction
+                    # Hack fix for now
+                    del rxn
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+                logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                logging.info("Found the following reverse reactions")
+                for rxn0 in reactions:
+                    logging.info(str(rxn0))
+                    for reactant in rxn0.reactants:
+                        logging.info("Reactant")
+                        logging.info(reactant.toAdjacencyList())
+                    for product in rxn0.products:
+                        logging.info("Product")
+                        logging.info(product.toAdjacencyList())
+                raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
+            else:
+                rxn.reverse = reactions[0]
+
     
     def calculateDegeneracy(self, reaction):
         """
