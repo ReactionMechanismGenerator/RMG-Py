@@ -50,3 +50,7 @@ class FluxDiagramTest(unittest.TestCase):
         
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)
+
+    def tearDown(self):
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
