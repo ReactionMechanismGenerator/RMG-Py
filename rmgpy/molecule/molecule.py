@@ -885,6 +885,7 @@ class Molecule(Graph):
         self.updateAtomTypes()
         self.updateMultiplicity()
         self.sortAtoms()
+        self.identifyRingMembership()
 
     def getFormula(self):
         """
@@ -1372,6 +1373,7 @@ class Molecule(Graph):
         
         self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
         self.updateAtomTypes()
+        self.identifyRingMembership()
         
         # Check if multiplicity is possible
         n_rad = self.getRadicalCount() 
