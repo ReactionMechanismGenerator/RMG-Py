@@ -683,14 +683,6 @@ The following adjList may have atoms in a different ordering than the input file
                     else:
                         sampleMolecule = entry.item.makeSampleMolecule()
 
-                    #for now ignore sample atoms that use nitrogen types
-                    nitrogen = False
-                    for atom in sampleMolecule.atoms:
-                        if atom.isNitrogen(): nitrogen = True
-                    if nitrogen:
-                        skipped.append(entryName)
-                        continue
-
                     #test accessibility here
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = family.groups.descendTree(sampleMolecule, atoms, strict=True, root = root)
