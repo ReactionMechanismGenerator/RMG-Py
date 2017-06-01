@@ -1549,8 +1549,12 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            
-            products = [product.generateResonanceIsomers() for product in products]
+            if isinstance(products[0],Molecule):
+                products = [product.generateResonanceIsomers() for product in products]
+            elif isinstance(products[0],Species):
+                products = [product.molecule for product in products]
+            else:
+                raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
             
             rxnList0 = rxnList[:]
             rxnList = []
