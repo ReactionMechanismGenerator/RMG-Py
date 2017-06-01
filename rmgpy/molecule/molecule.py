@@ -1839,6 +1839,22 @@ class Molecule(Graph):
         
         return group
 
+    def identifyRingMembership(self):
+        """
+        Performs ring perception and saves ring membership information to the Atom.props attribute.
+        """
+        cython.declare(rc=list, atom=Atom, ring=list)
+
+        # Get the set of relevant cycles
+        rc = self.getRelevantCycles()
+        # Identify whether each atom is in a ring
+        for atom in self.atoms:
+            atom.props['inRing'] = False
+            for ring in rc:
+                if atom in ring:
+                    atom.props['inRing'] = True
+                    break
+
     def getAromaticRings(self, rings=None):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.

@@ -226,6 +226,8 @@ cdef class Molecule(Graph):
 
     cpdef list generate_resonance_structures(self, bint keepIsomorphic=?)
 
+    cpdef identifyRingMembership(self)
+
     cpdef tuple getAromaticRings(self, list rings=?)
 
     cpdef list getDeterministicSmallestSetOfSmallestRings(self)

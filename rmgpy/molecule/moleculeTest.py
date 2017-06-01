@@ -2223,6 +2223,15 @@ multiplicity 2
         result3 = mol3.get_element_count()
         self.assertEqual(expected3, result3)
 
+    def testRingPerception(self):
+        """Test that identifying ring membership of atoms works properly."""
+        mol = Molecule(SMILES='c12ccccc1cccc2')
+        mol.identifyRingMembership()
+        for atom in mol.atoms:
+            if atom.element == 'C':
+                self.assertTrue(atom.props['inRing'])
+            elif atom.element == 'H':
+                self.assertFalse(atom.props['inRing'])
 
 ################################################################################
 
