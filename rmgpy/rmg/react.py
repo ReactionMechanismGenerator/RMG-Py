@@ -104,6 +104,115 @@ def reactMolecules(moleculeTuples):
     return reactionList
 
 def deflate(rxns, molecules, reactantIndices):
+def findDegeneracies(rxnList, useSpeciesReaction = True):
+    """
+    given a list of Reaction object with Molecule objects, this method 
+    removes degenerate reactions and increments the degeneracy of the 
+    reaction object. For multiple transition states, this method adds
+    them as separate duplicate reactions. This method modifies
+    rxnList in place and does not return anything.
+
+    This algorithm used to exist in family.__generateReactions, but was moved
+    here because it didn't have any family dependence.
+    """
+
+    # We want to sort all the reactions into sublists composed of isomorphic reactions
+    # with degenerate transition states
+    rxnSorted = []
+    for rxn0 in rxnList:
+        # find resonance structures for rxn0
+        convertToSpeciesObjects(rxn0)
+        if len(rxnSorted) == 0:
+            # This is the first reaction, so create a new sublist
+            rxnSorted.append([rxn0])
+        else:
+            # Loop through each sublist, which represents a unique reaction
+            for rxnList1 in rxnSorted:
+                # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
+                isomorphic = False
+                identical = False
+                sameTemplate = False
+                for rxn in rxnList1:
+                    isomorphic = rxn0.isIsomorphic(rxn,checkIdentical=False)
+                    if not isomorphic:
+                        identical = False
+                    else:
+                        identical = rxn0.isIsomorphic(rxn,checkIdentical=True)
+                    sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
+                    if not isomorphic:
+                        # a different product was found, go to next list
+                        break
+                    elif not sameTemplate:
+                        # a different transition state was found, mark as duplicate and
+                        # go to the next sublist
+                        rxn.duplicate = True
+                        rxn0.duplicate = True
+                        break
+                    elif identical:
+                        # An exact copy of rxn0 is already in our list, so we can move on to the next rxn
+                        break
+                    else: # sameTemplate and isomorphic but not identical
+                        # This is the right sublist for rxn0, but continue to see if there is an identical rxn
+                        continue
+                else:
+                    # We did not break, so this is the right sublist, but there is no identical reaction
+                    # This means that we should add rxn0 to the sublist as a degenerate rxn
+                    rxnList1.append(rxn0)
+                if isomorphic and sameTemplate:
+                    # We already found the right sublist, so we can move on to the next rxn
+                    break
+            else:
+                # We did not break, which means that there was no isomorphic sublist, so create a new one
+                rxnSorted.append([rxn0])
+
+    rxnList = []
+    for rxnList1 in rxnSorted:
+        # Collapse our sorted reaction list by taking one reaction from each sublist
+        rxn = rxnList1[0]
+        # The degeneracy of each reaction is the number of reactions that were in the sublist
+        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in rxnList1])
+        rxnList.append(rxn)
+        
+    return rxnList
+
+def convertToSpeciesObjects(reaction):
+    """
+    modifies a reaction holding Molecule objects to a reaction holding
+    Species objects, with generated resonance isomers.
+    """
+    # if already species' objects, return none
+    if isinstance(reaction.reactants[0],Species):
+        return None
+    # obtain species with all resonance isomers
+    for i, mol in enumerate(reaction.reactants):
+        spec = Species(molecule = [mol])
+        spec.generateResonanceIsomers(keepIsomorphic=True)
+        reaction.reactants[i] = spec
+    for i, mol in enumerate(reaction.products):
+        spec = Species(molecule = [mol])
+        spec.generateResonanceIsomers(keepIsomorphic=True)
+        reaction.products[i] = spec
+
+    # convert reaction.pairs object to species
+    newPairs=[]
+    for reactant, product in reaction.pairs:
+        newPair = []
+        for reactant0 in reaction.reactants:
+            if reactant0.isIsomorphic(reactant):
+                newPair.append(reactant0)
+                break
+        for product0 in reaction.products:
+            if product0.isIsomorphic(product):
+                newPair.append(product0)
+                break
+        newPairs.append(newPair)
+    reaction.pairs = newPairs
+
+    try:
+        convertToSpeciesObjects(reaction.reverse)
+    except AttributeError:
+        pass
+
     """
     The purpose of this function is to replace the reactants and
     products of a reaction, stored as Molecule objects by 
