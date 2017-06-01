@@ -257,6 +257,22 @@ def convertToSpeciesObjects(reaction):
     except AttributeError:
         pass
 
+def reduceSameReactantDegeneracy(rxnList):
+    """
+    This method reduces the degeneracy of reactions with identical reactants,
+    since translational component of the transition states are already taken
+    into account (so swapping the same reactant is not valid)
+    
+    This comes from work by Bishop and Laidler in 1965
+    """
+    for reaction in rxnList:
+        if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
+            reaction.degeneracy *= 0.5
+            print('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
+        if reaction.reverse and len(reaction.reverse.reactants) == 2 and \
+                                   reaction.reverse.reactants[0].isIsomorphic(reaction.reverse.reactants[1]):
+            reaction.reverse.degeneracy *= 0.5
+            print('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
 
 def correctDegeneracyOfReverseReactions(reactionList, reactants):
     """
