@@ -73,7 +73,6 @@ class TestRMGWorkFlow(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
         
-    @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
@@ -81,6 +80,8 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         In this test, a change of molecules order in a reacting species should 
         not change the reaction template matched.
+        
+        H + C=C=C=O -> O=C[C]=C
         """
 
         # react
@@ -89,16 +90,12 @@ class TestRMGWorkFlow(unittest.TestCase):
         newReactions = []		
         newReactions.extend(react((spc,)))
 
-        # process newly generated reactions to make sure no duplicated reactions
-        self.rmg.reactionModel.processNewReactions(newReactions, spc, None)
-
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
         mol_C3H2O = Molecule().fromSMILES("C=C=C=O")
 
-        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, \
-                                               self.rmg.reactionModel.edge.reactions)
-        self.assertEqual(len(target_rxns), 1)
+        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions)
+        self.assertEqual(len(target_rxns), 2)
 
         # reverse the order of molecules in spc
         spc.molecule = list(reversed(spc.molecule))
@@ -107,16 +104,12 @@ class TestRMGWorkFlow(unittest.TestCase):
         newReactions_reverse = []
         newReactions_reverse.extend(react((spc,)))
 
-        # process newly generated reactions again to make sure no duplicated reactions
-        self.rmg_dummy.reactionModel.processNewReactions(newReactions_reverse, spc, None)
-
         # try to pick out the target reaction 
-        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, \
-                                                       self.rmg_dummy.reactionModel.edge.reactions)
-        self.assertEqual(len(target_rxns_reverse), 1)
+        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
+        self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
-        self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
+        self.assertEqual(target_rxns[0].template, target_rxns_reverse[-1].template)
 
     def testCheckForExistingSpeciesForBiAromatics(self):
         """
