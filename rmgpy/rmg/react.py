@@ -257,6 +257,36 @@ def convertToSpeciesObjects(reaction):
     except AttributeError:
         pass
 
+
+def correctDegeneracyOfReverseReactions(reactionList, reactants):
+    """
+    This method corrects the degeneracy of reactions found when the backwards
+    template is used. Given the following parameters:
+
+        reactionList - list of reactions with their degeneracies already counted
+        reactants - list/tuple of species used in the generateReactions method
+
+    This method modifies reactionList in place and returns nothing
+    
+    This does not adjust for identical reactants, you need to use `reduceSameReactantDegeneracy`
+    to adjust for that.
+    """
+    from rmgpy.reaction import _isomorphicSpeciesList
+    from rmgpy.reaction import ReactionError
+
+    for rxn in reactionList:
+        if _isomorphicSpeciesList(rxn.reactants, reactants):
+            # was forward reaction so ignore
+            continue
+        elif _isomorphicSpeciesList(rxn.products, reactants):
+            # was reverse reaction so should find degeneracy
+            family = getDB('kinetics').families[rxn.family]
+            if not family.ownReverse: 
+                rxn.degeneracy = family.calculateDegeneracy(rxn, ignoreSameReactants=True)
+        else:
+            # wrong reaction was sent here
+            raise ReactionError('Reaction in reactionList did not match reactants. Reaction: {}, Reactants: {}'.format(rxn,reactants))
+
     """
     The purpose of this function is to replace the reactants and
     products of a reaction, stored as Molecule objects by 
