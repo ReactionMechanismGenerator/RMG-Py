@@ -1040,10 +1040,13 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
+            item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], 
+                                               products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
             template = self.getReactionTemplate(item)
-            item.degeneracy = self.calculateDegeneracy(item)
-            
+
+            item.template = self.getReactionTemplateLabels(item)
+            new_degeneracy = self.calculateDegeneracy(item)
+
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
@@ -1063,7 +1066,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.A.value_si /= item.degeneracy
+            new_entry.data.A.value_si /= new_degeneracy
             try:
                 self.rules.entries[new_entry.label].append(new_entry)
             except KeyError:
