@@ -967,6 +967,22 @@ class TestMolecule(unittest.TestCase):
                 self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in group.atoms)
 
+    def testSubgraphIsomorphismRings(self):
+        molecule = Molecule(SMILES='C1CCCC1CCC')
+        groupNoRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r0
+        """)
+        groupRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r1
+        """)
+
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupNoRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupNoRing)
+        self.assertEqual(len(mapping), 3)
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupRing)
+        self.assertEqual(len(mapping), 5)
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
