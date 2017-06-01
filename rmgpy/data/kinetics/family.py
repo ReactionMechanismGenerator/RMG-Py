@@ -52,6 +52,8 @@ from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
 
+
+
 ################################################################################
 
 class InvalidActionError(Exception):
@@ -1439,13 +1441,54 @@ class KineticsFamily(Database):
             else:
                 rxn.reverse = reactions[0]
 
-    
-    def calculateDegeneracy(self, reaction):
+    def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
         """
-        For a `reaction` given in the direction in which the kinetics are
-        defined, compute the reaction-path degeneracy.
+        For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
+        the kinetics are defined, compute the reaction-path degeneracy.
+
+        This method by default adjusts for double counting of identical reactants. 
+        This should only be adjusted once per reaction. To not adjust for 
+        identical reactants (since you will be reducing them later in the algorithm), add
+        `ignoreSameReactants= True` to this method.
         """
-        reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
+        reaction.degeneracy = 1
+        from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, getMoleculeTuples
+
+        # find combinations of resonance isomers
+        specReactants = []
+        if isinstance(reaction.reactants[0], Molecule):
+            for mol in reaction.reactants:
+                spec = Species(molecule=[mol])
+                spec.generateResonanceIsomers(keepIsomorphic=True)
+                specReactants.append(spec)
+        elif isinstance(reaction.reactants[0], Species):
+            specReactants = reaction.reactants
+        else:
+            raise TypeError('Reactants must be either Species or Molecule Objects')
+        molecule_combos = getMoleculeTuples(specReactants)
+
+        reactions = []
+        for combo in molecule_combos:
+            comboOnlyMols = [tup[0] for tup in combo]
+            reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
+
+        # remove degenerate reactions
+        reactions = findDegeneracies(reactions)
+        if not ignoreSameReactants:
+            reduceSameReactantDegeneracy(reactions)
+
+        # remove reactions with different templates (only for TemplateReaction)
+        if isinstance(reaction, TemplateReaction):
+            index = 0
+            while index < len(reactions):
+                if reaction.template and \
+                        frozenset(reactions[index].template) != frozenset(reaction.template):
+                    # remove reaction with different template
+                    del reactions[index]
+                    continue
+                index += 1
+            
+        # log issues
         if len(reactions) != 1:
             for reactant in reaction.reactants:
                 logging.error("Reactant: {0!r}".format(reactant))
