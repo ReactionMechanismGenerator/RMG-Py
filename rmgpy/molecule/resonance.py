@@ -526,6 +526,7 @@ def generateAromaticResonanceStructures(mol, features=None):
                         bond.order = order
                     # Move it to the end of the list, and go on to the next ring
                     aromaticBonds.append(aromaticBonds.pop(i))
+                    mol0.updateAtomTypes(logSpecies=False)
                     continue
                 else:
                     # We're done with this ring, so go on to the next ring

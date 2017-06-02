@@ -230,6 +230,49 @@ entry(
     kinetics = None,
 )
 
+entry(
+    index = 63,
+    label = "C/H3/Cs",
+    group = 
+"""
+1 *1 C  u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  u0 {1,S}
+3    H  u0 {1,S}
+4    H  u0 {1,S}
+5    Cs u0 {1,S}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 78,
+    label = "C/H3/Cd",
+    group = 
+"""
+1 *1 C  u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  u0 {1,S}
+3    H  u0 {1,S}
+4    H  u0 {1,S}
+5    Cd u0 {1,S} {6,D}
+6    C  u0 {5,D}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 65,
+    label = "C/H3/Cdot",
+    group = 
+"""
+1 *1 C  u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  u0 {1,S}
+3    H  u0 {1,S}
+4    H  u0 {1,S}
+5    C  u1 {1,S}
+""",
+    kinetics = None,
+)
+
 tree(
 """
 L1: X_H_or_Xrad_H_Xbirad_H_Xtrirad_H
@@ -243,6 +286,9 @@ L1: X_H_or_Xrad_H_Xbirad_H_Xtrirad_H
         L3: NH_singlet_H
     L2: Xrad_H
     L2: X_H
+        L3: C/H3/Cs
+        L3: C/H3/Cdot
+        L3: C/H3/Cd
 L1: Y_rad_birad_trirad_quadrad
     L2: Y_1centerquadrad
         L3: C_quintet

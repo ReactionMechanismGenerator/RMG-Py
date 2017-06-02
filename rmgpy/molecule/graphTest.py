@@ -640,6 +640,64 @@ class TestGraph(unittest.TestCase):
         for ring in expectedContinuousRings:
             self.assertTrue(ring in continuousRings)
 
+
+    def test_getLargestRing(self):
+        """
+        Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
+        """
+        vertices = [Vertex() for i in range(27)]
+        bonds = [
+                 (0,1),
+                 (1,2),
+                 (2,3),
+                 (3,4),
+                 (4,5),
+                 (5,6),
+                 (6,7),
+                 (9,10),
+                 (10,11),
+                 (11,12),
+                 (12,13),
+                 (13,14),
+                 (14,15),
+                 (12,16),
+                 (10,17),
+                 (17,18),
+                 (18,19),
+                 (9,20),
+                 (20,21),
+                 (6,22),
+                 (22,23),
+                 (22,8),
+                 (8,4),
+                 (23,3),
+                 (23,24),
+                 (24,25),
+                 (25,1)
+                 ]
+        edges = []
+        for bond in bonds:
+            edges.append(Edge(vertices[bond[0]], vertices[bond[1]]))
+
+        graph = Graph()
+        for vertex in vertices: graph.addVertex(vertex)
+        for edge in edges: graph.addEdge(edge)
+        graph.updateConnectivityValues()
+        
+        rings = graph.getPolycyclicRings()
+        self.assertEqual(len(rings), 1)
+        
+        #ensure the last ring doesn't include vertex 8, since it isn't in the
+        #longest ring. Try two different items since one might contain the vertex 8
+        long_ring = graph.getLargestRing(rings[0][0])
+        long_ring2 = graph.getLargestRing(rings[0][1])
+        
+        if len(long_ring) > len(long_ring2):
+            longest_ring = long_ring
+        else:
+            longest_ring = long_ring2
+        
+        self.assertEqual(len(longest_ring), len(rings[0]) - 1)
 ################################################################################
 
 if __name__ == '__main__':

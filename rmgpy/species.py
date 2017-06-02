@@ -47,12 +47,10 @@ import cython
 import logging
 
 import rmgpy.quantity as quantity
-from rmgpy.molecule import Molecule
 
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
-
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
                            
@@ -96,7 +94,8 @@ class Species(object):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None):
+                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
+                 symmetryNumber = -1):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -108,7 +107,7 @@ class Species(object):
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
         self.aug_inchi = aug_inchi
-        
+        self.symmetryNumber = symmetryNumber
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
@@ -162,7 +161,7 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
-    def generateResonanceIsomers(self):
+    def generateResonanceIsomers(self, keepIsomorphic=True):
         """
         Generate all of the resonance isomers of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
@@ -170,7 +169,9 @@ class Species(object):
         resonance isomers have already been generated.
         """
         if len(self.molecule) == 1:
-            self.molecule = self.molecule[0].generateResonanceIsomers()
+            if not self.molecule[0].atomIDValid():
+                self.molecule[0].assignAtomIDs()
+            self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic)
     
     def isIsomorphic(self, other):
         """
@@ -189,6 +190,25 @@ class Species(object):
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
+
+    def isIdentical(self, other):
+        """
+        Return ``True`` if at least one molecule of the species is identical to `other`,
+        which can be either a :class:`Molecule` object or a :class:`Species` object.
+        """
+        if isinstance(other, Molecule):
+            for molecule in self.molecule:
+                if molecule.isIdentical(other):
+                    return True
+        elif isinstance(other, Species):
+                for molecule1 in self.molecule:
+                    for molecule2 in other.molecule:
+                        if molecule1.isIdentical(molecule2):
+                            return True
+        else:
+            raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
+        return False
+
     
     def fromAdjacencyList(self, adjlist):
         """
@@ -373,13 +393,76 @@ class Species(object):
     def getSymmetryNumber(self):
         """
         Get the symmetry number for the species, which is the highest symmetry number amongst
-        its resonance isomers.  This function is currently used for website purposes and testing only as it
+        its resonance isomers and the resonance hybrid.  
+        This function is currently used for website purposes and testing only as it
         requires additional calculateSymmetryNumber calls.
         """
-        cython.declare(symmetryNumber=cython.int)
-        symmetryNumber = numpy.max([mol.getSymmetryNumber() for mol in self.molecule])
-        return symmetryNumber
+        if self.symmetryNumber < 1:
+            cython.declare(resonanceHybrid = Molecule, maxSymmetryNum = cython.short)
+            resonanceHybrid = self.getResonanceHybrid()
+            self.symmetryNumber = resonanceHybrid.getSymmetryNumber()
+        return self.symmetryNumber
         
+    def getResonanceHybrid(self):
+        """
+        Returns a molecule object with bond orders that are the average 
+        of all the resonance structures.
+        """
+        # get labeled resonance isomers
+        self.generateResonanceIsomers(keepIsomorphic=True)
+
+        # return if no resonance
+        if len(self.molecule) == 1:
+            return self.molecule[0]
+
+        # create a sorted list of atom objects for each resonance structure
+        cython.declare(atomsFromStructures = list, oldAtoms = list, newAtoms = list,
+                       numResonanceStructures=cython.short, structureNum = cython.short,
+                       oldBondOrder = cython.float,
+                       index1 = cython.short, index2 = cython.short,
+                      newMol=Molecule, oldMol = Molecule,
+                      atom1=Atom, atom2=Atom, 
+                      bond=Bond,  
+                      atoms=list,)
+
+        atomsFromStructures = []
+        for newMol in self.molecule:
+            newMol.atoms.sort(key=lambda atom: atom.id)
+            atomsFromStructures.append(newMol.atoms)
+
+        numResonanceStructures = len(self.molecule)
+
+        # make original structure with no bonds
+        newMol = Molecule()
+        originalAtoms = atomsFromStructures[0]
+        for atom1 in originalAtoms:
+            atom = newMol.addAtom(Atom(atom1.element))
+            atom.id = atom1.id
+
+        newAtoms = newMol.atoms
+
+        # initialize bonds to zero order
+        for index1, atom1 in enumerate(originalAtoms):
+            for atom2 in atom1.bonds:
+                index2 = originalAtoms.index(atom2)
+                bond = Bond(newAtoms[index1],newAtoms[index2], 0)
+                newMol.addBond(bond)
+
+        # set bonds to the proper value
+        for structureNum, oldMol in enumerate(self.molecule):
+            oldAtoms = atomsFromStructures[structureNum]
+
+            for index1, atom1 in enumerate(oldAtoms):
+                for atom2 in atom1.bonds:
+                    index2 = oldAtoms.index(atom2)
+
+                    newBond = newMol.getBond(newAtoms[index1], newAtoms[index2])
+                    oldBondOrder = oldMol.getBond(oldAtoms[index1], oldAtoms[index2]).getOrderNum()
+                    newBond.applyAction(('CHANGE_BOND',None,oldBondOrder / numResonanceStructures / 2))
+
+        newMol.updateAtomTypes(logSpecies = False, raiseException=False)
+        return newMol
+
     def calculateCp0(self):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.

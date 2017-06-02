@@ -207,7 +207,7 @@ cdef class Molecule(Graph):
 
     cpdef double calculateCpInf(self) except -1
     
-    cpdef updateAtomTypes(self, logSpecies=?)
+    cpdef updateAtomTypes(self, bint logSpecies=?, bint raiseException=?)
     
     cpdef bint isRadical(self) except -2
 
@@ -223,6 +223,8 @@ cdef class Molecule(Graph):
 
     cpdef kekulize(self)
 
-    cpdef assignAtomIDs(self)
+    cpdef assignAtomIDs(self, int start=?)
+
+    cpdef bint atomIDValid(self)
 
     cpdef bint isIdentical(self, Molecule other) except -2

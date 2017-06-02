@@ -52,6 +52,8 @@ from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
 
+
+
 ################################################################################
 
 class InvalidActionError(Exception):
@@ -134,6 +136,36 @@ class TemplateReaction(Reaction):
         TemplateReaction this should be a KineticsGroups object.
         """
         return self.family
+        
+    def copy(self):
+        """
+        creates a new instance of TemplateReaction
+        """
+        other = TemplateReaction.__new__(TemplateReaction)
+        
+        # this was copied from Reaction.copy class
+        other.index = self.index
+        other.label = self.label
+        other.reactants = []
+        for reactant in self.reactants:
+            other.reactants.append(reactant.copy(deep=True))
+        other.products = []
+        for product in self.products:
+            other.products.append(product.copy(deep=True))
+        other.degeneracy = self.degeneracy
+        other.kinetics = deepcopy(self.kinetics)
+        other.reversible = self.reversible
+        other.transitionState = deepcopy(self.transitionState)
+        other.duplicate = self.duplicate
+        other.pairs = deepcopy(self.pairs)
+        
+        # added for TemplateReaction information
+        other.family = self.family
+        other.template = self.template
+        other.estimator = self.estimator
+        other.reverse = self.reverse
+        
+        return other
 
 ################################################################################
 
@@ -1006,8 +1038,10 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
+            item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], 
+                                               products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
             template = self.getReactionTemplate(item)
+            item.template = self.getReactionTemplateLabels(item)
             item.degeneracy = self.calculateDegeneracy(item)
             
             new_entry = Entry(
@@ -1336,67 +1370,120 @@ class KineticsFamily(Database):
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(self.__generateReactions(reactants, forward=True))
         
-        if self.ownReverse:
-            # for each reaction, make its reverse reaction and store in a 'reverse' attribute
-            for rxn in reactionList:
-                reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                if len(reactions) == 0:
-                    logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
-                    logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
-                    for reactant in rxn.reactants:
-                        logging.info("Reactant")
-                        logging.info(reactant.toAdjacencyList())
-                    for product in rxn.products:
-                        logging.info("Product")
-                        logging.info(product.toAdjacencyList())
-                    logging.error("Debugging why no reaction was found...")
-                    logging.error("Checking whether the family's forbidden species have affected reaction generation...")
-                    # Set family's forbidden structures to empty for now to see if reaction gets generated...
-                    # Note that it is not necessary to check global forbidden structures, because this reaction would not have
-                    # been formed in the first place.
-                    tempObject = self.forbidden
-                    self.forbidden = ForbiddenStructures()  # Initialize with empty one
-                    try:
-                        reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                    finally:
-                        self.forbidden = tempObject
-                    if len(reactions) != 1:
-                        logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                        raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                    else:
-                        logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
-                        # Delete this reaction, since it should probably also be forbidden in the initial direction
-                        # Hack fix for now
-                        del rxn
-                elif len(reactions) > 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                    logging.info("Found the following reverse reactions")
-                    for rxn0 in reactions:
-                        logging.info(str(rxn0))
-                        for reactant in rxn0.reactants:
-                            logging.info("Reactant")
-                            logging.info(reactant.toAdjacencyList())
-                        for product in rxn0.products:
-                            logging.info("Product")
-                            logging.info(product.toAdjacencyList())
-                    raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
-                else:
-                    rxn.reverse = reactions[0]
-
-
-            
-        else: # family is not ownReverse
+        if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(self.__generateReactions(reactants, forward=False))
-            
+
         return reactionList
+
+    def addReverseAttribute(self, rxn):
+        """
+        For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
+        attribute that contains the reverse reaction information (like degeneracy)
+        """
+        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+
+        if self.ownReverse:
+            # make sure to react all resonance structures.
+            tuples = getMoleculeTuples(rxn.products)
+            reactionList = []
+            for tup in tuples:
+                moltup = [mol_and_index[0] for mol_and_index in tup]
+                reactionList.extend(self.__generateReactions(moltup,
+                                                             products=rxn.reactants,
+                                                             forward=True))
+            reactions = findDegeneracies(reactionList)
+            if len(reactions) == 0:
+                logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
+                logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
+                for reactant in rxn.reactants:
+                    logging.info("Reactant")
+                    logging.info(reactant.toAdjacencyList())
+                for product in rxn.products:
+                    logging.info("Product")
+                    logging.info(product.toAdjacencyList())
+                logging.error("Debugging why no reaction was found...")
+                logging.error("Checking whether the family's forbidden species have affected reaction generation...")
+                # Set family's forbidden structures to empty for now to see if reaction gets generated...
+                # Note that it is not necessary to check global forbidden structures, because this reaction would not have
+                # been formed in the first place.
+                tempObject = self.forbidden
+                self.forbidden = ForbiddenStructures()  # Initialize with empty one
+                try:
+                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                finally:
+                    self.forbidden = tempObject
+                if len(reactions) != 1:
+                    logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
+                else:
+                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                    # Delete this reaction, since it should probably also be forbidden in the initial direction
+                    # Hack fix for now
+                    del rxn
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+                logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                logging.info("Found the following reverse reactions")
+                for rxn0 in reactions:
+                    logging.info(str(rxn0))
+                    for reactant in rxn0.reactants:
+                        logging.info("Reactant")
+                        logging.info(reactant.toAdjacencyList())
+                    for product in rxn0.products:
+                        logging.info("Product")
+                        logging.info(product.toAdjacencyList())
+                raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
+            else:
+                rxn.reverse = reactions[0]
     
-    def calculateDegeneracy(self, reaction):
+    def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
         """
-        For a `reaction` given in the direction in which the kinetics are
-        defined, compute the reaction-path degeneracy.
+        For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
+        the kinetics are defined, compute the reaction-path degeneracy.
+
+        This method by default adjusts for double counting of identical reactants. 
+        This should only be adjusted once per reaction. To not adjust for 
+        identical reactants (since you will be reducing them later in the algorithm), add
+        `ignoreSameReactants= True` to this method.
         """
-        reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
+        reaction.degeneracy = 1
+        from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, getMoleculeTuples
+
+        # find combinations of resonance isomers
+        specReactants = []
+        if isinstance(reaction.reactants[0], Molecule):
+            for mol in reaction.reactants:
+                spec = Species(molecule=[mol])
+                spec.generateResonanceIsomers(keepIsomorphic=True)
+                specReactants.append(spec)
+        elif isinstance(reaction.reactants[0], Species):
+            specReactants = reaction.reactants
+        else:
+            raise TypeError('Reactants must be either Species or Molecule Objects')
+        molecule_combos = getMoleculeTuples(specReactants)
+
+        reactions = []
+        for combo in molecule_combos:
+            comboOnlyMols = [tup[0] for tup in combo]
+            reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
+
+        # remove degenerate reactions
+        reactions = findDegeneracies(reactions)
+        if not ignoreSameReactants:
+            reduceSameReactantDegeneracy(reactions)
+
+        # remove reactions with different templates (only for TemplateReaction)
+        if isinstance(reaction, TemplateReaction):
+            index = 0
+            while index < len(reactions):
+                if reaction.template and \
+                        frozenset(reactions[index].template) != frozenset(reaction.template):
+                    # remove reaction with different template
+                    del reactions[index]
+                    continue
+                index += 1
+            
+        # log issues
         if len(reactions) != 1:
             for reactant in reaction.reactants:
                 logging.error("Reactant: {0!r}".format(reactant))
@@ -1415,8 +1502,12 @@ class KineticsFamily(Database):
         will return an empty list. Each item in the list of reactants should
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
+        
+        This method returns degenerate reactions, and `react.findDegeneracies`
+        can be used to find the degenerate reactions.
         """
-
+        from rmgpy.rmg.react import findDegeneracies
+        
         rxnList = []; speciesList = []
 
         # Wrap each reactant in a list if not already done (this is done to 
@@ -1500,8 +1591,12 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            
-            products = [product.generateResonanceIsomers() for product in products]
+            if isinstance(products[0],Molecule):
+                products = [product.generateResonanceIsomers() for product in products]
+            elif isinstance(products[0],Species):
+                products = [product.molecule for product in products]
+            else:
+                raise TypeError('products input to __generateReactions must be Species or Reaction Objects')
             
             rxnList0 = rxnList[:]
             rxnList = []
@@ -1532,98 +1627,7 @@ class KineticsFamily(Database):
                     
                 if match: 
                     rxnList.append(reaction)
-            
-        # The reaction list may contain duplicates of the same reaction
-        # These duplicates should be combined (by increasing the degeneracy of
-        # one of the copies and removing the others)
-        index0 = 0
-        while index0 < len(rxnList):
-            reaction0 = rxnList[index0]
-            
-            products0 = reaction0.products if forward else reaction0.reactants
-            products0 = [product.generateResonanceIsomers() for product in products0]
-            
-            # Remove duplicates from the reaction list
-            index = index0 + 1
-            while index < len(rxnList):
-                reaction = rxnList[index]
-            
-                products = reaction.products if forward else reaction.reactants
-                
-                # We know the reactants are the same, so we only need to compare the products
-                match = False
-                if len(products) == len(products0) == 1:
-                    for product in products0[0]: # for each resonance isomer of the only product0
-                        if products[0].isIsomorphic(product):
-                            match = True
-                            break
-                elif len(products) == len(products0) == 2:
-                    for productA in products0[0]:
-                        for productB in products0[1]:
-                            if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                                match = True
-                                break
-                elif len(products) == len(products0) == 3:
-                    for productA, productB, productC in itertools.product(products0[0], products0[1], products0[2]):
-                    # This is equivalent to three nested for loops,
-                    # but allows us to break out of them all at once
-                    # with a single break statement.
-                        if (    products[0].isIsomorphic(productA) and
-                                products[1].isIsomorphic(productB) and
-                                products[2].isIsomorphic(productC) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productA) and
-                                products[1].isIsomorphic(productC) and
-                                products[2].isIsomorphic(productB) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productB) and
-                                products[1].isIsomorphic(productA) and
-                                products[2].isIsomorphic(productC) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productC) and
-                                products[1].isIsomorphic(productA) and
-                                products[2].isIsomorphic(productB) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productB) and
-                                products[1].isIsomorphic(productC) and
-                                products[2].isIsomorphic(productA) ):
-                            match = True
-                            break
-                        elif (  products[0].isIsomorphic(productC) and
-                                products[1].isIsomorphic(productB) and
-                                products[2].isIsomorphic(productA) ):
-                            match = True
-                            break
-                elif len(products) == len(products0):
-                    raise NotImplementedError(
-                        "Can't yet check degeneracy of reactions with {0} products".format(len(products))
-                        )
 
-                # If we found a match, remove it from the list
-                # Also increment the reaction path degeneracy of the remaining reaction
-                if match:
-                    rxnList.remove(reaction)
-                    reaction0.degeneracy += 1
-                else:
-                    index += 1
-            
-            index0 += 1
-        
-        # For R_Recombination reactions, the degeneracy is twice what it should
-        # be, so divide those by two
-        # This is hardcoding of reaction families!
-        if self.label.lower().startswith('r_recombination'):
-            for rxn in rxnList:
-                assert(rxn.degeneracy % 2 == 0)
-                rxn.degeneracy /= 2
-                
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
@@ -1637,8 +1641,6 @@ class KineticsFamily(Database):
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplateLabels(reaction)
-            if not forward:
-                reaction.degeneracy = self.calculateDegeneracy(reaction)
 
             # Unlabel the atoms
             for label, atom in reaction.labeledAtoms:

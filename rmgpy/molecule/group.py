@@ -670,7 +670,11 @@ class GroupBond(Edge):
             elif value == 'B':
                 values.append(1.5)
             else:
-                raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
+                # try to see if an float disguised as a string was input by mistake
+                try:
+                    values.append(float(value))
+                except ValueError:
+                    raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
         self.order = values      
 
         

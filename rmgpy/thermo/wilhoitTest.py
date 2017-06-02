@@ -77,7 +77,20 @@ class TestWilhoit(unittest.TestCase):
             Tmax = (self.Tmax,"K"),
             comment = self.comment,
         )
+
+    def tearDown(self):
+        """
+        Reset the database & liquid parameters for solution
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
         
+        from rmgpy.rmg.model import Species as DifferentSpecies
+        DifferentSpecies.solventData = None
+        DifferentSpecies.solventName = None
+        DifferentSpecies.solventStructure = None
+        DifferentSpecies.solventViscosity = None
+
     def test_Cp0(self):
         """
         Test that the Wilhoit Cp0 property was properly set.
