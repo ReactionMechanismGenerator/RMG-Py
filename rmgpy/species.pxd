@@ -90,6 +90,7 @@ cdef class TransitionState:
     cdef public ScalarQuantity _frequency
     cdef public int degeneracy
     cdef public TunnelingModel tunneling
+    cdef public dict props
 
     cpdef double getPartitionFunction(self, double T) except -1
 
