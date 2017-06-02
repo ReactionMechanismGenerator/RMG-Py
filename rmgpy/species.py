@@ -89,14 +89,14 @@ class Species(object):
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
+    `coreSizeAtCreation`    The number of the core species that previously existed when a species is created
     ======================= ====================================================
 
-    note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None):
+                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None, coreSizeAtCreation=0):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -108,6 +108,7 @@ class Species(object):
         self.energyTransferModel = energyTransferModel        
         self.props = props or {}
         self.aug_inchi = aug_inchi
+        self.coreSizeAtCreation = coreSizeAtCreation
         
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
@@ -154,7 +155,7 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation))
 
     def getMolecularWeight(self):
         return self._molecularWeight
@@ -424,6 +425,7 @@ class Species(object):
         other.energyTransferModel = deepcopy(self.energyTransferModel)
         other.reactive = self.reactive        
         other.props = deepcopy(self.props)
+        other.coreSizeAtCreation = self.coreSizeAtCreation
 
         return other
 

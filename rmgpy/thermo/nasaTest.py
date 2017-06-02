@@ -32,7 +32,7 @@
 This script contains unit tests of the :mod:`rmgpy.thermo.nasa` module.
 """
 
-import unittest
+from unittest import TestCase, TestLoader, TextTestRunner
 import numpy
 import os.path
 import logging
@@ -42,7 +42,7 @@ import rmgpy.constants as constants
 
 ################################################################################
 
-class TestNASA(unittest.TestCase):
+class TestNASA(TestCase):
     """
     Contains unit tests of the MultiNASA class.
     """
@@ -280,3 +280,29 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(wilhoit.comment,nasa.comment)
 
         # nasa to wilhoi performed in wilhoitTest
+
+    def testFitToFreeEnergyData(self):
+        """
+        Test if the NASA model can be correctly fitted to the Gibbs free energy data
+        """
+
+        Tdata = numpy.array([300.,350.,400.,450.,500.,550.,600.])
+        dHdata = numpy.array([self.nasa.getEnthalpy(T) for T in Tdata])
+        dSdata = numpy.array([self.nasa.getEntropy(T) for T in Tdata])
+        dGdata = numpy.array([self.nasa.getFreeEnergy(T) for T in Tdata])
+
+        NASAfitted = self.nasa.fitToFreeEnergyData(Tdata, dGdata, Tdata[0], Tdata[-1])
+        dHfitted = numpy.array([NASAfitted.getEnthalpy(T) for T in Tdata])
+        dSfitted = numpy.array([NASAfitted.getEntropy(T) for T in Tdata])
+        dGfitted = numpy.array([NASAfitted.getFreeEnergy(T) for T in Tdata])
+
+        for i in range(len(Tdata)):
+            self.assertAlmostEqual(dHdata[i] / dHfitted[i], 1.0, 2, '{0} != {1}'.format(dHdata[i], dHfitted[i]))
+            self.assertAlmostEqual(dSdata[i] / dSfitted[i], 1.0, 2, '{0} != {1}'.format(dSdata[i], dSfitted[i]))
+            self.assertAlmostEqual(dGdata[i] / dGfitted[i], 1.0, 3, '{0} != {1}'.format(dGdata[i], dGfitted[i]))
+
+#####################################################
+
+if __name__ == '__main__':
+    suite = TestLoader().loadTestsFromTestCase(TestNASA)
+    TextTestRunner(verbosity=2).run(suite)

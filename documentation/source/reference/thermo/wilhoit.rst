@@ -26,7 +26,7 @@ rmgpy.thermo.Wilhoit
     .. math::
 
         H(T) & = H_0 +
-        C_\mathrm{p}(0) T + \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right] T \\
+        C_\mathrm{p}(0) T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right] T \\
         & \left\{ \left[ 2 + \sum_{i=0}^3 a_i \right]
         \left[ \frac{1}{2}y - 1 + \left( \frac{1}{y} - 1 \right) \ln \frac{T}{y} \right]
         + y^2 \sum_{i=0}^3 \frac{y^i}{(i+2)(i+3)} \sum_{j=0}^3 f_{ij} a_j

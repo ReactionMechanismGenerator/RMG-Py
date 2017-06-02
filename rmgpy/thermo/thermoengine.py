@@ -6,19 +6,23 @@ import logging as logging
 from rmgpy.scoop_framework.util import submit_
 from rmgpy.data.rmg import getDB
 import rmgpy.constants as constants
-from rmgpy.molecule import Molecule
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
-import rmgpy.data.rmg
 
-def processThermoData(spc, thermo0, thermoClass=NASA):
+def processThermoData(spc, thermo0, solventThermoEstimator, thermoClass=NASA):
     """
     Converts via Wilhoit into required `thermoClass` and sets `E0`.
     
     Resulting thermo is returned.
     """
     # TODO moving this as a global import leads to circular imports.
-    from rmgpy.rmg.model import Species
+    # Because thermoEstimator.py does not use rmgpy.rmg.main, solvent data must be directly passed on
+    # from thermoEstimator input file. If this is normal rmg.py run, it will get the solvent data from
+    # rmgpy.rmg.main.
+    if solventThermoEstimator is None:
+        from rmgpy.rmg.main import solvent
+    else:
+        solvent = solventThermoEstimator
 
     thermo = None
 
@@ -31,14 +35,20 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
         wilhoit = thermo0.toWilhoit()
 
     # Add on solvation correction
-    if Species.solventData and not "Liquid thermo library" in thermo0.comment:
-        solvationdatabase = getDB('solvation')
-        #logging.info("Making solvent correction for {0}".format(Species.solventName))
-        soluteData = solvationdatabase.getSoluteData(spc)
-        solvation_correction = solvationdatabase.getSolvationCorrection(soluteData, Species.solventData)
-        # correction is added to the entropy and enthalpy
-        wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-        wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+    if solvent and not "Liquid thermo library" in thermo0.comment:
+        solvationDatabase = getDB('solvation')
+        #logging.info("Making solvent correction for {0}".format(solvent.solventName))
+        soluteData = solvationDatabase.getSoluteData(spc)
+        if solvent.solventData.inCoolProp:
+            if spc.label == solvent.solventName: # the species is the solvent
+                wilhoit, nasa = solvationDatabase.getSolventThermo(solvent.solventData, wilhoit)
+            else: # the species is the solute
+                wilhoit, nasa = solvationDatabase.getSolvationThermo(soluteData, solvent.solventData, wilhoit)
+        else:
+            solvationCorrection = solvationDatabase.getSolvationCorrection298(soluteData, solvent.solventData)
+            # correction is added to the entropy and enthalpy
+            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvationCorrection.entropy)
+            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvationCorrection.enthalpy)
         
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
@@ -49,15 +59,25 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     if thermoClass is Wilhoit:
         thermo = wilhoit
     elif thermoClass is NASA:
-        if Species.solventData:
+        if solvent:
             #if liquid phase simulation keep the nasa polynomial if it comes from a liquid phase thermoLibrary. Otherwise convert wilhoit to NASA
             if "Liquid thermo library" in thermo0.comment and isinstance(thermo0, NASA):
                 thermo = thermo0
                 if thermo.E0 is None:
                     thermo.E0 = wilhoit.E0
             else:
-                thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
-        else: 
+                if solvent.solventData.inCoolProp:
+                    # Tmax is set high to prevent value error when Cp is calculated for chemkin output file
+                    # Tmax should actually be the critical temperature of the solvent, Tc.
+                    # RMG requires NASA to have two polynomials while liquid phase thermo is fitted to one NASA polynomial
+                    # To prevent error, two NASA polynomials with the same coefficients are used
+                    # Liquid phase thermo should actually have one NASA polynomial with Tmin = 298K and Tmax = Tc
+                    thermo = wilhoit.toNASA(Tmin=298., Tmax=5000.0, Tint=1000.0)
+                    thermo.poly1.coeffs = nasa.poly1.coeffs
+                    thermo.poly1.coeffs = nasa.poly1.coeffs
+                else:
+                    thermo = wilhoit.toNASA(Tmin=298., Tmax=5000.0, Tint=1000.0)
+        else:
             #gas phase with species matching thermo library keep the NASA from library or convert if group additivity
             if "Thermo library" in thermo0.comment and isinstance(thermo0,NASA):
                 thermo=thermo0
@@ -80,7 +100,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     return thermo
     
 
-def generateThermoData(spc, thermoClass=NASA):
+def generateThermoData(spc, solventThermoEstimator, thermoClass=NASA):
     """
     Generates thermo data, first checking Libraries, then using either QM or Database.
     
@@ -119,10 +139,10 @@ def generateThermoData(spc, thermoClass=NASA):
         
         thermoCentralDatabase.registerInCentralThermoDB(spc)
         
-    return processThermoData(spc, thermo0, thermoClass)    
+    return processThermoData(spc, thermo0, solventThermoEstimator, thermoClass)
 
 
-def evaluator(spc):
+def evaluator(spc, solventThermoEstimator):
     """
     Module-level function passed to workers.
 
@@ -136,11 +156,11 @@ def evaluator(spc):
     logging.debug("Evaluating spc %s ", spc)
 
     spc.generateResonanceIsomers()
-    thermo = generateThermoData(spc)
+    thermo = generateThermoData(spc, solventThermoEstimator)
 
     return thermo
 
-def submit(spc):
+def submit(spc, solventThermoEstimator=None):
     """
     Submits a request to calculate chemical data for the Species object.
 
@@ -150,4 +170,4 @@ def submit(spc):
     the result.
 
     """
-    spc.thermo = submit_(evaluator, spc)
+    spc.thermo = submit_(evaluator, spc, solventThermoEstimator)
