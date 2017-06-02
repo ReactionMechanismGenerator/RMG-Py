@@ -700,6 +700,17 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
+
+        #Test that charges are correctly stored and written with adjacency lists
+        adjlist3 = """
+1 C u0 p1 c-1 {2,T}
+2 O u0 p1 c+1 {1,T}
+"""
+        molecule3 = Molecule().fromAdjacencyList(adjlist3)
+        self.assertEquals(molecule3.atoms[0].charge, -1)
+        self.assertEquals(molecule3.atoms[1].charge, 1)
+        adjlist4 = molecule3.toAdjacencyList()
+        self.assertEquals(adjlist3.strip(), adjlist4.strip())
         
     def testGroupAdjacencyList(self):
         """

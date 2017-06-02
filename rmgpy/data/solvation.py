@@ -53,10 +53,10 @@ def saveEntry(f, entry):
     f.write('    index = {0:d},\n'.format(entry.index))
     f.write('    label = "{0}",\n'.format(entry.label))
     
-    if isinstance(entry.item, Molecule):
-        if Molecule(SMILES=entry.item.toSMILES()).isIsomorphic(entry.item):
+    if isinstance(entry.item, Species):
+        if Molecule(SMILES=entry.item.molecule[0].toSMILES()).isIsomorphic(entry.item.molecule[0]):
             # The SMILES representation accurately describes the molecule, so we can save it that way.
-            f.write('    molecule = "{0}",\n'.format(entry.item.toSMILES()))
+            f.write('    molecule = "{0}",\n'.format(entry.item.molecule[0].toSMILES()))
         else:
             f.write('    molecule = \n')
             f.write('"""\n')

@@ -16,15 +16,17 @@ recipe(actions=[
     ['LOSE_RADICAL', '*1', '1'],
 ])
 
+boundaryAtoms = ["*1", "*2"]
+
 entry(
-    index = 1,
+    index = 0,
     label = "RnH",
-    group = "OR{R2Hall, R3Hall, R4Hall, R5Hall, R6Hall, R7Hall}",
+    group = "OR{R5Hall, R6Hall}",
     kinetics = None,
 )
 
 entry(
-    index = 2,
+    index = 1,
     label = "Y_rad_out",
     group = 
 """
@@ -34,7 +36,7 @@ entry(
 )
 
 entry(
-    index = 3,
+    index = 2,
     label = "XH_out",
     group = 
 """
@@ -45,7 +47,7 @@ entry(
 )
 
 entry(
-    index = 74,
+    index = 3,
     label = "R5Hall",
     group = 
 """
@@ -60,7 +62,7 @@ entry(
 )
 
 entry(
-    index = 75,
+    index = 4,
     label = "R5HJ_1",
     group = 
 """
@@ -75,7 +77,7 @@ entry(
 )
 
 entry(
-    index = 76,
+    index = 5,
     label = "R5HJ_2",
     group = 
 """
@@ -90,7 +92,7 @@ entry(
 )
 
 entry(
-    index = 77,
+    index = 6,
     label = "R5HJ_3",
     group = 
 """
@@ -105,7 +107,7 @@ entry(
 )
 
 entry(
-    index = 78,
+    index = 7,
     label = "R5H",
     group = 
 """
@@ -120,7 +122,7 @@ entry(
 )
 
 entry(
-    index = 131,
+    index = 8,
     label = "R6Hall",
     group = 
 """
@@ -136,7 +138,7 @@ entry(
 )
 
 entry(
-    index = 132,
+    index = 9,
     label = "R6HJ_1",
     group = 
 """
@@ -152,7 +154,7 @@ entry(
 )
 
 entry(
-    index = 133,
+    index = 10,
     label = "R6HJ_2",
     group = 
 """
@@ -168,7 +170,7 @@ entry(
 )
 
 entry(
-    index = 134,
+    index = 11,
     label = "R6HJ_3",
     group = 
 """
@@ -184,7 +186,7 @@ entry(
 )
 
 entry(
-    index = 135,
+    index = 12,
     label = "R6HJ_4",
     group = 
 """
@@ -200,7 +202,7 @@ entry(
 )
 
 entry(
-    index = 136,
+    index = 13,
     label = "R6H",
     group = 
 """
@@ -216,7 +218,7 @@ entry(
 )
 
 entry(
-    index = 188,
+    index = 14,
     label = "O_rad_out",
     group = 
 """
@@ -226,7 +228,7 @@ entry(
 )
 
 entry(
-    index = 190,
+    index = 15,
     label = "Cd_rad_out",
     group = 
 """
@@ -236,7 +238,7 @@ entry(
 )
 
 entry(
-    index = 199,
+    index = 16,
     label = "C_rad_out_single",
     group = 
 """
@@ -248,7 +250,7 @@ entry(
 )
 
 entry(
-    index = 219,
+    index = 17,
     label = "O_H_out",
     group = 
 """
@@ -259,7 +261,7 @@ entry(
 )
 
 entry(
-    index = 223,
+    index = 18,
     label = "Cd_H_out_double",
     group = 
 """
@@ -271,7 +273,7 @@ entry(
 )
 
 entry(
-    index = 226,
+    index = 19,
     label = "Cd_H_out_single",
     group = 
 """
@@ -283,7 +285,7 @@ entry(
 )
 
 entry(
-    index = 230,
+    index = 20,
     label = "Cs_H_out",
     group = 
 """
@@ -423,5 +425,4 @@ u"""
 
 """,
 )
-
 
