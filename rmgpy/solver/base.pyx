@@ -521,7 +521,7 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        cdef bool zeroProduction, zeroConsumption
+        cdef bool zeroProduction, zeroConsumption, firstTime, useDynamics
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
         cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
@@ -558,6 +558,8 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+        
+        useDynamics = not (toleranceMoveEdgeReactionToCore == numpy.inf and toleranceMoveEdgeReactionToSurface == numpy.inf)
         
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
@@ -683,8 +685,7 @@ cdef class ReactionSystem(DASx):
                 if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
                     maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
             
-            
-            if charRate == 0 and len(edgeSpeciesRates)>0:
+            if useDynamics and charRate == 0 and len(edgeSpeciesRates)>0:
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
                 maxSpecies = edgeSpecies[maxSpeciesIndex]
                 maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
@@ -696,74 +697,82 @@ cdef class ReactionSystem(DASx):
             
             #get abs(delta(Ln(total accumulation numbers))) (accumulation number=Production/Consumption)
             #(the natural log operation is avoided until after the maximum accumulation number is found)
-            totalDivAccumNums = numpy.ones(numEdgeReactions)
-            for index in xrange(numEdgeReactions):
-                reactionRate = edgeReactionRates[index]
-                for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
-                    if spcIndex != -1 and spcIndex<numCoreSpecies:
-                        consumption = coreSpeciesConsumptionRates[spcIndex]
-                        if consumption != 0:
-                            totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
-                        elif coreSpeciesConcentrations[spcIndex] == 0: 
-                            pass  #if the species concentration is zero ignore
-                        else:
-                            zeroConsumption = True #otherwise include edge reaction with most flux
-                            infAccumNumIndex = spcIndex
-                            break
-                for spcIndex in self.productIndices[index+numCoreReactions,:]:
-                    if spcIndex != -1 and spcIndex<numCoreSpecies:
-                        production = coreSpeciesProductionRates[spcIndex]
-                        if production != 0:
-                            totalDivAccumNums[index] *= (reactionRate+production)/production
-                        elif coreSpeciesConcentrations[spcIndex] == 0: 
-                            pass #if the species concentration is zero ignore
-                        else:
-                            zeroProduction = True #otherwise include edge reaction with most flux
-                            infAccumNumIndex = spcIndex
-                            break
+            if useDynamics:
+                totalDivAccumNums = numpy.ones(numEdgeReactions)
+                for index in xrange(numEdgeReactions):
+                    reactionRate = edgeReactionRates[index]
+                    for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
+                        if spcIndex != -1 and spcIndex<numCoreSpecies:
+                            consumption = coreSpeciesConsumptionRates[spcIndex]
+                            if consumption != 0:
+                                totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
+                            elif coreSpeciesConcentrations[spcIndex] == 0: 
+                                pass  #if the species concentration is zero ignore
+                            else:
+                                zeroConsumption = True #otherwise include edge reaction with most flux
+                                infAccumNumIndex = spcIndex
+                                break
+                    for spcIndex in self.productIndices[index+numCoreReactions,:]:
+                        if spcIndex != -1 and spcIndex<numCoreSpecies:
+                            production = coreSpeciesProductionRates[spcIndex]
+                            if production != 0:
+                                totalDivAccumNums[index] *= (reactionRate+production)/production
+                            elif coreSpeciesConcentrations[spcIndex] == 0: 
+                                pass #if the species concentration is zero ignore
+                            else:
+                                zeroProduction = True #otherwise include edge reaction with most flux
+                                infAccumNumIndex = spcIndex
+                                break
+                    
+                #Get edge reaction with greatest total difference in Ln(accumulation number)
                 
-            #Get edge reaction with greatest total difference in Ln(accumulation number)
-            
-            if len(totalDivAccumNums) > 0:
-                maxDifLnAccumNum = numpy.inf
-                if zeroConsumption:
-                    for index in xrange(numEdgeReactions):
-                        maxEdgeReactionAccum = 0.0
-                        maxAccumReactionIndex = -1
-                        if infAccumNumIndex in self.reactantIndices[index+numCoreReactions]:
-                            reactionRate = edgeReactionRates[index]
-                            if reactionRate > maxEdgeReactionAccum:
-                                maxEdgeReactionAccum = reactionRate
-                                maxAccumReactionIndex = index
-                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                elif zeroProduction:
-                    for index in xrange(numEdgeReactions):
-                        maxEdgeReactionAccum = 0.0
-                        maxAccumReactionIndex = -1
-                        if infAccumNumIndex in self.productIndices[index+numCoreReactions]:
-                            reactionRate = edgeReactionRates[index]
-                            if reactionRate > maxEdgeReactionAccum:
-                                maxEdgeReactionAccum = reactionRate
-                                maxAccumReactionIndex = index
-                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                if len(totalDivAccumNums) > 0:
+                    maxDifLnAccumNum = numpy.inf
+                    if zeroConsumption:
+                        for index in xrange(numEdgeReactions):
+                            maxEdgeReactionAccum = 0.0
+                            maxAccumReactionIndex = -1
+                            if infAccumNumIndex in self.reactantIndices[index+numCoreReactions]:
+                                reactionRate = edgeReactionRates[index]
+                                if reactionRate > maxEdgeReactionAccum:
+                                    maxEdgeReactionAccum = reactionRate
+                                    maxAccumReactionIndex = index
+                        maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                    elif zeroProduction:
+                        for index in xrange(numEdgeReactions):
+                            maxEdgeReactionAccum = 0.0
+                            maxAccumReactionIndex = -1
+                            if infAccumNumIndex in self.productIndices[index+numCoreReactions]:
+                                reactionRate = edgeReactionRates[index]
+                                if reactionRate > maxEdgeReactionAccum:
+                                    maxEdgeReactionAccum = reactionRate
+                                    maxAccumReactionIndex = index
+                        maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                    elif len(totalDivAccumNums)>0: 
+                        maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
+                        maxAccumReaction = edgeReactions[maxAccumReactionIndex]
+                        maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
                 else:
-                    maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
-                    maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                    maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
+                    maxAccumReactionIndex = -1
+                    maxAccumReaction = None
+                    maxDifLnAccumNum = 0.0
+                
+                #get the reaction with the greatest total difference in Ln(accumulation number) under the surface layering constraint
+                maxLayeringReactionIndex = self.maxIndUnderSurfaceLayeringConstraint(totalDivAccumNums,surfaceSpeciesIndices)
+                if maxLayeringReactionIndex>=0: #found 
+                    maxLayeringReaction = edgeReactions[maxLayeringReactionIndex]
+                    maxLayeringDifLnAccumNum = numpy.log(totalDivAccumNums[maxLayeringReactionIndex])
+                else: 
+                    maxLayeringReaction = None
+                    maxLayeringDifLnAccumNum = 0
             else:
                 maxAccumReactionIndex = -1
                 maxAccumReaction = None
                 maxDifLnAccumNum = 0.0
-            
-            #get the reaction with the greatest total difference in Ln(accumulation number) under the surface layering constraint
-            maxLayeringReactionIndex = self.maxIndUnderSurfaceLayeringConstraint(totalDivAccumNums,surfaceSpeciesIndices)
-            if maxLayeringReactionIndex>=0: #found 
-                maxLayeringReaction = edgeReactions[maxLayeringReactionIndex]
-                maxLayeringDifLnAccumNum = numpy.log(totalDivAccumNums[maxLayeringReactionIndex])
-            else: 
+                maxLayeringDifLnAccumNum = 0.0
                 maxLayeringReaction = None
-                maxLayeringDifLnAccumNum = 0
-                
+                maxLayeringReactionIndex = -1
+              
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
@@ -779,117 +788,114 @@ cdef class ReactionSystem(DASx):
                 maxNetworkRate = networkLeakRates[maxNetworkIndex]
                 
             #calculate criteria for surface species
-            surfaceTotalDivAccumNums = numpy.ones(len(surfaceReactionIndices))
-            
-            for i in xrange(len(surfaceReactionIndices)):
-                index = surfaceReactionIndices[i]
-                reactionRate = coreReactionRates[index]
-                for spcIndex in reactantIndices[index,:]:
-                    if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
-                        consumption = coreSpeciesConsumptionRates[spcIndex]
-                        if consumption != 0:
-                            if abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
-                                surfaceTotalDivAccumNums[i] = numpy.inf
-                            elif reactionRate > 0:
-                                surfaceTotalDivAccumNums[i] *= consumption/(consumption-reactionRate)
+            if useDynamics:
+                surfaceTotalDivAccumNums = numpy.ones(len(surfaceReactionIndices))
+                
+                for i in xrange(len(surfaceReactionIndices)):
+                    index = surfaceReactionIndices[i]
+                    reactionRate = coreReactionRates[index]
+                    for spcIndex in reactantIndices[index,:]:
+                        if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
+                            consumption = coreSpeciesConsumptionRates[spcIndex]
+                            if consumption != 0:
+                                if abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
+                                    surfaceTotalDivAccumNums[i] = numpy.inf
+                                elif reactionRate > 0:
+                                    surfaceTotalDivAccumNums[i] *= consumption/(consumption-reactionRate)
+                                else:
+                                    surfaceTotalDivAccumNums[i] *= (consumption-reactionRate)/consumption
+                            elif coreSpeciesConcentrations[spcIndex] == 0: 
+                                pass #if the species concentration is zero ignore
                             else:
-                                surfaceTotalDivAccumNums[i] *= (consumption-reactionRate)/consumption
-                        elif coreSpeciesConcentrations[spcIndex] == 0: 
-                            pass #if the species concentration is zero ignore
-                        else:
-                            zeroConsumption = True #otherwise include edge reaction with most flux
-                            surfaceInfAccumNumIndex = spcIndex
-                            break
-                for spcIndex in productIndices[index,:]:
-                    if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
-                        production = coreSpeciesProductionRates[spcIndex]
-                        if production != 0:
-                            if abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
-                                surfaceTotalDivAccumNums[i] = numpy.inf
-                            elif reactionRate > 0:
-                                surfaceTotalDivAccumNums[i] *= production/(production-reactionRate)
+                                zeroConsumption = True #otherwise include edge reaction with most flux
+                                surfaceInfAccumNumIndex = spcIndex
+                                break
+                    for spcIndex in productIndices[index,:]:
+                        if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
+                            production = coreSpeciesProductionRates[spcIndex]
+                            if production != 0:
+                                if abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
+                                    surfaceTotalDivAccumNums[i] = numpy.inf
+                                elif reactionRate > 0:
+                                    surfaceTotalDivAccumNums[i] *= production/(production-reactionRate)
+                                else:
+                                    surfaceTotalDivAccumNums[i] *= (production-reactionRate)/production
+                            elif coreSpeciesConcentrations[spcIndex] == 0: 
+                                pass #if the species concentration is zero ignore
                             else:
-                                surfaceTotalDivAccumNums[i] *= (production-reactionRate)/production
-                        elif coreSpeciesConcentrations[spcIndex] == 0: 
-                            pass #if the species concentration is zero ignore
-                        else:
-                            zeroProduction = True #otherwise include edge reaction with most flux
-                            infAccumNumIndex = spcIndex
-                            break
+                                zeroProduction = True #otherwise include edge reaction with most flux
+                                infAccumNumIndex = spcIndex
+                                break
+    
+                #Get surface reaction with greatest total difference in Ln(accumulation number)
+                
+                if len(surfaceTotalDivAccumNums) > 0:
+                    maxSurfaceDifLnAccumNum = numpy.inf
+                    if zeroConsumption:
+                        for i in xrange(len(surfaceReactionIndices)):
+                            index = surfaceReactionIndices[i]
+                            maxSurfaceReactionAccum = 0.0 
+                            maxSurfaceAccumReactionIndex = -1
+                            if surfaceInfAccumNumIndex in reactantIndices[index]:
+                                reactionRate = coreReactionRates[index]
+                                if reactionRate > maxEdgeReactionAccum:
+                                    maxSurfaceReactionAccum = reactionRate
+                                    maxSurfaceAccumReactionIndex = i
+                        maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
+                    elif zeroProduction:
+                        for i in xrange(len(surfaceReactionIndices)):
+                            index = surfaceReactionIndices[i]
+                            maxSurfaceReactionAccum = 0.0
+                            maxSurfaceAccumReactionIndex = -1
+                            if surfaceInfAccumNumIndex in productIndices[index]:
+                                reactionRate = coreReactionRates[index]
+                                if reactionRate > maxEdgeReactionAccum:
+                                    maxSurfaceReactionAccum = reactionRate
+                                    maxSurfaceAccumReactionIndex = i
+                        maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
+                    elif len(surfaceTotalDivAccumNums)>0: 
+                        maxSurfaceAccumReactionIndex = numpy.argmax(surfaceTotalDivAccumNums)
+                        maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
+                        maxSurfaceDifLnAccumNum = numpy.log(surfaceTotalDivAccumNums[maxSurfaceAccumReactionIndex])
+                else:
+                    maxSurfaceAccumReactionIndex = -1
+                    maxSurfaceAccumReaction = None
+                    maxSurfaceDifLnAccumNum = 0.0
+                    
+                #manage surface reaction movement "on the fly"
+                if maxSurfaceAccumReaction and maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
+                    logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
+                    surfaceReactions.remove(maxSurfaceAccumReaction)
+                    surfaceSpecies,surfaceReactions =self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                    surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                    surfaceReactionIndices = self.surfaceReactionIndices
+                    logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
 
-            #Get surface reaction with greatest total difference in Ln(accumulation number)
-            
-            if len(surfaceTotalDivAccumNums) > 0:
-                maxSurfaceDifLnAccumNum = numpy.inf
-                if zeroConsumption:
-                    for i in xrange(len(surfaceReactionIndices)):
-                        index = surfaceReactionIndices[i]
-                        maxSurfaceReactionAccum = 0.0 
-                        maxSurfaceAccumReactionIndex = -1
-                        if surfaceInfAccumNumIndex in reactantIndices[index]:
-                            reactionRate = coreReactionRates[index]
-                            if reactionRate > maxEdgeReactionAccum:
-                                maxSurfaceReactionAccum = reactionRate
-                                maxSurfaceAccumReactionIndex = i
-                    maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
-                elif zeroProduction:
-                    for i in xrange(len(surfaceReactionIndices)):
-                        index = surfaceReactionIndices[i]
-                        maxSurfaceReactionAccum = 0.0
-                        maxSurfaceAccumReactionIndex = -1
-                        if surfaceInfAccumNumIndex in productIndices[index]:
-                            reactionRate = coreReactionRates[index]
-                            if reactionRate > maxEdgeReactionAccum:
-                                maxSurfaceReactionAccum = reactionRate
-                                maxSurfaceAccumReactionIndex = i
-                    maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
-                elif len(surfaceTotalDivAccumNums)>0: 
-                    maxSurfaceAccumReactionIndex = numpy.argmax(surfaceTotalDivAccumNums)
-                    maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
-                    maxSurfaceDifLnAccumNum = numpy.log(surfaceTotalDivAccumNums[maxSurfaceAccumReactionIndex])
-            else:
-                maxSurfaceAccumReactionIndex = -1
-                maxSurfaceAccumReaction = None
-                maxSurfaceDifLnAccumNum = 0.0
-                
-            #manage surface reaction movement "on the fly"
-            if maxSurfaceAccumReaction and maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
-                logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
-                surfaceReactions.remove(maxSurfaceAccumReaction)
-                surfaceSpecies,surfaceReactions =self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                surfaceSpeciesIndices = self.surfaceSpeciesIndices
-                surfaceReactionIndices = self.surfaceReactionIndices
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-            
-            #surface flux calculations
-            surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
-            surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
-            surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
-            for i in xrange(len(surfaceSpeciesIndices)):
-                surfaceSpeciesRates[i] = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))
-                
-            if len(surfaceSpeciesIndices) > 0:
-                maxSurfaceSpeciesIndex = numpy.argmax(surfaceSpeciesRates)
-                maxSurfaceSpecies = surfaceSpecies[maxSurfaceSpeciesIndex]
-                maxSurfaceSpeciesRate = surfaceSpeciesRates[maxSurfaceSpeciesIndex]
-            else:
-                maxSurfaceSpeciesIndex = -1
-                maxSurfaceSpecies = None
-                maxSurfaceSpeciesRate = 0.0
-
-            
-            
-            
-            
-            #manage surface species movement "on the fly"
-            if maxSurfaceSpecies and maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore:
-                logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
-                surfaceSpecies.remove(maxSurfaceSpecies)
-                surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                surfaceSpeciesIndices = self.surfaceSpeciesIndices
-                surfaceReactionIndices = self.surfaceReactionIndices
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                
+                #surface flux calculations
+                surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
+                surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
+                surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
+                for i in xrange(len(surfaceSpeciesIndices)):
+                    surfaceSpeciesRates[i] = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))
+                    
+                if len(surfaceSpeciesIndices) > 0:
+                    maxSurfaceSpeciesIndex = numpy.argmax(surfaceSpeciesRates)
+                    maxSurfaceSpecies = surfaceSpecies[maxSurfaceSpeciesIndex]
+                    maxSurfaceSpeciesRate = surfaceSpeciesRates[maxSurfaceSpeciesIndex]
+                else:
+                    maxSurfaceSpeciesIndex = -1
+                    maxSurfaceSpecies = None
+                    maxSurfaceSpeciesRate = 0.0
+               
+                #manage surface species movement "on the fly"
+                if maxSurfaceSpecies and maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore:
+                    logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
+                    surfaceSpecies.remove(maxSurfaceSpecies)
+                    surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                    surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                    surfaceReactionIndices = self.surfaceReactionIndices
+                    logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                    
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
                 # Set the maximum unimolecular rate to be kB*T/h
