@@ -38,6 +38,7 @@ import rmgpy
 from rmgpy.cantherm import CanTherm, input
 from input import jobList
 import rmgpy.constants as constants
+from rmgpy.cantherm.statmech import InputError
 ################################################################################
 
 class CommonTest(unittest.TestCase):
@@ -253,7 +254,7 @@ class testCanthermInput(unittest.TestCase):
         ts = input.transitionState('TS', os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'TS.py'))
 
         self.assertTrue(isinstance(ts, rmgpy.species.TransitionState))
-
+    
     def testTransitionStateStatmech(self):
         """Test loading of statmech job from transition state input file."""
         job = jobList[-1]
@@ -265,7 +266,20 @@ class testCanthermInput(unittest.TestCase):
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
-
-
+        
+class testStatmech(unittest.TestCase):
+    """
+    Contains unit tests of statmech.py
+    """
+    def setUp(self):
+        cantherm = CanTherm()
+        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),r'files/Benzyl/input.py'))
+        
+    def testGaussianLogFileError(self):
+        """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
+        job = jobList[-1]
+        self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
+        self.assertRaises(InputError,job.load())
+        
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
