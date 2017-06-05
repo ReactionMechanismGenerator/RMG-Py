@@ -1738,13 +1738,16 @@ class ThermoDatabase(object):
         if node is None:
             raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
 
-        data = node.data; comment = node.label
-        while isinstance(data, basestring) and data is not None:
-            for entry in database.entries.values():
+        data = node.data
+        comment = node.label
+        while isinstance(data, basestring):
+            for entry in database.entries.itervalues():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
+            else:
+                raise DatabaseError("Node {0} points to a non-existant group called {1} in database: {2}".format(node.label, data, database.label))
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
