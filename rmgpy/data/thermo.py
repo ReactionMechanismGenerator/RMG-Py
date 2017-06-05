@@ -1945,15 +1945,25 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of'
+                                ' its ancestors.'.format(molecule, node0))
 
         data = node.data; comment = node.label
-        while isinstance(data, basestring) and data is not None:
-            for entry in database.entries.values():
+        loop_count = 0
+        while isinstance(data, basestring):
+            loop_count += 1
+            if loop_count > 100:
+                raise DatabaseError(
+                    "Maximum iterations reached while following thermo group data pointers. A circular"
+                    " reference may exist. Last node was {0} pointing to group called {1} in"
+                    " database {2}".format(node.label, data, database.label))
+            for entry in database.entries.itervalues():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
+            else: raise DatabaseError("Node {0} points to a non-existant group called {1} in database: {2}".format(
+                node.label, data, database.label))
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
