@@ -212,24 +212,26 @@ cdef class LiquidReactor(ReactionSystem):
         for j in xrange(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
-                reactionRate = 0.0
+                fReactionRate = 0.0
             elif ir[j,1] == -1: # only one reactant
-                reactionRate = k * C[ir[j,0]]
+                fReactionRate = k * C[ir[j,0]]
             elif ir[j,2] == -1: # only two reactants
-                reactionRate = k * C[ir[j,0]] * C[ir[j,1]]
+                fReactionRate = k * C[ir[j,0]] * C[ir[j,1]]
             else: # three reactants!! (really?)
-                reactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
+                fReactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
             k = kr[j]
             if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
-                pass
+                revReactionRate = 0.0
             elif ip[j,1] == -1: # only one reactant
-                reactionRate -= k * C[ip[j,0]]
+                revReactionRate = k * C[ip[j,0]]
             elif ip[j,2] == -1: # only two reactants
-                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]]
+                revReactionRate = k * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
-                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
-
-           # Set the reaction and species rates
+                revReactionRate = k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
+                
+            reactionRate = fReactionRate-revReactionRate
+            
+            # Set the reaction and species rates
             if j < numCoreReactions:
                 # The reaction is a core reaction
                 coreReactionRates[j] = reactionRate
@@ -239,26 +241,32 @@ cdef class LiquidReactor(ReactionSystem):
                 # and products are core species
                 first = ir[j,0]
                 coreSpeciesRates[first] -= reactionRate
-                coreSpeciesConsumptionRates[first] += reactionRate
+                coreSpeciesConsumptionRates[first] += fReactionRate
+                coreSpeciesProductionRates[first] += revReactionRate
                 second = ir[j,1]
                 if second != -1:
                     coreSpeciesRates[second] -= reactionRate
-                    coreSpeciesConsumptionRates[second] += reactionRate
+                    coreSpeciesConsumptionRates[second] += fReactionRate
+                    coreSpeciesProductionRates[second] += revReactionRate
                     third = ir[j,2]
                     if third != -1:
                         coreSpeciesRates[third] -= reactionRate
-                        coreSpeciesConsumptionRates[third] += reactionRate
+                        coreSpeciesConsumptionRates[third] += fReactionRate
+                        coreSpeciesProductionRates[third] += revReactionRate
                 first = ip[j,0]
                 coreSpeciesRates[first] += reactionRate
-                coreSpeciesProductionRates[first] += reactionRate
+                coreSpeciesProductionRates[first] += fReactionRate
+                coreSpeciesConsumptionRates[first] += revReactionRate
                 second = ip[j,1]
                 if second != -1:
                     coreSpeciesRates[second] += reactionRate
-                    coreSpeciesProductionRates[second] += reactionRate
+                    coreSpeciesProductionRates[second] += fReactionRate
+                    coreSpeciesConsumptionRates[second] += revReactionRate
                     third = ip[j,2]
                     if third != -1:
                         coreSpeciesRates[third] += reactionRate
-                        coreSpeciesProductionRates[third] += reactionRate
+                        coreSpeciesProductionRates[third] += fReactionRate
+                        coreSpeciesConsumptionRates[third] += revReactionRate
 
             else:
                 # The reaction is an edge reaction
