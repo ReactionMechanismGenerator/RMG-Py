@@ -614,8 +614,10 @@ class RMG(util.Subject):
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
+                        objectsToEnlarge.append(obj)
                     elif isinstance(obj, Species):
                         objectsToEnlarge.append(obj)
+                        assert len(objectsToEnlarge)>0
                     elif isinstance(obj,Reaction):
                         potentialSpcs = obj.reactants+obj.products
                         filterFcn = lambda x: not (x in self.reactionModel.core.species)
