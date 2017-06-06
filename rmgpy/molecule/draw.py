@@ -1423,19 +1423,14 @@ class ReactionDrawer:
             
         # Next determine size required for surface
         rxn_width = 0; rxn_height = 0; rxn_top = 0
-        for surface, cr, rect in reactants:
+        for surface, cr, rect in reactants + products:
             left, top, width, height = rect
             rxn_width += width
             if height > rxn_height: rxn_height = height
             if height + top > rxn_top: rxn_top = height + top
-        for surface, cr, rect in products:
-            left, top, width, height = rect
-            rxn_width += width
-            if height > rxn_height: rxn_height = height
-            if height + top > rxn_top: rxn_top = height + top
-        
+
         rxn_top = 0.5 * rxn_height - rxn_top
-        
+
         # Also include '+' and reaction arrow in width
         cr.set_font_size(fontSizeNormal)
         plus_extents = cr.text_extents(' + ')
@@ -1467,6 +1462,7 @@ class ReactionDrawer:
                 rxn_x += plus_extents[4]
             # Draw the reactant
             rxn_y = top + rxn_top + 0.5 * rxn_height
+            if rxn_y < 0 : rxn_y = 0
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
@@ -1504,6 +1500,7 @@ class ReactionDrawer:
                 rxn_x += plus_extents[4]
             # Draw the product
             rxn_y = top + rxn_top + 0.5 * rxn_height
+            if rxn_y < 0 : rxn_y = 0
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
