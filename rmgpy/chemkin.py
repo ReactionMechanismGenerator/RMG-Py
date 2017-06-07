@@ -37,6 +37,7 @@ import logging
 import textwrap
 import os.path
 import numpy
+from numba import jit
 
 import rmgpy.kinetics as _kinetics
 from rmgpy.molecule.element import getElement
@@ -1660,7 +1661,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     return string
 
 ################################################################################
-
+@jit
 def markDuplicateReaction(test_reaction, reaction_list):
     """
     If the test_reaction is a duplicate (in Chemkin terms) of one in reaction_list, then set `duplicate=True` on both instances.
@@ -1688,7 +1689,7 @@ def markDuplicateReaction(test_reaction, reaction_list):
                     logging.warning('Marked reaction {0} as duplicate of {1} for saving to Chemkin file.'.format(reaction1, reaction2))
                     reaction1.duplicate = True
                     reaction2.duplicate = True
-
+@jit
 def markDuplicateReactions(reactions):
     """
     For a given list of `reactions`, mark all of the duplicate reactions as
