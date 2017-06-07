@@ -564,3 +564,108 @@ cdef class HinderedRotor(Torsion):
         self.symmetry = symmetry
         
         return self
+
+cdef class FreeRotor(Torsion):
+    """
+    A statistical mechanical model of a one-dimensional hindered rotor.  
+    Based on Pfaendtner et al. 2007.  
+    The attributes are:
+    
+    ======================== ===================================================
+    Attribute                Description
+    ======================== ===================================================
+    `inertia`                The moment of inertia of the rotor
+    `rotationalConstant`     The rotational constant of the rotor
+    ======================== ===================================================
+
+    Note that the moment of inertia and the rotational constant are simply two
+    ways of representing the same quantity; only one of these can be specified
+    independently.
+    """
+    def __init__(self,inertia=None,symmetry=1,rotationalConstant=None):
+        Torsion.__init__(self, symmetry, False)
+        if inertia is not None and rotationalConstant is not None:
+            raise ValueError('Only one of moment of inertia and rotational constant can be specified.')
+        elif rotationalConstant is not None:
+            self.rotationalConstant = rotationalConstant
+        else:
+            self.inertia = inertia
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        FreeRotor object.
+        """
+        result = 'FreeRotor(inertia={0!r}, symmetry={1:d}'.format(self.inertia, self.symmetry)
+        result += ')'
+        return result
+            
+    def __reduce__(self):
+        """
+        A helper function used when pickling a FreeRotor object.
+        """
+        return (FreeRotor, (self.inertia, self.symmetry))
+    
+    property inertia:
+        """The moment of inertia of the rotor."""
+        def __get__(self):
+            return self._inertia
+        def __set__(self, value):
+            self._inertia = quantity.Inertia(value)
+    
+    property rotationalConstant:
+        """The rotational constant of the rotor."""
+        def __get__(self):
+            cdef double I = self._inertia.value_si
+            cdef double B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            return quantity.Quantity(B,"cm^-1")
+        def __set__(self, B):
+            cdef double I
+            B = quantity.Frequency(B)
+            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            self._inertia = quantity.ScalarQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
+    
+    cdef double getRotationalConstantEnergy(self):
+        """
+        Return the value of the rotational constant in J/mol.
+        """
+        return constants.hbar * constants.hbar / (2 * self._inertia.value_si) * constants.Na
+    
+    cpdef double getPartitionFunction(self, double T) except -1:
+        """
+        Return the value of the partition function :math:`Q(T)` at the
+        specified temperature `T` in K.
+        """
+        return numpy.sqrt(8*numpy.pi**3*constants.kB*T*self._inertia.value_si)/(self.symmetry*constants.h)
+        
+  
+    cpdef double getHeatCapacity(self, double T) except -100000000:
+        """
+        Return the heat capacity in J/mol*K for the degree of freedom at the
+        specified temperature `T` in K.
+        """
+        return constants.R/2.0
+       
+    
+    cpdef double getEnthalpy(self, double T) except 100000000:
+        """
+        Return the enthalpy in J/mol for the degree of freedom at the
+        specified temperature `T` in K.
+        """
+        return constants.R*T/2.0
+        
+
+    cpdef double getEntropy(self, double T) except -100000000:
+        """
+        Return the entropy in J/mol*K for the degree of freedom at the
+        specified temperature `T` in K.
+        """
+        cdef double Q
+        Q = self.getPartitionFunction(T)
+        return constants.R*(numpy.log(Q)+.5)
+        
+        
+
+
+    
+

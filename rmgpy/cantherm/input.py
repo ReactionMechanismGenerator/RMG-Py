@@ -40,7 +40,7 @@ from rmgpy.species import Species, TransitionState
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
 
 from rmgpy.thermo.thermodata import ThermoData
@@ -355,6 +355,7 @@ def loadInputFile(path):
         'SphericalTopRotor': SphericalTopRotor,
         'HarmonicOscillator': HarmonicOscillator,
         'HinderedRotor': HinderedRotor,
+        'FreeRotor':FreeRotor,
         # Thermo
         'ThermoData': ThermoData,
         'Wilhoit': Wilhoit,
