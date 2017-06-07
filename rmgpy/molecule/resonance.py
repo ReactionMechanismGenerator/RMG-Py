@@ -819,7 +819,11 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
 
     # Reset signal handling since lpsolve changed it
-    signal.signal(signal.SIGINT, sig)
+    try:
+        signal.signal(signal.SIGINT, sig)
+    except ValueError:
+        # This is not being run in the main thread, so we cannot reset signal
+        pass
 
     # Check that optimization was successful
     if status != 0:
