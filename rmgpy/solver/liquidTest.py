@@ -203,7 +203,7 @@ class LiquidReactorCheck(unittest.TestCase):
         
         integrationTime = 1e-8
         rxnSystem0.termination.append(TerminationTime((integrationTime,'s')))
-        rxnSystem0.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0)
+        rxnSystem0.simulate(coreSpecies, coreReactions, [], [], [],[], 0, 1, 0)
 
         y0 = rxnSystem0.y
         
@@ -224,7 +224,7 @@ class LiquidReactorCheck(unittest.TestCase):
             
             
             rxnSystem.termination.append(TerminationTime((integrationTime,'s')))
-            rxnSystem.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0)
+            rxnSystem.simulate(coreSpecies, coreReactions, [], [],[],[], 0, 1, 0)
             
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si/(1+1e-3)  # reset A factor
             

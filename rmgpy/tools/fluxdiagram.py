@@ -311,7 +311,7 @@ def simulate(reactionModel, reactionSystem, settings = None):
     for index, spec in enumerate(coreSpecies):
         speciesIndex[spec] = index
     
-    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], absoluteTolerance, relativeTolerance)
+    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], [], [], absoluteTolerance, relativeTolerance)
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reactionSystem.y.copy()

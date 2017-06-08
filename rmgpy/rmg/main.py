@@ -55,6 +55,7 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
+from rmgpy.reaction import Reaction
 from pdep import PDepNetwork
 import rmgpy.util as util
 
@@ -164,6 +165,10 @@ class RMG(util.Subject):
         self.fluxToleranceKeepInEdge = 0.0
         self.fluxToleranceMoveToCore = 1.0
         self.fluxToleranceInterrupt = 1.0
+        self.toleranceMoveEdgeReactionToCore = numpy.inf
+        self.toleranceReactionInterruptSimulation = numpy.inf
+        self.ignoreOverallFluxCriterion=False
+        
         self.absoluteTolerance = 1.0e-8
         self.relativeTolerance = 1.0e-4
         self.sensitivityAbsoluteTolerance = 1.0e-6
@@ -576,19 +581,30 @@ class RMG(util.Subject):
                     # Turn pruning off if we haven't reached minimum core size.
                     prune = False
                     
-                try: terminated, obj = reactionSystem.simulate(
+
+                try: terminated, obj,surfaceSpecies,surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
+                    surfaceSpecies = self.reactionModel.surfaceSpecies,
+                    surfaceReactions = self.reactionModel.surfaceReactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
+                    toleranceMoveEdgeReactionToCoreInterrupt= self.toleranceMoveEdgeReactionToCoreInterrupt if prune else self.toleranceMoveEdgeReactionToCore,
+                    toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
+                    toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
+                    toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
+                    toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
                 )
+                
                 except:
                     logging.error("Model core reactions:")
                     if len(self.reactionModel.core.reactions) > 5:
@@ -597,6 +613,10 @@ class RMG(util.Subject):
                         from rmgpy.cantherm.output import prettify
                         logging.error(prettify(repr(self.reactionModel.core.reactions)))
                     raise
+
+                self.reactionModel.surfaceSpecies = surfaceSpecies
+                self.reactionModel.surfaceReactions = surfaceReactions
+
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
@@ -608,7 +628,18 @@ class RMG(util.Subject):
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                    objectsToEnlarge.append(obj)
+                        objectsToEnlarge.append(obj)
+                    elif isinstance(obj, Species):
+                        objectsToEnlarge.append(obj)
+                        assert len(objectsToEnlarge)>0
+                    elif isinstance(obj,Reaction):
+                        potentialSpcs = obj.reactants+obj.products
+                        filterFcn = lambda x: not ((x in self.reactionModel.core.species)) #remove species already in core
+                        neededSpcs = filter(filterFcn,potentialSpcs)
+                        for i in range(len(neededSpcs)): #remove duplicate species
+                            if neededSpcs.index(neededSpcs[i]) != i:
+                                del neededSpcs[i]
+                        objectsToEnlarge.extend(neededSpcs)
                     self.done = False
     
     
@@ -646,10 +677,19 @@ class RMG(util.Subject):
                                 coreReactions = self.reactionModel.core.reactions,
                                 edgeSpecies = [],
                                 edgeReactions = [],
+                                surfaceSpecies = self.reactionModel.surfaceSpecies,
+                                surfaceReactions = self.reactionModel.surfaceReactions,
                                 toleranceKeepInEdge = 0,
                                 toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                                toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                                toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
+                                toleranceInterruptSimulation =  self.fluxToleranceMoveToCore,
+                                toleranceMoveEdgeReactionToCoreInterrupt=  self.toleranceMoveEdgeReactionToCore,
+                                toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
+                                toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
+                                toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
+                                toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
                                 pdepNetworks = self.reactionModel.networkList,
+                                ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                                 absoluteTolerance = self.absoluteTolerance,
                                 relativeTolerance = self.relativeTolerance,
                                 filterReactions=True,
@@ -703,8 +743,15 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
+                    toleranceInterruptSimulation =  self.fluxToleranceMoveToCore,
+                    toleranceMoveEdgeReactionToCoreInterrupt=  self.toleranceMoveEdgeReactionToCore,
+                    toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
+                    toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
+                    toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
+                    toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,

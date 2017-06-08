@@ -117,7 +117,9 @@ cdef class SimpleReactor(ReactionSystem):
             initialMoleFractions[speciesDict[label]] = moleFrac
         self.initialMoleFractions = initialMoleFractions
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=[],
+                          list surfaceReactions=[], list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
+                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -125,7 +127,10 @@ cdef class SimpleReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
+        ReactionSystem.initializeModel(self, coreSpecies=coreSpecies, coreReactions=coreReactions, edgeSpecies=edgeSpecies, 
+                                       edgeReactions=edgeReactions, surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
+                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol, sensitivity=sensitivity, sens_atol=sens_atol, 
+                                       sens_rtol=sens_rtol)
         
         # Set initial conditions
         self.set_initial_conditions()
@@ -241,8 +246,8 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
-        cdef double k, V, reactionRate, T, P, Peff
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
+        cdef double k, V, reactionRate, revReactionRate, T, P, Peff
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates, coreSpeciesConsumptionRates, coreSpeciesProductionRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C, y_coreSpecies
         cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, colliderEfficiencies
         cdef numpy.ndarray[numpy.int_t, ndim=1] pdepColliderReactionIndices
@@ -285,6 +290,8 @@ cdef class SimpleReactor(ReactionSystem):
         coreSpeciesConcentrations = numpy.zeros_like(self.coreSpeciesConcentrations)
         coreSpeciesRates = numpy.zeros_like(self.coreSpeciesRates)
         coreReactionRates = numpy.zeros_like(self.coreReactionRates)
+        coreSpeciesConsumptionRates = numpy.zeros_like(self.coreSpeciesConsumptionRates)
+        coreSpeciesProductionRates = numpy.zeros_like(self.coreSpeciesProductionRates)
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
@@ -302,23 +309,25 @@ cdef class SimpleReactor(ReactionSystem):
         for j in xrange(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
-                reactionRate = 0.0
+                fReactionRate = 0.0
             elif ir[j,1] == -1: # only one reactant
-                reactionRate = k * C[ir[j,0]]
+                fReactionRate = k * C[ir[j,0]]
             elif ir[j,2] == -1: # only two reactants
-                reactionRate = k * C[ir[j,0]] * C[ir[j,1]]
+                fReactionRate = k * C[ir[j,0]] * C[ir[j,1]]
             else: # three reactants!! (really?)
-                reactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
+                fReactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
             k = kr[j]
             if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
                 pass
             elif ip[j,1] == -1: # only one reactant
-                reactionRate -= k * C[ip[j,0]]
+                revReactionRate = k * C[ip[j,0]]
             elif ip[j,2] == -1: # only two reactants
-                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]]
+                revReactionRate = k * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
-                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
-
+                revReactionRate = k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
+                
+            reactionRate = fReactionRate-revReactionRate
+            
             # Set the reaction and species rates
             if j < numCoreReactions:
                 # The reaction is a core reaction
@@ -329,20 +338,32 @@ cdef class SimpleReactor(ReactionSystem):
                 # and products are core species
                 first = ir[j,0]
                 coreSpeciesRates[first] -= reactionRate
+                coreSpeciesConsumptionRates[first] += fReactionRate
+                coreSpeciesProductionRates[first] += revReactionRate
                 second = ir[j,1]
                 if second != -1:
                     coreSpeciesRates[second] -= reactionRate
+                    coreSpeciesConsumptionRates[second] += fReactionRate
+                    coreSpeciesProductionRates[second] += revReactionRate
                     third = ir[j,2]
                     if third != -1:
                         coreSpeciesRates[third] -= reactionRate
+                        coreSpeciesConsumptionRates[third] += fReactionRate
+                        coreSpeciesProductionRates[third] += revReactionRate
                 first = ip[j,0]
                 coreSpeciesRates[first] += reactionRate
+                coreSpeciesProductionRates[first] += fReactionRate
+                coreSpeciesConsumptionRates[first] += revReactionRate
                 second = ip[j,1]
                 if second != -1:
                     coreSpeciesRates[second] += reactionRate
+                    coreSpeciesProductionRates[second] += fReactionRate
+                    coreSpeciesConsumptionRates[second] += revReactionRate
                     third = ip[j,2]
                     if third != -1:
                         coreSpeciesRates[third] += reactionRate
+                        coreSpeciesProductionRates[third] += fReactionRate
+                        coreSpeciesConsumptionRates[third] += revReactionRate
 
             else:
                 # The reaction is an edge reaction
@@ -381,6 +402,8 @@ cdef class SimpleReactor(ReactionSystem):
 
         self.coreSpeciesConcentrations = coreSpeciesConcentrations
         self.coreSpeciesRates = coreSpeciesRates
+        self.coreSpeciesProductionRates = coreSpeciesProductionRates
+        self.coreSpeciesConsumptionRates = coreSpeciesConsumptionRates
         self.coreReactionRates = coreReactionRates
         self.edgeSpeciesRates = edgeSpeciesRates
         self.edgeReactionRates = edgeReactionRates
