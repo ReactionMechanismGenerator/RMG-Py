@@ -43,7 +43,7 @@ import pydot
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 import rmgpy.util as util
-
+from rmgpy.rmg.RMGSettings import SimulatorSettings
 from .loader import loadRMGJob
 
 ################################################################################
@@ -312,7 +312,11 @@ def simulate(reactionModel, reactionSystem, settings = None):
     for index, spec in enumerate(coreSpecies):
         speciesIndex[spec] = index
     
-    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], [], [], absoluteTolerance, relativeTolerance)
+    simulatorSettings = SimulatorSettings(atol=absoluteTolerance,rtol=relativeTolerance)
+
+    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], [], [], 
+                                   atol=simulatorSettings.atol,rtol=simulatorSettings.rtol,
+                                   sens_atol=simulatorSettings.sens_atol,sens_rtol=simulatorSettings.sens_rtol)
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reactionSystem.y.copy()

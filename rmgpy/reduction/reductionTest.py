@@ -68,13 +68,13 @@ class ReduceFunctionalTest(unittest.TestCase):
         reactionModel = rmg.reactionModel
 
         simulatorSettings = SimulatorSettings()
-        atol, rtol = simulatorSettings.absoluteTolerance, simulatorSettings.relativeTolerance
+        atol, rtol = simulatorSettings.atol, simulatorSettings.rtol
         
         index = 0
         reactionSystem = rmg.reactionSystems[index]
 
         conv = computeConversion(target, reactionModel, reactionSystem,\
-         rmg.simulatorSettingsList[-1].absoluteTolerance, rmg.simulatorSettingsList[-1].relativeTolerance)
+         rmg.simulatorSettingsList[-1].atol, rmg.simulatorSettingsList[-1].rtol)
         self.assertIsNotNone(conv)
 
 
@@ -84,12 +84,12 @@ class ReduceFunctionalTest(unittest.TestCase):
         reactionModel = rmg.reactionModel
 
         simulatorSettings = SimulatorSettings()
-        atol, rtol = simulatorSettings.absoluteTolerance, simulatorSettings.relativeTolerance
+        atol, rtol = simulatorSettings.atol, simulatorSettings.rtol
         index = 0
         reactionSystem = rmg.reactionSystems[index]
         
         observables = computeObservables(targets, reactionModel, reactionSystem, \
-            simulatorSettings.absoluteTolerance, simulatorSettings.relativeTolerance)
+            simulatorSettings.atol, simulatorSettings.rtol)
 
         tols = [0.7, 1e-3, 1e-6]
         for tol in tols:

@@ -556,10 +556,10 @@ cdef class ReactionSystem(DASx):
         toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
         toleranceMoveEdgeReactionToSurfaceInterrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
         ignoreOverallFluxCriterion=modelSettings.ignoreOverallFluxCriterion
-        absoluteTolerance = simulatorSettings.absoluteTolerance
-        relativeTolerance = simulatorSettings.relativeTolerance
-        sensitivityAbsoluteTolerance = simulatorSettings.sensitivityAbsoluteTolerance
-        sensitivityRelativeTolerance = simulatorSettings.sensitivityRelativeTolerance
+        absoluteTolerance = simulatorSettings.atol
+        relativeTolerance = simulatorSettings.rtol
+        sensitivityAbsoluteTolerance = simulatorSettings.sens_atol
+        sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
         

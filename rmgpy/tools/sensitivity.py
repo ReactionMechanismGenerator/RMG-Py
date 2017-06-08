@@ -112,6 +112,8 @@ def simulate(rmg):
         modelSettings = ModelSettings(toleranceKeepInEdge = 0, toleranceMoveToCore = 1, toleranceInterruptSimulation = 1)
         simulatorSettings = rmg.simulatorSettingsList[-1]
         
+        assert isinstance(modelSettings,ModelSettings)
+        
         terminated, obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = rmg.reactionModel.core.species,
             coreReactions = rmg.reactionModel.core.reactions,
