@@ -40,7 +40,8 @@ class ModelSettings:
     def __init__(self,toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1):
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
+          maxGibbsFreeEnergyPerRT=numpy.inf):
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
         self.fluxToleranceMoveToCore = toleranceMoveToCore
@@ -54,7 +55,8 @@ class ModelSettings:
         self.toleranceMoveEdgeReactionToSurface = toleranceMoveEdgeReactionToSurface
         self.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
         self.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
-
+        self.maxGibbsFreeEnergyPerRT = maxGibbsFreeEnergyPerRT
+        
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation
         else:

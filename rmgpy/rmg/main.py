@@ -52,7 +52,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.base import ForbiddenStructureException, DatabaseError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
-
+import rmgpy.constants as constants
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
@@ -535,6 +535,10 @@ class RMG(util.Subject):
 
         self.done = False
         
+        #get maximum temperature for Gibbs energy filtering
+        self.Ts = [r.T.value_si for r in self.reactionSystems]
+        self.Gmaxdless = self.modelSettingsList[0].maxGibbsFreeEnergyPerRT
+                                     
         # Initiate first reaction discovery step after adding all core species
         if self.filterReactions:
             # Run the reaction system to update threshold and react flags
@@ -556,12 +560,14 @@ class RMG(util.Subject):
         self.reactionModel.enlarge(reactEdge=True, 
             unimolecularReact=self.unimolecularReact, 
             bimolecularReact=self.bimolecularReact)
-
+        
+        self.filterEdgeByGibbs() #filter all species by Gibbs Energy
+        
         logging.info('Completed initial enlarge edge step...')
         self.saveEverything()
         
         assert len(self.modelSettingsList) == len(self.simulatorSettingsList), "different number of model and simulator declarations in input file with more than one simulator declaration"
-        
+    
         maxNumSpcsHit = False #default
         
         for q,modelSettings in enumerate(self.modelSettingsList):
@@ -571,6 +577,8 @@ class RMG(util.Subject):
                 simulatorSettings = self.simulatorSettingsList[0]
 
             logging.info('Beginning model generation stage {0}'.format(q+1))
+            
+            self.Gmaxdless = modelSettings.maxGibbsFreeEnergyPerRT
             
             self.done = False
 
@@ -673,11 +681,15 @@ class RMG(util.Subject):
                     logging.info('')
 
                     objectsToEnlarge = list(set(objectsToEnlarge))
-
+                    
+                    numOldEdgeSpecies = len(self.reactionModel.edge.species)
+                    
                     # Add objects to enlarge to the core first
                     for objectToEnlarge in objectsToEnlarge:
                         self.reactionModel.enlarge(objectToEnlarge)
-                        
+                    
+                    self.filterEdgeByGibbs(numOldEdgeSpecies)
+                                    
                     if len(self.reactionModel.core.species) > numCoreSpecies:
                         tempModelSettings = deepcopy(modelSettings)
                         tempModelSettings.toleranceKeepInEdge = 0
@@ -706,17 +718,21 @@ class RMG(util.Subject):
                         else:
                             self.updateReactionThresholdAndReactFlags()
                         
+                        numOldEdgeSpecies = len(self.reactionModel.edge.species)
+                        
                         self.reactionModel.enlarge(reactEdge=True, 
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
-                    
+                        
+                        self.filterEdgeByGibbs(numOldEdgeSpecies)
+                           
                     #Adjust Surface
                     #we add added species and remove any species moved out of the core
                     #for now we remove reactions that become part of a PDepNetwork by intersecting with the core
                     #thus the surface algorithm currently (June 2017) is not implemented for pdep networks
                     self.reactionModel.surfaceSpecies = list(((surfSpcs | newSurfaceSpcsAdd)-newSurfaceSpcsLoss) & set(self.reactionModel.core.species))
                     self.reactionModel.surfaceReactions = list(((surfRxns | newSurfaceRxnsAdd)-newSurfaceRxnsLoss) & set(self.reactionModel.core.reactions))
-                        
+                    
                     maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
 
                     if maxNumSpcsHit: #breaks the while loop 
@@ -1219,6 +1235,24 @@ class RMG(util.Subject):
                 if '//' in line: line = line[0:line.index('//')]
         return line
     
+    def filterEdgeByGibbs(self,numOldEdgeSpecies=0):
+        """
+        Calculates the minimum dimensionless gibbs energy of formation for edge species further out than numOldEdgeSpecies
+        and removes species whose Gf/(RT) are greater than the set maximum
+        """
+        Gmaxdless = self.Gmaxdless
+        if not numpy.isinf(Gmaxdless):
+            Ts = self.Ts
+            for spc in self.reactionModel.edge.species[numOldEdgeSpecies:]:
+                #get the smallest Gf/(RT) value over all reactors
+                Gdless = min([spc.thermo.getFreeEnergy(T)/(constants.R*T) for T in Ts]) #In SI already
+                if Gdless > Gmaxdless:
+                    logging.info('Removing species {0} from edge because it\'s Gf/(RT) {1} is greater than the Gmax/(RT) of {2} '.format(spc,Gdless,Gmaxdless))
+                    self.reactionModel.removeSpeciesFromEdge(self.reactionSystems,spc)
+            #call garbage collection
+            collected = gc.collect()
+            logging.info('Garbage collector: collected %d objects.' % (collected))
+                    
 ################################################################################
 def processToSpeciesNetworks(obj,reactionSystem,coreSpecies):
     """

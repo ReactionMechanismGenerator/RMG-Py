@@ -678,7 +678,9 @@ class CoreEdgeReactionModel:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks()
             logging.info('')
-            
+        
+        
+                    
         # Check new core and edge reactions for Chemkin duplicates
         # The same duplicate reaction gets brought into the core
         # at the same time, so there is no danger in checking all of the edge.
@@ -701,7 +703,7 @@ class CoreEdgeReactionModel:
             newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
             reactEdge=reactEdge,
         )
-
+                        
         logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
@@ -1077,7 +1079,8 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reactionSystems
         for reactionSystem in reactionSystems:
-            reactionSystem.speciesIndex.pop(spec)
+            if spec in reactionSystem.speciesIndex:
+                reactionSystem.speciesIndex.pop(spec)
 
             # identify any reactions it's involved in
             rxnList = []
