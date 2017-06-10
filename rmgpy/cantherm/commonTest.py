@@ -64,7 +64,7 @@ class testCanthermJob(unittest.TestCase):
 
         cantherm = CanTherm()
         
-        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),r'files/methoxy.py'))
+        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy.py'))
         pdepjob = jobList[-1]
         self.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
@@ -273,7 +273,7 @@ class testStatmech(unittest.TestCase):
     """
     def setUp(self):
         cantherm = CanTherm()
-        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),r'files/Benzyl/input.py'))
+        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','Benzyl','input.py'))
         
     def testGaussianLogFileError(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
