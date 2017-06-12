@@ -30,7 +30,19 @@
 
 """
 This script can be used to compare two RMG-generated kinetics models. To use,
-pass the 
+pass the chem.inp and species_dictionary.txt files to the script. The syntax
+is as follows:
+
+python diffModels.py CHEMKIN1 SPECIESDICT1 CHEMKIN2 SPECIESDICT2
+
+Optionally, you may use the --thermo1 and/or --thermo2 flags to add separate
+thermo chemkin files.
+
+The optional --web flag is used for running this script through the RMG-website
+
+With all options the syntax is as follows:
+
+python diffModels.py CHEMKIN1 SPECIESDICT1 --thermo1 THERMO1 CHEMKIN2 SPECIESDICT2 --thermo2 THERMO2 --web
 """
 import os
 import math
@@ -112,8 +124,8 @@ def compareModelKinetics(model1, model2):
 
 def compareModelSpecies(model1, model2):
     """
-    This function compares two RMG models and returns a list of common reactions
-    as a dictionary, as well as a list of unique reactions for each model.
+    This function compares two RMG models and returns a list of common species (with a nested list containing
+    both species objects as elements), as well as a list of unique species for each model.
     """
 
     commonSpecies = []
@@ -142,8 +154,8 @@ def compareModelSpecies(model1, model2):
 
 def compareModelReactions(model1, model2):
     """
-    This function compares two RMG models and returns a list of common reactions
-    as a dictionary, as well as a list of unique reactions for each model.
+    This function compares two RMG models and returns a list of common reactions (with a nested list containing
+    both reaction objects as elements), as well as a list of unique reactions for each model.
     """
     reactionList1 = model1.reactions[:]
     reactionList2 = model2.reactions[:]
