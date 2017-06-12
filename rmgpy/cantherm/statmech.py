@@ -541,6 +541,18 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'Klip_2_cc':
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155+ SOC['O'], 'C':-37.79029443+ SOC['C']}
+		
+    elif modelChemistry == 'CCSD_T/aug-cc-pVTZ':
+        #CCSD_T/aug-cc-pVTZ
+        atomEnergies = {'H':-0.4998212 + SOC['H'], 'S':-397.6561422+ SOC['S']}		
+
+    elif modelChemistry == 'CCSD/aug-cc-pVTZ':
+        #CCSD/aug-cc-pVTZ
+        atomEnergies = {'H':-0.4998212 + SOC['H'], 'S':-397.6511595+ SOC['S']}	
+
+    elif modelChemistry == 'MP2/aug-cc-pVTZ':
+        #MP2/aug-cc-pVTZ
+        atomEnergies = {'H':-0.4998212 + SOC['H'], 'S':-397.6283262+ SOC['S']}					
 
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12_H-TZ':
         atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.526406291655 + SOC['N'], 'O':-74.995458316117+ SOC['O'], 'C':-37.788203485235+ SOC['C']}
