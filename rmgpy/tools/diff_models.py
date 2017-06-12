@@ -40,9 +40,17 @@ thermo chemkin files.
 
 The optional --web flag is used for running this script through the RMG-website
 
-With all options the syntax is as follows:
+With all the above options the syntax is as follows:
 
 python diffModels.py CHEMKIN1 SPECIESDICT1 --thermo1 THERMO1 CHEMKIN2 SPECIESDICT2 --thermo2 THERMO2 --web
+
+Further option flags:
+======================= ====================================================================================
+Flag                    Description
+======================= ====================================================================================
+--diffOnly              Only show species and reactions which are unique or have different values
+--commonDiffOnly        Only show species and reactions present in BOTH models which have different values
+======================= ====================================================================================
 """
 import os
 import math
@@ -236,6 +244,13 @@ def kineticsDiff(reaction):
     else:
         diff = 9999999
     return -1*diff
+
+def identicalThermo(species_pair):
+    return species_pair[0].thermo.isIdenticalTo(species_pair[1].thermo)
+
+def identicalKinetics(reaction_pair):
+    return reaction_pair[0].kinetics.isIdenticalTo(reaction_pair[1].kinetics)
+
 ################################################################################
 
 def parseCommandLineArguments():
@@ -255,6 +270,9 @@ def parseCommandLineArguments():
     parser.add_argument('--thermo2', metavar = 'THERMO2', type=str, nargs = 1,
         help = 'the thermo file of the second model')
     parser.add_argument('--web', action='store_true', help='Running diff models through the RMG-website')
+    parser.add_argument('--diffOnly', action='store_true', help='Do not show identical species thermo or reactions')
+    parser.add_argument('--commonDiffOnly', action='store_true',
+        help='Only show species and reactions present in BOTH models which have different values')
     
     args = parser.parse_args()
 
@@ -282,7 +300,9 @@ def main():
 
     kwargs = {
             'web': args.web,
-            'wd': os.getcwd()
+            'wd': os.getcwd(),
+            'diffOnly': args.diffOnly,
+            'commonDiffOnly': args.commonDiffOnly,
             }
 
     execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **kwargs)
@@ -296,6 +316,26 @@ def execute(chemkin1, speciesDict1, thermo1, chemkin2, speciesDict2, thermo2, **
     
     commonSpecies, uniqueSpecies1, uniqueSpecies2 = compareModelSpecies(model1, model2)
     commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
+
+    try:
+        diffOnly = kwargs['diffOnly']
+    except KeyError:
+        diffOnly = False
+
+    try:
+        commonDiffOnly = kwargs['commonDiffOnly']
+    except KeyError:
+        commonDiffOnly = False
+
+    if diffOnly or commonDiffOnly:
+        commonSpecies = filter(lambda x: not identicalThermo(x), commonSpecies)
+        commonReactions = filter(lambda x: not identicalKinetics(x), commonReactions)
+
+    if commonDiffOnly:
+        uniqueSpecies1 = []
+        uniqueSpecies2 = []
+        uniqueReactions1 = []
+        uniqueReactions2 = []
     
     try:
         web = kwargs['web']
