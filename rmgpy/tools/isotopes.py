@@ -542,6 +542,166 @@ def is_enriched(obj):
     else:
         raise TypeError('is_enriched only takes species and reaction objects. {} was sent'.format(str(type(obj))))
 
+def ensure_correct_symmetry(isotopmoper_list, isotopic_element = 'C'):
+    """
+    given a list of isotopomers (species' objects) and the element that is labeled,
+    returns True if the correct symmetry is detected. False if not detected
+
+    This uses the observation that if there are less than 2^n isotopomors, where n is the number of
+    isotopic elements, then there should be an 2^n - m isotopomers where 
+    m is related to the amount of entropy increased by some isotopomers since they
+    lost symmetry.
+    """
+    gas_constant = 8.314 # J/molK
+    number_elements = 0
+    for atom in isotopmoper_list[0].molecule[0].atoms:
+        if atom.element.symbol ==isotopic_element:
+            number_elements +=1
+
+    minimum_entropy = min([spec.getEntropy(298) for spec in isotopmoper_list])
+
+    count = 0.
+    for spec in isotopmoper_list:
+        entropy_diff = spec.getEntropy(298) - minimum_entropy
+        count += math.exp(entropy_diff / gas_constant)
+    return abs(count - 2**number_elements) < 0.01
+
+def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_tol_small_flux=1e-5, r_tol_deviation = 0.0001):
+    """
+    given a list of isotopomers (reaction objects), returns True if the correct 
+    degeneracy values are detected. False if incorrect degeneracy values 
+    exist. 
+
+    This method assuumes an equilibrium distribution of compounds and finds 
+    the fluxes created by the set of reactions (both forward and 
+    reverse). It then checks that the fluxes of each compounds are proportional to their
+    symmetry numbers (since lower symmetry numbers have higher entropy and should have a
+    larger concentration.)
+
+    inputs:
+
+    reaction_isotopomer_list - a list of reactions that differ based on isotope placement
+    print_data - output the table of fluxes obtained. useful for debugging incorrect values
+    r_tol_small_flux - fraction of maximum flux to count as 'zero'
+    r_tol_deviation - allowable numerical deviation in answers
+
+    This method has a few datastructures it utilizes:
+
+    product_structures - a list of tuples, (index, isotopomer_structure), containing reactants and products
+    product_list - a pandas.DataFrame that sotres the fluxes and symmetry values
+    """
+
+    from rmgpy.kinetics.arrhenius import MultiArrhenius
+    def store_flux_info(species, flux, product_list,  product_structures):
+        """
+        input:
+            species - The desired species that you'd like to modify the flux value of
+            flux - the amount to modify the flux of the species
+            product_list - a list of current flux and symmetry values
+            product_structures - a list of unlabled structures un the reaction class 
+
+        modifies the product list by either adding on new row with the species' structure, flux
+        symmetry ratio, etc. or adds the flux to the species' current row in `product_list`
+
+        returns: modified product_list
+        """
+        # find the corresponding unlabeled structure
+        for struc_index, product_structure in enumerate(product_structures):
+            if compare_isotopomers(product_structure, species):
+                structure_index = struc_index
+                break 
+        # store product flux and symmetry info
+        for index in product_list.index:
+            spec = product_list.at[index,'product']
+            # if species already listed, add to its flux
+            if product_list.at[index,'product_struc_index'] == structure_index \
+                        and spec.isIsomorphic(species):
+                product_list.at[index,'flux'] += flux
+                return product_list
+        # add product to list
+        symmetry_ratio = product_structures[structure_index].getSymmetryNumber() / float(species.getSymmetryNumber())
+        return product_list.append({'product': species, 
+                                            'flux': flux,
+                                            'product_struc_index': structure_index,
+                                            'symmetry_ratio': symmetry_ratio},
+                                           ignore_index=True)
+
+    # copy list in case it is called upon
+    reaction_isotopomer_list = copy(reaction_isotopomer_list)
+    product_list = pd.DataFrame(columns=['product','flux','product_struc_index','symmetry_ratio'])
+    product_structures = []
+    unlabeled_rxn = None
+
+    # check if first reaction is unlabeled. If not, make unlabeled reaction
+    if not is_enriched(reaction_isotopomer_list[0]):
+        unlabeled_rxn = reaction_isotopomer_list[0]
+    else:
+        unlabeled_rxn = reaction_isotopomer_list[0].copy()
+        for mol in unlabeled_rxn.reactants:
+            remove_isotope(mol, inplace = True)
+        for mol in unlabeled_rxn.products:
+            remove_isotope(mol, inplace = True)
+    unlabeled_symmetry_reactants = np.prod([mol.getSymmetryNumber() for mol in unlabeled_rxn.reactants])
+    unlabeled_symmetry_products = np.prod([mol.getSymmetryNumber() for mol in unlabeled_rxn.products])
+
+    # prepare index of structures (product_structures)
+    for struc in unlabeled_rxn.reactants + unlabeled_rxn.products:
+        new_structure = struc.copy(deep=True)
+        product_structures.append(new_structure)
+
+    # go through each rxn cataloging fluxes to each product
+    for rxn in reaction_isotopomer_list:
+        # find characteristic flux for the forward direction
+        reactant_conc = 1.
+        reactant_conc /= np.prod([mol.getSymmetryNumber() for mol in rxn.reactants])
+        reactant_conc *= unlabeled_symmetry_reactants
+        if isinstance(rxn.kinetics, MultiArrhenius):
+            rate = sum([arr.A.value_si for arr in rxn.kinetics.arrhenius])
+        else:
+            rate = rxn.kinetics.A.value_si
+        product_flux = reactant_conc * rate
+
+        # modify fluxes for forward direction
+        for rxn_product in rxn.products:
+            product_list = store_flux_info(rxn_product,product_flux, product_list, product_structures)
+        for rxn_reactant in rxn.reactants:
+            product_list = store_flux_info(rxn_reactant,-product_flux, product_list, product_structures)
+
+        # now find characteristic flux of reverse direction. 
+        if isinstance(rxn.kinetics, MultiArrhenius):
+            reverse_A_factor = 0
+            for arr in rxn.kinetics.arrhenius:
+                reverse_A_factor += arr.A.value_si / rxn.getEquilibriumConstant(298)
+        else:
+            reverse_A_factor = rxn.kinetics.A.value_si / rxn.getEquilibriumConstant(298)
+
+        # get reverse flux using product symmetries
+        product_conc = 1.
+        product_conc /= np.prod([mol.getSymmetryNumber() for mol in rxn.products])
+        product_conc *= unlabeled_symmetry_products
+        reactant_flux = product_conc * reverse_A_factor
+
+        # modify reverse fluxes
+        for rxn_product in rxn.products:
+            product_list = store_flux_info(rxn_product,-reactant_flux, product_list, product_structures)
+        for rxn_reactant in rxn.reactants:
+            product_list = store_flux_info(rxn_reactant,reactant_flux, product_list, product_structures)
+
+    if print_data:
+        print(product_list.sort_values(['product_struc_index','symmetry_ratio']))
+
+    # now ensure the fluxes are correct or cancel out & throw error if not.
+    pass_species = []
+    for index in range(len(product_structures)):
+        products = product_list[product_list.product_struc_index == index]
+        fluxes = products.flux / products.flux.sum()
+        symmetries = products.symmetry_ratio / products.symmetry_ratio.sum()
+        # the two decisison criteria
+        accurate = np.allclose(fluxes,symmetries,rtol=r_tol_deviation)
+        low_fluxes = all(products.flux.abs() < max(reactant_flux, product_flux)*r_tol_small_flux)
+        pass_species.append(low_fluxes or accurate)
+    return all(pass_species)
+
 def run(inputFile, outputDir, original=None, maximumIsotopicAtoms = 1,
                             useOriginalReactions = False,
                             kineticIsotopeEffect = None):
@@ -576,6 +736,7 @@ def run(inputFile, outputDir, original=None, maximumIsotopicAtoms = 1,
     for spc in rmg.reactionModel.core.species:
         findCp0andCpInf(spc, spc.thermo)
         isotopes.append([spc] + generate_isotopomers(spc, maximumIsotopicAtoms))
+
     logging.info('isotope: number of isotopomers: {}'.format(sum([len(isotopomer) for isotopomer in isotopes if isotopomer])))
 
     outputdirIso = os.path.join(outputDir, 'iso')
