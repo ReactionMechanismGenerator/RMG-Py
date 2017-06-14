@@ -28,6 +28,20 @@ simpleReactor(
     terminationTime=(1e6,'s'),
 )
 
+simpleReactor(
+    temperature=(1000,'K'),
+    pressure=(1.0,'bar'),
+    initialMoleFractions={
+        "ethane": 1.0,
+    },
+    terminationConversion={
+        'ethane': 0.9,
+    },
+    terminationTime=(1e6,'s'),
+)
+
+
+
 simulator(
     atol=1e-16,
     rtol=1e-8,
