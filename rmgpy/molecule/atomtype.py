@@ -78,6 +78,7 @@ class AtomType:
     'triple'            ''list''            The total number of triple bonds on the atom
     'benzene'           ''list''            The total number of benzene bonds on the atom
     'lonePairs'         ''list''            The number of lone pairs on the atom
+    'charge'            ''list''            The partial charge of the atom
     =================== =================== ====================================
 
     """
@@ -91,7 +92,8 @@ class AtomType:
                  sDouble=None,
                  triple=None,
                  benzene=None,
-                 lonePairs=None,):
+                 lonePairs=None,
+                 charge=None):
         self.label = label
         self.generic = generic or []
         self.specific = specific or []
@@ -111,6 +113,7 @@ class AtomType:
         self.triple = triple or []
         self.benzene = benzene or []
         self.lonePairs = lonePairs or []
+        self.charge = charge or []
 
     def __repr__(self):
         return '<AtomType "%s">' % self.label
@@ -138,7 +141,8 @@ class AtomType:
             'sDouble': self.sDouble,
             'triple': self.triple,
             'benzene': self.benzene,
-            'lonePairs': self.lonePairs
+            'lonePairs': self.lonePairs,
+            'charge': self.charge
         }
         return (AtomType, (), d)
 
@@ -165,6 +169,7 @@ class AtomType:
         self.triple = d['triple']
         self.benzene = d['benzene']
         self.lonePairs = d['lonePairs']
+        self.charge = d['charge']
 
     def setActions(self, incrementBond, decrementBond, formBond, breakBond, incrementRadical, decrementRadical, incrementLonePair, decrementLonePair):
         self.incrementBond = incrementBond
@@ -202,7 +207,8 @@ class AtomType:
                   self.sDouble,
                   self.triple,
                   self.benzene,
-                  self.lonePairs,]
+                  self.lonePairs,
+                  self.charge]
         return features
 
 ################################################################################
@@ -470,7 +476,7 @@ def getFeatures(atom, bonds):
 
     # allDouble is for all double bonds, to anything
     allDouble = rDouble + oDouble + sDouble
-    features = [single, allDouble, rDouble, oDouble, sDouble, triple, benzene, atom.lonePairs]
+    features = [single, allDouble, rDouble, oDouble, sDouble, triple, benzene, atom.lonePairs, atom.charge]
 
     return features
 
@@ -507,8 +513,9 @@ def getAtomType(atom, bonds):
         triple = molFeatureList[5]
         benzene = molFeatureList[6]
         lonePairs = molFeatureList[7]
+        charge = molFeatureList[8]
 
         raise AtomTypeError(
-            'Unable to determine atom type for atom {0}, which has {1:d} single bonds, {2:d} double bonds to C, {3:d} double bonds to O, {4:d} double bonds to S, {5:d} triple bonds, {6:d} benzene bonds, and {7:d} lone pairs.'.format(
-                atom, single, rDouble, oDouble, sDouble, triple, benzene, lonePairs))
+            'Unable to determine atom type for atom {0}, which has {1:d} single bonds, {2:d} double bonds to C, {3:d} double bonds to O, {4:d} double bonds to S, {5:d} triple bonds, {6:d} benzene bonds, {7:d} lone pairs, and {8:d} charge.'.format(
+                atom, single, rDouble, oDouble, sDouble, triple, benzene, lonePairs, charge))
 

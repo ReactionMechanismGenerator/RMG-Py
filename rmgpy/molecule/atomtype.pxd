@@ -47,6 +47,7 @@ cdef class AtomType:
     cdef public list triple
     cdef public list benzene
     cdef public list lonePairs
+    cdef public list charge
 
     cpdef bint isSpecificCaseOf(self, AtomType other)
 
