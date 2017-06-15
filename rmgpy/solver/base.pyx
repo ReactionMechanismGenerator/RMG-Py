@@ -650,7 +650,13 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, Reaction {1} added to model surface based on minimum difference in total log(accumulation number) to resurrect solver'.format(self.t, maxAccumReaction))
                         self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
                         logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-    
+                    if pdepNetworks and maxNetwork:
+                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} sent for exploring to resurrect solver'.format(self.t, maxNetwork.index))
+                        self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
+                        logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                        self.logConversions(speciesIndex, y0)
+                        invalidObjects.append(maxNetwork)
+                            
                     invalidObjects = list(set(invalidObjects))
                         
                     self.logConversions(speciesIndex, y0)
@@ -660,8 +666,7 @@ cdef class ReactionSystem(DASx):
                         raise e
                     else:
                         return False, invalidObjects, surfaceSpecies, surfaceReactions
-            else:
-                firstTime = False
+
                 
             y_coreSpecies = self.y[:numCoreSpecies]
             totalMoles = numpy.sum(y_coreSpecies)
@@ -723,6 +728,27 @@ cdef class ReactionSystem(DASx):
                 if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
                     maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
             
+            if firstTime:
+                #if the first time through skip dynamics related things 
+                #that aren't valid at t=0
+                #do the flux criteria so information is available for resurrection 
+                #if the next step fails
+                if numEdgeSpecies > 0:
+                    maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
+                    maxSpecies = edgeSpecies[maxSpeciesIndex]
+                    maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
+                else:
+                    maxSpeciesIndex = -1
+                    maxSpecies = None
+                    maxSpeciesRate = 0.0
+                if pdepNetworks:
+                    maxNetworkIndex = numpy.argmax(networkLeakRates)
+                    maxNetwork = pdepNetworks[maxNetworkIndex]
+                    maxNetworkRate = networkLeakRates[maxNetworkIndex]
+                firstTime = False
+                continue
+                
+                
             if useDynamics and charRate == 0 and len(edgeSpeciesRates)>0:
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
                 maxSpecies = edgeSpecies[maxSpeciesIndex]
