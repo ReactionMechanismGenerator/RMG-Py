@@ -11,7 +11,9 @@ cpdef list _generateResonanceStructures(list molList, list methodList, bint keep
 
 cpdef list generateAdjacentResonanceStructures(Molecule mol)
 
-cpdef list generateLonePairRadicalResonanceStructures(Molecule mol)
+cpdef list generateLonePairRadicalResonanceChargeStructures(Molecule mol)
+
+cpdef list generateLonePairRadicalResonanceDoubleBondStructures(Molecule mol)
 
 cpdef list generateN5dd_N5tsResonanceStructures(Molecule mol)
 
