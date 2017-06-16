@@ -156,6 +156,8 @@ class GaussianLog:
                 mass[i] = 31.97207100
             elif number[i] == 17:
                 mass[i] = 35.4527
+            elif number[i] == 53:
+                mass[i] = 126.90447
             else:
                 print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
         
@@ -249,9 +251,10 @@ class GaussianLog:
         # Close file when finished
         f.close()
 
-        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
+        return Conformer(E0=(E0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
+                         opticalIsomers=opticalIsomers)
 
-    def loadEnergy(self,frequencyScaleFactor=1.):
+    def loadEnergy(self, frequencyScaleFactor=1.):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -261,8 +264,14 @@ class GaussianLog:
         """
 
         modes = []
-        E0 = None; E0_cbs = None; scaledZPE = None
+        E0 = None;
+        E0_cbs = None;
+        scaledZPE = None;
+#        E0_mp2 = None;
         spinMultiplicity = 1
+
+
+
 
         f = open(self.path, 'r')
         line = f.readline()
@@ -274,13 +283,31 @@ class GaussianLog:
                 E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
             elif 'G3(0 K)' in line:
                 E0_cbs = float(line.split()[2]) * constants.E_h * constants.Na
-            
+
+            # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
+            # Gaussian defines the following as
+            # E (0 K) = Elec + E(ZPE),
+            # The ZPE is the scaled ZPE given by E(ZPE) in the log file,
+            # hence to get the correct Elec from E (0 K) we need to subtract the scaled ZPE
+
+            elif 'E(ZPE)' in line:
+                scaledZPE = float(line.split()[1]) * constants.E_h * constants.Na
+            elif '\\ZeroPoint=' in line:
+                line = line.strip() + f.readline().strip()
+                start = line.find('\\ZeroPoint=') + 11
+                end = line.find('\\', start)
+
+            elif 'CBS-QB3 (0 K)' in line:
+                E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
+            elif 'G3(0 K)' in line:
+                E0_cbs = float(line.split()[2]) * constants.E_h * constants.Na
+
             # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
             # Gaussian defines the following as
             # E (0 K) = Elec + E(ZPE), 
             # The ZPE is the scaled ZPE given by E(ZPE) in the log file, 
             # hence to get the correct Elec from E (0 K) we need to subtract the scaled ZPE
-            
+
             elif 'E(ZPE)' in line:
                 scaledZPE = float(line.split()[1]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
@@ -293,15 +320,61 @@ class GaussianLog:
 
         # Close file when finished
         f.close()
-        
+
+
+        f = open(self.path, 'r')
+        collected_lines = ''
+        collect = False
+        line = f.readline()
+        while line != '':
+            if collect is True:
+                collected_lines += line
+
+            if 'Version=' in line:
+                collect = True
+
+            elif '\\@' in line:
+                collect = False
+            # Read the next line in the file
+            line = f.readline()
+        f.close()
+
+        collected_lines = collected_lines.replace('\n', '')
+        collected_lines = collected_lines.replace('\n', '')
+        collected_lines = collected_lines.replace('\n', '')
+        collected_lines = collected_lines.replace(' ', '')
+        collected_lines = collected_lines.replace(' ', '')
+        collected_lines = collected_lines.replace(' ', '')
+
+        if '\CCSD(T)=' in collected_lines:
+            E0 = collected_lines[collected_lines.find('CCSD(T)=') + 8:collected_lines.find('\\', collected_lines.find('CCSD(T)'))]
+            E0 = float(E0) * constants.E_h * constants.Na
+
+        elif '\CCSD=' in collected_lines:
+            E0 = collected_lines[collected_lines.find('CCSD=') + 5:collected_lines.find('\\', collected_lines.find('CCSD'))]
+            E0 = float(E0) * constants.E_h * constants.Na
+
+        elif '\MP2' in collected_lines:
+            E0 = collected_lines[collected_lines.find('MP2=') + 4:collected_lines.find('\\', collected_lines.find('MP2'))]
+            E0 = float(E0) * constants.E_h * constants.Na
+
+
         if E0_cbs is not None:
             if scaledZPE is None:
                 raise Exception('Unable to find zero-point energy in Gaussian log file.')
             return E0_cbs - scaledZPE
+#        elif E0_mp2 is not None:
+#            return E0_mp2
+
         elif E0 is not None:
             return E0
-        else: raise Exception('Unable to find energy in Gaussian log file.')
-    
+
+
+
+
+        else:
+            raise Exception('Unable to find energy in Gaussian log file.')
+
     def loadZeroPointEnergy(self):
         """
         Load the unscaled zero-point energy in J/mol from a Gaussian log file.
