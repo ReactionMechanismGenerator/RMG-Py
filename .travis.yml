@@ -37,7 +37,7 @@ install:
   - make
 
 script: 
-  - make test
+  - make test-all
   - make test-database
 
 after_success:
