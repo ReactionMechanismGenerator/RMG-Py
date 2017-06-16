@@ -4,6 +4,7 @@
 import os
 import unittest
 from external.wip import work_in_progress
+from nose.plugins.attrib import attr
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
@@ -863,6 +864,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         joinedCycle=combineCycles(testCycle1,testCycle2)
         self.assertTrue(sorted(mainCycle)==sorted(joinedCycle))
 
+@attr('auth')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
