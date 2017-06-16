@@ -21,9 +21,9 @@ class QChemTest(unittest.TestCase):
         Uses a Qchem log files to test that 
         number of atoms can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','npropyl.out'))        
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))        
         self.assertEqual(log.getNumberOfAtoms(), 10)
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','co.out'))        
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
         self.assertEqual(log.getNumberOfAtoms(), 2) 
 
     def testEnergyFromQchemLog(self):
@@ -31,9 +31,9 @@ class QChemTest(unittest.TestCase):
         Uses a Qchem log files to test that 
         molecular energies can be properly read.
         """        
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','npropyl.out'))      
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))      
         self.assertAlmostEqual(log.loadEnergy(), -310896203.5432524, 1e-5)
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','co.out'))        
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
         self.assertAlmostEqual(log.loadEnergy(), -297402545.0217114, 1e-5)   
         
     def testLoadVibrationsFromQchemLog(self):
@@ -41,11 +41,11 @@ class QChemTest(unittest.TestCase):
         Uses a Qchem log files to test that 
         molecular energies can be properly read.
         """        
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','npropyl.out'))    
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))    
         conformer = log.loadConformer()    
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 24)    
         self.assertEqual(conformer.modes[2]._frequencies.getValue()[5], 881.79)       
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','co.out'))        
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
         conformer = log.loadConformer() 
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 1)         
         self.assertEqual(conformer.modes[2]._frequencies.getValue(), 2253.16)    
@@ -55,7 +55,7 @@ class QChemTest(unittest.TestCase):
         Uses a Qchem log file for npropyl to test that its
         molecular modes can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','npropyl.out'))
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         conformer = log.loadConformer()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -68,10 +68,10 @@ class QChemTest(unittest.TestCase):
         Uses a Qchem log file for npropyl to test that its
         molecular degrees of freedom can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','npropyl.out'))
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         conformer = log.loadConformer()
         self.assertEqual(conformer.spinMultiplicity, 2)
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','co.out'))
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         conformer = log.loadConformer()
         self.assertEqual(conformer.spinMultiplicity, 1)
     
@@ -80,7 +80,7 @@ class QChemTest(unittest.TestCase):
         Uses a Qchem log file for CO to test that its
         molecular degrees of freedom can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'files','co.out'))
+        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         conformer = log.loadConformer()
         E0 = log.loadEnergy()
         
