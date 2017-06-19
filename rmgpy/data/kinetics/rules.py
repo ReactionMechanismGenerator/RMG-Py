@@ -698,13 +698,14 @@ class KineticsRules(Database):
                         ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
                     )
                 
-        kinetics.comment +=  ' for rate rule ' + originalLeaves
+        kinetics.comment += ' for rate rule ' + originalLeaves
+        kinetics.comment += ' Euclidian distance = {}.'.format(minNorm)
         kinetics.A.value_si *= degeneracy
         if degeneracy > 1:
             kinetics.comment += "\n"
             kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
 
-        return kinetics, entry if 'Exact' in kinetics.comment else None
+        return kinetics, (entry if 'Exact' in kinetics.comment else None)
 
 def removeIdenticalKinetics(kList):
     """
