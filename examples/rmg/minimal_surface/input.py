@@ -55,6 +55,7 @@ model(
     toleranceMoveEdgeReactionToSurface=1.0,
     toleranceMoveSurfaceReactionToCore=2.0,
     toleranceMoveSurfaceSpeciesToCore=.001,
+    dynamicsTimeScale=(1.0e-3,'sec'),
 )
 
 options(
