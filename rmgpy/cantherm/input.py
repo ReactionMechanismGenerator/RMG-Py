@@ -128,8 +128,8 @@ def database(
         if not isinstance(kineticsFamilies,list):
             raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         kineticsFamilies = kineticsFamilies
-    
-    database = RMGDatabase()
+
+    database = getDB() or RMGDatabase()
 
     database.load(
             path = databaseDirectory,
@@ -229,8 +229,16 @@ def species(label, *args, **kwargs):
                     spec.thermo.E0 = th.E0
                 else:
                     spec.conformer.E0 = spec.thermo.E0
-    return spec
 
+        if not spec.hasStatMech() and structure is not None: 
+            # generate stat mech info if it wasn't provided before
+            spec.generateStatMech()
+
+        if not energyTransferModel:
+            # default to RMG's method of generating energyTransferModel
+            spec.generateEnergyTransferModel()
+
+    return spec
 
 def transitionState(label, *args, **kwargs):
     global transitionStateDict
@@ -327,6 +335,9 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         for i in xrange(len(rxn)):
             reactionDict[label+str(i)] = rxn[i]
     
+    # set transition state Energy if not set previously using same method as RMG pdep
+    if transitionState.conformer and transitionState.conformer.E0 is None:
+        transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si,"J/mol")
     return rxn
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
@@ -484,6 +495,26 @@ def adjacencyList(adj):
 def InChI(inchi):
     return Molecule().fromInChI(inchi)
 
+def loadNecessaryDatabases():
+    """
+    loads transport and statmech databases
+    """
+    from rmgpy.data.statmech import StatmechDatabase
+    from rmgpy.data.transport import TransportDatabase
+
+    #only load if they are not there already.
+    try:
+        getDB('transport')
+        getDB('statmech')
+    except DatabaseError:
+        logging.info("Databases not found. Making databases")
+        db = RMGDatabase()
+        db.statmech = StatmechDatabase()
+        db.statmech.load(os.path.join(settings['database.directory'],'statmech'))
+
+        db.transport = TransportDatabase()
+        db.transport.load(os.path.join(settings['database.directory'],'transport'))
+
 ################################################################################
 
 def loadInputFile(path):
@@ -542,6 +573,8 @@ def loadInputFile(path):
         'adjacencyList': adjacencyList,
         'InChI': InChI,
     }
+
+    loadNecessaryDatabases()
 
     with open(path, 'r') as f:
         try:
