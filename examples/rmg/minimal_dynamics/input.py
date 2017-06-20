@@ -37,7 +37,7 @@ model(
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.1,
     toleranceInterruptSimulation=0.1,
-    toleranceMoveReactionToCore=5.0,
+    toleranceMoveEdgeReactionToCore=5.0,
     maximumEdgeSpecies=100000,
 )
 
