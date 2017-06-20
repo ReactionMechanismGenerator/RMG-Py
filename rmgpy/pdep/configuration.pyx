@@ -236,7 +236,7 @@ cdef class Configuration:
         for i, species in enumerate(self.species):
             modes.extend(species.conformer.getActiveModes(activeKRotor=activeKRotor, activeJRotor=activeJRotor))
         
-        if rmgmode:
+        if rmgmode or len(modes) == 0:
             # Include an arbitrary active rigid rotor if needed
             # The moments of inertia cancel in all subsequent calculations
             for mode in modes:
