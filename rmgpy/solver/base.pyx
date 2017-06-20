@@ -562,6 +562,7 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+        dynamicsTimeScale = modelSettings.dynamicsTimeScale
         
         useDynamics = not (toleranceMoveEdgeReactionToCore == numpy.inf and toleranceMoveEdgeReactionToSurface == numpy.inf)
         
@@ -761,7 +762,7 @@ cdef class ReactionSystem(DASx):
             
             #get abs(delta(Ln(total accumulation numbers))) (accumulation number=Production/Consumption)
             #(the natural log operation is avoided until after the maximum accumulation number is found)
-            if useDynamics:
+            if useDynamics and self.t >= dynamicsTimeScale:
                 totalDivAccumNums = numpy.ones(numEdgeReactions)
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
@@ -852,7 +853,7 @@ cdef class ReactionSystem(DASx):
                 maxNetworkRate = networkLeakRates[maxNetworkIndex]
                 
             #calculate criteria for surface species
-            if useDynamics:
+            if useDynamics and self.t >= dynamicsTimeScale:
                 surfaceTotalDivAccumNums = numpy.ones(len(surfaceReactionIndices))
                 
                 for i in xrange(len(surfaceReactionIndices)):

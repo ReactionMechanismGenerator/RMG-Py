@@ -32,6 +32,7 @@
 This module contains settings classes for manipulation of RMG run parameters
 """
 import numpy
+from rmgpy.quantity import Quantity
 
 class ModelSettings:
     """
@@ -41,7 +42,7 @@ class ModelSettings:
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
-          maxGibbsFreeEnergyPerRT=numpy.inf):
+          maxGibbsFreeEnergyPerRT=numpy.inf, dynamicsTimeScale = Quantity((0.0,'sec'))):
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
         self.fluxToleranceMoveToCore = toleranceMoveToCore
@@ -56,6 +57,8 @@ class ModelSettings:
         self.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
         self.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
         self.maxGibbsFreeEnergyPerRT = maxGibbsFreeEnergyPerRT
+        
+        self.dynamicsTimeScale = dynamicsTimeScale.value_si
         
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation

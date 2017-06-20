@@ -238,7 +238,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
           toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
-          maxNumSpecies=None,maxNumObjsPerIter=1,maxGibbsFreeEnergyPerRT=numpy.inf):
+          maxNumSpecies=None,maxNumObjsPerIter=1,maxGibbsFreeEnergyPerRT=numpy.inf,dynamicsTimeScale=(0.0,'sec')):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -255,7 +255,8 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
           toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
           toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
-          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, maxNumSpecies, maxNumObjsPerIter, maxGibbsFreeEnergyPerRT))
+          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, 
+          maxNumSpecies, maxNumObjsPerIter, maxGibbsFreeEnergyPerRT, Quantity(dynamicsTimeScale)))
 
     
 def quantumMechanics(
