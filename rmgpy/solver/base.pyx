@@ -248,6 +248,7 @@ cdef class ReactionSystem(DASx):
         cdef set possibleSpeciesIndices
         cdef int i,j
         cdef bool notInSurface
+        cdef object obj
         
         logging.info('initializing surface ...')
         
@@ -258,11 +259,12 @@ cdef class ReactionSystem(DASx):
         surfaceReactionIndices = []
         possibleSpeciesIndices = set()
         
-        for i in range(len(surfaceSpecies)):
-            surfaceSpeciesIndices.append(coreSpecies.index(surfaceSpecies[i]))
-        for i in range(len(surfaceReactions)):
-            surfaceReactionIndices.append(coreReactions.index(surfaceReactions[i]))
-        
+        for obj in surfaceSpecies:
+            surfaceSpeciesIndices.append(coreSpecies.index(obj))
+            
+        for obj in surfaceReactions:
+            surfaceReactionIndices.append(coreReactions.index(obj))
+       
         for i in surfaceReactionIndices: #remove surface reactions whose species have been moved to the bulk core
             notInSurface = True
             for j in productIndices[i]:
