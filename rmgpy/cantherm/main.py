@@ -45,7 +45,14 @@ try:
 except ImportError:
     pass
 
+from rmgpy.chemkin import writeElementsSection, writeThermoEntry, writeKineticsEntry
+
 from rmgpy.cantherm.input import loadInputFile
+
+from rmgpy.cantherm.kinetics import KineticsJob
+from rmgpy.cantherm.statmech import StatMechJob
+from rmgpy.cantherm.thermo import ThermoJob
+from rmgpy.cantherm.pdep import PressureDependenceJob
 
 ################################################################################
 
@@ -229,12 +236,40 @@ class CanTherm:
         with open(outputFile, 'w') as f:
             pass
         chemkinFile = os.path.join(self.outputDirectory, 'chem.inp')
+
+        # write the chemkin files and run the thermo and then kinetics jobs
         with open(chemkinFile, 'w') as f:
-            pass
-        
-        # Run the jobs
+            writeElementsSection(f)
+            
+            f.write('SPECIES\n\n')
+
+            # write each species in species block
+            for job in self.jobList:
+                if isinstance(job,ThermoJob):
+                    f.write(job.species.toChemkin())
+                    f.write('\n')
+
+            f.write('\nEND\n\n\n\n')
+            f.write('THERM ALL\n')
+            f.write('    300.000  1000.000  5000.000\n\n')
+
+        # run thermo jobs (printing out thermo stuff)
         for job in self.jobList:
-            job.execute(outputFile=outputFile, plot=self.plot)
-        
+            if isinstance(job,ThermoJob) or isinstance(job, StatMechJob):
+                job.execute(outputFile=outputFile, plot=self.plot)
+
+        with open(chemkinFile, 'a') as f:
+            f.write('\n')
+            f.write('END\n\n\n\n')
+            f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
+
+        # run kinetics and pdep jobs (and outputing chemkin stuff)
+        for job in self.jobList:
+            if isinstance(job,KineticsJob) or isinstance(job, PressureDependenceJob):
+                job.execute(outputFile=outputFile, plot=self.plot)
+
+        with open(chemkinFile, 'a') as f:
+            f.write('END\n\n')
+
         # Print some information to the end of the log
         self.logFooter()
