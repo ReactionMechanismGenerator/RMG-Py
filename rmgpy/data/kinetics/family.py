@@ -1915,12 +1915,15 @@ class KineticsFamily(Database):
         """
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
-        for entry in self.forwardTemplate.reactants:
-            if kinetics is None and entry.data is not None:
-                kinetics = entry.data
+        root = self.getRootTemplate()
+        kinetics = self.getKineticsForTemplate(root)
+        
         if kinetics is None:
             #raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for template "{0}".'.format(','.join([e.label for e in template])))
             return None
+        else:
+            kinetics = kinetics[0]
+            
         # Now add in more specific corrections if possible
         return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)        
         
