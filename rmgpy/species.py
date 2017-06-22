@@ -666,7 +666,10 @@ class Species(object):
 
         if self.conformer is None:
             self.conformer = Conformer()
-        self.conformer.E0 = self.getThermoData().E0
+        if self.getThermoData().E0 is not None:
+            self.conformer.E0 = self.getThermoData().E0
+        else:
+            self.conformer.E0 = self.getThermoData().toWilhoit().E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
         assert self.conformer.E0 is not None
