@@ -145,6 +145,10 @@ class KineticsJob(object):
         """
         Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.
         """
+
+        if isinstance(self.reaction.kinetics, Arrhenius):
+            return None
+
         kineticsClass = 'Arrhenius'
         
         tunneling = self.reaction.transitionState.tunneling
