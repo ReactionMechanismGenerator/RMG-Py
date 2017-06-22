@@ -254,7 +254,7 @@ def transitionState(label, *args, **kwargs):
         job = StatMechJob(species=ts, path=path)
         jobList.append(job)
     
-    elif len(args) == 0 and len(kwargs) > 0:
+    elif len(args) == 0:
         # The species parameters are given explicitly
         E0 = None
         modes = []
@@ -277,7 +277,11 @@ def transitionState(label, *args, **kwargs):
         
         ts.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
         ts.frequency = frequency
-        
+    else:
+        if len(args) == 0 and len(kwargs) == 0:
+            raise InputError('The transitionState needs to reference a quantum job file or contain kinetic information.')
+        raise InputError('The transitionState can only link a quantum job or directly input information, not both.')
+
     return ts
 
 def reaction(label, reactants, products, transitionState=None, kinetics=None, tunneling=''):
