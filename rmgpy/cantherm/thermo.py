@@ -157,11 +157,14 @@ class ThermoJob(object):
         f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
         f.write('#    =========== =========== =========== =========== ===========\n')
         for T in [300,400,500,600,800,1000,1500,2000,2400]:
-            Cp = species.getThermoData().getHeatCapacity(T) / 4.184
-            H = species.getThermoData().getEnthalpy(T) / 4184.
-            S = species.getThermoData().getEntropy(T) / 4.184
-            G = species.getThermoData().getFreeEnergy(T) / 4184.
-            f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
+            try:
+                Cp = species.getThermoData().getHeatCapacity(T) / 4.184
+                H = species.getThermoData().getEnthalpy(T) / 4184.
+                S = species.getThermoData().getEntropy(T) / 4.184
+                G = species.getThermoData().getFreeEnergy(T) / 4184.
+                f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
+            except ValueError:
+                logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species,T))
         f.write('#    =========== =========== =========== =========== ===========\n')
         
         string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
