@@ -46,6 +46,8 @@ import rmgpy.quantity as quantity
 import rmgpy.constants as constants
 from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
 
+from rmgpy.exceptions import SpeciesError
+
 ################################################################################
 
 class KineticsJob(object):
@@ -211,13 +213,22 @@ class KineticsJob(object):
         for T in Tlist:  
             tunneling = reaction.transitionState.tunneling
             reaction.transitionState.tunneling = None
-            k0 = reaction.calculateTSTRateCoefficient(T) * factor
+            try:
+                k0 = reaction.calculateTSTRateCoefficient(T) * factor
+            except SpeciesError:
+                k0 = 0
             reaction.transitionState.tunneling = tunneling
-            k = reaction.calculateTSTRateCoefficient(T) * factor
+            try:
+                k = reaction.calculateTSTRateCoefficient(T) * factor
+                kappa = k / k0
+            except SpeciesError:
+                k = reaction.getRateCoefficient(T)
+                kappa = 0
+                logging.info("The species in reaction {} do not have adequate information for TST, using default kinetics values.".format(reaction))
             tunneling = reaction.transitionState.tunneling
-            kappa = k / k0
             ks.append(k)
             k0s.append(k0)
+
             f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.kunits))
         f.write('#   ======= =========== =========== =========== ===============\n')
         f.write('\n\n')
