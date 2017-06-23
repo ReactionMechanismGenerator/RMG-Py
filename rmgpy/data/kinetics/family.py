@@ -633,6 +633,12 @@ class KineticsFamily(Database):
                 entry.item = reaction
         self.depositories = []
         
+        if self.treeDistances is None:
+            self.treeDistances = np.ones(len(self.groups.top))
+        else:
+            self.treeDistances = np.array(self.treeDistances,np.float64)
+        self.distributeTreeDistances()
+            
         if depositoryLabels=='all':
             # Load everything. This option is generally used for working with the database
             # load all the remaining depositories, in order returned by os.walk
@@ -648,11 +654,6 @@ class KineticsFamily(Database):
                     depository.load(fpath, local_context, global_context)
                     self.depositories.append(depository)
                     
-            if self.treeDistances is None:
-                self.treeDistances = np.ones(len(self.groups.top))
-            else:
-                self.treeDistances = np.array(self.treeDistances,np.float64)
-            self.distributeTreeDistances()
             return
                     
         if not depositoryLabels:
@@ -681,11 +682,6 @@ class KineticsFamily(Database):
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
             
-        if self.treeDistances is None:
-            self.treeDistances = np.ones(len(self.groups.top))
-        else:
-            self.treeDistances = np.array(self.treeDistances,np.float64)
-        self.distributeTreeDistances()
         
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
