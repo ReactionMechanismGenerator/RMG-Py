@@ -356,6 +356,7 @@ class KineticsFamily(Database):
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     `ownReverse`        `Boolean`                       It's its own reverse?
     'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
+    `treeDistances`     numpy.ndarray                   The default distance from parent along each tree
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java

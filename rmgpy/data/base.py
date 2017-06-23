@@ -82,6 +82,7 @@ class Entry(object):
     `shortDesc`         A brief (one-line) description of the data
     `longDesc`          A long, verbose description of the data
     `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
+    `nodalDistance`     A float representing the distance of a given entry from it's parent entry
     =================== ========================================================
 
     """
