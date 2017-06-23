@@ -1,0 +1,1358 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /18.000/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	Cl
+END
+
+SPECIES
+    Ar                  ! Ar
+    He                  ! He
+    Ne                  ! Ne
+    N2                  ! N2
+    ethane(1)           ! ethane(1)
+    C(3)                ! C(3)
+    CH3(4)              ! [CH3](4)
+    C2H5(5)             ! C[CH2](5)
+    H(6)                ! [H](6)
+    C2H4(8)             ! C=C(8)
+    H2(12)              ! [H][H](12)
+    C2H3(13)            ! [CH]=C(13)
+    C3H7(14)            ! [CH2]CC(14)
+    C3H6(18)            ! C=CC(18)
+    C3H7(19)            ! C[CH]C(19)
+    C#C(25)             ! C#C(25)
+    C4H7(28)            ! [CH2]CC=C(28)
+    C4H6(30)            ! C=CC=C(30)
+    C3H5(32)            ! [CH]=CC(32)
+    C#CC(38)            ! C#CC(38)
+    C3H5(39)            ! C=[C]C(39)
+    C3H5(40)            ! [CH2]C=C(40)
+    C4H7(50)            ! [CH2]C1CC1(50)
+    C4H7(52)            ! C=C[CH]C(52)
+    C5H9(109)           ! C=C[CH]CC(109)
+    C3H3(310)           ! C#C[CH2](310)
+    C3H4(357)           ! C=C=C(357)
+    C5H8(470)           ! [CH2]CC([CH2])=C(470)
+    C5H7(535)           ! C#CCC[CH2](535)
+    C5H5(550)           ! [CH]=CCC#C(550)
+    C7H9(588)           ! C=C=CC[CH]C=C(588)
+    C5H7(806)           ! [C]1=CCCC1(806)
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+Ar                      Ar  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+He                      He  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 9.28724000E-01 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 9.28724000E-01                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+N2                      N   2               G   200.000  6000.000 1000.00      1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R)
+ethane(1)               H   6C   2          G   100.000  5000.000  954.52      1
+ 4.58988896E+00 1.41506750E-02-4.75956384E-06 8.60280543E-10-6.21705194E-14    2
+-1.27217893E+04-3.61771500E+00 3.78031807E+00-3.24242222E-03 5.52372979E-05    3
+-6.38570868E-08 2.28632477E-11-1.16203402E+04 5.21039581E+00                   4
+
+! Thermo library: primaryThermoLibrary
+C(3)                    H   4C   1          G   100.000  5000.000 1084.14      1
+ 9.08329295E-01 1.14539810E-02-4.57167921E-06 8.29177951E-10-5.66303659E-14    2
+-9.72000229E+03 1.39927343E+01 4.20540421E+00-5.35544658E-03 2.51118989E-05    3
+-2.13757576E-08 5.97502823E-12-1.01619428E+04-9.21239525E-01                   4
+
+! Thermo library: primaryThermoLibrary + radical(CH3)
+CH3(4)                  H   3C   1          G   100.000  5000.000 1337.62      1
+ 3.54143812E+00 4.76789782E-03-1.82149991E-06 3.28880063E-10-2.22548343E-14    2
+ 1.62239673E+04 1.66046111E+00 3.91546894E+00 1.84152941E-03 3.48745804E-06    3
+-3.32751847E-09 8.49971176E-13 1.62856393E+04 3.51736601E-01                   4
+
+! Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + radical(CCJ)
+C2H5(5)                 H   5C   2          G   100.000  5000.000  900.31      1
+ 5.15615837E+00 9.43131421E-03-1.81951229E-06 2.21208350E-10-1.43491870E-14    2
+ 1.20641028E+04-2.91070458E+00 3.82185509E+00-3.43384536E-03 5.09266469E-05    3
+-6.20224677E-08 2.37079459E-11 1.30660121E+04 7.61636605E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H(6)                    H   1               G   100.000  5000.000 4383.16      1
+ 2.50003447E+00-3.04996987E-08 1.01101187E-11-1.48796738E-15 8.20356170E-20    2
+ 2.54741866E+04-4.45191184E-01 2.50000000E+00-2.38914167E-13 3.12709494E-16    3
+-1.33367320E-19 1.74989654E-23 2.54742178E+04-4.44972897E-01                   4
+
+! Thermo group additivity estimation: group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R)
+C2H4(8)                 H   4C   2          G   100.000  5000.000  940.44      1
+ 5.20294321E+00 7.82451252E-03-2.12688544E-06 3.79702803E-10-2.94680952E-14    2
+ 3.93630205E+03-6.62382497E+00 3.97976036E+00-7.57579555E-03 5.52980507E-05    3
+-6.36231673E-08 2.31771702E-11 5.07746018E+03 4.04617096E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2(12)                  H   2               G   100.000  5000.000 1959.07      1
+ 2.78818815E+00 5.87611948E-04 1.59023990E-07-5.52766269E-11 4.34330841E-15    2
+-5.96157437E+02 1.12600366E-01 3.43536390E+00 2.12712208E-04-2.78629248E-07    3
+ 3.40270465E-10-7.76040165E-14-1.03135983E+03-3.90841650E+00                   4
+
+! Thermo group additivity estimation: group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(Cds_P)
+C2H3(13)                H   3C   2          G   100.000  5000.000  931.96      1
+ 5.44796674E+00 4.98355922E-03-1.08820649E-06 1.79837006E-10-1.45096031E-14    2
+ 3.38297741E+04-4.87808922E+00 3.90670506E+00-4.06240557E-03 3.86779851E-05    3
+-4.62976144E-08 1.72900266E-11 3.47971783E+04 6.09789113E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group
+! (Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + radical(RCCJ)
+C3H7(14)                H   7C   3          G   100.000  5000.000  995.41      1
+ 5.69429475E+00 1.96033658E-02-7.42051121E-06 1.35883304E-09-9.56217774E-14    2
+ 8.87585458E+03-4.32881424E+00 3.09191676E+00 1.32172025E-02 2.75849167E-05    3
+-3.90850945E-08 1.43314207E-11 1.02284116E+04 1.24057739E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group
+! (Cds-CdsHH) + gauche(CsOsCdSs) + other(R)
+C3H6(18)                H   6C   3          G   100.000  5000.000  988.02      1
+ 5.41223350E+00 1.72862711E-02-6.51340180E-06 1.20318206E-09-8.55887363E-14    2
+-5.03256370E+02-4.80259813E+00 3.30972299E+00 8.27549637E-03 3.37696427E-05    3
+-4.39282569E-08 1.58761222E-11 7.67477670E+02 9.64366784E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group
+! (Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + radical(CCJC)
+C3H7(19)                H   7C   3          G   100.000  5000.000 1100.30      1
+ 3.65557541E+00 2.30584417E-02-9.41371372E-06 1.73592452E-09-1.20102267E-13    2
+ 8.11022491E+03 6.48192599E+00 3.21174698E+00 1.31075154E-02 1.99173551E-05    3
+-2.55877560E-08 8.25847356E-12 8.90792321E+03 1.18466459E+01                   4
+
+! Thermo group additivity estimation: group(Ct-CtH) + other(R) + group(Ct-CtH) + other(R)
+C#C(25)                 H   2C   2          G   100.000  5000.000  888.63      1
+ 5.76205644E+00 2.37156778E-03-1.49570815E-07-2.19183307E-11 2.21803327E-15    2
+ 2.50944456E+04-9.82614819E+00 3.03574285E+00 7.71244724E-03 2.53471113E-06    3
+-1.08129988E-08 5.50742205E-12 2.58526445E+04 4.54462887E+00                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group
+! (Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(RCCJ)
+C4H7(28)                H   7C   4          G   100.000  5000.000 1000.95      1
+ 7.59476040E+00 2.06425256E-02-7.89786346E-06 1.45965171E-09-1.03414100E-13    2
+ 2.08073223E+04-1.19157465E+01 2.68060419E+00 2.10826917E-02 2.02119020E-05    3
+-3.64238046E-08 1.41442668E-11 2.27528016E+04 1.66008917E+01                   4
+
+! Thermo group additivity estimation: group(Cds-Cds(Cds-Cds)H) + gauche(CsOsCdSs) + other(R) + group(Cds-Cds(Cds-Cds)H) + gauche(CsOsCdSs) + other(R) +
+! group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R)
+C4H6(30)                H   6C   4          G   100.000  5000.000  940.95      1
+ 1.10824023E+01 1.17734335E-02-3.11408809E-06 5.37732311E-10-4.10611840E-14    2
+ 8.42125662E+03-3.51699173E+01 2.68203469E+00 1.69324988E-02 3.73640478E-05    3
+-6.26468987E-08 2.59141561E-11 1.13546025E+04 1.20324826E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group
+! (Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(Cds_P)
+C3H5(32)                H   5C   3          G   100.000  5000.000  997.87      1
+ 5.66469092E+00 1.44326441E-02-5.46739928E-06 1.00158362E-09-7.04863614E-14    2
+ 2.93870939E+04-4.48500891E+00 3.23408657E+00 1.18207690E-02 1.70307977E-05    3
+-2.64369360E-08 9.91231585E-12 3.04873063E+04 1.03182604E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CtHHH) + gauche(Cs(RRRR)) + other(R) + group(Ct-CtCs) + other(R) + group(Ct-CtH) + other(R)
+C#CC(38)                H   4C   3          G   100.000  5000.000  883.30      1
+ 6.14675275E+00 9.80869780E-03-2.37134674E-06 3.20146459E-10-1.94933743E-14    2
+ 1.97631020E+04-8.68012618E+00 3.30774580E+00 1.08710171E-02 1.58530867E-05    3
+-2.85510802E-08 1.24303223E-11 2.07247365E+04 7.26856429E+00                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group
+! (Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(Cds_S)
+C3H5(39)                H   5C   3          G   100.000  5000.000 1095.65      1
+ 4.46560092E+00 1.63911975E-02-6.57036832E-06 1.20127944E-09-8.27693190E-14    2
+ 2.86404871E+04 2.24342504E+00 3.26570654E+00 1.29761066E-02 8.77777183E-06    3
+-1.46315736E-08 5.01167282E-12 2.93713327E+04 1.02771550E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group
+! (Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + radical(Allyl_P)
+C3H5(40)                H   5C   3          G   100.000  5000.000  951.99      1
+ 7.55708565E+00 1.14812261E-02-3.63959256E-06 6.63600342E-10-4.95331759E-14    2
+ 1.71133103E+04-1.66619924E+01 3.31932186E+00 5.66462271E-03 4.27458092E-05    3
+-5.78843754E-08 2.21704098E-11 1.89906163E+04 9.19638759E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsCsH) + other(R) + group(Cs-CsCsHH) + other(R) + group(Cs-CsCsHH) + other(R) + group(Cs-CsHHH) +
+! other(R) + ring(Cyclopropane) + radical(Isobutyl)
+C4H7(50)                H   7C   4          G   100.000  5000.000  926.06      1
+ 1.02344412E+01 1.41135152E-02-2.99945969E-06 4.56669812E-10-3.49840943E-14    2
+ 2.27934316E+04-2.92337913E+01 3.04743307E+00 5.45487531E-03 7.53339538E-05    3
+-1.02230952E-07 4.01847915E-11 2.58269359E+04 1.40788678E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) +
+! group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + radical(Allyl_P)
+C4H7(52)                H   7C   4          G   100.000  5000.000  998.56      1
+ 7.82805358E+00 2.08400091E-02-7.96749976E-06 1.47336790E-09-1.04524765E-13    2
+ 1.26472220E+04-1.65754398E+01 2.64213255E+00 2.15953947E-02 2.09683963E-05    3
+-3.79210217E-08 1.47845042E-11 1.46809431E+04 1.34335059E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs
+! -(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) +
+! radical(Allyl_P)
+C5H9(109)               H   9C   5          G   100.000  5000.000  999.84      1
+ 1.02288914E+01 2.64699653E-02-1.01084722E-05 1.86963823E-09-1.32726463E-13    2
+ 9.04334607E+03-2.75289589E+01 1.97339077E+00 3.36989082E-02 1.77499780E-05    3
+-4.25120902E-08 1.74171095E-11 1.19836901E+04 1.87463018E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CtHHH) + gauche(Cs(RRRR)) + other(R) + group(Ct-CtCs) + other(R) + group(Ct-CtH) + other(R) +
+! radical(Propargyl)
+C3H3(310)               H   3C   3          G   100.000  5000.000  960.56      1
+ 6.38511071E+00 8.14485270E-03-2.78733442E-06 4.95346903E-10-3.50147424E-14    2
+ 3.84835658E+04-9.48700412E+00 3.32025855E+00 1.08736262E-02 8.62055393E-06    3
+-1.82972517E-08 7.68646024E-12 3.95352631E+04 7.58536450E+00                   4
+
+! Thermo group additivity estimation: group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cdd-
+! CdsCds) + other(R)
+C3H4(357)               H   4C   3          G   100.000  5000.000  966.19      1
+ 6.46490578E+00 1.06811772E-02-3.73730613E-06 6.87003714E-10-4.98574960E-14    2
+ 2.06705499E+04-1.15464865E+01 3.36161839E+00 7.77125685E-03 2.52434147E-05    3
+-3.61888692E-08 1.38591727E-11 2.20057250E+04 7.12452909E+00                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs
+! -(Cds-Cds)HHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsCs) + gauche(Cd(Cs(CsRR)Cs)) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R)
+! + radical(RCCJ) + radical(Allyl_P)
+C5H8(470)               H   8C   5          G   100.000  5000.000 1006.87      1
+ 1.07548697E+01 2.32795400E-02-8.85964365E-06 1.62371488E-09-1.14276214E-13    2
+ 3.34911607E+04-2.81802335E+01 1.84043037E+00 3.85411644E-02-1.57303334E-06    3
+-2.30794496E-08 1.09550865E-11 3.63078363E+04 1.99606497E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CtCsHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group
+! (Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Ct-CtCs) + other(R) + group(Ct-CtH) + other(R) + radical(RCCJ)
+C5H7(535)               H   7C   5          G   100.000  5000.000  981.44      1
+ 8.77954938E+00 2.21971420E-02-7.87267772E-06 1.34791971E-09-9.00222282E-14    2
+ 3.80707433E+04-1.59618950E+01 1.97015558E+00 3.98631024E-02-1.94565852E-05    3
+-1.25520792E-09 3.24051362E-12 3.98931344E+04 1.92367998E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CtHH) + gauche(Cs(RRRR)) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group
+! (Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Ct-CtCs) + other(R) + group(Ct-CtH) + other(R) + radical(Cds_P)
+C5H5(550)               H   5C   5          G   100.000  5000.000 1020.59      1
+ 9.61238439E+00 1.62441041E-02-6.07929096E-06 1.08940713E-09-7.51981471E-14    2
+ 5.87667369E+04-2.17848189E+01 2.17298416E+00 3.48443929E-02-1.79010177E-05    3
+-1.32354544E-09 2.99850469E-12 6.08350664E+04 1.69512042E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)(Cds-Cds)HH) + gauche(Cs(RRRR)) + other(R) + group(Cs-(Cds-Cds)HHH) + gauche(Cs(RRRR)) +
+! other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsCsH) + gauche(CsOsCdSs) +
+! other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cdd-CdsCds) + other(R) + radical(Allyl_P)
+C7H9(588)               H   9C   7          G   100.000  5000.000 1047.87      1
+ 1.37878386E+01 2.96336792E-02-1.17792983E-05 2.18573074E-09-1.53733913E-13    2
+ 3.77035404E+04-4.22277680E+01 9.14151839E-01 5.71206703E-02-2.01274110E-05    3
+-1.22247794E-08 7.98946353E-12 4.15904494E+04 2.61553041E+01                   4
+
+! Thermo group additivity estimation: group(Cs-CsCsHH) + other(R) + group(Cs-(Cds-Cds)CsHH) + other(R) + group(Cs-(Cds-Cds)CsHH) + other(R) + group(Cds-
+! CdsCsH) + other(R) + group(Cds-CdsCsH) + other(R) + ring(Cyclopentene) + radical(cyclopentene-vinyl)
+C5H7(806)               H   7C   5          G   100.000  5000.000  968.90      1
+ 9.43783560E+00 2.11013303E-02-7.52792444E-06 1.43759418E-09-1.07725583E-13    2
+ 3.05205333E+04-2.59534814E+01 2.92801525E+00 7.76748902E-03 7.53644083E-05    3
+-9.84297005E-08 3.67122211E-11 3.36693413E+04 1.49865612E+01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #2
+! Template reaction: R_Recombination
+! Flux pairs: CH3(4), ethane(1); CH3(4), ethane(1); 
+! Matched reaction 20 CH3 + CH3 <=> C2H6 in R_Recombination/training
+CH3(4)+CH3(4)=ethane(1)                             9.450e+14 -0.538    0.135    
+
+! Reaction index: Chemkin #2; RMG #5
+! Template reaction: H_Abstraction
+! Flux pairs: ethane(1), C2H5(5); CH3(4), C(3); 
+! Estimated using average of templates [C/H3/Cs;C_methyl] + [C/H3/Cs\H3;Cs_rad] for rate rule [C/H3/Cs\H3;C_methyl]
+! Multiplied by reaction path degeneracy 6
+CH3(4)+ethane(1)=C(3)+C2H5(5)                       2.940e-05 5.135     7.890    
+
+! Reaction index: Chemkin #3; RMG #3
+! Template reaction: R_Recombination
+! Flux pairs: C2H5(5), ethane(1); H(6), ethane(1); 
+! Exact match found for rate rule [C_rad/H2/Cs;H_rad]
+H(6)+C2H5(5)=ethane(1)                              1.000e+14 0.000     0.000    
+
+! Reaction index: Chemkin #4; RMG #16
+! Template reaction: R_Recombination
+! Flux pairs: CH3(4), C(3); H(6), C(3); 
+! Exact match found for rate rule [C_methyl;H_rad]
+H(6)+CH3(4)=C(3)                                    1.930e+14 0.000     0.270    
+
+! Reaction index: Chemkin #5; RMG #7
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H4(8), C2H5(5); H(6), C2H5(5); 
+! Exact match found for rate rule [Cds-HH_Cds-HH;HJ]
+! Multiplied by reaction path degeneracy 2
+H(6)+C2H4(8)=C2H5(5)                                4.620e+08 1.640     1.010    
+
+! Reaction index: Chemkin #6; RMG #10
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C2H5(5), C2H4(8); 
+! Exact match found for rate rule [C_methyl;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+CH3(4)+C2H5(5)=C(3)+C2H4(8)                         6.570e+14 -0.680    0.000    
+
+! Reaction index: Chemkin #7; RMG #13
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C2H5(5), C2H4(8); 
+! Exact match found for rate rule [C_rad/H2/Cs;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C2H5(5)+C2H5(5)=C2H4(8)+ethane(1)                   1.380e+14 -0.350    0.000    
+
+! Reaction index: Chemkin #8; RMG #17
+! Template reaction: H_Abstraction
+! Flux pairs: ethane(1), C2H5(5); H(6), H2(12); 
+! Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\H3;Y_rad] for rate rule [C/H3/Cs\H3;H_rad]
+! Multiplied by reaction path degeneracy 6
+H(6)+ethane(1)=C2H5(5)+H2(12)                       2.175e+00 4.070     6.080    
+
+! Reaction index: Chemkin #9; RMG #19
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), C2H4(8); H(6), H2(12); 
+! Exact match found for rate rule [H_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+H(6)+C2H5(5)=H2(12)+C2H4(8)                         1.083e+13 0.000     0.000    
+
+! Reaction index: Chemkin #10; RMG #20
+! Template reaction: H_Abstraction
+! Flux pairs: C(3), CH3(4); H(6), H2(12); 
+! Exact match found for rate rule [C_methane;H_rad]
+! Multiplied by reaction path degeneracy 4
+C(3)+H(6)=CH3(4)+H2(12)                             8.760e-01 4.340     8.200    
+
+! Reaction index: Chemkin #11; RMG #21
+! Template reaction: R_Recombination
+! Flux pairs: H(6), H2(12); H(6), H2(12); 
+! Exact match found for rate rule [H_rad;H_rad]
+H(6)+H(6)=H2(12)                                    1.090e+11 0.000     1.500    
+
+! Reaction index: Chemkin #12; RMG #25
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: CH3(4), C3H7(14); C2H4(8), C3H7(14); 
+! Exact match found for rate rule [Cds-HH_Cds-HH;CsJ-HHH]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C2H4(8)=C3H7(14)                             4.180e+04 2.410     5.630    
+
+! Reaction index: Chemkin #13; RMG #23
+! Template reaction: R_Recombination
+! Flux pairs: C2H3(13), C2H4(8); H(6), C2H4(8); 
+! Exact match found for rate rule [Cd_pri_rad;H_rad]
+H(6)+C2H3(13)=C2H4(8)                               1.210e+14 0.000     0.000    
+
+! Reaction index: Chemkin #14; RMG #26
+! Template reaction: H_Abstraction
+! Flux pairs: C(3), CH3(4); C2H3(13), C2H4(8); 
+! Estimated using average of templates [Cs_H;Cd_Cd\H2_pri_rad] + [C_methane;Cd_pri_rad] for rate rule [C_methane;Cd_Cd\H2_pri_rad]
+! Multiplied by reaction path degeneracy 4
+C(3)+C2H3(13)=CH3(4)+C2H4(8)                        5.137e-02 4.133     3.682    
+
+! Reaction index: Chemkin #15; RMG #29
+! Template reaction: H_Abstraction
+! Flux pairs: ethane(1), C2H5(5); C2H3(13), C2H4(8); 
+! Estimated using template [C/H3/Cs;Cd_Cd\H2_pri_rad] for rate rule [C/H3/Cs\H3;Cd_Cd\H2_pri_rad]
+! Multiplied by reaction path degeneracy 6
+C2H3(13)+ethane(1)=C2H5(5)+C2H4(8)                  1.080e-03 4.550     3.500    
+
+! Reaction index: Chemkin #16; RMG #30
+! Template reaction: H_Abstraction
+! Flux pairs: H2(12), H(6); C2H3(13), C2H4(8); 
+! Estimated using average of templates [X_H;Cd_Cd\H2_pri_rad] + [H2;Cd_pri_rad] for rate rule [H2;Cd_Cd\H2_pri_rad]
+! Multiplied by reaction path degeneracy 2
+C2H3(13)+H2(12)=H(6)+C2H4(8)                        2.363e+01 3.243     3.347    
+
+! Reaction index: Chemkin #17; RMG #31
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C2H4(8); C2H5(5), C2H4(8); 
+! Exact match found for rate rule [Cd_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C2H3(13)=C2H4(8)+C2H4(8)                    4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #18; RMG #62
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C#C(25), C2H3(13); H(6), C2H3(13); 
+! Exact match found for rate rule [Ct-H_Ct-H;HJ]
+! Multiplied by reaction path degeneracy 2
+H(6)+C#C(25)=C2H3(13)                               1.030e+09 1.640     2.110    
+
+! Reaction index: Chemkin #19; RMG #64
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C2H3(13), C#C(25); 
+! Estimated using template [C_methyl;Cds/H2_d_Rrad] for rate rule [C_methyl;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C2H3(13)=C(3)+C#C(25)                        2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #20; RMG #68
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C2H3(13), C#C(25); 
+! Estimated using template [Cs_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C2H5(5)+C2H3(13)=C#C(25)+ethane(1)                  2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #21; RMG #71
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C2H3(13), C#C(25); 
+! Estimated using template [H_rad;Cds/H2_d_Rrad] for rate rule [H_rad;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+H(6)+C2H3(13)=C#C(25)+H2(12)                        6.788e+08 1.500     -0.890   
+
+! Reaction index: Chemkin #22; RMG #80
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C2H4(8); C2H3(13), C#C(25); 
+! Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 4
+C2H3(13)+C2H3(13)=C#C(25)+C2H4(8)                   1.466e+07 1.885     -1.120   
+
+! Reaction index: Chemkin #23; RMG #85
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: CH3(4), C3H5(32); C#C(25), C3H5(32); 
+! Exact match found for rate rule [Ct-H_Ct-H;CsJ-HHH]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C#C(25)=C3H5(32)                             1.338e+05 2.410     6.770    
+
+! Reaction index: Chemkin #24; RMG #74
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H4(8), C4H7(28); C2H3(13), C4H7(28); 
+! Exact match found for rate rule [Cds-HH_Cds-HH;CdsJ-H]
+! Multiplied by reaction path degeneracy 2
+C2H3(13)+C2H4(8)=C4H7(28)                           2.860e+04 2.410     1.800    
+
+! Reaction index: Chemkin #25; RMG #150
+! Template reaction: Intra_R_Add_Exocyclic
+! Flux pairs: C4H7(28), C4H7(50); 
+! Exact match found for rate rule [R4_S_D;doublebond_intra_2H_pri;radadd_intra_cs2H]
+C4H7(28)=C4H7(50)                                   3.840e+10 0.210     8.780    
+
+! Reaction index: Chemkin #26; RMG #82
+! Template reaction: R_Recombination
+! Flux pairs: C2H3(13), C4H6(30); C2H3(13), C4H6(30); 
+! Exact match found for rate rule [Cd_pri_rad;Cd_pri_rad]
+C2H3(13)+C2H3(13)=C4H6(30)                          7.230e+13 0.000     0.000    
+
+! Reaction index: Chemkin #27; RMG #151
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C4H6(30), C4H7(28); H(6), C4H7(28); 
+! Exact match found for rate rule [Cds-CdH_Cds-HH;HJ]
+! Multiplied by reaction path degeneracy 2
+H(6)+C4H6(30)=C4H7(28)                              3.240e+08 1.640     2.400    
+
+! Reaction index: Chemkin #28; RMG #165
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C4H7(28), C4H6(30); 
+! Estimated using template [C_methyl;Cpri_Rrad] for rate rule [C_methyl;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C4H7(28)=C(3)+C4H6(30)                       2.300e+13 -0.320    0.000    
+
+! Reaction index: Chemkin #29; RMG #174
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C4H7(28), C4H6(30); 
+! Estimated using template [C_rad/H2/Cs;Cpri_Rrad] for rate rule [C_rad/H2/Cs;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C2H5(5)+C4H7(28)=C4H6(30)+ethane(1)                 2.900e+12 0.000     0.000    
+
+! Reaction index: Chemkin #30; RMG #186
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C4H7(28), C4H6(30); 
+! Estimated using average of templates [Y_rad_birad_trirad_quadrad;C/H2/De_Csrad] + [H_rad;Cpri_Rrad] for rate rule [H_rad;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+H(6)+C4H7(28)=C4H6(30)+H2(12)                       2.691e+11 0.000     0.000    
+
+! Reaction index: Chemkin #31; RMG #217
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C2H4(8); C4H7(28), C4H6(30); 
+! Estimated using template [Cd_pri_rad;Cpri_Rrad] for rate rule [Cd_pri_rad;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C4H7(28)+C2H3(13)=C4H6(30)+C2H4(8)                  2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #32; RMG #153
+! Template reaction: intra_H_migration
+! Flux pairs: C4H7(52), C4H7(28); 
+! Exact match found for rate rule [R2H_S;C_rad_out_H/OneDe;Cs_H_out_2H]
+! Multiplied by reaction path degeneracy 3
+C4H7(52)=C4H7(28)                                   6.180e+09 1.220     47.800   
+
+! Reaction index: Chemkin #33; RMG #333
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C4H7(52), C4H6(30); 
+! Estimated using template [C_rad/H2/Cs;Cmethyl_Csrad] for rate rule [C_rad/H2/Cs;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C4H7(52)=C4H6(30)+ethane(1)                 6.900e+13 -0.350    0.000    
+
+! Reaction index: Chemkin #34; RMG #346
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C4H7(52), C4H6(30); 
+! Estimated using average of templates [Cs_rad;Cmethyl_Csrad/H/Cd] + [C_methyl;Cmethyl_Csrad] for rate rule [C_methyl;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+CH3(4)+C4H7(52)=C(3)+C4H6(30)                       9.927e+12 -0.340    0.000    
+
+! Reaction index: Chemkin #35; RMG #347
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: H(6), C4H7(52); C4H6(30), C4H7(52); 
+! Exact match found for rate rule [Cds-HH_Cds-CdH;HJ]
+! Multiplied by reaction path degeneracy 2
+H(6)+C4H6(30)=C4H7(52)                              4.620e+08 1.640     -0.470   
+
+! Reaction index: Chemkin #36; RMG #350
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C4H6(30); C4H7(52), C2H4(8); 
+! Estimated using template [Cd_pri_rad;Cmethyl_Csrad] for rate rule [Cd_pri_rad;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C4H7(52)+C2H3(13)=C4H6(30)+C2H4(8)                  4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #37; RMG #357
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C4H7(52), C4H6(30); 
+! Estimated using average of templates [Y_rad;Cmethyl_Csrad/H/Cd] + [H_rad;Cmethyl_Csrad] for rate rule [H_rad;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+H(6)+C4H7(52)=C4H6(30)+H2(12)                       1.275e+12 0.000     0.000    
+
+! Reaction index: Chemkin #38; RMG #34
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(18), C3H7(14); H(6), C3H7(14); 
+! Exact match found for rate rule [Cds-CsH_Cds-HH;HJ]
+H(6)+C3H6(18)=C3H7(14)                              1.170e+08 1.680     2.030    
+
+! Reaction index: Chemkin #39; RMG #42
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C3H7(14), C3H6(18); 
+! Exact match found for rate rule [C_methyl;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C3H7(14)=C(3)+C3H6(18)                       2.300e+13 -0.320    0.000    
+
+! Reaction index: Chemkin #40; RMG #46
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C3H7(14), C3H6(18); 
+! Exact match found for rate rule [C_rad/H2/Cs;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C2H5(5)+C3H7(14)=C3H6(18)+ethane(1)                 2.900e+12 0.000     0.000    
+
+! Reaction index: Chemkin #41; RMG #51
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C3H7(14), C3H6(18); 
+! Exact match found for rate rule [H_rad;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+H(6)+C3H7(14)=H2(12)+C3H6(18)                       3.620e+12 0.000     0.000    
+
+! Reaction index: Chemkin #42; RMG #67
+! Template reaction: R_Recombination
+! Flux pairs: CH3(4), C3H6(18); C2H3(13), C3H6(18); 
+! Exact match found for rate rule [C_methyl;Cd_pri_rad]
+CH3(4)+C2H3(13)=C3H6(18)                            7.230e+13 0.000     0.000    
+
+! Reaction index: Chemkin #43; RMG #76
+! Template reaction: Disproportionation
+! Flux pairs: C3H7(14), C3H6(18); C2H3(13), C2H4(8); 
+! Exact match found for rate rule [Cd_pri_rad;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C2H3(13)+C3H7(14)=C2H4(8)+C3H6(18)                  2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #44; RMG #109
+! Template reaction: H_Abstraction
+! Flux pairs: ethane(1), C2H5(5); C3H5(32), C3H6(18); 
+! Estimated using template [C/H3/Cs;Cd_pri_rad] for rate rule [C/H3/Cs\H3;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 6
+C3H5(32)+ethane(1)=C2H5(5)+C3H6(18)                 4.248e-02 4.340     3.400    
+
+! Reaction index: Chemkin #45; RMG #116
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), C2H4(8); C3H5(32), C3H6(18); 
+! Exact match found for rate rule [Cd_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C3H5(32)=C2H4(8)+C3H6(18)                   4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #46; RMG #120
+! Template reaction: H_Abstraction
+! Flux pairs: C(3), CH3(4); C3H5(32), C3H6(18); 
+! Estimated using template [C_methane;Cd_pri_rad] for rate rule [C_methane;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 4
+C(3)+C3H5(32)=CH3(4)+C3H6(18)                       2.236e-02 4.340     5.700    
+
+! Reaction index: Chemkin #47; RMG #124
+! Template reaction: R_Recombination
+! Flux pairs: H(6), C3H6(18); C3H5(32), C3H6(18); 
+! Exact match found for rate rule [H_rad;Cd_pri_rad]
+H(6)+C3H5(32)=C3H6(18)                              1.210e+14 0.000     0.000    
+
+! Reaction index: Chemkin #48; RMG #128
+! Template reaction: H_Abstraction
+! Flux pairs: C2H4(8), C2H3(13); C3H5(32), C3H6(18); 
+! Estimated using template [Cd_pri;Cd_pri_rad] for rate rule [Cd/H2/NonDeC;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 4
+C3H5(32)+C2H4(8)=C2H3(13)+C3H6(18)                  3.700e-02 4.340     6.100    
+
+! Reaction index: Chemkin #49; RMG #129
+! Template reaction: H_Abstraction
+! Flux pairs: H2(12), H(6); C3H5(32), C3H6(18); 
+! Estimated using average of templates [X_H;Cd_Cd\H\Cs_pri_rad] + [H2;Cd_pri_rad] for rate rule [H2;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 2
+C3H5(32)+H2(12)=H(6)+C3H6(18)                       1.375e+02 3.040     -1.225   
+
+! Reaction index: Chemkin #50; RMG #131
+! Template reaction: Disproportionation
+! Flux pairs: C3H7(14), C3H6(18); C3H5(32), C3H6(18); 
+! Exact match found for rate rule [Cd_pri_rad;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H5(32)+C3H7(14)=C3H6(18)+C3H6(18)                 2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #51; RMG #137
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C#C(25); C3H5(32), C3H6(18); 
+! Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H5(32)+C2H3(13)=C#C(25)+C3H6(18)                  7.332e+06 1.885     -1.120   
+
+! Reaction index: Chemkin #52; RMG #236
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(32), C3H6(18); C4H7(28), C4H6(30); 
+! Estimated using template [Cd_pri_rad;Cpri_Rrad] for rate rule [Cd_pri_rad;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C4H7(28)+C3H5(32)=C4H6(30)+C3H6(18)                 2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #53; RMG #563
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(32), C3H6(18); C4H7(52), C4H6(30); 
+! Estimated using template [Cd_pri_rad;Cmethyl_Csrad] for rate rule [Cd_pri_rad;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C4H7(52)+C3H5(32)=C4H6(30)+C3H6(18)                 4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #54; RMG #36
+! Template reaction: intra_H_migration
+! Flux pairs: C3H7(14), C3H7(19); 
+! Exact match found for rate rule [R2H_S;C_rad_out_2H;Cs_H_out_H/NonDeC]
+! Multiplied by reaction path degeneracy 2
+C3H7(14)=C3H7(19)                                   7.180e+05 2.050     36.300   
+
+! Reaction index: Chemkin #55; RMG #712
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C3H7(19), C3H6(18); 
+! Exact match found for rate rule [C_rad/H2/Cs;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C2H5(5)+C3H7(19)=C3H6(18)+ethane(1)                 1.380e+14 -0.350    0.000    
+
+! Reaction index: Chemkin #56; RMG #725
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C3H7(19), C3H6(18); 
+! Exact match found for rate rule [C_methyl;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+CH3(4)+C3H7(19)=C(3)+C3H6(18)                       1.314e+15 -0.680    0.000    
+
+! Reaction index: Chemkin #57; RMG #726
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: H(6), C3H7(19); C3H6(18), C3H7(19); 
+! Exact match found for rate rule [Cds-HH_Cds-Cs\H3/H;HJ]
+H(6)+C3H6(18)=C3H7(19)                              1.840e+09 1.553     1.570    
+
+! Reaction index: Chemkin #58; RMG #729
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C3H6(18); C3H7(19), C2H4(8); 
+! Exact match found for rate rule [Cd_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C2H3(13)+C3H7(19)=C2H4(8)+C3H6(18)                  9.120e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #59; RMG #735
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C3H7(19), C3H6(18); 
+! Exact match found for rate rule [H_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+H(6)+C3H7(19)=H2(12)+C3H6(18)                       2.166e+13 0.000     0.000    
+
+! Reaction index: Chemkin #60; RMG #853
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(32), C3H6(18); C3H7(19), C3H6(18); 
+! Exact match found for rate rule [Cd_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C3H5(32)+C3H7(19)=C3H6(18)+C3H6(18)                 9.120e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #61; RMG #102
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C#CC(38), C3H5(32); H(6), C3H5(32); 
+! Exact match found for rate rule [Ct-Cs_Ct-H;HJ]
+H(6)+C#CC(38)=C3H5(32)                              6.920e+08 1.640     3.400    
+
+! Reaction index: Chemkin #62; RMG #110
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C3H5(32), C#CC(38); 
+! Estimated using template [C_methyl;CH_d_Rrad] for rate rule [C_methyl;Cds/H/NonDe_d_Rrad]
+CH3(4)+C3H5(32)=C(3)+C#CC(38)                       1.138e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #63; RMG #115
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C3H5(32), C#CC(38); 
+! Estimated using template [Cs_rad;CH_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H/NonDe_d_Rrad]
+C2H5(5)+C3H5(32)=C#CC(38)+ethane(1)                 1.138e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #64; RMG #121
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C3H5(32), C#CC(38); 
+! Estimated using template [H_rad;CH_d_Rrad] for rate rule [H_rad;Cds/H/NonDe_d_Rrad]
+H(6)+C3H5(32)=C#CC(38)+H2(12)                       3.394e+08 1.500     -0.890   
+
+! Reaction index: Chemkin #65; RMG #136
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C2H4(8); C3H5(32), C#CC(38); 
+! Estimated using template [Y_rad;CH_d_Rrad] for rate rule [Cd_pri_rad;Cds/H/NonDe_d_Rrad]
+C3H5(32)+C2H3(13)=C#CC(38)+C2H4(8)                  3.224e+06 1.902     -1.131   
+
+! Reaction index: Chemkin #66; RMG #146
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(32), C3H6(18); C3H5(32), C#CC(38); 
+! Estimated using template [Y_rad;CH_d_Rrad] for rate rule [Cd_pri_rad;Cds/H/NonDe_d_Rrad]
+! Multiplied by reaction path degeneracy 2
+C3H5(32)+C3H5(32)=C#CC(38)+C3H6(18)                 6.447e+06 1.902     -1.131   
+
+! Reaction index: Chemkin #67; RMG #104
+! Template reaction: intra_H_migration
+! Flux pairs: C3H5(32), C3H5(39); 
+! Exact match found for rate rule [R2H_D;Cd_rad_out_singleH;Cd_H_out_singleNd]
+C3H5(32)=C3H5(39)                                   3.240e+11 0.730     42.400   
+
+! Reaction index: Chemkin #68; RMG #711
+! Template reaction: R_Recombination
+! Flux pairs: C3H5(39), C3H6(18); H(6), C3H6(18); 
+! Estimated using template [Cd_rad;H_rad] for rate rule [Cd_rad/NonDe;H_rad]
+H(6)+C3H5(39)=C3H6(18)                              3.479e+13 0.000     0.000    
+
+! Reaction index: Chemkin #69; RMG #718
+! Template reaction: H_Abstraction
+! Flux pairs: CH3(4), C(3); C3H6(18), C3H5(39); 
+! Exact match found for rate rule [Cd/H/NonDeC;C_methyl]
+CH3(4)+C3H6(18)=C(3)+C3H5(39)                       9.150e-03 4.340     8.400    
+
+! Reaction index: Chemkin #70; RMG #724
+! Template reaction: H_Abstraction
+! Flux pairs: ethane(1), C2H5(5); C3H5(39), C3H6(18); 
+! Estimated using template [C/H3/Cs;Cd_Cd\H2_rad/Cs] for rate rule [C/H3/Cs\H3;Cd_Cd\H2_rad/Cs]
+! Multiplied by reaction path degeneracy 6
+C3H5(39)+ethane(1)=C2H5(5)+C3H6(18)                 1.866e-04 4.870     3.500    
+
+! Reaction index: Chemkin #71; RMG #728
+! Template reaction: H_Abstraction
+! Flux pairs: H(6), H2(12); C3H6(18), C3H5(39); 
+! Exact match found for rate rule [Cd/H/NonDeC;H_rad]
+H(6)+C3H6(18)=C3H5(39)+H2(12)                       3.860e-01 4.340     6.300    
+
+! Reaction index: Chemkin #72; RMG #731
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C2H5(5), C2H4(8); 
+! Estimated using template [Cd_rad;Cmethyl_Csrad] for rate rule [Cd_rad/NonDeC;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C3H5(39)=C2H4(8)+C3H6(18)                   4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #73; RMG #750
+! Template reaction: H_Abstraction
+! Flux pairs: C2H3(13), C2H4(8); C3H6(18), C3H5(39); 
+! Estimated using template [Cd/H/NonDeC;Cd_pri_rad] for rate rule [Cd/H/NonDeC;Cd_Cd\H2_pri_rad]
+C2H3(13)+C3H6(18)=C3H5(39)+C2H4(8)                  8.420e-01 3.500     9.670    
+
+! Reaction index: Chemkin #74; RMG #754
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C2H3(13), C#C(25); 
+! Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_rad/NonDeC;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H5(39)+C2H3(13)=C#C(25)+C3H6(18)                  7.332e+06 1.885     -1.120   
+
+! Reaction index: Chemkin #75; RMG #764
+! Template reaction: H_Abstraction
+! Flux pairs: C3H5(32), C3H6(18); C3H6(18), C3H5(39); 
+! Estimated using template [Cd/H/NonDeC;Cd_pri_rad] for rate rule [Cd/H/NonDeC;Cd_Cd\H\Cs_pri_rad]
+C3H5(32)+C3H6(18)=C3H5(39)+C3H6(18)                 8.420e-01 3.500     9.670    
+
+! Reaction index: Chemkin #76; RMG #802
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C4H7(28), C4H6(30); 
+! Estimated using template [Cd_rad;Cpri_Rrad] for rate rule [Cd_rad/NonDeC;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C4H7(28)+C3H5(39)=C4H6(30)+C3H6(18)                 2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #77; RMG #804
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C4H7(52), C4H6(30); 
+! Estimated using template [Cd_rad;Cmethyl_Csrad] for rate rule [Cd_rad/NonDeC;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C4H7(52)+C3H5(39)=C4H6(30)+C3H6(18)                 4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #78; RMG #851
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C3H7(14), C3H6(18); 
+! Estimated using template [Cd_rad;C/H2/Nd_Csrad] for rate rule [Cd_rad/NonDeC;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H5(39)+C3H7(14)=C3H6(18)+C3H6(18)                 2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #79; RMG #852
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C3H7(19), C3H6(18); 
+! Estimated using template [Cd_rad;Cmethyl_Csrad] for rate rule [Cd_rad/NonDeC;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C3H5(39)+C3H7(19)=C3H6(18)+C3H6(18)                 9.120e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #80; RMG #930
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C3H5(39), C#CC(38); 
+! Estimated using template [Cs_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cs;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C2H5(5)+C3H5(39)=C#CC(38)+ethane(1)                 2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #81; RMG #943
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C3H5(39), C#CC(38); 
+! Estimated using template [C_methyl;Cds/H2_d_Rrad] for rate rule [C_methyl;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C3H5(39)=C(3)+C#CC(38)                       2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #82; RMG #944
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: H(6), C3H5(39); C#CC(38), C3H5(39); 
+! Exact match found for rate rule [Ct-H_Ct-Cs;HJ]
+H(6)+C#CC(38)=C3H5(39)                              1.500e+09 1.640     3.130    
+
+! Reaction index: Chemkin #83; RMG #947
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C#CC(38); C3H5(39), C2H4(8); 
+! Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H5(39)+C2H3(13)=C#CC(38)+C2H4(8)                  7.332e+06 1.885     -1.120   
+
+! Reaction index: Chemkin #84; RMG #952
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C3H5(39), C#CC(38); 
+! Estimated using template [H_rad;Cds/H2_d_Rrad] for rate rule [H_rad;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+H(6)+C3H5(39)=C#CC(38)+H2(12)                       6.788e+08 1.500     -0.890   
+
+! Reaction index: Chemkin #85; RMG #1050
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C#CC(38); C3H5(32), C3H6(18); 
+! Estimated using template [Y_rad;CH_d_Rrad] for rate rule [Cd_rad/NonDeC;Cds/H/NonDe_d_Rrad]
+! Multiplied by reaction path degeneracy 3
+C3H5(32)+C3H5(39)=C#CC(38)+C3H6(18)                 9.671e+06 1.902     -1.131   
+
+! Reaction index: Chemkin #86; RMG #1051
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C#CC(38); C3H5(39), C3H6(18); 
+! Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_rad/NonDeC;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 4
+C3H5(39)+C3H5(39)=C#CC(38)+C3H6(18)                 1.466e+07 1.885     -1.120   
+
+! Reaction index: Chemkin #87; RMG #105
+! Template reaction: intra_H_migration
+! Flux pairs: C3H5(32), C3H5(40); 
+! Exact match found for rate rule [R3H_DS;Cd_rad_out_singleH;Cs_H_out_2H]
+! Multiplied by reaction path degeneracy 3
+C3H5(32)=C3H5(40)                                   1.530e+10 0.970     37.700   
+
+! Reaction index: Chemkin #88; RMG #710
+! Template reaction: R_Recombination
+! Flux pairs: C3H5(40), C3H6(18); H(6), C3H6(18); 
+! Exact match found for rate rule [C_rad/H2/Cd;H_rad]
+H(6)+C3H5(40)=C3H6(18)                              2.920e+13 0.180     0.124    
+
+! Reaction index: Chemkin #89; RMG #717
+! Template reaction: H_Abstraction
+! Flux pairs: CH3(4), C(3); C3H6(18), C3H5(40); 
+! Exact match found for rate rule [C/H3/Cd\H_Cd\H2;C_methyl]
+! Multiplied by reaction path degeneracy 3
+CH3(4)+C3H6(18)=C(3)+C3H5(40)                       7.200e-02 4.250     7.530    
+
+! Reaction index: Chemkin #90; RMG #723
+! Template reaction: H_Abstraction
+! Flux pairs: C2H5(5), ethane(1); C3H6(18), C3H5(40); 
+! Estimated using template [C/H3/Cd\H_Cd\H2;C_rad/H2/Cs] for rate rule [C/H3/Cd\H_Cd\H2;C_rad/H2/Cs\H3]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C3H6(18)=C3H5(40)+ethane(1)                 1.008e-04 4.750     4.130    
+
+! Reaction index: Chemkin #91; RMG #727
+! Template reaction: H_Abstraction
+! Flux pairs: H(6), H2(12); C3H6(18), C3H5(40); 
+! Exact match found for rate rule [C/H3/Cd\H_Cd\H2;H_rad]
+! Multiplied by reaction path degeneracy 3
+H(6)+C3H6(18)=C3H5(40)+H2(12)                       3.360e+03 3.140     4.290    
+
+! Reaction index: Chemkin #92; RMG #730
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C2H5(5), C2H4(8); 
+! Exact match found for rate rule [C_rad/H2/Cd;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C3H5(40)=C2H4(8)+C3H6(18)                   6.870e+13 -0.350    -0.130   
+
+! Reaction index: Chemkin #93; RMG #749
+! Template reaction: H_Abstraction
+! Flux pairs: C2H3(13), C2H4(8); C3H6(18), C3H5(40); 
+! Estimated using template [C/H3/Cd;Cd_pri_rad] for rate rule [C/H3/Cd\H_Cd\H2;Cd_Cd\H2_pri_rad]
+! Multiplied by reaction path degeneracy 3
+C2H3(13)+C3H6(18)=C3H5(40)+C2H4(8)                  6.660e-03 4.340     0.100    
+
+! Reaction index: Chemkin #94; RMG #753
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C2H3(13), C#C(25); 
+! Estimated using template [Cs_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cd;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H5(40)+C2H3(13)=C#C(25)+C3H6(18)                  2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #95; RMG #763
+! Template reaction: H_Abstraction
+! Flux pairs: C3H5(32), C3H6(18); C3H6(18), C3H5(40); 
+! Estimated using template [C/H3/Cd;Cd_pri_rad] for rate rule [C/H3/Cd\H_Cd\H2;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 3
+C3H5(32)+C3H6(18)=C3H5(40)+C3H6(18)                 6.660e-03 4.340     0.100    
+
+! Reaction index: Chemkin #96; RMG #801
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C4H7(28), C4H6(30); 
+! Estimated using template [C_rad/H2/Cd;Cpri_Rrad] for rate rule [C_rad/H2/Cd;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C4H7(28)+C3H5(40)=C4H6(30)+C3H6(18)                 2.900e+12 0.000     -0.130   
+
+! Reaction index: Chemkin #97; RMG #803
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C4H7(52), C4H6(30); 
+! Estimated using template [C_rad/H2/Cd;Cmethyl_Csrad] for rate rule [C_rad/H2/Cd;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C4H7(52)+C3H5(40)=C4H6(30)+C3H6(18)                 6.870e+13 -0.350    -0.130   
+
+! Reaction index: Chemkin #98; RMG #849
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C3H7(14), C3H6(18); 
+! Exact match found for rate rule [C_rad/H2/Cd;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H5(40)+C3H7(14)=C3H6(18)+C3H6(18)                 2.900e+12 0.000     -0.130   
+
+! Reaction index: Chemkin #99; RMG #850
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C3H7(19), C3H6(18); 
+! Exact match found for rate rule [C_rad/H2/Cd;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C3H5(40)+C3H7(19)=C3H6(18)+C3H6(18)                 1.374e+14 -0.350    -0.130   
+
+! Reaction index: Chemkin #100; RMG #1048
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C#CC(38); C3H5(32), C3H6(18); 
+! Estimated using template [Cs_rad;CH_d_Rrad] for rate rule [C_rad/H2/Cd;Cds/H/NonDe_d_Rrad]
+C3H5(32)+C3H5(40)=C#CC(38)+C3H6(18)                 1.138e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #101; RMG #1049
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C#CC(38); C3H5(39), C3H6(18); 
+! Estimated using template [Cs_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Cd;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H5(40)+C3H5(39)=C#CC(38)+C3H6(18)                 2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #102; RMG #1074
+! Template reaction: intra_H_migration
+! Flux pairs: C3H5(39), C3H5(40); 
+! Exact match found for rate rule [R2H_S;Cd_rad_out;Cs_H_out_2H]
+! Multiplied by reaction path degeneracy 3
+C3H5(39)=C3H5(40)                                   7.320e+09 1.120     41.300   
+
+! Reaction index: Chemkin #103; RMG #1158
+! Template reaction: H_Abstraction
+! Flux pairs: C3H6(18), C3H5(40); C3H5(39), C3H6(18); 
+! Estimated using template [C/H3/Cd;Cd_rad/NonDeC] for rate rule [C/H3/Cd\H_Cd\H2;Cd_Cd\H2_rad/Cs]
+! Multiplied by reaction path degeneracy 3
+C3H5(39)+C3H6(18)=C3H5(40)+C3H6(18)                 3.780e-03 4.340     -0.200   
+
+! Reaction index: Chemkin #104; RMG #1073
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H4(357), C3H5(39); H(6), C3H5(39); 
+! Exact match found for rate rule [Cds-HH_Ca;HJ]
+! Multiplied by reaction path degeneracy 2
+C3H4(357)+H(6)=C3H5(39)                             4.180e+08 1.640     1.170    
+
+! Reaction index: Chemkin #105; RMG #1077
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C3H5(39), C3H4(357); 
+! Estimated using template [C_methyl;Cmethyl_Rrad] for rate rule [C_methyl;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+CH3(4)+C3H5(39)=C3H4(357)+C(3)                      6.878e+10 0.595     -0.555   
+
+! Reaction index: Chemkin #106; RMG #1081
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C3H5(39), C3H4(357); 
+! Estimated using template [C_rad/H2/Cs;Cmethyl_Rrad] for rate rule [C_rad/H2/Cs;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C3H5(39)=C3H4(357)+ethane(1)                6.900e+13 -0.350    0.000    
+
+! Reaction index: Chemkin #107; RMG #1084
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C3H5(39), C3H4(357); 
+! Estimated using template [H_rad;Cmethyl_Rrad] for rate rule [H_rad;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+H(6)+C3H5(39)=C3H4(357)+H2(12)                      1.083e+12 0.500     -0.297   
+
+! Reaction index: Chemkin #108; RMG #1094
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C2H4(8); C3H5(39), C3H4(357); 
+! Estimated using template [Cd_pri_rad;Cmethyl_Rrad] for rate rule [Cd_pri_rad;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+C3H5(39)+C2H3(13)=C3H4(357)+C2H4(8)                 4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #109; RMG #1102
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(32), C3H6(18); C3H5(39), C3H4(357); 
+! Estimated using template [Cd_pri_rad;Cmethyl_Rrad] for rate rule [Cd_pri_rad;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+C3H5(32)+C3H5(39)=C3H4(357)+C3H6(18)                4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #110; RMG #1171
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C3H5(39), C3H4(357); 
+! Estimated using template [Cd_rad;Cmethyl_Rrad] for rate rule [Cd_rad/NonDeC;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 6
+C3H5(39)+C3H5(39)=C3H4(357)+C3H6(18)                9.120e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #111; RMG #1174
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H4(357), C3H5(40); H(6), C3H5(40); 
+! Exact match found for rate rule [Ca_Cds-HH;HJ]
+! Multiplied by reaction path degeneracy 2
+C3H4(357)+H(6)=C3H5(40)                             8.840e+08 1.640     2.820    
+
+! Reaction index: Chemkin #112; RMG #1181
+! Template reaction: Disproportionation
+! Flux pairs: CH3(4), C(3); C3H5(40), C3H4(357); 
+! Exact match found for rate rule [C_methyl;Cdpri_Csrad]
+CH3(4)+C3H5(40)=C3H4(357)+C(3)                      3.010e+12 0.000     6.000    
+
+! Reaction index: Chemkin #113; RMG #1189
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(5), ethane(1); C3H5(40), C3H4(357); 
+! Exact match found for rate rule [C_rad/H2/Cs;Cdpri_Csrad]
+C2H5(5)+C3H5(40)=C3H4(357)+ethane(1)                9.640e+11 0.000     6.000    
+
+! Reaction index: Chemkin #114; RMG #1198
+! Template reaction: Disproportionation
+! Flux pairs: H(6), H2(12); C3H5(40), C3H4(357); 
+! Estimated using template [Y_rad;Cdpri_Csrad] for rate rule [H_rad;Cdpri_Csrad]
+H(6)+C3H5(40)=C3H4(357)+H2(12)                      3.620e+12 0.000     6.000    
+
+! Reaction index: Chemkin #115; RMG #1221
+! Template reaction: Disproportionation
+! Flux pairs: C2H3(13), C2H4(8); C3H5(40), C3H4(357); 
+! Exact match found for rate rule [Cd_pri_rad;Cdpri_Csrad]
+C3H5(40)+C2H3(13)=C3H4(357)+C2H4(8)                 2.410e+12 0.000     6.000    
+
+! Reaction index: Chemkin #116; RMG #1237
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(32), C3H6(18); C3H5(40), C3H4(357); 
+! Exact match found for rate rule [Cd_pri_rad;Cdpri_Csrad]
+C3H5(32)+C3H5(40)=C3H4(357)+C3H6(18)                2.410e+12 0.000     6.000    
+
+! Reaction index: Chemkin #117; RMG #1383
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(39), C3H6(18); C3H5(40), C3H4(357); 
+! Estimated using template [Cd_rad;Cdpri_Csrad] for rate rule [Cd_rad/NonDeC;Cdpri_Csrad]
+! Multiplied by reaction path degeneracy 4
+C3H5(40)+C3H5(39)=C3H4(357)+C3H6(18)                9.640e+12 0.000     6.000    
+
+! Reaction index: Chemkin #118; RMG #1393
+! Template reaction: Disproportionation
+! Flux pairs: C3H5(40), C3H6(18); C3H5(40), C3H4(357); 
+! Exact match found for rate rule [C_rad/H2/Cd;Cdpri_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H5(40)+C3H5(40)=C3H4(357)+C3H6(18)                1.686e+11 0.000     6.000    
+
+! Reaction index: Chemkin #119; RMG #928
+! Template reaction: R_Recombination
+! Flux pairs: C3H3(310), C#CC(38); H(6), C#CC(38); 
+! Estimated using template [C_pri_rad;H_rad] for rate rule [C_rad/H2/Ct;H_rad]
+C3H3(310)+H(6)=C#CC(38)                             1.134e+13 0.277     -0.082   
+
+! Reaction index: Chemkin #120; RMG #935
+! Template reaction: H_Abstraction
+! Flux pairs: CH3(4), C(3); C#CC(38), C3H3(310); 
+! Exact match found for rate rule [C/H3/Ct;C_methyl]
+! Multiplied by reaction path degeneracy 3
+CH3(4)+C#CC(38)=C3H3(310)+C(3)                      1.923e-02 4.340     5.200    
+
+! Reaction index: Chemkin #121; RMG #941
+! Template reaction: H_Abstraction
+! Flux pairs: C2H5(5), ethane(1); C#CC(38), C3H3(310); 
+! Estimated using template [C/H3/Ct;C_rad/H2/Cs] for rate rule [C/H3/Ct;C_rad/H2/Cs\H3]
+! Multiplied by reaction path degeneracy 3
+C2H5(5)+C#CC(38)=C3H3(310)+ethane(1)                2.709e-03 4.340     5.500    
+
+! Reaction index: Chemkin #122; RMG #945
+! Template reaction: H_Abstraction
+! Flux pairs: H(6), H2(12); C#CC(38), C3H3(310); 
+! Exact match found for rate rule [C/H3/Ct;H_rad]
+! Multiplied by reaction path degeneracy 3
+H(6)+C#CC(38)=C3H3(310)+H2(12)                      8.130e-01 4.340     3.100    
+
+! Reaction index: Chemkin #123; RMG #948
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C2H5(5), C2H4(8); 
+! Estimated using template [C_pri_rad;Cmethyl_Csrad] for rate rule [C_rad/H2/Ct;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C2H5(5)=C#CC(38)+C2H4(8)                  3.451e+13 -0.233    -0.043   
+
+! Reaction index: Chemkin #124; RMG #965
+! Template reaction: H_Abstraction
+! Flux pairs: C2H3(13), C2H4(8); C#CC(38), C3H3(310); 
+! Estimated using template [C/H3/Ct;Cd_pri_rad] for rate rule [C/H3/Ct;Cd_Cd\H2_pri_rad]
+! Multiplied by reaction path degeneracy 3
+C#CC(38)+C2H3(13)=C3H3(310)+C2H4(8)                 2.076e-02 4.340     0.600    
+
+! Reaction index: Chemkin #125; RMG #969
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C2H3(13), C#C(25); 
+! Estimated using template [Cs_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Ct;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C2H3(13)=C#C(25)+C#CC(38)                 2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #126; RMG #979
+! Template reaction: H_Abstraction
+! Flux pairs: C3H5(32), C3H6(18); C#CC(38), C3H3(310); 
+! Estimated using template [C/H3/Ct;Cd_pri_rad] for rate rule [C/H3/Ct;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 3
+C3H5(32)+C#CC(38)=C3H3(310)+C3H6(18)                2.076e-02 4.340     0.600    
+
+! Reaction index: Chemkin #127; RMG #1011
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C4H7(28), C4H6(30); 
+! Estimated using template [C_pri_rad;Cpri_Rrad] for rate rule [C_rad/H2/Ct;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C4H7(28)=C4H6(30)+C#CC(38)                2.009e+12 0.000     -0.043   
+
+! Reaction index: Chemkin #128; RMG #1013
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C4H7(52), C4H6(30); 
+! Estimated using template [C_pri_rad;Cmethyl_Csrad] for rate rule [C_rad/H2/Ct;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C4H7(52)=C4H6(30)+C#CC(38)                3.451e+13 -0.233    -0.043   
+
+! Reaction index: Chemkin #129; RMG #1052
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C3H7(14), C3H6(18); 
+! Estimated using template [C_pri_rad;C/H2/Nd_Csrad] for rate rule [C_rad/H2/Ct;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C3H7(14)=C#CC(38)+C3H6(18)                2.009e+12 0.000     -0.043   
+
+! Reaction index: Chemkin #130; RMG #1054
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C3H7(19), C3H6(18); 
+! Estimated using template [C_pri_rad;Cmethyl_Csrad] for rate rule [C_rad/H2/Ct;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C3H3(310)+C3H7(19)=C#CC(38)+C3H6(18)                6.902e+13 -0.233    -0.043   
+
+! Reaction index: Chemkin #131; RMG #1066
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C3H5(32), C#CC(38); 
+! Estimated using template [Cs_rad;CH_d_Rrad] for rate rule [C_rad/H2/Ct;Cds/H/NonDe_d_Rrad]
+C3H3(310)+C3H5(32)=C#CC(38)+C#CC(38)                1.138e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #132; RMG #1067
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C#CC(38); C3H5(39), C#CC(38); 
+! Estimated using template [Cs_rad;Cds/H2_d_Rrad] for rate rule [C_rad/H2/Ct;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C3H5(39)=C#CC(38)+C#CC(38)                2.277e+06 1.870     -1.110   
+
+! Reaction index: Chemkin #133; RMG #1169
+! Template reaction: H_Abstraction
+! Flux pairs: C3H3(310), C#CC(38); C3H6(18), C3H5(39); 
+! Exact match found for rate rule [Cd/H/NonDeC;C_rad/H2/Ct]
+C3H3(310)+C3H6(18)=C#CC(38)+C3H5(39)                1.040e-02 4.340     19.600   
+
+! Reaction index: Chemkin #134; RMG #1377
+! Template reaction: H_Abstraction
+! Flux pairs: C3H3(310), C#CC(38); C3H6(18), C3H5(40); 
+! Estimated using average of templates [C/H3/Cd;C_rad/H2/Ct] + [C/H3/Cd\H_Cd\H2;C_pri_rad] for rate rule [C/H3/Cd\H_Cd\H2;C_rad/H2/Ct]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C3H6(18)=C3H5(40)+C#CC(38)                4.727e-04 4.545     6.965    
+
+! Reaction index: Chemkin #135; RMG #1407
+! Template reaction: R_Recombination
+! Flux pairs: C3H3(310), C3H4(357); H(6), C3H4(357); 
+! Exact match found for rate rule [Cd_allenic;H_rad]
+C3H3(310)+H(6)=C3H4(357)                            1.000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #136; RMG #1412
+! Template reaction: H_Abstraction
+! Flux pairs: CH3(4), C(3); C3H4(357), C3H3(310); 
+! Exact match found for rate rule [Cd_Cdd/H2;C_methyl]
+! Multiplied by reaction path degeneracy 4
+C3H4(357)+CH3(4)=C3H3(310)+C(3)                     1.548e-01 4.340     5.600    
+
+! Reaction index: Chemkin #137; RMG #1417
+! Template reaction: H_Abstraction
+! Flux pairs: C2H5(5), ethane(1); C3H4(357), C3H3(310); 
+! Estimated using template [Cd_Cdd/H2;C_rad/H2/Cs] for rate rule [Cd_Cdd/H2;C_rad/H2/Cs\H3]
+! Multiplied by reaction path degeneracy 4
+C3H4(357)+C2H5(5)=C3H3(310)+ethane(1)               2.180e-02 4.340     5.900    
+
+! Reaction index: Chemkin #138; RMG #1418
+! Template reaction: H_Abstraction
+! Flux pairs: H(6), H2(12); C3H4(357), C3H3(310); 
+! Exact match found for rate rule [Cd_Cdd/H2;H_rad]
+! Multiplied by reaction path degeneracy 4
+C3H4(357)+H(6)=C3H3(310)+H2(12)                     6.520e+00 4.340     3.500    
+
+! Reaction index: Chemkin #139; RMG #1419
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C2H5(5), C2H4(8); 
+! Exact match found for rate rule [Cd_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C2H5(5)=C3H4(357)+C2H4(8)                 4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #140; RMG #1433
+! Template reaction: H_Abstraction
+! Flux pairs: C2H3(13), C2H4(8); C3H4(357), C3H3(310); 
+! Estimated using template [Cd_Cdd/H2;Cd_pri_rad] for rate rule [Cd_Cdd/H2;Cd_Cd\H2_pri_rad]
+! Multiplied by reaction path degeneracy 4
+C3H4(357)+C2H3(13)=C3H3(310)+C2H4(8)                1.668e-01 4.340     1.000    
+
+! Reaction index: Chemkin #141; RMG #1436
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C2H3(13), C#C(25); 
+! Estimated using template [Y_rad;Cds/H2_d_Rrad] for rate rule [Cd_pri_rad;Cds/H2_d_Crad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C2H3(13)=C3H4(357)+C#C(25)                7.332e+06 1.885     -1.120   
+
+! Reaction index: Chemkin #142; RMG #1445
+! Template reaction: H_Abstraction
+! Flux pairs: C3H5(32), C3H6(18); C3H4(357), C3H3(310); 
+! Estimated using template [Cd_Cdd/H2;Cd_pri_rad] for rate rule [Cd_Cdd/H2;Cd_Cd\H\Cs_pri_rad]
+! Multiplied by reaction path degeneracy 4
+C3H4(357)+C3H5(32)=C3H3(310)+C3H6(18)               1.668e-01 4.340     1.000    
+
+! Reaction index: Chemkin #143; RMG #1472
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C4H7(28), C4H6(30); 
+! Estimated using template [Cd_pri_rad;Cpri_Rrad] for rate rule [Cd_pri_rad;C/H2/De_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C4H7(28)=C3H4(357)+C4H6(30)               2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #144; RMG #1473
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C4H7(52), C4H6(30); 
+! Estimated using template [Cd_pri_rad;Cmethyl_Csrad] for rate rule [Cd_pri_rad;Cmethyl_Csrad/H/Cd]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C4H7(52)=C3H4(357)+C4H6(30)               4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #145; RMG #1502
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H7(14), C3H6(18); 
+! Exact match found for rate rule [Cd_pri_rad;C/H2/Nd_Csrad]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C3H7(14)=C3H4(357)+C3H6(18)               2.420e+12 0.000     0.000    
+
+! Reaction index: Chemkin #146; RMG #1503
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H7(19), C3H6(18); 
+! Exact match found for rate rule [Cd_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 6
+C3H3(310)+C3H7(19)=C3H4(357)+C3H6(18)               9.120e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #147; RMG #1513
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H5(39), C#CC(38); 
+! Estimated using template [C_pri_rad;Cmethyl_Rrad] for rate rule [C_rad/H2/Ct;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C3H5(39)=C3H4(357)+C#CC(38)               3.451e+13 -0.233    -0.043   
+
+! Reaction index: Chemkin #148; RMG #1514
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H5(40), C#CC(38); 
+! Estimated using template [C_pri_rad;Cdpri_Csrad] for rate rule [C_rad/H2/Ct;Cdpri_Csrad]
+C3H3(310)+C3H5(40)=C3H4(357)+C#CC(38)               2.851e+11 0.000     6.000    
+
+! Reaction index: Chemkin #149; RMG #1517
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H5(32), C#CC(38); 
+! Estimated using template [Y_rad;CH_d_Rrad] for rate rule [Cd_pri_rad;Cds/H/NonDe_d_Rrad]
+C3H3(310)+C3H5(32)=C3H4(357)+C#CC(38)               3.224e+06 1.902     -1.131   
+
+! Reaction index: Chemkin #150; RMG #1528
+! Template reaction: H_Abstraction
+! Flux pairs: C3H6(18), C3H5(39); C3H3(310), C3H4(357); 
+! Exact match found for rate rule [Cd/H/NonDeC;Cd_Cdd_rad/H]
+C3H3(310)+C3H6(18)=C3H4(357)+C3H5(39)               2.300e-02 4.340     22.040   
+
+! Reaction index: Chemkin #151; RMG #1537
+! Template reaction: H_Abstraction
+! Flux pairs: C3H5(40), C3H6(18); C3H4(357), C3H3(310); 
+! Estimated using template [Cd_Cdd/H2;C_rad/H2/Cd] for rate rule [Cd_Cdd/H2;C_rad/H2/Cd\H_Cd\H2]
+! Multiplied by reaction path degeneracy 4
+C3H4(357)+C3H5(40)=C3H3(310)+C3H6(18)               1.088e-01 4.340     14.500   
+
+! Reaction index: Chemkin #152; RMG #1542
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H5(39), C3H4(357); 
+! Estimated using template [Cd_pri_rad;Cmethyl_Rrad] for rate rule [Cd_pri_rad;Cmethyl_Cdrad]
+! Multiplied by reaction path degeneracy 3
+C3H3(310)+C3H5(39)=C3H4(357)+C3H4(357)              4.560e+14 -0.700    0.000    
+
+! Reaction index: Chemkin #153; RMG #1543
+! Template reaction: Disproportionation
+! Flux pairs: C3H3(310), C3H4(357); C3H5(40), C3H4(357); 
+! Exact match found for rate rule [Cd_pri_rad;Cdpri_Csrad]
+C3H3(310)+C3H5(40)=C3H4(357)+C3H4(357)              2.410e+12 0.000     6.000    
+
+! Reaction index: Chemkin #154; RMG #1835
+! Template reaction: H_Abstraction
+! Flux pairs: C3H3(310), C#CC(38); C3H4(357), C3H3(310); 
+! Exact match found for rate rule [Cd_Cdd/H2;C_rad/H2/Ct]
+! Multiplied by reaction path degeneracy 4
+C3H3(310)+C3H4(357)=C3H3(310)+C#CC(38)              5.560e-02 4.340     10.700   
+
+! Reaction index: Chemkin #155; RMG #1628
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C#C(25), C5H5(550); C3H3(310), C5H5(550); 
+! Matched reaction 46 C2H2 + C3H3 <=> C5H5-2 in R_Addition_MultipleBond/training
+C3H3(310)+C#C(25)=C5H5(550)                         1.270e+06 2.150     10.400   
+
+! Reaction index: Chemkin #156; RMG #1588
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H4(8), C5H7(535); C3H3(310), C5H7(535); 
+! Exact match found for rate rule [Cds-HH_Cds-HH;CsJ-CtHH]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C2H4(8)=C5H7(535)                         1.892e+04 2.410     9.350    
+
+! Reaction index: Chemkin #157; RMG #2289
+! Template reaction: Intra_R_Add_Endocyclic
+! Flux pairs: C5H7(535), C5H7(806); 
+! Estimated using template [R5_SS_T;triplebond_intra_H;radadd_intra] for rate rule [R5_SS_T;triplebond_intra_H;radadd_intra_cs2H]
+C5H7(535)=C5H7(806)                                 3.470e+11 0.150     14.000   
+
+! Reaction index: Chemkin #158; RMG #1420
+! Template reaction: 1,4_Linear_birad_scission
+! Flux pairs: C5H8(470), C2H4(8); C5H8(470), C3H4(357); 
+! Exact match found for rate rule [RJJ]
+! Multiplied by reaction path degeneracy 2
+C5H8(470)=C3H4(357)+C2H4(8)                         1.000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #159; RMG #1724
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C4H6(30), C7H9(588); C3H3(310), C7H9(588); 
+! Estimated using template [Cds-HH_Cds-CdH;CJ] for rate rule [Cds-HH_Cds-CdH;CdsJ=Cdd]
+! Multiplied by reaction path degeneracy 2
+C3H3(310)+C4H6(30)=C7H9(588)                        1.023e+04 2.522     0.109    
+
+! Reaction index: Chemkin #160; RMG #337
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: CH3(4), C5H9(109); C4H6(30), C5H9(109); 
+! Exact match found for rate rule [Cds-HH_Cds-CdH;CsJ-HHH]
+! Multiplied by reaction path degeneracy 2
+CH3(4)+C4H6(30)=C5H9(109)                           4.720e+04 2.410     2.520    
+
+END
+
