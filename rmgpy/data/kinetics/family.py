@@ -356,7 +356,7 @@ class KineticsFamily(Database):
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     `ownReverse`        `Boolean`                       It's its own reverse?
     'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
-    `treeDistances`     numpy.ndarray                   The default distance from parent along each tree
+    `treeDistances`     dict                            The default distance from parent along each tree, if not set default is 1 for every tree
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -568,15 +568,14 @@ class KineticsFamily(Database):
         toplabels = [i.label for i in self.groups.top]
         
         assert len(toplabels) == len(treeDistances), 'treeDistances does not have the same number of entries as there are top nodes in the family'
-        
+
         for entryName,entry in self.groups.entries.iteritems():
             topentry = entry
             while not (topentry.parent is None): #get the top for the tree entry is in
                 topentry = topentry.parent
-            if topentry.label in toplabels: #not exactly sure where the ones that don't match come from, they aren't in the trees, so this should be ok
-                ind = toplabels.index(topentry.label)
+            if topentry.label in toplabels: #filtering out product nodes
                 if entry.nodalDistance is None:
-                    entry.nodalDistance = treeDistances[ind]
+                    entry.nodalDistance = treeDistances[topentry.label]
                 
     def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
@@ -633,10 +632,10 @@ class KineticsFamily(Database):
                 entry.item = reaction
         self.depositories = []
         
+        toplabels = [i.label for i in self.groups.top]
         if self.treeDistances is None:
-            self.treeDistances = np.ones(len(self.groups.top))
-        else:
-            self.treeDistances = np.array(self.treeDistances,np.float64)
+            self.treeDistances = {topentry:1 for topentry in toplabels}
+
         self.distributeTreeDistances()
             
         if depositoryLabels=='all':
