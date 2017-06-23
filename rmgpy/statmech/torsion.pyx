@@ -514,14 +514,15 @@ cdef class HinderedRotor(Torsion):
         cdef numpy.ndarray[numpy.float64_t,ndim=2] A, fourier
         cdef numpy.ndarray[numpy.float64_t,ndim=1] b, fit
         cdef double phi, value, V0
-        cdef int N, i, m, numterms
+        cdef int N, i, m, numterms, maxterms
         numterms = 6
         cdef bint NegativeBarrier
         NegativeBarrier=True
         # numterms is actually half the number of terms. It is called numterms 
         # because it is the number of terms of either the cosine or sine fit
-        
-        while NegativeBarrier and numterms<18:
+
+        maxterms = floor(len(angle)/3.0)
+        while NegativeBarrier and numterms<maxterms:
             # Fit Fourier series potential
             N = V.shape[0]
             A = numpy.zeros((N+1,2*numterms), numpy.float64)
