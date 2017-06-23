@@ -107,7 +107,8 @@ cdef class ReactionSystem(DASx):
         list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,double toleranceReactionMoveToCore=?,double toleranceReactionInterruptSimulation=?,
+        double toleranceKeepInEdge, double toleranceMoveToCore,  double toleranceInterruptSimulation,
+        double toleranceReactionMoveToCore=?,double toleranceReactionInterruptSimulation=?,
         list pdepNetworks=?,ignoreOverallFluxCriterion=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, 
         sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?,
         filterReactions=?)

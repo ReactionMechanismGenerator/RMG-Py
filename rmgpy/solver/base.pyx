@@ -349,9 +349,10 @@ cdef class ReactionSystem(DASx):
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,double toleranceReactionMoveToCore=numpy.inf, double toleranceReactionInterruptSimulation=numpy.inf,
-        list pdepNetworks=None, ignoreOverallFluxCriterion=False, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
-        sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
+        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
+        double toleranceReactionMoveToCore=numpy.inf, double toleranceReactionInterruptSimulation=numpy.inf,
+        list pdepNetworks=None, ignoreOverallFluxCriterion=False, absoluteTolerance=1e-16, relativeTolerance=1e-8, 
+        sensitivity=False, sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None,
         filterReactions=False):
         """
         Simulate the reaction system with the provided reaction model,
@@ -373,7 +374,7 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates, coreSpeciesProductionRates, coreSpeciesConsumptionRates, totalDivAccumNums
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
         cdef bint terminated
-        cdef object maxSpecies, maxNetwork, 
+        cdef object maxSpecies, maxNetwork
         cdef int i, j, k
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
@@ -559,7 +560,7 @@ cdef class ReactionSystem(DASx):
                                 maxEdgeReactionAccum = reactionRate
                                 maxAccumReactionIndex = index
                     maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                elif len(totalDivAccumNums)>0:
+                else:
                     maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
                     maxAccumReaction = edgeReactions[maxAccumReactionIndex]
                     maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
@@ -701,7 +702,7 @@ cdef class ReactionSystem(DASx):
         Log information about the current maximum species and network rates.
         """
         logging.info('    Characteristic rate: {0:10.4e} mol/m^3*s'.format(charRate))
-        logging.info('    Max(Dif(Ln(accumulation number))):  {0:10.4e}'.format(maxDifLnAccumNum))
+        logging.info('    Dynamics number:  {0:10.4e}'.format(maxDifLnAccumNum))
         if charRate == 0.0:
             logging.info('    {0} rate: {1:10.4e} mol/m^3*s'.format(species, speciesRate))
             if network is not None:

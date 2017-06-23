@@ -622,8 +622,8 @@ class RMG(util.Subject):
                         assert len(objectsToEnlarge)>0
                     elif isinstance(obj,Reaction):
                         potentialSpcs = obj.reactants+obj.products
-                        filterFcn = lambda x: not ((x in self.reactionModel.core.species)) #remove species already in core
-                        neededSpcs = filter(filterFcn,potentialSpcs)
+                        #remove species already in core
+                        neededSpcs = [x for x in potentialSpcs if x not in self.reactionModel.core.species]
                         for i in range(len(neededSpcs)): #remove duplicate species
                             if neededSpcs.index(neededSpcs[i]) != i:
                                 del neededSpcs[i]
