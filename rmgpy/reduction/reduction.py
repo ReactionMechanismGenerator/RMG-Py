@@ -39,6 +39,7 @@ from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.scoop_framework.util import broadcast, get, map_
 from rmgpy.scoop_framework.util import logger as logging
 from rmgpy.rmg.main import RMG
+from rmgpy.rmg.RMGSettings import ModelSettings, SimulatorSettings
 
 from model import ReductionReaction
 from rates import isImportant
@@ -84,18 +85,20 @@ def simulateOne(reactionModel, atol, rtol, reactionSystem):
     pdepNetworks = []
     for source, networks in reactionModel.networkDict.items():
         pdepNetworks.extend(networks)
+        
+    simulatorSettings = SimulatorSettings(atol,rtol)
+    modelSettings = ModelSettings(toleranceKeepInEdge=0,toleranceMoveToCore=1,toleranceInterruptSimulation=1)
     
-    terminated, obj = reactionSystem.simulate(
+    terminated, obj,sspcs,srxns = reactionSystem.simulate(
         coreSpecies = reactionModel.core.species,
         coreReactions = reactionModel.core.reactions,
         edgeSpecies = reactionModel.edge.species,
         edgeReactions = reactionModel.edge.reactions,
-        toleranceKeepInEdge = 0,
-        toleranceMoveToCore = 1,
-        toleranceInterruptSimulation = 1,
+        surfaceSpecies = [],
+        surfaceReactions = [],
         pdepNetworks = pdepNetworks,
-        absoluteTolerance = atol,
-        relativeTolerance = rtol,
+        modelSettings = modelSettings,
+        simulatorSettings=simulatorSettings,
     ) 
 
     assert terminated
@@ -116,7 +119,7 @@ def simulateAll(rmg):
 
     data = []
 
-    atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
+    atol, rtol = rmg.simulatorSettingsList[-1].atol, rmg.simulatorSettingsList[-1].rtol
     for reactionSystem in rmg.reactionSystems:
         data.append(simulateOne(reactionModel, atol, rtol, reactionSystem))
 
@@ -290,10 +293,12 @@ def computeObservables(targets, reactionModel, reactionSystem, atol, rtol):
     - resetting the reaction system, initialing with empty variables
     - running the simulation at the conditions stored in the reaction system
     """
+    simulatorSettings = SimulatorSettings(atol,rtol)
     reactionSystem.initializeModel(\
         reactionModel.core.species, reactionModel.core.reactions,\
         reactionModel.edge.species, reactionModel.edge.reactions, \
-        [], atol, rtol)
+        [],[],[],atol=simulatorSettings.atol,rtol=simulatorSettings.rtol,
+        sens_atol=simulatorSettings.sens_atol, sens_rtol=simulatorSettings.sens_rtol)
 
     #run the simulation:
     simulateOne(reactionModel, atol, rtol, reactionSystem)
@@ -341,11 +346,14 @@ def computeConversion(targetLabel, reactionModel, reactionSystem, atol, rtol):
 
     #reset reaction system variables:
     logging.info('No. of rxns in core reactions: {}'.format(len(reactionModel.core.reactions)))
-
+    
+    simulatorSettings = SimulatorSettings(atol,rtol)
+    
     reactionSystem.initializeModel(\
         reactionModel.core.species, reactionModel.core.reactions,\
         reactionModel.edge.species, reactionModel.edge.reactions, \
-        [], atol, rtol)
+        [],[],[],atol=simulatorSettings.atol,rtol=simulatorSettings.rtol,
+        sens_atol=simulatorSettings.sens_atol,sens_rtol=simulatorSettings.sens_rtol)
 
     #get the initial moles:
     y0 = reactionSystem.y.copy()
@@ -378,7 +386,7 @@ def reduceModel(tolerance, targets, reactionModel, rmg, reactionSystemIndex):
     #re-compute observables: 
     observables = computeObservables(targets, rmg.reactionModel,\
      rmg.reactionSystems[reactionSystemIndex],\
-     rmg.absoluteTolerance, rmg.relativeTolerance)
+     rmg.simulatorSettingsList[-1].atol, rmg.simulatorSettingsList[-1].rtol)
 
     #reset the reaction model to its original state:
     rmg.reactionModel.core.reactions = originalReactions

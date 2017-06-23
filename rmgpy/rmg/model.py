@@ -71,15 +71,15 @@ class Species(rmgpy.species.Species):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, coreSizeAtCreation=0):
+                 energyTransferModel=None, reactive=True, props=None, creationIteration=0):
         rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, energyTransferModel, reactive, props)
-        self.coreSizeAtCreation = coreSizeAtCreation
+        self.creationIteration = creationIteration
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props,self.creationIteration),)
 
 ################################################################################
 
@@ -92,7 +92,7 @@ class ReactionModel:
     def __init__(self, species=None, reactions=None):
         self.species = species or []
         self.reactions = reactions or []
-    
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -209,6 +209,9 @@ class CoreEdgeReactionModel:
             self.edge = ReactionModel()
         else:
             self.edge = edge
+        
+        self.surfaceSpecies = []
+        self.surfaceReactions = []
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
@@ -230,6 +233,7 @@ class CoreEdgeReactionModel:
         self.kineticsEstimator = 'group additivity'
         self.indexSpeciesDict = {}
         self.saveEdgeSpecies = False
+        self.iteration = 0
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -323,7 +327,7 @@ class CoreEdgeReactionModel:
         except AttributeError, e:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
-        spec.coreSizeAtCreation = len(self.core.species)
+        spec.creationIteration = self.iteration
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
@@ -675,7 +679,9 @@ class CoreEdgeReactionModel:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks()
             logging.info('')
-            
+        
+        
+                    
         # Check new core and edge reactions for Chemkin duplicates
         # The same duplicate reaction gets brought into the core
         # at the same time, so there is no danger in checking all of the edge.
@@ -698,7 +704,7 @@ class CoreEdgeReactionModel:
             newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
             reactEdge=reactEdge,
         )
-
+                        
         logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
@@ -997,13 +1003,12 @@ class CoreEdgeReactionModel:
 
         ineligibleSpecies = []     # A list of the species which are not eligible for pruning, for any reason
 
-        numCoreSpecies = len(self.core.species)
         numEdgeSpecies = len(self.edge.species)
-
+        iteration = self.iteration
         # All edge species that have not existed for more than two enlarge
         # iterations are ineligible for pruning
         for spec in self.edge.species:
-            if numCoreSpecies - spec.coreSizeAtCreation <= minSpeciesExistIterationsForPrune:
+            if iteration - spec.creationIteration <= minSpeciesExistIterationsForPrune:
                 ineligibleSpecies.append(spec)
 
         # Get the maximum species rates (and network leak rates)
@@ -1097,7 +1102,8 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reactionSystems
         for reactionSystem in reactionSystems:
-            reactionSystem.speciesIndex.pop(spec)
+            if spec in reactionSystem.speciesIndex:
+                reactionSystem.speciesIndex.pop(spec)
 
             # identify any reactions it's involved in
             rxnList = []

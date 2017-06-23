@@ -31,6 +31,7 @@
 import logging
 import quantities
 import os
+import numpy
 
 from rmgpy import settings
 
@@ -39,7 +40,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
-
+from rmgpy.rmg.RMGSettings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
 from rmgpy.scoop_framework.util import broadcast, get
@@ -224,10 +225,7 @@ def liquidReactor(temperature,
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
-    rmg.absoluteTolerance = atol
-    rmg.relativeTolerance = rtol
-    rmg.sensitivityAbsoluteTolerance = sens_atol
-    rmg.sensitivityRelativeTolerance = sens_rtol
+    rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
@@ -235,23 +233,32 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False):
+def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
+          toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
+          toleranceMoveEdgeReactionToSurfaceInterrupt=None,
+          toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
+          maxNumSpecies=None,maxNumObjsPerIter=1,maxGibbsFreeEnergyPerRT=numpy.inf,dynamicsTimeScale=(0.0,'sec')):
     """
-    How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
+    How to generate the model. `toleranceMoveToCore` must be specified. 
+    toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
+    by default this criterion is turned off
+    Other parameters are optional and control the pruning.
+    ignoreOverallFluxCriterion=True will cause the toleranceMoveToCore to be only applied
+    to the pressure dependent network expansion and not movement of species from edge to core
     """
     if toleranceMoveToCore is None:
         raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
+    
+    rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
+          toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
+          toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
+          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, 
+          maxNumSpecies, maxNumObjsPerIter, maxGibbsFreeEnergyPerRT, Quantity(dynamicsTimeScale)))
 
-    rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
-    rmg.fluxToleranceMoveToCore = toleranceMoveToCore
-    rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
-    rmg.maximumEdgeSpecies = maximumEdgeSpecies
-    rmg.minCoreSizeForPrune = minCoreSizeForPrune
-    rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
-    rmg.filterReactions = filterReactions
-
+    
 def quantumMechanics(
                     software,
                     method,
