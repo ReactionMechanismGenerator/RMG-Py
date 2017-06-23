@@ -31,6 +31,7 @@
 import logging
 import quantities
 import os
+import numpy
 
 from rmgpy import settings
 
@@ -235,22 +236,30 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False):
+def model(toleranceMoveToCore=None, toleranceMoveReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, toleranceReactionInterruptSimulation=numpy.inf, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
     """
-    How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
+    How to generate the model. `toleranceMoveToCore` must be specified. 
+    toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
+    by default this criterion is turned off
+    Other parameters are optional and control the pruning.
+    ignoreOverallFluxCriterion=True will cause the toleranceMoveToCore to be only applied
+    to the pressure dependent network expansion and not movement of species from edge to core
     """
     if toleranceMoveToCore is None:
         raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
-
+    
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
+    rmg.reactionToleranceMoveToCore = toleranceMoveReactionToCore
+    rmg.reactionToleranceInterrupt = toleranceReactionInterruptSimulation
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
     rmg.minCoreSizeForPrune = minCoreSizeForPrune
     rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
     rmg.filterReactions = filterReactions
+    rmg.ignoreOverallFluxCriterion=ignoreOverallFluxCriterion
 
 def quantumMechanics(
                     software,
