@@ -1239,13 +1239,21 @@ class ThermoDatabase(object):
         
         Returns a tuple: (ThermoData, library, entry)  or None.
         """
+        match = None
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)
                     findCp0andCpInf(species, thermoData)
-                    return (thermoData, library, entry)
-        return None
+                    match = (thermoData, library, entry)
+                    break
+            if match is not None:
+                break
+        if match is not None:
+            # Move the matched molecule to the first position in the list
+            species.molecule.remove(molecule)
+            species.molecule.insert(0, molecule)
+        return match
 
     def getThermoDataFromGroups(self, species):
         """
