@@ -476,10 +476,10 @@ class RMG(util.Subject):
             # This is necessary so that the PDep algorithm can identify the bath gas            
             for spec in self.initialSpecies:
                 if not spec.reactive:
-                    self.reactionModel.enlarge(spec)
+                    self.reactionModel.enlargeCore(spec)
             for spec in self.initialSpecies:
                 if spec.reactive:
-                    self.reactionModel.enlarge(spec)
+                    self.reactionModel.enlargeCore(spec)
             
             #chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
             #advantages to write it here: this is run only once (as species indexes does not change over the generation)
@@ -553,7 +553,7 @@ class RMG(util.Subject):
                     rxnSysUnimolecularThreshold=reactionSystem.unimolecularThreshold, 
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
 
-        self.reactionModel.enlarge(reactEdge=True, 
+        self.reactionModel.enlargeEdge(
             unimolecularReact=self.unimolecularReact, 
             bimolecularReact=self.bimolecularReact)
 
@@ -632,7 +632,7 @@ class RMG(util.Subject):
                 
                 # Add objects to enlarge to the core first
                 for objectToEnlarge in objectsToEnlarge:
-                    self.reactionModel.enlarge(objectToEnlarge)
+                    self.reactionModel.enlargeCore(objectToEnlarge)
                 
                 if len(self.reactionModel.core.species) > numCoreSpecies:
                     # If there were core species added, then react the edge
@@ -662,7 +662,7 @@ class RMG(util.Subject):
                     else:
                         self.updateReactionThresholdAndReactFlags()
                     
-                    self.reactionModel.enlarge(reactEdge=True, 
+                    self.reactionModel.enlargeEdge(
                             unimolecularReact=self.unimolecularReact, 
                             bimolecularReact=self.bimolecularReact)
 

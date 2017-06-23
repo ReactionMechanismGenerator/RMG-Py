@@ -520,7 +520,69 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def enlarge(self, newObject=None, reactEdge=False, unimolecularReact=None, bimolecularReact=None):
+    def enlargeEdge(self, unimolecularReact=None, bimolecularReact=None):
+        """
+        Enlarge a reaction model by processing react the core species together
+        to form edge reactions.
+
+        """
+        numOldCoreSpecies = len(self.core.species)
+        numOldCoreReactions = len(self.core.reactions)
+        numOldEdgeSpecies = len(self.edge.species)
+        numOldEdgeReactions = len(self.edge.reactions)
+        reactionsMovedFromEdge = []
+        self.newReactionList = []; self.newSpeciesList = []
+        ### CODE ABOVE HERE IS DUPLICATED IN enlargeCORE()
+
+
+        # We are reacting the edge
+        rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
+        spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
+
+        for rxn, spc in zip(rxns, spcs):
+            rxn = self.inflate(rxn)
+            try:
+                rxn.reverse = self.inflate(rxn.reverse)
+            except AttributeError, e:
+                pass
+            self.processNewReactions([rxn], spc)
+
+        ### THE CODE BELOW HERE IS ALL DUPLICATED (bad) IN enlargeCore()
+        self.generateKineticsForNewReactions(self.newReactionList)
+
+        # Update unimolecular (pressure dependent) reaction networks
+        if self.pressureDependence:
+            # Recalculate k(T,P) values for modified networks
+            self.updateUnimolecularReactionNetworks()
+            logging.info('')
+
+        # Check new core and edge reactions for Chemkin duplicates
+        # The same duplicate reaction gets brought into the core
+        # at the same time, so there is no danger in checking all of the edge.
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+        checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
+        if self.saveEdgeSpecies:
+            for rxn in newEdgeReactions:
+                markDuplicateReaction(rxn, checkedReactions)
+                checkedReactions.append(rxn)
+
+        logging.info('\nAfter reacting core to generate edge reactions')
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            reactionsMovedFromEdge=reactionsMovedFromEdge,
+            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
+        )
+
+        logging.info('')
+
+    def enlargeCore(self, newObject=None):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
         If `newObject` is a
@@ -529,10 +591,6 @@ class CoreEdgeReactionModel:
         with itself and with all other species in the model core. If `newObject`
         is a :class:`rmg.unirxn.network.Network` object, then reactions are
         generated for the species in the network with the largest leak flux.
-
-        If the `reactEdge` flag is `True`, then no newObject is needed,
-        and instead the algorithm proceeds to react the core species together
-        to form edge reactions.
         """
         
         numOldCoreSpecies = len(self.core.species)
@@ -542,99 +600,131 @@ class CoreEdgeReactionModel:
         reactionsMovedFromEdge = []
         self.newReactionList = []; self.newSpeciesList = []
 
-        if reactEdge is False:
-            # We are adding core species 
-            newReactions = []
-            pdepNetwork = None
-            objectWasInEdge = False
-        
-            if isinstance(newObject, Species):
-                
-                newSpecies = newObject
+        # We are adding core species
+        newReactions = []
+        pdepNetwork = None
+        objectWasInEdge = False
 
-                objectWasInEdge = newSpecies in self.edge.species
-                
-                if not newSpecies.reactive:
-                    logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
-                else:
-                    logging.info('Adding species {0} to model core'.format(newSpecies))
-                    display(newSpecies) # if running in IPython --pylab mode, draws the picture!
+        if isinstance(newObject, Species):
 
-                # Add new species
-                reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
+            newSpecies = newObject
 
-            elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
+            objectWasInEdge = newSpecies in self.edge.species
 
-                pdepNetwork, newSpecies = newObject
-                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
-
-                for rxn in newReactions:
-                    rxn = self.inflate(rxn)
-                    try:
-                        rxn.reverse = self.inflate(rxn.reverse)
-                    except AttributeError, e:
-                        pass
-                    
-                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-
+            if not newSpecies.reactive:
+                logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(newObject, newObject.__class__))
+                logging.info('Adding species {0} to model core'.format(newSpecies))
+                display(newSpecies)  # if running in IPython --pylab mode, draws the picture!
 
-            # If there are any core species among the unimolecular product channels
-            # of any existing network, they need to be made included
-            for network in self.networkList:
-                network.updateConfigurations(self)
-                index = 0
-                while index < len(self.core.species):
-                    species = self.core.species[index]
-                    isomers = [isomer.species[0] for isomer in network.isomers]
-                    if species in isomers and species not in network.explored:
-                        network.explored.append(species)
-                        continue
-                    for products in network.products:
-                        products = products.species
-                        if len(products) == 1 and products[0] == species:
-                            newReactions = network.exploreIsomer(species)
-                            for rxn in newReactions:
-                                rxn = self.inflate(rxn)
-                                try:
-                                    rxn.reverse = self.inflate(rxn.reverse)
-                                except AttributeError, e:
-                                    pass
+            # Add new species
+            reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
-                            self.processNewReactions(newReactions, species, network)
-                            network.updateConfigurations(self)
-                            index = 0
-                            break
-                    else:
-                        index += 1
-            
-            if isinstance(newObject, Species) and objectWasInEdge:
-                # moved one species from edge to core
-                numOldEdgeSpecies -= 1
-                # moved these reactions from edge to core
-                numOldEdgeReactions -= len(reactionsMovedFromEdge)
+        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
 
-        else:
-            # We are reacting the edge
+            pdepNetwork, newSpecies = newObject
+            newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
 
-            rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
-            spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
-            
-            for rxn, spc in zip(rxns, spcs):
-                rxn = self.inflate(rxn) 
+            for rxn in newReactions:
+                rxn = self.inflate(rxn)
                 try:
                     rxn.reverse = self.inflate(rxn.reverse)
                 except AttributeError, e:
                     pass
-                self.processNewReactions([rxn], spc)
 
-        ################################################################
-        # Begin processing the new species and reactions
+            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+
+        else:
+            raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(newObject, newObject.__class__))
+
+        # If there are any core species among the unimolecular product channels
+        # of any existing network, they need to be made included
+        for network in self.networkList:
+            network.updateConfigurations(self)
+            index = 0
+            while index < len(self.core.species):
+                species = self.core.species[index]
+                isomers = [isomer.species[0] for isomer in network.isomers]
+                if species in isomers and species not in network.explored:
+                    network.explored.append(species)
+                    continue
+                for products in network.products:
+                    products = products.species
+                    if len(products) == 1 and products[0] == species:
+                        newReactions = network.exploreIsomer(species)
+                        for rxn in newReactions:
+                            rxn = self.inflate(rxn)
+                            try:
+                                rxn.reverse = self.inflate(rxn.reverse)
+                            except AttributeError, e:
+                                pass
+
+                        self.processNewReactions(newReactions, species, network)
+                        network.updateConfigurations(self)
+                        index = 0
+                        break
+                else:
+                    index += 1
+
+        if isinstance(newObject, Species) and objectWasInEdge:
+            # moved one species from edge to core
+            numOldEdgeSpecies -= 1
+            # moved these reactions from edge to core
+            numOldEdgeReactions -= len(reactionsMovedFromEdge)
+
+
+        self.generateKineticsForNewReactions(self.newReactionList)
+
+        # Update unimolecular (pressure dependent) reaction networks
+        if self.pressureDependence:
+            # Recalculate k(T,P) values for modified networks
+            self.updateUnimolecularReactionNetworks()
+            logging.info('')
+
+        # Check new core and edge reactions for Chemkin duplicates
+        # The same duplicate reaction gets brought into the core
+        # at the same time, so there is no danger in checking all of the edge.
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+        checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, checkedReactions)
+            checkedReactions.append(rxn)
+        if self.saveEdgeSpecies:
+            for rxn in newEdgeReactions:
+                markDuplicateReaction(rxn, checkedReactions)
+                checkedReactions.append(rxn)
+
+        if isinstance(newObject, Species):
+            logging.info('\nAfter adding {0!s} to core'.format(newObject))
+        else:
+            logging.info('\nAfter exploring {0!s} in {1!s}'.format(newObject[0], newObject[1]))
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            reactionsMovedFromEdge=reactionsMovedFromEdge,
+            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
+        )
+
+        logging.info('')
+
         
+    def generateKineticsForNewReactions(self, newReactionList):
+        """
+        Generate the kinetics for things in newReactionList.
+        
+        1. Assumes things that already have kinetics (they came from a library)
+        are already OK
+        2. Other things are generated using `self.generateKinetics(reaction)`
+        3. If that returns the reverse, then the reaction is flipped
+        4. ArrheniuEP (Evans Polanyi) ace converted to Arrhenius
+        5. Barrier heights are fixed to ensure match endothermicity, if needed.  
+        """
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
-        for reaction in self.newReactionList:
+        for reaction in newReactionList:
             family = getFamilyLibraryObject(reaction.family)
 
             # If the reaction already has kinetics (e.g. from a library),
@@ -655,8 +745,8 @@ class CoreEdgeReactionModel:
                         reaction.reverse = None
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
-        # self.newReactionList only contains *actually* new reactions, all in the forward direction.
-        for reaction in self.newReactionList:
+        # newReactionList only contains *actually* new reactions, all in the forward direction.
+        for reaction in newReactionList:
             # convert KineticsData to Arrhenius forms
             if isinstance(reaction.kinetics, KineticsData):
                 reaction.kinetics = reaction.kinetics.toArrhenius()
@@ -669,36 +759,6 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 reaction.fixBarrierHeight(forcePositive=True)
             
-        # Update unimolecular (pressure dependent) reaction networks
-        if self.pressureDependence:
-            # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks()
-            logging.info('')
-            
-        # Check new core and edge reactions for Chemkin duplicates
-        # The same duplicate reaction gets brought into the core
-        # at the same time, so there is no danger in checking all of the edge.
-        newCoreReactions = self.core.reactions[numOldCoreReactions:]
-        newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
-        checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
-        from rmgpy.chemkin import markDuplicateReaction
-        for rxn in newCoreReactions:
-            markDuplicateReaction(rxn, checkedReactions)
-            checkedReactions.append(rxn)
-        if self.saveEdgeSpecies:
-            for rxn in newEdgeReactions:
-                markDuplicateReaction(rxn, checkedReactions)
-                checkedReactions.append(rxn)
-        self.printEnlargeSummary(
-            newCoreSpecies=self.core.species[numOldCoreSpecies:],
-            newCoreReactions=self.core.reactions[numOldCoreReactions:],
-            reactionsMovedFromEdge=reactionsMovedFromEdge,
-            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
-            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:],
-            reactEdge=reactEdge,
-        )
-
-        logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """
@@ -874,18 +934,15 @@ class CoreEdgeReactionModel:
                 
         return kinetics, source, entry, isForward
     
-    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None, reactEdge=False):
+    def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies,
+                            newEdgeReactions, reactionsMovedFromEdge=None):
         """
         Output a summary of a model enlargement step to the log. The details of
         the enlargement are passed in the `newCoreSpecies`, `newCoreReactions`,
         `newEdgeSpecies`, and `newEdgeReactions` objects. 
         """
 
-        logging.info('')
-        if reactEdge:
-            logging.info('Summary of Secondary Model Edge Enlargement')
-        else:
-            logging.info('Summary of Model Enlargement')
+        logging.info('Summary of Model Enlargement')
         logging.info('---------------------------------')
 
         logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))

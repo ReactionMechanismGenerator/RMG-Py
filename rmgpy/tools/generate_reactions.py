@@ -144,7 +144,7 @@ def execute(rmg, **kwargs):
     import numpy
     rmg.initialize(**kwargs)
     
-    rmg.reactionModel.enlarge(reactEdge=True,
+    rmg.reactionModel.enlargeEdge(
         unimolecularReact=rmg.unimolecularReact,
         bimolecularReact=rmg.bimolecularReact)
     # Show all core and edge species and reactions in the output
