@@ -132,7 +132,7 @@ class Reaction:
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
-        if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
+        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
         string = string[:-2] + ')'
         return string
@@ -164,15 +164,16 @@ class Reaction:
     def __getDegneneracy(self):
         return self._degeneracy
     def __setDegeneracy(self, new):
-        # find how much to modify the rate
-        if self._degeneracy < 2:
-            degeneracyRatio = new
-        else:
-            degeneracyRatio = (new*1.0) / self._degeneracy
         # modify rate if kinetics exists
         if self.kinetics is not None:
+            if self._degeneracy < 2:
+                degeneracyRatio = new
+            else:
+                degeneracyRatio = (new*1.0) / self._degeneracy
             self.kinetics.changeRate(degeneracyRatio)
-            logging.debug('did not modify A factor when modifying degeneracy since the reaction rate was not set')
+        else:
+            logging.debug('did not modify A factor when modifying degeneracy since' \
+                          'the reaction rate was not set')
         # set new degeneracy
         self._degeneracy = new
     degeneracy = property(__getDegneneracy, __setDegeneracy)
@@ -356,90 +357,25 @@ class Reaction:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(reactants)))
         # If we're here then neither direction matched, so return false
         return False
-        
-    def isIsomorphic(self, other, eitherDirection=True):
+
+    def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
-        or ``False`` if they are different. 
+        or ``False`` if they are different. The comparison involves comparing
+        isomorphism of reactants and products, and doesn't use any kinetic
+        information.
+
         If `eitherDirection=False` then the directions must match.
         """
-        
+
         # Compare reactants to reactants
-        forwardReactantsMatch = False
-        if len(self.reactants) == len(other.reactants) == 1:
-            if self.reactants[0].isIsomorphic(other.reactants[0]):
-                forwardReactantsMatch = True
-        elif len(self.reactants) == len(other.reactants) == 2:
-            if self.reactants[0].isIsomorphic(other.reactants[0]) and self.reactants[1].isIsomorphic(other.reactants[1]):
-                forwardReactantsMatch = True
-            elif self.reactants[0].isIsomorphic(other.reactants[1]) and self.reactants[1].isIsomorphic(other.reactants[0]):
-                forwardReactantsMatch = True
-        elif len(self.reactants) == len(other.reactants) == 3:
-            if (    self.reactants[0].isIsomorphic(other.reactants[0]) and
-                    self.reactants[1].isIsomorphic(other.reactants[1]) and
-                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[0]) and
-                    self.reactants[1].isIsomorphic(other.reactants[2]) and
-                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
-                    self.reactants[1].isIsomorphic(other.reactants[0]) and
-                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
-                    self.reactants[1].isIsomorphic(other.reactants[0]) and
-                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
-                    self.reactants[1].isIsomorphic(other.reactants[2]) and
-                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
-                    self.reactants[1].isIsomorphic(other.reactants[1]) and
-                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
-                forwardReactantsMatch = True
-        elif len(self.reactants) == len(other.reactants):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
+        forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 
+                                    other.reactants,checkIdentical = checkIdentical)
         
         # Compare products to products
-        forwardProductsMatch = False
-        if len(self.products) == len(other.products) == 1:
-            if self.products[0].isIsomorphic(other.products[0]):
-                forwardProductsMatch = True
-        elif len(self.products) == len(other.products) == 2:
-            if self.products[0].isIsomorphic(other.products[0]) and self.products[1].isIsomorphic(other.products[1]):
-                forwardProductsMatch = True
-            elif self.products[0].isIsomorphic(other.products[1]) and self.products[1].isIsomorphic(other.products[0]):
-                forwardProductsMatch = True
-        elif len(self.products) == len(other.products) == 3:
-            if (    self.products[0].isIsomorphic(other.products[0]) and
-                    self.products[1].isIsomorphic(other.products[1]) and
-                    self.products[2].isIsomorphic(other.products[2]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[0]) and
-                    self.products[1].isIsomorphic(other.products[2]) and
-                    self.products[2].isIsomorphic(other.products[1]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[1]) and
-                    self.products[1].isIsomorphic(other.products[0]) and
-                    self.products[2].isIsomorphic(other.products[2]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[2]) and
-                    self.products[1].isIsomorphic(other.products[0]) and
-                    self.products[2].isIsomorphic(other.products[1]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[1]) and
-                    self.products[1].isIsomorphic(other.products[2]) and
-                    self.products[2].isIsomorphic(other.products[0]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[2]) and
-                    self.products[1].isIsomorphic(other.products[1]) and
-                    self.products[2].isIsomorphic(other.products[0]) ):
-                forwardProductsMatch = True
-        elif len(self.products) == len(other.products):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(self.products)))
-        
+        forwardProductsMatch = _isomorphicSpeciesList(self.products, 
+                                    other.products,checkIdentical = checkIdentical)
+
         # Return now, if we can
         if (forwardReactantsMatch and forwardProductsMatch):
             return True
@@ -447,84 +383,16 @@ class Reaction:
             return False
         
         # Compare reactants to products
-        reverseReactantsMatch = False
-        if len(self.reactants) == len(other.products) == 1:
-            if self.reactants[0].isIsomorphic(other.products[0]):
-                reverseReactantsMatch = True
-        elif len(self.reactants) == len(other.products) == 2:
-            if self.reactants[0].isIsomorphic(other.products[0]) and self.reactants[1].isIsomorphic(other.products[1]):
-                reverseReactantsMatch = True
-            elif self.reactants[0].isIsomorphic(other.products[1]) and self.reactants[1].isIsomorphic(other.products[0]):
-                reverseReactantsMatch = True
-        elif len(self.reactants) == len(other.products) == 3:
-            if (    self.reactants[0].isIsomorphic(other.products[0]) and
-                    self.reactants[1].isIsomorphic(other.products[1]) and
-                    self.reactants[2].isIsomorphic(other.products[2]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[0]) and
-                    self.reactants[1].isIsomorphic(other.products[2]) and
-                    self.reactants[2].isIsomorphic(other.products[1]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
-                    self.reactants[1].isIsomorphic(other.products[0]) and
-                    self.reactants[2].isIsomorphic(other.products[2]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
-                    self.reactants[1].isIsomorphic(other.products[0]) and
-                    self.reactants[2].isIsomorphic(other.products[1]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
-                    self.reactants[1].isIsomorphic(other.products[2]) and
-                    self.reactants[2].isIsomorphic(other.products[0]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
-                    self.reactants[1].isIsomorphic(other.products[1]) and
-                    self.reactants[2].isIsomorphic(other.products[0]) ):
-                reverseReactantsMatch = True
-        elif len(self.reactants) == len(other.products):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
+        reverseReactantsMatch = _isomorphicSpeciesList(self.reactants, 
+                                    other.products,checkIdentical = checkIdentical)
 
         # Compare products to reactants
-        reverseProductsMatch = False
-        if len(self.products) == len(other.reactants) == 1:
-            if self.products[0].isIsomorphic(other.reactants[0]):
-                reverseProductsMatch = True
-        elif len(self.products) == len(other.reactants) == 2:
-            if self.products[0].isIsomorphic(other.reactants[0]) and self.products[1].isIsomorphic(other.reactants[1]):
-                reverseProductsMatch = True
-            elif self.products[0].isIsomorphic(other.reactants[1]) and self.products[1].isIsomorphic(other.reactants[0]):
-                reverseProductsMatch = True
-        elif len(self.products) == len(other.reactants) == 3:
-            if (    self.products[0].isIsomorphic(other.reactants[0]) and
-                    self.products[1].isIsomorphic(other.reactants[1]) and
-                    self.products[2].isIsomorphic(other.reactants[2]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[0]) and
-                    self.products[1].isIsomorphic(other.reactants[2]) and
-                    self.products[2].isIsomorphic(other.reactants[1]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[1]) and
-                    self.products[1].isIsomorphic(other.reactants[0]) and
-                    self.products[2].isIsomorphic(other.reactants[2]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[2]) and
-                    self.products[1].isIsomorphic(other.reactants[0]) and
-                    self.products[2].isIsomorphic(other.reactants[1]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[1]) and
-                    self.products[1].isIsomorphic(other.reactants[2]) and
-                    self.products[2].isIsomorphic(other.reactants[0]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[2]) and
-                    self.products[1].isIsomorphic(other.reactants[1]) and
-                    self.products[2].isIsomorphic(other.reactants[0]) ):
-                reverseProductsMatch = True
-        elif len(self.products) == len(other.reactants):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(self.products)))
-        
+        reverseProductsMatch = _isomorphicSpeciesList(self.products, 
+                                    other.reactants,checkIdentical = checkIdentical)
+
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch)
-    
+
     def getEnthalpyOfReaction(self, T):
         """
         Return the enthalpy of reaction in J/mol evaluated at temperature
@@ -1116,12 +984,71 @@ class Reaction:
         other.products = []
         for product in self.products:
             other.products.append(product.copy(deep=True))
+        other.degeneracy = self.degeneracy
         other.kinetics = deepcopy(self.kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
-        other.degeneracy = self.degeneracy
         other.pairs = deepcopy(self.pairs)
         
         return other
 
+def _isomorphicSpeciesList(list1, list2, checkIdentical=False):
+    """
+    This method compares whether lists of species or molecules are isomorphic
+    or identical. It is used for the 'isIsomorphic' method of Reaction class.
+    It likely can be useful elswehere as well:
+        
+        list1 - list of species/molecule objects of reaction1
+        list2 - list of species/molecule objects of reaction2
+        checkIdentical - if true, uses the 'isIdentical' comparison
+                         if false, uses the 'isIsomorphic' comparison
+                         
+    Returns True if the lists are isomorphic/identical & false otherwise
+    """
+
+    def comparison_method(other1, other2, checkIdentical=checkIdentical):
+        if checkIdentical:
+            return other1.isIdentical(other2)
+        else:
+            return other1.isIsomorphic(other2)
+
+    if len(list1) == len(list2) == 1:
+        if comparison_method(list1[0], list2[0]):
+            return True
+    elif len(list1) == len(list2) == 2:
+        if comparison_method(list1[0], list2[0]) \
+                    and comparison_method(list1[1], list2[1]):
+            return True
+        elif comparison_method(list1[0], list2[1]) \
+                    and comparison_method(list1[1], list2[0]):
+            return True
+    elif len(list1) == len(list2) == 3:
+        if (    comparison_method(list1[0], list2[0]) and
+                comparison_method(list1[1], list2[1]) and
+                comparison_method(list1[2], list2[2]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[0]) and
+                comparison_method(list1[1], list2[2]) and
+                comparison_method(list1[2], list2[1]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[1]) and
+                comparison_method(list1[1], list2[0]) and
+                comparison_method(list1[2], list2[2]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[2]) and
+                comparison_method(list1[1], list2[0]) and
+                comparison_method(list1[2], list2[1]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[1]) and
+                comparison_method(list1[1], list2[2]) and
+                comparison_method(list1[2], list2[0]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[2]) and
+                comparison_method(list1[1], list2[1]) and
+                comparison_method(list1[2], list2[0]) ):
+            return True
+    elif len(list1) == len(list2):
+        raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
+    # nothing found
+    return False

@@ -68,7 +68,19 @@ class TestNASA(unittest.TestCase):
             E0 = (self.E0, "J/mol"),
             comment = self.comment,
         )
-    
+    def tearDown(self):
+        """
+        Reset the database & liquid parameters for solution
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        
+        from rmgpy.rmg.model import Species as DifferentSpecies
+        DifferentSpecies.solventData = None
+        DifferentSpecies.solventName = None
+        DifferentSpecies.solventStructure = None
+        DifferentSpecies.solventViscosity = None
+        
     def test_polyLow(self):
         """
         Test that the NASA low-temperature polynomial was properly set.

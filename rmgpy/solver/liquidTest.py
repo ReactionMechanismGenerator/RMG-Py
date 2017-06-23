@@ -335,7 +335,7 @@ class LiquidReactorCheck(unittest.TestCase):
         
     def tearDown(self):
         """
-        Reset the database
+        Reset the database & liquid parameters for solution
         """
         global diffusionLimiter        
         from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -344,4 +344,8 @@ class LiquidReactorCheck(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-        
+        from rmgpy.rmg.model import Species as DifferentSpecies
+        DifferentSpecies.solventData = None
+        DifferentSpecies.solventName = None
+        DifferentSpecies.solventStructure = None
+        DifferentSpecies.solventViscosity = None

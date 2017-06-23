@@ -52,3 +52,7 @@ class SensitivityTest(unittest.TestCase):
         
         os.remove(simfile)
         os.remove(sensfile)
+        
+    def tearDown(self):
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None

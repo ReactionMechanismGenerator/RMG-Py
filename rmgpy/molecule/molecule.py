@@ -668,6 +668,7 @@ class Molecule(Graph):
     ======================= =========== ========================================
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
+    `props`                 ``dict``    A list of properties describing the state of the molecule.
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `SMILES` or
@@ -1886,10 +1887,29 @@ class Molecule(Graph):
 
     def assignAtomIDs(self):
         """
-        Assigns an ID number to every atom in the molecule for tracking purposes.
+        Assigns an index to every atom in the molecule for tracking purposes.
+        Uses entire range of cython's integer values to reduce chance of duplicates
         """
+
+        global atom_id_counter
+
         for i, atom in enumerate(self.atoms):
-            atom.id = i
+            atom.id = atom_id_counter
+            atom_id_counter += 1
+            if atom_id_counter == 2**15:
+                atom_id_counter = -2**15
+
+    def atomIDValid(self):
+        """
+        Checks to see if the atom IDs are valid in this structure
+        """
+        num_atoms = len(self.atoms)
+        num_IDs = len(set([atom.id for atom in self.atoms]))
+
+        if num_atoms == num_IDs:
+            # all are unique
+            return True
+        return False
 
     def isIdentical(self, other):
         """
@@ -1923,6 +1943,7 @@ class Molecule(Graph):
         else:
             # The molecules don't have the same set of indices, so they are not identical
             return False
+
     def getNthNeighbor(self, startingAtoms, distanceList, ignoreList = None, n=1):
         '''
         Recursively get the Nth nonHydrogen neighbors of the startingAtoms, and return them in a list.
@@ -1948,3 +1969,8 @@ class Molecule(Graph):
             else:
                 neighbors = self.getNthNeighbor(neighbors, distanceList, ignoreList, n+1)
         return neighbors
+
+
+# this variable is used to name atom IDs so that there are as few conflicts by 
+# using the entire space of integer objects
+atom_id_counter = -2**15

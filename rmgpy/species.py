@@ -147,6 +147,8 @@ class Species(object):
         """
         Return a string representation of the species, in the form 'label(id)'.
         """
+        if not self.label:
+            self.label = self.molecule[0].toSMILES()
         if self.index == -1: return self.label
         else: return '{0}({1:d})'.format(self.label, self.index)
 
@@ -162,7 +164,7 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
-    def generateResonanceIsomers(self, keepIsomorphic=False):
+    def generateResonanceIsomers(self, keepIsomorphic=True):
         """
         Generate all of the resonance isomers of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
@@ -170,7 +172,8 @@ class Species(object):
         resonance isomers have already been generated.
         """
         if len(self.molecule) == 1:
-            self.molecule[0].assignAtomIDs()
+            if not self.molecule[0].atomIDValid():
+                self.molecule[0].assignAtomIDs()
             self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic)
     
     def isIsomorphic(self, other):
@@ -190,6 +193,25 @@ class Species(object):
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
+
+    def isIdentical(self, other):
+        """
+        Return ``True`` if at least one molecule of the species is identical to `other`,
+        which can be either a :class:`Molecule` object or a :class:`Species` object.
+        """
+        if isinstance(other, Molecule):
+            for molecule in self.molecule:
+                if molecule.isIdentical(other):
+                    return True
+        elif isinstance(other, Species):
+                for molecule1 in self.molecule:
+                    for molecule2 in other.molecule:
+                        if molecule1.isIdentical(molecule2):
+                            return True
+        else:
+            raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
+        return False
+
     
     def fromAdjacencyList(self, adjlist):
         """
