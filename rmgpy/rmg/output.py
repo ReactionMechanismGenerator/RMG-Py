@@ -605,6 +605,28 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
             except IndexError:
                 raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
     
+    #Add pictures for species that may not have different thermo but are in reactions with different kinetics
+    allRxns = [rxnTuple[0] for rxnTuple in commonReactions] + uniqueReactions1 + uniqueReactions2
+    allSpecies = []
+    for rxn in allRxns:
+        for prod in rxn.products:
+            allSpecies.append(prod)
+        for rxt in rxn.reactants:
+            allSpecies.append(rxt)
+    allSpecies = set(allSpecies)
+
+    for spec in allSpecies:
+        match = re_index.search(spec.label)
+        if match:
+            spec.index = int(match.group(0)[1:-1])
+            spec.label = spec.label[0:match.start()]
+        # Draw molecules if necessary
+        fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec))
+        if not os.path.exists(fstr):
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
 
 
     familyCount1 = {}
