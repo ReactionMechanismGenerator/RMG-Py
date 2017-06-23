@@ -109,6 +109,7 @@ class TestDiffusionLimited(unittest.TestCase):
         """
         effective_rate = diffusionLimiter.getEffectiveRate(self.bi_uni_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
+        self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.bi_uni_reaction])
 
 ################################################################################
 
