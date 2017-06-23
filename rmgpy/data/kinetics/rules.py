@@ -600,9 +600,10 @@ class KineticsRules(Database):
         minNorm = numpy.inf
         savedKinetics = []
         
-        if not(entry is None) and entry.data:
+        if entry is not None and entry.data:
             savedKinetics = [[deepcopy(entry.data),template]]
             templateList = []
+            minNorm = 0
             
         while len(templateList) > 0:
             
@@ -634,7 +635,7 @@ class KineticsRules(Database):
             distanceList = []
             templateList = []
             
-            if not numpy.isinf(minNorm): #filter out stuff too large to be used
+            if minNorm > 0:  #filter out stuff too large to be used
                 toDelete = []
                 norms = [numpy.linalg.norm(d) for d in distanceList0]
                 for i in range(len(templateList0)):
