@@ -31,6 +31,7 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.statmech.conformer cimport Conformer
 from rmgpy.kinetics.model cimport TunnelingModel
+from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 ################################################################################
 
@@ -47,8 +48,9 @@ cdef class Species:
     cdef public object energyTransferModel
     cdef public dict props
     cdef public str aug_inchi
+    cdef public short symmetryNumber
     
-    cpdef generateResonanceIsomers(self)
+    cpdef generateResonanceIsomers(self,bint keepIsomorphic=?)
     
     cpdef bint isIsomorphic(self, other)
     

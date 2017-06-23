@@ -850,12 +850,22 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
 
             # Bond type(s)
             if group:
+                code = '[{0}]'
                 if len(bond.order) == 1:
-                    adjlist += bond.getOrderStr()[0]
-                else:
-                    adjlist += '[{0}]'.format(','.join(bond.getOrderStr()))
+                    code = '{0}'
+                # preference is for string representation, backs down to number
+                # numbers if doesn't work
+                try:
+                    adjlist += code.format(','.join(bond.getOrderStr()))
+                except ValueError:
+                    adjlist += code.format(','.join(str(bond.getOrderNum())))
             else:
-                adjlist += bond.getOrderStr()
+                # preference is for string representation, backs down to number
+                # numbers if doesn't work
+                try:
+                    adjlist += bond.getOrderStr()
+                except ValueError:
+                    adjlist += str(bond.getOrderNum())
             adjlist += '}'
 
         # Each atom begins on a new line
