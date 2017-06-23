@@ -521,7 +521,7 @@ cdef class HinderedRotor(Torsion):
         # numterms is actually half the number of terms. It is called numterms 
         # because it is the number of terms of either the cosine or sine fit
 
-        maxterms = floor(len(angle)/3.0)
+        maxterms = numpy.floor(len(angle)/3.0)
         while NegativeBarrier and numterms<maxterms:
             # Fit Fourier series potential
             N = V.shape[0]
@@ -549,7 +549,11 @@ cdef class HinderedRotor(Torsion):
                 V0 -= fourier[0,k] * (k+1) * (k+1)
             if V0 < 0:
                 NegativeBarrier=True
+                logging.warning("Fourier fit for hindered rotor gave a negative barrier when fit with {0} terms, retrying with {1} terms...".format(2*numterms,2*numterms+4))
                 numterms = numterms+2;
+        if V0< 0:
+            logging.error("Fourier fit for hindered rotor gave a negative barrier on final try with {0} terms".format(numterms*2))
+
         self.barrier = None
         return self
 
