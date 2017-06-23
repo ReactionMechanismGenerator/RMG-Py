@@ -473,9 +473,8 @@ class KineticsRules(Database):
                 childrenList.extend(getAllCombinations(childrenSet))
                 distanceList.extend([k.nodalDistance for k in parent.children])
                 
-        if distanceList != []:
-            minDist = min(distanceList) #average the minimum distance neighbors
-        
+        if distanceList != []: #average the minimum distance neighbors
+            minDist = min(distanceList) 
             closeChildrenList = [childrenList[i] for i in xrange(len(childrenList)) if distanceList[i]==minDist]
         else:
             closeChildrenList = []
@@ -609,8 +608,7 @@ class KineticsRules(Database):
             
             kineticsList = []
             distances = []
-            for i in xrange(len(templateList)):
-                t = templateList[i]
+            for i,t in enumerate(templateList):
                 entry = self.getRule(t)
                 if entry is None: 
                     continue
@@ -630,8 +628,8 @@ class KineticsRules(Database):
                     minNorm = newMinNorm
                     savedKinetics = [pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)]
                 
-            templateList0 = templateList
-            distanceList0 = distanceList
+            templateList0 = templateList #keep the old template list
+            distanceList0 = distanceList #keep thge old distance list
             distanceList = []
             templateList = []
             
@@ -647,8 +645,7 @@ class KineticsRules(Database):
                     del distanceList0[k]
                         
             
-            for i in xrange(len(templateList0)):
-                template0 = templateList0[i]
+            for i,template0 in enumerate(templateList0):
                 for index in xrange(len(template0)):
                     if not template0[index].parent: # We're at the top-level node in this subtreee
                         continue

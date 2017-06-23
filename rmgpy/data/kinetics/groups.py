@@ -72,6 +72,9 @@ class KineticsGroups(Database):
         return '<KineticsGroups "{0}">'.format(self.label)
 
     def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',nodalDistance=None):
+        """
+        nodalDistance is the distance between a given entry and its parent specified by a float
+        """
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
