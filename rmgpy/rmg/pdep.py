@@ -277,6 +277,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             raise Exception('Attempted to explore isomer {0}, but that species not found in product channels.'.format(isomer))
 
         logging.info('Exploring isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
+
+        for mol in isomer.molecule:
+            mol.update()
+
         self.explored.append(isomer)
         self.isomers.append(product)
         self.products.remove(product)
