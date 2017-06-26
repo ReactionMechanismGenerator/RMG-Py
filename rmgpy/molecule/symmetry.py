@@ -99,6 +99,9 @@ def calculateAtomSymmetryNumber(molecule, atom):
         elif double == 2:
             # Two double bonds
             if count == [2]: symmetryNumber *= 2
+        # for nitrogen resonance hybrids
+        elif single == 0:
+            if count == [2]: symmetryNumber *=2
     elif atom.radicalElectrons == 1:
         if single == 3:
             # Three single bonds
@@ -109,11 +112,6 @@ def calculateAtomSymmetryNumber(molecule, atom):
         if single == 2:
             # Two single bonds
             if count == [2]:
-                symmetryNumber *= 2
-    
-    if atom.isNitrogen():
-        for groupN in groups:
-            if groupN.toSMILES() == "[N+](=O)[O-]":
                 symmetryNumber *= 2
     
     return symmetryNumber
