@@ -257,10 +257,13 @@ class Species(object):
         from rmgpy.chemkin import getSpeciesIdentifier
         return getSpeciesIdentifier(self)
         
-    def toCantera(self):
+    def toCantera(self, useChemkinIdentifier = True):
         """
         Converts the RMG Species object to a Cantera Species object
         with the appropriate thermo data.
+
+        If useChemkinIdentifier is set to False, the species label is used
+        instead. Be sure that species' labels are unique when setting it False.
         """
         import cantera as ct
         
@@ -273,8 +276,10 @@ class Species(object):
                 elementDict[symbol] = 1
             else:
                 elementDict[symbol] += 1
-        
-        ctSpecies = ct.Species(self.toChemkin(), elementDict)
+        if useChemkinIdentifier:
+            ctSpecies = ct.Species(self.toChemkin(), elementDict)
+        else:
+            ctSpecies = ct.Species(self.label, elementDict)
         if self.thermo:
             try:
                 ctSpecies.thermo = self.thermo.toCantera()

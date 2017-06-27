@@ -192,10 +192,13 @@ class Reaction:
         else:
             return rmgpy.chemkin.writeReactionString(self)
     
-    def toCantera(self, speciesList=None):
+    def toCantera(self, speciesList=None, useChemkinIdentifier = True):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
         with the appropriate reaction class.
+
+        If useChemkinIdentifier is set to False, the species label is used
+        instead. Be sure that species' labels are unique when setting it False.
         """
         from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
                     
@@ -208,14 +211,20 @@ class Reaction:
         # for initializing the cantera reaction object
         ctReactants = {}
         for reactant in self.reactants:
-            reactantName = reactant.toChemkin()  # Use the chemkin name for the species
+            if useChemkinIdentifier:
+                reactantName = reactant.toChemkin()
+            else:
+                reactantName = reactant.label
             if reactantName in ctReactants:
                 ctReactants[reactantName] += 1
             else:
                 ctReactants[reactantName] = 1
         ctProducts = {}
         for product in self.products:
-            productName = product.toChemkin()  # Use the chemkin name for the species
+            if useChemkinIdentifier:
+                productName = product.toChemkin()
+            else:
+                productName = product.label
             if productName in ctProducts:
                 ctProducts[productName] += 1
             else:
