@@ -29,6 +29,25 @@ this output, you must either keep all of the reactions and treat them as
 irreversible, or discard the duplicate reverse directions and treat the
 remaining reactions as reversible. This decision is left to the end user.
 
+Chemkin Output File
+===================
+
+In addition to the ``output.py`` which contains the thermodynamic,
+kinetic, and pressure dependent results from a cantherm run, a Chemkin 
+input file, ``chem.inp`` is also returned. This file contains species and their 
+thermodynamic parameters for each species that has the ``thermo()`` in the 
+input file. The file also contains kinetics, both pressure dependent and high 
+pressure limit, which have the ``kinetics()`` or ``pressureDependence()`` module 
+called.
+
+For the output file to function, all the names of species should be in valid
+chemkin format. The butanol and ethyl examples both show how to obtain a valid 
+chemkin file.
+
+The ``chem.inp`` file can be used in Chemkin software package or converted to 
+a Cantera input file for use in Cantera software.
+
+
 Log File
 ========
 
