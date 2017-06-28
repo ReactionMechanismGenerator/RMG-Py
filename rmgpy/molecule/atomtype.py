@@ -223,6 +223,15 @@ with a capital letter [A-Z]
 
 For making sample atoms, we use the first atomtype under specific,
 therefore the first one in the list should always be an element.
+
+The atomTypes naming convention is:
+<element> <valence> <characteristic bonds> <charge(optional)>
+For example:
+- N3d is nitrogen with valence=3 (i.e., 3 electronce are able to form bonds or remain as radicals) with one double bond
+- S4tc is sulfur with valence=4 with one triple bond and charged
+- S2sp is sulfur with valence=2 with only single bonds and charged positively
+- S2sn is similar to S2sp, only charged negatively
+- Oa is atomic oxygen, i.e., a closed shell atom
 """
 
 atomTypes = {}
