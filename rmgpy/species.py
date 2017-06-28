@@ -257,7 +257,7 @@ class Species(object):
         from rmgpy.chemkin import getSpeciesIdentifier
         return getSpeciesIdentifier(self)
         
-    def toCantera(self, useChemkinIdentifier = True):
+    def toCantera(self, useChemkinIdentifier = False):
         """
         Converts the RMG Species object to a Cantera Species object
         with the appropriate thermo data.

@@ -192,7 +192,7 @@ class Reaction:
         else:
             return rmgpy.chemkin.writeReactionString(self)
     
-    def toCantera(self, speciesList=None, useChemkinIdentifier = True):
+    def toCantera(self, speciesList=None, useChemkinIdentifier = False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
         with the appropriate reaction class.

@@ -246,14 +246,14 @@ class Cantera:
         Load a cantera Solution model from the job's own speciesList and reactionList attributes
         """
 
-        ctSpecies =[spec.toCantera() for spec in self.speciesList]
+        ctSpecies =[spec.toCantera(useChemkinIdentifier = True) for spec in self.speciesList]
 
         self.reactionMap = {}
         ctReactions = []
         for rxn in self.reactionList:
             index = len(ctReactions)
 
-            convertedReactions = rxn.toCantera(self.speciesList)
+            convertedReactions = rxn.toCantera(self.speciesList, useChemkinIdentifier = True)
 
             if isinstance(convertedReactions, list):
                 indices = range(index, index+len(convertedReactions))
@@ -306,20 +306,20 @@ class Cantera:
         is generated directly from rmg objects and not from a chemkin file)
         """
         indices = self.reactionMap[rmgReactionIndex]
-        modified_ctReactions = rmgReaction.toCantera(self.speciesList)
+        modified_ctReactions = rmgReaction.toCantera(self.speciesList, useChemkinIdentifier = True)
         if not isinstance(modified_ctReactions, list):
             modified_ctReactions = [modified_ctReactions]
 
         for i in range(len(indices)):
             self.model.modify_reaction(indices[i], modified_ctReactions[i])
 
-    def modifySpeciesThermo(self, rmgSpeciesIndex, rmgSpecies):
+    def modifySpeciesThermo(self, rmgSpeciesIndex, rmgSpecies, useChemkinIdentifier = False):
         """
         Modify the corresponding cantera species thermo to match that of a
         `rmgSpecies` object, given the `rmgSpeciesIndex` which indicates the
         index at which this species appears in the `speciesList`
         """
-        modified_ctSpecies = rmgSpecies.toCantera()
+        modified_ctSpecies = rmgSpecies.toCantera(useChemkinIdentifier = useChemkinIdentifier)
         ctSpecies = self.model.species(rmgSpeciesIndex)
         ctSpecies.thermo = modified_ctSpecies.thermo
 

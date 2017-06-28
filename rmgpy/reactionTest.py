@@ -1190,7 +1190,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         rmgObjects = [self.arrheniusBi, self.arrheniusBi_irreversible, self.arrheniusMono, self.arrheniusTri]
         
         ctObjects = [self.ct_arrheniusBi, self.ct_arrheniusBi_irreversible, self.ct_arrheniusMono, self.ct_arrheniusTri]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
         
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the reaction class is the same
@@ -1206,7 +1206,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         rmgObjects = [self.multiArrhenius]
         ctObjects = [self.ct_multiArrhenius]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
                 
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the same number of reactions are produced
@@ -1226,7 +1226,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         rmgObjects = [self.pdepArrhenius]
         ctObjects = [self.ct_pdepArrhenius]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
         
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the reaction class is the same
@@ -1243,7 +1243,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         
         rmgObjects = [self.multiPdepArrhenius]
         ctObjects = [self.ct_multiPdepArrhenius]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
                 
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the same number of reactions are produced
@@ -1262,7 +1262,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         Tests formation of cantera reactions with Chebyshev kinetics.
         """
-        ct_chebyshev = self.chebyshev.toCantera(self.speciesList)
+        ct_chebyshev = self.chebyshev.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_chebyshev),type(self.ct_chebyshev))
         self.assertEqual(repr(ct_chebyshev),repr(self.ct_chebyshev))
         
@@ -1277,13 +1277,13 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         Tests formation of cantera reactions with Falloff kinetics.
         """
-        ct_thirdBody = self.thirdBody.toCantera(self.speciesList)
+        ct_thirdBody = self.thirdBody.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_thirdBody),type(self.ct_thirdBody))
         self.assertEqual(repr(ct_thirdBody),repr(self.ct_thirdBody))
         self.assertEqual(str(ct_thirdBody.rate), str(self.ct_thirdBody.rate))
         self.assertEqual(ct_thirdBody.efficiencies, self.ct_thirdBody.efficiencies)
         
-        ct_lindemann = self.lindemann.toCantera(self.speciesList)
+        ct_lindemann = self.lindemann.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_lindemann),type(self.ct_lindemann))
         self.assertEqual(repr(ct_lindemann), repr(self.ct_lindemann))
         self.assertEqual(ct_lindemann.efficiencies, self.ct_lindemann.efficiencies)
@@ -1292,7 +1292,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         self.assertEqual(str(ct_lindemann.falloff), str(self.ct_lindemann.falloff))
         
         
-        ct_troe = self.troe.toCantera(self.speciesList)
+        ct_troe = self.troe.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_troe),type(self.ct_troe))
         self.assertEqual(repr(ct_troe), repr(self.ct_troe))
         self.assertEqual(ct_troe.efficiencies, self.ct_troe.efficiencies)
