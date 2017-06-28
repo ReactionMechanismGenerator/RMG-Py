@@ -69,6 +69,10 @@ species(
     energyTransferModel = None,
 )
 
+thermo('H2O','NASA')
+thermo('C4H8','NASA')
+thermo('n-C4H10','NASA')
+
 ################################################################################
 
 transitionState(
