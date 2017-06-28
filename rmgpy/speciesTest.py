@@ -228,7 +228,7 @@ class TestSpecies(unittest.TestCase):
 Thermo library: primaryThermoLibrary
 """), molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
         
-        rmg_ctSpecies = rmgSpecies.toCantera()
+        rmg_ctSpecies = rmgSpecies.toCantera(useChemkinIdentifier = True)
         
         ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
         atoms='Ar:1',

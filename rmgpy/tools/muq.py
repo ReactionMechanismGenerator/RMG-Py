@@ -286,7 +286,7 @@ class ReactorModPiece(ModPiece):
         deltaH = randomInput*uncertaintyFactor*4184.0   # Convert kcal/mol to J/mol
         
         species.thermo.changeBaseEnthalpy(deltaH)
-        self.cantera.modifySpeciesThermo(speciesIndex, species)
+        self.cantera.modifySpeciesThermo(speciesIndex, species, useChemkinIdentifier = True)
         
         
 class ReactorPCEFactory:
