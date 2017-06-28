@@ -101,6 +101,9 @@ if __name__ == '__main__':
     import os.path
     inputFile = args.file[0]
 
+    if args.output_directory != '':
+        args.output_directory = args.output_directory[0]
+
     inputDirectory = os.path.abspath(os.path.dirname(inputFile))
     if args.output_directory == '':
         args.output_directory = inputDirectory
