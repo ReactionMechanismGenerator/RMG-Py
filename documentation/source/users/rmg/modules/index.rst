@@ -22,3 +22,4 @@ otherwise.
     databaseScripts
     standardizeModelSpeciesNames
     reduction
+    isotopes
