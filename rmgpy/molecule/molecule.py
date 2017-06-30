@@ -175,7 +175,8 @@ class Atom(Vertex):
                 self.radicalElectrons       == atom.radicalElectrons   and
                 self.lonePairs              == atom.lonePairs           and
                 self.charge                 == atom.charge and
-                self.atomType              is atom.atomType
+                self.atomType               is atom.atomType and
+                self.label                  == atom.label
                 )
         elif isinstance(other, gr.GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
