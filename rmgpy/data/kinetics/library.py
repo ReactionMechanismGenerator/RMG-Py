@@ -29,11 +29,12 @@
 ################################################################################
 
 """
-This module contains functionality for working with kinetics families.
+This module contains functionality for working with kinetics libraries.
 """
 
 import os.path
 import logging
+import re
 
 from rmgpy.data.base import DatabaseError, Database, Entry
 
@@ -58,6 +59,7 @@ class LibraryReaction(Reaction):
                  index=-1,
                  reactants=None,
                  products=None,
+                 specificCollider=None,
                  kinetics=None,
                  reversible=True,
                  transitionState=None,
@@ -71,6 +73,7 @@ class LibraryReaction(Reaction):
                           index=index,
                           reactants=reactants,
                           products=products,
+                          specificCollider=specificCollider,
                           kinetics=kinetics,
                           reversible=reversible,
                           transitionState=transitionState,
@@ -89,6 +92,7 @@ class LibraryReaction(Reaction):
         return (LibraryReaction, (self.index,
                                   self.reactants,
                                   self.products,
+                                  self.specificCollider,
                                   self.kinetics,
                                   self.reversible,
                                   self.transitionState,
@@ -131,6 +135,7 @@ class KineticsLibrary(Database):
             for r2 in reactions2:
                 if (r1.reactants == r2.reactants and
                     r1.products == r2.products and
+                    r1.specificCollider == r2.specificCollider and
                     r1.reversible == r2.reversible
                     ):
                     r1.duplicate = True
@@ -245,6 +250,26 @@ class KineticsLibrary(Database):
                 products = products[1:]
                 reversible = False
             assert reversible == rxn.reversible, "Reaction string reversibility (=>) and entry attribute `reversible` (set to `False`) must agree if reaction is irreversible."
+
+            collider = re.search('\(\+[^\)]+\)',reactants)
+            if collider is not None:
+                collider = collider.group(0) # save string value rather than the object
+                assert collider == re.search('\(\+[^\)]+\)',products).group(0), "Third body colliders in reaction {0} in kinetics library {1} are missing" \
+                                                                                " from products or are not identical!".format(rxn_string, self.label)
+                extraParenthesis = collider.count('(') -1
+                for i in xrange(extraParenthesis):
+                    collider += ')' # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders, although currently not implemented in Chemkin. See RMG-Py #1070
+                reactants = reactants.replace(collider,'',1)
+                products = products.replace(collider,'',1)
+                if collider.upper().strip() != "(+M)": # the collider is a specific species, not (+M) or (+m)
+                    if collider.strip()[2:-1] not in speciesDict: # stripping spaces, '(+' and ')'
+                        raise DatabaseError('Collider species {0} in kinetics library {1} is missing from its dictionary.'.format(collider.strip()[2:-1], self.label))
+                    rxn.specificCollider = speciesDict[collider.strip()[2:-1]]
+            # verify there's no more than one specificCollider:
+            collider = re.search('\(\+[^\)]+\)', reactants)
+            if collider is not None:
+                raise DatabaseError("Found TWO specific third body colliders, {0} and {1}, in reaction {2} in kinetics library {3), expecting no more than one!".format(rxn.specificCollider, collider.group(0), rxn_string, self.label))
+
             for reactant in reactants.split('+'):
                 reactant = reactant.strip()
                 if reactant not in speciesDict:
@@ -263,8 +288,6 @@ class KineticsLibrary(Database):
                 raise DatabaseError('RMG does not accept reactions with more than 3 reactants in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.reactants)))
             if len(rxn.products) > 3:
                 raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.products)))
-            
-
             
         self.checkForDuplicates()
         
