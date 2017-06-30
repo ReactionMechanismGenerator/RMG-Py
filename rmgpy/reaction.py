@@ -82,6 +82,7 @@ class Reaction:
     `label`             ``str``                     A descriptive string label
     `reactants`         :class:`list`               The reactant species (as :class:`Species` objects)
     `products`          :class:`list`               The product species (as :class:`Species` objects)
+    'specificCollider'  :class:`Species`            The collider species (as a :class:`Species` object)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
@@ -97,6 +98,7 @@ class Reaction:
                  label='',
                  reactants=None,
                  products=None,
+                 specificCollider=None,
                  kinetics=None,
                  reversible=True,
                  transitionState=None,
@@ -108,6 +110,7 @@ class Reaction:
         self.label = label
         self.reactants = reactants
         self.products = products
+        self.specificCollider = specificCollider
         self.degeneracy = degeneracy
         self.kinetics = kinetics
         self.reversible = reversible
@@ -128,6 +131,7 @@ class Reaction:
         if self.label != '': string += 'label={0!r}, '.format(self.label)
         if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
+        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
@@ -140,10 +144,14 @@ class Reaction:
     def __str__(self):
         """
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
+        If a specificCollider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
         """
         arrow = ' <=> '
         if not self.reversible: arrow = ' => '
-        return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
+        if self.specificCollider:
+            return arrow.join([' + '.join([str(s) for s in self.reactants])+' (+'+str(self.specificCollider)+')', ' + '.join([str(s) for s in self.products])+' (+'+str(self.specificCollider)+')'])
+        else:
+            return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
     def __reduce__(self):
         """
@@ -153,6 +161,7 @@ class Reaction:
                            self.label,
                            self.reactants,
                            self.products,
+                           self.specificCollider,
                            self.kinetics,
                            self.reversible,
                            self.transitionState,
@@ -172,7 +181,7 @@ class Reaction:
                 degeneracyRatio = (new*1.0) / self._degeneracy
             self.kinetics.changeRate(degeneracyRatio)
         else:
-            logging.debug('did not modify A factor when modifying degeneracy since' \
+            logging.debug('did not modify A factor when modifying degeneracy since ' \
                           'the reaction rate was not set')
         # set new degeneracy
         self._degeneracy = new
@@ -210,6 +219,7 @@ class Reaction:
         # Create the dictionaries containing species strings and their stoichiometries
         # for initializing the cantera reaction object
         ctReactants = {}
+        ctCollider = {}
         for reactant in self.reactants:
             if useChemkinIdentifier:
                 reactantName = reactant.toChemkin()
@@ -229,6 +239,8 @@ class Reaction:
                 ctProducts[productName] += 1
             else:
                 ctProducts[productName] = 1
+        if self.specificCollider:              # add a specific collider if exists
+            ctCollider[self.specificCollider.toChemkin() if useChemkinIdentifier else self.specificCollider.label] = 1
                 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
@@ -249,12 +261,18 @@ class Reaction:
                 ctReaction = ct.ChebyshevReaction(reactants=ctReactants, products=ctProducts)
             
             elif isinstance(self.kinetics, ThirdBody):
-                ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
+                if ctCollider is not None:
+                    ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts, tbody=ctCollider)
+                else:
+                    ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
                 
             elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
-                ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
+                if ctCollider is not None:
+                    ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts, tbody=ctCollider)
+                else:
+                    ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
             else:
-                raise NotImplementedError('Not able to set cantera kinetics for {0}'.format(self.kinetics))
+                raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
             
             
             # Set reversibility, duplicate, and ID attributes
@@ -384,9 +402,12 @@ class Reaction:
         # Compare products to products
         forwardProductsMatch = _isomorphicSpeciesList(self.products, 
                                     other.products,checkIdentical = checkIdentical)
+        
+        # Compare specificCollider to specificCollider
+        ColliderMatch = (self.specificCollider == other.specificCollider)
 
         # Return now, if we can
-        if (forwardReactantsMatch and forwardProductsMatch):
+        if (forwardReactantsMatch and forwardProductsMatch and ColliderMatch):
             return True
         if not eitherDirection:
             return False
@@ -400,7 +421,7 @@ class Reaction:
                                     other.reactants,checkIdentical = checkIdentical)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
-        return  (reverseReactantsMatch and reverseProductsMatch)
+        return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
 
     def getEnthalpyOfReaction(self, T):
         """
@@ -540,7 +561,7 @@ class Reaction:
                 self.k_effective_cache[T] = k
             return k
         else:
-            return  self.kinetics.getRateCoefficient(T, P)
+            return self.kinetics.getRateCoefficient(T, P)
 
     def fixDiffusionLimitedA(self, T):
         """
@@ -996,6 +1017,7 @@ class Reaction:
         for product in self.products:
             other.products.append(product.copy(deep=True))
         other.degeneracy = self.degeneracy
+        other.specificCollider = self.specificCollider
         other.kinetics = deepcopy(self.kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
