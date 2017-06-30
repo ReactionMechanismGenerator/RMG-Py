@@ -409,7 +409,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for j in range(i+1,len(speciesList)):
                     initialMap = {}
                     try:
-                        for atomLabel in labeledAtoms[i]:
+                        atom_labels = set(list(labeledAtoms[i].keys()) + 
+                                                list(labeledAtoms[j].keys()))
+                        for atomLabel in atom_labels:
                             initialMap[labeledAtoms[i][atomLabel]] = labeledAtoms[j][atomLabel]
                     except KeyError:
                         # atom labels did not match, therefore not a match
