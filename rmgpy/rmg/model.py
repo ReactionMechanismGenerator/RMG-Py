@@ -463,6 +463,8 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
         products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
+        if forward.specificCollider is not None: forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
+
         if forward.pairs is not None:
             for pairIndex in range(len(forward.pairs)):
                 reactantIndex = forward.reactants.index(forward.pairs[pairIndex][0])
@@ -1253,7 +1255,7 @@ class CoreEdgeReactionModel:
 
         for entry in seedMechanism.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-             library=seedMechanism.label, kinetics=entry.data, duplicate=entry.item.duplicate,\
+             library=seedMechanism.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
              reversible=entry.item.reversible
              )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
@@ -1323,7 +1325,7 @@ class CoreEdgeReactionModel:
         # Load library reactions, keep reversibility as is
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-            library=reactionLibrary.label, kinetics=entry.data,\
+            specificCollider=entry.item.specificCollider, library=reactionLibrary.label, kinetics=entry.data,\
             duplicate=entry.item.duplicate, reversible=entry.item.reversible if rmg.keepIrreversible else True
             )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
