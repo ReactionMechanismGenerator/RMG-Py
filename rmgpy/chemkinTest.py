@@ -118,9 +118,9 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(formula, {'H': 6, 'C': 2})
         self.assertTrue(isinstance(thermo, NASA))
 
-    def testReadAndWriteTemplateReactionFamilyForMinimalExample(self):
+    def testReadAndWriteAndReadTemplateReactionFamilyForMinimalExample(self):
         """
-        This example is mainly to test if family info can be correctly
+        This example tests if family and templates info can be correctly
         parsed from comments like '!Template reaction: R_Recombination'.
         """
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
@@ -128,15 +128,16 @@ class ChemkinTest(unittest.TestCase):
         chemkinPath = os.path.join(folder, 'minimal', 'chem.inp')
         dictionaryPath = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
-        # loadChemkinFile
+        # read original chemkin file
         species, reactions = loadChemkinFile(chemkinPath, dictionaryPath)
 
+        # ensure correct reading
         reaction1 = reactions[0]
         self.assertEqual(reaction1.family, "R_Recombination")
-
+        self.assertEqual(frozenset('C_methyl;C_methyl'.split(';')), frozenset(reaction1.template))
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
-
+        self.assertEqual(frozenset('C/H3/Cs\H3;C_methyl'.split(';')), frozenset(reaction2.template))
         # saveChemkinFile
         chemkinSavePath = os.path.join(folder, 'minimal', 'chem_new.inp')
         dictionarySavePath = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
@@ -146,6 +147,19 @@ class ChemkinTest(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(chemkinSavePath))
         self.assertTrue(os.path.isfile(dictionarySavePath))
+
+        # read newly written chemkin file to make sure the entire cycle works
+        _, reactions2 =loadChemkinFile(chemkinSavePath, dictionarySavePath)
+
+        reaction1_new = reactions2[0]
+        self.assertEqual(reaction1_new.family, reaction1_new.family)
+        self.assertEqual(reaction1_new.template, reaction1_new.template)
+        self.assertEqual(reaction1_new.degeneracy, reaction1_new.degeneracy)
+
+        reaction2_new = reactions2[1]
+        self.assertEqual(reaction2_new.family, reaction2_new.family)
+        self.assertEqual(reaction2_new.template, reaction2_new.template)
+        self.assertEqual(reaction2_new.degeneracy, reaction2_new.degeneracy)
 
         # clean up
         os.remove(chemkinSavePath)
