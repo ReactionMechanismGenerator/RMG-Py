@@ -628,6 +628,23 @@ def readReactionComments(reaction, comments, read = True):
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
+        elif isinstance(reaction,TemplateReaction) and 'rate rule ' in line:
+            bracketed_rule = tokens[-1]
+            templates = bracketed_rule[1:-1].split(';')
+            reaction.template = templates
+            # still add kinetic comment
+            reaction.kinetics.comment += line.strip() + "\n"
+
+        elif isinstance(reaction,TemplateReaction) and\
+                       'Multiplied by reaction path degeneracy ' in line:
+            degen = float(tokens[-1])
+            reaction.degeneracy = degen
+            # undo the kinetic manipulation caused by setting degneracy
+            if reaction.kinetics:
+                reaction.kinetics.changeRate(1./degen)
+            # still add kinetic comment
+            reaction.kinetics.comment += line.strip() + "\n"
+
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
             reaction.kinetics.comment += line.strip() + "\n"

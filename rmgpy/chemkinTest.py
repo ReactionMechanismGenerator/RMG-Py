@@ -31,6 +31,8 @@ import os
 from chemkin import *
 import rmgpy
 from rmgpy.species import Species
+from rmgpy.reaction import Reaction
+from rmgpy.kinetics.arrhenius import Arrhenius
 
 
 ###################################################
@@ -290,3 +292,88 @@ multiplicity 2
 
         self.assertEqual(reaction.specificCollider.label, 'N2(5)')
 
+class TestReadReactionComments(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        r = Species().fromSMILES('[CH3]')
+        r.label = '[CH3]'
+        p = Species().fromSMILES('CC')
+        p.label = 'CC'
+
+        self.reaction = Reaction(reactants=[r,r],
+                                 products=[p],
+                                 kinetics = Arrhenius(A=(8.26e+17,'cm^3/(mol*s)'),
+                                                      n=-1.4,
+                                                      Ea=(1,'kcal/mol'), T0=(1,'K'))
+                                )
+        self.comments_list = ["""
+Reaction index: Chemkin #1; RMG #1
+Template reaction: R_Recombination
+Exact match found for rate rule (C_methyl;C_methyl)
+Multiplied by reaction path degeneracy 0.5
+""",
+"""
+Reaction index: Chemkin #2; RMG #4
+Template reaction: H_Abstraction
+Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\H3;C_methyl)
+Multiplied by reaction path degeneracy 6
+""",
+"""
+Reaction index: Chemkin #13; RMG #8
+Template reaction: H_Abstraction
+Flux pairs: [CH3], CC; [CH3], CC; 
+Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
+Multiplied by reaction path degeneracy 6.0
+""",
+"""
+Reaction index: Chemkin #17; RMG #31
+Template reaction: H_Abstraction
+Flux pairs: [CH3], CC; [CH3], CC; 
+Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\H3;Y_rad] for rate rule [C/H3/Cs\H3;H_rad]
+Multiplied by reaction path degeneracy 6.0
+"""]
+        self.template_list = [['C_methyl','C_methyl'],
+                              ['C/H3/Cs\H3','C_methyl'],
+                              ['C/H3/Cs\H3','C_rad/H2/Cs'],
+                              ['C/H3/Cs\H3','H_rad']]
+        self.family_list = ['R_Recombination',
+                            'H_Abstraction',
+                            'H_Abstraction',
+                            'H_Abstraction']
+        self.degeneracy_list = [0.5,
+                                6,
+                                6,
+                                6]
+
+    def testReadReactionCommentsTemplate(self):
+        """
+        Test that the template is picked up from reading reaction comments.
+        """
+        for index, comment in enumerate(self.comments_list):
+            new_rxn = readReactionComments(self.reaction, comment)
+
+            self.assertTrue(new_rxn.template,'The template was not saved from the reaction comment {}'.format(comment))
+            self.assertEqual(frozenset(new_rxn.template),frozenset(self.template_list[index]),'The reaction template does not match')
+
+    def testReadReactionCommentsFamily(self):
+        """
+        Test that the family is picked up from reading reaction comments.
+        """
+        for index, comment in enumerate(self.comments_list):
+            new_rxn = readReactionComments(self.reaction, comment)
+
+            self.assertEqual(new_rxn.family, self.family_list[index], 'wrong reaction family stored')
+
+    def testReadReactionCommentsDegeneracy(self):
+        """
+        Test that the degeneracy is picked up from reading reaction comments.
+
+        Also checks that reaction rate was not modified in the process.
+        """
+        for index, comment in enumerate(self.comments_list):
+            previous_rate = self.reaction.kinetics.A.value_si
+            new_rxn = readReactionComments(self.reaction, comment)
+            new_rate = new_rxn.kinetics.A.value_si
+
+            self.assertEqual(new_rxn.degeneracy, self.degeneracy_list[index], 'wrong degeneracy was stored')
+            self.assertEqual(previous_rate, new_rate)
