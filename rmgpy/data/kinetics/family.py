@@ -1877,7 +1877,10 @@ class KineticsFamily(Database):
                 kineticsList.append([deepcopy(entry.data), entry, entry.item.isIsomorphic(reaction, eitherDirection=False)])
         for kinetics, entry, isForward in kineticsList:
             if kinetics is not None:
-                kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
+                kinetics.comment += "Matched reaction {0} {1} in {2}\nThis reaction matched rate rule {3}".format(entry.index, 
+                                                      entry.label, 
+                                                      depository.label,
+                                                      '[{0}]'.format(';'.join([g.label for g in template])))
         return kineticsList
     
     def __selectBestKinetics(self, kineticsList):
