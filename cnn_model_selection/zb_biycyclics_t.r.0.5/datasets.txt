@@ -1,0 +1,14 @@
+# specify all the datasets to 
+# train on
+
+sdata134k.polycyclic_2954_table: 0.1
+
+sdata134k.cyclic_O_only_table: 0.1
+
+sdata134k.kh_bicyclic_table: 0.0
+
+sdata134k.rmg_rings_130_table: 0.0
+
+# new data set for effective learning
+
+sdata134k.zb_biycyclics_195_table: 0.5
