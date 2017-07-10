@@ -1704,6 +1704,7 @@ class CoreEdgeReactionModel:
         for obj in itertools.chain(deflatedRxn.reactants, deflatedRxn.products):
             if isinstance(obj, int):
                 return self.getSpecies(obj)
+        raise Exception("No core species were found in either reactants or products of {0}!".format(deflatedRxn))
 
 
 def generateReactionKey(rxn, useProducts=False):
