@@ -366,7 +366,8 @@ def deflate(rxns, species, reactantIndices):
 
     for i, coreIndex in enumerate(reactantIndices):
         if coreIndex != -1:
-            molDict[species[i].molecule[0]] = coreIndex 
+            for mol in species[i].molecule:
+                molDict[mol] = coreIndex
 
     for rxn in rxns:
         deflateReaction(rxn, molDict)
