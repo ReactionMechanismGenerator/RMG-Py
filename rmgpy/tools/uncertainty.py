@@ -708,7 +708,17 @@ class Uncertainty:
                 for data in reactionDataList:
                     data.label = 'k' + str(data.index) + ': ' + data.label.split()[-1]
 
-            tPath = os.path.join(self.outputDirectory, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
-            rPath = os.path.join(self.outputDirectory, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            if correlated:
+                folder = os.path.join(self.outputDirectory, 'correlated')
+            else:
+                folder = os.path.join(self.outputDirectory, 'uncorrelated')
+            if not os.path.exists(folder):
+                try:
+                    os.makedirs(folder)
+                except OSError as e:
+                    raise OSError('Uncertainty output directory could not be created: {0}'.format(e.message))
+
+            rPath = os.path.join(folder, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            tPath = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
             ReactionSensitivityPlot(xVar=time, yVar=reactionDataList, numReactions=number).uncertaintyPlot(totalVariance, filename=rPath)
             ThermoSensitivityPlot(xVar=time, yVar=thermoDataList, numSpecies=number).uncertaintyPlot(totalVariance, filename=tPath)
