@@ -82,6 +82,7 @@ class Entry(object):
     `shortDesc`         A brief (one-line) description of the data
     `longDesc`          A long, verbose description of the data
     `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
+    `nodalDistance`     A float representing the distance of a given entry from it's parent entry
     =================== ========================================================
 
     """
@@ -98,6 +99,7 @@ class Entry(object):
                  shortDesc='',
                  longDesc='',
                  rank=None,
+                 nodalDistance=None,
                  ):
         self.index = index
         self.label = label
@@ -110,6 +112,7 @@ class Entry(object):
         self._shortDesc = unicode(shortDesc)
         self._longDesc = unicode(longDesc)
         self.rank = rank
+        self.nodalDistance=nodalDistance
 
     def __str__(self):
         return self.label

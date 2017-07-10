@@ -37,6 +37,7 @@ import logging
 import codecs
 from copy import deepcopy
 import itertools
+import numpy as np
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -355,6 +356,7 @@ class KineticsFamily(Database):
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     `ownReverse`        `Boolean`                       It's its own reverse?
     'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
+    `treeDistances`     dict                            The default distance from parent along each tree, if not set default is 1 for every tree
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -379,7 +381,8 @@ class KineticsFamily(Database):
                  reverseTemplate=None,
                  reverseRecipe=None,
                  forbidden=None,
-                 boundaryAtoms = None
+                 boundaryAtoms = None,
+                 treeDistances = None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.reverse = reverse
@@ -390,6 +393,8 @@ class KineticsFamily(Database):
         self.forbidden = forbidden
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
         self.boundaryAtoms = boundaryAtoms
+        self.treeDistances = treeDistances
+        
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
@@ -552,7 +557,26 @@ class KineticsFamily(Database):
         ftemp.write('\n')
         
         ftemp.close()
-    
+        
+    def distributeTreeDistances(self):
+        """
+        fills in nodalDistance (the distance between an entry and its parent)
+        if not already entered with the value from treeDistances associated
+        with the tree the entry comes from
+        """
+        treeDistances = self.treeDistances
+        toplabels = [i.label for i in self.groups.top]
+        
+        assert len(toplabels) == len(treeDistances), 'treeDistances does not have the same number of entries as there are top nodes in the family'
+
+        for entryName,entry in self.groups.entries.iteritems():
+            topentry = entry
+            while not (topentry.parent is None): #get the top for the tree entry is in
+                topentry = topentry.parent
+            if topentry.label in toplabels: #filtering out product nodes
+                if entry.nodalDistance is None:
+                    entry.nodalDistance = treeDistances[topentry.label]
+                
     def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
         Load a kinetics database from a file located at `path` on disk.
@@ -571,13 +595,14 @@ class KineticsFamily(Database):
         local_context['False'] = False
         local_context['reverse'] = None
         local_context['boundaryAtoms'] = None
-
+        local_context['treeDistances'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
-
+        self.treeDistances = local_context.get('treeDistances',None)
+        
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -597,6 +622,7 @@ class KineticsFamily(Database):
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
+        
         # load the groups indicated in the entry label
         for label, entries in self.rules.entries.iteritems():
             nodes = label.split(';')
@@ -606,6 +632,12 @@ class KineticsFamily(Database):
                 entry.item = reaction
         self.depositories = []
         
+        toplabels = [i.label for i in self.groups.top]
+        if self.treeDistances is None:
+            self.treeDistances = {topentry:1 for topentry in toplabels}
+
+        self.distributeTreeDistances()
+            
         if depositoryLabels=='all':
             # Load everything. This option is generally used for working with the database
             # load all the remaining depositories, in order returned by os.walk
@@ -620,6 +652,7 @@ class KineticsFamily(Database):
                     logging.debug("Loading kinetics family depository from {0}".format(fpath))
                     depository.load(fpath, local_context, global_context)
                     self.depositories.append(depository)
+                    
             return
                     
         if not depositoryLabels:
@@ -647,8 +680,8 @@ class KineticsFamily(Database):
             logging.debug("Loading kinetics family depository from {0}".format(fpath))
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
+            
         
-
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
         Load information about the reaction template.
