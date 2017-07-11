@@ -44,6 +44,7 @@ import rmgpy.quantity as quantity
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
+from rmgpy.data.kinetics.library import LibraryReaction
 
 from rmgpy.cantherm.output import prettify
 from rmgpy.chemkin import writeKineticsEntry
@@ -623,6 +624,10 @@ class PressureDependenceJob(object):
                     f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
                 if ts.tunneling is not None:
                     f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
+                if isinstance(rxn,LibraryReaction):
+                    f.write('    comment = "Library reaction: {0!r}",\n'.format(rxn.library))
+                else:
+                    f.write('    comment = "Template reaction: {0!r}",\n'.format(rxn.family))
                 f.write(')\n\n')
             
             # Write network
