@@ -140,7 +140,8 @@ cdef class ReactionSystem(DASx):
         #surface indices
         self.surfaceSpeciesIndices = None
         self.surfaceReactionIndices = None
-
+        self.validLayeringIndices = None
+        
         # variables that cache maximum rate (ratio) data
         self.maxCoreSpeciesRates = None
         self.maxEdgeSpeciesRates = None
@@ -289,6 +290,8 @@ cdef class ReactionSystem(DASx):
         self.surfaceSpeciesIndices = numpy.array(surfaceSpeciesIndices,dtype=numpy.int)
         self.surfaceReactionIndices = numpy.array(surfaceReactionIndices,dtype=numpy.int)
         
+        self.validLayeringIndices = self.getLayeringIndices()
+        
         surfaceSpecies = [coreSpecies[i] for i in surfaceSpeciesIndices]
         surfaceReactions = [coreReactions[i] for i in surfaceReactionIndices]
         
@@ -421,39 +424,39 @@ cdef class ReactionSystem(DASx):
                 self.networkIndices[j,l] = i
    
     @cython.boundscheck(False)                               
-    cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,numpy.ndarray[numpy.int_t,ndim=1] surfSpeciesIndices):
+    cpdef getLayeringIndices(self):
         """
-        determines the "surface index" maximizing arr value under the surface layering constraint, all of the reactants or all of the products must be in the
-        bulk core (in the core, but not in the surface)
+        determines the edge reaction indices that indicate reactions that are valid for movement from
+        edge to surface based on the layering constraint
         """
         
-        cdef numpy.ndarray[numpy.int_t, ndim=1] sortedIndices
-        cdef int i,j,k,index, numCoreSpecies, numCoreReactions
-
-        if len(surfSpeciesIndices) == 0:
-            if len(arr) > 0:
-                return arr.argmax()
-            else:
-                return
+        cdef numpy.ndarray[numpy.int_t, ndim=1] surfSpeciesIndices
+        cdef int i,j,k,index, numCoreSpecies, numCoreReactions, numEdgeReactions
+        cdef list validIndices
         
+        surfSpeciesIndices = self.surfaceSpeciesIndices
         numCoreSpecies = self.numCoreSpecies
         numCoreReactions = self.numCoreReactions
+        numEdgeReactions = self.numEdgeReactions
         productIndices= self.productIndices
         reactantIndices = self.reactantIndices
         
-        sortedIndices = numpy.flipud(numpy.argsort(arr))
+        validIndices = []
         
-        for index in sortedIndices:
+        for index in xrange(numEdgeReactions):
             for j in productIndices[index+numCoreReactions]:
                 if j in surfSpeciesIndices or j >= numCoreSpecies:
                     break
             else:
-                return index
+                validIndices.append(index)
+                continue
             for j in reactantIndices[index+numCoreReactions]:
                 if j in surfSpeciesIndices or j >= numCoreSpecies:
                     break
             else:
-                return index
+                validIndices.append(index)
+        
+        return numpy.array(validIndices)
     
     cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list surfaceSpecies,list surfaceReactions,list edgeSpecies):
         """

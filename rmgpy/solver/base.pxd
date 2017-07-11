@@ -69,6 +69,7 @@ cdef class ReactionSystem(DASx):
     #surface information
     cdef public numpy.ndarray surfaceSpeciesIndices
     cdef public numpy.ndarray surfaceReactionIndices
+    cdef public numpy.ndarray validLayeringIndices
     
     # The reaction and species rates at the current time (in mol/m^3*s)
     cdef public numpy.ndarray coreSpeciesRates
@@ -119,7 +120,7 @@ cdef class ReactionSystem(DASx):
      
     cpdef logConversions(self, speciesIndex, y0)
     
-    cpdef maxIndUnderSurfaceLayeringConstraint(self,numpy.ndarray[numpy.float64_t,ndim=1] arr,numpy.ndarray[numpy.int_t,ndim=1] surfSpeciesIndices)
+    cpdef getLayeringIndices(self)
     
     cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions)
     
