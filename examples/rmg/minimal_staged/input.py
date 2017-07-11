@@ -50,9 +50,9 @@ model(#first stage
 model( #second stage
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=0.1,
+    toleranceInterruptSimulation=1.0,
     maximumEdgeSpecies=100000,
-    maxNumObjsPerIter=2,
+    maxNumObjsPerIter=3,
     maxNumSpecies = 100,
 )
 
