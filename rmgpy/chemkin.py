@@ -535,6 +535,26 @@ def _readKineticsLine(line, reaction, speciesDict, Eunits, kunits, klow_units, k
             raise ChemkinError(error_msg)
     return kinetics
 
+def _removeLineBreaks(comments):
+    """
+    This method removes any extra line breaks in reaction comments, so they
+    can be parsed by readReactionComments.
+    """
+    comments = comments.replace('\n',' ')
+    new_statement_indicators = ['Reaction index','Template reaction','Library reaction',
+                                'PDep reaction','Flux pairs',
+                                'Estimated using','Exact match found','Average of ',
+                                'Euclidian distance','Matched node ','Matched reaction ',
+                                'Multiplied by reaction path degeneracy ',
+                                'Kinetics were estimated in this direction',
+                                'dGrxn(298 K) = ','Both directions are estimates',
+                                'Other direction matched ','Both directions matched ',
+                                'This direction matched an entry in ', 'From training reaction',
+                                'This reaction matched rate rule',
+                                ]
+    for indicator in new_statement_indicators:
+        comments = comments.replace(' ' + indicator, '\n' + indicator,1)
+    return comments
 
 def readReactionComments(reaction, comments, read = True):
     """
@@ -561,6 +581,9 @@ def readReactionComments(reaction, comments, read = True):
         
         return reaction  
     
+    # the comments could have line breaks that will mess up reading
+    # we will now combine the lines and separate them based on statements
+    comments = _removeLineBreaks(comments)
     lines = comments.strip().splitlines()
         
     for line in lines:
