@@ -180,9 +180,6 @@ class Reaction:
             else:
                 degeneracyRatio = (new*1.0) / self._degeneracy
             self.kinetics.changeRate(degeneracyRatio)
-        else:
-            logging.debug('did not modify A factor when modifying degeneracy since ' \
-                          'the reaction rate was not set')
         # set new degeneracy
         self._degeneracy = new
     degeneracy = property(__getDegneneracy, __setDegeneracy)
