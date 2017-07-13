@@ -48,6 +48,7 @@ cdef class Reaction:
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
+    cdef public str comment
     cdef public dict k_effective_cache
     
     cpdef bint isIsomerization(self)
