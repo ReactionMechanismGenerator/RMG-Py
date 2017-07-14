@@ -49,7 +49,7 @@ def get_data_from_db(host, db_name, collection_name,
 						add_extra_atom_attribute, add_extra_bond_attribute)
 		if padding:
 			mol_tensor = pad_molecule_tensor(mol_tensor, padding_final_size)
-		hf298_qm = float(db_mol["Hf298"])
+		hf298_qm = float(db_mol["Hf298(kcal/mol)"])
 		X.append(mol_tensor)
 		y.append(hf298_qm)
 		smis.append(smile)
@@ -89,7 +89,7 @@ def get_data_from_db_using_ecfp(host, db_name, collection_name):
 		mol = Chem.MolFromSmiles(smile)
 		ecfp = np.array(AllChem.GetMorganFingerprintAsBitVect(mol=mol,radius=4,nBits=512))
 
-		hf298_qm = float(db_mol["Hf298"])
+		hf298_qm = float(db_mol["Hf298(kcal/mol)"])
 		X.append(ecfp)
 		y.append(hf298_qm)
 		smis.append(smile)
