@@ -532,7 +532,13 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     calculation at a given `modelChemistry`, adjust the energy such that it
     is consistent with the normal gas-phase reference states. `atoms` is a
     dictionary associating element symbols with the number of that element in
-    the molecule. `bonds` is a dictionary associating bond types with the number
+    the molecule. The atom energies are in Hartrees, which are from single
+    atom calculations using corresponding model chemistries. 
+    
+    The assumption for the multiplicity of each atom is: 
+    H singlet, C triplet, O triplet, N quartet, S triplet, P quartet.
+
+    `bonds` is a dictionary associating bond types with the number
     of that bond in the molecule.
     """
     
