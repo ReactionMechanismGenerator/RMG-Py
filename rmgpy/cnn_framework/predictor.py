@@ -61,8 +61,8 @@ class Predictor(object):
 				line = line.strip()
 				if line and not line.startswith('#'):
 					dataset, testing_ratio = [token.strip() for token in line.split(':')]
-					db, table = [token.strip() for token in dataset.split('.')]
-					self.datasets.append((db, table, float(testing_ratio)))
+					host, db, table = [token.strip() for token in dataset.split('.')]
+					self.datasets.append((host, db, table, float(testing_ratio)))
 
 	def kfcv_train(self, folds, lr_func, save_model_path, batch_size=1):
 
