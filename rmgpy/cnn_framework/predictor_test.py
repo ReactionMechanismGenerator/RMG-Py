@@ -69,8 +69,8 @@ class Test_Predictor(unittest.TestCase):
 		"""
 		Test the datasets specification is done properly
 		"""
-		expected_datasets = [('sdata134k', 'polycyclic_2954_table', 0.1),
-							('sdata134k', 'cyclic_O_only_table', 0.1)]
+		expected_datasets = [('rmg', 'sdata134k', 'polycyclic_2954_table', 0.1),
+							('rmg', 'sdata134k', 'cyclic_O_only_table', 0.1)]
 
 		self.assertEqual(self.predictor.datasets, expected_datasets)
 
