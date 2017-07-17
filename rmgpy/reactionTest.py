@@ -38,12 +38,13 @@ from external.wip import work_in_progress
 
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
+from rmgpy.quantity import Quantity
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.kinetics import Arrhenius
+from rmgpy.kinetics import Arrhenius, ArrheniusEP
 from rmgpy.thermo import Wilhoit
 import rmgpy.constants as constants
 
@@ -431,7 +432,63 @@ class TestReaction(unittest.TestCase):
             kr0 = self.reaction2.getRateCoefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
             kr = reverseKinetics.getRateCoefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
-
+    
+    def testFixBarrierHeight(self):
+        """
+        Test that fixBarrierHeight:
+            1) raises Ea to match endothermicity of reaction
+            2) forces Ea to be positive if forcePositive=True
+            3) Evans-Polanyi kinetics are handled so that negative Ea if Ea<E0 are set to min(0,E0)
+        """
+        
+        #setup
+        rxn = self.reaction2.copy()
+        revRxn = rxn.copy()
+        revRxn.reactants = rxn.products
+        revRxn.products = rxn.reactants
+        
+        #test that endothermicity is matched 
+        rxn.fixBarrierHeight()
+        Ea = rxn.kinetics.Ea.value_si
+        self.assertTrue(Ea==0.0)
+        
+        revRxn.fixBarrierHeight()
+        Ea = revRxn.kinetics.Ea.value_si
+        H0 = sum([spec.getThermoData().E0.value_si for spec in rxn.products]) \
+            - sum([spec.getThermoData().E0.value_si for spec in rxn.reactants])
+        self.assertAlmostEqual(Ea,-H0,3)
+        
+        #test that Ea is forced to be positive if forcePositive is set to True
+        Ea = Quantity((-10000.0,'J/mol'))
+        rxn.kinetics.Ea = Ea
+        rxn.fixBarrierHeight()
+        self.assertTrue(rxn.kinetics.Ea.value_si==Ea.value_si)
+        
+        rxn.fixBarrierHeight(forcePositive=True)
+        self.assertTrue(rxn.kinetics.Ea.value_si==0.0)
+        
+        #Test for ArrheniusEP handling
+        #if calculated Ea < 0 and Ea < E0, Ea is set to min(0,E0)
+        H298 = rxn.getEnthalpyOfReaction(298)
+        E0s = [-1000000.0,-10.0,0.0,10.0,1000000.0]
+        
+        for i,E0 in enumerate(E0s):
+            kinetics = ArrheniusEP(
+                A = (1.0, rxn.kinetics.A.units),
+                n = (0, rxn.kinetics.n.units),
+                alpha = 1.0,
+                E0 = (E0, 'J/mol'),
+            )
+            rxn.kinetics = kinetics
+            rxn.fixBarrierHeight()
+            Ea = rxn.kinetics.Ea.value_si
+            if i < 2:
+                self.assertTrue(Ea==E0)
+            elif i < 4:
+                self.assertTrue(Ea==0.0)
+            else:
+                self.assertTrue(Ea==E0+H298)
+            
     def testGenerateReverseRateCoefficientArrhenius(self):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the Arrhenius format.
@@ -466,7 +523,6 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the ArrheniusEP format.
         """
-        from rmgpy.kinetics import ArrheniusEP
 
         original_kinetics = ArrheniusEP(
                     A = (2.65e12, 'cm^3/(mol*s)'),
