@@ -635,12 +635,17 @@ class ModelMatcher():
                                'BurkeH2O2',
                                'DFT_QCI_thermo',
                                'CBS_QB3_1dHR',
-                               'GRI-Mech3.0', ]
+                               'FFCM1(-)',
+                               'GRI-Mech3.0-N',
+                               'JetSurF2.0',
+                               'CurranPentane', ]
         rmg.kineticsFamilies = ['default','fake_for_importer']
         rmg.reactionLibraries = [('BurkeH2O2inN2', False),
-                                 ('Glarborg/C3', False),
+                                 ('FFCM1(-)', False),
+                                 ('JetSurF2.0', False),
+                                 ('CurranPentane', False),
                                  ('Glarborg/highP', False),
-                                 ('GRI-Mech3.0', False), ]
+                                 ('GRI-Mech3.0-N', False), ]
 
         rmgpy.rmg.input.rmg = rmg  # put it in this scope so these functions can modify it
 
