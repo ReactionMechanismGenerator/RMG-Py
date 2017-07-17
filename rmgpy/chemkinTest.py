@@ -30,6 +30,7 @@ import mock
 import os
 from chemkin import *
 import rmgpy
+from rmgpy.species import Species
 
 
 ###################################################
@@ -256,3 +257,36 @@ class ChemkinTest(unittest.TestCase):
         self.assertTrue(n2.reactive)
 
         self.assertEqual(getSpeciesIdentifier(n2), 'N2(35)')
+
+    def testReadSpecificCollider(self):
+        """
+        Test that a Chemkin reaction with a specific species as a third body collider can be properly read
+        even if the species name contains parenthesis
+        """
+        entry = """O2(4)+H(5)(+N2(5))<=>HO2(10)(+N2(5))                          4.651e+12 0.440     0.000"""
+        speciesDict = {}
+        s1 = Species().fromAdjacencyList("""O2(4)
+multiplicity 3
+1 O u1 p2 c0 {2,S}
+2 O u1 p2 c0 {1,S}""")
+        s2 = Species().fromAdjacencyList("""H(5)
+multiplicity 2
+1 H u1 p0 c0""")
+        s3 = Species().fromAdjacencyList("""N2(5)
+1 N u0 p1 c0 {2,T}
+2 N u0 p1 c0 {1,T}""")
+        s4 = Species().fromAdjacencyList("""HO2(10)
+multiplicity 2
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u1 p2 c0 {1,S}
+3 H u0 p0 c0 {1,S}""")
+        speciesDict['O2(4)'] = s1
+        speciesDict['H(5)'] = s2
+        speciesDict['N2(5)'] = s3
+        speciesDict['HO2(10)'] = s4
+        Aunits = ['','s^-1','cm^3/(mol*s)','cm^6/(mol^2*s)','cm^9/(mol^3*s)']
+        Eunits = 'kcal/mol'
+        reaction = readKineticsEntry(entry, speciesDict, Aunits, Eunits)
+
+        self.assertEqual(reaction.specificCollider.label, 'N2(5)')
+

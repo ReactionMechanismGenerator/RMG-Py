@@ -33,6 +33,7 @@ This module contains functionality for working with kinetics depositories.
 """
 
 from rmgpy.data.base import Database, Entry, DatabaseError
+import re
 
 from rmgpy.reaction import Reaction
 from .common import saveEntry
@@ -50,6 +51,7 @@ class DepositoryReaction(Reaction):
                  index=-1,
                  reactants=None,
                  products=None,
+                 specificCollider=None,
                  kinetics=None,
                  reversible=True,
                  transitionState=None,
@@ -64,6 +66,7 @@ class DepositoryReaction(Reaction):
                           index=index,
                           reactants=reactants,
                           products=products,
+                          specificCollider=specificCollider,
                           kinetics=kinetics,
                           reversible=reversible,
                           transitionState=transitionState,
@@ -82,6 +85,7 @@ class DepositoryReaction(Reaction):
         return (DepositoryReaction, (self.index,
                                      self.reactants,
                                      self.products,
+                                     self.specificCollider,
                                      self.kinetics,
                                      self.reversible,
                                      self.transitionState,
@@ -140,7 +144,23 @@ class KineticsDepository(Database):
             elif '=>' in rxn_string:
                 products = products[1:]
                 reversible = False
-            assert reversible == rxn.reversible
+            assert reversible == rxn.reversible, "Reaction string reversibility (=>) and entry attribute `reversible` (set to `False`) must agree if reaction is irreversible."
+
+            specificCollider = None
+            collider = re.search('\(\+[^\)]+\)',reactants)
+            if collider is not None:
+                collider = collider.group(0) # save string value rather than the object
+                assert collider == re.search('\(\+[^\)]+\)',products).group(0), "Third body colliders in reaction {0} in kinetics library {1} are not identical!".format(rxn_string, self.label)
+                extraParenthesis = collider.count('(') -1
+                for i in xrange(extraParenthesis):
+                    collider += ')' # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders, although currently not implemented in Chemkin. See RMG-Py #1070
+                reactants = reactants.replace(collider,'')
+                products = products.replace(collider,'')
+                if collider.upper().strip() != "(+M)": # the collider is a specific species, not (+M) or (+m)
+                    if collider.strip()[2:-1] not in speciesDict: # stripping spaces, '(+' and ')'
+                        raise DatabaseError('Collider species {0} in kinetics library {1} is missing from its dictionary.'.format(collider.strip()[2:-1], self.label))
+                    specificCollider = speciesDict[collider.strip()[2:-1]]
+
             for reactant in reactants.split('+'):
                 reactant = reactant.strip()
                 if reactant not in speciesDict:
@@ -156,7 +176,7 @@ class KineticsDepository(Database):
                 
             if not rxn.isBalanced():
                 raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
-            
+
 
     def loadEntry(self,
                   index,
@@ -166,6 +186,7 @@ class KineticsDepository(Database):
                   product1=None,
                   product2=None,
                   product3=None,
+                  specificCollider=None,
                   kinetics=None,
                   degeneracy=1,
                   label='',
@@ -186,7 +207,8 @@ class KineticsDepository(Database):
 #        if product2 is not None: products.append(Species().fromAdjacencyList(product2))
 #        if product3 is not None: products.append(Species().fromAdjacencyList(product3))
         
-        reaction = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+        reaction = Reaction(reactants=[], products=[], specificCollider=specificCollider,
+          degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
         
         entry = Entry(
             index = index,

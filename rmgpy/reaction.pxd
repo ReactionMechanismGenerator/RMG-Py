@@ -41,6 +41,7 @@ cdef class Reaction:
     cdef public str label
     cdef public list reactants
     cdef public list products
+    cdef public Species specificCollider
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics

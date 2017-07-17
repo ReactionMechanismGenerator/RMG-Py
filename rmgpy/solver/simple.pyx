@@ -30,7 +30,7 @@ Contains the :class:`SimpleReactor` class, providing a reaction system
 consisting of a homogeneous, isothermal, isobaric batch reactor.
 """
 
-import numpy
+import numpy, logging
 cimport numpy
 
 import itertools
@@ -65,17 +65,14 @@ cdef class SimpleReactor(ReactionSystem):
     """
     cdef public list pdepColliderKinetics
 
-
     """
     colliderEfficiencies:
     an array consisting of array elements, each element corresponding to a reaction.
     Each element is an array with each position in the array corresponding to the collider efficiency
     of the core species. The collider efficiency is set to 1 if the species was not found in the list
     of colliders.
-
     """
     cdef public numpy.ndarray colliderEfficiencies
-    
 
     """
     pdepColliderReactionIndices: 
@@ -83,6 +80,27 @@ cdef class SimpleReactor(ReactionSystem):
     have pressure dependent kinetics. E.g. [4, 10, 2, 123]
     """
     cdef public numpy.ndarray pdepColliderReactionIndices
+
+    """
+    pdepSpecificColliderKinetics:
+    an array that contains a reference to the kinetics object of the reaction
+    that has pressure dependent kinetics with a specific species as a third body collider.
+    """
+    cdef public list pdepSpecificColliderKinetics
+
+    """
+    specificColliderSpecies:
+    a list that contains object references to species which are specific third body colliders
+    in the respective reactions in pdepSpecificColliderReactionIndices.
+    """
+    cdef public list specificColliderSpecies
+
+    """
+    pdepSpecificColliderReactionIndices:
+    an array that contains the indices of reactions that have
+    a specifcCollider attribyte. E.g. [16, 155, 90]
+    """
+    cdef public numpy.ndarray pdepSpecificColliderReactionIndices
 
 
     def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
@@ -97,6 +115,9 @@ cdef class SimpleReactor(ReactionSystem):
         self.pdepColliderReactionIndices = None
         self.pdepColliderKinetics = None
         self.colliderEfficiencies = None
+        self.pdepSpecificColliderReactionIndices = None
+        self.pdepSpecificColliderKinetics = None
+        self.specificColliderSpecies = None
         
 
     def __reduce__(self):
@@ -104,7 +125,7 @@ cdef class SimpleReactor(ReactionSystem):
         A helper function used when pickling an object.
         """
         return (self.__class__, 
-            (self.T, self.P, self.initialMoleFractions, self.termination, ))
+            (self.T, self.P, self.initialMoleFractions, self.termination))
 
 
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
@@ -152,7 +173,9 @@ cdef class SimpleReactor(ReactionSystem):
         with:
             - P the pressure of the reactor,
             - y the array of initial moles of the core species
-
+        or as:
+            Peff = P * y_specificCollider / sum(y)
+        if a secificCollider is mentioned
         """
 
         y0_coreSpecies = self.y0[:self.numCoreSpecies]
@@ -162,15 +185,19 @@ cdef class SimpleReactor(ReactionSystem):
         for i in xrange(self.pdepColliderReactionIndices.shape[0]):
             if j == self.pdepColliderReactionIndices[i]:
                 # Calculate effective pressure
-                Peff = self.P.value_si * numpy.sum(self.colliderEfficiencies[i]*y0_coreSpecies / sum_core_species)
-                return Peff          
+                if rxn.specificCollider is None:
+                    Peff = self.P.value_si * numpy.sum(self.colliderEfficiencies[i]*y0_coreSpecies / sum_core_species)
+                else:
+                    logging.debug("Calculating Peff using {0} as a specificCollider".format(rxn.specificCollider))
+                    Peff = self.P.value_si * self.y0[self.speciesIndex[rxn.specificCollider]] / sum_core_species
+                return Peff
         return self.P.value_si
 
     def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
         Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
         and equilibrium constants (Keq) arrays with the values computed at the temperature
-        and (effective) pressure of the reacion system.
+        and (effective) pressure of the reaction system.
         """
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
@@ -185,11 +212,15 @@ cdef class SimpleReactor(ReactionSystem):
 
     def set_colliders(self, coreReactions, edgeReactions, coreSpecies):
         """
-        Store collider efficiencies and reaction indices for pdep reactions that have specific collider efficiencies.
+        Store collider efficiencies and reaction indices for pdep reactions that have collider efficiencies,
+        and store specific collider indices
         """
         pdepColliderReactionIndices = []
         self.pdepColliderKinetics = []
         colliderEfficiencies = []
+        pdepSpecificColliderReactionIndices = []
+        self.pdepSpecificColliderKinetics = []
+        self.specificColliderSpecies = []
 
         for rxn in itertools.chain(coreReactions, edgeReactions):
             if rxn.kinetics.isPressureDependent():
@@ -198,9 +229,14 @@ cdef class SimpleReactor(ReactionSystem):
                     pdepColliderReactionIndices.append(j)
                     self.pdepColliderKinetics.append(rxn.kinetics)
                     colliderEfficiencies.append(rxn.kinetics.getEffectiveColliderEfficiencies(coreSpecies))
-        
+                if rxn.specificCollider:
+                    pdepSpecificColliderReactionIndices.append(self.reactionIndex[rxn])
+                    self.pdepSpecificColliderKinetics.append(rxn.kinetics)
+                    self.specificColliderSpecies.append(rxn.specificCollider)
+
         self.pdepColliderReactionIndices = numpy.array(pdepColliderReactionIndices, numpy.int)
         self.colliderEfficiencies = numpy.array(colliderEfficiencies, numpy.float64)
+        self.pdepSpecificColliderReactionIndices = numpy.array(pdepSpecificColliderReactionIndices, numpy.int)
 
 
     def set_initial_conditions(self):
@@ -244,9 +280,9 @@ cdef class SimpleReactor(ReactionSystem):
         cdef double k, V, reactionRate, revReactionRate, T, P, Peff
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates, coreSpeciesConsumptionRates, coreSpeciesProductionRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C, y_coreSpecies
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, colliderEfficiencies
-        cdef numpy.ndarray[numpy.int_t, ndim=1] pdepColliderReactionIndices
-        cdef list pdepColliderKinetics
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, colliderEfficiencies, specificColliderEfficiencies
+        cdef numpy.ndarray[numpy.int_t, ndim=1] pdepColliderReactionIndices, pdepSpecificColliderReactionIndices
+        cdef list pdepColliderKinetics, pdepSpecificColliderKinetics
 
         ir = self.reactantIndices
         ip = self.productIndices
@@ -274,6 +310,19 @@ cdef class SimpleReactor(ReactionSystem):
                 Peff = P*numpy.sum(colliderEfficiencies[i]*y_coreSpecies / numpy.sum(y_coreSpecies))
                 j = pdepColliderReactionIndices[i]
                 kf[j] = pdepColliderKinetics[i].getRateCoefficient(T, Peff)
+                kr[j] = kf[j] / equilibriumConstants[j]
+        if self.pdepSpecificColliderReactionIndices.shape[0] != 0:
+            T = self.T.value_si
+            P = self.P.value_si
+            equilibriumConstants = self.Keq
+            pdepSpecificColliderReactionIndices = self.pdepSpecificColliderReactionIndices
+            pdepSpecificColliderKinetics = self.pdepSpecificColliderKinetics
+            specificColliderSpecies = self.specificColliderSpecies
+            for i in xrange(pdepSpecificColliderReactionIndices.shape[0]):
+                # Calculate effective pressure
+                Peff = P * y[self.speciesIndex[specificColliderSpecies[i]]] / numpy.sum(y_coreSpecies)
+                j = pdepSpecificColliderReactionIndices[i]
+                kf[j] = pdepSpecificColliderKinetics[i].getRateCoefficient(T, Peff)
                 kr[j] = kf[j] / equilibriumConstants[j]
             
         inet = self.networkIndices

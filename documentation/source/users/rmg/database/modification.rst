@@ -46,7 +46,6 @@ Adding Reaction Family
 ----------------------
 
 
-
 There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:
 
 
@@ -72,6 +71,170 @@ There are several places in the RMG-database and RMG-Py source code where reacti
 
 Creating Kinetics Libraries
 ---------------------------
+
+To add a reaction library, simply create a folder bearing the library's name under
+``RMG-database/input/kinetics/libraries``. You'll need to create two files:
+``dictionary.txt`` and ``reactions.py``. The dictionary file contains the Adjacency lists
+for all relevant species (can be generated using the `Molecule Search <http://rmg.mit.edu/molecule_search>`_
+function of the rmg website, while the reactions file specifies the kinetics.
+To conform to RMG's format, simply copy and modify an existing library.
+
+At the top of the reactions file fill in the name and short (one line) and long descriptions.
+The name must be identical to the folder's name. Then list the kinetics entries, each with a unique index number.
+The following formats are accepted as kinetics entries:
+
+**Arrhenius** of the form :math:`k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)`
+(see `Arrhenius Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/arrhenius.html>`_ for details)::
+
+	entry(
+        index = 1,
+    	label = "H + O2 <=> O + OH",
+    	degeneracy = 1,
+    	kinetics = Arrhenius(A=(9.841e+13, 'cm^3/(mol*s)'), n=0, Ea=(15310, 'cal/mol'), T0=(1, 'K')),
+    	shortDesc = u"This is a short description limited to one line, e.g. 'CBS-QB3'",
+    	longDesc = u"""This is a long description, unlimited by number of lines.
+    	These descriptions can be added to every kinetics type.""")
+
+**MultiArrhenius** is the sum of multiple Arrhenius expressions (all apply to the same temperature range)
+(see `MultiArrhenius Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/multiarrhenius.html>`_ for details)::
+
+	entry(
+    	index = 2,
+    	label = "O + H2 <=> H + OH",
+    	degeneracy = 1,
+		duplicate = True,
+    	kinetics = MultiArrhenius(
+        	arrhenius = [Arrhenius(A=(3.848e+12, 'cm^3/(mol*s)'), n=0, Ea=(7950, 'cal/mol'), T0=(1, 'K')),
+            	Arrhenius(A=(6.687e+14, 'cm^3/(mol*s)'), n=0, Ea=(19180, 'cal/mol'), T0=(1, 'K'))]))
+
+**ThirdBody** for pressure dependent reactions of the sort ``H2 + M <=> H + H + M``. ``efficiencies`` are optional and specify
+the factor by which the rate is multiplies if the mentioned species is the third body collider. Note that for complex efficiency
+behaviour, an efficiency of ``0`` can be set, and a seperate specific reaction can be defined
+(see `ThirdBody Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/thirdbody.html>`_ for details)::
+
+	entry(
+    	index = 3,
+    	label = "H2 <=> H + H",
+    	degeneracy = 1,
+    	kinetics = ThirdBody(
+        	arrheniusLow = Arrhenius(A=(4.58e+19, 'cm^3/(mol*s)'), n=-1.4, Ea=(104390, 'cal/mol'), T0=(1, 'K')),
+        	efficiencies = {'[Ar]': 0, 'N#N': 1.01, '[H][H]': 2.55, 'O': 12.02, '[C-]#[O+]': 1.95, 'O=C=O': 3.83, 'C': 2.00, 'C=O': 2.50, 'CO': 3.00, 'CC': 3.00}))
+
+	entry(
+    	index = 4,
+    	label = "H2 + Ar <=> H + H + Ar",
+    	degeneracy = 1,
+    	kinetics = Arrhenius(A=(5.176e+18, 'cm^3/(mol*s)'), n= 1.1, Ea=(104390, 'cal/mol'), T0=(1, 'K')))
+
+
+**Troe** for pressure dependent reactions
+(see `Troe Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/troe.html>`_ for details)::
+
+	entry(
+    	index = 5,
+    	label = "H + O2 <=> HO2",
+    	degeneracy = 1,
+    	kinetics = Troe(
+        	arrheniusHigh = Arrhenius(A=(4.565e+12, 'cm^3/(mol*s)'), n=0.44, Ea=(0, 'cal/mol'), T0=(1, 'K')),
+        	arrheniusLow = Arrhenius( A=(6.37e+20, 'cm^6/(mol^2*s)'), n = -1.72, Ea = (525, 'cal/mol'), T0 = (1, 'K')),
+        	alpha=0.5, T3=(30, 'K'), T1=(90000, 'K'), T2=(90000, 'K'),
+        	efficiencies = {'[Ar]': 0.6, '[He]': 0.71, 'N#N': 0.96, '[H][H]': 1.87, '[O][O]': 0.75, 'O': 15.81, '[C-]#[O+]': 1.90, 'O=C=O': 3.45, 'C': 2.00, 'C=O': 2.50, 'CO': 3.00, 'CC': 3.00}))
+
+**Lindemann**
+(see `Lindemann Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/lindemann.html>`_ for details)::
+
+	entry(
+	    index = 6,
+	    label = "CO + O <=> CO2",
+	    degeneracy = 1,
+	    kinetics = Lindemann(
+	        arrheniusHigh = Arrhenius(A=(1.88e+11, 'cm^3/(mol*s)'), n=0, Ea=(2430, 'cal/mol'), T0=(1, 'K')),
+	        arrheniusLow = Arrhenius(A = (1.4e+21, 'cm^6/(mol^2*s)'), n = -2.1, Ea = (5500, 'cal/mol'), T0 = (1, 'K')),
+	        efficiencies = {'[Ar]': 0.87, '[He]': 2.50, 'O': 12.00, '[C-]#[O+]': 1.90, 'O=C=O': 3.80, 'C': 2.00, 'C=O': 2.50, 'CO': 3.00, 'CC': 3.00}))
+
+
+**PDepArrhenius** where each Arrhenius expression corresponds to a different pressure, as specified.
+Allowed pressure units are ``Pa``, ``bar``, ``atm``, ``torr``, ``psi``, ``mbar``
+(see `PDepArrhenius Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/pdeparrhenius.html>`_ for details)::
+
+	entry(
+	    index = 7,
+	    label = "HCO <=> H + CO",
+	    degeneracy = 1,
+	    kinetics = PDepArrhenius(
+	        pressures = ([1, 10, 20, 50, 100], 'atm'),
+	        arrhenius = [
+	            Arrhenius(A=(9.9e+11, 's^-1'), n=-0.865, Ea=(16755, 'cal/mol'), T0=(1, 'K')),
+	            Arrhenius(A=(7.2e+12, 's^-1'), n=-0.865, Ea=(16755, 'cal/mol'), T0=(1, 'K')),
+	            Arrhenius(A=(1.3e+13, 's^-1'), n=-0.865, Ea=(16755, 'cal/mol'), T0=(1, 'K')),
+	            Arrhenius(A=(2.9e+13, 's^-1'), n=-0.865, Ea=(16755, 'cal/mol'), T0=(1, 'K')),
+	            Arrhenius(A=(5.3e+13, 's^-1'), n=-0.865, Ea=(16755, 'cal/mol'), T0=(1, 'K'))]))
+
+**MultiPDepArrhenius**
+(see `MultiPDepArrhenius Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/multipdeparrhenius.html>`_ for details)::
+
+	entry(
+	    index = 8,
+	    label = "N2H2 <=> NNH + H",
+	    degeneracy = 1,
+	    duplicate = True,
+	    kinetics = MultiPDepArrhenius(
+	        arrhenius = [
+	            PDepArrhenius(
+	                pressures = ([0.1, 1, 10], 'atm'),
+	                arrhenius = [
+	                    Arrhenius(A=(5.6e+36, '1/s'), n=-7.75, Ea=(70250.4, 'cal/mol'), T0=(1, 'K')),
+	                    Arrhenius(A=(1.8e+40, '1/s'), n=-8.41, Ea=(73390, 'cal/mol'), T0=(1, 'K')),
+	                    Arrhenius(A=(3.1e+41, '1/s'), n=-8.42, Ea=(76043, 'cal/mol'), T0=(1, 'K'))]),
+	            PDepArrhenius(
+	                pressures = ([0.1, 1, 10], 'atm'),
+	                arrhenius = [
+	                    Arrhenius(A=(1.6e+37, '1/s'), n=-7.94, Ea=(70757, 'cal/mol'), T0=(1, 'K')),
+	                    Arrhenius(A=(2.6e+40, '1/s'), n=-8.53, Ea=(72923, 'cal/mol'), T0=(1, 'K')),
+	                    Arrhenius(A=(1.3e+44, '1/s'), n=-9.22, Ea=(77076, 'cal/mol'), T0=(1, 'K'))])]))
+
+**Chebyshev**
+(see `Chebyshev Class <http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/chebyshev.html>`_ for details)::
+
+	entry(
+	    index = 9,
+	    label = "CH3 + OH <=> CH2(S) + H2O",
+	    degeneracy = 1,
+	    kinetics = Chebyshev(
+	        coeffs = [
+	            [12.4209, -0.799241, -0.299133, -0.0143012],
+	            [0.236291, 0.856853, 0.246313, -0.0463755],
+	            [-0.0827561, 0.0457236, 0.105699, 0.057531],
+	            [-0.049145, -0.0760609, -0.0214574, 0.0247001],
+	            [-0.00664556, -0.0412733, -0.0308561, -0.00959838],
+	            [0.0111919, -0.00649914, -0.0106088, -0.0137528],
+	        ],
+	        kunits='cm^3/(mol*s)', Tmin=(300, 'K'), Tmax=(3000, 'K'), Pmin=(0.0013156, 'atm'), Pmax=(131.56, 'atm')))
+
+
+Adding a specific collider
+--------------------------
+
+Only the ``Troe`` and ``Lindemann`` pressure dependent formats could be defined with a specific species as a third body collider, if needed. For example::
+
+	entry(
+	    index = 10,
+	    label = "SO2 + O <=> SO3",
+	    degeneracy = 1,
+	    kinetics = Troe(
+	        arrheniusHigh = Arrhenius(A=(3.7e+11, 'cm^3/(mol*s)'), n=0, Ea=(1689, 'cal/mol'), T0=(1, 'K')),
+	        arrheniusLow = Arrhenius(A=(2.4e+27, 'cm^6/(mol^2*s)'), n=-3.6, Ea=(5186, 'cal/mol'), T0=(1, 'K')),
+	        alpha = 0.442, T3=(316, 'K'), T1=(7442, 'K'), efficiencies={'O=S=O': 10, 'O': 10, 'O=C=O': 2.5, 'N#N': 0}))
+
+	entry(
+	    index = 11,
+	    label = "SO2 + O (+N2) <=> SO3 (+N2)",
+	    degeneracy = 1,
+	    kinetics = Troe(
+	        arrheniusHigh = Arrhenius(A=(3.7e+11, 'cm^6/(mol^2*s)'), n=0, Ea=(1689, 'cal/mol'), T0=(1, 'K')),
+	        arrheniusLow = Arrhenius(A=(2.9e+27, 'cm^9/(mol^3*s)'), n=-3.58, Ea=(5206, 'cal/mol'), T0=(1, 'K')),
+	        alpha=0.43, T3=(371, 'K'), T1=(7442, 'K'), efficiencies={}))
+
 
 Adding New Kinetic Groups and Rate Rules
 ----------------------------------------

@@ -391,6 +391,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 reaction = LibraryReaction(
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
+                    specificCollider = entry.item.specificCollider,
                     degeneracy = entry.item.degeneracy,
                     reversible = entry.item.reversible,
                     duplicate = entry.item.duplicate,
@@ -474,6 +475,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reaction = Reaction(
                 reactants = entry.item.reactants[:],
                 products = [],
+                specificCollider = entry.item.specificCollider,
                 kinetics = entry.data,
                 degeneracy = 1,
             )
