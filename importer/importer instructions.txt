@@ -1,0 +1,19 @@
+importer instructions:
+
+Create a new folder.
+Place the chemik file to be imported there
+write a SMILES dictionary for small/known species
+
+make sure cherrypy is installed
+source activate rmg_env
+conda install cherrypy
+
+To run locally, run import.sh:
+./import.sh
+
+then point a web browser at http://localhost:8084
+
+
+
+
+
