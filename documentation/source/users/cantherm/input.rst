@@ -52,6 +52,7 @@ Model Chemistry                                  AEC   BC   SOC
 ``'CBS-QB3'``                                     v    v    v
 ``'G3'``                                          v         v
 ``'M08SO/MG3S*'``                                 v         v
+``'M06-2X/cc-pVTZ'``                              v         v
 ``'Klip_1'``                                      v         v
 ``'Klip_2'`` *uses QCI(tz,qz) values*             v         v
 ``'Klip_3'`` *uses QCI(dz,qz) values*             v         v

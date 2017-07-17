@@ -532,7 +532,13 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     calculation at a given `modelChemistry`, adjust the energy such that it
     is consistent with the normal gas-phase reference states. `atoms` is a
     dictionary associating element symbols with the number of that element in
-    the molecule. `bonds` is a dictionary associating bond types with the number
+    the molecule. The atom energies are in Hartrees, which are from single
+    atom calculations using corresponding model chemistries. 
+    
+    The assumption for the multiplicity of each atom is: 
+    H singlet, C triplet, O triplet, N quartet, S triplet, P quartet.
+
+    `bonds` is a dictionary associating bond types with the number
     of that bond in the molecule.
     """
     
@@ -546,6 +552,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
     if modelChemistry == 'CBS-QB3':
         atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360+ SOC['S']}
+    if modelChemistry == 'M06-2X/cc-pVTZ':
+        atomEnergies = {'H':-0.498135 + SOC['H'], 'N':-54.586780 + SOC['N'], 'O':-75.064242+ SOC['O'], 'C':-37.842468+ SOC['C'], 'P':-341.246985+ SOC['P'], 'S': -398.101240+ SOC['S']}
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
     elif modelChemistry == 'M08SO/MG3S*': # * indicates that the grid size used in the [QChem] electronic 
