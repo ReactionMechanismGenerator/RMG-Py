@@ -1,0 +1,48 @@
+H2O2	OO
+OH	[OH]
+H2	[H][H]
+H	[H]
+O	[O]
+H2O	O
+HO2	[O]O
+O2	[O][O]
+AR	[Ar]
+N2	N#N
+HE	[He]
+OHV	[OH]
+CO	[C]=O
+CO2	O=C=O
+CH4	C
+CH3	[CH3]
+C	[C]
+CH	[CH]
+CHV	[CH]
+CH3OH	CO
+C2H6	CC
+C2H5	C[CH2]
+C2H4	C=C
+C2H	[C]#C
+C3H8	CCC
+C2H2	C#C
+CH3OCH3	COC
+O3	[O-][O+]=O
+N	[N]
+NO2	O=N[O]
+CH3O	C[O]	! Confirmed by alongd
+CH2OH	[CH2]O	! Confirmed by alongd
+CH2O	C=O	! Confirmed by alongd
+NC3H7	[CH2]CC	! Confirmed by alongd
+HCO	[CH]=O	! Confirmed by alongd
+HONO	N(=O)O	! Confirmed by alongd
+C2H3	[CH]=C	! Confirmed by alongd
+CH2	[CH2]	! Confirmed by alongd
+CH3OCH2	[CH2]OC	! Confirmed by alongd
+C3H6	C=CC	! Confirmed by alongd
+IC3H7	C[CH]C	! Confirmed by alongd
+C3H5-A	[CH2]C=C	! Confirmed by alongd
+C3H5-T	C=[C]C	! Confirmed by alongd
+C3H5-S	[CH]=CC	! Confirmed by alongd
+C3H4-A	C=C=C	! Confirmed by alongd
+C3H4-P	C#CC	! Confirmed by alongd
+NO	[N]=O	! Confirmed by alongd
+
