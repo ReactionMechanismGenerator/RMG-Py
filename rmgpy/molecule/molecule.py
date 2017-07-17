@@ -1430,6 +1430,43 @@ class Molecule(Graph):
                         count += 1
         return count
 
+    def getInternalRotors(self):
+        """
+        Returns a list of tuples of atoms that describe the internal rotors for the structure.
+        """
+        torsionList = []
+
+        for atom1 in self.atoms:
+            bondDict1 = self.getBonds(atom1)
+            for atom2 in bondDict1:
+                bond = self.getBond(atom1, atom2)
+                if atom1.isNonHydrogen() and atom2.isNonHydrogen() and bond.isSingle() and self.vertices.index(
+                        atom1) < self.vertices.index(atom2) and not self.isBondInCycle(bond):
+                    print
+                    gotAtom0 = False
+                    gotAtom3 = False
+                    bondDict2 = self.getBonds(atom2)
+                    for atom_0 in bondDict1:
+                        if atom_0 != atom2:
+                            gotAtom0 = True
+                            atom0 = atom_0
+                            break
+                        else:
+                            pass
+
+                    for atom_3 in bondDict2:
+                        if atom_3 != atom1:
+                            gotAtom3 = True
+                            atom3 = atom_3
+                            break
+                        else:
+                            pass
+
+                    if gotAtom0 == True and gotAtom3 == True:
+                        tup = (atom0, atom1, atom2, atom3)
+                        torsionList.append(tup)
+        return torsionList
+
     def calculateCp0(self):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
