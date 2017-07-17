@@ -440,6 +440,7 @@ def _readKineticsLine(line, reaction, speciesDict, Eunits, kunits, klow_units, k
 
     elif 'TROE' in line:
         # Troe falloff parameters
+        tokens[1] = tokens[1].replace(",","")
         tokens = tokens[1].split()
         alpha = float(tokens[0].strip())
         T3 = float(tokens[1].strip())
