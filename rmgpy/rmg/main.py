@@ -573,7 +573,10 @@ class RMG(util.Subject):
             bimolecularReact=self.bimolecularReact)
 
         logging.info('Completed initial enlarge edge step...')
+        
         self.saveEverything()
+        
+        self.makeSeedMech(firstTime=True)
         
         # Main RMG loop
         while not self.done:
@@ -792,18 +795,33 @@ class RMG(util.Subject):
         
         self.finish()
     
-    def makeSeedMech(self):
+    def makeSeedMech(self,firstTime=False):
         """
         causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
         this seed mechnaism is outputted in a seed folder within the run directory and automatically
         added to as the (or replaces the current) 'Seed' thermo and kinetics libraries in database
+        
+        if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
+        by adding integers to the end of the name to prevent overwritting
         """
+        
         logging.info('Making seed mechanism...')
         
         name = self.name
         
         currentDir = os.getcwd()
         
+        if firstTime: #make sure don't overwrite current libraries
+            thermoNames = self.database.thermo.libraries.keys()
+            kineticsNames = self.database.kinetics.libraries.keys()
+            
+            if name in thermoNames or name in kineticsNames: 
+                q = 1
+                while name+str(q) in thermoNames or name+str(q) in kineticsNames:
+                    q += 1
+                name += str(q)
+                self.name = name
+            
         if not os.path.lexists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
             os.system('mkdir seed')
             
