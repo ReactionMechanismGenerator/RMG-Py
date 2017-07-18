@@ -2139,6 +2139,9 @@ class KineticsFamily(Database):
             training = []
             
             lines = kinetics.comment.split('\n')
+            
+            lines = [line for line in lines if not line.startswith('Euclid')] #remove the Euclidean distance line to help parser
+            
             # Discard the last line, unless it's the only line!
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'
             if len(lines) == 1:
