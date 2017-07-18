@@ -150,6 +150,16 @@ model(
 )
 
 options(
+    	#provides a name for the seed mechanism produced at the end of an rmg run default is 'Seed'
+    name='SeedName',	
+	#if True every iteration it saves the current model as libraries/seeds
+	#(and deletes the old one)
+	#Unlike HTML this is inexpensive time-wise
+	#note a seed mechanism will be generated at the end of a completed run and some incomplete 
+	#runs even if this is set as False
+    generateSeedEachIteration=True,
+	#If True the mechanism will also be saved directly as kinetics and thermo libraries in the database
+    saveSeedToDatabase=False,
 	#only option is 'si'
     units='si',
 	#how often you want to save restart files.  

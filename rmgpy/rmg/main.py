@@ -207,7 +207,7 @@ class RMG(util.Subject):
         self.kineticsdatastore = None
         
         self.name = None
-        self.generateSeeds = None
+        self.generateSeedEachIteration = None
         self.saveSeedToDatabase = None
 
         self.thermoCentralDatabase = None
@@ -635,7 +635,7 @@ class RMG(util.Subject):
                 self.reactionModel.surfaceSpecies = surfaceSpecies
                 self.reactionModel.surfaceReactions = surfaceReactions
 
-                if self.generateSeeds:
+                if self.generateSeedEachIteration:
                     self.makeSeedMech()
 
                 allTerminated = allTerminated and terminated
@@ -803,7 +803,7 @@ class RMG(util.Subject):
     def makeSeedMech(self,firstTime=False):
         """
         causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
-        this seed mechnaism is outputted in a seed folder within the run directory and automatically
+        this seed mechanism is outputted in a seed folder within the run directory and automatically
         added to as the (or replaces the current) 'Seed' thermo and kinetics libraries in database
         
         if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
@@ -816,19 +816,17 @@ class RMG(util.Subject):
         
         currentDir = os.getcwd()
         
-        if self.saveSeedToDatabase:
-            if firstTime: #make sure don't overwrite current libraries
-                thermoNames = self.database.thermo.libraries.keys()
-                kineticsNames = self.database.kinetics.libraries.keys()
+        if self.saveSeedToDatabase and firstTime: #make sure don't overwrite current libraries
+            thermoNames = self.database.thermo.libraries.keys()
+            kineticsNames = self.database.kinetics.libraries.keys()
                 
-                if name in thermoNames or name in kineticsNames: 
-                    q = 1
-                    while name+str(q) in thermoNames or name+str(q) in kineticsNames:
-                        q += 1
-                    name += str(q)
-                    self.name = name
+            if name in thermoNames or name in kineticsNames: 
+                q = 1
+                while name+str(q) in thermoNames or name+str(q) in kineticsNames:
+                    q += 1
+                self.name = name + str(q)
             
-        if not os.path.lexists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
+        if not os.path.exists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
             os.system('mkdir seed')
             
         speciesList = self.reactionModel.core.species
