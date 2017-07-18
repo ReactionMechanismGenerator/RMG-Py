@@ -697,7 +697,7 @@ class KineticsRules(Database):
                     )
                 
         kinetics.comment += ' for rate rule ' + originalLeaves
-        kinetics.comment += ' Euclidian distance = {}.'.format(minNorm)
+        kinetics.comment += '\nEuclidian distance = {}'.format(minNorm)
         kinetics.A.value_si *= degeneracy
         if degeneracy > 1:
             kinetics.comment += "\n"
