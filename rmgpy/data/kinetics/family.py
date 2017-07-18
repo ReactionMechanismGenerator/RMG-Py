@@ -2136,8 +2136,7 @@ class KineticsFamily(Database):
         
         Where the TrainingReactionEntry is only present if it comes from a training reaction
         """
-        
-        templateLabels = templateLabel.split()[0].split(';')
+        templateLabels = templateLabel.split()[-1].split(';')
         template = self.retrieveTemplate(templateLabels)
         rule = self.getRateRule(template)
         if 'from training reaction' in rule.data.comment:
@@ -2227,6 +2226,8 @@ class KineticsFamily(Database):
                 training = {}
                 
                 for tokenTemplateLabel, weight in weightedEntries:
+                    if 'from training reaction' in tokenTemplateLabel:
+                        tokenTemplateLabel = tokenTemplateLabel.split()[0]
                     ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel)
                     if trainingEntry:
                         if (ruleEntry, trainingEntry) in training:
