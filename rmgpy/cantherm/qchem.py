@@ -161,7 +161,6 @@ class QchemLog:
                 number.append('6')
             elif atom[i] == 'N':
                 mass[i] = 14.0030740048
-                number[i] = 7
                 number.append('7')
             elif atom[i] == 'O':
                 mass[i] = 15.99491461956
