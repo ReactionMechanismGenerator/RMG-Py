@@ -409,6 +409,11 @@ class RMG(util.Subject):
             diffusionLimiter.enable(Species.solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
 
+        try:
+            self.wallTime = kwargs['walltime']
+        except KeyError:
+            pass
+
         data = self.wallTime.split(':')
         self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
         if not len(data) == 4:
