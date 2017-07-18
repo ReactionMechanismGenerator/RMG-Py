@@ -94,7 +94,12 @@ endif
 
 test-database:
 	nosetests -v -d testing/databaseTest.py	
-
+eg0: noQM
+	mkdir -p testing/eg0
+	rm -rf testing/eg0/*
+	cp examples/rmg/superminimal/input.py testing/eg0/input.py
+	@ echo "Running eg0: superminimal (H2 oxidation) example"
+	python rmg.py testing/eg0/input.py
 eg1: noQM
 	mkdir -p testing/eg1
 	rm -rf testing/eg1/*
