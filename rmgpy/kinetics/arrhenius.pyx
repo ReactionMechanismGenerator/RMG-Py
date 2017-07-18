@@ -429,6 +429,159 @@ cdef class ArrheniusEP(KineticsModel):
 
 ################################################################################
 
+cdef class ArrheniusBM(KineticsModel):
+    """
+    A kinetics model based on the (modified) Arrhenius equation, using the
+    Blowers-Masel equation to determine the activation energy. 
+    Based on Blowers and Masel's 2000 paper Engineering Approximations for Activation
+    Energies in Hydrogen Transfer Reactions.  
+    The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `n`             The temperature exponent
+    `w0`            The average of the bond dissociation energies of the bond formed and the bond broken
+    `E0`            The activation energy for a thermoneutral reaction
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+    
+    """
+    
+    def __init__(self, A=None, n=0.0, w0=(0.0,'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.A = A
+        self.n = n
+        self.w0 = w0
+        self.E0 = E0
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        ArrheniusBM object.
+        """
+        string = 'ArrheniusBM(A={0!r}, n={1!r}, w0={2!r}, E0={3!r}'.format(self.A, self.n, self.w0, self.E0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an ArrheniusEP object.
+        """
+        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+
+    property A:
+        """The preexponential factor."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.RateCoefficient(value)
+
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property w0:
+        """The average of the bond dissociation energies of the bond formed and the bond broken."""
+        def __get__(self):
+            return self._w0
+        def __set__(self, value):
+            self._w0 = quantity.Energy(value)
+
+    property E0:
+        """The activation energy for a thermoneutral reaction."""
+        def __get__(self):
+            return self._E0
+        def __set__(self, value):
+            self._E0 = quantity.Energy(value)
+
+    cpdef double getRateCoefficient(self, double T, double dHrxn=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
+        in J/mol. 
+        """
+        cdef double A, n, Ea        
+        Ea = self.getActivationEnergy(dHrxn)
+        A = self._A.value_si
+        n = self._n.value_si
+        return A * T**n * exp(-Ea / (constants.R * T))
+
+    cpdef double getActivationEnergy(self, double dHrxn) except -1:
+        """
+        Return the activation energy in J/mol corresponding to the given
+        enthalpy of reaction `dHrxn` in J/mol.
+        """
+        cdef double w0,E0
+        E0 = self._E0.value_si
+        if dHrxn < -4*self._E0.value_si:
+            return 0.0
+        elif dHrxn > 4*self._E0.value_si:
+            return dHrxn
+        else:
+            w0 = self._w0.value_si
+            Vp = 2*w0*(2*w0+2*E0)/(2*w0-2*E0)
+            return (w0+dHrxn/2.0)*(Vp-2*w0+dHrxn)**2/(Vp**2-(2*w0)**2+dHrxn**2)
+    
+    cpdef Arrhenius toArrhenius(self, double dHrxn):
+        """
+        Return an :class:`Arrhenius` instance of the kinetics model using the
+        given enthalpy of reaction `dHrxn` to determine the activation energy.
+        """
+        return Arrhenius(
+            A = self.A,
+            n = self.n,
+            Ea = (self.getActivationEnergy(dHrxn)*0.001,"kJ/mol"),
+            T0 = (1,"K"),
+            Tmin = self.Tmin,
+            Tmax = self.Tmax,
+            comment = self.comment,
+        )
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(otherKinetics,ArrheniusBM):
+            return False
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+            return False
+        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
+            or not self.w0.equals(otherKinetics.w0) or not self.E0.equals(otherKinetics.E0)):
+            return False
+                
+        return True
+    
+    cpdef changeRate(self, double factor):
+        """
+        Changes A factor by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
+
+    def setCanteraKinetics(self, ctReaction, speciesList):
+        """
+        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        converted to an Arrhenius form.
+        """
+        raise NotImplementedError('setCanteraKinetics() is not implemented for ArrheniusBM class kinetics.')
+        
+################################################################################
+
 cdef class PDepArrhenius(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T,P)` where
