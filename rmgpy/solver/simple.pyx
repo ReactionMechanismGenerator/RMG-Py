@@ -280,7 +280,7 @@ cdef class SimpleReactor(ReactionSystem):
         cdef double k, V, reactionRate, revReactionRate, T, P, Peff
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates, coreSpeciesConsumptionRates, coreSpeciesProductionRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C, y_coreSpecies
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, colliderEfficiencies, specificColliderEfficiencies
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk, colliderEfficiencies
         cdef numpy.ndarray[numpy.int_t, ndim=1] pdepColliderReactionIndices, pdepSpecificColliderReactionIndices
         cdef list pdepColliderKinetics, pdepSpecificColliderKinetics
 
