@@ -249,7 +249,23 @@ cdef class Arrhenius(KineticsModel):
 
         # Set the rate parameter to a cantera Arrhenius object
         ctReaction.rate = self.toCanteraKinetics()
-    
+
+    cpdef ArrheniusEP toArrheniusEP(self):
+        """
+        Converts an Arrhenius object to ArrheniusEP by setting alpha to 0
+        and E0 = Ea
+        """
+        self.changeT0(1)
+        aep = ArrheniusEP(A = self.A,
+                          n = self.n,
+                          alpha = 0.0,
+                          E0 = self.Ea,
+                          Tmin = self.Tmin,
+                          Tmax = self.Tmax,
+                          Pmin = self.Pmin,
+                          Pmax = self.Pmax,
+                          comment = self.comment)
+        return aep
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):
@@ -367,6 +383,8 @@ cdef class ArrheniusEP(KineticsModel):
             T0 = (1,"K"),
             Tmin = self.Tmin,
             Tmax = self.Tmax,
+            Pmin = self.Pmin,
+            Pmax = self.Pmax,
             comment = self.comment,
         )
 

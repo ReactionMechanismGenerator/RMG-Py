@@ -217,6 +217,15 @@ class TestArrhenius(unittest.TestCase):
         self.assertAlmostEqual(ctArrhenius.temperature_exponent, 0.5)
         self.assertAlmostEqual(ctArrhenius.activation_energy, 41.84e6)
 
+    def test_toArrheniusEP(self):
+        """
+        Tests that the Arrhenius object can be converted to ArrheniusEP
+        """
+        arrRate = self.arrhenius.getRateCoefficient(500)
+        arrEP = self.arrhenius.toArrheniusEP()
+        arrEPRate = arrEP.getRateCoefficient(500,10) # the second number should not matter
+        self.assertAlmostEqual(arrRate,arrEPRate)
+
 ################################################################################
 
 class TestArrheniusEP(unittest.TestCase):
