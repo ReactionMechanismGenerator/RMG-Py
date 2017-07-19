@@ -1037,20 +1037,14 @@ class KineticsFamily(Database):
                 label = ';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                                                    products=[]),
-                data = ArrheniusEP(
-                    A = deepcopy(data.A),
-                    n = deepcopy(data.n),
-                    alpha = 0,
-                    E0 = deepcopy(data.Ea),
-                    Tmin = deepcopy(data.Tmin),
-                    Tmax = deepcopy(data.Tmax),
-                    comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index),
-                ),
+                data = data.toArrheniusEP(),
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
+            new_entry.data.comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index)
+
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
                 self.rules.entries[new_entry.label].append(new_entry)
@@ -1091,20 +1085,14 @@ class KineticsFamily(Database):
                 label = ';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                                                    products=[]),
-                data = ArrheniusEP(
-                    A = deepcopy(data.A),
-                    n = deepcopy(data.n),
-                    alpha = 0,
-                    E0 = deepcopy(data.Ea),
-                    Tmin = deepcopy(data.Tmin),
-                    Tmax = deepcopy(data.Tmax),
-                    comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index),
-                ),
+                data = data.toArrheniusEP(),
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
+            new_entry.data.comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index)
+
             new_entry.data.A.value_si /= new_degeneracy
             try:
                 self.rules.entries[new_entry.label].append(new_entry)
