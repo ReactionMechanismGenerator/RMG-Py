@@ -205,6 +205,10 @@ class RMG(util.Subject):
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
         self.kineticsdatastore = None
+        
+        self.name = None
+        self.generateSeeds = None
+        self.saveSeedToDatabase = None
 
         self.thermoCentralDatabase = None
 
@@ -631,7 +635,8 @@ class RMG(util.Subject):
                 self.reactionModel.surfaceSpecies = surfaceSpecies
                 self.reactionModel.surfaceReactions = surfaceReactions
 
-                self.makeSeedMech()
+                if self.generateSeeds:
+                    self.makeSeedMech()
 
                 allTerminated = allTerminated and terminated
                 logging.info('')
@@ -885,9 +890,10 @@ class RMG(util.Subject):
             pass
         
         #save in database
-        thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
-        kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
-        kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
+        if self.saveSeedToDatabase:
+            thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
+            kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
+            kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
         
         seedDir = os.path.join(os.getcwd(),'seed')
         
