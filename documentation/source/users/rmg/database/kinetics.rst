@@ -10,7 +10,7 @@ Pressure independent reaction rates in RMG are calculated using a modified
 Arrhenius equation, designating the reaction coefficient as :math:`k(T)` at 
 temperature :math:`T`.
 
-.. math:: k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_a + \alpha \Delta H_{rxn})/(RT)}
+.. math:: k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_0 + \alpha \Delta H_{rxn})/(RT)}
 
 :math:`R` is the universal gas constant. The **kinetic parameters** determining 
 the rate coefficient are:
@@ -21,14 +21,16 @@ the rate coefficient are:
 
 * :math:`n`:	the temperature exponent
 
-* :math:`E_a`:	the activation energy 
+* :math:`E_0`:	the activation energy for a thermoneutral reaction (a barrier height intrinsic to the kinetics family)
 
-* :math:`\alpha`:	the Evans-Polanyi coefficient
+* :math:`\alpha`:	the Evans-Polanyi coefficient (characterizes the position of the transition state along the reaction coordinate, :math:`0 \le \alpha \le 1`)
 
 * :math:`\Delta H_{rxn}`: the enthalpy of reaction
 
 When Evans-Polanyi corrections are used, :math:`\Delta H_{rxn}` is calculated
-using RMG's thermo database, instead of being specified in the kinetic database.  
+using RMG's thermo database, instead of being specified in the kinetic database.
+When Evans-Polanyi corrections are not used, :math:`\Delta H_{rxn}` and :math:`\alpha`
+are set to zero, and :math:`E_0` is the activation energy of the reaction.
 
 Libraries
 =========
