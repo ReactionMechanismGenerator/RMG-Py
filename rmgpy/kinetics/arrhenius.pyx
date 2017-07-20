@@ -32,7 +32,6 @@ from libc.math cimport exp, log, sqrt, log10
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -250,16 +249,22 @@ cdef class Arrhenius(KineticsModel):
         # Set the rate parameter to a cantera Arrhenius object
         ctReaction.rate = self.toCanteraKinetics()
 
-    cpdef ArrheniusEP toArrheniusEP(self):
+    cpdef ArrheniusEP toArrheniusEP(self, double alpha=0.0, double dHrxn=0.0):
         """
-        Converts an Arrhenius object to ArrheniusEP by setting alpha to 0
-        and E0 = Ea
+        Converts an Arrhenius object to ArrheniusEP
+
+        If setting alpha, you need to also input dHrxn, which must be given 
+        in J/mol (and vise versa).
         """
+
+        if (bool(alpha) ^ bool(dHrxn)):
+            raise Exception('If you set alpha or dHrxn in toArrheniusEP, '\
+                                'you need to set the other value to non-zero.')
         self.changeT0(1)
         aep = ArrheniusEP(A = self.A,
                           n = self.n,
-                          alpha = 0.0,
-                          E0 = self.Ea,
+                          alpha = alpha,
+                          E0 = (self.Ea.value_si-alpha*dHrxn,'J/mol'),
                           Tmin = self.Tmin,
                           Tmax = self.Tmax,
                           Pmin = self.Pmin,

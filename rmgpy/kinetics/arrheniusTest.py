@@ -226,6 +226,21 @@ class TestArrhenius(unittest.TestCase):
         arrEPRate = arrEP.getRateCoefficient(500,10) # the second number should not matter
         self.assertAlmostEqual(arrRate,arrEPRate)
 
+    def test_toArrheniusEP_with_alpha_and_Hrxn(self):
+        """
+        Tests that the Arrhenius object can be converted to ArrheniusEP given parameters
+        """
+        hrxn = 5
+        arrRate = self.arrhenius.getRateCoefficient(500)
+        arrEP = self.arrhenius.toArrheniusEP(alpha=1, dHrxn=hrxn)
+        self.assertAlmostEqual(1.,arrEP.alpha.value_si)
+        arrEPRate = arrEP.getRateCoefficient(500,hrxn)
+        self.assertAlmostEqual(arrRate,arrEPRate)
+
+    def test_toArrheniusEP_throws_error_with_just_alpha(self):
+        with self.assertRaises(Exception):
+            self.arrhenius.toArrheniusEP(alpha=1)
+
 ################################################################################
 
 class TestArrheniusEP(unittest.TestCase):
