@@ -104,7 +104,7 @@ class MoleculeConv(Layer):
 
 		# Get initial fingerprint
 		presum_fp = self.attributes_to_fp_contribution(A, 0)
-		fp = K.sum(presum_fp, axis = 0) # sum across atom contributions
+		fp_all_depth = presum_fp
 
 		# Iterate through different depths, updating atom matrix each time
 		A_new = A
@@ -114,9 +114,11 @@ class MoleculeConv(Layer):
 										+ self.b_inner[depth+1, 0, :])
 
 			presum_fp_new = self.attributes_to_fp_contribution(A_new, depth + 1)
-			fp = fp + K.sum(presum_fp_new, axis = 0) 
+			fp_all_depth = fp_all_depth + presum_fp_new
+		
+		fp = K.sum(fp_all_depth, axis = 0) # sum across atom contributions
 
-		return fp
+		return  fp
 
 
 	def attributes_to_fp_contribution(self, attributes, depth):
