@@ -103,7 +103,7 @@ class Reaction:
         self.reactants = reactants
         self.products = products
         self.specificCollider = specificCollider
-        self.degeneracy = degeneracy
+        self._degeneracy = degeneracy
         self.kinetics = kinetics
         self.reversible = reversible
         self.transitionState = transitionState
@@ -180,6 +180,13 @@ class Reaction:
                 degeneracyRatio = new
             else:
                 degeneracyRatio = (new*1.0) / self._degeneracy
+            # fix kinetics comment with new degeneracy
+            if 'Multiplied by reaction path degeneracy {}'.format(self._degeneracy) in self.kinetics.comment:
+                self.kinetics.comment = self.kinetics.comment.replace(
+                                                  'Multiplied by reaction path degeneracy {}'.format(self._degeneracy),
+                                                  'Multiplied by reaction path degeneracy {}'.format(float(new)))
+            elif self.kinetics.comment:
+                self.kinetics.comment += 'Multiplied by reaction path degeneracy {}'.format(float(new))
             self.kinetics.changeRate(degeneracyRatio)
         # set new degeneracy
         self._degeneracy = new
