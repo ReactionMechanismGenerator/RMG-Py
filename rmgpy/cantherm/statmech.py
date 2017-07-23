@@ -243,12 +243,19 @@ class StatMechJob:
         try:
             externalSymmetry = local_context['externalSymmetry']
         except KeyError:
-            raise InputError('Required attribute "externalSymmetry" not found in species file {0!r}.'.format(path))
+            logging.info('\n')
+            logging.warning('"externalSymmetry" was unspecified in species file {0!r}!\n'\
+                'It is strongly recommended that the externalSymmetry values is supplied by the user rather'\
+                ' than extracted from the quantum job output, which is often erroneous.\n'.format(path))
+            externalSymmetry = None
+            pass
         
         try:
             spinMultiplicity = local_context['spinMultiplicity']
         except KeyError:
-            raise InputError('Required attribute "spinMultiplicity" not found in species file {0!r}.'.format(path))
+            logging.info('"spinMultiplicity" was unspecified in species file {0!r}, attempting to read from job file'.format(path))
+            spinMultiplicity = None
+            pass
        
         try:
             opticalIsomers = local_context['opticalIsomers']

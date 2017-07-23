@@ -198,7 +198,8 @@ class QchemLog:
             if '$molecule' in line and spinMultiplicity is None:
                 line = f.readline()
                 if len(line.split()) == 2:
-                    spinMultiplicity = int(float(line.split()[1])) 
+                    spinMultiplicity = int(float(line.split()[1]))
+                    logging.info('Spin Multiplicity was extracted from QChem output: {}'.format(spinMultiplicity))
             # The rest of the data we want is in the Thermochemistry section of the output
             elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
@@ -241,8 +242,16 @@ class QchemLog:
                     # Read moments of inertia for external rotational modes, given in atomic units
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
+
+                    # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
+                    elif 'Rotational Symmetry Number is' in line:
+                        if symmetry is None:
+                            symmetry = int(float(line.split()[4]))
+                            logging.info('externalSymmetry (Rotational Symmetry Number) was extracted from QChem output: {}'.format(symmetry))
+
+                        #Now that symmetry was extracted, continue with moments of inertia for external rotational modes
+                        assert inertia is not None, "Did not find Eigenvalues in QChem output prior to Rotational Symmetry Number"
                         # If the first eigenvalue is 0, the rotor is linear
-                        symmetry = 1
                         if inertia[0] == 0.0:
                             inertia.remove(0.0)
                             logging.debug('inertia is {}'.format(str(inertia)))
@@ -258,11 +267,6 @@ class QchemLog:
                                 rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                                 #modes.append(rotation)
                             rot.append(rotation) 
-
-                    # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
-                    elif 'Rotational Symmetry Number is' in line: # and symmetry is None:
-                        symmetry = int(float(line.split()[4]))
-                        logging.debug('rot sym is {}'.format(str(symmetry)))
 
                     # Read the next line in the file
                     line = f.readline()
