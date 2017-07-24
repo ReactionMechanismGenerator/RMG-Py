@@ -9,7 +9,7 @@ atoms = {
 bonds = {
     'C-C': 4, 
     'C-H': 8,
-    'C=H': 3,
+    'C=C': 3,
 }
 
 linear = False
