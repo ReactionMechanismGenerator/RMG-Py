@@ -36,14 +36,8 @@ import os
 import os.path
 import logging
 from .version import __version__
-
+from .exceptions import SettingsError
 ################################################################################
-
-class SettingsError(Exception):
-    """
-    An exception raised when dealing with settings.
-    """
-    pass
 
 class Settings(dict):
     """

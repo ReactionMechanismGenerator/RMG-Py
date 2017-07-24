@@ -53,10 +53,9 @@ import itertools
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
-from .kekulize import kekulize, KekulizationError
-from .atomtype import AtomTypeError
+from .kekulize import kekulize
 import rmgpy.molecule.pathfinder as pathfinder
-
+from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError
 
 def populateResonanceAlgorithms(features=None):
     """
@@ -883,12 +882,3 @@ def _clarTransformation(mol, aromaticRing):
 
     for bond in bondList:
         bond.order = 1.5
-
-
-class ILPSolutionError(Exception):
-    """
-    An exception to be raised when solving an integer linear programming problem if a solution
-    could not be found or the solution is not valid. Can pass a string to indicate the reason
-    that the solution is invalid.
-    """
-    pass

@@ -56,18 +56,8 @@ from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
 from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
-
+from rmgpy.exceptions import ReactionError
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-
-################################################################################
-
-class ReactionError(Exception):
-    """
-    An exception class for exceptional behavior involving :class:`Reaction`
-    objects. Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 

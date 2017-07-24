@@ -37,15 +37,7 @@ import scipy.linalg
 from libc.math cimport exp, log, sqrt
 
 import rmgpy.constants as constants
-
-################################################################################
-
-class ReservoirStateError(Exception): 
-    """
-    An exception raised when the reservoir state method is unsuccessful for
-    any reason. Pass a string describing the cause of the exceptional behavior.
-    """
-    pass
+from rmgpy.exceptions import ReservoirStateError
 
 ################################################################################
 

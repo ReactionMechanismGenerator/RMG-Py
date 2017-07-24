@@ -40,16 +40,7 @@ represent, this should be the only module you need to change to do so.
 """
 
 import cython
-
-################################################################################
-
-class AtomTypeError(Exception):
-    """
-    An exception to be raised when an error occurs while working with atom
-    types. Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
+from rmgpy.exceptions import AtomTypeError
 
 ################################################################################
 

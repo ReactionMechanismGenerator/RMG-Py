@@ -56,8 +56,7 @@ import logging
 
 from .molecule cimport Atom, Bond, Molecule
 from .element import PeriodicSystem
-from .atomtype import AtomTypeError
-
+from rmgpy.exceptions import KekulizationError, AtomTypeError
 
 cpdef kekulize(Molecule mol):
     """
@@ -345,10 +344,3 @@ cdef class AromaticBond(object):
 
         self.endoDOF = endoDOF
         self.exoDOF = exoDOF
-
-class KekulizationError(Exception):
-    """
-    An exception to be raised when encountering an error while kekulizing an aromatic molecule.
-    Can pass a string to indicate the reason for failure.
-    """
-    pass

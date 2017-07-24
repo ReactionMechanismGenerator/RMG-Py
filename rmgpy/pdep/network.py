@@ -39,25 +39,7 @@ import logging
 
 import rmgpy.constants as constants
 from rmgpy.reaction import Reaction
-
-################################################################################
-
-class NetworkError(Exception): 
-    pass
-
-class InvalidMicrocanonicalRateError(NetworkError):
-    """Used when the k(E) calculation does not give the correct kf(T) or Kc(T)"""
-    def __init__(self,message, k_ratio=1.0, Keq_ratio=1.0):
-        self.message = message
-        self.k_ratio = k_ratio
-        self.Keq_ratio = Keq_ratio
-    def badness(self):
-        """
-        How bad is the error?
-        
-        Returns the max of the absolute logarithmic errors of kf and Kc
-        """
-        return max(abs(math.log10(self.k_ratio)), abs(math.log10(self.Keq_ratio)))
+from rmgpy.exceptions import NetworkError, InvalidMicrocanonicalRateError
 
 ################################################################################
 

@@ -27,6 +27,7 @@
 
 import cython
 import re
+from rmgpy.exceptions import InchiException
 
 # search for (*) PARENTHESES
 PARENTHESES = re.compile( r'\((.[^\(\)]*)\)')
@@ -298,9 +299,6 @@ def parse_N_layer(auxinfo):
     indices = map(int, atom_numbers.split(','))
 
     return indices
-        
-class InchiException(Exception):
-    pass
 
 class InChI(str):
     """InChI is a type of string in which the InChI=1 prefix is ignored."""

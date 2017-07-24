@@ -41,12 +41,13 @@ import math
 import numpy
 from copy import  deepcopy
 
-from rmgpy.data.base import Database, Entry, DatabaseError, getAllCombinations
+from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import ArrheniusEP, Arrhenius
-from .common import KineticsError, saveEntry
+from .common import saveEntry
+from rmgpy.exceptions import KineticsError, DatabaseError
 
 ################################################################################
 

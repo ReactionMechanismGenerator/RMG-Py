@@ -43,18 +43,10 @@ comparisons.
 
 import cython
 from rdkit.Chem import GetPeriodicTable
+from rmgpy.exceptions import ElementError
 
 ################################################################################
 
-class ElementError(Exception):
-    """
-    An exception class for errors that occur while working with elements.
-    Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
-
-################################################################################
 _rdkit_periodic_table = GetPeriodicTable()
 class Element:
     """

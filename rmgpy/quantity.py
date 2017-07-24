@@ -37,6 +37,7 @@ import numpy
 import quantities as pq
 
 import rmgpy.constants as constants
+from rmgpy.exceptions import QuantityError
 
 ################################################################################
 
@@ -63,14 +64,6 @@ NOT_IMPLEMENTED_UNITS = [
                         'degR',
                         'R'
                         ]
-
-class QuantityError(Exception):
-    """
-    An exception to be raised when an error occurs while working with physical
-    quantities in RMG. Pass a string describing the circumstances of the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 

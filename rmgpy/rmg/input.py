@@ -44,11 +44,7 @@ from rmgpy.solver.liquid import LiquidReactor
 from model import CoreEdgeReactionModel
 
 from rmgpy.scoop_framework.util import broadcast, get
-
-################################################################################
-
-class InputError(Exception): pass
-
+from rmgpy.exceptions import InputError
 ################################################################################
 
 rmg = None

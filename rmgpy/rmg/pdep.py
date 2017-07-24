@@ -41,16 +41,7 @@ import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
 from rmgpy.rmg.react import react
-
-################################################################################
-
-class PressureDependenceError(Exception):
-    """
-    An exception class to use when an error involving pressure dependence is
-    encountered. Pass a string describing the circumstances of the exceptional
-    behavior.
-    """
-    pass
+from rmgpy.exceptions import PressureDependenceError
 
 ################################################################################
 
