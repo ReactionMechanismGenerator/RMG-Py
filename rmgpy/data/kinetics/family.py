@@ -41,35 +41,19 @@ import numpy as np
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
-                            ForbiddenStructureException, getAllCombinations
+                            getAllCombinations
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
-from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
-from rmgpy.molecule.kekulize import KekulizationError
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
-from .common import KineticsError, UndeterminableKineticsError, saveEntry
+from .common import saveEntry
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
-
-
-
-################################################################################
-
-class InvalidActionError(Exception):
-    """
-    An exception to be raised when an invalid action is encountered in a
-    reaction recipe.
-    """
-    pass
-
-class ReactionPairsError(Exception):
-    """
-    An exception to be raised when an error occurs while working with reaction
-    pairs.
-    """
-    pass
+from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
+                             UndeterminableKineticsError, ForbiddenStructureException,\
+                             KekulizationError, ActionError
 
 ################################################################################
 

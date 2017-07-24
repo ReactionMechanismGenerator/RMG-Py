@@ -45,7 +45,7 @@ from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo.thermoengine import submit
 
-from rmgpy.data.base import ForbiddenStructureException
+from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction

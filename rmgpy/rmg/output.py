@@ -39,17 +39,7 @@ import re
 import textwrap
 from rmgpy.util import makeOutputSubdirectory
 from rmgpy.chemkin import getSpeciesIdentifier
-
-################################################################################
-
-class OutputError(Exception):
-    """
-    This exception is raised whenever an error occurs while saving output
-    information. Pass a string describing the circumstances of the exceptional
-    behavior.
-    """
-    pass
-
+from rmgpy.exceptions import OutputError
 ################################################################################
 
 def saveOutputHTML(path, reactionModel, partCoreEdge='core'):

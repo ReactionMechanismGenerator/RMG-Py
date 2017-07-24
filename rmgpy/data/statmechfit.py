@@ -41,6 +41,7 @@ import logging
 import rmgpy.constants as constants
 from rmgpy.statmech import HarmonicOscillator, HinderedRotor
 from pydqed import DQED
+from rmgpy.exceptions import StatmechFitError
 
 ################################################################################
 
@@ -64,16 +65,6 @@ hrBarrUpperBound = 10000.0
 
 # The maximum number of iterations for the optimization solver to use
 maxIter = 200
-
-################################################################################
-
-class StatmechFitError(Exception):
-    """
-    An exception used when attempting to fit molecular degrees of freedom to
-    heat capacity data. Pass a string describing the circumstances of the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 

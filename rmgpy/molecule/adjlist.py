@@ -36,7 +36,7 @@ import re
 from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
 from .element import getElement, PeriodicSystem
-#import chempy.molecule.atomtype as atomtypes
+from rmgpy.exceptions import InvalidAdjacencyListError
 
 class Saturator(object):
     @staticmethod
@@ -135,15 +135,6 @@ class ConsistencyChecker(object):
             raise InvalidAdjacencyListError("Violation of hund's rule. Invalid multiplicity of {0} because there is an atom with {1} unpaired electrons"
                                             .format(multiplicity, atom.radicalElectrons))
             
-################################################################################
-
-class InvalidAdjacencyListError(Exception):
-    """
-    An exception used to indicate that an RMG-style adjacency list is invalid.
-    Pass a string describing the reason the adjacency list is invalid
-    """
-    pass
-
 ################################################################################
 
 def fromOldAdjacencyList(adjlist, group=False, saturateH=False):

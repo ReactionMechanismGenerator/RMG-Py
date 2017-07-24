@@ -52,18 +52,9 @@ import rmgpy.quantity as quantity
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.exceptions import SpeciesError
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
-                           
-################################################################################
-
-class SpeciesError(Exception):
-    """
-    An exception class for exceptional behavior that occurs while working with
-    chemical species. Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 

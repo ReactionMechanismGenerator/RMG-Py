@@ -55,19 +55,11 @@ from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 from rmgpy.transport import TransportData
+from rmgpy.exceptions import ChemkinError
 
 __chemkin_reaction_count = None
     
 from rmgpy.util import makeOutputSubdirectory
-
-################################################################################
-
-class ChemkinError(Exception):
-    """
-    An exception class for exceptional behavior involving Chemkin files. Pass a
-    string describing the circumstances that caused the exceptional behavior.
-    """
-    pass
 
 ################################################################################
 
