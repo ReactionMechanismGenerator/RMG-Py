@@ -395,6 +395,17 @@ are reported relative to that.
 
 Also note that the value of ``E0`` provided here will be used directly, i.e., no atom or bond corrections will be applied.
 
+If you want Cantherm to correct for zero point energy, you can either just place
+the raw units in Hartree (as if it were read directly from quantum):
+
+    E0 = 547.6789753223456
+
+Or you can add a third argument to the Quantity specified whether zero-point
+energy is included or not:
+
+    E0 = (95.1, 'kJ/mol', 'E0') # when ZPE is not included
+    E0 = (95.1, 'kJ/mol', 'E0-ZPE') # when ZPE is already included
+
 When specifying the ``modes`` parameter, define a list
 with the following types of degrees of freedom.  To understand how to define these
 degrees of freedom, please click on the links below:
