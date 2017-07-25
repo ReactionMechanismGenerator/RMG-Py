@@ -42,7 +42,7 @@ import logging
 from rdkit.Chem import GetPeriodicTable
 
 import rmgpy.constants as constants
-
+from rmgpy.quantity import Quantity
 from rmgpy.cantherm.output import prettify
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.molpro import MolproLog
@@ -277,8 +277,14 @@ class StatMechJob(object):
         if isinstance(energy, (GaussianLog,QchemLog,MolproLog)):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
+            E0_withZPE = None
         elif isinstance(energy, float):
-            energyLog = None; E0 = energy
+            energyLog = None; E0 = energy; E0_withZPE = None
+        elif isinstance(energy, tuple) and len(energy) == 2:
+            # this is likely meant to be a quantity object with ZPE already accounted for
+            energy_temp = Quantity(energy)
+            E0_withZPE = energy_temp.value_si # in J/mol
+            energyLog = None; E0 = None
         
         try:
             geomLog = local_context['geometry']
