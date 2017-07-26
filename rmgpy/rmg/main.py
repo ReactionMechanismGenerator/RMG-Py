@@ -874,15 +874,13 @@ class RMG(util.Subject):
         kineticsLibrary.checkForDuplicates(markDuplicates=True)
         kineticsLibrary.convertDuplicatesToMulti()
     
-        # Save in Py formatp
-        databaseDirectory = settings['database.directory']
-        try:
-            os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name))
-        except:
-            pass
-        
         #save in database
         if self.saveSeedToDatabase:
+            databaseDirectory = settings['database.directory']
+            try:
+                os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name))
+            except:
+                pass
             thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
             kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
             kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
