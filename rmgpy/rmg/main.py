@@ -825,8 +825,11 @@ class RMG(util.Subject):
                 while name+str(q) in thermoNames or name+str(q) in kineticsNames:
                     q += 1
                 self.name = name + str(q)
-            
-        if not os.path.exists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
+        
+        if firstTime and not os.path.exists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
+            os.system('mkdir seed')
+        else:
+            os.system('rm -rf seed') #otherwise delete the old seed and make a new directory
             os.system('mkdir seed')
             
         speciesList = self.reactionModel.core.species
