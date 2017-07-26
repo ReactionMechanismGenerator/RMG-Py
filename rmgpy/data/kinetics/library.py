@@ -241,7 +241,7 @@ class KineticsLibrary(Database):
             rxn = entry.item
             rxn_string = entry.label
             # Convert the reactants and products to Species objects using the speciesDict
-            reactants, products = rxn_string.split('=')
+            reactants, products = rxn_string.split('=>')
             reversible = True
             if '<=>' in rxn_string:
                 reactants = reactants[:-1]
