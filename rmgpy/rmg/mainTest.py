@@ -32,11 +32,11 @@ import os
 import unittest
 import shutil 
 
-from rmgpy.chemkin import loadChemkinFile
-
 from main import RMG
+from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy import getPath
+from rmgpy.rmg.model import CoreEdgeReactionModel
 ###################################################
 
 originalPath = getPath()
@@ -48,6 +48,9 @@ class TestMain(unittest.TestCase):
         os.chdir(originalPath)
         os.mkdir(self.dir_name)
         os.chdir(self.dir_name)
+        self.databaseDirectory = settings['database.directory']
+        self.thermoDir = os.path.join(self.databaseDirectory,'thermo','libraries','testSeed.py')
+        self.kineticsDir = os.path.join(self.databaseDirectory,'kinetics','libraries','testSeed')
         inputFile = """
 database(
     thermoLibraries = ['primaryThermoLibrary'],
@@ -79,7 +82,10 @@ model(
     toleranceInterruptSimulation=0.2,
 )
 options(
+    name='testSeed',
     units='si',
+    generateSeedEachIteration=True,
+    saveSeedToDatabase=True,
     saveRestartPeriod=None,
     generateOutputHTML=False,
     generatePlots=False,
@@ -102,7 +108,13 @@ options(
         # remove modular level database
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
-
+        
+        #delete the seed files created in database
+        if os.path.exists(self.thermoDir):
+            os.system('rm '+self.thermoDir)
+        if os.path.exists(self.kineticsDir):
+            os.system('rm -rf '+self.kineticsDir)
+        
     def testRMGExecute(self):
         """
         This example is to test if RMG.execute increases the core reactions
@@ -115,6 +127,40 @@ options(
         self.assertTrue(len(self.rmg.reactionModel.core.species) > 1)
         self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
         self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
+        
+        #test seed mech generation
+        #test seed mech made in run directory
+        seedDir = os.path.join(originalPath,self.dir_name,'seed')
+        self.assertTrue(os.path.exists)
+        os.chdir(seedDir)
+        self.assertTrue(os.path.exists(self.rmg.name+'.py')) #thermo library made
+        self.assertTrue(os.path.exists(self.rmg.name)) #kinetics library folder made
+        kDir = os.path.join(seedDir,self.rmg.name)
+        os.chdir(kDir)
+        self.assertTrue(os.path.exists('dictionary.txt')) #dictionary file made
+        self.assertTrue(os.path.exists('reactions.py')) #reactions file made
+        
+        os.chdir(os.path.join(originalPath,self.dir_name)) #return to original directory
+        
+        #check seed mech made in database
+        self.assertTrue(os.path.exists(self.thermoDir))
+        self.assertTrue(os.path.exists(self.kineticsDir))
+        
+        #check seed works
+        self.rmg.database.load(path=self.databaseDirectory,thermoLibraries=['testSeed'],reactionLibraries=['testSeed'],
+                               seedMechanisms=['testSeed'],kineticsFamilies='default',kineticsDepositories = [],
+                                              depository=False) #reload the database to get the seed
+        
+        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reactionModel.addReactionLibraryToEdge('testSeed') #try adding seed as library
+        self.assertTrue(len(self.rmg.reactionModel.edge.species)>0)
+        self.assertTrue(len(self.rmg.reactionModel.edge.reactions)>0)
+        
+        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reactionModel.addSeedMechanismToCore('testSeed') #try adding seed as seed mech
+        self.assertTrue(len(self.rmg.reactionModel.core.species)>0)
+        self.assertTrue(len(self.rmg.reactionModel.core.reactions)>0)
+        
         
     def testMakeCanteraInputFile(self):
         """
