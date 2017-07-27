@@ -248,6 +248,21 @@ def convertToSpeciesObjects(reaction):
     # if already species' objects, return none
     if isinstance(reaction.reactants[0],Species):
         return None
+
+    # map reactants and reaction paris before conversion
+    pair_indexes = []
+    for reactant, product in reaction.pairs:
+        newPair = []
+        for r_index, reactant0 in enumerate(reaction.reactants):
+            if id(reactant0) == id(reactant):
+                newPair.append(r_index)
+                break
+        for p_index, product0 in enumerate(reaction.products):
+            if id(product0) == id(product):
+                newPair.append(p_index)
+                break
+        pair_indexes.append(newPair)
+
     # obtain species with all resonance isomers
     for i, mol in enumerate(reaction.reactants):
         spec = Species(molecule = [mol])
@@ -258,19 +273,10 @@ def convertToSpeciesObjects(reaction):
         spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.products[i] = spec
 
-    # convert reaction.pairs object to species
+    # convert reaction.pairs object to contain species objects
     newPairs=[]
-    for reactant, product in reaction.pairs:
-        newPair = []
-        for reactant0 in reaction.reactants:
-            if reactant0.isIsomorphic(reactant):
-                newPair.append(reactant0)
-                break
-        for product0 in reaction.products:
-            if product0.isIsomorphic(product):
-                newPair.append(product0)
-                break
-        newPairs.append(newPair)
+    for r_index, p_index in pair_indexes:
+        newPairs.append([reaction.reactants[r_index],reaction.products[p_index]])
     reaction.pairs = newPairs
 
     try:
