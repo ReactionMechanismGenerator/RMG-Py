@@ -425,7 +425,7 @@ class QMReaction:
         """
         logging.info("Starting optimization steps of the TS search.")
         if os.path.exists(self.outputFilePath):
-            completeOutputFileExists, _ = self.checkComplete()
+            completeOutputFileExists, _ = self.checkComplete(self.outputFilePath)
             if not completeOutputFileExists:
                 # Looks like calculation was interrupted, rather than failed.
                 logging.info("Output file {} exists but looks incomplete, so deleting it to try again.".format(self.outputFilePath))
