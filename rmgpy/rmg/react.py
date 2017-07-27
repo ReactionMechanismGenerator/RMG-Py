@@ -127,26 +127,6 @@ def _labelListOfSpecies(speciesTuple):
             # remake resonance isomers with new labeles
             species.molecule = [mol]
             species.generateResonanceIsomers(keepIsomorphic = True)
-            
-    
-def getMoleculeTuples(speciesTuple):
-    """
-    returns a list of molule tuples from given speciesTuples.
-
-    The species objects should already have resonance isomers
-    generated for the function to work
-    """
-    combos = []
-    if len(speciesTuple) == 1:#unimolecular reaction
-        spc, = speciesTuple
-        mols = [(mol, spc.index) for mol in spc.molecule]
-        combos.extend([(combo,) for combo in mols])
-    elif len(speciesTuple) == 2:#bimolecular reaction
-        spcA, spcB = speciesTuple
-        molsA = [(mol, spcA.index) for mol in spcA.molecule]
-        molsB = [(mol, spcB.index) for mol in spcB.molecule]
-        combos.extend(itertools.product(molsA, molsB))
-    return combos
 
 def getMoleculeTuples(speciesTuple):
     """
