@@ -118,6 +118,29 @@ class TemplateReaction(Reaction):
                                    self.reverse,
                                    ))
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'TemplateReaction('
+        if self.index != -1: string += 'index={0:d}, '.format(self.index)
+        if self.label != '': string += 'label={0!r}, '.format(self.label)
+        if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
+        if self.products is not None: string += 'products={0!r}, '.format(self.products)
+        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
+        if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
+        if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
+        if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
+        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
+        if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
+        if self.family: string += "family='{}', ".format(self.family)
+        if self.template: string += "template={}, ".format(self.template)
+        if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
+        string = string[:-2] + ')'
+        return string
+
     def getSource(self):
         """
         Return the database that was the source of this reaction. For a
