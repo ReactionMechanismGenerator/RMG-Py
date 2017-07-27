@@ -63,7 +63,7 @@ def react(*spcTuples):
 
     return reactions
 
-def reactSpecies(speciesTuple):
+def reactSpecies(speciesTuple, accurateDegeneracies = False):
     """
     given one species tuple, will find the reactions and remove degeneracy
     from them.
@@ -76,8 +76,8 @@ def reactSpecies(speciesTuple):
 
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
-    # find all degeneracies
-    reactions = findDegeneracies(reactions)
+    # reduce number of reactions by finding degenerate rxns.
+    reactions = findDegeneracies(reactions, accurateDegeneracies)
     # add reverse attribute to families with ownReverse
     for rxn in reactions:
         family = getDB('kinetics').families[rxn.family]
@@ -85,8 +85,9 @@ def reactSpecies(speciesTuple):
             family.addReverseAttribute(rxn)
     # fix the degneracy of (not ownReverse) reactions found in the backwards
     # direction
-    correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
-    reduceSameReactantDegeneracy(reactions)
+    if accurateDegeneracies:
+        correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
+        reduceSameReactantDegeneracy(reactions)
     # get a molecule list with species indexes
     zippedList = []
     for spec in speciesTuple:

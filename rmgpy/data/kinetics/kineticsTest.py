@@ -370,9 +370,9 @@ class TestReactionDegeneracy(unittest.TestCase):
         spcA = Species().fromSMILES('[H]')
         spcB = Species().fromSMILES('CC=C[CH]C')
         spcB.generateResonanceIsomers(keepIsomorphic=True)
-        spcTuples = [(spcA,spcB)]
+        spcTuple = (spcA,spcB)
         
-        reactionList = list(react(*spcTuples))
+        reactionList = reactSpecies(spcTuple, accurateDegeneracies = True)
         
         # find reaction with a specific product
         specific_product = Species().fromSMILES('[CH2]C=C[CH]C')
@@ -397,8 +397,9 @@ class TestReactionDegeneracy(unittest.TestCase):
         """
         spcA = Species().fromSMILES('C[C]=C')
         spcB = Species().fromSMILES('C=C[CH2]')
-        spcTuples = [(spcA,spcB)]
-        reactionList = list(react(*spcTuples))
+        spcTuple = (spcA,spcB)
+
+        reactionList = reactSpecies(spcTuple, accurateDegeneracies = True)
         # find reaction with a specific product
         specific_products = [Species().fromSMILES('C=C=C'),
                              Species().fromSMILES('CC=C'),]
@@ -456,9 +457,9 @@ class TestReactionDegeneracy(unittest.TestCase):
         spcA = Species().fromSMILES('[H]')
         spcB = Species().fromSMILES('CC=C[CH]C')
         spcB.generateResonanceIsomers(keepIsomorphic=True)
-        spcTuples = [(spcA,spcB)]
+        spcTuple = (spcA,spcB)
         
-        reactionList = list(react(*spcTuples))
+        reactionList = reactSpecies(spcTuple, accurateDegeneracies = True)
         
         # find reaction with a specific product
         specific_product = Species().fromSMILES('CC=C[CH][CH2]')
