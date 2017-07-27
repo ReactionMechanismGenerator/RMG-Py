@@ -40,7 +40,7 @@ from libc.math cimport log, sqrt
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-cimport rmgpy.statmech.schrodinger as schrodinger 
+import rmgpy.statmech.schrodinger as schrodinger 
 
 ################################################################################
 
