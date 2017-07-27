@@ -76,7 +76,7 @@ def reactSpecies(speciesTuple):
 
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
-    # remove reverse reaction
+    # find all degeneracies
     reactions = findDegeneracies(reactions)
     # add reverse attribute to families with ownReverse
     for rxn in reactions:
@@ -148,11 +148,11 @@ def getMoleculeTuples(speciesTuple):
 
 def reactMolecules(moleculeTuples):
     """
-    Performs a reaction between
-    the resonance isomers.
+    Finds reactions between the resonance isomers of species.
 
     The parameter contains a list of tuples with each tuple:
     (Molecule, index of the core species it belongs to)
+    This is meant to help with deflating
     """
 
     families = getDB('kinetics').families
@@ -174,8 +174,8 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
     given a list of Reaction object with Molecule objects, this method 
     removes degenerate reactions and increments the degeneracy of the 
     reaction object. For multiple transition states, this method adds
-    them as separate duplicate reactions. This method modifies
-    rxnList in place and does not return anything.
+    them as separate duplicate reactions. This method returns a list of
+    reactions using species objects with degeneracies modified.
 
     This algorithm used to exist in family.__generateReactions, but was moved
     here because it didn't have any family dependence.
