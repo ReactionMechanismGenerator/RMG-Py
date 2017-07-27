@@ -169,13 +169,16 @@ def reactMolecules(moleculeTuples):
 
     return reactionList
 
-def findDegeneracies(rxnList, useSpeciesReaction = True):
+def findDegeneracies(rxnList, accurate = True):
     """
     given a list of Reaction object with Molecule objects, this method 
     removes degenerate reactions and increments the degeneracy of the 
     reaction object. For multiple transition states, this method adds
     them as separate duplicate reactions. This method returns a list of
     reactions using species objects with degeneracies modified.
+
+    The optional argument `accurate` will make the method find robust values
+    of degeneracy, which increases runtime significantly.
 
     This algorithm used to exist in family.__generateReactions, but was moved
     here because it didn't have any family dependence.
@@ -186,7 +189,7 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
     rxnSorted = []
     for rxn0 in rxnList:
         # find resonance structures for rxn0
-        convertToSpeciesObjects(rxn0)
+        convertToSpeciesObjects(rxn0, make_resonance_structures = accurate)
         if len(rxnSorted) == 0:
             # This is the first reaction, so create a new sublist
             rxnSorted.append([rxn0])
@@ -222,13 +225,20 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
                 else:
                     # We did not break, so this is the right sublist, but there is no identical reaction
                     # This means that we should add rxn0 to the sublist as a degenerate rxn
-                    rxnList1.append(rxn0)
+                    # if accuracy is not required, we will ignore this entry & increment degeneracy
+                    if accurate:
+                        rxnList1.append(rxn0)
+                    else:
+                        rxnList1[0].degeneracy +=1
                 if isomorphic and sameTemplate:
                     # We already found the right sublist, so we can move on to the next rxn
                     break
             else:
                 # We did not break, which means that there was no isomorphic sublist, so create a new one
                 rxnSorted.append([rxn0])
+
+    if not accurate:
+        return [rxnList[0] for rxnList in rxnSorted]
 
     rxnList = []
     for rxnList1 in rxnSorted:
