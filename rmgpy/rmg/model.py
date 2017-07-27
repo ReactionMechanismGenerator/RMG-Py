@@ -759,14 +759,8 @@ class CoreEdgeReactionModel:
                     # The reaction is not new, so it should already be in the core or edge
                     continue
                 if allSpeciesInCore:
-                    #for reaction in self.core.reactions:
-                    #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
-                    #else:
                     self.addReactionToCore(rxn)
                 else:
-                    #for reaction in self.edge.reactions:
-                    #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
-                    #else:
                     self.addReactionToEdge(rxn)
             else:
                 # Add the reaction to the appropriate unimolecular reaction network
