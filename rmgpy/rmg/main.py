@@ -792,13 +792,16 @@ class RMG(util.Subject):
         
         self.finish()
     
-    def makeSeedMech(self,name='Seed'):
+    def makeSeedMech(self):
         """
         causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
         this seed mechnaism is outputted in a seed folder within the run directory and automatically
         added to as the (or replaces the current) 'Seed' thermo and kinetics libraries in database
         """
         logging.info('Making seed mechanism...')
+        
+        name = self.name
+        
         currentDir = os.getcwd()
         
         if not os.path.lexists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
