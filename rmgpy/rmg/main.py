@@ -52,6 +52,11 @@ from rmgpy.data.base import ForbiddenStructureException, DatabaseError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 
+from rmgpy.data.thermo import ThermoLibrary
+from rmgpy.data.base import Entry
+from rmgpy.chemkin import loadChemkinFile, getSpeciesIdentifier
+from rmgpy import settings
+
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
@@ -617,10 +622,13 @@ class RMG(util.Subject):
                     else:
                         from rmgpy.cantherm.output import prettify
                         logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                    self.makeSeedMech()
                     raise
 
                 self.reactionModel.surfaceSpecies = surfaceSpecies
                 self.reactionModel.surfaceReactions = surfaceReactions
+
+                self.makeSeedMech()
 
                 allTerminated = allTerminated and terminated
                 logging.info('')
@@ -783,7 +791,90 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
-
+    
+    def makeSeedMech(self,name='Seed'):
+        """
+        causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
+        this seed mechnaism is outputted in a seed folder within the run directory and automatically
+        added to as the (or replaces the current) 'Seed' thermo and kinetics libraries in database
+        """
+        logging.info('Making seed mechanism...')
+        currentDir = os.getcwd()
+        
+        if not os.path.lexists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
+            os.system('mkdir seed')
+            
+        speciesList = self.reactionModel.core.species
+        reactionList = self.reactionModel.core.reactions
+        
+        # Make full species identifier the species labels
+        spclabels = [spc.label for spc in speciesList]
+        labelCounts = [spclabels.count(i) for i in spclabels]
+        
+        for i,species in enumerate(speciesList):
+            if labelCounts[i] > 1:
+                species.label = getSpeciesIdentifier(species)
+                species.index = -1
+            else:
+                species.label = spclabels[i]
+                species.index = -1
+            
+        # load thermo library entries
+        thermoLibrary = ThermoLibrary(name=name)
+        for i in range(len(speciesList)): 
+            species = speciesList[i]
+            if species.thermo:
+                thermoLibrary.loadEntry(index = i + 1,
+                                        label = species.label,
+                                        molecule = species.molecule[0].toAdjacencyList(),
+                                        thermo = species.thermo,
+                                        shortDesc = species.thermo.comment
+               )                
+            else:
+                logging.warning('Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(str(species)))
+                            
+        # load kinetics library entries                    
+        kineticsLibrary = KineticsLibrary(name=name)
+        kineticsLibrary.entries = {}
+        for i in range(len(reactionList)):
+            reaction = reactionList[i]        
+            entry = Entry(
+                    index = i+1,
+                    label = str(reaction),
+                    item = reaction,
+                    data = reaction.kinetics,
+                )
+            try:
+        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+    	    except AttributeError:
+        	    entry.longDesc = reaction.kinetics.comment
+            kineticsLibrary.entries[i+1] = entry
+        
+        # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
+        # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
+        # Using flag markDuplicates = True
+        kineticsLibrary.checkForDuplicates(markDuplicates=True)
+        kineticsLibrary.convertDuplicatesToMulti()
+    
+        # Save in Py formatp
+        databaseDirectory = settings['database.directory']
+        try:
+            os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name))
+        except:
+            pass
+        
+        #save in database
+        thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
+        kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
+        kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
+        
+        seedDir = os.path.join(os.getcwd(),'seed')
+        
+        #save in output directory
+        thermoLibrary.save(os.path.join(seedDir, name + '.py'))
+        kineticsLibrary.save(os.path.join(seedDir, name, 'reactions.py'))
+        kineticsLibrary.saveDictionary(os.path.join(seedDir, name, 'dictionary.txt'))
+        
     def generateCanteraFiles(self, chemkinFile, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
