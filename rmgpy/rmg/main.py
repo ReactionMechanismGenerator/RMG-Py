@@ -858,7 +858,7 @@ class RMG(util.Subject):
             reaction = reactionList[i]        
             entry = Entry(
                     index = i+1,
-                    label = str(reaction),
+                    label = reaction.toLabeledStr(),
                     item = reaction,
                     data = reaction.kinetics,
                 )
