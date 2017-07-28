@@ -150,12 +150,20 @@ class Reaction:
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
         If a specificCollider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
         """
+        return self.toLabeledStr(use_index=True)
+    
+    def toLabeledStr(self, use_index=False):
+        """
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+        the labels plus the index in parentheses
+        """
         arrow = ' <=> '
         if not self.reversible: arrow = ' => '
+        
         if self.specificCollider:
-            return arrow.join([' + '.join([str(s) for s in self.reactants])+' (+'+str(self.specificCollider)+')', ' + '.join([str(s) for s in self.products])+' (+'+str(self.specificCollider)+')'])
+            return arrow.join([' + '.join([str(s) if use_index else s.label for s in self.reactants])+' (+'+str(self.specificCollider)+')', ' + '.join([str(s) if use_index else s.label for s in self.products])+' (+'+str(self.specificCollider)+')'])
         else:
-            return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
+            return arrow.join([' + '.join([str(s) if use_index else s.label for s in self.reactants]), ' + '.join([str(s) if use_index else s.label for s in self.products])])
 
     def __reduce__(self):
         """
