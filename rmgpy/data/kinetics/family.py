@@ -1533,6 +1533,11 @@ class KineticsFamily(Database):
         reaction.degeneracy = 1
         from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
+        # if reactants are different instances, make deep copy of reaction object
+        if len(reaction.reactants) > 1 and \
+                      len(set([id(r) for r in reaction.reactants])) != \
+                      len(reaction.reactants):
+            reaction = reaction.copy()
         # find combinations of resonance isomers
         specReactants = []
         if isinstance(reaction.reactants[0], Molecule):
