@@ -816,16 +816,17 @@ class RMG(util.Subject):
         
         currentDir = os.getcwd()
         
-        if firstTime: #make sure don't overwrite current libraries
-            thermoNames = self.database.thermo.libraries.keys()
-            kineticsNames = self.database.kinetics.libraries.keys()
-            
-            if name in thermoNames or name in kineticsNames: 
-                q = 1
-                while name+str(q) in thermoNames or name+str(q) in kineticsNames:
-                    q += 1
-                name += str(q)
-                self.name = name
+        if self.saveSeedToDatabase:
+            if firstTime: #make sure don't overwrite current libraries
+                thermoNames = self.database.thermo.libraries.keys()
+                kineticsNames = self.database.kinetics.libraries.keys()
+                
+                if name in thermoNames or name in kineticsNames: 
+                    q = 1
+                    while name+str(q) in thermoNames or name+str(q) in kineticsNames:
+                        q += 1
+                    name += str(q)
+                    self.name = name
             
         if not os.path.lexists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
             os.system('mkdir seed')
@@ -833,17 +834,8 @@ class RMG(util.Subject):
         speciesList = self.reactionModel.core.species
         reactionList = self.reactionModel.core.reactions
         
-        # Make full species identifier the species labels
-        spclabels = [spc.label for spc in speciesList]
-        labelCounts = [spclabels.count(i) for i in spclabels]
-        
-        for i,species in enumerate(speciesList):
-            if labelCounts[i] > 1:
-                species.label = getSpeciesIdentifier(species)
-                species.index = -1
-            else:
-                species.label = spclabels[i]
-                species.index = -1
+        # Make species labels independent
+        oldLabels = self.makeCoreSpeciesLabelsIndependent()
             
         # load thermo library entries
         thermoLibrary = ThermoLibrary(name=name)
@@ -901,7 +893,31 @@ class RMG(util.Subject):
         thermoLibrary.save(os.path.join(seedDir, name + '.py'))
         kineticsLibrary.save(os.path.join(seedDir, name, 'reactions.py'))
         kineticsLibrary.saveDictionary(os.path.join(seedDir, name, 'dictionary.txt'))
-        
+    
+        #change labels back so species aren't renamed
+        for i,label in enumerate(oldLabels):
+            speciesList[i].label = label
+                   
+    def makeCoreSpeciesLabelsIndependent(self):
+        """
+        This method looks at the core species labels and makes sure none of them conflict
+        If a conflict occurs, the second occurance will have '-2' added
+        returns a list of the old labels
+        """
+        species = self.reactionModel.core.species
+        oldLabels = []
+        labels = set()
+        for spec in species:
+            oldLabels.append(spec.label)
+            duplicate_index = 1
+            potential_label = spec.label
+            while potential_label in labels:
+                duplicate_index += 1
+                potential_label = spec.label + '-{}'.format(duplicate_index)
+            spec.label = potential_label
+            labels.add(potential_label)
+        return oldLabels
+    
     def generateCanteraFiles(self, chemkinFile, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
