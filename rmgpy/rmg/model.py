@@ -209,6 +209,9 @@ class CoreEdgeReactionModel:
             self.edge = ReactionModel()
         else:
             self.edge = edge
+        
+        self.surfaceSpecies = []
+        self.surfaceReactions = []
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
