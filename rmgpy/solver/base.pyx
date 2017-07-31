@@ -909,7 +909,7 @@ cdef class ReactionSystem(DASx):
                         else:
                             logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model core of {3}'.format(self.t, obj, dlnaccum,toleranceMoveEdgeReactionToCore))
                     else: 
-                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for exploring of {3}'.format(self.t, maxNetwork.index, networkLeakRateRatios[ind],toleranceMoveToCore))
+                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for exploring of {3}'.format(self.t, obj.index, networkLeakRateRatios[ind],toleranceMoveToCore))
     
                 
                 invalidObjects += newObjects
