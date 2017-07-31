@@ -50,8 +50,9 @@ class AtomTypeError(Exception):
 
 class ChemicallySignificantEigenvaluesError(Exception):
     """
-    An exception raised when the reservoir state method is unsuccessful for
-    any reason. Pass a string describing the cause of the exceptional behavior.
+    An exception raised when the chemically significant eigenvalue method is 
+    unsuccessful for any reason. 
+    Pass a string describing the cause of the exceptional behavior.
     """
     pass
 
@@ -63,6 +64,11 @@ class ChemkinError(Exception):
     pass
 
 class CollisionError(Exception):
+    """
+    An exception class for when RMG is unable to calculate collision efficiencies
+    for the single exponential down pressure dependent solver. 
+    Pass a string describing the circumstances that caused the exceptional behavior.
+    """
     pass
 
 class DatabaseError(Exception):
@@ -82,7 +88,8 @@ class ElementError(Exception):
 
 class ForbiddenStructureException(Exception):
     """
-    Made a forbidden structure.
+    An exception passed when RMG encounters a forbidden structure. These are usually
+    caught and the reaction that created it is ignored.
     """
     pass
 
@@ -103,11 +110,16 @@ class ImplicitBenzeneError(Exception):
     pass
 
 class InchiException(Exception):
+    """
+    An exception used when encountering a non-valid Inchi expression are encountered.
+    Pass a string describing the error.
+    """
     pass
 
 class InputError(Exception):
     """
-    An exception raised when parsing an input file for RMG or a specific conformer. 
+    An exception raised when parsing an input file for any module in RMG:
+    mechanism generation, cantherm, conformer creation, etc.
     Pass a string describing the error.
     """
     pass
@@ -135,25 +147,30 @@ class KekulizationError(Exception):
 
 class KineticsError(Exception):
     """
-    An exception for problems with kinetics. Pass a string describing the problem.
+    An exception class for problems with kinetics. This can be used when finding 
+    degeneracy in reaction generation, modifying KineticsData objects, or finding the
+    kinetics of reactions. Unable Pass a string describing the problem.
     """
     pass
 
 class ModifiedStrongCollisionError(Exception): 
     """
-    An exception raised when the modified strong collsion method is unsuccessful
+    An exception raised when the modified strong collision method is unsuccessful
     for any reason. Pass a string describing the cause of the exceptional 
     behavior.
     """
     pass
 
 class NegativeBarrierException(Exception):
-    """This Exception occurs when the energy barrier for a hindered Rotor is negative.
+    """ This Exception occurs when the energy barrier for a hindered Rotor is negative.
     This can occur if the scan or fourier fit is poor. """
     
     pass
 
 class NetworkError(Exception): 
+    """
+    Raised when an error occurs while working with a pressure-dependent reaction network
+    """
     pass
 
 class OutputError(Exception):
