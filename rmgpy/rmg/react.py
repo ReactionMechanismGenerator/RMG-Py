@@ -290,11 +290,11 @@ def reduceSameReactantDegeneracy(rxnList):
     for reaction in rxnList:
         if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
             reaction.degeneracy *= 0.5
-            print('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
+            logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
         if reaction.reverse and len(reaction.reverse.reactants) == 2 and \
                                    reaction.reverse.reactants[0].isIsomorphic(reaction.reverse.reactants[1]):
             reaction.reverse.degeneracy *= 0.5
-            print('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
+            logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
 
 def correctDegeneracyOfReverseReactions(reactionList, reactants):
     """
