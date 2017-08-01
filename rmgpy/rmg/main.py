@@ -881,9 +881,9 @@ class RMG(util.Subject):
                     data = reaction.kinetics,
                 )
             try:
-        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-    	    except AttributeError:
-        	    entry.longDesc = reaction.kinetics.comment
+                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+            except AttributeError:
+                entry.longDesc = reaction.kinetics.comment
             kineticsLibrary.entries[i+1] = entry
         
         # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
