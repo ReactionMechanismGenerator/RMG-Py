@@ -516,7 +516,7 @@ cdef class ReactionSystem(DASx):
         cdef object maxSpecies, maxNetwork
         cdef int i, j, k
         cdef numpy.float64_t maxSurfaceDifLnAccumNum, maxSurfaceSpeciesRate 
-        cdef int maxSurfaceAccumReactionIndex, ind, maxSurfaceSpeciesIndex
+        cdef int maxSurfaceAccumReactionIndex, maxSurfaceSpeciesIndex
         cdef object maxSurfaceAccumReaction, maxSurfaceSpecies
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRates
@@ -855,7 +855,7 @@ cdef class ReactionSystem(DASx):
             if len(surfaceSpeciesIndices) > 0:
                 maxSurfaceSpeciesIndex = numpy.argmax(surfaceSpeciesRates)
                 maxSurfaceSpecies = surfaceSpecies[maxSurfaceSpeciesIndex]
-                maxSurfaceSpeciesRate = surfaceSpeciesRates[ind]
+                maxSurfaceSpeciesRate = surfaceSpeciesRates[maxSurfaceSpeciesIndex]
             else:
                 maxSurfaceSpeciesIndex = -1
                 maxSurfaceSpecies = None
