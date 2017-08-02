@@ -942,6 +942,39 @@ cdef class Graph:
 
         return sssr
 
+    cpdef list getRelevantCycles(self):
+        """
+        Returns the set of relevant cycles as a list of lists.
+        Uses RingDecomposerLib for ring perception.
+
+        Kolodzik, A.; Urbaczek, S.; Rarey, M.
+        Unique Ring Families: A Chemically Meaningful Description
+        of Molecular Ring Topologies.
+        J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
+
+        Flachsenberg, F.; Andresen, N.; Rarey, M.
+        RingDecomposerLib: An Open-Source Implementation of
+        Unique Ring Families and Other Cycle Bases.
+        J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
+        """
+        cdef list rc
+        cdef object graph, data, cycle
+
+        graph = py_rdl.Graph.from_edges(
+            self.getAllEdges(),
+            _getEdgeVertex1,
+            _getEdgeVertex2,
+        )
+
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data.calculate()
+
+        rc = []
+        for cycle in data.get_rcs():
+            rc.append([graph.get_node_for_index(i) for i in cycle.nodes])
+
+        return rc
+
     cpdef list getLargestRing(self, Vertex vertex):
         """
         returns the largest ring containing vertex. This is typically

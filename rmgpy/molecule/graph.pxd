@@ -140,6 +140,8 @@ cdef class Graph:
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles)
 
     cpdef list getSmallestSetOfSmallestRings(self)
+
+    cpdef list getRelevantCycles(self)
     
     cpdef list getLargestRing(self, Vertex vertex)
     
