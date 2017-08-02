@@ -814,8 +814,6 @@ class RMG(util.Subject):
         
         name = self.name
         
-        currentDir = os.getcwd()
-        
         if self.saveSeedToDatabase and firstTime: #make sure don't overwrite current libraries
             thermoNames = self.database.thermo.libraries.keys()
             kineticsNames = self.database.kinetics.libraries.keys()
@@ -826,11 +824,13 @@ class RMG(util.Subject):
                     q += 1
                 self.name = name + str(q)
         
-        if firstTime and not os.path.exists(os.path.join(currentDir,'seed')): #if seed directory does not exist make it
-            os.system('mkdir seed')
+        seedDir = os.path.join(self.outputDirectory,'seed')
+        
+        if firstTime and not os.path.exists(seedDir): #if seed directory does not exist make it
+            os.system('mkdir '+seedDir)
         else:
-            os.system('rm -rf seed') #otherwise delete the old seed and make a new directory
-            os.system('mkdir seed')
+            os.system('rm -rf '+ seedDir) #otherwise delete the old seed and make a new directory
+            os.system('mkdir '+ seedDir)
             
         speciesList = self.reactionModel.core.species
         reactionList = self.reactionModel.core.reactions
@@ -885,8 +885,6 @@ class RMG(util.Subject):
             thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
             kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
             kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
-        
-        seedDir = os.path.join(os.getcwd(),'seed')
         
         #save in output directory
         thermoLibrary.save(os.path.join(seedDir, name + '.py'))
