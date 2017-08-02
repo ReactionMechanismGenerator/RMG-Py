@@ -206,9 +206,9 @@ class RMG(util.Subject):
         self.initializationTime = 0
         self.kineticsdatastore = None
         
-        self.name = None
-        self.generateSeedEachIteration = None
-        self.saveSeedToDatabase = None
+        self.name = 'Seed'
+        self.generateSeedEachIteration = True
+        self.saveSeedToDatabase = False
 
         self.thermoCentralDatabase = None
 
