@@ -55,10 +55,17 @@ class TestGraph(unittest.TestCase):
             Edge(vertices[4], vertices[5]),
         ]
         
-        self.graph = Graph()
-        for vertex in vertices: self.graph.addVertex(vertex)
+        self.graph = Graph(vertices)
         for edge in edges: self.graph.addEdge(edge)
-        
+
+    def test_vertices(self):
+        """
+        Test that the vertices attribute can be accessed.
+        """
+        vertices = self.graph.vertices
+        self.assertTrue(isinstance(vertices, list))
+        self.assertEqual(len(vertices), 6)
+
     def test_addVertex(self):
         """
         Test the Graph.addVertex() method.
@@ -117,6 +124,14 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(len(edges), 2)
         self.assertTrue(self.graph.vertices[1] in edges)
         self.assertTrue(self.graph.vertices[3] in edges)
+
+    def test_getAllEdges(self):
+        """
+        Test the Graph.getAllEdges() method.
+        """
+        edges = self.graph.getAllEdges()
+        self.assertTrue(isinstance(edges, list))
+        self.assertEqual(len(edges), 5)
 
     def test_hasVertex(self):
         """
