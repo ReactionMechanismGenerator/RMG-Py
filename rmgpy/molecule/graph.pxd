@@ -65,6 +65,10 @@ cdef class Edge(object):
 
 ################################################################################
 
+cdef Vertex _getEdgeVertex1(Edge edge)
+
+cdef Vertex _getEdgeVertex2(Edge edge)
+
 cdef class Graph:
 
     cdef public list vertices
