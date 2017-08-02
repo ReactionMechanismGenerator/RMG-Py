@@ -236,6 +236,21 @@ cdef class Graph:
         edge.vertex2.edges[edge.vertex1] = edge
         return edge
 
+    cpdef list getAllEdges(self):
+        """
+        Returns a list of all edges in the graph.
+        """
+        cdef set edgeSet
+        cdef Vertex vertex
+        cdef Edge edge
+
+        edgeSet = set()
+        for vertex in self.vertices:
+            for edge in vertex.edges.itervalues():
+                edgeSet.add(edge)
+
+        return list(edgeSet)
+
     cpdef dict getEdges(self, Vertex vertex):
         """
         Return a dictionary of the edges involving the specified `vertex`.

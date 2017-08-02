@@ -73,6 +73,8 @@ cdef class Graph:
 
     cpdef Edge addEdge(self, Edge edge)
 
+    cpdef list getAllEdges(self)
+
     cpdef dict getEdges(self, Vertex vertex)
 
     cpdef Edge getEdge(self, Vertex vertex1, Vertex vertex2)
