@@ -54,12 +54,13 @@ cdef class HeatCapacityModel:
 
     """
     
-    def __init__(self, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.E0 = E0
         self.Cp0 = Cp0
         self.CpInf = CpInf
+        self.label = label
         self.comment = comment
         
     def __repr__(self):
@@ -67,13 +68,14 @@ cdef class HeatCapacityModel:
         Return a string representation that can be used to reconstruct the
         HeatCapacityModel object.
         """
-        return 'HeatCapacityModel(Tmin={0!r}, Tmax={1!r}, E0={2!r}, Cp0={3!r}, Cp0={4!r}, comment="""{5}""")'.format(self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.comment)
+        return 'HeatCapacityModel(Tmin={0!r}, Tmax={1!r}, E0={2!r}, Cp0={3!r}, Cp0={4!r}, label="""{5}""", comment="""{6}""")'.format(self.Tmin,
+                                 self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a HeatCapacityModel object.
         """
-        return (HeatCapacityModel, (self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.comment))
+        return (HeatCapacityModel, (self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
     property E0:
         """The ground state energy (J/mol) at zero Kelvin, including zero point energy, or ``None`` if not yet specified."""
