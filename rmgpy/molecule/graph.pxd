@@ -142,6 +142,8 @@ cdef class Graph:
     cpdef list getSmallestSetOfSmallestRings(self)
 
     cpdef list getRelevantCycles(self)
+
+    cpdef list _sortCyclicVertices(self, list vertices)
     
     cpdef list getLargestRing(self, Vertex vertex)
     

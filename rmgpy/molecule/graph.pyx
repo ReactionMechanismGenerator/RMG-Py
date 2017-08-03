@@ -938,7 +938,7 @@ cdef class Graph:
 
         sssr = []
         for cycle in data.get_sssr():
-            sssr.append([graph.get_node_for_index(i) for i in cycle.nodes])
+            sssr.append(self._sortCyclicVertices([graph.get_node_for_index(i) for i in cycle.nodes]))
 
         return sssr
 
@@ -971,9 +971,28 @@ cdef class Graph:
 
         rc = []
         for cycle in data.get_rcs():
-            rc.append([graph.get_node_for_index(i) for i in cycle.nodes])
+            rc.append(self._sortCyclicVertices([graph.get_node_for_index(i) for i in cycle.nodes]))
 
         return rc
+
+    cpdef list _sortCyclicVertices(self, list vertices):
+        """
+        Given a list of vertices comprising a cycle, sort them such that adjacent
+        entries in the list are connected to each other.
+        Warning: Assumes that the cycle is elementary, ie. no bridges.
+        """
+        cdef list ordered
+        cdef Vertex vertex
+
+        ordered = [vertices.pop()]
+        while vertices:
+            for vertex in vertices:
+                if vertex in ordered[-1].edges:
+                    ordered.append(vertex)
+                    vertices.remove(vertex)
+                    break
+
+        return ordered
 
     cpdef list getLargestRing(self, Vertex vertex):
         """
