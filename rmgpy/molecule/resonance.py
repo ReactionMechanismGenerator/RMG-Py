@@ -678,6 +678,10 @@ def generate_clar_structures(mol):
     if not mol.isCyclic():
         return []
 
+    # Atom IDs are necessary in order to maintain consistent matrices between iterations
+    if not mol.atomIDValid():
+        mol.assignAtomIDs()
+
     try:
         output = _clar_optimization(mol)
     except ILPSolutionError:
@@ -749,6 +753,7 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
     molecule = mol.copy(deep=True)
 
     aromaticRings = molecule.getAromaticRings()[0]
+    aromaticRings.sort(key=lambda x: sum([atom.id for atom in x]))
 
     if not aromaticRings:
         return []
@@ -757,13 +762,13 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
     atoms = set()
     for ring in aromaticRings:
         atoms.update(ring)
-    atoms = list(atoms)
+    atoms = sorted(atoms, key=lambda x: x.id)
 
     # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
     bonds = set()
     for atom in atoms:
         bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.isNonHydrogen()])
-    bonds = list(bonds)
+    bonds = sorted(bonds, key=lambda x: (x.atom1.id, x.atom2.id))
 
     # Identify exocyclic bonds, and save their bond orders
     exo = []
