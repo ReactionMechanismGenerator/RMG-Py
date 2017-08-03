@@ -756,12 +756,14 @@ class RMG(util.Subject):
                 for spec in reactionSystem.sensitiveSpecies:
                     csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
                     sensWorksheet.append(csvfilePath)
-                    
-                terminated, obj = reactionSystem.simulate(
+                
+                terminated, obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
+                    surfaceSpecies = self.reactionModel.surfaceSpecies,
+                    surfaceReactions = self.reactionModel.surfaceReactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
