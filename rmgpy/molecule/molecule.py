@@ -1510,10 +1510,10 @@ class Molecule(Graph):
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
         """
-        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if SSSR:
-            for cycle in SSSR:
+        cython.declare(rc=list, cycle=list, atom=Atom)
+        rc = self.getRelevantCycles()
+        if rc:
+            for cycle in rc:
                 if len(cycle) == 6:
                     for atom in cycle:
                         #print atom.atomType.label
