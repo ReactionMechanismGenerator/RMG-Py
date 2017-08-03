@@ -827,10 +827,10 @@ class RMG(util.Subject):
         seedDir = os.path.join(self.outputDirectory,'seed')
         
         if firstTime and not os.path.exists(seedDir): #if seed directory does not exist make it
-            os.system('mkdir '+seedDir)
+            os.mkdir(seedDir)
         else:
-            os.system('rm -rf '+ seedDir) #otherwise delete the old seed and make a new directory
-            os.system('mkdir '+ seedDir)
+            shutil.rmtree(seedDir) #otherwise delete the old seed and make a new directory
+            os.mkdir(seedDir)
             
         speciesList = self.reactionModel.core.species
         reactionList = self.reactionModel.core.reactions
