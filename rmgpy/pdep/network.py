@@ -643,7 +643,8 @@ class Network:
                     for mol in pro.molecule:
                         logging.info(mol.toAdjacencyList())
                         logging.info('reactive = {0}\n'.format(mol.reactive))
-                raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
+                logging.info('Path reaction {0} not found in reaction network {1}'.format(rxn,self.label))
+                continue
         
             # Compute the microcanonical rate coefficient k(E)
             reacDensStates = densStates[reac,:,:]
