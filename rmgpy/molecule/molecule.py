@@ -688,7 +688,7 @@ class Molecule(Graph):
     
     
     def __hash__(self):
-        return hash((self.getFingerprint()))
+        return hash((self.fingerprint))
             
     def __richcmp__(x, y, op):
         if op == 2:#Py_EQ
@@ -702,7 +702,7 @@ class Molecule(Graph):
         """Method to test equality of two Molecule objects."""
         if not isinstance(other, Molecule): return False #different type
         elif self is other: return True #same reference in memory
-        elif self.getFingerprint() != other.getFingerprint(): return False
+        elif self.fingerprint != other.fingerprint: return False
         else:
             return self.isIsomorphic(other)   
 
@@ -737,6 +737,20 @@ class Molecule(Graph):
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
+
+    def __getFingerprint(self):
+        """
+        Return a string containing the "fingerprint" used to accelerate graph
+        isomorphism comparisons with other molecules. The fingerprint is a
+        short string containing a summary of selected information about the 
+        molecule. Two fingerprint strings matching is a necessary (but not
+        sufficient) condition for the associated molecules to be isomorphic.
+        """
+        if self._fingerprint is None:
+            self.fingerprint = self.getFormula()
+        return self._fingerprint
+    def __setFingerprint(self, fingerprint): self._fingerprint = fingerprint
+    fingerprint = property(__getFingerprint, __setFingerprint)
 
     def addAtom(self, atom):
         """
@@ -1063,18 +1077,6 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
-    def getFingerprint(self):
-        """
-        Return a string containing the "fingerprint" used to accelerate graph
-        isomorphism comparisons with other molecules. The fingerprint is a
-        short string containing a summary of selected information about the 
-        molecule. Two fingerprint strings matching is a necessary (but not
-        sufficient) condition for the associated molecules to be isomorphic.
-        """
-        if self._fingerprint is None:
-            self._fingerprint = self.getFormula()
-        return self._fingerprint
-    
     def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -1091,7 +1093,7 @@ class Molecule(Graph):
         # Do the quick isomorphism comparison using the fingerprint
         # Two fingerprint strings matching is a necessary (but not
         # sufficient!) condition for the associated molecules to be isomorphic
-        if self.getFingerprint() != other.getFingerprint():
+        if self.fingerprint != other.fingerprint:
             return False
         # check multiplicity
         if self.multiplicity != other.multiplicity:
@@ -1117,7 +1119,7 @@ class Molecule(Graph):
         # Do the quick isomorphism comparison using the fingerprint
         # Two fingerprint strings matching is a necessary (but not
         # sufficient!) condition for the associated molecules to be isomorphic
-        if self.getFingerprint() != other.getFingerprint():
+        if self.fingerprint != other.fingerprint:
             return []
         # check multiplicity
         if self.multiplicity != other.multiplicity:

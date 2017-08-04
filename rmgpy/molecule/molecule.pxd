@@ -125,8 +125,6 @@ cdef class Molecule(Graph):
     cdef public str InChI
     cdef public dict props
     
-    cpdef str getFingerprint(self)
-    
     cpdef addAtom(self, Atom atom)
 
     cpdef addBond(self, Bond bond)
