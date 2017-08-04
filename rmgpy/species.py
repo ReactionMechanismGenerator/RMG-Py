@@ -669,6 +669,10 @@ class Species(object):
         if self.getThermoData().E0 is not None:
             self.conformer.E0 = self.getThermoData().E0
         else:
+            if not self.thermo.Cp0 or not self.thermo.CpInf:
+                # set Cp0 and CpInf
+                from rmgpy.data.thermo import findCp0andCpInf
+                findCp0andCpInf(self, self.thermo)
             self.conformer.E0 = self.getThermoData().toWilhoit().E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
