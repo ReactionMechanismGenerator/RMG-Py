@@ -60,7 +60,7 @@ from rmgpy.exceptions import InputError
 # These are the atoms we currently have enthalpies of formation for
 atom_num_dict = {1: 'H',
                  3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F',
-                 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl'}
+                 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 53: 'I'}
 
 # Use the RDKit periodic table so we can write symbols for not implemented elements
 _rdkit_periodic_table = GetPeriodicTable()
@@ -357,14 +357,14 @@ class StatMechJob:
                                     applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
                                     applyBondEnergyCorrections=self.applyBondEnergyCorrections)
         ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-        
+
         # The E0_withZPE at this stage contains the ZPE
         E0_withZPE = E0 + ZPE
         
         logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
         logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
-       
+
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
@@ -476,7 +476,7 @@ class StatMechJob:
         
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
-        
+
         conformer = self.species.conformer
             
         coordinates = conformer.coordinates.value_si * 1e10
@@ -565,7 +565,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
         # Spin orbit correction (SOC) in Hartrees
         # Values taken from ref 22 of http://dx.doi.org/10.1063/1.477794 and converted to hartrees
         # Values in millihartree are also available (with fewer significant figures) from table VII of http://dx.doi.org/10.1063/1.473182
-        SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0}
+        SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0, 'I':-0.011547226,}
 
         # Step 1: Reference all energies to a model chemistry-independent basis
         # by subtracting out that model chemistry's atomic energies
@@ -613,6 +613,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.588545831900 + SOC['N'], 'O':-75.065995072347 + SOC['O'], 'C':-37.844662139972+ SOC['C']}
             elif modelChemistry == 'ccsd(t)-f12/cc-pcvqz-f12':
                 atomEnergies = {'H':-0.499994558325 + SOC['H'], 'N':-54.589137594139+ SOC['N'], 'O':-75.067412234737+ SOC['O'], 'C':-37.844893820561+ SOC['C']}
+            elif modelChemistry == 'ccsd(t)-f12/cc-pvtz-f12(-pp)':
+                atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471, 'S':-397.675447487865, 'I':-294.81781766}
 
             elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvdz':
                 atomEnergies = {'H':-0.499459066131 + SOC['H'], 'N':-54.524279516472 + SOC['N'], 'O':-74.992097308083+ SOC['O'], 'C':-37.786694171716+ SOC['C']}
@@ -756,7 +758,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 E0 += count * bondEnergies[symbol[::-1]] * 4184.
             else:
                 logging.warning('Ignored unknown bond type {0!r}.'.format(symbol))
-    
+
     return E0
 
 def projectRotors(conformer, F, rotors, linear, TS):
