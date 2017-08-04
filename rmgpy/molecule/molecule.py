@@ -83,6 +83,10 @@ class Atom(Vertex):
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     `lonePairs`         ``short``           The number of lone electron pairs
     `id`                ``int``             Number assignment for atom tracking purposes
+    `bonds`             ``dict``            Dictionary of bond objects with keys being neighboring atoms
+    `mass`              ``int``             atomic mass of element (read only)
+    `number`            ``int``             atomic number of element (read only)
+    `symbol`            ``str``             atomic symbol of element (read only)
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -442,6 +446,8 @@ class Bond(Edge):
     Attribute           Type                Description
     =================== =================== ====================================
     `order`             ``float``             The :ref:`bond type <bond-types>`
+    `atom1`             ``Atom``              An Atom object connecting to the bond
+    `atom2`             ``Atom``              An Atom object connecting to the bond
     =================== =================== ====================================
 
     """
@@ -660,8 +666,7 @@ class Bond(Edge):
 class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
-    the :class:`Graph` class. The `atoms` and `bonds` attributes are aliases
-    for the `vertices` and `edges` attributes. Other attributes are:
+    the :class:`Graph` class. Attributes are:
 
     ======================= =========== ========================================
     Attribute               Type        Description
@@ -669,6 +674,9 @@ class Molecule(Graph):
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
     `props`                 ``dict``    A list of properties describing the state of the molecule.
+    `InChI`                 ``str``     A string representation of the molecule in InChI
+    `atoms`                 ``list``    A list of Atom objects in the molecule
+    `fingerprint`           ``str``     A representation for fast comparison, set as molecular formula
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `SMILES` or
