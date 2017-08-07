@@ -30,13 +30,14 @@ import unittest
 
 import rmgpy
 from external.wip import work_in_progress
-
+from nose.plugins.attrib import attr
 from .reduction import *
 
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.species import Species
 from rmgpy.rmg.settings import SimulatorSettings
 
+@attr('functional')
 class ReduceFunctionalTest(unittest.TestCase):
 
     #MINIMAL
