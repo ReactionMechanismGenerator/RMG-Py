@@ -1528,10 +1528,8 @@ class KineticsFamily(Database):
             
         # log issues
         if len(reactions) != 1:
-            for reactant in reaction.reactants:
-                logging.error("Reactant: {0!r}".format(reactant))
-            for product in reaction.products:
-                logging.error("Product: {0!r}".format(product))
+            logging.error("The full original reaction object is: {0!r}".format(reaction))
+            logging.error("The reaction objects found are: {0!r}".format(reactions))
             raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
