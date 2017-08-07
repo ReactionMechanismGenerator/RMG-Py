@@ -38,7 +38,8 @@ install:
   - make
 
 script: 
-  - make test-all
+  - make test-unittests
+  - make test-functional
   - make test-database
 
 after_success:
