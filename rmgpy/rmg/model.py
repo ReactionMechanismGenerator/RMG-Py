@@ -732,17 +732,20 @@ class CoreEdgeReactionModel:
                 allSpeciesInCore = True
                 # Add the reactant and product species to the edge if necessary
                 # At the same time, check if all reactants and products are in the core
+                spcs = []
                 for spec in rxn.reactants:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
                         if spec not in self.edge.species:
+                            spcs.append(spec)
                             self.addSpeciesToEdge(spec)
                 for spec in rxn.products:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
                         if spec not in self.edge.species:
+                            spcs.append(spec)
                             self.addSpeciesToEdge(spec)
-            
+                    
             isomerAtoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
             
             # Decide whether or not to handle the reaction as a pressure-dependent reaction
@@ -786,7 +789,35 @@ class CoreEdgeReactionModel:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
-
+            
+            if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
+            
+                Tmax = self.Tmax
+                for spc in spcs:
+                    G = spc.thermo.getFreeEnergy(Tmax)
+                    if G > self.Gfmax:
+                        Gn = (G-self.Gmax)/(self.Gmax-self.Gmin)
+                        logging.info('Removing species {0} from edge because it\'s Gibbs number {1} is greater than the toleranceThermoKeepSpeciesInEdge of {2} '.format(spc,Gn,self.toleranceThermoKeepSpeciesInEdge))
+                        self.removeSpeciesFromEdge(self.reactionSystems,spc)
+                
+                # Delete any networks that became empty as a result of pruning
+                if self.pressureDependence:
+                    networksToDelete = []
+                    for network in self.networkList:
+                        if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+                            networksToDelete.append(network)
+                    
+                    if len(networksToDelete) > 0:
+                        logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
+                        for network in networksToDelete:
+                            logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
+                            source = tuple(network.source)
+                            nets_with_this_source = self.networkDict[source]
+                            nets_with_this_source.remove(network)
+                            if not nets_with_this_source:
+                                del(self.networkDict[source])
+                            self.networkList.remove(network)
+                            
     def applyKineticsToReaction(self, reaction):
         """
         retrieve the best kinetics for the reaction and apply it towards the forward 
