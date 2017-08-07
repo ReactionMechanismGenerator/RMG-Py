@@ -360,8 +360,16 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
         reactants.append(sorted([speciesDict[spec] for spec in reactant]))
     
     if pathReactions is None:
-        # If not explicitly given, use all reactions in input file
-        pathReactions = reactionDict.values()
+        # Only add reactions that match reactants and/or isomers
+        pathReactions = []
+        for rxn in reactionDict.values():
+            reactant_is_isomer = len(rxn.reactants) == 1 and rxn.reactants[0] in isomers
+            product_is_isomer  = len(rxn.products)  == 1 and rxn.products[0]  in isomers
+            reactant_is_reactant = any([frozenset(rxn.reactants) == frozenset(reactant_pair) for reactant_pair in reactants])
+            product_is_reactant  = any([frozenset(rxn.products ) == frozenset(reactant_pair) for reactant_pair in reactants])
+            if reactant_is_isomer or reactant_is_reactant or product_is_isomer or product_is_reactant:
+                pathReactions.append(rxn)
+        logging.debug('Path reactions {} were found for network {}'.format([rxn.label for rxn in pathReactions], label))
     else:
         pathReactions0 = pathReactions; pathReactions = []
         for rxn in pathReactions0:
