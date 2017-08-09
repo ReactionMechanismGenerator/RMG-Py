@@ -163,6 +163,10 @@ def generateResonanceStructures(mol, clarStructures=True, keepIsomorphic=False):
             # Encountered false positive, ie. the molecule is not actually aromatic
             features['isAromatic'] = False
             features['isPolycyclicAromatic'] = False
+        else:
+            features['isAromatic'] = True
+            if len(newMolList[0].getAromaticRings()[0]) > 1:
+                features['isPolycyclicAromatic'] = True
     else:
         newMolList = []
 
