@@ -1267,6 +1267,7 @@ class ThermoDatabase(object):
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)
+                    thermoData.label = entry.label
                     findCp0andCpInf(species, thermoData)
                     match = (thermoData, library, entry)
                     break

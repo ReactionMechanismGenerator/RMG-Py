@@ -307,14 +307,6 @@ class CoreEdgeReactionModel:
         # Check that the structure is not forbidden
 
         # If we're here then we're ready to make the new species
-        if label == '': 
-            # Use SMILES as default format for label
-            # However, SMILES can contain slashes (to describe the
-            # stereochemistry around double bonds); since RMG doesn't 
-            # distinguish cis and trans isomers, we'll just strip these out
-            # so that we can use the label in file paths
-            label = molecule.toSMILES().replace('/','').replace('\\','')
-        logging.debug('Creating new species {0}'.format(label))
         if reactive:
             self.speciesCounter += 1   # count only reactive species
             speciesIndex = self.speciesCounter
@@ -331,7 +323,22 @@ class CoreEdgeReactionModel:
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
         submit(spec)
-
+        
+        if spec.label == '':
+            if spec.thermo and spec.thermo.label != '': #check if thermo libraries have a name for it
+                logging.info('Species with SMILES of {0} named {1} based on thermo library name'.format(molecule.toSMILES().replace('/','').replace('\\',''),spec.thermo.label))
+                spec.label = spec.thermo.label
+                label = spec.label
+            else:
+                # Use SMILES as default format for label
+                # However, SMILES can contain slashes (to describe the
+                # stereochemistry around double bonds); since RMG doesn't 
+                # distinguish cis and trans isomers, we'll just strip these out
+                # so that we can use the label in file paths
+                label = molecule.toSMILES().replace('/','').replace('\\','')
+                
+        logging.debug('Creating new species {0}'.format(label))
+        
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
