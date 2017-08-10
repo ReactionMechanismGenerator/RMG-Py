@@ -365,6 +365,24 @@ Because the ODE simulation is always interrupted, no pruning is performed.
 
 Please find more details about the theory behind pruning at :ref:`Pruning Theory <prune>`.
 
+Advanced Setting: Taking Multiple Species At A Time
+----------------------------------------------------
+Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+over only taking one.  For this purpose there is a maxNumObjsPerIter parameter that allows RMG to take
+that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.   
+
+For example ::
+
+	model(
+		toleranceKeepInEdge=0.0,
+		toleranceMoveToCore=0.1,
+		toleranceInterruptSimulation=0.1,
+		maxNumObjsPerIter=2,
+	)
+
+Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
+object at a time) pick up chemistry that would otherwise have been missed.  
+
 .. _ontheflyquantumcalculations:
 
 On the fly Quantum Calculations
@@ -580,4 +598,23 @@ forbidden groups.
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.  
 
+
+Staging
+========
+
+It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.  
+
+There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file. 
+
+To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.  
+
+For example ::
+
+	model(
+		toleranceKeepInEdge=0.0,
+		toleranceMoveToCore=0.1,
+		toleranceInterruptSimulation=0.1,
+		maximumEdgeSpecies=100000,
+		maxNumSpecies=100
+	)
 
