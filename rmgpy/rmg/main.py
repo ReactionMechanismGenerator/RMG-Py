@@ -833,14 +833,16 @@ class RMG(util.Subject):
             
         speciesList = self.reactionModel.core.species
         reactionList = self.reactionModel.core.reactions
+        edgeSpeciesList = self.reactionModel.edge.species
+        edgeReactionList = self.reactionModel.edge.reactions
         
         # Make species labels independent
-        oldLabels = self.makeCoreSpeciesLabelsIndependent()
-            
+        oldLabels = self.makeSpeciesLabelsIndependent(speciesList)
+        edgeOldLabels = self.makeSpeciesLabelsIndependent(edgeSpeciesList)
+        
         # load thermo library entries
         thermoLibrary = ThermoLibrary(name=name)
-        for i in range(len(speciesList)): 
-            species = speciesList[i]
+        for i,species in enumerate(speciesList): 
             if species.thermo:
                 thermoLibrary.loadEntry(index = i + 1,
                                         label = species.label,
@@ -850,7 +852,19 @@ class RMG(util.Subject):
                )                
             else:
                 logging.warning('Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(str(species)))
-                            
+                      
+        edgeThermoLibrary = ThermoLibrary(name=name+'_edge')
+        for i,species in enumerate(edgeSpeciesList): 
+            if species.thermo:
+                edgeThermoLibrary.loadEntry(index = i + 1,
+                                        label = species.label,
+                                        molecule = species.molecule[0].toAdjacencyList(),
+                                        thermo = species.thermo,
+                                        shortDesc = species.thermo.comment
+               )                
+            else:
+                logging.warning('Species {0} did not contain any thermo data and was omitted from the edge thermo library.'.format(str(species)))
+                   
         # load kinetics library entries                    
         kineticsLibrary = KineticsLibrary(name=name)
         kineticsLibrary.entries = {}
@@ -873,7 +887,31 @@ class RMG(util.Subject):
         # Using flag markDuplicates = True
         kineticsLibrary.checkForDuplicates(markDuplicates=True)
         kineticsLibrary.convertDuplicatesToMulti()
-    
+        
+        
+        # load kinetics library entries                    
+        edgeKineticsLibrary = KineticsLibrary(name=name+'_edge')
+        edgeKineticsLibrary.entries = {}
+        for i,reaction in enumerate(edgeReactionList):       
+            entry = Entry(
+                    index = i+1,
+                    label = reaction.toLabeledStr(),
+                    item = reaction,
+                    data = reaction.kinetics,
+                )
+            try:
+        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+    	    except AttributeError:
+        	    entry.longDesc = reaction.kinetics.comment
+            edgeKineticsLibrary.entries[i+1] = entry
+        
+        # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
+        # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
+        # Using flag markDuplicates = True
+        edgeKineticsLibrary.checkForDuplicates(markDuplicates=True)
+        edgeKineticsLibrary.convertDuplicatesToMulti()
+        
+        
         #save in database
         if self.saveSeedToDatabase:
             databaseDirectory = settings['database.directory']
@@ -884,23 +922,37 @@ class RMG(util.Subject):
             thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
             kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
             kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
-        
+            
+            try:
+                os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name+'_edge'))
+            except:
+                pass
+            edgeThermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name +'_edge'+'.py'))
+            edgeKineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'reactions.py'))
+            edgeKineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'dictionary.txt'))
+
         #save in output directory
         thermoLibrary.save(os.path.join(seedDir, name + '.py'))
         kineticsLibrary.save(os.path.join(seedDir, name, 'reactions.py'))
         kineticsLibrary.saveDictionary(os.path.join(seedDir, name, 'dictionary.txt'))
-    
+        
+        edgeThermoLibrary.save(os.path.join(seedDir, name + '_edge'+ '.py'))
+        edgeKineticsLibrary.save(os.path.join(seedDir, name+'_edge', 'reactions.py'))
+        edgeKineticsLibrary.saveDictionary(os.path.join(seedDir, name+'_edge', 'dictionary.txt'))
+        
         #change labels back so species aren't renamed
         for i,label in enumerate(oldLabels):
             speciesList[i].label = label
-                   
-    def makeCoreSpeciesLabelsIndependent(self):
+        
+        for i,label in enumerate(edgeOldLabels):
+            edgeSpeciesList[i].label = label
+            
+    def makeSpeciesLabelsIndependent(self, species):
         """
         This method looks at the core species labels and makes sure none of them conflict
         If a conflict occurs, the second occurance will have '-2' added
         returns a list of the old labels
         """
-        species = self.reactionModel.core.species
         oldLabels = []
         labels = set()
         for spec in species:
