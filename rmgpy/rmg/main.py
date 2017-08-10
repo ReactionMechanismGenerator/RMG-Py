@@ -661,6 +661,8 @@ class RMG(util.Subject):
                     # species from the edge
                     if allTerminated:
                         self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                        if modelSettings.removeNeglectedReactions:
+                            self.reactionModel.removeNeglectableReactions(self.reactionSystems,modelSettings.toleranceNeglectCoreReaction)
                         # Perform garbage collection after pruning
                         collected = gc.collect()
                         logging.info('Garbage collector: collected %d objects.' % (collected))
