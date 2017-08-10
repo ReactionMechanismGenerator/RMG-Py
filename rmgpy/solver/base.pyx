@@ -512,7 +512,7 @@ cdef class ReactionSystem(DASx):
         ``None`` is returned.
         """
         cdef double toleranceKeepInEdge,toleranceMoveToCore,toleranceMoveEdgeReactionToCore,toleranceInterruptSimulation
-        cdef double toleranceMoveEdgeReactionToCoreInterrupt,toleranceMoveEdgeReactionToSurface
+        cdef double toleranceMoveEdgeReactionToCoreInterrupt,toleranceMoveEdgeReactionToSurface, toleranceNeglectCoreReaction
         cdef double toleranceMoveSurfaceSpeciesToCore,toleranceMoveSurfaceReactionToCore
         cdef double toleranceMoveEdgeReactionToSurfaceInterrupt
         cdef bool ignoreOverallFluxCriterion, filterReactions
@@ -568,6 +568,7 @@ cdef class ReactionSystem(DASx):
         toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
         toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
         toleranceMoveEdgeReactionToSurfaceInterrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
+        toleranceNeglectCoreReaction = modelSettings.toleranceNeglectCoreReaction
         ignoreOverallFluxCriterion=modelSettings.ignoreOverallFluxCriterion
         absoluteTolerance = simulatorSettings.atol
         relativeTolerance = simulatorSettings.rtol
