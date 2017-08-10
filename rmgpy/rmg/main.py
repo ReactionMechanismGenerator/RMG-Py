@@ -669,7 +669,7 @@ class RMG(util.Subject):
                 # If we reached our termination conditions, then try to prune
                 # species from the edge
                 if allTerminated:
-                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies, self.minSpeciesExistIterationsForPrune)
+                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.fluxToleranceMoveToCore, self.maximumEdgeSpecies, self.minSpeciesExistIterationsForPrune)
                     # Perform garbage collection after pruning
                     collected = gc.collect()
                     logging.info('Garbage collector: collected %d objects.' % (collected))

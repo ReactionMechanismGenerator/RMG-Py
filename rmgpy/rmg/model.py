@@ -995,7 +995,7 @@ class CoreEdgeReactionModel:
         """
         self.edge.species.append(spec)
 
-    def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
+    def prune(self, reactionSystems, toleranceKeepInEdge, toleranceMoveToCore, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reactionSystems`.
@@ -1051,7 +1051,7 @@ class CoreEdgeReactionModel:
                 speciesToPrune.append((index, spec))
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
-            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies:
+            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies and maxEdgeSpeciesRateRatios[index] < toleranceMoveToCore:
                 logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec)) # repeated ~15 lines below
                 speciesToPrune.append((index, spec))
             else:
