@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import itertools
+import gc
 
 from rmgpy.display import display
 #import rmgpy.chemkin
@@ -234,6 +235,14 @@ class CoreEdgeReactionModel:
         self.indexSpeciesDict = {}
         self.saveEdgeSpecies = False
         self.iterationNum = 0
+        self.toleranceThermoKeepSpeciesInEdge = numpy.inf
+        self.Gfmax = numpy.inf
+        self.Gmax = numpy.inf
+        self.Gmin = -numpy.inf
+        self.minCoreSizeForPrune = 50
+        self.maximumEdgeSpecies = 100000
+        self.Tmax = 0
+        self.reactionSystems = []
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -1026,7 +1035,83 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model edge.
         """
         self.edge.species.append(spec)
+    
+    def setThermodynamicFilteringParameters(self,Tmax, toleranceThermoKeepSpeciesInEdge,minCoreSizeForPrune,maximumEdgeSpecies,reactionSystems):
+        """
+        sets parameters for thermodynamic filtering based on the current core
+        """
+        self.Tmax = Tmax
+        Gs = [spc.thermo.getFreeEnergy(Tmax) for spc in self.core.species]
+        self.Gmax = max(Gs)
+        self.Gmin = min(Gs)
+        
+        self.Gfmax = toleranceThermoKeepSpeciesInEdge*(self.Gmax-self.Gmin)+self.Gmax
+        self.toleranceThermoKeepSpeciesInEdge = toleranceThermoKeepSpeciesInEdge
+        self.minCoreSizeForPrune = minCoreSizeForPrune
+        self.reactionSystems = reactionSystems
+        self.maximumEdgeSpecies = maximumEdgeSpecies
+        
+    def thermoFilterDown(self,maximumEdgeSpecies,minSpeciesExistIterationsForPrune=0):
+        """
+        removes species from the edge based on their Gibbs energy until maximumEdgeSpecies
+        is reached under the constraint that all removed species are older than
+        minSpeciesExistIterationsForPrune iterations
+        """
+        Tmax = self.Tmax
+        numToRemove = len(self.edge.species) - maximumEdgeSpecies
+        logging.debug('Planning to remove {0} species'.format(numToRemove))
+        iteration = self.iterationNum
+            
+        if numToRemove > 0: #implies flux pruning is off or did not trigger
+            logging.info('Reached maximum number of edge species')
+            logging.info('Attempting to remove excess edge species with Thermodynamic filtering')
+            spcs = self.edge.species
+            Gfs = numpy.array([spc.thermo.getFreeEnergy(Tmax) for spc in spcs])
+            Gns = (Gfs-self.Gmax)/(self.Gmax-self.Gmin) 
+            inds = numpy.argsort(Gns) #could actually do this with the Gfs, but want to print the Gn value later
+            inds = inds[::-1] #get in order of increasing Gf
 
+            ind = 0
+            removeSpcs = []
+            
+            
+            while ind < len(inds) and numToRemove > 0: #find the species we can remove and collect indices for removal     
+                i = inds[ind]
+                spc = spcs[i]
+                if iteration - spc.creationIteration >= minSpeciesExistIterationsForPrune:
+                    removeSpcs.append(spc)
+                    numToRemove -= 1
+                ind += 1
+            
+            logging.debug('found {0} eligible species for filtering'.format(len(removeSpcs)))
+            
+            for spc in removeSpcs:
+                logging.info('Removing species {0} from edge to meet maximum number of edge species, Gibbs number is {1}'.format(spc,Gns[i]))
+                self.removeSpeciesFromEdge(self.reactionSystems,spc)
+            
+            # Delete any networks that became empty as a result of pruning
+            if self.pressureDependence:
+                networksToDelete = []
+                for network in self.networkList:
+                    if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+                        networksToDelete.append(network)
+                    
+                if len(networksToDelete) > 0:
+                    logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
+                    for network in networksToDelete:
+                        logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
+                        source = tuple(network.source)
+                        nets_with_this_source = self.networkDict[source]
+                        nets_with_this_source.remove(network)
+                        if not nets_with_this_source:
+                            del(self.networkDict[source])
+                        self.networkList.remove(network)
+            
+            #call garbage collection
+            collected = gc.collect()
+            logging.info('Garbage collector: collected %d objects.' % (collected))
+            
+            
     def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from
