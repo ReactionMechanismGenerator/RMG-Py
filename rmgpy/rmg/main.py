@@ -548,8 +548,8 @@ class RMG(util.Subject):
                     edgeSpecies = [],
                     edgeReactions = [],
                     pdepNetworks = self.reactionModel.networkList,
-                    atol = self.absoluteTolerance,
-                    rtol = self.relativeTolerance,
+                    atol = self.simulatorSettingsList[0].atol,
+                    rtol = self.simulatorSettingsList[0].rtol,
                     filterReactions=True,
                 )
                 self.updateReactionThresholdAndReactFlags(
