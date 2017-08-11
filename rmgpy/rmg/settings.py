@@ -30,7 +30,7 @@
 
 """
 This module contains settings classes for manipulation of RMG run parameters
-=========================================================================================================================
+==================================================================================================================================================
     `atol`                                          The absolute tolerance used in the ODE/DAE solver
     `rtol`                                          The relative tolerance used in the ODE/DAE solver
     `sens_atol`                                     The absolute tolerance used in the ODE/DAE solver for the sensitivities
@@ -49,7 +49,9 @@ This module contains settings classes for manipulation of RMG run parameters
     `minSpeciesExistIterationsForPrune`             Minimum number of iterations a species must exist before it can be pruned
     `filterReactions`                               Specify whether to filter reactions during model enlarging step
     `ignoreOverallFluxCriterion`                    flag indicating that the ordinary flux criterion should be ignored except for pdep purposes
-=========================================================================================================================
+    `maxNumSpecies`                                 Number of core species at which a stage/job will terminate
+    `maxNumObjPerIter`                              Maximum number of objects that can be sent for enlargement from a single simulation
+==================================================================================================================================================
 """
 import numpy
 
