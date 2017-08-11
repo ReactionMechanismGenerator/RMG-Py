@@ -166,6 +166,7 @@ class RMG(util.Subject):
         self.reactionModel = None
         self.reactionSystems = None
         self.database = None
+        self.reactionSystem = None
         
         self.fluxToleranceKeepInEdge = 0.0
         self.fluxToleranceMoveToCore = 1.0
@@ -591,6 +592,7 @@ class RMG(util.Subject):
             numCoreSpecies = len(self.reactionModel.core.species)
             for index, reactionSystem in enumerate(self.reactionSystems):
                 
+                self.reactionSystem = reactionSystem
                 # Conduct simulation
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
                 prune = True
@@ -644,25 +646,11 @@ class RMG(util.Subject):
                 # If simulation is invalid, note which species should be added to
                 # the core
                 if obj:
-                    if isinstance(obj, PDepNetwork):
-                        # Determine which species in that network has the highest leak rate
-                        # We do this here because we need a temperature and pressure
-                        # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                        objectsToEnlarge.append(obj)
-                    elif isinstance(obj, Species):
-                        objectsToEnlarge.append(obj)
-                        assert len(objectsToEnlarge)>0
-                    elif isinstance(obj,Reaction):
-                        potentialSpcs = obj.reactants+obj.products
-                        #remove species already in core
-                        neededSpcs = [x for x in potentialSpcs if x not in self.reactionModel.core.species]
-                        for i in range(len(neededSpcs)): #remove duplicate species
-                            if neededSpcs.index(neededSpcs[i]) != i:
-                                del neededSpcs[i]
-                        objectsToEnlarge.extend(neededSpcs)
+                    objectsToEnlarge = self.processToSpeciesNetworks(obj)
+                    if isinstance(objectsToEnlarge[0],PDepNetwork):
+                        assert False
+                        
                     self.done = False
-    
     
             if not self.done: # There is something that needs exploring/enlarging
                 
@@ -917,6 +905,62 @@ class RMG(util.Subject):
             labels.add(potential_label)
         return oldLabels
     
+    ################################################################################
+    def processToSpeciesNetworks(self,obj):
+        """
+        breaks down the objects returned by simulate into Species and PDepNetwork
+        components
+        """
+        
+        if isinstance(obj, PDepNetwork):
+            out = [self.processPdepNetworks(obj)]
+            return out
+        elif isinstance(obj, Species):
+            return [obj]
+        elif isinstance(obj,Reaction):
+            return list(self.processReactionsToSpecies(obj))
+        elif isinstance(obj,list): #list of species
+            rspcs = self.processReactionsToSpecies([k for k in obj if isinstance(k,Reaction)])
+            spcs = list({k for k in obj if isinstance(k,Species)} | rspcs)
+            nworks = list(set(self.processPdepNetworks([k for k in obj if isinstance(k,PDepNetwork)])))
+            return spcs+nworks
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+                
+    def processPdepNetworks(self,obj):
+        """
+        properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate
+        """
+        reactionSystem = self.reactionSystem
+        if isinstance(obj, PDepNetwork):
+            # Determine which species in that network has the highest leak rate
+            # We do this here because we need a temperature and pressure
+            # Store the maximum leak species along with the associated network
+            ob = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
+            return ob
+        elif isinstance(obj,list):
+            return [(ob, ob.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si)) for ob in obj]
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+            
+    def processReactionsToSpecies(self,obj):
+        """
+        properly processes Reaction objects and lists of Reaction objects returned from simulate
+        """
+        coreSpecies = self.reactionModel.core.species
+        filterFcn = lambda x: not ((x in coreSpecies)) #remove species already in core
+        if isinstance(obj,Reaction):
+            potentialSpcs = obj.reactants+obj.products
+            potentialSpcs = filter(filterFcn,potentialSpcs)
+        elif isinstance(obj,list) or isinstance(obj,set):
+            potentialSpcs = set()
+            for ob in obj:
+                potentialSpcs = potentialSpcs | set(ob.reactants+ob.products)
+            potentialSpcs = {sp for sp in potentialSpcs if filterFcn(sp)}
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+        return potentialSpcs
+
     def generateCanteraFiles(self, chemkinFile, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
