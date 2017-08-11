@@ -322,7 +322,7 @@ class Species(object):
         Return ``True`` if the species has statistical mechanical parameters,
         or ``False`` otherwise.
         """
-        return self.conformer is not None and (len(self.conformer.modes) > 0 or (len(self.molecule) > 0 and len(self.molecule[0].atoms) == 1))
+        return self.conformer is not None and (len(self.conformer.modes) > 0 or (len(self.molecule) > 0 and len(self.molecule[0].atoms)==1))
 
     def hasThermo(self):
         """
