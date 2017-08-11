@@ -887,12 +887,13 @@ class RMG(util.Subject):
             return list(self.processReactionsToSpecies(obj))
         elif isinstance(obj,list): #list of species
             rspcs = self.processReactionsToSpecies([k for k in obj if isinstance(k,Reaction)])
-            spcs = list({k for k in obj if isinstance(k,Species)} | rspcs)
-            nworks = list(set(self.processPdepNetworks([k for k in obj if isinstance(k,PDepNetwork)])))
+            spcs = {k for k in obj if isinstance(k,Species)} | rspcs
+            nworks,pspcs = self.processPdepNetworks([k for k in obj if isinstance(k,PDepNetwork)])
+            spcs = list(spcs-pspcs) #avoid duplicate species
             return spcs+nworks
         else:
             raise TypeError("improper call, obj input was incorrect")
-                
+
     def processPdepNetworks(self,obj):
         """
         properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate
@@ -905,7 +906,9 @@ class RMG(util.Subject):
             ob = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
             return ob
         elif isinstance(obj,list):
-            return [(ob, ob.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si)) for ob in obj]
+            spcs = [ob.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si) for ob in obj]
+            nworks = [(obj[i],spcs[i]) for i in xrange(len(obj))]
+            return nworks,set(spcs)
         else:
             raise TypeError("improper call, obj input was incorrect")
             
