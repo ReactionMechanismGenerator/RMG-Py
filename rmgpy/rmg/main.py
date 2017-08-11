@@ -628,8 +628,6 @@ class RMG(util.Subject):
                     # the core
                     if obj:
                         objectsToEnlarge = self.processToSpeciesNetworks(obj)
-                        if isinstance(objectsToEnlarge[0],PDepNetwork):
-                            assert False
                         self.done = False
         
                 if not self.done: # There is something that needs exploring/enlarging
