@@ -565,6 +565,8 @@ class RMG(util.Subject):
         self.saveEverything()
         
         self.makeSeedMech(firstTime=True)
+
+        maxNumSpcsHit = False #default
         
         for q,modelSettings in enumerate(self.modelSettingsList):
             if len(self.simulatorSettingsList) > 1: 
@@ -650,7 +652,13 @@ class RMG(util.Subject):
                     
                     # Add objects to enlarge to the core first
                     for objectToEnlarge in objectsToEnlarge:
+                        if len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies:
+                            maxNumSpcsHit = True
+                            break
                         self.reactionModel.enlarge(objectToEnlarge)
+                        
+                    if maxNumSpcsHit: #breaks the while loop 
+                        break
                     
                     if len(self.reactionModel.core.species) > numCoreSpecies:
                         tempModelSettings = deepcopy(modelSettings)
@@ -701,7 +709,10 @@ class RMG(util.Subject):
                         logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
                         logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                         return
-        
+                    
+            if maxNumSpcsHit: #resets maxNumSpcsHit and continues the settings for loop
+                maxNumSpcsHit = False
+                continue
         
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
