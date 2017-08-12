@@ -5,7 +5,7 @@
 # So you may well have to do this one manually first, before using this requirements file.
 numpy
 
-scipy
+dog
 matplotlib
 cython>=0.19
 quantities
