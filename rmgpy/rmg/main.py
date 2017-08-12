@@ -42,6 +42,7 @@ import numpy
 import csv
 import gc
 import copy
+from copy import deepcopy
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
@@ -73,7 +74,7 @@ from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
 from cantera import ck2cti
-
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 ################################################################################
 
 solvent = None
@@ -102,17 +103,8 @@ class RMG(util.Subject):
     `reactionSystems`                   A list of the reaction systems used in this job
     `database`                          The RMG database used in this job
     ----------------------------------- ------------------------------------------------
-    `absoluteTolerance`                 The absolute tolerance used in the ODE/DAE solver
-    `relativeTolerance`                 The relative tolerance used in the ODE/DAE solver
-    `sensitivityAbsoluteTolerance`      The absolute tolerance used in the ODE/DAE solver for the sensitivities
-    `sensitivityRelativeTolerance`      The relative tolerance used in the ODE/DAE solver for the sensitivities
-    `fluxToleranceKeepInEdge`           The relative species flux below which species are discarded from the edge
-    `fluxToleranceMoveToCore`           The relative species flux above which species are moved from the edge to the core
-    `fluxToleranceInterrupt`            The relative species flux above which the simulation will halt
-    `maximumEdgeSpecies`                The maximum number of edge species allowed at any time
-    `minCoreSizeForPrune`               Minimum number of core species before pruning is allowed
-    `minSpeciesExistIterationsForPrune` Minimum number of iterations a species must exist before it can be pruned
-    `filterReactions`                   Specify whether to filter reactions during model enlarging step
+    `modelSettingsList`                 List of ModelSettings objects containing information related to how to manage species/reaction movement
+    `simulatorSettingsList`             List of SimulatorSettings objects containing information on how to run simulations
     `unimolecularThreshold`             Array of flags indicating whether a species is above the unimolecular reaction threshold
     `bimolecularaThreshold`             Array of flags indicating whether two species are above the bimolecular reaction threshold
     `unimolecularReact`                 Array of flags indicating whether a species should react unimolecularly in the enlarge step
@@ -146,6 +138,8 @@ class RMG(util.Subject):
         self.inputFile = inputFile
         self.outputDirectory = outputDirectory
         self.clear()
+        self.modelSettingsList = []
+        self.simulatorSettingsList = []
     
     def clear(self):
         """
@@ -166,21 +160,11 @@ class RMG(util.Subject):
         self.reactionModel = None
         self.reactionSystems = None
         self.database = None
+        self.reactionSystem = None
         
-        self.fluxToleranceKeepInEdge = 0.0
-        self.fluxToleranceMoveToCore = 1.0
-        self.fluxToleranceInterrupt = 1.0
-        self.toleranceMoveEdgeReactionToCore = numpy.inf
-        self.toleranceReactionInterruptSimulation = numpy.inf
-        self.ignoreOverallFluxCriterion=False
+        self.modelSettingsList = []
+        self.simulatorSettingsList = []
         
-        self.absoluteTolerance = 1.0e-8
-        self.relativeTolerance = 1.0e-4
-        self.sensitivityAbsoluteTolerance = 1.0e-6
-        self.sensitivityRelativeTolerance = 1.0e-4
-        self.maximumEdgeSpecies = 1000000
-        self.minCoreSizeForPrune = 50
-        self.minSpeciesExistIterationsForPrune = 2
         self.filterReactions=False
         self.unimolecularReact = None
         self.bimolecularReact = None
@@ -555,7 +539,7 @@ class RMG(util.Subject):
         self.done = False
         
         # Initiate first reaction discovery step after adding all core species
-        if self.filterReactions:
+        if self.modelSettingsList[0].filterReactions:
             # Run the reaction system to update threshold and react flags
             for index, reactionSystem in enumerate(self.reactionSystems):
                 reactionSystem.initializeModel(
@@ -564,8 +548,8 @@ class RMG(util.Subject):
                     edgeSpecies = [],
                     edgeReactions = [],
                     pdepNetworks = self.reactionModel.networkList,
-                    atol = self.absoluteTolerance,
-                    rtol = self.relativeTolerance,
+                    atol = self.simulatorSettingsList[0].atol,
+                    rtol = self.simulatorSettingsList[0].rtol,
                     filterReactions=True,
                 )
                 self.updateReactionThresholdAndReactFlags(
@@ -581,170 +565,195 @@ class RMG(util.Subject):
         self.saveEverything()
         
         self.makeSeedMech(firstTime=True)
+
+        maxNumSpcsHit = False #default
         
-        # Main RMG loop
-        while not self.done:
+        for q,modelSettings in enumerate(self.modelSettingsList):
+            if len(self.simulatorSettingsList) > 1: 
+                simulatorSettings = self.simulatorSettingsList[q]
+            else: #if they only provide one input for simulator use that everytime
+                simulatorSettings = self.simulatorSettingsList[0]
+
+            self.filterReactions = modelSettings.filterReactions
+
+            logging.info('Beginning model generation stage {0}\n\n'.format(q+1))
+            
+            self.done = False
+
+            # Main RMG loop
+            while not self.done:
                 
-            self.done = True
-            objectsToEnlarge = []
-            allTerminated = True
-            numCoreSpecies = len(self.reactionModel.core.species)
-            for index, reactionSystem in enumerate(self.reactionSystems):
+                self.reactionModel.iterationNum += 1
+                self.done = True
+                objectsToEnlarge = []
+                newSurfaceSpcsAdd = set()
+                newSurfaceRxnsAdd = set()
+                newSurfaceSpcsLoss = set()
+                newSurfaceRxnsLoss = set()
+                surfSpcs = set(self.reactionModel.surfaceSpecies)
+                surfRxns = set(self.reactionModel.surfaceReactions)
                 
-                # Conduct simulation
-                logging.info('Conducting simulation of reaction system %s...' % (index+1))
-                prune = True
-                if numCoreSpecies < self.minCoreSizeForPrune:
-                    # Turn pruning off if we haven't reached minimum core size.
-                    prune = False
+                allTerminated = True
+                numCoreSpecies = len(self.reactionModel.core.species)
+                for index, reactionSystem in enumerate(self.reactionSystems):
+                    self.reactionSystem = reactionSystem
+                    # Conduct simulation
+                    logging.info('Conducting simulation of reaction system %s...' % (index+1))
+                    prune = True
+                    if numCoreSpecies < modelSettings.minCoreSizeForPrune:
+                        # Turn pruning off if we haven't reached minimum core size.
+                        prune = False
+                        
+                    try: terminated, obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
+                        coreSpecies = self.reactionModel.core.species,
+                        coreReactions = self.reactionModel.core.reactions,
+                        edgeSpecies = self.reactionModel.edge.species,
+                        edgeReactions = self.reactionModel.edge.reactions,
+                        surfaceSpecies = list(surfSpcs),
+                        surfaceReactions = list(surfRxns),
+                        pdepNetworks = self.reactionModel.networkList,
+                        prune = prune,
+                        modelSettings=modelSettings,
+                        simulatorSettings = simulatorSettings,
+                    )
+                    except:
+                        logging.error("Model core reactions:")
+                        if len(self.reactionModel.core.reactions) > 5:
+                            logging.error("Too many to print in detail")
+                        else:
+                            from rmgpy.cantherm.output import prettify
+                            logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                        self.makeSeedMech()
+                        raise
+
+                    if self.generateSeedEachIteration:
+                        self.makeSeedMech()
+                        
+                    newSurfaceSpecies = set(newSurfaceSpecies)
+                    newSurfaceReactions = set(newSurfaceReactions)
                     
-
-                try: terminated, obj,surfaceSpecies,surfaceReactions = reactionSystem.simulate(
-                    coreSpecies = self.reactionModel.core.species,
-                    coreReactions = self.reactionModel.core.reactions,
-                    edgeSpecies = self.reactionModel.edge.species,
-                    edgeReactions = self.reactionModel.edge.reactions,
-                    surfaceSpecies = self.reactionModel.surfaceSpecies,
-                    surfaceReactions = self.reactionModel.surfaceReactions,
-                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
-                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
-                    toleranceMoveEdgeReactionToCoreInterrupt= self.toleranceMoveEdgeReactionToCoreInterrupt if prune else self.toleranceMoveEdgeReactionToCore,
-                    toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
-                    toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
-                    toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
-                    toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
-                    pdepNetworks = self.reactionModel.networkList,
-                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
-                    absoluteTolerance = self.absoluteTolerance,
-                    relativeTolerance = self.relativeTolerance,
-                    filterReactions=False,
-                )
-                
-                except:
-                    logging.error("Model core reactions:")
-                    if len(self.reactionModel.core.reactions) > 5:
-                        logging.error("Too many to print in detail")
-                    else:
-                        from rmgpy.cantherm.output import prettify
-                        logging.error(prettify(repr(self.reactionModel.core.reactions)))
-                    self.makeSeedMech()
-                    raise
-
-                self.reactionModel.surfaceSpecies = surfaceSpecies
-                self.reactionModel.surfaceReactions = surfaceReactions
-
-                if self.generateSeedEachIteration:
-                    self.makeSeedMech()
-
-                allTerminated = allTerminated and terminated
-                logging.info('')
-                
-                # If simulation is invalid, note which species should be added to
-                # the core
-                if obj:
-                    if isinstance(obj, PDepNetwork):
-                        # Determine which species in that network has the highest leak rate
-                        # We do this here because we need a temperature and pressure
-                        # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                        objectsToEnlarge.append(obj)
-                    elif isinstance(obj, Species):
-                        objectsToEnlarge.append(obj)
-                        assert len(objectsToEnlarge)>0
-                    elif isinstance(obj,Reaction):
-                        potentialSpcs = obj.reactants+obj.products
-                        #remove species already in core
-                        neededSpcs = [x for x in potentialSpcs if x not in self.reactionModel.core.species]
-                        for i in range(len(neededSpcs)): #remove duplicate species
-                            if neededSpcs.index(neededSpcs[i]) != i:
-                                del neededSpcs[i]
-                        objectsToEnlarge.extend(neededSpcs)
-                    self.done = False
-    
-    
-            if not self.done: # There is something that needs exploring/enlarging
-                
-                # If we reached our termination conditions, then try to prune
-                # species from the edge
-                if allTerminated:
-                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies, self.minSpeciesExistIterationsForPrune)
-                    # Perform garbage collection after pruning
-                    collected = gc.collect()
-                    logging.info('Garbage collector: collected %d objects.' % (collected))
-    
-                # Enlarge objects identified by the simulation for enlarging
-                # These should be Species or Network objects
-                logging.info('')
-                objectsToEnlarge = list(set(objectsToEnlarge))
-
-                if len(objectsToEnlarge) == 0:
-                    raise Exception("Expected a species or pdep object to enlarge, but there wasn't one found.")
-                
-                # Add objects to enlarge to the core first
-                for objectToEnlarge in objectsToEnlarge:
-                    self.reactionModel.enlarge(objectToEnlarge)
-                
-                if len(self.reactionModel.core.species) > numCoreSpecies:
-                    # If there were core species added, then react the edge
-                    # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
-                    if self.filterReactions:
-                        # Run a raw simulation to get updated reaction system threshold values
-                        for index, reactionSystem in enumerate(self.reactionSystems):
-                            # Run with the same conditions as with pruning off
-                            reactionSystem.simulate(
-                                coreSpecies = self.reactionModel.core.species,
-                                coreReactions = self.reactionModel.core.reactions,
-                                edgeSpecies = [],
-                                edgeReactions = [],
-                                surfaceSpecies = self.reactionModel.surfaceSpecies,
-                                surfaceReactions = self.reactionModel.surfaceReactions,
-                                toleranceKeepInEdge = 0,
-                                toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                                toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
-                                toleranceInterruptSimulation =  self.fluxToleranceMoveToCore,
-                                toleranceMoveEdgeReactionToCoreInterrupt=  self.toleranceMoveEdgeReactionToCore,
-                                toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
-                                toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
-                                toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
-                                toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
-                                pdepNetworks = self.reactionModel.networkList,
-                                ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
-                                absoluteTolerance = self.absoluteTolerance,
-                                relativeTolerance = self.relativeTolerance,
-                                filterReactions=True,
-                            )
-                            self.updateReactionThresholdAndReactFlags(
-                                rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
-    
-                        logging.info('')    
-                    else:
-                        self.updateReactionThresholdAndReactFlags()
+                    addedRxns = {k for k in obj if isinstance(k,Reaction)}
+                    addedSurfaceRxns = newSurfaceReactions - surfRxns
                     
-                    self.reactionModel.enlarge(reactEdge=True, 
-                            unimolecularReact=self.unimolecularReact, 
-                            bimolecularReact=self.bimolecularReact)
-
-            self.saveEverything()
-
-            # Consider stopping gracefully if the next iteration might take us
-            # past the wall time
-            if self.wallTime > 0 and len(self.execTime) > 1:
-                t = self.execTime[-1]
-                dt = self.execTime[-1] - self.execTime[-2]
-                if t + 3 * dt > self.wallTime:
-                    logging.info('MODEL GENERATION TERMINATED')
+                    addedBulkRxns = addedRxns-addedSurfaceRxns
+                    lostSurfaceRxns = (surfRxns - newSurfaceReactions) | addedBulkRxns
+                    
+                    addedSpcs = {k for k in obj if isinstance(k,Species)} | {k.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si) for k in obj if isinstance(k,PDepNetwork)}
+                    lostSurfaceSpcs = (surfSpcs-newSurfaceSpecies) | addedSpcs
+                    addedSurfaceSpcs = newSurfaceSpecies - surfSpcs
+                    
+                    newSurfaceSpcsAdd = newSurfaceSpcsAdd | addedSurfaceSpcs
+                    newSurfaceRxnsAdd = newSurfaceRxnsAdd | addedSurfaceRxns
+                    newSurfaceSpcsLoss = newSurfaceSpcsLoss | lostSurfaceSpcs
+                    newSurfaceRxnsLoss = newSurfaceRxnsLoss | lostSurfaceRxns
+                    
+                    allTerminated = allTerminated and terminated
                     logging.info('')
-                    logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
-                    logging.info('The output model may be incomplete.')
-                    logging.info('')
-                    coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
-                    logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
-                    logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
-                    return
+                        
+                    # If simulation is invalid, note which species should be added to
+                    # the core
+                    if obj != [] and not (obj is None):
+                        objects = self.processToSpeciesNetworks(obj)
+                        for ob in objects:
+                            if not (ob in objectsToEnlarge):
+                                if isinstance(ob,Species): #keep Species before PDepNetworks
+                                    objectsToEnlarge.insert(0,ob)
+                                elif isinstance(ob[0],PDepNetwork):
+                                    objectsToEnlarge.append(ob)
+                                else:
+                                    raise TypeError('processed object not recognized')
+
+                        self.done = False
+                        
+                    if newSurfaceRxnsAdd != set() or newSurfaceRxnsLoss != set() or newSurfaceSpcsLoss != set() or newSurfaceSpcsAdd != set():
+                        self.done = False
+                        
+                if not self.done: # There is something that needs exploring/enlarging
+
+                    # If we reached our termination conditions, then try to prune
+                    # species from the edge
+                    if allTerminated:
+                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                        # Perform garbage collection after pruning
+                        collected = gc.collect()
+                        logging.info('Garbage collector: collected %d objects.' % (collected))
         
+                    # Enlarge objects identified by the simulation for enlarging
+                    # These should be Species or Network objects
+                    logging.info('')
+
+                    objectsToEnlarge = list(set(objectsToEnlarge))
+
+                    # Add objects to enlarge to the core first
+                    for objectToEnlarge in objectsToEnlarge:
+                        self.reactionModel.enlarge(objectToEnlarge)
+                        
+                    if len(self.reactionModel.core.species) > numCoreSpecies:
+                        tempModelSettings = deepcopy(modelSettings)
+                        tempModelSettings.toleranceKeepInEdge = 0
+                        # If there were core species added, then react the edge
+                        # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
+                        if modelSettings.filterReactions:
+                            # Run a raw simulation to get updated reaction system threshold values
+                            for index, reactionSystem in enumerate(self.reactionSystems):
+                                # Run with the same conditions as with pruning off
+                                reactionSystem.simulate(
+                                    coreSpecies = self.reactionModel.core.species,
+                                    coreReactions = self.reactionModel.core.reactions,
+                                    edgeSpecies = [],
+                                    edgeReactions = [],
+                                    surfaceSpecies = self.reactionModel.surfaceSpecies,
+                                    surfaceReactions = self.reactionModel.surfaceReactions,
+                                    pdepNetworks = self.reactionModel.networkList,
+                                    modelSettings = tempModelSettings,
+                                    simulatorSettings = simulatorSettings,
+                                )
+                                self.updateReactionThresholdAndReactFlags(
+                                    rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                    rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+        
+                            logging.info('')    
+                        else:
+                            self.updateReactionThresholdAndReactFlags()
+                        
+                        self.reactionModel.enlarge(reactEdge=True, 
+                                unimolecularReact=self.unimolecularReact, 
+                                bimolecularReact=self.bimolecularReact)
+                    
+                    #Adjust Surface
+                    #we add added species and remove any species moved out of the core
+                    #for now we remove reactions that become part of a PDepNetwork by intersecting with the core
+                    #thus the surface algorithm currently (June 2017) is not implemented for pdep networks
+                    self.reactionModel.surfaceSpecies = list(((surfSpcs | newSurfaceSpcsAdd)-newSurfaceSpcsLoss) & set(self.reactionModel.core.species))
+                    self.reactionModel.surfaceReactions = list(((surfRxns | newSurfaceRxnsAdd)-newSurfaceRxnsLoss) & set(self.reactionModel.core.reactions))
+                        
+                    maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
+
+                    if maxNumSpcsHit: #breaks the while loop 
+                        break
+                    
+                self.saveEverything()
+    
+                # Consider stopping gracefully if the next iteration might take us
+                # past the wall time
+                if self.wallTime > 0 and len(self.execTime) > 1:
+                    t = self.execTime[-1]
+                    dt = self.execTime[-1] - self.execTime[-2]
+                    if t + 3 * dt > self.wallTime:
+                        logging.info('MODEL GENERATION TERMINATED')
+                        logging.info('')
+                        logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
+                        logging.info('The output model may be incomplete.')
+                        logging.info('')
+                        coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
+                        logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
+                        logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
+                        return
+                    
+            if maxNumSpcsHit: #resets maxNumSpcsHit and continues the settings for loop
+                logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(modelSettings.maxNumSpecies,q+1))
+                maxNumSpcsHit = False
+                continue
         
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
@@ -762,25 +771,13 @@ class RMG(util.Subject):
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
-                    surfaceSpecies = self.reactionModel.surfaceSpecies,
-                    surfaceReactions = self.reactionModel.surfaceReactions,
-                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
-                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceMoveEdgeReactionToCore = self.toleranceMoveEdgeReactionToCore,
-                    toleranceInterruptSimulation =  self.fluxToleranceMoveToCore,
-                    toleranceMoveEdgeReactionToCoreInterrupt=  self.toleranceMoveEdgeReactionToCore,
-                    toleranceMoveEdgeReactionToSurface = self.toleranceMoveEdgeReactionToSurface,
-                    toleranceMoveSurfaceSpeciesToCore = self.toleranceMoveSurfaceSpeciesToCore,
-                    toleranceMoveSurfaceReactionToCore = self.toleranceMoveSurfaceReactionToCore,
-                    toleranceMoveEdgeReactionToSurfaceInterrupt = self.toleranceMoveEdgeReactionToSurfaceInterrupt,
+                    surfaceSpecies = [],
+                    surfaceReactions = [],
                     pdepNetworks = self.reactionModel.networkList,
-                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
-                    absoluteTolerance = self.absoluteTolerance,
-                    relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
-                    sensitivityAbsoluteTolerance = self.sensitivityAbsoluteTolerance,
-                    sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
+                    modelSettings = self.modelSettingsList[-1],
+                    simulatorSettings = self.simulatorSettingsList[-1],
                 )
                 
                 plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
@@ -917,6 +914,65 @@ class RMG(util.Subject):
             labels.add(potential_label)
         return oldLabels
     
+    ################################################################################
+    def processToSpeciesNetworks(self,obj):
+        """
+        breaks down the objects returned by simulate into Species and PDepNetwork
+        components
+        """
+        
+        if isinstance(obj, PDepNetwork):
+            out = [self.processPdepNetworks(obj)]
+            return out
+        elif isinstance(obj, Species):
+            return [obj]
+        elif isinstance(obj,Reaction):
+            return list(self.processReactionsToSpecies(obj))
+        elif isinstance(obj,list): #list of species
+            rspcs = self.processReactionsToSpecies([k for k in obj if isinstance(k,Reaction)])
+            spcs = {k for k in obj if isinstance(k,Species)} | rspcs
+            nworks,pspcs = self.processPdepNetworks([k for k in obj if isinstance(k,PDepNetwork)])
+            spcs = list(spcs-pspcs) #avoid duplicate species
+            return spcs+nworks
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+
+    def processPdepNetworks(self,obj):
+        """
+        properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate
+        """
+        reactionSystem = self.reactionSystem
+        if isinstance(obj, PDepNetwork):
+            # Determine which species in that network has the highest leak rate
+            # We do this here because we need a temperature and pressure
+            # Store the maximum leak species along with the associated network
+            ob = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
+            return ob
+        elif isinstance(obj,list):
+            spcs = [ob.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si) for ob in obj]
+            nworks = [(obj[i],spcs[i]) for i in xrange(len(obj))]
+            return nworks,set(spcs)
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+            
+    def processReactionsToSpecies(self,obj):
+        """
+        properly processes Reaction objects and lists of Reaction objects returned from simulate
+        """
+        coreSpecies = self.reactionModel.core.species
+        filterFcn = lambda x: not ((x in coreSpecies)) #remove species already in core
+        if isinstance(obj,Reaction):
+            potentialSpcs = obj.reactants+obj.products
+            potentialSpcs = filter(filterFcn,potentialSpcs)
+        elif isinstance(obj,list) or isinstance(obj,set):
+            potentialSpcs = set()
+            for ob in obj:
+                potentialSpcs = potentialSpcs | set(ob.reactants+ob.products)
+            potentialSpcs = {sp for sp in potentialSpcs if filterFcn(sp)}
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+        return potentialSpcs
+
     def generateCanteraFiles(self, chemkinFile, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti

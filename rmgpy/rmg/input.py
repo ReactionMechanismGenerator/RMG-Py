@@ -40,7 +40,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
-
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
 from rmgpy.scoop_framework.util import broadcast, get
@@ -221,10 +221,7 @@ def liquidReactor(temperature,
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
-    rmg.absoluteTolerance = atol
-    rmg.relativeTolerance = rtol
-    rmg.sensitivityAbsoluteTolerance = sens_atol
-    rmg.sensitivityRelativeTolerance = sens_rtol
+    rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
@@ -236,7 +233,8 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
           toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
+          maxNumSpecies=None,maxNumObjsPerIter=1):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -250,33 +248,11 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
     
-    rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
-    rmg.fluxToleranceMoveToCore = toleranceMoveToCore
-    rmg.toleranceMoveEdgeReactionToCore = toleranceMoveEdgeReactionToCore
-    rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
-    rmg.maximumEdgeSpecies = maximumEdgeSpecies
-    rmg.minCoreSizeForPrune = minCoreSizeForPrune
-    rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
-    rmg.filterReactions = filterReactions
-    rmg.ignoreOverallFluxCriterion=ignoreOverallFluxCriterion
-    rmg.toleranceMoveEdgeReactionToSurface = toleranceMoveEdgeReactionToSurface
-    rmg.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
-    rmg.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
-    
-    if toleranceInterruptSimulation:
-        rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
-    else:
-        rmg.fluxToleranceInterrupt = toleranceMoveToCore
-        
-    if toleranceMoveEdgeReactionToSurfaceInterrupt:
-        rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurfaceInterrupt
-    else:
-        rmg.toleranceMoveEdgeReactionToSurfaceInterrupt = toleranceMoveEdgeReactionToSurface
-    
-    if toleranceMoveEdgeReactionToCoreInterrupt:
-        rmg.toleranceMoveEdgeReactionToCoreInterrupt = toleranceMoveEdgeReactionToCoreInterrupt
-    else:
-        rmg.toleranceMoveEdgeReactionToCoreInterrupt = toleranceMoveEdgeReactionToCore
+    rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
+          toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
+          toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
+          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, maxNumSpecies, maxNumObjsPerIter))
+
     
 def quantumMechanics(
                     software,
