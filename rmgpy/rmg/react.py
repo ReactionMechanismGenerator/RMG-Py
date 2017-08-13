@@ -85,7 +85,7 @@ def reactSpecies(speciesTuple):
             family.addReverseAttribute(rxn)
     # fix the degneracy of (not ownReverse) reactions found in the backwards
     # direction
-    correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
+    correctDegeneracyOfReverseReactions(reactions)
     reduceSameReactantDegeneracy(reactions)
     # get a molecule list with species indexes
     zippedList = []
@@ -295,7 +295,7 @@ def reduceSameReactantDegeneracy(rxnList):
             reaction.reverse.degeneracy *= 0.5
             logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
 
-def correctDegeneracyOfReverseReactions(reactionList, reactants):
+def correctDegeneracyOfReverseReactions(reactionList):
     """
     This method corrects the degeneracy of reactions found when the backwards
     template is used. Given the following parameters:
@@ -308,21 +308,12 @@ def correctDegeneracyOfReverseReactions(reactionList, reactants):
     This does not adjust for identical reactants, you need to use `reduceSameReactantDegeneracy`
     to adjust for that.
     """
-    from rmgpy.reaction import _isomorphicSpeciesList
-    from rmgpy.reaction import ReactionError
-
     for rxn in reactionList:
-        if _isomorphicSpeciesList(rxn.reactants, reactants):
-            # was forward reaction so ignore
-            continue
-        elif _isomorphicSpeciesList(rxn.products, reactants):
+        if not rxn.isForward:
             # was reverse reaction so should find degeneracy
             family = getDB('kinetics').families[rxn.family]
             if not family.ownReverse: 
                 rxn.degeneracy = family.calculateDegeneracy(rxn, ignoreSameReactants=True)
-        else:
-            # wrong reaction was sent here
-            raise ReactionError('Reaction in reactionList did not match reactants. Reaction: {}, Reactants: {}'.format(rxn,reactants))
 
 def deflate(rxns, species, reactantIndices):
     """

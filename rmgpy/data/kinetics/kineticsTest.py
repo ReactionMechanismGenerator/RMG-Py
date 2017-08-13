@@ -698,8 +698,8 @@ class TestReactionDegeneracy(unittest.TestCase):
         reverse_reactions = findDegeneracies(reverse_reactions)
 
         # correct reverse reaction degeneracy
-        correctDegeneracyOfReverseReactions(forward_reactions, reactants = [molA, molB])
-        correctDegeneracyOfReverseReactions(reverse_reactions, reactants = [molC, molD])
+        correctDegeneracyOfReverseReactions(forward_reactions)
+        correctDegeneracyOfReverseReactions(reverse_reactions)
 
         self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
                          'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))
