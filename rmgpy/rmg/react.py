@@ -198,11 +198,11 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
                 identical = False
                 sameTemplate = False
                 for rxn in rxnList1:
-                    isomorphic = rxn0.isIsomorphic(rxn,checkIdentical=False)
+                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, checkTemplateRxnProducts=True)
                     if not isomorphic:
                         identical = False
                     else:
-                        identical = rxn0.isIsomorphic(rxn,checkIdentical=True)
+                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, checkTemplateRxnProducts=True)
                     sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
                     if not isomorphic:
                         # a different product was found, go to next list

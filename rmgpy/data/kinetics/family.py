@@ -1493,7 +1493,7 @@ class KineticsFamily(Database):
                     # Delete this reaction, since it should probably also be forbidden in the initial direction
                     # Hack fix for now
                     del rxn
-            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
                 for rxn0 in reactions:
