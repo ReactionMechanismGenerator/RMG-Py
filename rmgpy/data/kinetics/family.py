@@ -1456,14 +1456,8 @@ class KineticsFamily(Database):
         from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
         if self.ownReverse:
-            # make sure to react all resonance structures.
-            tuples = getMoleculeTuples(rxn.products)
-            reactionList = []
-            for tup in tuples:
-                moltup = [mol_and_index[0] for mol_and_index in tup]
-                reactionList.extend(self.__generateReactions(moltup,
-                                                             products=rxn.reactants,
-                                                             forward=True))
+            reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
+                                                    products=rxn.reactants, forward=True)
             reactions = findDegeneracies(reactionList)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
