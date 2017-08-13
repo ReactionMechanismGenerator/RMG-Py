@@ -251,11 +251,13 @@ def convertToSpeciesObjects(reaction):
     # obtain species with all resonance isomers
     for i, mol in enumerate(reaction.reactants):
         spec = Species(molecule = [mol])
-        spec.generateResonanceIsomers(keepIsomorphic=True)
+        if not reaction.isForward:
+            spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.reactants[i] = spec
     for i, mol in enumerate(reaction.products):
         spec = Species(molecule = [mol])
-        spec.generateResonanceIsomers(keepIsomorphic=True)
+        if reaction.isForward:
+            spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.products[i] = spec
 
     # convert reaction.pairs object to species

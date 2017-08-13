@@ -1665,6 +1665,8 @@ class KineticsFamily(Database):
             if isinstance(products[0],Molecule):
                 products = [product.generateResonanceIsomers() for product in products]
             elif isinstance(products[0],Species):
+                for product in products:
+                    product.generateResonanceIsomers(keepIsomorphic=False)
                 products = [product.molecule for product in products]
             else:
                 raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
