@@ -107,6 +107,7 @@ class TestConfiguration(unittest.TestCase):
         )
 
         self.configuration = Configuration(self.nC4H8, self.H2O)
+        self.configuration_unimolecular = Configuration(self.nC4H10O)
 
     def test_repr(self):
         """
