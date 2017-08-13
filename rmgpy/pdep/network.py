@@ -75,32 +75,43 @@ class Network:
     
     """
     
-    def __init__(self, label='', isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    def __init__(self, label='', isomers=None, reactants=None, products=None,
+                 pathReactions=None, bathGas=None, netReactions=None, T=0.0, P =0.0,
+                 Elist = None, Jlist = None, Ngrains = 0, NJ = 0, activeKRotor = True,
+                 activeJRotor = True, grainSize=0.0, grainCount = 0, E0 = None):
+        """
+        To initialize a Network object for running a pressure dependent job,
+        only label, isomers, reactants, products pathReactions and bathGas are useful,
+        since the other attributes will be created during the run.
+
+        The other attributes are used to reinstantiate the created network object
+        for debugging and testing.
+        """
         self.label = label
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
         self.pathReactions = pathReactions or []
         self.bathGas = bathGas or {}
-        self.netReactions = []
+        self.netReactions = netReactions or []
         
-        self.T = 0.0
-        self.P = 0.0
-        self.Elist = None
-        self.Jlist = None
+        self.T = T
+        self.P = P
+        self.Elist = Elist
+        self.Jlist = Jlist
         
         self.Nisom = len(self.isomers)
         self.Nreac = len(self.reactants)
         self.Nprod = len(self.products)
-        self.Ngrains = 0
-        self.NJ = 0
+        self.Ngrains = Ngrains
+        self.NJ = NJ
 
-        self.activeKRotor = True
-        self.activeJRotor = True
+        self.activeKRotor = activeKRotor
+        self.activeJRotor = activeJRotor
 
-        self.grainSize = 0.0
-        self.grainCount = 0
-        self.E0 = None
+        self.grainSize = grainSize
+        self.grainCount = grainCount
+        self.E0 = E0
 
         self.valid = False
 
