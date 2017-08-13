@@ -115,6 +115,40 @@ class Network:
 
         self.valid = False
 
+    def __repr__(self):
+        string = 'Network('
+        if self.label != '': string += 'label="{0}", '.format(self.label)
+        if self.isomers: string += 'isomers="{0!r}", '.format(self.isomers)
+        if self.reactants: string += 'reactants="{0!r}", '.format(self.reactants)
+        if self.products: string += 'products="{0!r}", '.format(self.products)
+        if self.pathReactions: string += 'pathReactions="{0!r}", '.format(self.pathReactions)
+        if self.bathGas: string += 'bathGas="{0!r}", '.format(self.bathGas)
+        if self.netReactions: string += 'netReactions="{0!r}", '.format(self.netReactions)
+        if self.T != 0.0: string += 'T="{0}", '.format(self.T)
+        if self.P != 0.0: string += 'P="{0}", '.format(self.P)
+        if self.Elist: string += 'Elist="{0}", '.format(self.Elist)
+        if self.Jlist: string += 'Jlist="{0}", '.format(self.Jlist)
+        if self.Ngrains != 0: string += 'Ngrains="{0}", '.format(self.Ngrains)
+        if self.NJ != 0: string += 'NJ="{0}", '.format(self.NJ)
+        string += 'activeKRotor="{0}", '.format(self.activeKRotor)
+        string += 'activeJRotor="{0}", '.format(self.activeJRotor)
+        if self.grainSize != 0.0: string += 'grainSize="{0}", '.format(self.grainSize)
+        if self.grainCount != 0: string += 'grainCount="{0}", '.format(self.grainCount)
+        if self.E0: string += 'E0="{0}", '.format(self.E0)
+        string += ')'
+        return string
+
+    def __str__(self):
+        """return Network like it would be seen in cantherm input file"""
+        return "Network(label = '{0}', isomers = {1}, reactants = {2}, products = {3}, "\
+                        "pathReactions = {4}, bathGas = {5}, "\
+                        "netReactions = {6})".format(self.label, [i.species[0].label for i in self.isomers],
+                        [[r.label for r in pair.species] for pair in self.reactants],
+                        [[p.label for p in pair.species] for pair in self.products],
+                        [r.label for r in self.pathReactions],
+                        dict([(s.label, value) for s, value in self.bathGas.items()]),
+                        [r.toLabeledStr() for r in self.netReactions])
+
     def invalidate(self):
         """
         Mark the network as in need of a new calculation to determine the
