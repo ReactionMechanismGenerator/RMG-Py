@@ -77,7 +77,8 @@ class TemplateReaction(Reaction):
                 family=None,
                 template=None,
                 estimator=None,
-                reverse=None
+                reverse=None,
+                isForward=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -95,6 +96,7 @@ class TemplateReaction(Reaction):
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
+        self.isForward = isForward
 
     def __reduce__(self):
         """
@@ -114,6 +116,7 @@ class TemplateReaction(Reaction):
                                    self.template,
                                    self.estimator,
                                    self.reverse,
+                                   self.isForward
                                    ))
 
     def __repr__(self):
@@ -174,6 +177,7 @@ class TemplateReaction(Reaction):
         other.template = self.template
         other.estimator = self.estimator
         other.reverse = self.reverse
+        other.isForward = self.isForward
         
         return other
 
@@ -1391,6 +1395,7 @@ class KineticsFamily(Database):
             degeneracy = 1,
             reversible = True,
             family = self.label,
+            isForward = isForward,
         )
         
         # Store the labeled atoms so we can recover them later
