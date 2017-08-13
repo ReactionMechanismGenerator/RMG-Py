@@ -144,10 +144,12 @@ class KineticsJob:
             tunneling.E0_TS = (self.reaction.transitionState.conformer.E0.value_si*0.001,"kJ/mol")
             tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in self.reaction.products])*0.001,"kJ/mol")
         elif tunneling is not None:
-            raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
-        
-        logging.info('Generating {0} kinetics model for {0}...'.format(kineticsClass, self.reaction))
-        
+            if tunneling.frequency is not None:
+                # Frequency was given by the user
+                pass
+            else:
+                raise ValueError('Unknown tunneling model {0!r} for reaction {1}.'.format(tunneling, self.reaction))
+        logging.debug('Generating {0} kinetics model for {1}...'.format(kineticsClass, self.reaction))
         if Tlist is None:
             Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
         klist = numpy.zeros_like(Tlist)
