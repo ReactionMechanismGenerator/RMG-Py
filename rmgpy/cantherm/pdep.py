@@ -238,6 +238,8 @@ class PressureDependenceJob(object):
             self.save(outputFile)
             if plot:
                 self.plot(os.path.dirname(outputFile))
+        logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
+        logging.debug(repr(self.network))
 
     def generateTemperatureList(self):
         """
@@ -362,7 +364,7 @@ class PressureDependenceJob(object):
                 order = len(reaction.reactants)
                 kdata *= 1e6 ** (order-1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-                
+                logging.debug('Fitting master eqn data to kinetics for reaction {}.'.format(reaction))
                 reaction.kinetics = self.fitInterpolationModel(Tdata, Pdata, kdata, kunits)
                 
                 self.network.netReactions.append(reaction)

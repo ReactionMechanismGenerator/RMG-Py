@@ -127,6 +127,8 @@ class KineticsJob:
             self.save(outputFile)
             if plot:
                 self.plot(os.path.dirname(outputFile))
+        logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
+        logging.debug(repr(self.reaction))
     
     def generateKinetics(self,Tlist=None):
         """

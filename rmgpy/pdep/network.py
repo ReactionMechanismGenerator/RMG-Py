@@ -215,6 +215,8 @@ class Network:
         self.rmgmode = rmgmode
         
         self.calculateDensitiesOfStates()
+        logging.debug('Finished initialization for network {0}.'.format(self.label))
+        logging.debug('The nework now has values of {0}'.format(repr(self)))
 
     def calculateRateCoefficients(self, Tlist, Plist, method, errorCheck=True):
         
@@ -284,7 +286,9 @@ class Network:
                                 logging.info(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
                                 K[t,p,:,:] = 0 * K[t,p,:,:]
                                 self.K = 0 * self.K
-
+        logging.debug('Finished calculating rate coefficients for network {0}.'.format(self.label))
+        logging.debug('The nework now has values of {0}'.format(repr(self)))
+        logging.debug('Master equation matrix found for network {0} is {1}'.format(self.label, K))
         return K
 
     def setConditions(self, T, P, ymB=None):
@@ -370,6 +374,8 @@ class Network:
             # Update parameters that depend on temperature and pressure if necessary
             if temperatureChanged or pressureChanged:
                 self.calculateCollisionModel()
+        logging.debug('Finished setting conditions for network {0}.'.format(self.label))
+        logging.debug('The nework now has values of {0}'.format(repr(self)))
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
