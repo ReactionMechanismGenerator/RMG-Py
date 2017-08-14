@@ -68,6 +68,11 @@ def reactSpecies(speciesTuple):
     given one species tuple, will find the reactions and remove degeneracy
     from them.
     """
+    # Check if the reactants are the same
+    sameReactants = False
+    if len(speciesTuple) == 2 and speciesTuple[0].isIsomorphic(speciesTuple[1]):
+        sameReactants = True
+
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
     _labelListOfSpecies(speciesTuple)
@@ -77,16 +82,12 @@ def reactSpecies(speciesTuple):
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
     # remove reverse reaction
-    reactions = findDegeneracies(reactions)
+    reactions = findDegeneracies(reactions, sameReactants)
     # add reverse attribute to families with ownReverse
     for rxn in reactions:
         family = getDB('kinetics').families[rxn.family]
         if family.ownReverse:
             family.addReverseAttribute(rxn)
-    # fix the degneracy of (not ownReverse) reactions found in the backwards
-    # direction
-    correctDegeneracyOfReverseReactions(reactions)
-    reduceSameReactantDegeneracy(reactions)
     # get a molecule list with species indexes
     zippedList = []
     for spec in speciesTuple:
@@ -169,7 +170,7 @@ def reactMolecules(moleculeTuples):
 
     return reactionList
 
-def findDegeneracies(rxnList, useSpeciesReaction = True):
+def findDegeneracies(rxnList, sameReactants=None):
     """
     given a list of Reaction object with Molecule objects, this method 
     removes degenerate reactions and increments the degeneracy of the 
@@ -237,7 +238,14 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
         # The degeneracy of each reaction is the number of reactions that were in the sublist
         rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in rxnList1])
         rxnList.append(rxn)
-        
+
+    for rxn in rxnList:
+        if rxn.isForward:
+            reduceSameReactantDegeneracy(rxn, sameReactants)
+        else:
+            # fix the degeneracy of (not ownReverse) reactions found in the backwards direction
+            correctDegeneracyOfReverseReaction(rxn)
+
     return rxnList
 
 def convertToSpeciesObjects(reaction):
@@ -280,7 +288,7 @@ def convertToSpeciesObjects(reaction):
     except AttributeError:
         pass
 
-def reduceSameReactantDegeneracy(rxnList):
+def reduceSameReactantDegeneracy(reaction, sameReactants=None):
     """
     This method reduces the degeneracy of reactions with identical reactants,
     since translational component of the transition states are already taken
@@ -288,34 +296,28 @@ def reduceSameReactantDegeneracy(rxnList):
     
     This comes from work by Bishop and Laidler in 1965
     """
-    for reaction in rxnList:
-        if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
-            reaction.degeneracy *= 0.5
-            logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
-        if reaction.reverse and len(reaction.reverse.reactants) == 2 and \
-                                   reaction.reverse.reactants[0].isIsomorphic(reaction.reverse.reactants[1]):
-            reaction.reverse.degeneracy *= 0.5
-            logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
+    if len(reaction.reactants) == 2 and (
+                (reaction.isForward and sameReactants) or
+                reaction.reactants[0].isIsomorphic(reaction.reactants[1])
+            ):
+        reaction.degeneracy *= 0.5
+        logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
 
-def correctDegeneracyOfReverseReactions(reactionList):
+def correctDegeneracyOfReverseReaction(reaction):
     """
     This method corrects the degeneracy of reactions found when the backwards
     template is used. Given the following parameters:
 
-        reactionList - list of reactions with their degeneracies already counted
-        reactants - list/tuple of species used in the generateReactions method
+        reaction - list of reactions with their degeneracies already counted
 
-    This method modifies reactionList in place and returns nothing
+    This method modifies reaction in place and returns nothing
     
     This does not adjust for identical reactants, you need to use `reduceSameReactantDegeneracy`
     to adjust for that.
     """
-    for rxn in reactionList:
-        if not rxn.isForward:
-            # was reverse reaction so should find degeneracy
-            family = getDB('kinetics').families[rxn.family]
-            if not family.ownReverse: 
-                rxn.degeneracy = family.calculateDegeneracy(rxn, ignoreSameReactants=True)
+    family = getDB('kinetics').families[reaction.family]
+    if not family.ownReverse:
+        reaction.degeneracy = family.calculateDegeneracy(reaction)
 
 def deflate(rxns, species, reactantIndices):
     """

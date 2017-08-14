@@ -36,7 +36,7 @@ from rmgpy.data.base import DatabaseError
 import numpy
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, react, reactSpecies, _labelListOfSpecies
+from rmgpy.rmg.react import findDegeneracies, react, reactSpecies, _labelListOfSpecies
 from rmgpy.data.base import ForbiddenStructures
 from rmgpy.species import Species
 ###################################################
@@ -354,7 +354,6 @@ class TestReactionDegeneracy(unittest.TestCase):
         for reactant in reactants: reactant.assignAtomIDs()
         reactions = family.generateReactions(reactants)
         reactions = findDegeneracies(reactions)
-        reduceSameReactantDegeneracy(reactions)
         self.assertEqual(len(reactions), num_independent_reactions,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_independent_reactions))
 
         return sum([reaction.degeneracy for reaction in reactions]), reactions
@@ -676,7 +675,6 @@ class TestReactionDegeneracy(unittest.TestCase):
         Ensure the returned kinetics have the same degeneracy irrespective of
         whether __generateReactions has forward = True or False
         """
-        from rmgpy.rmg.react import correctDegeneracyOfReverseReactions
 
         family = database.kinetics.families['Disproportionation']
 
@@ -696,10 +694,6 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         forward_reactions = findDegeneracies(forward_reactions)
         reverse_reactions = findDegeneracies(reverse_reactions)
-
-        # correct reverse reaction degeneracy
-        correctDegeneracyOfReverseReactions(forward_reactions)
-        correctDegeneracyOfReverseReactions(reverse_reactions)
 
         self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
                          'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))

@@ -1453,12 +1453,17 @@ class KineticsFamily(Database):
         For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
         attribute that contains the reverse reaction information (like degeneracy)
         """
-        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+        from rmgpy.rmg.react import findDegeneracies
 
         if self.ownReverse:
+            # Check if the reactants are the same
+            sameReactants = False
+            if len(rxn.products) == 2 and rxn.products[0].isIsomorphic(rxn.products[1]):
+                sameReactants = True
+
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True)
-            reactions = findDegeneracies(reactionList)
+            reactions = findDegeneracies(reactionList, sameReactants)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                 logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
@@ -1502,7 +1507,7 @@ class KineticsFamily(Database):
             else:
                 rxn.reverse = reactions[0]
 
-    def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
+    def calculateDegeneracy(self, reaction):
         """
         For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
         the kinetics are defined, compute the reaction-path degeneracy.
@@ -1513,7 +1518,7 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
-        from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, getMoleculeTuples
+        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
         # find combinations of resonance isomers
         specReactants = []
@@ -1533,10 +1538,13 @@ class KineticsFamily(Database):
             comboOnlyMols = [tup[0] for tup in combo]
             reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
 
+        # Check if the reactants are the same
+        sameReactants = False
+        if len(specReactants) == 2 and specReactants[0].isIsomorphic(specReactants[1]):
+            sameReactants = True
+
         # remove degenerate reactions
-        reactions = findDegeneracies(reactions)
-        if not ignoreSameReactants:
-            reduceSameReactantDegeneracy(reactions)
+        reactions = findDegeneracies(reactions, sameReactants)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
