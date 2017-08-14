@@ -573,6 +573,10 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+        useFluxRatioInWeights = modelSettings.useFluxRatioInWeights
+        speciesWeights = modelSettings.speciesWeights
+        radicalChangeWeightBase = modelSettings.radicalChangeWeightBase
+        
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
         terminateAtMaxObjects = True if not prune else modelSettings.terminateAtMaxObjects 
         
