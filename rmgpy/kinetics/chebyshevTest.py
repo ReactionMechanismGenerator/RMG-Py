@@ -36,7 +36,7 @@ import unittest
 import numpy
 
 from rmgpy.kinetics.chebyshev import Chebyshev
-
+from rmgpy.exceptions import KineticsError
 ################################################################################
 
 class TestChebyshev(unittest.TestCase):
@@ -153,7 +153,23 @@ class TestChebyshev(unittest.TestCase):
             for p in range(nP):
                 kfit = chebyshev.getRateCoefficient(Tdata[t], Pdata[p]) * 1e6
                 self.assertAlmostEqual(kfit, kdata[t,p], delta=1e-4*kdata[t,p])
+
+    def test_fitToData2(self):
+        """
+        Test the Chebyshev.fitToData() method throws error without enough degrees of freedom.
         
+        Here only 3 temperatures are given, but the polynomial desired has 6 parameters.
+        """
+        Tdata = numpy.array([300,1200,2000])
+        Pdata = numpy.array([1e5,3e5,1e6,3e7])
+        nT = len(Tdata); nP = len(Pdata)
+        kdata = numpy.zeros((nT,nP))
+        for t in range(nT):
+            for p in range(nP):
+                kdata[t,p] = self.chebyshev.getRateCoefficient(Tdata[t], Pdata[p])
+        with self.assertRaises(KineticsError):
+            Chebyshev().fitToData(Tdata, Pdata, kdata, kunits="cm^3/(mol*s)", degreeT=12, degreeP=8, Tmin=300, Tmax=2000, Pmin=0.1, Pmax=10.)
+
     def test_pickle(self):
         """
         Test that a Chebyshev object can be pickled and unpickled with no loss
