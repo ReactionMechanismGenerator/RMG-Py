@@ -247,7 +247,7 @@ cdef class ReactionSystem(DASx):
             2) every species participates in a surface reaction
         """
         cdef numpy.ndarray[numpy.int_t,ndim=2] productIndices,reactantIndices
-        cdef list surfaceSpeciesIndices, surfaceReationIndices
+        cdef list surfaceSpeciesIndices, surfaceReactionIndices, removeInds
         cdef set possibleSpeciesIndices
         cdef int i,j
         cdef bool notInSurface
@@ -261,6 +261,7 @@ cdef class ReactionSystem(DASx):
         surfaceSpeciesIndices = []
         surfaceReactionIndices = []
         possibleSpeciesIndices = set()
+        removeInds = []
         
         for obj in surfaceSpecies:
             surfaceSpeciesIndices.append(coreSpecies.index(obj))
@@ -283,11 +284,16 @@ cdef class ReactionSystem(DASx):
                 surfaceReactions.remove(coreReactions[i])
                 surfaceReactionIndices.remove(i)
         
+        possibleSpeciesIndices -= {-1}
+        
         for i in surfaceSpeciesIndices: #remove species without reactions in the surface
             if not(i in possibleSpeciesIndices):
                 logging.info('removing disconnected species from surface: {0}'.format(coreSpecies[i].label))
-                surfaceSpecies.remove(coreSpecies[i])
-                surfaceSpeciesIndices.remove(i)
+                removeInds.append(i)
+        
+        for i in removeInds:
+            surfaceSpecies.remove(coreSpecies[i])
+            surfaceSpeciesIndices.remove(i)
         
         self.surfaceSpeciesIndices = numpy.array(surfaceSpeciesIndices,dtype=numpy.int)
         self.surfaceReactionIndices = numpy.array(surfaceReactionIndices,dtype=numpy.int)
@@ -509,9 +515,9 @@ cdef class ReactionSystem(DASx):
         cdef double toleranceMoveEdgeReactionToSurfaceInterrupt
         cdef bool ignoreOverallFluxCriterion, filterReactions
         cdef double absoluteTolerance, relativeTolerance, sensitivityAbsoluteTolerance, sensitivityRelativeTolerance
-        
         cdef dict speciesIndex
         cdef list row
+        cdef list sortedInds, tempNewObjects, tempNewObjectInds, tempNewObjectVals, tempInds
         cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex, infAccumNumIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, maxEdgeReactionAccum
@@ -785,7 +791,7 @@ cdef class ReactionSystem(DASx):
                 surfaceObjectIndices = []
                 
                 #movement from surface to core
-                if surfaceReactionIndices != []:
+                if surfaceReactionIndices != [] or surfaceSpeciesIndices != []:
                     #manage surface reaction movement "on the fly"
                     for ind in xrange(len(surfaceTotalDivAccumNums)): #move surface reactions to core
                         if surfaceTotalDivAccumNums[ind] > toleranceMoveSurfaceReactionToCore:
@@ -808,6 +814,7 @@ cdef class ReactionSystem(DASx):
                             surfaceObjects.append(coreSpecies[sind])
                     
                     if len(surfaceObjects) > 0:
+                        schanged = True
                         for ind,obj in enumerate(surfaceObjects):
                             if isinstance(obj,Reaction):
                                 logging.info('Moving reaction {0} from surface to core'.format(obj))
@@ -818,7 +825,9 @@ cdef class ReactionSystem(DASx):
                             else:
                                 raise ValueError
                         surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                        logging.info('Surface now has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                        surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                        surfaceReactionIndices = self.surfaceReactionIndices
+                        logging.info('Surface now has {0} Species and {1} Reactions'.format(len(self.surfaceSpeciesIndices),len(self.surfaceReactionIndices)))
                 
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
@@ -839,6 +848,12 @@ cdef class ReactionSystem(DASx):
 
             newObjectInds = []
             newObjects = []
+            newObjectVals = []
+            
+            tempNewObjects = []
+            tempNewObjectInds = []
+            tempNewObjectVals = []
+            
             newSurfaceRxnInds = []
             interrupt = False
             
@@ -848,68 +863,108 @@ cdef class ReactionSystem(DASx):
                     RR = edgeSpeciesRateRatios[ind]
                     if RR > toleranceMoveToCore:
                         if not(obj in newObjects or obj in invalidObjects):
-                            newObjects.append(edgeSpecies[ind])
-                            newObjectInds.append(ind)
+                            tempNewObjects.append(edgeSpecies[ind])
+                            tempNewObjectInds.append(ind)
+                            tempNewObjectVals.append(RR)
                     if RR > toleranceInterruptSimulation:
                         logging.info('At time {0:10.4e} s, species {1} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj, RR, toleranceInterruptSimulation))
                         interrupt = True
+                
+                
+                sortedInds = numpy.argsort(numpy.array(tempNewObjectVals)).tolist()[::-1]
+                
+                newObjects.extend([tempNewObjects[q] for q in sortedInds])
+                newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
+                newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                
+                tempNewObjects = []
+                tempNewObjectInds = []
+                tempNewObjectVals = []
+            
             if useDynamics:     
                 #if the difference in natural log of total accumulation number exceeds tolerance 
                 validLayeringIndices = self.validLayeringIndices
-             
+                tempInds = []
+                
                 for ind,obj in enumerate(edgeReactions):
                     dlnaccum = totalDivLnAccumNums[ind]
                     if dlnaccum > toleranceMoveEdgeReactionToCore:
                         if not(obj in newObjects or obj in invalidObjects):
-                            newObjects.append(edgeReactions[ind])
-                            newObjectInds.append(ind)
+                            tempNewObjects.append(edgeReactions[ind])
+                            tempNewObjectInds.append(ind)
+                            tempNewObjectVals.append(dlnaccum)
                     elif dlnaccum > toleranceMoveEdgeReactionToSurface and ind in validLayeringIndices:
                         if not(obj in newObjects or obj in invalidObjects):
-                            newObjects.append(edgeReactions[ind])
-                            newObjectInds.append(ind)
-                            newSurfaceRxnInds.append(len(newObjects)-1)
+                            tempNewObjects.append(edgeReactions[ind])
+                            tempNewObjectInds.append(ind)
+                            tempNewObjectVals.append(dlnaccum)
+                            tempInds.append(len(newObjects)-1)
                     if dlnaccum > toleranceMoveEdgeReactionToCoreInterrupt:
                         logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for simulation interruption of {3}'.format(self.t, obj,dlnaccum,toleranceMoveEdgeReactionToCoreInterrupt))
                         interrupt = True
-            
+                
+                sortedInds = numpy.argsort(numpy.array(tempNewObjectVals)).tolist()[::-1]
+                
+                newObjects.extend([tempNewObjects[q] for q in sortedInds])
+                newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
+                newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                
+                tempNewObjects = []
+                tempNewObjectInds = []
+                tempNewObjectVals = []
+                
+                newSurfaceRxnInds = [sortedInds[q] for q in tempInds]
+                
             #if the network leak rate ratios exceed tolerance
             if pdepNetworks:
                 for ind,obj in enumerate(pdepNetworks):
                     LR = networkLeakRateRatios[ind]
                     if LR > toleranceMoveToCore:
                         if not(obj in newObjects or obj in invalidObjects):
-                            newObjects.append(pdepNetworks[ind])
-                            newObjectInds.append(ind)
+                            tempNewObjects.append(pdepNetworks[ind])
+                            tempNewObjectInds.append(ind)
+                            tempNewObjectVals.append(LR)
                     if LR > toleranceInterruptSimulation:
                         logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj.index,LR,toleranceInterruptSimulation))
                         interrupt = True
-            
+                
+                sortedInds = numpy.argsort(numpy.array(tempNewObjectVals)).tolist()[::-1]
+                
+                newObjects.extend([tempNewObjects[q] for q in sortedInds])
+                newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
+                newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                
+                tempNewObjects = []
+                tempNewObjectInds = []
+                tempNewObjectVals = []
+                
             #remove excess objects
             if len(invalidObjects) + len(newObjects) > maxNumObjsPerIter:
                 logging.info('Exceeded max number of objects...removing excess objects')
                 num = maxNumObjsPerIter - len(invalidObjects)
                 newObjects = newObjects[:num]
                 newObjectInds = newObjectInds[:num]
-            
-            if terminateAtMaxObjects and len(invalidObjects) >= maxNumObjsPerIter:
+                newObjectVals = newObjectVals[:num]
+                
+            if terminateAtMaxObjects and len(invalidObjects)+len(newObjects) >= maxNumObjsPerIter:
                 logging.info('Reached max number of objects...preparing to terminate')
                 interrupt = True
             
             if newObjects != []:
                 for i,obj in enumerate(newObjects): #log everything and add reactions to surface
+                    val = newObjectVals[i]
                     ind = newObjectInds[i]
                     if isinstance(obj,Species):
-                        logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} exceeded the minimum rate for moving to model core of {3}'.format(self.t, obj,edgeSpeciesRateRatios[ind],toleranceMoveToCore))
+                        logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} exceeded the minimum rate for moving to model core of {3}'.format(self.t, obj,val,toleranceMoveToCore))
                     elif isinstance(obj,Reaction):
-                        dlnaccum = totalDivLnAccumNums[ind]
                         if i in newSurfaceRxnInds:
-                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model surface of {3}'.format(self.t, obj, dlnaccum,toleranceMoveEdgeReactionToSurface))
+                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model surface of {3}'.format(self.t, obj, val,toleranceMoveEdgeReactionToSurface))
                             newSurfaceReactions.append(obj)
                             newSurfaceReactionInds.append(ind)
                         else:
-                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model core of {3}'.format(self.t, obj, dlnaccum,toleranceMoveEdgeReactionToCore))
+                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model core of {3}'.format(self.t, obj, val,toleranceMoveEdgeReactionToCore))
                     else: 
-                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for exploring of {3}'.format(self.t, obj.index, networkLeakRateRatios[ind],toleranceMoveToCore))
+                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for exploring of {3}'.format(self.t, obj.index, val,toleranceMoveToCore))
     
                 
                 invalidObjects += newObjects
