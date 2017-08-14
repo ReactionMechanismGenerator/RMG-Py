@@ -698,6 +698,28 @@ class TestReactionDegeneracy(unittest.TestCase):
         self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
                          'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))
 
+    def test_degeneracy_same_reactant_different_resonance_structure(self):
+        """Test if degeneracy is correct when reacting different resonance structures."""
+        from rmgpy.reaction import _isomorphicSpeciesList
+
+        spc = Species().fromSMILES('CC=C[CH2]')
+        # reactSpecies will label reactants and generate resonance structures
+        reactions = reactSpecies((spc, spc))
+        # these products are only possible if the reacting structures are CC=C[CH2] and C[CH2]C=C
+        products = [Species().fromSMILES('CC=CC'), Species().fromSMILES('C=CC=C')]
+
+        # search for the desired products
+        desired_rxn = None
+        for rxn in reactions:
+            if rxn.family == 'Disproportionation' and _isomorphicSpeciesList(rxn.products, products):
+                if desired_rxn is None:
+                    desired_rxn = rxn
+                else:
+                    self.fail('Found two reactions which should be isomorphic.')
+
+        self.assertEqual(desired_rxn.degeneracy, 3)
+        self.assertEqual(set(desired_rxn.template), {'C_rad/H2/Cd', 'Cmethyl_Csrad/H/Cd'})
+
 class TestKineticsCommentsParsing(unittest.TestCase):
 
     @classmethod
