@@ -601,7 +601,7 @@ class Bond(Edge):
         Update the bond as a result of applying a CHANGE_BOND action to
         increase the order by one.
         """
-        if self.order <=2: 
+        if self.order <=2.0001:
             self.order += 1
         else:
             raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '+\
@@ -612,7 +612,7 @@ class Bond(Edge):
         Update the bond as a result of applying a CHANGE_BOND action to
         decrease the order by one.
         """
-        if self.order >=1: 
+        if self.order >=0.9999:
             self.order -= 1
         else:
             raise gr.ActionError('Unable to decrease Bond due to CHANGE_BOND action: '+\
@@ -625,7 +625,7 @@ class Bond(Edge):
         in bond order, and can be any real number.
         """
         self.order += order
-        if self.order < 0 or self.order >3:
+        if self.order < -0.0001 or self.order >3.0001:
             raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(self.order))
 
     def applyAction(self, action):
