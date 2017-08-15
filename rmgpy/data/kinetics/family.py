@@ -1213,9 +1213,14 @@ class KineticsFamily(Database):
                 # reverse all the atoms in the chain between *1 and *2
                 # i.e. swap *4 with the highest, *5 with the second-highest
                 highest = len(atomLabels)
-                if highest>4:
-                    for i in range(4,highest+1):
-                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
+                if highest > 4:
+                    # swap *4 with *5
+                    atomLabels['*4'].label = '*5'
+                    atomLabels['*5'].label = '*4'
+                if highest > 6:
+                    # swap *6 with the highest, etc.
+                    for i in range(6, highest+1):
+                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(6+highest-i)
                         
             elif label == 'intra_ene_reaction':
                 # Labels for nodes are swapped
