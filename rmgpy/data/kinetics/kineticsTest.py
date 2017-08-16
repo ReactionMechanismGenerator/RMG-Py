@@ -201,7 +201,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         reactionList = findDegeneracies(reactionList)
 
         self.assertEqual(len(reactionList), 1)
-        self.assertEqual(reactionList[0].degeneracy, 1)
+        self.assertEqual(reactionList[0].degeneracy, 0.5)
 
     def test_degeneracy_for_methyl_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + methyl recombination"""
