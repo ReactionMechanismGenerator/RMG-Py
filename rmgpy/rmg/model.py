@@ -1219,7 +1219,10 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reactionSystems
         for reactionSystem in reactionSystems:
-            reactionSystem.speciesIndex.pop(spec)
+            try:
+                reactionSystem.speciesIndex.pop(spec)
+            except KeyError:
+                pass
 
             # identify any reactions it's involved in
             rxnList = []
