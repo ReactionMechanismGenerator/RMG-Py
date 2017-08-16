@@ -1424,7 +1424,9 @@ class ThermoDatabase(object):
                     try:
                         self.__addGroupThermoData(thermoData,self.groups['longDistanceInteraction_cyclic'], molecule, {'*1':atomPair[0], '*2':atomPair[1]})
                     except KeyError: pass
-
+        
+        thermoData.label = '' #prevents the original thermo species name being used for the HBI corrected radical in species generation
+        
         return thermoData
         
         
