@@ -557,8 +557,9 @@ class RMG(util.Subject):
                 self.updateReactionThresholdAndReactFlags(
                     rxnSysUnimolecularThreshold=reactionSystem.unimolecularThreshold, 
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
-        
-        self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
+                
+        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
                                                               minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune, 
                                                               maximumEdgeSpecies =self.modelSettingsList[0].maximumEdgeSpecies,
                                                               reactionSystems=self.reactionSystems)
@@ -724,8 +725,9 @@ class RMG(util.Subject):
                             logging.info('')    
                         else:
                             self.updateReactionThresholdAndReactFlags()
-                        
-                        self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
+                            
+                        if not numpy.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
+                            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
                                                               minCoreSizeForPrune=modelSettings.minCoreSizeForPrune, 
                                                               maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
                                                               reactionSystems=self.reactionSystems)
