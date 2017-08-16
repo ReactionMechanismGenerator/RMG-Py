@@ -1182,6 +1182,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
+        single_ring_submol_a.updateAtomTypes()
+        single_ring_submol_b.updateAtomTypes()
+
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
         expected_submol_a.deleteHydrogens()
         expected_submol_a.updateConnectivityValues()
@@ -1210,6 +1213,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
+
+        single_ring_submol_a.updateAtomTypes()
+        single_ring_submol_b.updateAtomTypes()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
         # remove hydrogen
