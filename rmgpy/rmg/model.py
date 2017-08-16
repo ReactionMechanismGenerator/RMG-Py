@@ -800,33 +800,8 @@ class CoreEdgeReactionModel:
                         self.edge.reactions.remove(rxn)
             
             if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
-            
-                Tmax = self.Tmax
-                for spc in spcs:
-                    G = spc.thermo.getFreeEnergy(Tmax)
-                    if G > self.Gfmax:
-                        Gn = (G-self.Gmax)/(self.Gmax-self.Gmin)
-                        logging.info('Removing species {0} from edge because it\'s Gibbs number {1} is greater than the toleranceThermoKeepSpeciesInEdge of {2} '.format(spc,Gn,self.toleranceThermoKeepSpeciesInEdge))
-                        self.removeSpeciesFromEdge(self.reactionSystems,spc)
+                self.thermoFilterSpecies(spcs)
                 
-                # Delete any networks that became empty as a result of pruning
-                if self.pressureDependence:
-                    networksToDelete = []
-                    for network in self.networkList:
-                        if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
-                            networksToDelete.append(network)
-                    
-                    if len(networksToDelete) > 0:
-                        logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
-                        for network in networksToDelete:
-                            logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                            source = tuple(network.source)
-                            nets_with_this_source = self.networkDict[source]
-                            nets_with_this_source.remove(network)
-                            if not nets_with_this_source:
-                                del(self.networkDict[source])
-                            self.networkList.remove(network)
-                            
     def applyKineticsToReaction(self, reaction):
         """
         retrieve the best kinetics for the reaction and apply it towards the forward 
@@ -1039,6 +1014,11 @@ class CoreEdgeReactionModel:
     def setThermodynamicFilteringParameters(self,Tmax, toleranceThermoKeepSpeciesInEdge,minCoreSizeForPrune,maximumEdgeSpecies,reactionSystems):
         """
         sets parameters for thermodynamic filtering based on the current core
+        Tmax is the maximum reactor temperature in K
+        toleranceThermoKeepSpeciesInEdge is the Gibbs number above which species will be filtered
+        minCoreSizeForPrune is the core size at which thermodynamic filtering will start
+        maximumEdgeSpecies is the maximum allowed number of edge species
+        reactionSystems is a list of reactionSystem objects
         """
         self.Tmax = Tmax
         Gs = [spc.thermo.getFreeEnergy(Tmax) for spc in self.core.species]
@@ -1050,12 +1030,32 @@ class CoreEdgeReactionModel:
         self.minCoreSizeForPrune = minCoreSizeForPrune
         self.reactionSystems = reactionSystems
         self.maximumEdgeSpecies = maximumEdgeSpecies
-        
+    
+    def thermoFilterSpecies(self, spcs):
+        """
+        checks Gibbs energy of the species in species against the
+        maximum allowed Gibbs energy
+        """
+        Tmax = self.Tmax
+        for spc in spcs:
+            G = spc.thermo.getFreeEnergy(Tmax)
+            if G > self.Gfmax:
+                Gn = (G-self.Gmax)/(self.Gmax-self.Gmin)
+                logging.info('Removing species {0} with Gibbs energy {1} from edge because it\'s Gibbs number {2} is greater than the toleranceThermoKeepSpeciesInEdge of {3} '.format(spc,G,Gn,self.toleranceThermoKeepSpeciesInEdge))
+                self.removeSpeciesFromEdge(self.reactionSystems,spc)
+                
+        # Delete any networks that became empty as a result of pruning
+        if self.pressureDependence:
+            self.removeEmptyPdepNetworks()
+                        
     def thermoFilterDown(self,maximumEdgeSpecies,minSpeciesExistIterationsForPrune=0):
         """
         removes species from the edge based on their Gibbs energy until maximumEdgeSpecies
         is reached under the constraint that all removed species are older than
         minSpeciesExistIterationsForPrune iterations
+        maximumEdgeSpecies is the maximum allowed number of edge species
+        minSpeciesExistIterationsForPrune is the number of iterations a species must be in the edge
+        before it is eligible for thermo filtering
         """
         Tmax = self.Tmax
         numToRemove = len(self.edge.species) - maximumEdgeSpecies
@@ -1091,27 +1091,32 @@ class CoreEdgeReactionModel:
             
             # Delete any networks that became empty as a result of pruning
             if self.pressureDependence:
-                networksToDelete = []
-                for network in self.networkList:
-                    if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
-                        networksToDelete.append(network)
-                    
-                if len(networksToDelete) > 0:
-                    logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
-                    for network in networksToDelete:
-                        logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                        source = tuple(network.source)
-                        nets_with_this_source = self.networkDict[source]
-                        nets_with_this_source.remove(network)
-                        if not nets_with_this_source:
-                            del(self.networkDict[source])
-                        self.networkList.remove(network)
+                self.removeEmptyPdepNetworks()
             
             #call garbage collection
             collected = gc.collect()
             logging.info('Garbage collector: collected %d objects.' % (collected))
             
-            
+    def removeEmptyPdepNetworks(self):
+        """
+        searches for and deletes any empty pdep networks
+        """
+        networksToDelete = []
+        for network in self.networkList:
+            if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+                networksToDelete.append(network)
+                    
+        if len(networksToDelete) > 0:
+            logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
+            for network in networksToDelete:
+                logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
+                source = tuple(network.source)
+                nets_with_this_source = self.networkDict[source]
+                nets_with_this_source.remove(network)
+                if not nets_with_this_source:
+                    del(self.networkDict[source])
+                self.networkList.remove(network)
+                    
     def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from
@@ -1189,21 +1194,7 @@ class CoreEdgeReactionModel:
 
         # Delete any networks that became empty as a result of pruning
         if self.pressureDependence:
-            networksToDelete = []
-            for network in self.networkList:
-                if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
-                    networksToDelete.append(network)
-            
-            if len(networksToDelete) > 0:
-                logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
-                for network in networksToDelete:
-                    logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                    source = tuple(network.source)
-                    nets_with_this_source = self.networkDict[source]
-                    nets_with_this_source.remove(network)
-                    if not nets_with_this_source:
-                        del(self.networkDict[source])
-                    self.networkList.remove(network)
+            self.removeEmptyPdepNetworks()
 
         logging.info('')
 
