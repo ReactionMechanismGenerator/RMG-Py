@@ -883,7 +883,7 @@ class RMG(util.Subject):
                 logging.warning('Species {0} did not contain any thermo data and was omitted from the edge thermo library.'.format(str(species)))
                    
         # load kinetics library entries                    
-        kineticsLibrary = KineticsLibrary(name=name)
+        kineticsLibrary = KineticsLibrary(name=name,duplicatesChecked=False)
         kineticsLibrary.entries = {}
         for i in range(len(reactionList)):
             reaction = reactionList[i]        
@@ -902,12 +902,10 @@ class RMG(util.Subject):
         # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
         # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
         # Using flag markDuplicates = True
-        kineticsLibrary.checkForDuplicates(markDuplicates=True)
-        kineticsLibrary.convertDuplicatesToMulti()
         
         
         # load kinetics library entries                    
-        edgeKineticsLibrary = KineticsLibrary(name=name+'_edge')
+        edgeKineticsLibrary = KineticsLibrary(name=name+'_edge',duplicatesChecked=False)
         edgeKineticsLibrary.entries = {}
         for i,reaction in enumerate(edgeReactionList):       
             entry = Entry(
@@ -925,8 +923,6 @@ class RMG(util.Subject):
         # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
         # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
         # Using flag markDuplicates = True
-        edgeKineticsLibrary.checkForDuplicates(markDuplicates=True)
-        edgeKineticsLibrary.convertDuplicatesToMulti()
         
         
         #save in database
