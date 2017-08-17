@@ -17,14 +17,16 @@ one-dimensional master equation, then apply one of several available model
 reduction methods of varying accuracy, speed, and robustness to simplify the 
 detailed model into a set of phenomenological rate coefficients. The result 
 is a set of :math:`k(T,P)` functions suitable for use in chemical reaction
-mechanisms.
+mechanisms. More information is available at `Allen et al. <http://dx.doi.org/10.1039/c1cp22765c>`_.
 
-
-About CanTherm
-==============
+CanTherm is developed and distributed as part of `RMG-Py <http://rmg.mit.edu/>`_, but can be used as a stand-alone
+application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics calculations. 
 
 CanTherm is written in the `Python <http://www.python.org/>`_ programming
-language to facilitate ease of development, installation, and use. 
+language to facilitate ease of development, installation, and use.
+
+Additional theoretical background can be found at `RMG's Theory Guide <http://reactionmechanismgenerator.github.io/RMG-Py/theory/index.html>`_
+and `CanTherm's Manual <manual.pdf>`_ as well as the `manual's supplement information <manual_supplement-Solving1DSchrodingerEquation.pdf>`_.
 
 License
 =======
@@ -35,4 +37,4 @@ full, official license is reproduced below
 
 
 
-.. literalinclude:: ../../../../COPYING.txt
+.. literalinclude:: ../../../../LICENSE.txt

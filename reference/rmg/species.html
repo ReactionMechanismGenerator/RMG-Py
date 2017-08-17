@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.rmg.model.Species &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Reaction system simulation (rmgpy.solver)" href="../solver/index.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,31 +71,49 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.rmg.model.Species<a class="headerlink" href="#rmgpy-rmg-model-species" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.model.Species">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>coreSizeAtCreation=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>creationIteration=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.aug_inchi">
+<code class="descname">aug_inchi</code><a class="headerlink" href="#rmgpy.rmg.model.Species.aug_inchi" title="Permalink to this definition">¶</a></dt>
+<dd><p>aug_inchi: str</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.Species.calculateCp0">
-<code class="descname">calculateCp0</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.calculateCp0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateCp0</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.calculateCp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.calculateCpInf">
-<code class="descname">calculateCpInf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.calculateCpInf" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateCpInf</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.calculateCpInf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at infinite temperature in J/mol*K.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.conformer">
+<code class="descname">conformer</code><a class="headerlink" href="#rmgpy.rmg.model.Species.conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>conformer: rmgpy.statmech.conformer.Conformer</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em>, <em>bool deep=False</em><span class="sig-paren">)</span> &#x2192; Species<a class="headerlink" href="#rmgpy.rmg.model.Species.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current species. If the 
-kw argument &#8216;deep&#8217; is True, then a deep copy will be made of the 
+kw argument ‘deep’ is True, then a deep copy will be made of the 
 Molecule objects in self.molecule.</p>
 <p>For other complex attributes, a deep copy will always be made.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.energyTransferModel">
+<code class="descname">energyTransferModel</code><a class="headerlink" href="#rmgpy.rmg.model.Species.energyTransferModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>energyTransferModel: object</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.fromAdjacencyList">
-<code class="descname">fromAdjacencyList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromAdjacencyList</code><span class="sig-paren">(</span><em>self</em>, <em>adjlist</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the structure of a species as a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object from the
 given adjacency list <cite>adjlist</cite> and store it as the first entry of a 
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
@@ -107,7 +122,7 @@ of the loaded molecule.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.fromSMILES">
-<code class="descname">fromSMILES</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.fromSMILES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fromSMILES</code><span class="sig-paren">(</span><em>self</em>, <em>smiles</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.fromSMILES" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the structure of a species as a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object from the
 given SMILES string <cite>smiles</cite> and store it as the first entry of a 
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
@@ -116,14 +131,14 @@ of the loaded molecule.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateEnergyTransferModel">
-<code class="descname">generateEnergyTransferModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateEnergyTransferModel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateEnergyTransferModel</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateEnergyTransferModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the collisional energy transfer model parameters for the
-species. This &#8220;algorithm&#8221; is <em>very</em> much in need of improvement.</p>
+species. This “algorithm” is <em>very</em> much in need of improvement.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateResonanceIsomers">
-<code class="descname">generateResonanceIsomers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateResonanceIsomers</code><span class="sig-paren">(</span><em>self</em>, <em>bool keepIsomorphic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance isomers of this species. The isomers are
 stored as a list in the <cite>molecule</cite> attribute. If the length of
 <cite>molecule</cite> is already greater than one, it is assumed that all of the
@@ -132,7 +147,7 @@ resonance isomers have already been generated.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateStatMech">
-<code class="descname">generateStatMech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateStatMech" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateStatMech</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateStatMech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate molecular degree of freedom data for the species. You must
 have already provided a thermodynamics model using e.g.
 <code class="xref py py-meth docutils literal"><span class="pre">generateThermoData()</span></code>.</p>
@@ -140,70 +155,93 @@ have already provided a thermodynamics model using e.g.
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateTransportData">
-<code class="descname">generateTransportData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateTransportData" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateTransportData</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generateTransportData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the transportData parameters for the species.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.Species.generate_aug_inchi">
+<code class="descname">generate_aug_inchi</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.generate_aug_inchi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.getAugmentedInChI">
+<code class="descname">getAugmentedInChI</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getAugmentedInChI" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.Species.getDensityOfStates">
-<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.rmg.model.Species.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>Elist</cite> in J/mol above the ground state.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getEnthalpy">
-<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getEntropy">
-<code class="descname">getEntropy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getFreeEnergy">
-<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getHeatCapacity">
-<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.Species.getMolecularWeight">
+<code class="descname">getMolecularWeight</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.Species.getPartitionFunction">
-<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.model.Species.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.Species.getResonanceHybrid">
+<code class="descname">getResonanceHybrid</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getResonanceHybrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a molecule object with bond orders that are the average 
+of all the resonance structures.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.Species.getSumOfStates">
-<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.rmg.model.Species.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
 in J/mol.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getSymmetryNumber">
-<code class="descname">getSymmetryNumber</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getSymmetryNumber</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getSymmetryNumber" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the symmetry number for the species, which is the highest symmetry number amongst
-its resonance isomers.  This function is currently used for website purposes and testing only as it
+its resonance isomers and the resonance hybrid.  
+This function is currently used for website purposes and testing only as it
 requires additional calculateSymmetryNumber calls.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getThermoData">
-<code class="descname">getThermoData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getThermoData</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <cite>thermoData</cite> object of the current Species object.</p>
 <p>If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
 type, or it is a Future.</p>
@@ -215,49 +253,117 @@ If the thermo object did not exist yet, the thermo object is generated.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.getTransportData">
-<code class="descname">getTransportData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getTransportData" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getTransportData</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.getTransportData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the transport data associated with this species, and
 calculates it if it is not yet available.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.hasStatMech">
-<code class="descname">hasStatMech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.hasStatMech" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hasStatMech</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.hasStatMech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the species has statistical mechanical parameters,
 or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.hasThermo">
-<code class="descname">hasThermo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.hasThermo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hasThermo</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.hasThermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the species has thermodynamic parameters, or 
 <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.index">
+<code class="descname">index</code><a class="headerlink" href="#rmgpy.rmg.model.Species.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>index: ‘int’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.isIdentical">
+<code class="descname">isIdentical</code><span class="sig-paren">(</span><em>self</em>, <em>other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.isIdentical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if at least one molecule of the species is identical to <cite>other</cite>,
+which can be either a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object or a <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the species is isomorphic to <cite>other</cite>, which can be
 either a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object or a <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.rmg.model.Species.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.molecularWeight">
+<code class="descname">molecularWeight</code><a class="headerlink" href="#rmgpy.rmg.model.Species.molecularWeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Species.getMolecularWeight(self)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.molecule">
+<code class="descname">molecule</code><a class="headerlink" href="#rmgpy.rmg.model.Species.molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>molecule: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.props">
+<code class="descname">props</code><a class="headerlink" href="#rmgpy.rmg.model.Species.props" title="Permalink to this definition">¶</a></dt>
+<dd><p>props: dict</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.reactive">
+<code class="descname">reactive</code><a class="headerlink" href="#rmgpy.rmg.model.Species.reactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>reactive: ‘bool’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.setMolecularWeight">
+<code class="descname">setMolecularWeight</code><span class="sig-paren">(</span><em>self</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.setMolecularWeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.symmetryNumber">
+<code class="descname">symmetryNumber</code><a class="headerlink" href="#rmgpy.rmg.model.Species.symmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>symmetryNumber: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.thermo">
+<code class="descname">thermo</code><a class="headerlink" href="#rmgpy.rmg.model.Species.thermo" title="Permalink to this definition">¶</a></dt>
+<dd><p>thermo: object</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.toAdjacencyList">
-<code class="descname">toAdjacencyList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string containing each of the molecules&#8217; adjacency lists.</p>
+<code class="descname">toAdjacencyList</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing each of the molecules’ adjacency lists.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.toCantera">
-<code class="descname">toCantera</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toCantera" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toCantera</code><span class="sig-paren">(</span><em>self</em>, <em>useChemkinIdentifier=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toCantera" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the RMG Species object to a Cantera Species object
 with the appropriate thermo data.</p>
+<p>If useChemkinIdentifier is set to False, the species label is used
+instead. Be sure that species’ labels are unique when setting it False.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.toChemkin">
-<code class="descname">toChemkin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toChemkin" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toChemkin</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this species.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.transportData">
+<code class="descname">transportData</code><a class="headerlink" href="#rmgpy.rmg.model.Species.transportData" title="Permalink to this definition">¶</a></dt>
+<dd><p>transportData: object</p>
 </dd></dl>
 
 </dd></dl>
@@ -363,8 +469,8 @@ with the appropriate thermo data.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

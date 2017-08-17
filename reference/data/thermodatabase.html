@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.data.thermo.ThermoDatabase &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.data.thermo.ThermoDepository" href="thermodepository.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -94,6 +91,8 @@ This should be done later by the calling function.</p>
 applying the provided stableThermoEstimator method on the saturated species,
 then applying hydrogen bond increment corrections for the radical
 site(s) and correcting for the symmetry.</p>
+<p>No entropy is included in the returning term.
+This should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">
@@ -103,6 +102,8 @@ site(s) and correcting for the symmetry.</p>
 <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
 <code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
+<p>The entropy is not corrected for the symmetry of the molecule.
+This should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">
@@ -111,19 +112,19 @@ additivity values. If no group additivity values are loaded, a
 <dd><p><cite>species</cite>: A species object containing thermo data and thermo data comments</p>
 <p>Parses the verbose string of comments from the thermo data of the species object,
 and extracts the thermo sources.</p>
-<p>Returns a dictionary with keys of either &#8216;Library&#8217;, &#8216;QM&#8217;, and/or &#8216;GAV&#8217;.
+<p>Returns a dictionary with keys of either ‘Library’, ‘QM’, and/or ‘GAV’.
 Commonly, species thermo are estimated using only one of these sources.
 However, a radical can be estimated with more than one type of source, for 
 instance a saturated library value and a GAV HBI correction, or a QM saturated value
 and a GAV HBI correction.</p>
 <dl class="docutils">
-<dt>source = {&#8216;Library&#8217;: String_Name_of_Library_Used,</dt>
-<dd>&#8216;QM&#8217;: String_of_Method_Used,
-&#8216;GAV&#8217;: Dictionary_of_Groups_Used 
+<dt>source = {‘Library’: String_Name_of_Library_Used,</dt>
+<dd>‘QM’: String_of_Method_Used,
+‘GAV’: Dictionary_of_Groups_Used 
 }</dd>
 </dl>
 <p>The Dictionary_of_Groups_Used looks like 
-{&#8216;groupType&#8217;:[List of tuples containing (Entry, Weight)]</p>
+{‘groupType’:[List of tuples containing (Entry, Weight)]</p>
 </dd></dl>
 
 <dl class="method">
@@ -151,6 +152,9 @@ from them, returning them as lists.</p>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
 estimation via group additivity.</p>
+<p>The method corrects for symmetry when the molecule uses HBI or 
+group additivity. Libraries and direct QM calculations are already
+corrected.</p>
 <p>Returns: ThermoData</p>
 </dd></dl>
 
@@ -172,6 +176,7 @@ additivity values. If no group additivity values are loaded, a
 <code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
 the resonance isomers (items in <cite>species.molecule</cite> list) are sorted in ascending order.</p>
+<p>This does not account for symmetry. The method calling this sould correct for it.</p>
 <p>Returns: ThermoData</p>
 </dd></dl>
 
@@ -225,6 +230,7 @@ points to the top-level folder of the thermo database.</p>
 <code class="descname">loadLibraries</code><span class="sig-paren">(</span><em>path</em>, <em>libraries=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.loadLibraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
+<p>If no libraries are given, all are loaded.</p>
 </dd></dl>
 
 <dl class="method">
@@ -386,8 +392,8 @@ points to the top-level folder of the thermo libraries.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

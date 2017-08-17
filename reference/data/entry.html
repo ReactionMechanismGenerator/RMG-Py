@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.data.base.Entry &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.data.statmech.GroupFrequencies" href="groupfrequencies.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.base.Entry<a class="headerlink" href="#rmgpy-data-base-entry" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.data.base.Entry">
-<em class="property">class </em><code class="descclassname">rmgpy.data.base.</code><code class="descname">Entry</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>item=None</em>, <em>parent=None</em>, <em>children=None</em>, <em>data=None</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>rank=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.data.base.</code><code class="descname">Entry</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>item=None</em>, <em>parent=None</em>, <em>children=None</em>, <em>data=None</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>rank=None</em>, <em>nodalDistance=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for representing individual records in an RMG database. Each entry
 in the database associates a chemical item (generally a species, functional
 group, or reaction) with a piece of data corresponding to that item. A
@@ -95,7 +92,7 @@ significant amount of metadata can also be stored with each entry.</p>
 <td>A unique nonnegative integer index for the entry</td>
 </tr>
 <tr class="row-odd"><td><cite>label</cite></td>
-<td>A unique string identifier for the entry (or &#8216;&#8217; if not used)</td>
+<td>A unique string identifier for the entry (or ‘’ if not used)</td>
 </tr>
 <tr class="row-even"><td><cite>item</cite></td>
 <td>The item that this entry represents</td>
@@ -123,6 +120,9 @@ significant amount of metadata can also be stored with each entry.</p>
 </tr>
 <tr class="row-even"><td><cite>rank</cite></td>
 <td>An integer indicating the degree of confidence in the entry data, or <code class="docutils literal"><span class="pre">None</span></code> if not used</td>
+</tr>
+<tr class="row-odd"><td><cite>nodalDistance</cite></td>
+<td>A float representing the distance of a given entry from it’s parent entry</td>
 </tr>
 </tbody>
 </table>
@@ -229,8 +229,8 @@ significant amount of metadata can also be stored with each entry.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

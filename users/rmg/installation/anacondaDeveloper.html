@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="3.2.2. Installation by Source Using Anaconda Environment for Windows" href="anacondaDeveloperWindows.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">3. Installation</a> &#187;</li> 
       </ul>
     </div>
@@ -76,7 +73,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <ul>
 <li><p class="first">Download and install the <a class="reference external" href="http://continuum.io/downloads">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.  Install the Anaconda folder inside your home directory (typically <code class="docutils literal"><span class="pre">/home/YourUsername/</span></code> in Linux and <code class="docutils literal"><span class="pre">/Users/YourUsername</span></code> in Mac).</p>
 </li>
-<li><p class="first">Install <a class="reference external" href="https://git-scm.com/">Git</a>, the open source version control package through the Terminal. <strong>For Mac OS X</strong>: Git is already packages with OS X 10.9 or later, but requires installation of Xcode&#8217;s Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed.</p>
+<li><p class="first">Install <a class="reference external" href="https://git-scm.com/">Git</a>, the open source version control package through the Terminal. <strong>For Mac OS X</strong>: Git is already packages with OS X 10.9 or later, but requires installation of Xcode’s Command Line Tools. Skip the git installation and run it through the terminal, where you will be prompted to install the Command Line Tools if they are not already installed.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">git</span>
 </pre></div>
 </div>
@@ -105,10 +102,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </pre></div>
 </div>
 </li>
-<li><p class="first">Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any python prompt.  Modify your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file by adding the following line</p>
+<li><p class="first">Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder. Modify your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file by adding the following line</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>export PYTHONPATH=$PYTHONPATH:YourFolder/RMG-Py/
 </pre></div>
 </div>
+<p>NOTE: Make sure to change <code class="docutils literal"><span class="pre">YourFolder</span></code> to the path leading to the <code class="docutils literal"><span class="pre">RMG-Py</span></code> code. Not doing so will lead to an error stating that python cannot find the module <code class="docutils literal"><span class="pre">rmgpy</span></code>.</p>
 </li>
 <li><p class="first">If you wish to always be able to run RMG-Py, you can modify the anaconda path to point to the RMG environment. Modify the following line in your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>export PATH=~/anaconda/bin:$PATH
@@ -288,8 +286,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

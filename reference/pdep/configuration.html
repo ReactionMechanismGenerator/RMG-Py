@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.pdep.Configuration &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.pdep.Network" href="network.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.pdep.Configuration<a class="headerlink" href="#rmgpy-pdep-configuration" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.pdep.Configuration">
-<em class="property">class </em><code class="descclassname">rmgpy.pdep.</code><code class="descname">Configuration</code><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.pdep.</code><code class="descname">Configuration</code><span class="sig-paren">(</span><em>*species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular configuration on a potential energy
 surface.</p>
 <dl class="attribute">
@@ -83,9 +80,27 @@ surface.</p>
 <dd><p>The ground-state energy of the configuration in J/mol.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.Elist">
+<code class="descname">Elist</code><a class="headerlink" href="#rmgpy.pdep.Configuration.Elist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elist: numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.activeJRotor">
+<code class="descname">activeJRotor</code><a class="headerlink" href="#rmgpy.pdep.Configuration.activeJRotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>activeJRotor: ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.activeKRotor">
+<code class="descname">activeKRotor</code><a class="headerlink" href="#rmgpy.pdep.Configuration.activeKRotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>activeKRotor: ‘bool’</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.calculateCollisionFrequency">
-<code class="descname">calculateCollisionFrequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculateCollisionFrequency" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateCollisionFrequency</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P</em>, <em>dict bathGas</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.Configuration.calculateCollisionFrequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the collision frequency in Hz at the given 
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa. If a dictionary <cite>bathGas</cite>
 of bath gas species and corresponding mole fractions is given, the
@@ -96,7 +111,7 @@ of the species before computing the collision frequency.</p>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.calculateDensityOfStates">
-<code class="descname">calculateDensityOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculateDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>bool activeJRotor=True</em>, <em>bool activeKRotor=True</em>, <em>bool rmgmode=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculateDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the density (and sum) of states for the configuration at the
 given energies above the ground state <cite>Elist</cite> in J/mol. The 
 <cite>activeJRotor</cite> and <cite>activeKRotor</cite> flags control whether the J-rotor
@@ -107,13 +122,19 @@ arrays are stored on the object for future use.</p>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.cleanup">
-<code class="descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.cleanup" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cleanup</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.cleanup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete intermediate arrays used in computing k(T,P) values.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.densStates">
+<code class="descname">densStates</code><a class="headerlink" href="#rmgpy.pdep.Configuration.densStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>densStates: numpy.ndarray</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.generateCollisionMatrix">
-<code class="descname">generateCollisionMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.generateCollisionMatrix" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateCollisionMatrix</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>ndarray densStates</em>, <em>ndarray Elist</em>, <em>ndarray Jlist=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.pdep.Configuration.generateCollisionMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the collisional energy transfer probabilities matrix for the
 configuration at the given temperature <cite>T</cite> in K using the given
 energies <cite>Elist</cite> in kJ/mol and total angular momentum quantum numbers
@@ -123,68 +144,68 @@ mol/kJ is also required.</p>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.getEnthalpy">
-<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.Configuration.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in kJ/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.getEntropy">
-<code class="descname">getEntropy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.getEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.Configuration.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.getFreeEnergy">
-<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFreeEnergy</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.Configuration.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in kJ/mol at the specified temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.getHeatCapacity">
-<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.Configuration.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.hasStatMech">
-<code class="descname">hasStatMech</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.hasStatMech" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hasStatMech</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.pdep.Configuration.hasStatMech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if all species in the configuration have statistical
 mechanics parameters, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.hasThermo">
-<code class="descname">hasThermo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.hasThermo" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hasThermo</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.pdep.Configuration.hasThermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if all species in the configuration have thermodynamics
 parameters, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.isBimolecular">
-<code class="descname">isBimolecular</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.isBimolecular" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isBimolecular</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.pdep.Configuration.isBimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the configuration represents a bimolecular reactant
 or product channel, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.isTransitionState">
-<code class="descname">isTransitionState</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.isTransitionState" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isTransitionState</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.pdep.Configuration.isTransitionState" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the configuration represents a transition state,
 or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.isUnimolecular">
-<code class="descname">isUnimolecular</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.isUnimolecular" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isUnimolecular</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.pdep.Configuration.isUnimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the configuration represents a unimolecular isomer,
 or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.mapDensityOfStates">
-<code class="descname">mapDensityOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.mapDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray Jlist=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.mapDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>Elist</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>Jlist</cite>.</p>
@@ -192,10 +213,22 @@ total angular momentum quantum numbers <cite>Jlist</cite>.</p>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Configuration.mapSumOfStates">
-<code class="descname">mapSumOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.mapSumOfStates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mapSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray Jlist=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.mapSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>Elist</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>Jlist</cite>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.species">
+<code class="descname">species</code><a class="headerlink" href="#rmgpy.pdep.Configuration.species" title="Permalink to this definition">¶</a></dt>
+<dd><p>species: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.pdep.Configuration.sumStates">
+<code class="descname">sumStates</code><a class="headerlink" href="#rmgpy.pdep.Configuration.sumStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>sumStates: numpy.ndarray</p>
 </dd></dl>
 
 </dd></dl>
@@ -301,8 +334,8 @@ total angular momentum quantum numbers <cite>Jlist</cite>.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>13. Thermochemistry Estimation &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="14. Kinetics Estimation" href="kinetics.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
       </ul>
     </div>
             
@@ -88,7 +85,7 @@ In these databases each entry contains an unambiguous definition of the species
 along with a values for the thermochemistry in a format that allows
 the evaluation of each thermodynamic variable as a function of temperature.</p>
 <p>RMG is shipped with a number of species thermochemistry libraries, located in the
-&#8216;libraries&#8217; folder of RMG-database. More information on these species thermochemistry libraries can be found in
+‘libraries’ folder of RMG-database. More information on these species thermochemistry libraries can be found in
 <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="group-contribution-methods">
@@ -100,7 +97,7 @@ of a molecule based on the sub-molecular fragments present in the molecule.
 The Benson group additivity framework is such an example of a group contribution method
 that has proven to provide accurate estimates of the ideal gas thermochemistry
 for a large range of molecules.</p>
-<p>Benson&#8217;s Group Additivity approach (<a class="reference internal" href="#benson" id="id1">[Benson]</a>), divides a molecule into functional
+<p>Benson’s Group Additivity approach (<a class="reference internal" href="#id8" id="id1">[Benson]</a>), divides a molecule into functional
 groups, and the contribution of each functional group to the overall thermochemistry is
 included. For example, the molecule 2-methylnonane consists of three types of groups:</p>
 <ul class="simple">
@@ -113,9 +110,9 @@ included. For example, the molecule 2-methylnonane consists of three types of gr
 of the contributions <span class="math">\(C_{i}\)</span>. E.g.:</p>
 <div class="math">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i})\]</div>
-<p>The term &#8216;group additive value&#8217; (GAV) denotes a polyvalent (ligancy &gt; 1) monoatomic central atom
+<p>The term ‘group additive value’ (GAV) denotes a polyvalent (ligancy &gt; 1) monoatomic central atom
 <span class="math">\(C_{i}\)</span> surrounded by its nearest-neighbor ligands.</p>
-<p>Values for each central atomtype (e.g. &#8220;tertiary carbon atom&#8221;) and its surrounding ligands can be found in the thermo
+<p>Values for each central atomtype (e.g. “tertiary carbon atom”) and its surrounding ligands can be found in the thermo
 group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 <div class="section" id="nnis">
 <h3>13.2.1. NNIs<a class="headerlink" href="#nnis" title="Permalink to this headline">¶</a></h3>
@@ -141,8 +138,8 @@ ring correction (RSC) needs to be added to the sum of the GAVs of the individual
 <p>As a result, thermochemistry of the molecule X is determined as :</p>
 <div class="math">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + RSC\]</div>
-<p>RMG contains a database with single-ring corrections, &#8216;ring.py&#8217; and polycyclic ring corrections,
-&#8216;polycyclic.py&#8217;. More information on the nature on the available NNIs, and corresponding values
+<p>RMG contains a database with single-ring corrections, ‘ring.py’ and polycyclic ring corrections,
+‘polycyclic.py’. More information on the nature on the available NNIs, and corresponding values
 can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 </div>
 <div class="section" id="hydrogen-bond-increment-hbi-method">
@@ -164,7 +161,7 @@ Similar expressions are valid for the entropy and heat capacity.</p>
 \[ \begin{align}\begin{aligned}\Delta_fH_{298}^{o}(R^*) = HBI(\Delta_fH_{298}^{o}) + \Delta_fH_{298}^{o}(R-H)\\C_{p}^{o}(R^*) = HBI(C_{p}^{o}) + C_{p}^{o}(R-H)\\S_{298}^{o}(R^*) = HBI(S_{298}^{o}) + S_{298}^{o}(R-H)\end{aligned}\end{align} \]</div>
 <p>The HBI method is the default method use to estimate thermochemistry of radicals. Thus,
 the effect of resonance stabilization on the enthalpy of the radical will be accounted for
-through the corresponding HBI. For example, the HBI labeled as &#8220;C=CC=CCJ&#8221; will account
+through the corresponding HBI. For example, the HBI labeled as “C=CC=CCJ” will account
 for the resonance present in 1,4-pentadien-3-yl radical.</p>
 <p>The HBI method can be applied to a variety of saturated compound thermochemistry values.  In
 RMG, library values for saturated compounds are prioritized over group additivity values for saturated compounds.
@@ -184,16 +181,16 @@ group contribution methods [Magoon and Green]_. This interface is particularly i
 thermochemistry of molecules that are not present in one of the species thermochemistry databases,
 and which cannot be estimated with sufficient accuracy using the Benson group additivity framework. This
 pertains specifically to polycyclic fused ring containing species, whose ring strain cannot be modeled using
-the available ring corrections in RMG&#8217;s ring strain correction databases.</p>
+the available ring corrections in RMG’s ring strain correction databases.</p>
 <p>The QMTP interface involves a number of steps, summarized in the figure below.</p>
 <img alt="../../_images/QMTP.jpg" class="align-center" src="../../_images/QMTP.jpg" />
 <p>In a first step the connectivity representation is converted into a three-dimensional structure of the molecule
 through the generation of 3D coordinates for the atoms in the molecule. This is accomplished using
 a combination of a distance geometry method, followed by a optimization using the UFF force field available in
 RDKit <a class="reference internal" href="#rdkit" id="id3">[RDKit]</a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
-that calculates the thermochemistry of the given molecule &#8220;on-the-fly&#8221;. The keywords specify the type of calculation, and the level-of-theory.
+that calculates the thermochemistry of the given molecule “on-the-fly”. The keywords specify the type of calculation, and the level-of-theory.
 Finally, the calculated thermochemistry data is sent back to RMG.</p>
-<p>The QMTP calculation creates a folder &#8216;QMfiles&#8217; that contains a number of files that are created during the process.
+<p>The QMTP calculation creates a folder ‘QMfiles’ that contains a number of files that are created during the process.
 The filename of these files is a combination of the InChI key of the molecule, and a specific filename extension, e.g.</p>
 <p>WEEGYLXZBRQIMU-UHFFFAOYSA.out is the output file produced by the QM package for the molecule cineole (SMILES: CC12CCC(CC1)C(C)(C)O2),
 represented by the InChI key WEEGYLXZBRQIMU-UHFFFAOYSA.</p>
@@ -277,18 +274,21 @@ and levels of theory that are currently  supported in the QMTP interface of RMG.
 <div class="section" id="symmetry">
 <h3>13.4.1. Symmetry<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h3>
 <p>The notion of symmetry is an essential part of molecules.
-Molecular symmetry refers to the indistinguishable orientations of a molecule.
+Molecular symmetry refers to the indistinguishable orientations of a molecule and
+can be represented by molecular groups or a symmetry number. RMG uses a symmetry number
+which is the number of superimposible configurations, which includes external symmetry and internal
+free rotors, which is described by detail by <a class="reference internal" href="#id8" id="id5">[Benson]</a>.
 This is macroscopically quantified as a decrease of the entropy S by a term  <span class="math">\(-R * ln(\sigma)\)</span>
 with R the universal gas constant and <span class="math">\(\sigma\)</span> the global symmetry number,
 corresponding to the number of indistinguishable orientations of the molecule.</p>
 <p>In RMG, <span class="math">\(\sigma\)</span> is calculated  as the product of contributions of three symmetry center types : atoms, bonds and axes, cf. below.</p>
 <div class="math">
 \[\sigma = \prod_{i}\sigma_{atom,i}.\prod_{j}\sigma_{bond,j}.\prod_{k}\sigma_{axis,k}\]</div>
-<p>More information can be found in the Ph.D Thesis of Joanna Yu <a class="reference internal" href="#yu" id="id5">[Yu]</a>.</p>
+<p>More information can be found in the Ph.D Thesis of Joanna Yu <a class="reference internal" href="#yu" id="id6">[Yu]</a>.</p>
 <p>For molecules whose thermochemistry is calculated through group contribution techniques, the
 rotational symmetry number is calculated through graph algorithms of RMG based on the above equation. If
 the thermochemistry is calculated through the QMTP process, the external, rotational symmetry number is calculatedµ
-using the open-source software SYMMETRY &#8220;Brute Force Symmetry Analyzer&#8221; <a class="reference internal" href="#patchkovskii" id="id6">[Patchkovskii]</a>. This program uses the optimized
+using the open-source software SYMMETRY “Brute Force Symmetry Analyzer” <a class="reference internal" href="#patchkovskii" id="id7">[Patchkovskii]</a>. This program uses the optimized
 three-dimensional geometry and calculates the corresponding point group.</p>
 </div>
 <div class="section" id="chirality">
@@ -308,7 +308,7 @@ symmetry elements).</p>
 <table class="docutils citation" frame="void" id="benson" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Benson]</a></td><td>Benson, Sidney William. &#8220;Thermochemical kinetics.&#8221; (1976)</td></tr>
+<tr><td class="label">[Benson]</td><td>Benson, Sidney William. “Thermochemical kinetics.” (1976)</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="lay" rules="none">
@@ -326,19 +326,29 @@ symmetry elements).</p>
 <table class="docutils citation" frame="void" id="patchkovskii" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id6">[Patchkovskii]</a></td><td>Patchkovskii, S. (2003). SYMMETRY, <a class="reference external" href="http://www.cobalt.chem.ucalgary.ca/ps/symmetry/">http://www.cobalt.chem.ucalgary.ca/ps/symmetry/</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id7">[Patchkovskii]</a></td><td>Patchkovskii, S. (2003). SYMMETRY, <a class="reference external" href="http://www.cobalt.chem.ucalgary.ca/ps/symmetry/">http://www.cobalt.chem.ucalgary.ca/ps/symmetry/</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="yu" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id5">[Yu]</a></td><td>&#8220;Estimation method for the thermochemical properties of polycyclic aromatic molecules&#8221; (Ph.D), Joanna Yu, M.I.T (2005)</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id6">[Yu]</a></td><td>“Estimation method for the thermochemical properties of polycyclic aromatic molecules” (Ph.D), Joanna Yu, M.I.T (2005)</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="rdkit" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id3">[RDKit]</a></td><td>Landrum, G. (2012). RDKit, <a class="reference external" href="http://rdkit.org">http://rdkit.org</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Benson]</td><td><div class="first system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/home/mjliu/Code/RMG-Py/documentation/source/users/rmg/thermo.rst</tt>, line 286); <em><a href="#id8">backlink</a></em></p>
+Duplicate explicit target name: “benson”.</div>
+<p class="last">Benson, S.W. (1965), <a class="reference external" href="https://en.wikipedia.org/wiki/Benson_group_increment_theory">https://en.wikipedia.org/wiki/Benson_group_increment_theory</a></p>
+</td></tr>
 </tbody>
 </table>
 </div>
@@ -467,8 +477,8 @@ symmetry elements).</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.molecule.GroupBond &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.Group" href="group.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.GroupBond<a class="headerlink" href="#rmgpy-molecule-groupbond" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.GroupBond">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">GroupBond</code><a class="headerlink" href="#rmgpy.molecule.GroupBond" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">GroupBond</code><span class="sig-paren">(</span><em>atom1</em>, <em>atom2</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>A bond group. This class is based on the <code class="xref py py-class docutils literal"><span class="pre">Bond</span></code> class, except that
 all attributes are lists rather than individual values. The allowed bond
 types are given <a class="reference internal" href="bond.html#id1"><span class="std std-ref">here</span></a>. The attributes are:</p>
@@ -101,7 +98,7 @@ types are given <a class="reference internal" href="bond.html#id1"><span class="
 group if it matches <em>any</em> item in the list.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.applyAction">
-<code class="descname">applyAction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.applyAction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">applyAction</code><span class="sig-paren">(</span><em>self</em>, <em>list action</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.applyAction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the bond group as a result of applying <cite>action</cite>, a tuple
 containing the name of the reaction recipe action along with any
 required parameters. The available actions can be found
@@ -110,14 +107,14 @@ required parameters. The available actions can be found
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; Edge<a class="headerlink" href="#rmgpy.molecule.GroupBond.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a deep copy of the <code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code> object. Modifying the
 attributes of the copy will not affect the original.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.equivalent">
-<code class="descname">equivalent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Edge other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is equivalent to <cite>self</cite> or <code class="docutils literal"><span class="pre">False</span></code> if not,
 where <cite>other</cite> can be either an <code class="xref py py-class docutils literal"><span class="pre">Bond</span></code> or an <code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code>
 object.</p>
@@ -125,19 +122,19 @@ object.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.getOrderNum">
-<code class="descname">getOrderNum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.getOrderNum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getOrderNum</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.GroupBond.getOrderNum" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the bond order as a list of numbers</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.getOrderStr">
-<code class="descname">getOrderStr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.getOrderStr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getOrderStr</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.GroupBond.getOrderStr" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a list of strings representing the bond order</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.getOtherVertex">
-<code class="descname">getOtherVertex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.getOtherVertex" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getOtherVertex</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex vertex</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.GroupBond.getOtherVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a vertex that makes up part of the edge, return the other vertex.
 Raise a <code class="xref py py-class docutils literal"><span class="pre">ValueError</span></code> if the given vertex is not part of the
 edge.</p>
@@ -145,7 +142,7 @@ edge.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isBenzene">
-<code class="descname">isBenzene</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isBenzene" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isBenzene</code><span class="sig-paren">(</span><em>self</em>, <em>bool wildcards=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.isBenzene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a benzene bond or <code class="docutils literal"><span class="pre">False</span></code> if
 not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
 than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
@@ -154,7 +151,7 @@ are benzene</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isDouble">
-<code class="descname">isDouble</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isDouble" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isDouble</code><span class="sig-paren">(</span><em>self</em>, <em>bool wildcards=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.isDouble" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a double bond or <code class="docutils literal"><span class="pre">False</span></code> if
 not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
 than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
@@ -163,7 +160,7 @@ are double.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isSingle">
-<code class="descname">isSingle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isSingle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSingle</code><span class="sig-paren">(</span><em>self</em>, <em>bool wildcards=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.isSingle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal"><span class="pre">False</span></code> if
 not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
 than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
@@ -174,7 +171,7 @@ we swtich to python 3.5+</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isSpecificCaseOf">
-<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Edge other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is the same as <cite>self</cite> or is a more
 specific case of <cite>self</cite>. Returns <code class="docutils literal"><span class="pre">False</span></code> if some of <cite>self</cite> is not
 included in <cite>other</cite> or they are mutually exclusive.</p>
@@ -182,7 +179,7 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isTriple">
-<code class="descname">isTriple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isTriple" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isTriple</code><span class="sig-paren">(</span><em>self</em>, <em>bool wildcards=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.isTriple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal"><span class="pre">False</span></code> if
 not. If <cite>wildcards</cite> is <code class="docutils literal"><span class="pre">False</span></code> we return False anytime there is more
 than one bond order, otherwise we return <code class="docutils literal"><span class="pre">True</span></code> if any of the options
@@ -191,7 +188,7 @@ are triple.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.makeBond">
-<code class="descname">makeBond</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.makeBond" title="Permalink to this definition">¶</a></dt>
+<code class="descname">makeBond</code><span class="sig-paren">(</span><em>self</em>, <em>Molecule molecule</em>, <em>Atom atom1</em>, <em>Atom atom2</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.makeBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a :class: Bond between atom1 and atom2 analogous to self</p>
 <p>The intended input arguments should be class :Atom: not class :GroupAtom:
 Args:</p>
@@ -203,16 +200,34 @@ Unexpected indentation.</div>
 atom2: Second :class: Atom the bond connects</div></blockquote>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.order">
+<code class="descname">order</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.order" title="Permalink to this definition">¶</a></dt>
+<dd><p>order: list</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.setOrderNum">
-<code class="descname">setOrderNum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.setOrderNum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setOrderNum</code><span class="sig-paren">(</span><em>self</em>, <em>list newOrder</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.setOrderNum" title="Permalink to this definition">¶</a></dt>
 <dd><p>change the bond order with a list of numbers</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupBond.setOrderStr">
-<code class="descname">setOrderStr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.setOrderStr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setOrderStr</code><span class="sig-paren">(</span><em>self</em>, <em>list newOrder</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.setOrderStr" title="Permalink to this definition">¶</a></dt>
 <dd><p>set the bond order using a valid bond-order character list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.vertex1">
+<code class="descname">vertex1</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.vertex1" title="Permalink to this definition">¶</a></dt>
+<dd><p>vertex1: rmgpy.molecule.graph.Vertex</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupBond.vertex2">
+<code class="descname">vertex2</code><a class="headerlink" href="#rmgpy.molecule.GroupBond.vertex2" title="Permalink to this definition">¶</a></dt>
+<dd><p>vertex2: rmgpy.molecule.graph.Vertex</p>
 </dd></dl>
 
 </dd></dl>
@@ -318,8 +333,8 @@ atom2: Second :class: Atom the bond connects</div></blockquote>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

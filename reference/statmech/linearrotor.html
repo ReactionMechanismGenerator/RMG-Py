@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.statmech.LinearRotor &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.statmech.NonlinearRotor" href="nonlinearrotor.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -111,8 +108,8 @@ temperatures; therefore, the classical model is used by default.</p>
 <p>A linear rigid rotor is modeled as a pair of point masses <span class="math">\(m_1\)</span> and
 <span class="math">\(m_2\)</span> separated by a distance <span class="math">\(R\)</span>. Since we are modeling the
 rotation of this system, we choose to work in spherical coordinates. Following
-the physics convention &#8211; where <span class="math">\(0 \le \theta \le \pi\)</span> is the zenith
-angle and <span class="math">\(0 \le \phi \le 2\pi\)</span> is the azimuth &#8211; the Schrodinger
+the physics convention – where <span class="math">\(0 \le \theta \le \pi\)</span> is the zenith
+angle and <span class="math">\(0 \le \phi \le 2\pi\)</span> is the azimuth – the Schrodinger
 equation for the rotor is given by</p>
 <div class="math">
 \[-\frac{\hbar^2}{2I} \left[ \frac{1}{\sin \theta} \frac{\partial}{\partial \theta} \left( \sin \theta \frac{\partial}{\partial \theta} \right) + \frac{1}{\sin^2 \theta} \frac{\partial^2}{\partial \phi^2} \right] \Psi(\theta, \phi) &amp;= E \Psi(\theta, \phi)\]</div>
@@ -125,8 +122,8 @@ for the linear rigid rotor as</p>
 <div class="math">
 \[\begin{split}E_J &amp;= B J (J + 1) \hspace{2em} J = 0, 1, 2, \ldots \\
 g_J &amp;= 2J + 1\end{split}\]</div>
-<p>where <span class="math">\(J\)</span> is the quantum number for the rotor &#8211; sometimes called the
-total angular momentum quantum number &#8211; and <span class="math">\(B \equiv \hbar^2/2I\)</span> is the
+<p>where <span class="math">\(J\)</span> is the quantum number for the rotor – sometimes called the
+total angular momentum quantum number – and <span class="math">\(B \equiv \hbar^2/2I\)</span> is the
 rotational constant.</p>
 <p>Using these expressions for the energy levels and corresponding degeneracies,
 we can evaluate the partition function for the linear rigid rotor:</p>
@@ -206,7 +203,7 @@ these states.</p>
 <dl class="attribute">
 <dt id="rmgpy.statmech.LinearRotor.quantum">
 <code class="descname">quantum</code><a class="headerlink" href="#rmgpy.statmech.LinearRotor.quantum" title="Permalink to this definition">¶</a></dt>
-<dd><p>quantum: &#8216;bool&#8217;</p>
+<dd><p>quantum: ‘bool’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -218,7 +215,7 @@ these states.</p>
 <dl class="attribute">
 <dt id="rmgpy.statmech.LinearRotor.symmetry">
 <code class="descname">symmetry</code><a class="headerlink" href="#rmgpy.statmech.LinearRotor.symmetry" title="Permalink to this definition">¶</a></dt>
-<dd><p>symmetry: &#8216;int&#8217;</p>
+<dd><p>symmetry: ‘int’</p>
 </dd></dl>
 
 </dd></dl>
@@ -324,8 +321,8 @@ these states.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.molecule.GroupAtom &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.GroupBond" href="groupbond.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.GroupAtom<a class="headerlink" href="#rmgpy-molecule-groupatom" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.GroupAtom">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">GroupAtom</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">GroupAtom</code><span class="sig-paren">(</span><em>atomType=None</em>, <em>radicalElectrons=None</em>, <em>charge=None</em>, <em>label=''</em>, <em>lonePairs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom group. This class is based on the <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> class, except that
 it uses <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom types</span></a> instead of elements, and all
 attributes are lists rather than individual values. The attributes are:</p>
@@ -120,31 +117,67 @@ such that an atom must match values from the same index in each of these in
 order to match.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.applyAction">
-<code class="descname">applyAction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.applyAction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">applyAction</code><span class="sig-paren">(</span><em>self</em>, <em>list action</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.applyAction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the atom group as a result of applying <cite>action</cite>, a tuple
 containing the name of the reaction recipe action along with any
 required parameters. The available actions can be found
 <a class="reference internal" href="recipe.html#reaction-recipe-actions"><span class="std std-ref">here</span></a>.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.atomType">
+<code class="descname">atomType</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.atomType" title="Permalink to this definition">¶</a></dt>
+<dd><p>atomType: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.charge">
+<code class="descname">charge</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>charge: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.connectivity1">
+<code class="descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.connectivity1" title="Permalink to this definition">¶</a></dt>
+<dd><p>connectivity1: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.connectivity2">
+<code class="descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.connectivity2" title="Permalink to this definition">¶</a></dt>
+<dd><p>connectivity2: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.connectivity3">
+<code class="descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.connectivity3" title="Permalink to this definition">¶</a></dt>
+<dd><p>connectivity3: ‘short’</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.GroupAtom.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a deep copy of the <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object. Modifying the
 attributes of the copy will not affect the original.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.countBonds">
-<code class="descname">countBonds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.countBonds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">countBonds</code><span class="sig-paren">(</span><em>self</em>, <em>wildcards=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.GroupAtom.countBonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: list of the number of bonds currently on the :class:GroupAtom</p>
 <p>If the argument wildcards is turned off then any bonds with multiple
 options for bond orders will not be counted</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.edges">
+<code class="descname">edges</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>edges: dict</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.equivalent">
-<code class="descname">equivalent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is equivalent to <cite>self</cite> or <code class="docutils literal"><span class="pre">False</span></code> if not,
 where <cite>other</cite> can be either an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> or an <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code>
 object. When comparing two <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> objects, this function
@@ -153,22 +186,28 @@ respects wildcards, e.g. <code class="docutils literal"><span class="pre">R!H</s
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.hasWildcards">
-<code class="descname">hasWildcards</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.hasWildcards" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hasWildcards</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.hasWildcards" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom has wildcards in any of the attributes:
 atomtype, electronpairs, lone pairs, charge, and bond order. Returns
-&#8216;&#8217;False&#8217;&#8217; if no attribute has wildcards.</p>
+‘’False’’ if no attribute has wildcards.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.ignore">
+<code class="descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>ignore: ‘bool’</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.isOxygen">
-<code class="descname">isOxygen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.isOxygen" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isOxygen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isOxygen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.isSpecificCaseOf">
-<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is the same as <cite>self</cite> or is a more
 specific case of <cite>self</cite>. Returns <code class="docutils literal"><span class="pre">False</span></code> if some of <cite>self</cite> is not
 included in <cite>other</cite> or they are mutually exclusive.</p>
@@ -176,23 +215,59 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.isSulfur">
-<code class="descname">isSulfur</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.isSulfur" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSulfur</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isSulfur" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.lonePairs">
+<code class="descname">lonePairs</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.lonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>lonePairs: list</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.makeSampleAtom">
-<code class="descname">makeSampleAtom</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.makeSampleAtom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">makeSampleAtom</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; Atom<a class="headerlink" href="#rmgpy.molecule.GroupAtom.makeSampleAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: a class :Atom: object analagous to the GroupAtom</p>
 <p>This makes a sample, so it takes the first element when there are multiple options inside of
 self.atomtype, self.radicalElectrons, self.lonePairs, and self.charge</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.mapping">
+<code class="descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>mapping: rmgpy.molecule.graph.Vertex</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.radicalElectrons">
+<code class="descname">radicalElectrons</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.radicalElectrons" title="Permalink to this definition">¶</a></dt>
+<dd><p>radicalElectrons: list</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.resetConnectivityValues">
-<code class="descname">resetConnectivityValues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resetConnectivityValues</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.sortingLabel">
+<code class="descname">sortingLabel</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.sortingLabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>sortingLabel: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.GroupAtom.terminal">
+<code class="descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.GroupAtom.terminal" title="Permalink to this definition">¶</a></dt>
+<dd><p>terminal: ‘bool’</p>
 </dd></dl>
 
 </dd></dl>
@@ -298,8 +373,8 @@ self.atomtype, self.radicalElectrons, self.lonePairs, and self.charge</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

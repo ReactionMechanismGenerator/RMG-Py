@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.reaction.Reaction &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Reaction mechanism generation (rmgpy.rmg)" href="../rmg/index.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.reaction.Reaction<a class="headerlink" href="#rmgpy-reaction-reaction" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.reaction.Reaction">
-<em class="property">class </em><code class="descclassname">rmgpy.reaction.</code><code class="descname">Reaction</code><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.reaction.</code><code class="descname">Reaction</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>reactants=None</em>, <em>products=None</em>, <em>specificCollider=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical reaction. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -105,35 +102,43 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <td><code class="xref py py-class docutils literal"><span class="pre">list</span></code></td>
 <td>The product species (as <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> objects)</td>
 </tr>
-<tr class="row-even"><td><cite>kinetics</cite></td>
+<tr class="row-even"><td>‘specificCollider’</td>
+<td><code class="xref py py-class docutils literal"><span class="pre">Species</span></code></td>
+<td>The collider species (as a <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object)</td>
+</tr>
+<tr class="row-odd"><td><cite>kinetics</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">KineticsModel</span></code></td>
 <td>The kinetics model to use for the reaction</td>
 </tr>
-<tr class="row-odd"><td><cite>reversible</cite></td>
+<tr class="row-even"><td><cite>reversible</cite></td>
 <td><code class="docutils literal"><span class="pre">bool</span></code></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if the reaction is reversible, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
 </tr>
-<tr class="row-even"><td><cite>transitionState</cite></td>
+<tr class="row-odd"><td><cite>transitionState</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">TransitionState</span></code></td>
 <td>The transition state</td>
 </tr>
-<tr class="row-odd"><td><cite>duplicate</cite></td>
+<tr class="row-even"><td><cite>duplicate</cite></td>
 <td><code class="docutils literal"><span class="pre">bool</span></code></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if the reaction is known to be a duplicate, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
 </tr>
-<tr class="row-even"><td><cite>degeneracy</cite></td>
+<tr class="row-odd"><td><cite>degeneracy</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">double</span></code></td>
 <td>The reaction path degeneracy for the reaction</td>
 </tr>
-<tr class="row-odd"><td><cite>pairs</cite></td>
+<tr class="row-even"><td><cite>pairs</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>Reactant-product pairings to use in converting reaction flux to species flux</td>
+</tr>
+<tr class="row-odd"><td><cite>comment</cite></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td>A description of the reaction source (optional)</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.calculateMicrocanonicalRateCoefficient">
-<code class="descname">calculateMicrocanonicalRateCoefficient</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateMicrocanonicalRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateMicrocanonicalRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray Jlist</em>, <em>ndarray reacDensStates</em>, <em>ndarray prodDensStates=None</em>, <em>double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateMicrocanonicalRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient <span class="math">\(k(E)\)</span> for the reaction
 <cite>reaction</cite> at the energies <cite>Elist</cite> in J/mol. <cite>reacDensStates</cite> and 
 <cite>prodDensStates</cite> are the densities of states of the reactant and product
@@ -158,7 +163,7 @@ inverse Laplace transform method.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.calculateTSTRateCoefficient">
-<code class="descname">calculateTSTRateCoefficient</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateTSTRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateTSTRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.reaction.Reaction.calculateTSTRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the forward rate coefficient for the reaction with
 corresponding transition state <cite>TS</cite> at temperature <cite>T</cite> in K using
 (canonical) transition state theory. The TST equation is</p>
@@ -174,23 +179,40 @@ correction.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.reaction.Reaction.calculateTSTRateCoefficients">
+<code class="descname">calculateTSTRateCoefficients</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.reaction.Reaction.calculateTSTRateCoefficients" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.reaction.Reaction.canTST">
-<code class="descname">canTST</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.canTST" title="Permalink to this definition">¶</a></dt>
+<code class="descname">canTST</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.canTST" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the necessary parameters are available for using
-transition state theory &#8211; or the microcanonical equivalent, RRKM
-theory &#8211; to compute the rate coefficient for this reaction, or
+transition state theory – or the microcanonical equivalent, RRKM
+theory – to compute the rate coefficient for this reaction, or
 <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.comment">
+<code class="descname">comment</code><a class="headerlink" href="#rmgpy.reaction.Reaction.comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>comment: str</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a deep copy of the current reaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.degeneracy">
+<code class="descname">degeneracy</code><a class="headerlink" href="#rmgpy.reaction.Reaction.degeneracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reaction.__getDegneneracy(self)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.draw">
-<code class="descname">draw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.draw" title="Permalink to this definition">¶</a></dt>
+<code class="descname">draw</code><span class="sig-paren">(</span><em>self</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a pictorial representation of the chemical reaction using the
 <code class="xref py py-mod docutils literal"><span class="pre">draw</span></code> module. Use <cite>path</cite> to specify the file to save
 the generated image to; the image type is automatically determined by
@@ -199,9 +221,15 @@ extension. Valid extensions are <code class="docutils literal"><span class="pre"
 vector formats.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.duplicate">
+<code class="descname">duplicate</code><a class="headerlink" href="#rmgpy.reaction.Reaction.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>duplicate: ‘bool’</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.fixBarrierHeight">
-<code class="descname">fixBarrierHeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.fixBarrierHeight" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fixBarrierHeight</code><span class="sig-paren">(</span><em>self</em>, <em>bool forcePositive=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.fixBarrierHeight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turns the kinetics into Arrhenius (if they were ArrheniusEP)
 and ensures the activation energy is at least the endothermicity
 for endothermic reactions, and is not negative only as a result 
@@ -212,14 +240,14 @@ are forced to have a non-negative barrier.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.fixDiffusionLimitedA">
-<code class="descname">fixDiffusionLimitedA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.fixDiffusionLimitedA" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fixDiffusionLimitedA</code><span class="sig-paren">(</span><em>self</em>, <em>T</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.fixDiffusionLimitedA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decrease the pre-exponential factor (A) by the diffusion factor
 to account for the diffusion limit at the specified temperature.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.generate3dTS">
-<code class="descname">generate3dTS</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.generate3dTS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generate3dTS</code><span class="sig-paren">(</span><em>self</em>, <em>reactants</em>, <em>products</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.generate3dTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the 3D structure of the transition state. Called from 
 model.generateKinetics().</p>
 <p>self.reactants is a list of reactants
@@ -228,7 +256,7 @@ self.products is a list of products</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.generatePairs">
-<code class="descname">generatePairs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.generatePairs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generatePairs</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.generatePairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the reactant-product pairs to use for this reaction when
 performing flux analysis. The exact procedure for doing so depends on
 the reaction type:</p>
@@ -272,7 +300,7 @@ some cases.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.generateReverseRateCoefficient">
-<code class="descname">generateReverseRateCoefficient</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.generateReverseRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateReverseRateCoefficient</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.generateReverseRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return a rate coefficient model for the reverse reaction. 
 Currently this only works if the <cite>kinetics</cite> attribute is one of several
 (but not necessarily all) kinetics types.</p>
@@ -280,35 +308,35 @@ Currently this only works if the <cite>kinetics</cite> attribute is one of sever
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEnthalpiesOfReaction">
-<code class="descname">getEnthalpiesOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpiesOfReaction</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpiesOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpies of reaction in J/mol evaluated at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEnthalpyOfReaction">
-<code class="descname">getEnthalpyOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpyOfReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEnthalpyOfReaction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy of reaction in J/mol evaluated at temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEntropiesOfReaction">
-<code class="descname">getEntropiesOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropiesOfReaction</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropiesOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropies of reaction in J/mol*K evaluated at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEntropyOfReaction">
-<code class="descname">getEntropyOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropyOfReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEntropyOfReaction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy of reaction in J/mol*K evaluated at temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEquilibriumConstant">
-<code class="descname">getEquilibriumConstant</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstant" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEquilibriumConstant</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>str type='Kc'</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constant for the reaction at the specified
 temperature <cite>T</cite> in K. The <cite>type</cite> parameter lets you specify the
 quantities used in the equilibrium constant: <code class="docutils literal"><span class="pre">Ka</span></code> for activities,
@@ -318,7 +346,7 @@ this function currently assumes an ideal gas mixture.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEquilibriumConstants">
-<code class="descname">getEquilibriumConstants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstants" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getEquilibriumConstants</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tlist</em>, <em>str type='Kc'</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constants for the reaction at the specified
 temperatures <cite>Tlist</cite> in K. The <cite>type</cite> parameter lets you specify the
 quantities used in the equilibrium constant: <code class="docutils literal"><span class="pre">Ka</span></code> for activities,
@@ -328,21 +356,21 @@ this function currently assumes an ideal gas mixture.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getFreeEnergiesOfReaction">
-<code class="descname">getFreeEnergiesOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFreeEnergiesOfReaction</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergiesOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energies of reaction in J/mol evaluated at
 temperatures <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getFreeEnergyOfReaction">
-<code class="descname">getFreeEnergyOfReaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergyOfReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFreeEnergyOfReaction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy of reaction in J/mol evaluated at
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getRateCoefficient">
-<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.reaction.Reaction.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
@@ -353,7 +381,7 @@ coefficient.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getStoichiometricCoefficient">
-<code class="descname">getStoichiometricCoefficient</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getStoichiometricCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getStoichiometricCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>Species spec</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#rmgpy.reaction.Reaction.getStoichiometricCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometric coefficient of species <cite>spec</cite> in the reaction.
 The stoichiometric coefficient is increased by one for each time <cite>spec</cite>
 appears as a product and decreased by one for each time <cite>spec</cite> appears
@@ -362,92 +390,169 @@ as a reactant.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getURL">
-<code class="descname">getURL</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getURL" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getURL</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.getURL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a URL to search for this reaction in the rmg website.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.hasTemplate">
-<code class="descname">hasTemplate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.hasTemplate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hasTemplate</code><span class="sig-paren">(</span><em>self</em>, <em>list reactants</em>, <em>list products</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.hasTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the reaction matches the template of <cite>reactants</cite>
 and <cite>products</cite>, which are both lists of <code class="xref py py-class docutils literal"><span class="pre">Species</span></code> objects, or
 <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.index">
+<code class="descname">index</code><a class="headerlink" href="#rmgpy.reaction.Reaction.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>index: ‘int’</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isAssociation">
-<code class="descname">isAssociation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.isAssociation" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isAssociation</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isAssociation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the reaction represents an association reaction
 <span class="math">\(\ce{A + B &lt;=&gt; C}\)</span> or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isBalanced">
-<code class="descname">isBalanced</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.isBalanced" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isBalanced</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isBalanced" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the reaction has the same number of each atom on
 each side of the reaction equation, or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isDissociation">
-<code class="descname">isDissociation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.isDissociation" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isDissociation</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isDissociation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the reaction represents a dissociation reaction
 <span class="math">\(\ce{A &lt;=&gt; B + C}\)</span> or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isIsomerization">
-<code class="descname">isIsomerization</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomerization" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomerization</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomerization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the reaction represents an isomerization reaction
 <span class="math">\(\ce{A &lt;=&gt; B}\)</span> or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if this reaction is the same as the <cite>other</cite> reaction,
-or <code class="docutils literal"><span class="pre">False</span></code> if they are different. 
-If <cite>eitherDirection=False</cite> then the directions must match.</p>
+or <code class="docutils literal"><span class="pre">False</span></code> if they are different. The comparison involves comparing
+isomorphism of reactants and products, and doesn’t use any kinetic
+information.</p>
+<p>If <cite>eitherDirection=False</cite> then the directions must match.</p>
+<dl class="docutils">
+<dt><cite>checkIdentical</cite> indicates that atom ID’s must match and is used in</dt>
+<dd>checking degeneracy</dd>
+<dt><cite>checkOnlyLabel</cite> indicates that the string representation will be </dt>
+<dd>checked, ignoring the molecular structure comparisons</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isUnimolecular">
-<code class="descname">isUnimolecular</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.isUnimolecular" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isUnimolecular</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isUnimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the reaction has a single molecule as either reactant or product (or both)
 <span class="math">\(\ce{A &lt;=&gt; B + C}\)</span> or <span class="math">\(\ce{A + B &lt;=&gt; C}\)</span> or <span class="math">\(\ce{A &lt;=&gt; B}\)</span>,
 or <code class="docutils literal"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.k_effective_cache">
+<code class="descname">k_effective_cache</code><a class="headerlink" href="#rmgpy.reaction.Reaction.k_effective_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>k_effective_cache: dict</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.kinetics">
+<code class="descname">kinetics</code><a class="headerlink" href="#rmgpy.reaction.Reaction.kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>kinetics: rmgpy.kinetics.model.KineticsModel</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.reaction.Reaction.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.matchesMolecules">
-<code class="descname">matchesMolecules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.matchesMolecules" title="Permalink to this definition">¶</a></dt>
+<code class="descname">matchesMolecules</code><span class="sig-paren">(</span><em>self</em>, <em>list reactants</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.matchesMolecules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the given <code class="docutils literal"><span class="pre">reactants</span></code> represent the total set of
 reactants or products for the current <code class="docutils literal"><span class="pre">reaction</span></code>, or <code class="docutils literal"><span class="pre">False</span></code> if not.
 The reactants should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.pairs">
+<code class="descname">pairs</code><a class="headerlink" href="#rmgpy.reaction.Reaction.pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>pairs: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.products">
+<code class="descname">products</code><a class="headerlink" href="#rmgpy.reaction.Reaction.products" title="Permalink to this definition">¶</a></dt>
+<dd><p>products: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.reactants">
+<code class="descname">reactants</code><a class="headerlink" href="#rmgpy.reaction.Reaction.reactants" title="Permalink to this definition">¶</a></dt>
+<dd><p>reactants: list</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.reverseThisArrheniusRate">
-<code class="descname">reverseThisArrheniusRate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.reverseThisArrheniusRate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reverseThisArrheniusRate</code><span class="sig-paren">(</span><em>self</em>, <em>Arrhenius kForward</em>, <em>str reverseUnits</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.reverseThisArrheniusRate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given kForward, which must be an Arrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.reversible">
+<code class="descname">reversible</code><a class="headerlink" href="#rmgpy.reaction.Reaction.reversible" title="Permalink to this definition">¶</a></dt>
+<dd><p>reversible: ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.specificCollider">
+<code class="descname">specificCollider</code><a class="headerlink" href="#rmgpy.reaction.Reaction.specificCollider" title="Permalink to this definition">¶</a></dt>
+<dd><p>specificCollider: rmgpy.species.Species</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.toCantera">
-<code class="descname">toCantera</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toCantera</code><span class="sig-paren">(</span><em>self</em>, <em>speciesList=None</em>, <em>useChemkinIdentifier=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toCantera" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the RMG Reaction object to a Cantera Reaction object
 with the appropriate reaction class.</p>
+<p>If useChemkinIdentifier is set to False, the species label is used
+instead. Be sure that species’ labels are unique when setting it False.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.toChemkin">
-<code class="descname">toChemkin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toChemkin" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toChemkin</code><span class="sig-paren">(</span><em>self</em>, <em>speciesList=None</em>, <em>kinetics=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
 <p>If <cite>kinetics</cite> is set to True, the chemkin format kinetics will also
 be returned (requires the <cite>speciesList</cite> to figure out third body colliders.)
 Otherwise, only the reaction string will be returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.reaction.Reaction.toLabeledStr">
+<code class="descname">toLabeledStr</code><span class="sig-paren">(</span><em>self</em>, <em>use_index=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction.toLabeledStr" title="Permalink to this definition">¶</a></dt>
+<dd><p>the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+the labels plus the index in parentheses</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.transitionState">
+<code class="descname">transitionState</code><a class="headerlink" href="#rmgpy.reaction.Reaction.transitionState" title="Permalink to this definition">¶</a></dt>
+<dd><p>transitionState: rmgpy.species.TransitionState</p>
 </dd></dl>
 
 </dd></dl>
@@ -553,8 +658,8 @@ Otherwise, only the reaction string will be returned.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

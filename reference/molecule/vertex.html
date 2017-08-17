@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.molecule.graph.Vertex &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.graph.Edge" href="edge.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -97,11 +94,11 @@ useful for accelerating isomorphism searches, as proposed by
 </tr>
 <tr class="row-odd"><td><cite>connectivity2</cite></td>
 <td><code class="docutils literal"><span class="pre">int</span></code></td>
-<td>The sum of the neighbors&#8217; <cite>connectivity1</cite> values</td>
+<td>The sum of the neighbors’ <cite>connectivity1</cite> values</td>
 </tr>
 <tr class="row-even"><td><cite>connectivity3</cite></td>
 <td><code class="docutils literal"><span class="pre">int</span></code></td>
-<td>The sum of the neighbors&#8217; <cite>connectivity2</cite> values</td>
+<td>The sum of the neighbors’ <cite>connectivity2</cite> values</td>
 </tr>
 <tr class="row-odd"><td><cite>sortingLabel</cite></td>
 <td><code class="docutils literal"><span class="pre">int</span></code></td>
@@ -109,34 +106,82 @@ useful for accelerating isomorphism searches, as proposed by
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.connectivity1">
+<code class="descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity1" title="Permalink to this definition">¶</a></dt>
+<dd><p>connectivity1: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.connectivity2">
+<code class="descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity2" title="Permalink to this definition">¶</a></dt>
+<dd><p>connectivity2: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.connectivity3">
+<code class="descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity3" title="Permalink to this definition">¶</a></dt>
+<dd><p>connectivity3: ‘short’</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Vertex.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the vertex. The default implementation assumes that no
 semantic information is associated with each vertex, and therefore
 simply returns a new <code class="xref py py-class docutils literal"><span class="pre">Vertex</span></code> object.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.edges">
+<code class="descname">edges</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>edges: dict</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Vertex.equivalent">
-<code class="descname">equivalent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
 equivalent, or <code class="xref py py-data docutils literal"><span class="pre">False</span></code> if not. You should reimplement this
 function in a derived class if your vertices have semantic information.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.ignore">
+<code class="descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>ignore: ‘bool’</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Vertex.isSpecificCaseOf">
-<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
 or <code class="docutils literal"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
 class if your edges have semantic information.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.mapping">
+<code class="descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>mapping: rmgpy.molecule.graph.Vertex</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Vertex.resetConnectivityValues">
-<code class="descname">resetConnectivityValues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resetConnectivityValues</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.sortingLabel">
+<code class="descname">sortingLabel</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.sortingLabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>sortingLabel: ‘short’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.graph.Vertex.terminal">
+<code class="descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.terminal" title="Permalink to this definition">¶</a></dt>
+<dd><p>terminal: ‘bool’</p>
 </dd></dl>
 
 </dd></dl>
@@ -242,8 +287,8 @@ class if your edges have semantic information.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

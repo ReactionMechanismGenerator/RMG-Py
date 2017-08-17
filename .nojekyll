@@ -1,4 +1,0 @@
-The existence of this file tells github pages not to run it's jekyll rendering
-engine on the site, because doing so would prevent it from publishing any
-directories that begin with an underscore, such as our _static which has
-all the .css files, etc.

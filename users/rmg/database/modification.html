@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>12.4. Database Modification &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="13. Thermochemistry Estimation" href="../thermo.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
       </ul>
     </div>
@@ -107,16 +104,19 @@ add to the training set instead of modifying the kinetic groups.</p>
 <div class="section" id="adding-reaction-family">
 <h3>12.4.2.1. Adding Reaction Family<a class="headerlink" href="#adding-reaction-family" title="Permalink to this headline">¶</a></h3>
 <p>There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:</p>
-<ul class="simple">
+<ul>
 <li><dl class="first docutils">
 <dt><code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/[family</span> <span class="pre">name]</span></code></dt>
 <dd><ul class="first last">
-<li>add folder for your family name</li>
-<li>create <code class="docutils literal"><span class="pre">groups.py</span></code>, <code class="docutils literal"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal"><span class="pre">reactions.py</span></code>.</li>
-<li>fill the files with rate data that you plan to use.</li>
+<li><p class="first">add folder for your family name</p>
+</li>
+<li><p class="first">create <code class="docutils literal"><span class="pre">groups.py</span></code>, <code class="docutils literal"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal"><span class="pre">reactions.py</span></code>.</p>
+</li>
+<li><p class="first">fill the files with rate data that you plan to use.</p>
+</li>
 <li><dl class="first docutils">
 <dt>Many tools exist to help with the conversion process:</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code></li>
 <li><code class="docutils literal"><span class="pre">importChemkinLibrary.py</span></code> in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code></li>
 </ul>
@@ -129,7 +129,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.family</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">applyRecipe</span></code>: swapping the atom labels (eg. <cite>*1</cite> and <cite>*2</cite>) around</li>
 <li><code class="docutils literal"><span class="pre">getReactionPairs</span></code>: figuring out which species becomes which for flux analyses</li>
 <li><code class="docutils literal"><span class="pre">__generateReactions</span></code>: correcting degeneracy eg. dividing by 2 for radical recombination</li>
@@ -139,7 +139,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.rules</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">processOldLibraryEntry</span></code>: determining units when importing RMG-Java database</li>
 <li><code class="docutils literal"><span class="pre">getAllRules</span></code>: for radical recombination add reverse templates</li>
 </ul>
@@ -148,7 +148,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.groups</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">getReactionTemplate</span></code>: for radical recombination duplicate the template</li>
 </ul>
 </dd>
@@ -156,7 +156,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>RMG-database/input/kinetics/families/recommended.py</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li>allows the usage of the database with the recommended families.</li>
 </ul>
 </dd>
@@ -166,18 +166,176 @@ add to the training set instead of modifying the kinetic groups.</p>
 </div>
 <div class="section" id="creating-kinetics-libraries">
 <h3>12.4.2.2. Creating Kinetics Libraries<a class="headerlink" href="#creating-kinetics-libraries" title="Permalink to this headline">¶</a></h3>
+<p>To add a reaction library, simply create a folder bearing the library’s name under
+<code class="docutils literal"><span class="pre">RMG-database/input/kinetics/libraries</span></code>. You’ll need to create two files:
+<code class="docutils literal"><span class="pre">dictionary.txt</span></code> and <code class="docutils literal"><span class="pre">reactions.py</span></code>. The dictionary file contains the Adjacency lists
+for all relevant species (can be generated using the <a class="reference external" href="http://rmg.mit.edu/molecule_search">Molecule Search</a>
+function of the rmg website, while the reactions file specifies the kinetics.
+To conform to RMG’s format, simply copy and modify an existing library.</p>
+<p>At the top of the reactions file fill in the name and short (one line) and long descriptions.
+The name must be identical to the folder’s name. Then list the kinetics entries, each with a unique index number.
+The following formats are accepted as kinetics entries:</p>
+<p><strong>Arrhenius</strong> of the form <span class="math">\(k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)\)</span>
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/arrhenius.html">Arrhenius Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H + O2 &lt;=&gt; O + OH&quot;</span><span class="p">,</span>
+<span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="n">kinetics</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">9.841e+13</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">15310</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+<span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;This is a short description limited to one line, e.g. &#39;CBS-QB3&#39;&quot;</span><span class="p">,</span>
+<span class="n">longDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;This is a long description, unlimited by number of lines.</span>
+<span class="s2">These descriptions can be added to every kinetics type.&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>MultiArrhenius</strong> is the sum of multiple Arrhenius expressions (all apply to the same temperature range)
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/multiarrhenius.html">MultiArrhenius Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;O + H2 &lt;=&gt; H + OH&quot;</span><span class="p">,</span>
+<span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">duplicate</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="n">kinetics</span> <span class="o">=</span> <span class="n">MultiArrhenius</span><span class="p">(</span>
+        <span class="n">arrhenius</span> <span class="o">=</span> <span class="p">[</span><span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">3.848e+12</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">7950</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">6.687e+14</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">19180</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">))]))</span>
+</pre></div>
+</div>
+<p><strong>ThirdBody</strong> for pressure dependent reactions of the sort <code class="docutils literal"><span class="pre">H2</span> <span class="pre">+</span> <span class="pre">M</span> <span class="pre">&lt;=&gt;</span> <span class="pre">H</span> <span class="pre">+</span> <span class="pre">H</span> <span class="pre">+</span> <span class="pre">M</span></code>. <code class="docutils literal"><span class="pre">efficiencies</span></code> are optional and specify
+the factor by which the rate is multiplies if the mentioned species is the third body collider. Note that for complex efficiency
+behaviour, an efficiency of <code class="docutils literal"><span class="pre">0</span></code> can be set, and a seperate specific reaction can be defined
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/thirdbody.html">ThirdBody Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H2 &lt;=&gt; H + H&quot;</span><span class="p">,</span>
+<span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="n">kinetics</span> <span class="o">=</span> <span class="n">ThirdBody</span><span class="p">(</span>
+        <span class="n">arrheniusLow</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">4.58e+19</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">104390</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">efficiencies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;[Ar]&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;N#N&#39;</span><span class="p">:</span> <span class="mf">1.01</span><span class="p">,</span> <span class="s1">&#39;[H][H]&#39;</span><span class="p">:</span> <span class="mf">2.55</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mf">12.02</span><span class="p">,</span> <span class="s1">&#39;[C-]#[O+]&#39;</span><span class="p">:</span> <span class="mf">1.95</span><span class="p">,</span> <span class="s1">&#39;O=C=O&#39;</span><span class="p">:</span> <span class="mf">3.83</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mf">2.00</span><span class="p">,</span> <span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mf">2.50</span><span class="p">,</span> <span class="s1">&#39;CO&#39;</span><span class="p">:</span> <span class="mf">3.00</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="mf">3.00</span><span class="p">}))</span>
+
+<span class="n">entry</span><span class="p">(</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H2 + Ar &lt;=&gt; H + H + Ar&quot;</span><span class="p">,</span>
+<span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="n">kinetics</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">5.176e+18</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">104390</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p><strong>Troe</strong> for pressure dependent reactions
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/troe.html">Troe Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H + O2 &lt;=&gt; HO2&quot;</span><span class="p">,</span>
+<span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="n">kinetics</span> <span class="o">=</span> <span class="n">Troe</span><span class="p">(</span>
+        <span class="n">arrheniusHigh</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">4.565e+12</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mf">0.44</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">arrheniusLow</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span> <span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">6.37e+20</span><span class="p">,</span> <span class="s1">&#39;cm^6/(mol^2*s)&#39;</span><span class="p">),</span> <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.72</span><span class="p">,</span> <span class="n">Ea</span> <span class="o">=</span> <span class="p">(</span><span class="mi">525</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">T3</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">T1</span><span class="o">=</span><span class="p">(</span><span class="mi">90000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">T2</span><span class="o">=</span><span class="p">(</span><span class="mi">90000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">efficiencies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;[Ar]&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span> <span class="s1">&#39;[He]&#39;</span><span class="p">:</span> <span class="mf">0.71</span><span class="p">,</span> <span class="s1">&#39;N#N&#39;</span><span class="p">:</span> <span class="mf">0.96</span><span class="p">,</span> <span class="s1">&#39;[H][H]&#39;</span><span class="p">:</span> <span class="mf">1.87</span><span class="p">,</span> <span class="s1">&#39;[O][O]&#39;</span><span class="p">:</span> <span class="mf">0.75</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mf">15.81</span><span class="p">,</span> <span class="s1">&#39;[C-]#[O+]&#39;</span><span class="p">:</span> <span class="mf">1.90</span><span class="p">,</span> <span class="s1">&#39;O=C=O&#39;</span><span class="p">:</span> <span class="mf">3.45</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mf">2.00</span><span class="p">,</span> <span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mf">2.50</span><span class="p">,</span> <span class="s1">&#39;CO&#39;</span><span class="p">:</span> <span class="mf">3.00</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="mf">3.00</span><span class="p">}))</span>
+</pre></div>
+</div>
+<p><strong>Lindemann</strong>
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/lindemann.html">Lindemann Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CO + O &lt;=&gt; CO2&quot;</span><span class="p">,</span>
+    <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">Lindemann</span><span class="p">(</span>
+        <span class="n">arrheniusHigh</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">1.88e+11</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">2430</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">arrheniusLow</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.4e+21</span><span class="p">,</span> <span class="s1">&#39;cm^6/(mol^2*s)&#39;</span><span class="p">),</span> <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.1</span><span class="p">,</span> <span class="n">Ea</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5500</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">efficiencies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;[Ar]&#39;</span><span class="p">:</span> <span class="mf">0.87</span><span class="p">,</span> <span class="s1">&#39;[He]&#39;</span><span class="p">:</span> <span class="mf">2.50</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mf">12.00</span><span class="p">,</span> <span class="s1">&#39;[C-]#[O+]&#39;</span><span class="p">:</span> <span class="mf">1.90</span><span class="p">,</span> <span class="s1">&#39;O=C=O&#39;</span><span class="p">:</span> <span class="mf">3.80</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mf">2.00</span><span class="p">,</span> <span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mf">2.50</span><span class="p">,</span> <span class="s1">&#39;CO&#39;</span><span class="p">:</span> <span class="mf">3.00</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="mf">3.00</span><span class="p">}))</span>
+</pre></div>
+</div>
+<p><strong>PDepArrhenius</strong> where each Arrhenius expression corresponds to a different pressure, as specified.
+Allowed pressure units are <code class="docutils literal"><span class="pre">Pa</span></code>, <code class="docutils literal"><span class="pre">bar</span></code>, <code class="docutils literal"><span class="pre">atm</span></code>, <code class="docutils literal"><span class="pre">torr</span></code>, <code class="docutils literal"><span class="pre">psi</span></code>, <code class="docutils literal"><span class="pre">mbar</span></code>
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/pdeparrhenius.html">PDepArrhenius Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;HCO &lt;=&gt; H + CO&quot;</span><span class="p">,</span>
+    <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">PDepArrhenius</span><span class="p">(</span>
+        <span class="n">pressures</span> <span class="o">=</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="s1">&#39;atm&#39;</span><span class="p">),</span>
+        <span class="n">arrhenius</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">9.9e+11</span><span class="p">,</span> <span class="s1">&#39;s^-1&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">0.865</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">16755</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+            <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">7.2e+12</span><span class="p">,</span> <span class="s1">&#39;s^-1&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">0.865</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">16755</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+            <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">1.3e+13</span><span class="p">,</span> <span class="s1">&#39;s^-1&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">0.865</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">16755</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+            <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.9e+13</span><span class="p">,</span> <span class="s1">&#39;s^-1&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">0.865</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">16755</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+            <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">5.3e+13</span><span class="p">,</span> <span class="s1">&#39;s^-1&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">0.865</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">16755</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">))]))</span>
+</pre></div>
+</div>
+<p><strong>MultiPDepArrhenius</strong>
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/multipdeparrhenius.html">MultiPDepArrhenius Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;N2H2 &lt;=&gt; NNH + H&quot;</span><span class="p">,</span>
+    <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">duplicate</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">MultiPDepArrhenius</span><span class="p">(</span>
+        <span class="n">arrhenius</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">PDepArrhenius</span><span class="p">(</span>
+                <span class="n">pressures</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="s1">&#39;atm&#39;</span><span class="p">),</span>
+                <span class="n">arrhenius</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">5.6e+36</span><span class="p">,</span> <span class="s1">&#39;1/s&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">7.75</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mf">70250.4</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+                    <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">1.8e+40</span><span class="p">,</span> <span class="s1">&#39;1/s&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">8.41</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">73390</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+                    <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">3.1e+41</span><span class="p">,</span> <span class="s1">&#39;1/s&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">8.42</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">76043</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">))]),</span>
+            <span class="n">PDepArrhenius</span><span class="p">(</span>
+                <span class="n">pressures</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="s1">&#39;atm&#39;</span><span class="p">),</span>
+                <span class="n">arrhenius</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">1.6e+37</span><span class="p">,</span> <span class="s1">&#39;1/s&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">7.94</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">70757</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+                    <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.6e+40</span><span class="p">,</span> <span class="s1">&#39;1/s&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">8.53</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">72923</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+                    <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">1.3e+44</span><span class="p">,</span> <span class="s1">&#39;1/s&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">9.22</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">77076</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">))])]))</span>
+</pre></div>
+</div>
+<p><strong>Chebyshev</strong>
+(see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/chebyshev.html">Chebyshev Class</a> for details):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CH3 + OH &lt;=&gt; CH2(S) + H2O&quot;</span><span class="p">,</span>
+    <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">Chebyshev</span><span class="p">(</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="mf">12.4209</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.799241</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.299133</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0143012</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.236291</span><span class="p">,</span> <span class="mf">0.856853</span><span class="p">,</span> <span class="mf">0.246313</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0463755</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="mf">0.0827561</span><span class="p">,</span> <span class="mf">0.0457236</span><span class="p">,</span> <span class="mf">0.105699</span><span class="p">,</span> <span class="mf">0.057531</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="mf">0.049145</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0760609</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0214574</span><span class="p">,</span> <span class="mf">0.0247001</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="mf">0.00664556</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0412733</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0308561</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00959838</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.0111919</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00649914</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0106088</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0137528</span><span class="p">],</span>
+        <span class="p">],</span>
+        <span class="n">kunits</span><span class="o">=</span><span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Pmin</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0013156</span><span class="p">,</span> <span class="s1">&#39;atm&#39;</span><span class="p">),</span> <span class="n">Pmax</span><span class="o">=</span><span class="p">(</span><span class="mf">131.56</span><span class="p">,</span> <span class="s1">&#39;atm&#39;</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-a-specific-collider">
+<h3>12.4.2.3. Adding a specific collider<a class="headerlink" href="#adding-a-specific-collider" title="Permalink to this headline">¶</a></h3>
+<p>Only the <code class="docutils literal"><span class="pre">Troe</span></code> and <code class="docutils literal"><span class="pre">Lindemann</span></code> pressure dependent formats could be defined with a specific species as a third body collider, if needed. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SO2 + O &lt;=&gt; SO3&quot;</span><span class="p">,</span>
+    <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">Troe</span><span class="p">(</span>
+        <span class="n">arrheniusHigh</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">3.7e+11</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">1689</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">arrheniusLow</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.4e+27</span><span class="p">,</span> <span class="s1">&#39;cm^6/(mol^2*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">3.6</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">5186</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.442</span><span class="p">,</span> <span class="n">T3</span><span class="o">=</span><span class="p">(</span><span class="mi">316</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">T1</span><span class="o">=</span><span class="p">(</span><span class="mi">7442</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">efficiencies</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;O=S=O&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;O=C=O&#39;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">,</span> <span class="s1">&#39;N#N&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}))</span>
+
+<span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SO2 + O (+N2) &lt;=&gt; SO3 (+N2)&quot;</span><span class="p">,</span>
+    <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">Troe</span><span class="p">(</span>
+        <span class="n">arrheniusHigh</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">3.7e+11</span><span class="p">,</span> <span class="s1">&#39;cm^6/(mol^2*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">1689</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">arrheniusLow</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.9e+27</span><span class="p">,</span> <span class="s1">&#39;cm^9/(mol^3*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=-</span><span class="mf">3.58</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">5206</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.43</span><span class="p">,</span> <span class="n">T3</span><span class="o">=</span><span class="p">(</span><span class="mi">371</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">T1</span><span class="o">=</span><span class="p">(</span><span class="mi">7442</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">efficiencies</span><span class="o">=</span><span class="p">{}))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="adding-new-kinetic-groups-and-rate-rules">
-<h3>12.4.2.3. Adding New Kinetic Groups and Rate Rules<a class="headerlink" href="#adding-new-kinetic-groups-and-rate-rules" title="Permalink to this headline">¶</a></h3>
+<h3>12.4.2.4. Adding New Kinetic Groups and Rate Rules<a class="headerlink" href="#adding-new-kinetic-groups-and-rate-rules" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="decide-on-a-template">
-<h3>12.4.2.4. Decide on a Template<a class="headerlink" href="#decide-on-a-template" title="Permalink to this headline">¶</a></h3>
+<h3>12.4.2.5. Decide on a Template<a class="headerlink" href="#decide-on-a-template" title="Permalink to this headline">¶</a></h3>
 <p>First you need to know the template for your reaction to decide whether or not
 to create new groups:</p>
 <ol class="arabic simple">
 <li>Type your reaction into the kinetics search at <a class="reference external" href="http://rmg.mit.edu/database/kinetics/search/">http://rmg.mit.edu/database/kinetics/search/</a></li>
 <li>Select the correct reaction</li>
-<li>In the results search for &#8220;(RMG-Py rate rules)&#8221; and select that link. The kinetic family listed is the family of interest.</li>
+<li>In the results search for “(RMG-Py rate rules)” and select that link. The kinetic family listed is the family of interest.</li>
 <li>Scroll to the bottom and look at the end of the long description. There may be very long description of the averaging scheme, but the template for the reaction is the very last one listed:</li>
 </ol>
 <img alt="../../../_images/GroupSearch.png" class="align-center" src="../../../_images/GroupSearch.png" />
@@ -214,8 +372,8 @@ group. Therefore it is better to make a new group.</p>
 next section for instructions on creating the new group.</p>
 </div>
 <div class="section" id="creating-a-new-group">
-<h3>12.4.2.5. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
-<p>In the family&#8217;s groups.py, you will need to add an entry of the format:</p>
+<h3>12.4.2.6. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
+<p>In the family’s groups.py, you will need to add an entry of the format:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
@@ -255,7 +413,7 @@ example given in the previous section, the new group would be added under the C_
 </div>
 </div>
 <div class="section" id="adding-kinetic-rules">
-<span id="kinetic-rules"></span><h3>12.4.2.6. Adding Kinetic Rules<a class="headerlink" href="#adding-kinetic-rules" title="Permalink to this headline">¶</a></h3>
+<span id="kinetic-rules"></span><h3>12.4.2.7. Adding Kinetic Rules<a class="headerlink" href="#adding-kinetic-rules" title="Permalink to this headline">¶</a></h3>
 <p>Rules give generalized kinetic parameters for a specific node template. In most
 cases, your kinetic parameters describe a specific reaction in which case you
 will want to add your reaction to the training set.</p>
@@ -300,79 +458,85 @@ will want to add your reaction to the training set.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li>The index can be any number not already used in rules.py.</li>
-<li>The label is the name of the rule.</li>
-<li>The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</li>
+<ul>
+<li><p class="first">The index can be any number not already used in rules.py.</p>
+</li>
+<li><p class="first">The label is the name of the rule.</p>
+</li>
+<li><p class="first">The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</p>
+</li>
 <li><dl class="first docutils">
 <dt>The value and units of kinetic parameters must be given.</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li>Multiplicative uncertainty is given as <code class="docutils literal"><span class="pre">'*\|/,'</span> <span class="pre">5</span></code> meaning within a factor of 5</li>
 <li>Additive uncertainty is given as <code class="docutils literal"><span class="pre">'+\|/-',</span> <span class="pre">2</span></code> meaning plus or minus 2.</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li>Rank determines the priority of the rule when compared with other rules.</li>
-<li>The short description will appear in the annotated chemkin file.</li>
-<li>The long description only appears in the database.</li>
+<li><p class="first">Rank determines the priority of the rule when compared with other rules.</p>
+</li>
+<li><p class="first">The short description will appear in the annotated chemkin file.</p>
+</li>
+<li><p class="first">The long description only appears in the database.</p>
+</li>
 </ul>
 </div>
 <div class="section" id="adding-training-reactions">
-<span id="kinetic-training-set"></span><h3>12.4.2.7. Adding Training Reactions<a class="headerlink" href="#adding-training-reactions" title="Permalink to this headline">¶</a></h3>
+<span id="kinetic-training-set"></span><h3>12.4.2.8. Adding Training Reactions<a class="headerlink" href="#adding-training-reactions" title="Permalink to this headline">¶</a></h3>
 <p>If you know the kinetics of a specific reaction, rather than a rate rule for a template, you can
 add the kinetics to the database training set.  By default, RMG creates new rate rules from this
 training set, which in turn benefits the kinetics of similar reactions.  The new rate rules
 are formed by matching the reaction to the most most specific template nodes within
-the reaction&#8217;s respective family. If you do not want the
+the reaction’s respective family. If you do not want the
 training depository reactions to create new rate rules in the database, set the option for
 <code class="docutils literal"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal"><span class="pre">database</span></code> field in your input file to</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
 </pre></div>
 </div>
-<p>Currently, RMG&#8217;s rate rule estimates overrides all kinetics depository kinetics, including training
-reactions.  Unless the training reaction&#8217;s rate rule ranks higher than the existing node, it
+<p>Currently, RMG’s rate rule estimates overrides all kinetics depository kinetics, including training
+reactions.  Unless the training reaction’s rate rule ranks higher than the existing node, it
 will not be used.  If you want the training reaction to override the rate rule estimates, you should put the reaction into
 a reaction library or seed mechanism.</p>
 <p>The easiest way to add training reactions to the database is via the RMG website.  First, search for
 the reaction using <a class="reference external" href="http://rmg.mit.edu/database/kinetics/search/">http://rmg.mit.edu/database/kinetics/search/</a> . This will automatically search
 the existing RMG database for the reaction, as well as identify the reaction family template
 that this reaction matches.  If the reaction does not match any family, then it cannot be added to the
-training reactions.  Click the &#8216;Create training rate from average&#8217; button underneath the kinetics plot
+training reactions.  Click the ‘Create training rate from average’ button underneath the kinetics plot
 for the reaction and edit the kinetics and reference descriptions for the reaction.  The atom labels
 marking the reaction recipe actions (lose bond, add radical, etc.) will already be automatically
 labeled for you.  After editing the reaction data, write a short message for the reaction added under
-the &#8216;Summary of changes&#8217; field, then click &#8216;Save.&#8217;  You will need an account for the RMG website to
+the ‘Summary of changes’ field, then click ‘Save.’  You will need an account for the RMG website to
 make an entry.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>If you are entering the reaction in the reverse direction of the family, you must still label the
 reactants and products with the atomLabels of the original reaction template.  Otherwise, RMG
 will not be able to locate the nodes in the group tree to match the reaction.</p>
-<p class="last">Entries added in the reverse direction of the original template will use the current RMG job&#8217;s
+<p class="last">Entries added in the reverse direction of the original template will use the current RMG job’s
 thermo database to estimate the kinetics in the forward direction.  Therefore this value can differ
 depending on the order of thermo libraries used when running a job.</p>
 </div>
 <p>If adding the training reaction manually, first identify the reaction family of the reaction, then
-go to the family&#8217;s folder in <code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/</span></code>.  Create a new kinetics entry
+go to the family’s folder in <code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/</span></code>.  Create a new kinetics entry
 in the <code class="docutils literal"><span class="pre">training.py</span></code> file.  Make sure to apply the reaction recipe labels properly for the
 reactants and products.</p>
 </div>
 <div class="section" id="pitfalls">
-<h3>12.4.2.8. Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h3>
+<h3>12.4.2.9. Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h3>
 <p>Be careful with the specificity when naming neighbouring atoms. On upper nodes,
 you should try to be general so that you do not exclude reactions.</p>
 <p>Sibling nodes must be exclusive from one another so that there is no question
 which group a molecule qualifies as. However, you do not need to be exhaustive and
 list out every possibility.</p>
-<p>Be sure to give errors whenever adding rules. If you don&#8217;t know the uncertainty,
+<p>Be sure to give errors whenever adding rules. If you don’t know the uncertainty,
 why do you trust the kinetics?</p>
 <p>After you are done always check via populate reactions or the website, that your
 modifications are behaving the way you expect.</p>
 <p>Caveat regarding how rate rules are used by RMG and the rate parameters you input: because tunneling is
 important for many chemical reactions, the rate of a reaction may not be easily represented by
 a bi-Arrhenius fit. 3-parameter fits are more common. However, the resulting fit may report an
-&#8216;activation energy&#8217; that is much different (possibly by 10+ kcals) than the the true barrier height.
+‘activation energy’ that is much different (possibly by 10+ kcals) than the the true barrier height.
 When RMG is assembling pressure-dependent networks, it will use barrier heights from rate rules. This can
 lead to very inaccurate rate calculations. To avoid this issue, try to ensure that your fitted arrhenius
 activation energy truly does reflect the reaction barrier height.</p>
@@ -401,12 +565,13 @@ activation energy truly does reflect the reaction barrier height.</p>
 <li><a class="reference internal" href="#modifying-the-kinetics-database">12.4.2. Modifying the Kinetics Database</a><ul>
 <li><a class="reference internal" href="#adding-reaction-family">12.4.2.1. Adding Reaction Family</a></li>
 <li><a class="reference internal" href="#creating-kinetics-libraries">12.4.2.2. Creating Kinetics Libraries</a></li>
-<li><a class="reference internal" href="#adding-new-kinetic-groups-and-rate-rules">12.4.2.3. Adding New Kinetic Groups and Rate Rules</a></li>
-<li><a class="reference internal" href="#decide-on-a-template">12.4.2.4. Decide on a Template</a></li>
-<li><a class="reference internal" href="#creating-a-new-group">12.4.2.5. Creating a New Group</a></li>
-<li><a class="reference internal" href="#adding-kinetic-rules">12.4.2.6. Adding Kinetic Rules</a></li>
-<li><a class="reference internal" href="#adding-training-reactions">12.4.2.7. Adding Training Reactions</a></li>
-<li><a class="reference internal" href="#pitfalls">12.4.2.8. Pitfalls</a></li>
+<li><a class="reference internal" href="#adding-a-specific-collider">12.4.2.3. Adding a specific collider</a></li>
+<li><a class="reference internal" href="#adding-new-kinetic-groups-and-rate-rules">12.4.2.4. Adding New Kinetic Groups and Rate Rules</a></li>
+<li><a class="reference internal" href="#decide-on-a-template">12.4.2.5. Decide on a Template</a></li>
+<li><a class="reference internal" href="#creating-a-new-group">12.4.2.6. Creating a New Group</a></li>
+<li><a class="reference internal" href="#adding-kinetic-rules">12.4.2.7. Adding Kinetic Rules</a></li>
+<li><a class="reference internal" href="#adding-training-reactions">12.4.2.8. Adding Training Reactions</a></li>
+<li><a class="reference internal" href="#pitfalls">12.4.2.9. Pitfalls</a></li>
 </ul>
 </li>
 </ul>
@@ -503,8 +668,8 @@ activation energy truly does reflect the reaction barrier height.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

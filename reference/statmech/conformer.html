@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.statmech.Conformer &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Thermodynamics (rmgpy.thermo)" href="../thermo/index.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -178,20 +175,36 @@ temperature <cite>T</cite> in K.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia">
-<code class="descname">getInternalReducedMomentOfInertia</code><span class="sig-paren">(</span><em>self</em>, <em>pivots</em>, <em>top1</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getInternalReducedMomentOfInertia</code><span class="sig-paren">(</span><em>self</em>, <em>pivots</em>, <em>top1</em>, <em>option=3</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the reduced moment of inertia for an internal
 torsional rotation around the axis defined by the two atoms in 
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
 as part of the rotating top; this list should contain the pivot atom
 connecting the top to the rest of the molecule.    The procedure used is
-that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math">\(I^{(2,3)}\)</span> by East
+that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math">\(I^{(2,option)}\)</span> by East
 and Radom <a class="footnote-reference" href="#id4" id="id2">[2]</a>. In this procedure, the molecule is divided into two
 tops: those at either end of the hindered rotor bond. The moment of
-inertia of each top is evaluated using an axis passing through the
-center of mass of both tops. Finally, the reduced moment of inertia is
-evaluated from the moment of inertia of each top via the formula</p>
+inertia of each top is evaluated using an axis determined by option. 
+Finally, the reduced moment of inertia is evaluated from the moment of inertia 
+of each top via the formula (I1*I2)/(I1+I2).</p>
+<p>option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
+as discussed in East and Radom [2]</p>
+<p>option = 1 -&gt; moments of inertia of each rotating group calculated about the axis containing the twisting bond
+option = 2 (unimplemented) -&gt; each moment of inertia of each rotating group is calculated about an axis parallel to the</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia</tt>, line 18)</p>
+Unexpected indentation.</div>
+<blockquote>
+<div>twisting bond and passing through its center of mass</div></blockquote>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">docstring of rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia</tt>, line 19)</p>
+Block quote ends without a blank line; unexpected unindent.</div>
+<dl class="docutils">
+<dt>option = 3 -&gt; moments of inertia of each rotating group calculated about the axis passing through the</dt>
+<dd>centers of mass of both groups</dd>
+</dl>
 <div class="math">
-\[\frac{1}{I^{(2,3)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
+\[\frac{1}{I^{(2,option)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -285,13 +298,13 @@ used.</p>
 <dl class="attribute">
 <dt id="rmgpy.statmech.Conformer.opticalIsomers">
 <code class="descname">opticalIsomers</code><a class="headerlink" href="#rmgpy.statmech.Conformer.opticalIsomers" title="Permalink to this definition">¶</a></dt>
-<dd><p>opticalIsomers: &#8216;int&#8217;</p>
+<dd><p>opticalIsomers: ‘int’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.statmech.Conformer.spinMultiplicity">
 <code class="descname">spinMultiplicity</code><a class="headerlink" href="#rmgpy.statmech.Conformer.spinMultiplicity" title="Permalink to this definition">¶</a></dt>
-<dd><p>spinMultiplicity: &#8216;int&#8217;</p>
+<dd><p>spinMultiplicity: ‘int’</p>
 </dd></dl>
 
 </dd></dl>
@@ -397,8 +410,8 @@ used.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

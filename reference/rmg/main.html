@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.rmg.main.RMG &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Saving RMG output" href="output.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -113,7 +110,7 @@ attributes are:</p>
 <td>The kinetics depositories to use for looking up kinetics in each family</td>
 </tr>
 <tr class="row-even"><td><cite>kineticsEstimator</cite></td>
-<td>The method to use to estimate kinetics: &#8216;group additivity&#8217; or &#8216;rate rules&#8217;</td>
+<td>The method to use to estimate kinetics: ‘group additivity’ or ‘rate rules’</td>
 </tr>
 <tr class="row-odd"><td><cite>solvent</cite></td>
 <td>If solvation estimates are required, the name of the solvent.</td>
@@ -127,103 +124,76 @@ attributes are:</p>
 <tr class="row-even"><td><cite>database</cite></td>
 <td>The RMG database used in this job</td>
 </tr>
-<tr class="row-odd"><td><cite>absoluteTolerance</cite></td>
-<td>The absolute tolerance used in the ODE/DAE solver</td>
+<tr class="row-odd"><td><cite>modelSettingsList</cite></td>
+<td>List of ModelSettings objects containing information related to how to manage species/reaction movement</td>
 </tr>
-<tr class="row-even"><td><cite>relativeTolerance</cite></td>
-<td>The relative tolerance used in the ODE/DAE solver</td>
+<tr class="row-even"><td><cite>simulatorSettingsList</cite></td>
+<td>List of SimulatorSettings objects containing information on how to run simulations</td>
 </tr>
-<tr class="row-odd"><td><cite>sensitivityAbsoluteTolerance</cite></td>
-<td>The absolute tolerance used in the ODE/DAE solver for the sensitivities</td>
-</tr>
-<tr class="row-even"><td><cite>sensitivityRelativeTolerance</cite></td>
-<td>The relative tolerance used in the ODE/DAE solver for the sensitivities</td>
-</tr>
-<tr class="row-odd"><td><cite>fluxToleranceKeepInEdge</cite></td>
-<td>The relative species flux below which species are discarded from the edge</td>
-</tr>
-<tr class="row-even"><td><cite>fluxToleranceMoveToCore</cite></td>
-<td>The relative species flux above which species are moved from the edge to the core</td>
-</tr>
-<tr class="row-odd"><td><cite>fluxToleranceInterrupt</cite></td>
-<td>The relative species flux above which the simulation will halt</td>
-</tr>
-<tr class="row-even"><td><cite>maximumEdgeSpecies</cite></td>
-<td>The maximum number of edge species allowed at any time</td>
-</tr>
-<tr class="row-odd"><td><cite>minCoreSizeForPrune</cite></td>
-<td>Minimum number of core species before pruning is allowed</td>
-</tr>
-<tr class="row-even"><td><cite>minSpeciesExistIterationsForPrune</cite></td>
-<td>Minimum number of iterations a species must exist before it can be pruned</td>
-</tr>
-<tr class="row-odd"><td><cite>filterReactions</cite></td>
-<td>Specify whether to filter reactions during model enlarging step</td>
-</tr>
-<tr class="row-even"><td><cite>unimolecularThreshold</cite></td>
+<tr class="row-odd"><td><cite>unimolecularThreshold</cite></td>
 <td>Array of flags indicating whether a species is above the unimolecular reaction threshold</td>
 </tr>
-<tr class="row-odd"><td><cite>bimolecularaThreshold</cite></td>
+<tr class="row-even"><td><cite>bimolecularaThreshold</cite></td>
 <td>Array of flags indicating whether two species are above the bimolecular reaction threshold</td>
 </tr>
-<tr class="row-even"><td><cite>unimolecularReact</cite></td>
+<tr class="row-odd"><td><cite>unimolecularReact</cite></td>
 <td>Array of flags indicating whether a species should react unimolecularly in the enlarge step</td>
 </tr>
-<tr class="row-odd"><td><cite>bimolecularReact</cite></td>
+<tr class="row-even"><td><cite>bimolecularReact</cite></td>
 <td>Array of flags indicating whether two species should react in the enlarge step</td>
 </tr>
-<tr class="row-even"><td><cite>termination</cite></td>
+<tr class="row-odd"><td><cite>termination</cite></td>
 <td>A list of termination targets (i.e <code class="xref py py-class docutils literal"><span class="pre">TerminationTime</span></code> and <code class="xref py py-class docutils literal"><span class="pre">TerminationConversion</span></code> objects)</td>
 </tr>
-<tr class="row-odd"><td><cite>speciesConstraints</cite></td>
+<tr class="row-even"><td><cite>speciesConstraints</cite></td>
 <td>Dictates the maximum number of atoms, carbons, electrons, etc. generated by RMG</td>
 </tr>
-<tr class="row-even"><td><cite>outputDirectory</cite></td>
+<tr class="row-odd"><td><cite>outputDirectory</cite></td>
 <td>The directory used to save output files</td>
 </tr>
-<tr class="row-odd"><td><cite>verbosity</cite></td>
+<tr class="row-even"><td><cite>verbosity</cite></td>
 <td>The level of logging verbosity for console output</td>
 </tr>
-<tr class="row-even"><td><cite>loadRestart</cite></td>
+<tr class="row-odd"><td><cite>loadRestart</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if restarting a previous job, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
-<tr class="row-odd"><td><cite>saveRestartPeriod</cite></td>
+<tr class="row-even"><td><cite>saveRestartPeriod</cite></td>
 <td>The time period to periodically save a restart file (<code class="xref py py-class docutils literal"><span class="pre">Quantity</span></code>), or <code class="docutils literal"><span class="pre">None</span></code> for never.</td>
 </tr>
-<tr class="row-even"><td><cite>units</cite></td>
-<td>The unit system to use to save output files (currently must be &#8216;si&#8217;)</td>
+<tr class="row-odd"><td><cite>units</cite></td>
+<td>The unit system to use to save output files (currently must be ‘si’)</td>
 </tr>
-<tr class="row-odd"><td><cite>generateOutputHTML</cite></td>
+<tr class="row-even"><td><cite>generateOutputHTML</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
-<tr class="row-even"><td><cite>generatePlots</cite></td>
+<tr class="row-odd"><td><cite>generatePlots</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> to generate plots of the job execution statistics after each iteration, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
-<tr class="row-odd"><td><cite>verboseComments</cite></td>
+<tr class="row-even"><td><cite>verboseComments</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> to keep the verbose comments for database estimates, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
-<tr class="row-even"><td><cite>saveEdgeSpecies</cite></td>
+<tr class="row-odd"><td><cite>saveEdgeSpecies</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> to save chemkin and HTML files of the edge species, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
-<tr class="row-odd"><td><cite>keepIrreversible</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> to keep ireversibility of library reactions as is (&#8216;&lt;=&gt;&#8217; or &#8216;=&gt;&#8217;). <code class="docutils literal"><span class="pre">False</span></code> (default) to force all library reactions to be reversible (&#8216;&lt;=&gt;&#8217;)</td>
+<tr class="row-even"><td><cite>keepIrreversible</cite></td>
+<td><code class="docutils literal"><span class="pre">True</span></code> to keep ireversibility of library reactions as is (‘&lt;=&gt;’ or ‘=&gt;’). <code class="docutils literal"><span class="pre">False</span></code> (default) to force all library reactions to be reversible (‘&lt;=&gt;’)</td>
 </tr>
-<tr class="row-even"><td><cite>pressureDependence</cite></td>
+<tr class="row-odd"><td><cite>pressureDependence</cite></td>
 <td>Whether to process unimolecular (pressure-dependent) reaction networks</td>
 </tr>
-<tr class="row-odd"><td><cite>quantumMechanics</cite></td>
+<tr class="row-even"><td><cite>quantumMechanics</cite></td>
 <td>Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.</td>
 </tr>
-<tr class="row-even"><td><cite>wallTime</cite></td>
+<tr class="row-odd"><td><cite>wallTime</cite></td>
 <td>The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information</td>
 </tr>
-<tr class="row-odd"><td><cite>kineticsdatastore</cite></td>
+<tr class="row-even"><td><cite>kineticsdatastore</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if storing details of each kinetic database entry in text file, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
-<tr class="row-even"><td><cite>initializationTime</cite></td>
+<tr class="row-odd"><td><cite>initializationTime</cite></td>
 <td>The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())</td>
 </tr>
-<tr class="row-odd"><td><cite>done</cite></td>
+<tr class="row-even"><td><cite>done</cite></td>
 <td>Whether the job has completed (there is nothing new to add)</td>
 </tr>
 </tbody>
@@ -310,6 +280,43 @@ from the <cite>inputFile</cite> attribute if not given as a parameter.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.main.RMG.makeSeedMech">
+<code class="descname">makeSeedMech</code><span class="sig-paren">(</span><em>firstTime=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.makeSeedMech" title="Permalink to this definition">¶</a></dt>
+<dd><p>causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
+this seed mechanism is outputted in a seed folder within the run directory and automatically
+added to as the (or replaces the current) ‘Seed’ thermo and kinetics libraries in database</p>
+<p>if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
+by adding integers to the end of the name to prevent overwritting</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.main.RMG.makeSpeciesLabelsIndependent">
+<code class="descname">makeSpeciesLabelsIndependent</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.makeSpeciesLabelsIndependent" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method looks at the core species labels and makes sure none of them conflict
+If a conflict occurs, the second occurance will have ‘-2’ added
+returns a list of the old labels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.main.RMG.processPdepNetworks">
+<code class="descname">processPdepNetworks</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.processPdepNetworks" title="Permalink to this definition">¶</a></dt>
+<dd><p>properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.main.RMG.processReactionsToSpecies">
+<code class="descname">processReactionsToSpecies</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.processReactionsToSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>properly processes Reaction objects and lists of Reaction objects returned from simulate</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.main.RMG.processToSpeciesNetworks">
+<code class="descname">processToSpeciesNetworks</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.processToSpeciesNetworks" title="Permalink to this definition">¶</a></dt>
+<dd><p>breaks down the objects returned by simulate into Species and PDepNetwork
+components</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.main.RMG.readMeaningfulLineJava">
 <code class="descname">readMeaningfulLineJava</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.readMeaningfulLineJava" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a meaningful line from an RMG-Java condition file object <cite>f</cite>,
@@ -352,7 +359,7 @@ at the console; the levels correspond to those of the <code class="xref py py-da
 <code class="descclassname">rmgpy.rmg.main.</code><code class="descname">makeProfileGraph</code><span class="sig-paren">(</span><em>stats_file</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.makeProfileGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses gprof2dot to create a graphviz dot file of the profiling information.</p>
 <p>This requires the gprof2dot package available via <cite>pip install gprof2dot</cite>.
-Render the result using the program &#8216;dot&#8217; via a command like
+Render the result using the program ‘dot’ via a command like
 <cite>dot -Tps2 input.dot -o output.ps2</cite>.</p>
 <p>Rendering the ps2 file to pdf requires an external pdf converter
 <cite>ps2pdf output.ps2</cite> which produces a <cite>output.ps2.pdf</cite> file.</p>
@@ -464,8 +471,8 @@ Render the result using the program &#8216;dot&#8217; via a command like
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>14. Kinetics Estimation &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="15. Liquid Phase Systems" href="liquids.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
       </ul>
     </div>
             
@@ -112,10 +109,10 @@ parameters</p>
 <td>Low level calculation: no rotor treatment</td>
 </tr>
 <tr class="row-even"><td>Rank 5</td>
-<td>User&#8217;s estimates without supporting methods</td>
+<td>User’s estimates without supporting methods</td>
 </tr>
 <tr class="row-odd"><td>Rank 10</td>
-<td>Averaged value from child nodes&#8217; rate rules</td>
+<td>Averaged value from child nodes’ rate rules</td>
 </tr>
 <tr class="row-even"><td>Rank 0</td>
 <td>Untrusted method and never used in generation</td>
@@ -142,7 +139,7 @@ an exact match will be returned using the kinetics of that template. Note that a
 exact match refers to the nodes (C_sec, O_pri_rad) and not the molecules
 (propane, OH).</p>
 <p>There may not be an entry for (C_sec, O_pri_rad) in the database. In that case,
-the rule will attempt to &#8220;fall up&#8221; to more general nodes:</p>
+the rule will attempt to “fall up” to more general nodes:</p>
 <img alt="../../_images/Fallup.png" class="align-center" src="../../_images/Fallup.png" />
 <p>Now the preferred rule is (Cs_H, O_rad). If database contains parameters for this,
 those will be returned as an estimated match.</p>
@@ -152,7 +149,7 @@ checked. For this example, this set would include every combination of
 an average of their parameters will be returned as an estimated match. The
 average for <span class="math">\(A\)</span> is a geometric mean, while the average for <span class="math">\(n\)</span>,
 <span class="math">\(E_a\)</span>, and <span class="math">\(\alpha\)</span> are arithmetic means.</p>
-<p>If there are still no &#8220;sibling&#8221; kinetics, then the groups will continue to fall
+<p>If there are still no “sibling” kinetics, then the groups will continue to fall
 up to more and more general nodes. In the worst case, the root nodes may be used.</p>
 <p>A <a class="reference internal" href="input.html#kineticsfamilies"><span class="std std-ref">Full List of the Kinetics Families</span></a> in RMG is available.</p>
 </div>
@@ -266,8 +263,8 @@ up to more and more general nodes. In the worst case, the root nodes may be used
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

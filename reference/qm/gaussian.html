@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.qm.gaussian &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.qm.mopac" href="mopac.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -100,7 +97,7 @@ ALL of these must be present in a successful job.</p>
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.Gaussian.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -143,7 +140,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -265,7 +262,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMol.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -292,7 +289,7 @@ for the <cite>attempt</cite>.</p>
 <em class="property">class </em><code class="descclassname">rmgpy.qm.gaussian.</code><code class="descname">GaussianMolPM3</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gaussian PM3 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
-but for now it&#8217;s only the &#8216;pm3&#8217; in the keywords that differs.</p>
+but for now it’s only the ‘pm3’ in the keywords that differs.</p>
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.calculateChiralityCorrection">
 <code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
@@ -316,7 +313,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -444,7 +441,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM3.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -471,7 +468,7 @@ for the <cite>attempt</cite>.</p>
 <em class="property">class </em><code class="descclassname">rmgpy.qm.gaussian.</code><code class="descname">GaussianMolPM6</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gaussian PM6 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
-but for now it&#8217;s only the &#8216;pm6&#8217; in the keywords that differs.</p>
+but for now it’s only the ‘pm6’ in the keywords that differs.</p>
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.calculateChiralityCorrection">
 <code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
@@ -495,7 +492,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -623,7 +620,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.gaussian.GaussianMolPM6.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -746,8 +743,8 @@ for the <cite>attempt</cite>.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

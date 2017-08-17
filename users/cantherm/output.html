@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>6. Parsing Output Files &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="7. Frequently Asked Questions" href="faq.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User’s Guide</a> &#187;</li> 
       </ul>
     </div>
             
@@ -88,16 +85,27 @@ addition, the output file contains a block of <code class="docutils literal"><sp
 parameters of each <code class="docutils literal"><span class="pre">pdepreaction()</span></code> block match those of the <code class="docutils literal"><span class="pre">reaction()</span></code>
 block from the input file, except that no transition state data is given and
 the <code class="docutils literal"><span class="pre">kinetics</span></code> are by definition pressure-dependent.</p>
-<p>A <code class="docutils literal"><span class="pre">pdepreaction()</span></code> item is printed for the forward and reverse direction of
-every reaction involving isomers and reactant channels only. For reactions
-involving a product channel, there is only a <code class="docutils literal"><span class="pre">pdepreaction()</span></code> item for the
-direction in which the product channel is the product of the reaction. To use
-this output, you must either keep all of the reactions and treat them as
-irreversible, or discard the duplicate reverse directions and treat the
-remaining reactions as reversible. This decision is left to the end user.</p>
+<p>A <code class="docutils literal"><span class="pre">pdepreaction()</span></code> item is printed for each reaction pathway possible in the
+network. Each reaction is reversible. Reactions in the opposite direction are
+provided as commented out, so a user can choose to use them if she/he desires.</p>
+</div>
+<div class="section" id="chemkin-output-file">
+<h2>6.3. Chemkin Output File<a class="headerlink" href="#chemkin-output-file" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the <code class="docutils literal"><span class="pre">output.py</span></code> which contains the thermodynamic,
+kinetic, and pressure dependent results from a cantherm run, a Chemkin
+input file, <code class="docutils literal"><span class="pre">chem.inp</span></code> is also returned. This file contains species and their
+thermodynamic parameters for each species that has the <code class="docutils literal"><span class="pre">thermo()</span></code> in the
+input file. The file also contains kinetics, both pressure dependent and high
+pressure limit, which have the <code class="docutils literal"><span class="pre">kinetics()</span></code> or <code class="docutils literal"><span class="pre">pressureDependence()</span></code> module
+called.</p>
+<p>For the output file to function, all the names of species should be in valid
+chemkin format. The butanol and ethyl examples both show how to obtain a valid
+chemkin file.</p>
+<p>The <code class="docutils literal"><span class="pre">chem.inp</span></code> file can be used in Chemkin software package or converted to
+a Cantera input file for use in Cantera software.</p>
 </div>
 <div class="section" id="log-file">
-<h2>6.3. Log File<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h2>
+<h2>6.4. Log File<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h2>
 <p>A log file containing similar information to that displayed on the console
 during CanTherm execution is also automatically saved. This file has the name
 <code class="docutils literal"><span class="pre">cantherm.log</span></code> and is found in the same directory as the output file. The
@@ -123,7 +131,8 @@ output files.</p>
 <li><a class="reference internal" href="#">6. Parsing Output Files</a><ul>
 <li><a class="reference internal" href="#thermodynamic-and-high-pressure-limit-kinetics-calculations">6.1. Thermodynamic and High-pressure Limit Kinetics Calculations</a></li>
 <li><a class="reference internal" href="#pressure-dependent-calculations">6.2. Pressure-Dependent Calculations</a></li>
-<li><a class="reference internal" href="#log-file">6.3. Log File</a></li>
+<li><a class="reference internal" href="#chemkin-output-file">6.3. Chemkin Output File</a></li>
+<li><a class="reference internal" href="#log-file">6.4. Log File</a></li>
 </ul>
 </li>
 </ul>
@@ -218,8 +227,8 @@ output files.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

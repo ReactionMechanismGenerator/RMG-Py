@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Writing Chemkin files &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Physical constants (rmgpy.constants)" href="../constants.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -79,8 +76,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <code class="descclassname">rmgpy.chemkin.</code><code class="descname">saveChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em>, <em>checkForDuplicates=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
 of <cite>species</cite> and <cite>reactions</cite>.
-If checkForDuplicates is False then we don&#8217;t check for unlabeled duplicate reactions,
-thus saving time (eg. if you are sure you&#8217;ve already labeled them as duplicate).</p>
+If checkForDuplicates is False then we don’t check for unlabeled duplicate reactions,
+thus saving time (eg. if you are sure you’ve already labeled them as duplicate).</p>
 </dd></dl>
 
 <dl class="function">
@@ -142,7 +139,7 @@ reaction equations fit in the maximum limit of 52 characters.</p>
 
 <dl class="function">
 <dt id="rmgpy.chemkin.writeKineticsEntry">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">writeKineticsEntry</code><span class="sig-paren">(</span><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">writeKineticsEntry</code><span class="sig-paren">(</span><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em>, <em>commented=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string representation of the reaction as used in a Chemkin
 file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
 generate a kinetics entry suitable for an RMG-Java kinetics library.</p>
@@ -161,7 +158,7 @@ model, and you must use the seven-coefficient forms for each.</p>
 <code class="descclassname">rmgpy.chemkin.</code><code class="descname">markDuplicateReactions</code><span class="sig-paren">(</span><em>reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.markDuplicateReactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given list of <cite>reactions</cite>, mark all of the duplicate reactions as
 understood by Chemkin.</p>
-<p>This is pretty slow (quadratic in size of reactions list) so only call it if you&#8217;re really worried
+<p>This is pretty slow (quadratic in size of reactions list) so only call it if you’re really worried
 you may have undetected duplicate reactions.</p>
 </dd></dl>
 
@@ -276,8 +273,8 @@ you may have undetected duplicate reactions.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

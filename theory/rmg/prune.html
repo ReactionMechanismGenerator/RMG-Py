@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>2. Prune Edge Species &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Pressure-Dependence Theory Guide" href="../pdep/index.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -73,8 +70,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="prune-edge-species">
 <span id="prune"></span><h1>2. Prune Edge Species<a class="headerlink" href="#prune-edge-species" title="Permalink to this headline">¶</a></h1>
 <p>When dealing with complicated reaction systems, RMG calculation would easily hit the computer memory limitation. Memory profiling shows
-most memory especially during memory limitation stage is occupied by edge species. However, most edge species in fact wouldn&#8217;t
-be included in the core (or final model). Thus, it&#8217;s natural to get rid of some not &#8220;so useful&#8221; edge species during calculation
+most memory especially during memory limitation stage is occupied by edge species. However, most edge species in fact wouldn’t
+be included in the core (or final model). Thus, it’s natural to get rid of some not “so useful” edge species during calculation
 in order to achieve both low memory consumption and mechanism accuracy. Pruning is such a way.</p>
 <div class="section" id="key-parameters-in-pruning">
 <h2>2.1. Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
@@ -87,11 +84,11 @@ in order to achieve both low memory consumption and mechanism accuracy. Pruning 
 </li>
 <li><p class="first">toleranceInterrupSimulation</p>
 <p>Once flux of any edge species exceeds toleranceInterruptSimulation <span class="math">\(*\)</span> characteristic flux, dynamic simulation will be stopped.
-Usually this tolerance will be set a very high value so that any flux&#8217;s exceeding that means mechanism is too incomplete to continue
+Usually this tolerance will be set a very high value so that any flux’s exceeding that means mechanism is too incomplete to continue
 dynamic simulation.</p>
 </li>
 <li><p class="first">maximumEdgeSpecies</p>
-<p>If dynamic simulation isn&#8217;t interrupted in half way and total number of the edge species whose peak fluxes are higher than
+<p>If dynamic simulation isn’t interrupted in half way and total number of the edge species whose peak fluxes are higher than
 toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
 </li>
 <li><p class="first">minCoreSizeForPrune</p>
@@ -106,8 +103,8 @@ toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux exceeds 
 <h2>2.2. How Pruning Works<a class="headerlink" href="#how-pruning-works" title="Permalink to this headline">¶</a></h2>
 <div class="figure" id="id1">
 <img alt="../../_images/fluxDiagram.png" src="../../_images/fluxDiagram.png" />
-<p class="caption"><span class="caption-text">The goal of pruning is to delete those &#8220;useless&#8221; edge species. So &#8220;usefulness&#8221; should be defined and it&#8217;s natural to have flux as a
-criterion for &#8220;usefulness&#8221;. Since flux changes with reactant conversion, peak flux is chosen here to make decision of pruning or not.
+<p class="caption"><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
+criterion for “usefulness”. Since flux changes with reactant conversion, peak flux is chosen here to make decision of pruning or not.
 Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux will be deleted.</span></p>
 </div>
 <div class="figure" id="id2">
@@ -234,8 +231,8 @@ in the edge, which is followed by pruning of excessive amount of edge species to
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

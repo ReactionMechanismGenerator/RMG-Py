@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>1. Rate-based Model Enlarging Algorithm &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="2. Prune Edge Species" href="prune.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -79,20 +76,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 the initial conditions (temperature, pressure, species concentrations, etc.).
 RMG reacts the initial species in all possible ways according to its known
 reaction families, and it integrates the model in time. RMG tracks the rate
-(flux) at which each new &#8220;edge&#8221; species is produced, and species (and the
+(flux) at which each new “edge” species is produced, and species (and the
 reactions producing them) that are produced with significant fluxes are
-incorporated into the model (the &#8220;core&#8221;). These new core species are reacted
+incorporated into the model (the “core”). These new core species are reacted
 with all other core species in the model to generate a new set of edge species
 and reactions. The time-integration restarts, and the expanded list of edge
 species is monitored for significant species to be included in the core. The
 process continues until all significant species and reactions have been
-included in the model. The definition of a &#8220;significant&#8221; rate can be specified by the user
+included in the model. The definition of a “significant” rate can be specified by the user
 by taking the following definition for a single species rate:</p>
 <p><span class="math">\(R_i = \frac{dC_i}{dt}\)</span></p>
-<p>and the following definition for the reaction system&#8217;s characteristic rate, which is the sum of
+<p>and the following definition for the reaction system’s characteristic rate, which is the sum of
 all <strong>core</strong> species rates:</p>
 <p><span class="math">\(R_{char} = \sqrt{\sum\limits_{j} R_{j}^2}\quad    \quad  \textrm{species $j$ $\in$  core}\)</span></p>
-<p>When a <span class="math">\(\textrm{species $i$ $\in$ edge}\)</span>  exceeds a &#8220;significant&#8221; rate equal to <span class="math">\(\epsilon R_{char}\)</span>,
+<p>When a <span class="math">\(\textrm{species $i$ $\in$ edge}\)</span>  exceeds a “significant” rate equal to <span class="math">\(\epsilon R_{char}\)</span>,
 it is added to the core. The parameter <span class="math">\(\epsilon\)</span> is the user-specified
 <code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code> that can be adjusted under the <a class="reference internal" href="../../users/rmg/input.html#modeltolerances"><span class="std std-ref">model tolerances</span></a>
 in the <a class="reference internal" href="../../users/rmg/input.html#input"><span class="std std-ref">RMG Input File</span></a>.</p>
@@ -100,13 +97,13 @@ in the <a class="reference internal" href="../../users/rmg/input.html#input"><sp
 <table class="docutils citation" frame="void" id="gao2016" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Gao2016]</a></td><td>C. W. Gao, J. W. Allen, W. H. Green, R. H. West, &#8220;Reaction Mechanism Generator: automatic construction of chemical kinetic mechanisms.&#8221; <em>Computer Physics Communications</em> (2016).</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id1">[Gao2016]</a></td><td>C. W. Gao, J. W. Allen, W. H. Green, R. H. West, “Reaction Mechanism Generator: automatic construction of chemical kinetic mechanisms.” <em>Computer Physics Communications</em> (2016).</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="susnow1997" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Susnow1997]</a></td><td>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. &#8220;Rate-Based Construction of Kinetic Models for Complex Systems.&#8221; <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id2">[Susnow1997]</a></td><td>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. “Rate-Based Construction of Kinetic Models for Complex Systems.” <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</td></tr>
 </tbody>
 </table>
 <div class="section" id="filtering-reactions-within-the-rate-based-algorithm">
@@ -242,8 +239,8 @@ shifts from <code class="docutils literal"><span class="pre">False</span></code>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

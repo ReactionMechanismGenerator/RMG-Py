@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.thermo.ThermoData &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.thermo.Wilhoit" href="wilhoit.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.thermo.ThermoData<a class="headerlink" href="#rmgpy-thermo-thermodata" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermothermodata"></span><dl class="class">
 <dt id="rmgpy.thermo.ThermoData">
-<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">ThermoData</code><span class="sig-paren">(</span><em>Tdata=None</em>, <em>Cpdata=None</em>, <em>H298=None</em>, <em>S298=None</em>, <em>Cp0=None</em>, <em>CpInf=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">ThermoData</code><span class="sig-paren">(</span><em>Tdata=None</em>, <em>Cpdata=None</em>, <em>H298=None</em>, <em>S298=None</em>, <em>Cp0=None</em>, <em>CpInf=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>label=''</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on a set of discrete heat capacity data points.
 The attributes are:</p>
 <table border="1" class="docutils">
@@ -233,6 +230,12 @@ the minimum and maximum temperature are not defined, <code class="docutils liter
 returned.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.thermo.ThermoData.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.thermo.ThermoData.toNASA">
 <code class="descname">toNASA</code><span class="sig-paren">(</span><em>self</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Tint</em>, <em>bool fixedTint=False</em>, <em>bool weighting=True</em>, <em>int continuity=3</em><span class="sig-paren">)</span> &#x2192; NASA<a class="headerlink" href="#rmgpy.thermo.ThermoData.toNASA" title="Permalink to this definition">¶</a></dt>
@@ -378,8 +381,8 @@ Benson model.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

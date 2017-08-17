@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.thermo.Wilhoit &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.thermo.NASA" href="nasa.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.thermo.Wilhoit<a class="headerlink" href="#rmgpy-thermo-wilhoit" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermowilhoit"></span><dl class="class">
 <dt id="rmgpy.thermo.Wilhoit">
-<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">Wilhoit</code><span class="sig-paren">(</span><em>Cp0=None</em>, <em>CpInf=None</em>, <em>a0=0.0</em>, <em>a1=0.0</em>, <em>a2=0.0</em>, <em>a3=0.0</em>, <em>H0=None</em>, <em>S0=None</em>, <em>B=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">Wilhoit</code><span class="sig-paren">(</span><em>Cp0=None</em>, <em>CpInf=None</em>, <em>a0=0.0</em>, <em>a1=0.0</em>, <em>a2=0.0</em>, <em>a3=0.0</em>, <em>H0=None</em>, <em>S0=None</em>, <em>B=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>label=''</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on the Wilhoit equation. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -208,25 +205,25 @@ atoms and <span class="math">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a0">
 <code class="descname">a0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a0" title="Permalink to this definition">¶</a></dt>
-<dd><p>a0: &#8216;double&#8217;</p>
+<dd><p>a0: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a1">
 <code class="descname">a1</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a1" title="Permalink to this definition">¶</a></dt>
-<dd><p>a1: &#8216;double&#8217;</p>
+<dd><p>a1: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a2">
 <code class="descname">a2</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a2" title="Permalink to this definition">¶</a></dt>
-<dd><p>a2: &#8216;double&#8217;</p>
+<dd><p>a2: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a3">
 <code class="descname">a3</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a3" title="Permalink to this definition">¶</a></dt>
-<dd><p>a3: &#8216;double&#8217;</p>
+<dd><p>a3: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -324,6 +321,12 @@ range of temperatures, or <code class="docutils literal"><span class="pre">False
 temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
 returned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
 </dd></dl>
 
 <dl class="method">
@@ -468,8 +471,8 @@ polynomial (rather than two).</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.molecule.Element &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.AtomType" href="atomtype.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,7 +71,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Element<a class="headerlink" href="#rmgpy-molecule-element" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Element">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Element</code><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Element</code><span class="sig-paren">(</span><em>number</em>, <em>symbol</em>, <em>name</em>, <em>mass</em>, <em>isotope=-1</em>, <em>chemkinName=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical element. The attributes are:</p>
 <div class="system-message">
 <p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.molecule.Element</tt>, line 12)</p>
@@ -96,11 +93,53 @@ Attribute   Type            Description
 </div>
 <p>This class is specifically for properties that all atoms of the same element
 share. Ideally there is only one instance of this class for each element.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.chemkinName">
+<code class="descname">chemkinName</code><a class="headerlink" href="#rmgpy.molecule.Element.chemkinName" title="Permalink to this definition">¶</a></dt>
+<dd><p>chemkinName: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.covRadius">
+<code class="descname">covRadius</code><a class="headerlink" href="#rmgpy.molecule.Element.covRadius" title="Permalink to this definition">¶</a></dt>
+<dd><p>covRadius: ‘float’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.isotope">
+<code class="descname">isotope</code><a class="headerlink" href="#rmgpy.molecule.Element.isotope" title="Permalink to this definition">¶</a></dt>
+<dd><p>isotope: ‘int’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.mass">
+<code class="descname">mass</code><a class="headerlink" href="#rmgpy.molecule.Element.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>mass: ‘float’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.name">
+<code class="descname">name</code><a class="headerlink" href="#rmgpy.molecule.Element.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.number">
+<code class="descname">number</code><a class="headerlink" href="#rmgpy.molecule.Element.number" title="Permalink to this definition">¶</a></dt>
+<dd><p>number: ‘int’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Element.symbol">
+<code class="descname">symbol</code><a class="headerlink" href="#rmgpy.molecule.Element.symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>symbol: str</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.molecule.getElement">
-<code class="descclassname">rmgpy.molecule.</code><code class="descname">getElement</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.getElement" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.molecule.</code><code class="descname">getElement</code><span class="sig-paren">(</span><em>value</em>, <em>int isotope=-1</em><span class="sig-paren">)</span> &#x2192; Element<a class="headerlink" href="#rmgpy.molecule.getElement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the <code class="xref py py-class docutils literal"><span class="pre">Element</span></code> object corresponding to the given parameter
 <cite>value</cite>. If an integer is provided, the value is treated as the atomic
 number. If a string is provided, the value is treated as the symbol. An
@@ -208,8 +247,8 @@ number. If a string is provided, the value is treated as the symbol. An
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

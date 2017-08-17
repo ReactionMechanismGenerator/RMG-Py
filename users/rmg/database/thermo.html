@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>12.2. Thermo Database &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="12.3. Kinetics Database" href="kinetics.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
       </ul>
     </div>
@@ -86,15 +83,15 @@ extrapolation of the heat capacity data as a function of temperature.</p>
 <h2>12.2.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="library-types">
 <span id="thermolibrarytype"></span><h3>12.2.1.1. Library types<a class="headerlink" href="#library-types" title="Permalink to this headline">¶</a></h3>
-<p>Two types of thermo libraries are available in RMG: &#8220;gas phase&#8221; and &#8220;liquid thermo&#8221; libraries respectively identified thanks to the absence or presence of the keyword
-<cite>solvent = &#8220;solvent_name&#8221;</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
+<p>Two types of thermo libraries are available in RMG: “gas phase” and “liquid thermo” libraries respectively identified thanks to the absence or presence of the keyword
+<cite>solvent = “solvent_name”</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;example_liquid_thermo_library&quot;</span>
 <span class="n">solvent</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span>
 <span class="n">shortDesc</span> <span class="o">=</span> <span class="s2">u&quot;test&quot;</span>
 <span class="n">longDesc</span> <span class="o">=</span> <span class="s2">u&quot;&quot;&quot;</span>
 </pre></div>
 </div>
-<p>In this example the library name is &#8220;example_liquid_thermo_library&#8221; and thermo data provided was obtained in <cite>octane</cite> solvent.
+<p>In this example the library name is “example_liquid_thermo_library” and thermo data provided was obtained in <cite>octane</cite> solvent.
 The only difference between gas phase and liquid phase thermo libraries is made through this keyword, the rest of the library is similar to gas phase.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -108,7 +105,7 @@ RMG will also raise an error if user try to use liquid phase thermo library in g
 <h3>12.2.1.2. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
 <p>The folder <code class="docutils literal"><span class="pre">RMG-database/input/thermo/libraries/</span></code> in RMG-database is the location to store
 species thermochemistry libraries. Each particularly library is stored in a file
-with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
+with the extension .py, e.g. ‘DFT_QCI_thermo.py’.</p>
 <p>An example of a species thermochemistry entry is shown here below:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -133,9 +130,9 @@ with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 </pre></div>
 </div>
 <p>The text above describes the first entry in the library (index = 1),
-labeled &#8216;H2&#8217;, through the adjacency list representation. Heat capacity data (&#8216;Cpdata&#8217;) is described
-at 7 different temperatures, along with the standard enthalpy of formation at 298K (&#8216;H298&#8217;), and
-the standard entropy at 298K (&#8216;S298&#8217;).</p>
+labeled ‘H2’, through the adjacency list representation. Heat capacity data (‘Cpdata’) is described
+at 7 different temperatures, along with the standard enthalpy of formation at 298K (‘H298’), and
+the standard entropy at 298K (‘S298’).</p>
 <p>According to the <cite>thermo classes</cite> availble in RMG, you can provide different thermo data: <a class="reference internal" href="../../../reference/thermo/nasa.html#thermonasa"><span class="std std-ref">NASA</span></a>, <a class="reference internal" href="../../../reference/thermo/thermodata.html#thermothermodata"><span class="std std-ref">thermodata</span></a> (as shown above),
 <a class="reference internal" href="../../../reference/thermo/wilhoit.html#thermowilhoit"><span class="std std-ref">wilhoit</span></a> or <a class="reference internal" href="../../../reference/thermo/nasapolynomial.html#thermonasapolynomial"><span class="std std-ref">NASAPolynomial</span></a>.</p>
 </div>
@@ -144,7 +141,7 @@ the standard entropy at 298K (&#8216;S298&#8217;).</p>
 <h2>12.2.2. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
 <p>The folder <code class="docutils literal"><span class="pre">RMG-database/input/thermo/groups/</span></code> in RMG-database is the location to store
 group contribution databases. Each particularly type of group contribution is stored in a file
-with the extension .py, e.g. &#8216;groups.py&#8217;:</p>
+with the extension .py, e.g. ‘groups.py’:</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="37%" />
@@ -230,9 +227,9 @@ is organized in a hierarchical tree, and is defined at the bottom of the databas
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The text above describes a GAV &#8220;Cbf-CbCbCbf&#8221;, with the central atom denoted by the asterisk in
+<p>The text above describes a GAV “Cbf-CbCbCbf”, with the central atom denoted by the asterisk in
 the adjacency list representation. Uncertainty margins are added in the data, after the unit
-specification. A short description &#8216;shortDesc&#8217; specifies the origin of the data.</p>
+specification. A short description ‘shortDesc’ specifies the origin of the data.</p>
 </div>
 <div class="section" id="ring-strain-corrections-rsc">
 <h3>12.2.2.2. Ring Strain Corrections (RSC)<a class="headerlink" href="#ring-strain-corrections-rsc" title="Permalink to this headline">¶</a></h3>
@@ -481,8 +478,8 @@ cis-, ortho- and ketene-corrections.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

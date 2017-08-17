@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.qm.qmverifier &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.qm.symmetry" href="symmetry.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -79,7 +76,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt>Verifies whether a QM job (externalized) was succesfully completed by </dt>
 <dd><ul class="first last simple">
 <li>searching for specific keywords in the output files,</li>
-<li>located in a specific directory (e.g. &#8220;QMFiles&#8221;)</li>
+<li>located in a specific directory (e.g. “QMFiles”)</li>
 </ul>
 </dd>
 </dl>
@@ -91,7 +88,7 @@ correspond to the InChI of the given molecule.</p>
 <p>This could mean two things:
 1) that the InChI Key hash does not correspond to the InChI it is hashed from. This is the rarest case of them all
 2) the complete InChI did not fit onto just one line in the MOPAC output file. Therefore it was continued on the
-second line and only a part of the InChI was actually taken as the &#8216;whole&#8217; InChI.</p>
+second line and only a part of the InChI was actually taken as the ‘whole’ InChI.</p>
 <p>This method reads in the MOPAC input file and compares the found InChI in there to the InChI of the given molecule.</p>
 </dd></dl>
 
@@ -205,8 +202,8 @@ If so, it returns true.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

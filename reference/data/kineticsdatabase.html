@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.data.kinetics.KineticsDatabase &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.data.kinetics.KineticsDepository" href="kineticsdepository.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -86,13 +83,13 @@ as loaded from the rmgpy.chemkin.loadChemkinFile function</dd>
 </dl>
 <p>Parses the verbose string of comments from the thermo data of the species object,
 and extracts the thermo sources.</p>
-<p>Returns a dictionary with keys of either &#8216;Rate Rules&#8217;, &#8216;Training&#8217;, &#8216;Library&#8217;, or &#8216;PDep&#8217;.
+<p>Returns a dictionary with keys of either ‘Rate Rules’, ‘Training’, ‘Library’, or ‘PDep’.
 A reaction can only be estimated using one of these methods.</p>
 <dl class="docutils">
-<dt>source = {&#8216;RateRules&#8217;: (Family_Label, OriginalTemplate, RateRules),</dt>
-<dd>&#8216;Library&#8217;: String_Name_of_Library_Used,
-&#8216;PDep&#8217;: Network_Index,
-&#8216;Training&#8217;:  (Family_Label, Training_Reaction_Entry),
+<dt>source = {‘RateRules’: (Family_Label, OriginalTemplate, RateRules),</dt>
+<dd>‘Library’: String_Name_of_Library_Used,
+‘PDep’: Network_Index,
+‘Training’:  (Family_Label, Training_Reaction_Entry),
 }</dd>
 </dl>
 </dd></dl>
@@ -136,7 +133,7 @@ searches the depository.</p>
 <code class="descname">getForwardReactionForFamilyEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>family</em>, <em>thermoDatabase</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.getForwardReactionForFamilyEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given <cite>entry</cite> for a reaction of the given reaction <cite>family</cite> (the
 string label of the family), return the reaction with kinetics and
-degeneracy for the &#8220;forward&#8221; direction as defined by the reaction 
+degeneracy for the “forward” direction as defined by the reaction 
 family. For families that are their own reverse, the direction the
 kinetics is given in will be preserved. If the entry contains 
 functional groups for the reactants, assume that it is given in the 
@@ -184,7 +181,7 @@ and the libraries should be in files like <code class="file docutils literal"><s
 <dt id="rmgpy.data.kinetics.KineticsDatabase.loadRecommendedFamiliesList">
 <code class="descname">loadRecommendedFamiliesList</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadRecommendedFamiliesList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the list of recommended families from the given file</p>
-<p>The file is usually &#8216;kinetics/families/recommended.py&#8217;.
+<p>The file is usually ‘kinetics/families/recommended.py’.
 This is stored as a dictionary of True or False values (checked here),
 and should contain entries for every available family (checked in loadFamilies).</p>
 </dd></dl>
@@ -193,7 +190,7 @@ and should contain entries for every available family (checked in loadFamilies).
 <dt id="rmgpy.data.kinetics.KineticsDatabase.reconstructKineticsFromSource">
 <code class="descname">reconstructKineticsFromSource</code><span class="sig-paren">(</span><em>reaction</em>, <em>source</em>, <em>fixBarrierHeight=False</em>, <em>forcePositiveBarrier=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.reconstructKineticsFromSource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reaction is the original reaction with original kinetics.
-Note that for Library and PDep reactions this function does not do anything other than return the original kinetics...</p>
+Note that for Library and PDep reactions this function does not do anything other than return the original kinetics…</p>
 <p>You must enter source data in the appropriate format such as returned from returned from self.extractSourceFromComments, 
 self-constructed.  
 fixBarrierHeight and forcePositiveBarrier will change the kinetics based on the Reaction.fixBarrierHeight function.
@@ -338,8 +335,8 @@ points to the top-level folder of the kinetics libraries.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

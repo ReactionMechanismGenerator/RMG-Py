@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Methods for estimating k(T,P) values &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="QMTP (rmgpy.qm)" href="../qm/index.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -82,7 +79,7 @@ of all unimolecular isomers and bimolecular reactant channels.</p>
 <h2>The modified strong collision method<a class="headerlink" href="#the-modified-strong-collision-method" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.pdep.msc.applyModifiedStrongCollisionMethod">
-<code class="descclassname">rmgpy.pdep.msc.</code><code class="descname">applyModifiedStrongCollisionMethod</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.msc.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.pdep.msc.</code><code class="descname">applyModifiedStrongCollisionMethod</code><span class="sig-paren">(</span><em>network</em>, <em>str efficiencyModel='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.msc.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
 <dd><p>The modified strong collision method utilizes a greatly simplified collision
 model that allows for a decoupling of the energy grains. In the simplified
 collision model, collisional stabilization of a reactive isomer is treated as a
@@ -106,7 +103,7 @@ temperatures and pressures.</p>
 <h2>The reservoir state method<a class="headerlink" href="#the-reservoir-state-method" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.pdep.rs.applyReservoirStateMethod">
-<code class="descclassname">rmgpy.pdep.rs.</code><code class="descname">applyReservoirStateMethod</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.rs.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.pdep.rs.</code><code class="descname">applyReservoirStateMethod</code><span class="sig-paren">(</span><em>network</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.rs.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
 <dd><p>In the reservoir state method, the population distribution of each isomer is
 partitioned into the low-energy grains (called the <em>reservoir</em>) and the
 high-energy grains (called the <em>active space</em>). The partition generally occurs
@@ -131,11 +128,11 @@ applicable over a wide range of temperatures and pressures.</p>
 <h2>The chemically-significant eigenvalues method<a class="headerlink" href="#the-chemically-significant-eigenvalues-method" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod">
-<code class="descclassname">rmgpy.pdep.cse.</code><code class="descname">applyChemicallySignificantEigenvaluesMethod</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.pdep.cse.</code><code class="descname">applyChemicallySignificantEigenvaluesMethod</code><span class="sig-paren">(</span><em>network</em>, <em>list lumpingOrder=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
 <dd><p>In the chemically-significant eigenvalues method, the master equation matrix
 is diagonized to determine its eigenmodes. Only the slowest of these modes are
 relevant to the chemistry; the rest involve internal energy relaxation due to
-collisions. Keeping only these &#8220;chemically-significant&#8221; eigenmodes allows for
+collisions. Keeping only these “chemically-significant” eigenmodes allows for
 reduction to <span class="math">\(k(T,P)\)</span> values.</p>
 <p>The chemically-significant eigenvalues method is the most accurate method,
 and is considered to be exact as long as the chemically-significant eigenmodes
@@ -257,8 +254,8 @@ is also substantially more expensive to apply than the other methods.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

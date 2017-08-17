@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>4. Creating Input Files &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="5. Example Input Files" href="examples.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
       </ul>
     </div>
             
@@ -94,7 +91,7 @@ suitably accurate. However, if you would like to override the default settings,
 you may specify the thermodynamic properties of species in the
 ThermoLibrary. When a species is specified in the ThermoLibrary,
 RMG will automatically use those thermodynamic properties instead of generating
-them from Benson&#8217;s formulas. Multiple libraries may be created, if so desired.
+them from Benson’s formulas. Multiple libraries may be created, if so desired.
 The order in which the thermo libraries are specified is important:
 If a species appears in multiple thermo libraries, the first instance will
 be used.</p>
@@ -104,7 +101,7 @@ in liquid phase simulation. (see more details on the two <a class="reference int
 <p>Please see Section <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">editing thermo database</span></a> for more details. In general, it is best to leave the ThermoLibrary
 set to its default value.  In particular, the thermodynamic properties for H and H2
 must be specified in one of the primary thermo libraries as they cannot be estimated
-by Benson&#8217;s method.</p>
+by Benson’s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="#grimech3-0" id="id1">[GRIMech3.0]</a> as a ThermoLibrary in your model, the syntax will be:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 </pre></div>
@@ -116,13 +113,13 @@ by Benson&#8217;s method.</p>
 </tbody>
 </table>
 <p>This library is located in the
-<code class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></code> directory.  All &#8220;Locations&#8221; for the
+<code class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></code> directory.  All “Locations” for the
 ThermoLibrary field must be with respect to the <code class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></code>
 directory.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Checks during the initialization are maid to avoid users to use &#8220;liquid thermo librairies&#8221; in gas phase simulations or to use
-&#8220;liquid phase libraries&#8221; obtained in another solvent that the one defined in the input file in liquid phase simulations.</p>
+<p class="last">Checks during the initialization are maid to avoid users to use “liquid thermo librairies” in gas phase simulations or to use
+“liquid phase libraries” obtained in another solvent that the one defined in the input file in liquid phase simulations.</p>
 </div>
 </div>
 <div class="section" id="reaction-libraries">
@@ -155,7 +152,7 @@ given in each mechanism, the different mechanisms can have different units.</p>
 <p>While using a Reaction Library the user must be careful enough to provide
 all instances of a particular reaction in the library file, as RMG will
 ignore all reactions generated by its templates.  For example, suppose you supply the
-Reaction Library with butyl_1 &#8211;&gt; butyl_2.  Although RMG would find two unique
+Reaction Library with butyl_1 –&gt; butyl_2.  Although RMG would find two unique
 instances of this reaction (via a three- and four-member cyclic Transition State),
 RMG would only use the rate coefficient supplied by you in generating the mechanism.</p>
 <p class="last">RMG will not handle irreversible reactions correctly, if supplied in a Reaction
@@ -196,7 +193,7 @@ the one that gets used.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Intra_RH_Add_Endocyclic&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Otherwise, by typing &#8216;default&#8217; (and excluding the brackets that are shown in the example above), RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in <code class="file docutils literal"><span class="pre">RMG-database/input/families/recommended.py</span></code>.</p>
+<p>Otherwise, by typing ‘default’ (and excluding the brackets that are shown in the example above), RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in <code class="file docutils literal"><span class="pre">RMG-database/input/families/recommended.py</span></code>.</p>
 </div>
 <div class="section" id="kinetics-estimator">
 <h3>4.2.6. Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this headline">¶</a></h3>
@@ -363,7 +360,7 @@ the model does not converge with normal parameter settings.  See <a class="refer
 <p><strong>Recommendations:</strong></p>
 <p>We recommend setting <code class="docutils literal"><span class="pre">toleranceKeepInEdge</span></code> to not be larger than 10% of <code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code>, based on a pruning case study.
 In order to always enable pruning, <code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code> should be set as a high value, e.g. 1e8.
-<code class="docutils literal"><span class="pre">maximumEdgeSpecies</span></code> can be adjusted based on user&#8217;s RAM size. Usually 200000 edge species would cause memory shortage of 8GB computer,
+<code class="docutils literal"><span class="pre">maximumEdgeSpecies</span></code> can be adjusted based on user’s RAM size. Usually 200000 edge species would cause memory shortage of 8GB computer,
 setting <code class="docutils literal"><span class="pre">maximumEdgeSpecies</span> <span class="pre">=</span> <span class="pre">200000</span></code> (or lower values) could effectively prevent memory crash.</p>
 <p><strong>Additional Notes:</strong></p>
 <p>Note that when using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without exceeding the <code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code>.
@@ -382,6 +379,23 @@ try increasing <code class="docutils literal"><span class="pre">toleranceInterru
 <code class="docutils literal"><span class="pre">toleranceInterruptSimulation</span></code> equals to <code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code> so that ODE simulation get interrupted once discovering a new core species.
 Because the ODE simulation is always interrupted, no pruning is performed.</p>
 <p>Please find more details about the theory behind pruning at <a class="reference internal" href="../../theory/rmg/prune.html#prune"><span class="std std-ref">Pruning Theory</span></a>.</p>
+</div>
+<div class="section" id="advanced-setting-taking-multiple-species-at-a-time">
+<h3>4.6.3. Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this headline">¶</a></h3>
+<p>Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+over only taking one.  For this purpose there is a maxNumObjsPerIter parameter that allows RMG to take
+that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.</p>
+<p>For example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+        <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">maxNumObjsPerIter</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
+object at a time) pick up chemistry that would otherwise have been missed.</p>
 </div>
 </div>
 <div class="section" id="on-the-fly-quantum-calculations">
@@ -422,11 +436,23 @@ thermodynamic parameters.</p>
 <span id="pressuredependence"></span><h2>4.8. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when the model should account for pressure
 dependent rate coefficients. RMG can estimate pressure dependence kinetics based on <code class="docutils literal"><span class="pre">Modified</span> <span class="pre">Strong</span> <span class="pre">Collision</span></code> and <code class="docutils literal"><span class="pre">Reservoir</span> <span class="pre">State</span></code> methods.
-The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id3">[Chang2000]</a>,
+The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="../../reference/pdep/singleexponentialdown.html#chang2000" id="id3">[Chang2000]</a>,
 and works reasonably well while running more rapidly. The latter
 utilizes the steady-state/reservoir-state approach of Green and Bhatti <a class="reference internal" href="#green2007" id="id4">[Green2007]</a>,
 and is more theoretically sound but more expensive.</p>
-<p>The pressure dependence block should specify the following:</p>
+<p>The following is an example of pressure dependence options</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
+        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
+        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The various options are as follows:</p>
 <div class="section" id="method-used-for-estimating-pressure-dependent-kinetics">
 <h3>4.8.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
 <p>To specify the modified strong collision approach, this item should read</p>
@@ -441,13 +467,13 @@ and is more theoretically sound but more expensive.</p>
 <table class="docutils citation" frame="void" id="chang2000" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[Chang2000]</a></td><td>A.Y. Chang, J.W. Bozzelli, and A. M. Dean. &#8220;Kinetic Analysis of Complex Chemical Activation and Unimolecular Dissociation Reactions using QRRK Theory and the Modified Strong Collision Approximation.&#8221; <em>Z. Phys. Chem.</em> <strong>214</strong> (11), p. 1533-1568 (2000).</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id3">[Chang2000]</a></td><td>A.Y. Chang, J.W. Bozzelli, and A. M. Dean. “Kinetic Analysis of Complex Chemical Activation and Unimolecular Dissociation Reactions using QRRK Theory and the Modified Strong Collision Approximation.” <em>Z. Phys. Chem.</em> <strong>214</strong> (11), p. 1533-1568 (2000).</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="green2007" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[Green2007]</a></td><td>N.J.B. Green and Z.A. Bhatti. &#8220;Steady-State Master Equation Methods.&#8221; <em>Phys. Chem. Chem. Phys.</em> <strong>9</strong>, p. 4275-4290 (2007).</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id4">[Green2007]</a></td><td>N.J.B. Green and Z.A. Bhatti. “Steady-State Master Equation Methods.” <em>Phys. Chem. Chem. Phys.</em> <strong>9</strong>, p. 4275-4290 (2007).</td></tr>
 </tbody>
 </table>
 </div>
@@ -480,23 +506,24 @@ line</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;PDepArrhenius&#39;</span><span class="p">,)</span>
 </pre></div>
 </div>
-<p>The auxillary information printed to the Chemkin chem.inp file will have the &#8220;PLOG&#8221;
+<p>The auxillary information printed to the Chemkin chem.inp file will have the “PLOG”
 format.  Refer to Section 3.5.3 of the <code class="file docutils literal"><span class="pre">CHEMKIN_Input.pdf</span></code> document and/or
 Section 3.6.3 of the <code class="file docutils literal"><span class="pre">CHEMKIN_Theory.pdf</span></code> document.  These files are part of
 the CHEMKIN manual.</p>
 <p>To fit a set of Chebyshev polynomials on inverse temperature and logarithmic pressure axes mapped
-to [-1,1], use the line</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You should also specify the number of temperature and pressure basis functions by adding the appropriate integers.
+to [-1,1], specify <cite>‘’Chebyshev’</cite> interpolation.
+You should also specify the number of temperature and pressure basis functions by adding the appropriate integers.
 For example, the following specifies that six basis functions in temperature and four in pressure should be used</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The auxillary information printed to the Chemkin chem.inp file will have the &#8220;CHEB&#8221;
+<p>The auxillary information printed to the Chemkin chem.inp file will have the “CHEB”
 format.  Refer to Section 3.5.3 of the <code class="file docutils literal"><span class="pre">CHEMKIN_Input.pdf</span></code> document and/or
 Section 3.6.4 of the <code class="file docutils literal"><span class="pre">CHEMKIN_Theory.pdf</span></code> document.</p>
+<p>Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
+plese refer to the <a class="reference internal" href="../../reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev" title="rmgpy.kinetics.Chebyshev"><code class="xref py py-class docutils literal"><span class="pre">rmgpy.kinetics.Chebyshev</span></code></a> documentation.
+The number of pressures and temperature coefficents should always be smaller
+than the respective number of user-specified temperatures and pressures.</p>
 </div>
 <div class="section" id="maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">
 <h3>4.8.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
@@ -513,22 +540,6 @@ the line</p>
 </div>
 <p>to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).</p>
-<p>The following is an example of pressure dependence options</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
-        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
-        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
-        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
-        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
-        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
-        <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p>Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
-plese refer to the <a class="reference internal" href="../../reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev" title="rmgpy.kinetics.Chebyshev"><code class="xref py py-class docutils literal"><span class="pre">rmgpy.kinetics.Chebyshev</span></code></a> documentation.
-The number of pressures and temperature coefficents should always be smaller
-than the respective number of user-specified temperatures and pressures.</p>
 </div>
 </div>
 <div class="section" id="miscellaneous-options">
@@ -552,14 +563,14 @@ HTML file for your model containing all the species and reactions.  Turning this
 <p>Setting <code class="docutils literal"><span class="pre">generatePlots</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.</p>
 <p>Setting <code class="docutils literal"><span class="pre">saveSimulationProfiles</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will make RMG save csv files of the simulation in .csv files in the <code class="docutils literal"><span class="pre">solver/</span></code> folder.  The filename will be <code class="docutils literal"><span class="pre">simulation_1_26.csv</span></code> where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.</p>
 <p>Setting <code class="docutils literal"><span class="pre">verboseComments</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.</p>
-<p>Setting <code class="docutils literal"><span class="pre">saveEdgeSpecies</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as <code class="docutils literal"><span class="pre">chem_edge.inp</span></code> and <code class="docutils literal"><span class="pre">chem_edge_annotated.inp</span></code> files located inside the <code class="docutils literal"><span class="pre">chemkin</span></code> folder.  These files will be helpful in viewing RMG&#8217;s estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.</p>
+<p>Setting <code class="docutils literal"><span class="pre">saveEdgeSpecies</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as <code class="docutils literal"><span class="pre">chem_edge.inp</span></code> and <code class="docutils literal"><span class="pre">chem_edge_annotated.inp</span></code> files located inside the <code class="docutils literal"><span class="pre">chemkin</span></code> folder.  These files will be helpful in viewing RMG’s estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.</p>
 <p>Setting <code class="docutils literal"><span class="pre">keepIrreversible</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if <code class="docutils literal"><span class="pre">False</span></code> (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.</p>
 </div>
 <div class="section" id="species-constraints">
 <h2>4.10. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
 <p>RMG can generate mechanisms with a number of optional species constraints,
 such as total number of carbon atoms or electrons per species. These are applied to
-all of RMG&#8217;s reaction families.</p>
+all of RMG’s reaction families.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
     <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;input species&#39;</span><span class="p">,</span><span class="s1">&#39;seed mechanisms&#39;</span><span class="p">,</span><span class="s1">&#39;reaction libraries&#39;</span><span class="p">],</span>
     <span class="n">maximumCarbonAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -582,6 +593,22 @@ products that form.</p>
 manually removed from the database.  See <a class="reference internal" href="database/kinetics.html#kineticsdatabase"><span class="std std-ref">Kinetics Database</span></a> for more information on
 forbidden groups.</p>
 <p>By default, the <code class="docutils literal"><span class="pre">allowSingletO2</span></code> flag is set to <code class="docutils literal"><span class="pre">False</span></code>.  See <a class="reference internal" href="species.html#representing-oxygen"><span class="std std-ref">Representing Oxygen</span></a> for more information.</p>
+</div>
+<div class="section" id="staging">
+<h2>4.11. Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
+<p>It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.</p>
+<p>There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.</p>
+<p>To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.</p>
+<p>For example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+        <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+        <span class="n">maxNumSpecies</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -613,6 +640,7 @@ forbidden groups.</p>
 <li><a class="reference internal" href="#model-tolerances">4.6. Model Tolerances</a><ul>
 <li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.6.1. Advanced Setting: Speed Up by Filtering Reactions</a></li>
 <li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.6.2. Advanced Setting: Speed Up by Pruning</a></li>
+<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.6.3. Advanced Setting: Taking Multiple Species At A Time</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.7. On the fly Quantum Calculations</a></li>
@@ -626,6 +654,7 @@ forbidden groups.</p>
 </li>
 <li><a class="reference internal" href="#miscellaneous-options">4.9. Miscellaneous Options</a></li>
 <li><a class="reference internal" href="#species-constraints">4.10. Species Constraints</a></li>
+<li><a class="reference internal" href="#staging">4.11. Staging</a></li>
 </ul>
 </li>
 </ul>
@@ -720,8 +749,8 @@ forbidden groups.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

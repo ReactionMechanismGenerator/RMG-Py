@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.data.base.Database &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.data.kinetics.DepositoryReaction" href="depositoryreaction.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -136,6 +133,7 @@ the old-style syntax.</p>
 <code class="descname">getEntriesToSave</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.base.Database.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sorted list of the entries in this database that should be
 saved to the output file.</p>
+<p>Then renumber the entry indexes so that we never have any duplicate indexes.</p>
 </dd></dl>
 
 <dl class="method">
@@ -151,7 +149,7 @@ saved to the output file.</p>
 The parameters <cite>local_context</cite> and <cite>global_context</cite> are used to
 provide specialized mapping of identifiers in the input file to
 corresponding functions to evaluate. This method will automatically add
-a few identifiers required by all data entries, so you don&#8217;t need to
+a few identifiers required by all data entries, so you don’t need to
 provide these.</p>
 </dd></dl>
 
@@ -161,7 +159,7 @@ provide these.</p>
 <dd><p>Load a dictionary-tree-library based database. The database is stored
 in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
 the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
-be set to &#8216;&#8217; if not desired.</p>
+be set to ‘’ if not desired.</p>
 </dd></dl>
 
 <dl class="method">
@@ -238,7 +236,7 @@ be found in node.  However the reverse is not true, unless <cite>strict</cite> i
 <td>Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()</td>
 </tr>
 <tr class="row-odd"><td><cite>strict</cite></td>
-<td>If set to <code class="docutils literal"><span class="pre">True</span></code>, ensures that all the node&#8217;s atomLabels are matched by in the structure</td>
+<td>If set to <code class="docutils literal"><span class="pre">True</span></code>, ensures that all the node’s atomLabels are matched by in the structure</td>
 </tr>
 </tbody>
 </table>
@@ -404,8 +402,8 @@ syntax.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.molecule.AtomType &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Reaction recipes" href="recipe.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -74,11 +71,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.AtomType<a class="headerlink" href="#rmgpy-molecule-atomtype" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="atom-types"></span><dl class="class">
 <dt id="rmgpy.molecule.AtomType">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><span class="sig-paren">(</span><em>label=''</em>, <em>generic=None</em>, <em>specific=None</em>, <em>single=None</em>, <em>allDouble=None</em>, <em>rDouble=None</em>, <em>oDouble=None</em>, <em>sDouble=None</em>, <em>triple=None</em>, <em>benzene=None</em>, <em>lonePairs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for internal representation of atom types. Using unique objects
 rather than strings allows us to use fast pointer comparisons instead of
 slow string comparisons, as well as store extra metadata. In particular,
-we store metadata describing the atom type&#8217;s hierarchy with regard to other
+we store metadata describing the atom type’s hierarchy with regard to other
 atom types, and the atom types that can result when various actions
 involving this atom type are taken. The attributes are:</p>
 <div class="system-message">
@@ -114,32 +111,151 @@ An empty list is a wildcard
 </pre></div>
 </div>
 </div>
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.allDouble">
+<code class="descname">allDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.allDouble" title="Permalink to this definition">¶</a></dt>
+<dd><p>allDouble: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.benzene">
+<code class="descname">benzene</code><a class="headerlink" href="#rmgpy.molecule.AtomType.benzene" title="Permalink to this definition">¶</a></dt>
+<dd><p>benzene: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.breakBond">
+<code class="descname">breakBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.breakBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>breakBond: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.decrementBond">
+<code class="descname">decrementBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrementBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>decrementBond: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.decrementLonePair">
+<code class="descname">decrementLonePair</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrementLonePair" title="Permalink to this definition">¶</a></dt>
+<dd><p>decrementLonePair: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.decrementRadical">
+<code class="descname">decrementRadical</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrementRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>decrementRadical: list</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.equivalent">
-<code class="descname">equivalent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>AtomType other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if two atom types <cite>atomType1</cite> and <cite>atomType2</cite> are
 equivalent or <code class="docutils literal"><span class="pre">False</span></code>  otherwise. This function respects wildcards,
 e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equivalent to <code class="docutils literal"><span class="pre">C</span></code>.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.formBond">
+<code class="descname">formBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.formBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>formBond: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.generic">
+<code class="descname">generic</code><a class="headerlink" href="#rmgpy.molecule.AtomType.generic" title="Permalink to this definition">¶</a></dt>
+<dd><p>generic: list</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.getFeatures">
-<code class="descname">getFeatures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.getFeatures" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getFeatures</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.AtomType.getFeatures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of the features that are checked to determine atomtype</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.incrementBond">
+<code class="descname">incrementBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.incrementBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>incrementBond: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.incrementLonePair">
+<code class="descname">incrementLonePair</code><a class="headerlink" href="#rmgpy.molecule.AtomType.incrementLonePair" title="Permalink to this definition">¶</a></dt>
+<dd><p>incrementLonePair: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.incrementRadical">
+<code class="descname">incrementRadical</code><a class="headerlink" href="#rmgpy.molecule.AtomType.incrementRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>incrementRadical: list</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.isSpecificCaseOf">
-<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>AtomType other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.AtomType.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if atom type <cite>atomType1</cite> is a specific case of
 atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="pre">False</span></code>  otherwise.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.molecule.AtomType.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.lonePairs">
+<code class="descname">lonePairs</code><a class="headerlink" href="#rmgpy.molecule.AtomType.lonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>lonePairs: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.oDouble">
+<code class="descname">oDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.oDouble" title="Permalink to this definition">¶</a></dt>
+<dd><p>oDouble: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.rDouble">
+<code class="descname">rDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.rDouble" title="Permalink to this definition">¶</a></dt>
+<dd><p>rDouble: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.sDouble">
+<code class="descname">sDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.sDouble" title="Permalink to this definition">¶</a></dt>
+<dd><p>sDouble: list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.AtomType.setActions">
+<code class="descname">setActions</code><span class="sig-paren">(</span><em>self</em>, <em>incrementBond</em>, <em>decrementBond</em>, <em>formBond</em>, <em>breakBond</em>, <em>incrementRadical</em>, <em>decrementRadical</em>, <em>incrementLonePair</em>, <em>decrementLonePair</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.setActions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.single">
+<code class="descname">single</code><a class="headerlink" href="#rmgpy.molecule.AtomType.single" title="Permalink to this definition">¶</a></dt>
+<dd><p>single: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.specific">
+<code class="descname">specific</code><a class="headerlink" href="#rmgpy.molecule.AtomType.specific" title="Permalink to this definition">¶</a></dt>
+<dd><p>specific: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.triple">
+<code class="descname">triple</code><a class="headerlink" href="#rmgpy.molecule.AtomType.triple" title="Permalink to this definition">¶</a></dt>
+<dd><p>triple: list</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.molecule.getAtomType">
-<code class="descclassname">rmgpy.molecule.</code><code class="descname">getAtomType</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.molecule.</code><code class="descname">getAtomType</code><span class="sig-paren">(</span><em>atom</em>, <em>dict bonds</em><span class="sig-paren">)</span> &#x2192; AtomType<a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate atom type for an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object <cite>atom</cite>
 with local bond structure <cite>bonds</cite>, a <code class="docutils literal"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
@@ -356,8 +472,8 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

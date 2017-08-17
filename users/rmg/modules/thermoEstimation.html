@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>9.7. Thermo Estimation Module &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="9.8. Convert FAME to CanTherm Input File" href="convertFAME.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
       </ul>
     </div>
@@ -102,13 +99,13 @@ be used.</p>
 thermo library. In general, it is best to leave the ThermoLibrary
 set to its default value.  In particular, the thermodynamic properties for H and H2
 must be specified in one of the primary thermo libraries as they cannot be estimated
-by Benson&#8217;s method.</p>
+by Benson’s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="../input.html#grimech3-0" id="id1">[GRIMech3.0]</a> as a ThermoLibrary in your model, the syntax will be:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This library is located in the
-<code class="file docutils literal"><span class="pre">RMG-database/input/thermo/libraries</span></code> directory.  All &#8220;Locations&#8221; for the
+<code class="file docutils literal"><span class="pre">RMG-database/input/thermo/libraries</span></code> directory.  All “Locations” for the
 ThermoLibrary field must be with respect to the <code class="file docutils literal"><span class="pre">RMG-database/input/thermo/libraries</span></code>
 directory.</p>
 <p>The optional <code class="docutils literal"><span class="pre">quantumMechanics</span></code> block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
@@ -230,8 +227,8 @@ thermodynamic parameters.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

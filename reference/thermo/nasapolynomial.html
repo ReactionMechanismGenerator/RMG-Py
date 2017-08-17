@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.thermo.NASAPolynomial &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="prev" title="rmgpy.thermo.NASA" href="nasa.html" />
@@ -37,7 +34,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -70,7 +67,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.thermo.NASAPolynomial<a class="headerlink" href="#rmgpy-thermo-nasapolynomial" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermonasapolynomial"></span><dl class="class">
 <dt id="rmgpy.thermo.NASAPolynomial">
-<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">NASAPolynomial</code><span class="sig-paren">(</span><em>coeffs=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">NASAPolynomial</code><span class="sig-paren">(</span><em>coeffs=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>label=''</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on the NASA polynomial. Both the 
 seven-coefficient and nine-coefficient variations are supported.
 The attributes are:</p>
@@ -151,43 +148,43 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c0">
 <code class="descname">c0</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c0" title="Permalink to this definition">¶</a></dt>
-<dd><p>c0: &#8216;double&#8217;</p>
+<dd><p>c0: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c1">
 <code class="descname">c1</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c1" title="Permalink to this definition">¶</a></dt>
-<dd><p>c1: &#8216;double&#8217;</p>
+<dd><p>c1: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c2">
 <code class="descname">c2</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c2" title="Permalink to this definition">¶</a></dt>
-<dd><p>c2: &#8216;double&#8217;</p>
+<dd><p>c2: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c3">
 <code class="descname">c3</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c3" title="Permalink to this definition">¶</a></dt>
-<dd><p>c3: &#8216;double&#8217;</p>
+<dd><p>c3: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c4">
 <code class="descname">c4</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c4" title="Permalink to this definition">¶</a></dt>
-<dd><p>c4: &#8216;double&#8217;</p>
+<dd><p>c4: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c5">
 <code class="descname">c5</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c5" title="Permalink to this definition">¶</a></dt>
-<dd><p>c5: &#8216;double&#8217;</p>
+<dd><p>c5: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c6">
 <code class="descname">c6</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c6" title="Permalink to this definition">¶</a></dt>
-<dd><p>c6: &#8216;double&#8217;</p>
+<dd><p>c6: ‘double’</p>
 </dd></dl>
 
 <dl class="method">
@@ -199,13 +196,13 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.cm1">
 <code class="descname">cm1</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm1" title="Permalink to this definition">¶</a></dt>
-<dd><p>cm1: &#8216;double&#8217;</p>
+<dd><p>cm1: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.cm2">
 <code class="descname">cm2</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm2" title="Permalink to this definition">¶</a></dt>
-<dd><p>cm2: &#8216;double&#8217;</p>
+<dd><p>cm2: ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -277,6 +274,12 @@ range of temperatures, or <code class="docutils literal"><span class="pre">False
 temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
 returned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.NASAPolynomial.label">
+<code class="descname">label</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>label: str</p>
 </dd></dl>
 
 </dd></dl>
@@ -382,8 +385,8 @@ returned.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>rmgpy.qm.mopac &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Physical quantities (rmgpy.quantity)" href="../quantity/index.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -106,7 +103,7 @@ ALL of these must be present in a successful job.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.Mopac.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -149,7 +146,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMol.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -276,7 +273,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMol.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -303,7 +300,7 @@ for the <cite>attempt</cite>.</p>
 <em class="property">class </em><code class="descclassname">rmgpy.qm.mopac.</code><code class="descname">MopacMolPM3</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM3 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
-but for now it&#8217;s the same as all the MOPAC PMn calculations, only pm3</p>
+but for now it’s the same as all the MOPAC PMn calculations, only pm3</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.calculateChiralityCorrection">
 <code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
@@ -327,7 +324,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -449,7 +446,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -476,7 +473,7 @@ for the <cite>attempt</cite>.</p>
 <em class="property">class </em><code class="descclassname">rmgpy.qm.mopac.</code><code class="descname">MopacMolPM6</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM6 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
-but for now it&#8217;s the same as all the MOPAC PMn calculations, only pm6</p>
+but for now it’s the same as all the MOPAC PMn calculations, only pm6</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.calculateChiralityCorrection">
 <code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
@@ -500,7 +497,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -622,7 +619,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -649,7 +646,7 @@ for the <cite>attempt</cite>.</p>
 <em class="property">class </em><code class="descclassname">rmgpy.qm.mopac.</code><code class="descname">MopacMolPM7</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM7 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
-but for now it&#8217;s the same as all the MOPAC PMn calculations, only pm7</p>
+but for now it’s the same as all the MOPAC PMn calculations, only pm7</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.calculateChiralityCorrection">
 <code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
@@ -673,7 +670,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.checkReady">
 <code class="descname">checkReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.checkReady" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that it&#8217;s ready to run calculations.</p>
+<dd><p>Check that it’s ready to run calculations.</p>
 </dd></dl>
 
 <dl class="method">
@@ -795,7 +792,7 @@ then we start to use the crude coordinates.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.verifyOutputFile">
 <code class="descname">verifyOutputFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<dd><p>Check’s that an output file exists and was successful.</p>
 <p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
 given (augmented) InChI Key.</p>
 <p>The definition of finding a successful simulation is based on these criteria:
@@ -918,8 +915,8 @@ for the <cite>attempt</cite>.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

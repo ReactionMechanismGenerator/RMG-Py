@@ -32,10 +32,13 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     source activate rmg_env
     make
     
-* Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any python prompt.  Modify your ``~/.bashrc`` file by adding the following line ::
+* Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder. Modify your ``~/.bashrc`` file by adding the following line ::
 
    export PYTHONPATH=$PYTHONPATH:YourFolder/RMG-Py/
    
+
+  NOTE: Make sure to change ``YourFolder`` to the path leading to the ``RMG-Py`` code. Not doing so will lead to an error stating that python cannot find the module ``rmgpy``.
+
 * If you wish to always be able to run RMG-Py, you can modify the anaconda path to point to the RMG environment. Modify the following line in your ``~/.bashrc`` file ::
 
    export PATH=~/anaconda/bin:$PATH

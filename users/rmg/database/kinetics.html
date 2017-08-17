@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>12.3. Kinetics Database &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="12.4. Database Modification" href="modification.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,41 +62,44 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
       </ul>
     </div>
             
   <div class="section" id="kinetics-database">
 <span id="kineticsdatabase"></span><h1>12.3. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
-<p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span class="std std-ref">Modifying the Kinetics Database</span></a> for
+<p>This section describes the general usage of RMG’s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span class="std std-ref">Modifying the Kinetics Database</span></a> for
 instructions on modifying the database.</p>
 <p>Pressure independent reaction rates in RMG are calculated using a modified
 Arrhenius equation, designating the reaction coefficient as <span class="math">\(k(T)\)</span> at
 temperature <span class="math">\(T\)</span>.</p>
 <div class="math">
-\[k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_a + \alpha \Delta H_{rxn})/(RT)}\]</div>
+\[k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_0 + \alpha \Delta H_{rxn})/(RT)}\]</div>
 <p><span class="math">\(R\)</span> is the universal gas constant. The <strong>kinetic parameters</strong> determining
 the rate coefficient are:</p>
 <ul class="simple">
 <li><span class="math">\(A\)</span>:    the pre-exponential A-factor</li>
 <li><span class="math">\(T_0\)</span>:  the reference temperature</li>
 <li><span class="math">\(n\)</span>:    the temperature exponent</li>
-<li><span class="math">\(E_a\)</span>:  the activation energy</li>
-<li><span class="math">\(\alpha\)</span>:       the Evans-Polanyi coefficient</li>
+<li><span class="math">\(E_0\)</span>:  the activation energy for a thermoneutral reaction (a barrier height intrinsic to the kinetics family)</li>
+<li><span class="math">\(\alpha\)</span>:       the Evans-Polanyi coefficient (characterizes the position of the transition state along the reaction coordinate, <span class="math">\(0 \le \alpha \le 1\)</span>)</li>
 <li><span class="math">\(\Delta H_{rxn}\)</span>: the enthalpy of reaction</li>
 </ul>
 <p>When Evans-Polanyi corrections are used, <span class="math">\(\Delta H_{rxn}\)</span> is calculated
-using RMG&#8217;s thermo database, instead of being specified in the kinetic database.</p>
+using RMG’s thermo database, instead of being specified in the kinetic database.
+When Evans-Polanyi corrections are not used, <span class="math">\(\Delta H_{rxn}\)</span> and <span class="math">\(\alpha\)</span>
+are set to zero, and <span class="math">\(E_0\)</span> is the activation energy of the reaction.</p>
 <div class="section" id="libraries">
 <h2>12.3.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
 <p>Kinetic libraries delineate kinetic parameters for specific reactions.
 RMG always chooses to use kinetics from libraries over families. If multiple libraries
 contain the same reaction, then precedence is given to whichever library is
 listed first in the input.py file.</p>
-<p>For combustion mechanisms, you should always use <em>one</em> small-molecule
-combustion library, such as the pre-packaged ERC-Foundation Fuel.
+<p>For combustion mechanisms, you should always use at least one small-molecule
+combustion library, such as the pre-packaged <em>BurkeH2O2</em> and/or <em>FFCM1</em>
+for natural gas.
 The reactions contained in these libraries are poorly estimated by kinetic
 families and are universally important to combustion systems.</p>
 <p>Kinetic libraries should also be used in the cases where:</p>
@@ -109,6 +109,152 @@ families and are universally important to combustion systems.</p>
 <li>No family exists for the class of reaction</li>
 <li>You are not confident about the accuracy of kinetic parameters</li>
 </ul>
+<p>Below is a list of pre-packaged kinetics library reactions in RMG:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Library</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1989_Stewart_2CH3_to_C2H5_H</td>
+<td>Chemically Activated Methyl Recombination to Ethyl (2CH3 -&gt; C2H5 + H)</td>
+</tr>
+<tr class="row-odd"><td>2001_Tokmakov_H_Toluene_to_CH3_Benzene</td>
+<td>H + Toluene = CH3 + Benzene</td>
+</tr>
+<tr class="row-even"><td>2005_Senosiain_OH_C2H2</td>
+<td>pathways on the OH + acetylene surface</td>
+</tr>
+<tr class="row-odd"><td>2006_Joshi_OH_CO</td>
+<td>pathways on OH + CO = HOCO = H + CO2 surface</td>
+</tr>
+<tr class="row-even"><td>BurkeH2O2inArHe</td>
+<td>Comprehensive H2/O2 kinetic model in Ar or He atmosphere</td>
+</tr>
+<tr class="row-odd"><td>BurkeH2O2inN2</td>
+<td>Comprehensive H2/O2 kinetic model in N2 atmosphere</td>
+</tr>
+<tr class="row-even"><td>C10H11</td>
+<td>Cyclopentadiene pyrolysis in the presence of ethene</td>
+</tr>
+<tr class="row-odd"><td>C3</td>
+<td>Cyclopentadiene pyrolysis in the presence of ethene</td>
+</tr>
+<tr class="row-even"><td>C6H5_C4H4_Mebel</td>
+<td>Formation Mechanism of Naphthalene and Indene</td>
+</tr>
+<tr class="row-odd"><td>Chernov</td>
+<td>Soot Formation with C1 and C2 Fuels (aromatic reactions only)</td>
+</tr>
+<tr class="row-even"><td>CurranPentane</td>
+<td>Ignition of pentane isomers</td>
+</tr>
+<tr class="row-odd"><td>Dooley</td>
+<td>Methyl formate (contains several mechanisms)</td>
+</tr>
+<tr class="row-even"><td>ERC-FoundationFuelv0.9</td>
+<td>Small molecule combustio (natural gas)</td>
+</tr>
+<tr class="row-odd"><td>Ethylamine</td>
+<td>Ethylamine pyrolysis and oxidation</td>
+</tr>
+<tr class="row-even"><td>FFCM1(-)</td>
+<td>Foundational Fuel Chemistry Model Version 1.0 (excited species removed)</td>
+</tr>
+<tr class="row-odd"><td>Fulvene_H</td>
+<td>Cyclopentadiene pyrolysis in the presence of ethene</td>
+</tr>
+<tr class="row-even"><td>GRI-HCO</td>
+<td>The <cite>HCO &lt;=&gt; H + CO</cite> reaction</td>
+</tr>
+<tr class="row-odd"><td>GRI-Mech3.0</td>
+<td>Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)</td>
+</tr>
+<tr class="row-even"><td>GRI-Mech3.0-N</td>
+<td>GRI-Mech3.0 including nitrogen chemistry (NOx from N2)</td>
+</tr>
+<tr class="row-odd"><td>Glarborg</td>
+<td>Mechanisms by P. Glarborg, assorted by carbon number</td>
+</tr>
+<tr class="row-even"><td>JetSurF2.0</td>
+<td>Jet Surrogate Fuel model up tp C12 (excited species removed)</td>
+</tr>
+<tr class="row-odd"><td>Mebel_C6H5_C2H2</td>
+<td>Pathways from benzene to naphthalene</td>
+</tr>
+<tr class="row-even"><td>Mebel_Naphthyl</td>
+<td>Reactions of naphthyl-1 and naphthyl-2</td>
+</tr>
+<tr class="row-odd"><td>Methylformate</td>
+<td>Methyl formate</td>
+</tr>
+<tr class="row-even"><td>Narayanaswamy</td>
+<td>Oxidation of substituted aromatic species (aromatic reactions only)</td>
+</tr>
+<tr class="row-odd"><td>Nitrogen_Dean_and_Bozzelli</td>
+<td>Combustion Chemistry of Nitrogen</td>
+</tr>
+<tr class="row-even"><td>Nitrogen_Glarborg_Gimenez_et_al</td>
+<td>High pressure C2H4 oxidation with nitrogen chemistry</td>
+</tr>
+<tr class="row-odd"><td>Nitrogen_Glarborg_Lucassen_et_al</td>
+<td>Fuel-nitrogen conversion in the combustion of small amines</td>
+</tr>
+<tr class="row-even"><td>Nitrogen_Glarborg_Zhang_et_al</td>
+<td>Premixed nitroethane flames at low pressure</td>
+</tr>
+<tr class="row-odd"><td>OxygenSingTrip</td>
+<td>Reactions of singlet and triplet oxygen</td>
+</tr>
+<tr class="row-even"><td>Sulfur/DMDS</td>
+<td>Dimethyl disulfide (CH3SSCH3)</td>
+</tr>
+<tr class="row-odd"><td>Sulfur/DMS</td>
+<td>Dimethyl disulfide (CH3SSCH3)</td>
+</tr>
+<tr class="row-even"><td>Sulfur/DTBS</td>
+<td>Di-tert-butyl Sulfide (C4H9SSC4H9)</td>
+</tr>
+<tr class="row-odd"><td>Sulfur/Hexanethial_nr</td>
+<td>Hexyl sulfide (C6H13SC6H13) + hexadecane (C16H34)</td>
+</tr>
+<tr class="row-even"><td>Sulfur/Sendt</td>
+<td>Small sulfur molecule</td>
+</tr>
+<tr class="row-odd"><td>Sulfur/TP_Song</td>
+<td>Thiophene (C4H4S, aromatic)</td>
+</tr>
+<tr class="row-even"><td>Sulfur/Thial_Hydrolysis</td>
+<td>Thioformaldehyde (CH2S) and thioacetaldehyde (C2H4S) to COS and CO2</td>
+</tr>
+<tr class="row-odd"><td>TEOS</td>
+<td>Organic oxidized silicone</td>
+</tr>
+<tr class="row-even"><td>c-C5H5_CH3_Sharma</td>
+<td>Cyclopentadienyl + CH3</td>
+</tr>
+<tr class="row-odd"><td>combustion_core</td>
+<td>Leeds University natural gas mechanism (contains versions 2-5)</td>
+</tr>
+<tr class="row-even"><td>fascella</td>
+<td>Cyclopentadienyl + acetyl</td>
+</tr>
+<tr class="row-odd"><td>kislovB</td>
+<td>Formation of indene in combustion</td>
+</tr>
+<tr class="row-even"><td>naphthalene_H</td>
+<td>Cyclopentadiene pyrolysis in the presence of ethene Part 1</td>
+</tr>
+<tr class="row-odd"><td>vinylCPD_H</td>
+<td>Cyclopentadiene pyrolysis in the presence of ethene Part 2</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="families">
 <span id="kineticsfamilies"></span><h2>12.3.2. Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
@@ -287,7 +433,7 @@ of decreasing reliability are:</p>
 </ol>
 <p>Both training sets and reaction libraries use the observed rate, but rules must
 first be divided by the degeneracy of the reaction. For example, the reaction
-CH4 + OH &#8211;&gt; H2O + CH3 has a reaction degeneracy of 4. If one performed an
+CH4 + OH –&gt; H2O + CH3 has a reaction degeneracy of 4. If one performed an
 experiment or obtained this reaction rate using Cantherm (applying the correct
 symmetry), the resultant rate parameters would be entered into libraries and
 training sets unmodified. However a kinetic rule created for this reaction must
@@ -416,8 +562,8 @@ rules.py. For more information on modification see <a class="reference internal"
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

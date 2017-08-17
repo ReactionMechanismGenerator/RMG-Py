@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>3.3.1. Linux Installation &#8212; RMG Py 2.1.0 documentation</title>
-    
     <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="3.3.2. MacOS X Installation" href="macos.html" />
@@ -38,7 +35,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </script>
 
   </head>
-  <body role="document">
+  <body>
 <div class="header">
 &nbsp;
 </div>  
@@ -65,8 +62,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
 
-          <li class="nav-item nav-item-1"><a href="../../index.html" >User&#8217;s Guide</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User&#8217;s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">3. Installation</a> &#187;</li> 
       </ul>
     </div>
@@ -107,7 +104,7 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 </li>
 <li><p class="first">Install RDKit</p>
 <p>Full installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
-Be sure to <strong>build it with InChI support.</strong> Here&#8217;s a synopsis:</p>
+Be sure to <strong>build it with InChI support.</strong> Here’s a synopsis:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>cd ~
 sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3
 sudo apt-get install libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
@@ -126,7 +123,7 @@ make
 make install
 </pre></div>
 </div>
-<p>You&#8217;ll need various environment variables set (you may want to add these to your <cite>.bash_profile</cite> file), eg.:</p>
+<p>You’ll need various environment variables set (you may want to add these to your <cite>.bash_profile</cite> file), eg.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
 export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it&#39;s on your Python path)
@@ -147,7 +144,7 @@ export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it&#39;
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="n">examples</span><span class="o">/</span><span class="n">rmg</span><span class="o">/</span><span class="n">minimal</span><span class="o">/</span><span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
+<p>Verify your installation by opening the resulting output.html file under the “examples/rmg/minimal” directory.</p>
 <p>You can also use the Makefile targets to test and run examples:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
 <span class="n">make</span> <span class="n">eg1</span>
@@ -275,8 +272,8 @@ To do so first compile daspk in PyDAS and agree to download the daspk31.tgz file
       <div class="clearer"></div>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2015, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>
