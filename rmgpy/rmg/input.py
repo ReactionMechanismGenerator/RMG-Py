@@ -322,7 +322,7 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None, 
+def options(name='Seed', generateSeedEachIteration=False, saveSeedToDatabase=False, units='si', saveRestartPeriod=None, 
             generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
             saveEdgeSpecies=False, keepIrreversible=False, wallTime='00:00:00:00'):
     rmg.name = name
