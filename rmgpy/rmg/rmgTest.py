@@ -242,7 +242,31 @@ class TestRMGScript(unittest.TestCase):
 
         # Test default values
         self.assertEqual(args.walltime, '00:00:00:00')
-        self.assertEqual(args.output_directory, '')
-        self.assertEqual(args.scratch_directory, '')
-        self.assertEqual(args.library_directory, '')
+        self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname('./')))
+        self.assertEqual(args.debug, False)
+        self.assertEqual(args.file, 'input.py')
+        self.assertEqual(args.kineticsdatastore, False)
+        self.assertEqual(args.postprocess, False)
+        self.assertEqual(args.profile, False)
+        self.assertEqual(args.quiet, False)
+        self.assertEqual(args.restart, False)
+        self.assertEqual(args.verbose, False)
 
+    def test_parse_command_line_non_defaults(self):
+        """
+        Test user command line inputs into rmg.py
+        """
+
+        # Acquire arguments
+        args = parseCommandLineArguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', '-P',
+                                          '-t', '01:20:33:45', '-k'])
+
+        # Test expected values
+        self.assertEqual(args.walltime, '01:20:33:45')
+        self.assertEqual(args.output_directory, '/test/output/dir/')
+        self.assertEqual(args.debug, True)
+        self.assertEqual(args.file, 'other_name.py')
+        self.assertEqual(args.kineticsdatastore, True)
+        self.assertEqual(args.postprocess, True)
+        self.assertEqual(args.profile, True)
+        self.assertEqual(args.restart, True)

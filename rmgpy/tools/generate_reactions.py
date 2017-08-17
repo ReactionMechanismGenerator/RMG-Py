@@ -39,7 +39,6 @@ The input file is a subset of that used with regular RMG jobs.
 import os.path
 import argparse
 import logging
-import sys
 
 from rmgpy.rmg.main import initializeLog, RMG
 from rmgpy.chemkin import ChemkinWriter
@@ -52,19 +51,8 @@ def main():
     Driver function that parses command line arguments and passes them to the execute function.
     """
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments(sys.argv[1:])
+    args = parse_command_line_arguments()
 
-    # For output and scratch directories, if they are empty strings, set them
-    # to match the input file location
-    inputFile = args.file[0]
-
-    inputDirectory = os.path.abspath(os.path.dirname(inputFile))
-
-    if args.output_directory == '':
-        args.output_directory = inputDirectory
-    if args.scratch_directory == '':
-        args.scratch_directory = inputDirectory
-    
     # Initialize the logging system (resets the RMG.log file)
     level = logging.INFO
     if args.debug: level = 0
@@ -79,9 +67,9 @@ def main():
             'kineticsdatastore': args.kineticsdatastore
     }
 
-    initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
+    initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
-    rmg = RMG(inputFile=inputFile, outputDirectory=args.output_directory)
+    rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
 
     # Add output listeners:
     rmg.attach(ChemkinWriter(args.output_directory))

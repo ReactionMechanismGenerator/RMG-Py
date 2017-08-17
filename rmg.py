@@ -33,7 +33,6 @@ RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 """
 
 import os.path
-import sys
 import argparse
 import logging
 import rmgpy
@@ -42,7 +41,8 @@ from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileG
 
 ################################################################################
 
-def parseCommandLineArguments(args):
+
+def parse_command_line_arguments(command_line_args=None):
     """
     Parse the command-line arguments being passed to RMG Py. This uses the
     :mod:`argparse` module, which ensures that the command-line arguments are
@@ -87,76 +87,96 @@ def parseCommandLineArguments(args):
     #Add option to output a folder that stores the details of each kinetic database entry source
     parser.add_argument('-k', '--kineticsdatastore', action='store_true', help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
 
-    return parser.parse_args(args)
+    args = parser.parse_args(command_line_args)
 
-################################################################################
-
-if __name__ == '__main__':
-
-    # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments(sys.argv[1:])
+    # Process args to set correct default values and format
 
     # For output and scratch directories, if they are empty strings, set them
     # to match the input file location
-    import os.path
-    inputFile = args.file[0]
+    args.file = args.file[0]
 
-    if args.output_directory != '':
-        args.output_directory = args.output_directory[0]
-
+    # If walltime was specified, retrieve this string from the element 1 list
     if args.walltime != '00:00:00:00':
         args.walltime = args.walltime[0]
 
-    inputDirectory = os.path.abspath(os.path.dirname(inputFile))
+    if args.library_directory != '':
+        args.library_directory = args.library_directory[0]
+
+    # Set directories
+    inputDirectory = os.path.abspath(os.path.dirname(args.file))
+
     if args.output_directory == '':
         args.output_directory = inputDirectory
+    # If output directory was specified, retrieve this string from the element 1 list
+    else:
+        args.output_directory = args.output_directory[0]
+
     if args.scratch_directory == '':
         args.scratch_directory = inputDirectory
+    else:
+        args.scratch_directory = args.scratch_directory[0]
+
+    if args.postprocess:
+        args.profile = True
+
+    return args
+
+
+def main():
+    # Parse the command-line arguments (requires the argparse module)
+    args = parse_command_line_arguments()
 
     if args.postprocess:
         print "Postprocessing the profiler statistics (will be appended to RMG.log)"
-        args.profile = True
     else:
         # Initialize the logging system (resets the RMG.log file)
         level = logging.INFO
-        if args.debug: level = 0
-        elif args.verbose: level = logging.DEBUG
-        elif args.quiet: level = logging.WARNING
+        if args.debug:
+            level = 0
+        elif args.verbose:
+            level = logging.DEBUG
+        elif args.quiet:
+            level = logging.WARNING
         initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
     logging.info(rmgpy.settings.report())
 
-    output_dir = args.output_directory
     kwargs = {
         'scratch_directory': args.scratch_directory,
         'restart': args.restart,
         'walltime': args.walltime,
         'kineticsdatastore': args.kineticsdatastore
-        }
+    }
 
     if args.profile:
-        import cProfile, sys, pstats, os
+        import cProfile
         global_vars = {}
         local_vars = {
-            'inputFile': inputFile, 
-            'output_dir': output_dir, 
+            'inputFile': args.file,
+            'output_dir': args.output_directory,
             'kwargs': kwargs,
             'RMG': RMG
-            }
+        }
 
         command = """rmg = RMG(inputFile=inputFile, outputDirectory=output_dir); rmg.execute(**kwargs)"""
 
-        stats_file = os.path.join(args.output_directory,'RMG.profile')
+        stats_file = os.path.join(args.output_directory, 'RMG.profile')
         print("Running under cProfile")
         if not args.postprocess:
             # actually run the program!
             cProfile.runctx(command, global_vars, local_vars, stats_file)
         # postprocess the stats
-        log_file = os.path.join(args.output_directory,'RMG.log')
+        log_file = os.path.join(args.output_directory, 'RMG.log')
         processProfileStats(stats_file, log_file)
         makeProfileGraph(stats_file)
-        
+
     else:
 
-        rmg = RMG(inputFile=inputFile, outputDirectory=output_dir)
+        rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
         rmg.execute(**kwargs)
+
+
+################################################################################
+
+if __name__ == '__main__':
+    main()
