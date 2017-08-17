@@ -42,7 +42,7 @@ from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileG
 
 ################################################################################
 
-def parseCommandLineArguments():
+def parseCommandLineArguments(args):
     """
     Parse the command-line arguments being passed to RMG Py. This uses the
     :mod:`argparse` module, which ensures that the command-line arguments are
@@ -87,14 +87,14 @@ def parseCommandLineArguments():
     #Add option to output a folder that stores the details of each kinetic database entry source
     parser.add_argument('-k', '--kineticsdatastore', action='store_true', help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 ################################################################################
 
 if __name__ == '__main__':
 
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    args = parseCommandLineArguments(sys.argv[1:])
 
     # For output and scratch directories, if they are empty strings, set them
     # to match the input file location

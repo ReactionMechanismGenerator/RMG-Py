@@ -39,6 +39,7 @@ The input file is a subset of that used with regular RMG jobs.
 import os.path
 import argparse
 import logging
+import sys
 
 from rmgpy.rmg.main import initializeLog, RMG
 from rmgpy.chemkin import ChemkinWriter
@@ -51,7 +52,7 @@ def main():
     Driver function that parses command line arguments and passes them to the execute function.
     """
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    args = parseCommandLineArguments(sys.argv[1:])
 
     # For output and scratch directories, if they are empty strings, set them
     # to match the input file location
