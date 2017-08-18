@@ -245,10 +245,10 @@ class TestThermoDatabase(unittest.TestCase):
         """Test thermo generation for species objects for HBI correction on group additivity value.
 
         Ensure that molecule list is only reordered, and not changed after group additivity"""
-        spec = Species().fromSMILES('CCC[CH]c1ccccc1')
+        spec = Species().fromSMILES('C[CH]c1ccccc1')
         spec.generateResonanceIsomers()
         initial = list(spec.molecule)  # Make a copy of the list
-        thermo = self.database.getThermoData(spec)
+        thermo = self.databaseWithoutLibraries.getThermoData(spec)
 
         self.assertEqual(len(initial), len(spec.molecule))
         self.assertEqual(set(initial), set(spec.molecule))
