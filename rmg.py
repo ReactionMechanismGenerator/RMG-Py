@@ -70,10 +70,6 @@ def parse_command_line_arguments(command_line_args=None):
     # Add options for controlling what directories files are written to
     parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as output directory')
-    parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as scratch directory')
-    parser.add_argument('-l', '--library-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as library directory')
 
     # Add restart option
     parser.add_argument('-r', '--restart', action='store_true', help='restart an incomplete job')
@@ -99,9 +95,6 @@ def parse_command_line_arguments(command_line_args=None):
     if args.walltime != '00:00:00:00':
         args.walltime = args.walltime[0]
 
-    if args.library_directory != '':
-        args.library_directory = args.library_directory[0]
-
     # Set directories
     inputDirectory = os.path.abspath(os.path.dirname(args.file))
 
@@ -110,11 +103,6 @@ def parse_command_line_arguments(command_line_args=None):
     # If output directory was specified, retrieve this string from the element 1 list
     else:
         args.output_directory = args.output_directory[0]
-
-    if args.scratch_directory == '':
-        args.scratch_directory = inputDirectory
-    else:
-        args.scratch_directory = args.scratch_directory[0]
 
     if args.postprocess:
         args.profile = True
@@ -142,7 +130,6 @@ def main():
     logging.info(rmgpy.settings.report())
 
     kwargs = {
-        'scratch_directory': args.scratch_directory,
         'restart': args.restart,
         'walltime': args.walltime,
         'kineticsdatastore': args.kineticsdatastore

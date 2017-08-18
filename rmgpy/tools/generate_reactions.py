@@ -60,7 +60,6 @@ def main():
     elif args.quiet: level = logging.WARNING
 
     kwargs = {
-            'scratch_directory': args.scratch_directory,
             'restart': args.restart,
             'walltime': args.walltime,
             'log': level,
