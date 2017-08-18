@@ -2114,6 +2114,15 @@ multiplicity 2
         mol.assignAtomIDs()
         self.assertTrue(mol.atomIDValid())
 
+    def testFingerprintProperty(self):
+        """Test that the Molecule.fingerprint property works"""
+        # Test getting fingerprint
+        self.assertEqual(self.molecule[0].fingerprint, 'CH2NO2')
+
+        # Test setting fingerprint
+        self.molecule[0].fingerprint = 'nitronate'
+        self.assertEqual(self.molecule[0].fingerprint, 'nitronate')
+
 ################################################################################
 
 if __name__ == '__main__':
