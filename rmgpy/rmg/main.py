@@ -538,6 +538,8 @@ class RMG(util.Subject):
 
         self.done = False
         
+        self.Tmax = max([x.T for x in self.reactionSystems]).value_si
+        
         # Initiate first reaction discovery step after adding all core species
         if self.modelSettingsList[0].filterReactions:
             # Run the reaction system to update threshold and react flags
@@ -555,11 +557,19 @@ class RMG(util.Subject):
                 self.updateReactionThresholdAndReactFlags(
                     rxnSysUnimolecularThreshold=reactionSystem.unimolecularThreshold, 
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
-
+                
+        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
+                                                              minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune, 
+                                                              maximumEdgeSpecies =self.modelSettingsList[0].maximumEdgeSpecies,
+                                                              reactionSystems=self.reactionSystems)
+        
         self.reactionModel.enlarge(reactEdge=True, 
             unimolecularReact=self.unimolecularReact, 
             bimolecularReact=self.bimolecularReact)
-
+        
+        self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
+        
         logging.info('Completed initial enlarge edge step...')
         
         self.saveEverything()
@@ -715,11 +725,18 @@ class RMG(util.Subject):
                             logging.info('')    
                         else:
                             self.updateReactionThresholdAndReactFlags()
-                        
+                            
+                        if not numpy.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
+                            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
+                                                              minCoreSizeForPrune=modelSettings.minCoreSizeForPrune, 
+                                                              maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
+                                                              reactionSystems=self.reactionSystems)
+        
                         self.reactionModel.enlarge(reactEdge=True, 
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
-                    
+                        
+                        self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                     #Adjust Surface
                     #we add added species and remove any species moved out of the core
                     #for now we remove reactions that become part of a PDepNetwork by intersecting with the core

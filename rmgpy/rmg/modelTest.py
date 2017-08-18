@@ -38,7 +38,8 @@ from rmgpy.reaction import Reaction
 from rmgpy.rmg.react import react
 from rmgpy.rmg.model import *
 from rmgpy.data.base import ForbiddenStructures
-
+from rmgpy.data.kinetics.family import TemplateReaction
+from rmgpy.data.thermo import *
 ###################################################
 
 
@@ -118,7 +119,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         for family in rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
         rmg.database.forbiddenStructures = ForbiddenStructures()
-
+        
     def testMakeNewSpecies(self):
         """
         Test that CoreEdgeReactionModel.makeNewSpecies method correctly stores the unique species.
@@ -182,7 +183,129 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                     counter += len(rxnList)
 
         self.assertEquals(counter, 3)
+    
+    def testThermoFilterSpecies(self):
+        """
+        test that thermoFilterSpecies leaves species alone if if toleranceThermoKeepInEdge
+        is high and removes them if if toleranceThermoKeepInEdge is low
+        """
+        
+        cerm = CoreEdgeReactionModel()
 
+        spcs = [Species().fromSMILES('[OH]'), 
+                Species().fromSMILES('C'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('[CH2]'),
+                Species().fromSMILES('O')]
+        
+        for spc in spcs:
+            cerm.makeNewSpecies(spc,label=spc.molecule[0].toSMILES())
+            spc.label = spc.molecule[0].toSMILES()
+        
+        thermoDict = {'[OH]':NASA(polynomials=[NASAPolynomial(coeffs=[3.51457,2.92787e-05,-5.32168e-07,1.0195e-09,-3.85947e-13,3414.25,2.10435], Tmin=(100,'K'), Tmax=(1145.75,'K')), NASAPolynomial(coeffs=[3.07194,0.000604014,-1.39775e-08,-2.13448e-11,2.48067e-15,3579.39,4.578], Tmin=(1145.75,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(28.3945,'kJ/mol'), Cp0=(29.1007,'J/(mol*K)'), CpInf=(37.4151,'J/(mol*K)'), label="""OH(D)""", comment="""Thermo library: primaryThermoLibrary"""),
+        'C' : NASA(polynomials=[NASAPolynomial(coeffs=[4.20541,-0.00535551,2.51121e-05,-2.1376e-08,5.97513e-12,-10161.9,-0.921259], Tmin=(100,'K'), Tmax=(1084.13,'K')), NASAPolynomial(coeffs=[0.908298,0.011454,-4.57171e-06,8.29185e-10,-5.66309e-14,-9719.99,13.9929], Tmin=(1084.13,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(-84.435,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(108.088,'J/(mol*K)'), label="""CH4""", comment="""Thermo library: primaryThermoLibrary"""),
+        '[CH3]' : NASA(polynomials=[NASAPolynomial(coeffs=[3.67359,0.00201095,5.73022e-06,-6.87117e-09,2.54386e-12,16445,1.60456], Tmin=(200,'K'), Tmax=(1000,'K')), NASAPolynomial(coeffs=[2.28572,0.0072399,-2.98714e-06,5.95685e-10,-4.67154e-14,16775.6,8.48007], Tmin=(1000,'K'), Tmax=(3500,'K'))], Tmin=(200,'K'), Tmax=(3500,'K'), E0=(136.42,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(83.1447,'J/(mol*K)'), label="""CH3""", comment="""Thermo library: GRI-Mech3.0"""),
+        '[CH2]': NASA(polynomials=[NASAPolynomial(coeffs=[4.01192,-0.000154978,3.26298e-06,-2.40422e-09,5.69497e-13,45867.7,0.533201], Tmin=(100,'K'), Tmax=(1104.62,'K')), NASAPolynomial(coeffs=[3.14983,0.00296674,-9.76056e-07,1.54115e-10,-9.50338e-15,46058.1,4.77808], Tmin=(1104.62,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(381.37,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(58.2013,'J/(mol*K)'), label="""CH2(T)""", comment="""Thermo library: primaryThermoLibrary"""),
+        'O' : NASA(polynomials=[NASAPolynomial(coeffs=[4.05764,-0.000787936,2.90877e-06,-1.47519e-09,2.12842e-13,-30281.6,-0.311364], Tmin=(100,'K'), Tmax=(1130.24,'K')), NASAPolynomial(coeffs=[2.84325,0.00275109,-7.81031e-07,1.07244e-10,-5.79392e-15,-29958.6,5.91042], Tmin=(1130.24,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(-251.755,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(58.2013,'J/(mol*K)'), label="""H2O""", comment="""Thermo library: primaryThermoLibrary"""),
+        }
+        
+        for spc in spcs[:3]:
+            cerm.addSpeciesToCore(spc)
+            
+        reaction = TemplateReaction(
+            reactants = [spcs[0],spcs[2]],
+            products = [spcs[-1],spcs[-2]],
+            degeneracy = 1,
+            reversible = True,
+            family = 'H_Abstraction',
+        )
+        
+        cerm.processNewReactions(newReactions=[reaction],newSpecies=[]) #adds CH2 and O to edge
+        
+        for spc in cerm.core.species+cerm.edge.species:
+            spc.thermo = thermoDict[spc.molecule[0].toSMILES()] #assign thermo
+            
+        cerm.setThermodynamicFilteringParameters(Tmax=300.0, 
+                                                 toleranceThermoKeepSpeciesInEdge=1000.0,
+                                                 minCoreSizeForPrune=0,
+                                                 maximumEdgeSpecies=1,
+                                                 reactionSystems=[])
+        
+        cerm.thermoFilterSpecies(cerm.edge.species) #should not do anythinb because toleranceThermoKeepSpeciesInEdge is high
+        
+        
+        difset = set([x.molecule[0].toSMILES() for x in cerm.edge.species])-set([x.molecule[0].toSMILES() for x in cerm.core.species])
+        
+        self.assertEquals(len(difset),2) #no change in edge
+        
+        cerm.setThermodynamicFilteringParameters(Tmax=300.0, 
+                                                 toleranceThermoKeepSpeciesInEdge=0.0,
+                                                 minCoreSizeForPrune=0,
+                                                 maximumEdgeSpecies=1,
+                                                 reactionSystems=[])
+        
+        cerm.thermoFilterSpecies(cerm.edge.species) #should remove stuff since CH2 and O have high thermo
+        
+        difset = set([x.molecule[0].toSMILES() for x in cerm.edge.species])-set([x.molecule[0].toSMILES() for x in cerm.core.species])
+        
+        self.assertLess(len(difset),2) #edge is smaller
+        
+    def testThermoFilterDown(self):
+        """
+        test that thermoFilterDown with maximumEdgeSpecies = 1 reduces
+        the edge to one species
+        """
+        cerm = CoreEdgeReactionModel()
+
+        spcs = [Species().fromSMILES('[OH]'), 
+                Species().fromSMILES('C'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('[CH2]'),
+                Species().fromSMILES('O')]
+        
+        for spc in spcs:
+            cerm.makeNewSpecies(spc,label=spc.molecule[0].toSMILES())
+            spc.label = spc.molecule[0].toSMILES()
+        
+        thermoDict = {'[OH]':NASA(polynomials=[NASAPolynomial(coeffs=[3.51457,2.92787e-05,-5.32168e-07,1.0195e-09,-3.85947e-13,3414.25,2.10435], Tmin=(100,'K'), Tmax=(1145.75,'K')), NASAPolynomial(coeffs=[3.07194,0.000604014,-1.39775e-08,-2.13448e-11,2.48067e-15,3579.39,4.578], Tmin=(1145.75,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(28.3945,'kJ/mol'), Cp0=(29.1007,'J/(mol*K)'), CpInf=(37.4151,'J/(mol*K)'), label="""OH(D)""", comment="""Thermo library: primaryThermoLibrary"""),
+        'C' : NASA(polynomials=[NASAPolynomial(coeffs=[4.20541,-0.00535551,2.51121e-05,-2.1376e-08,5.97513e-12,-10161.9,-0.921259], Tmin=(100,'K'), Tmax=(1084.13,'K')), NASAPolynomial(coeffs=[0.908298,0.011454,-4.57171e-06,8.29185e-10,-5.66309e-14,-9719.99,13.9929], Tmin=(1084.13,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(-84.435,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(108.088,'J/(mol*K)'), label="""CH4""", comment="""Thermo library: primaryThermoLibrary"""),
+        '[CH3]' : NASA(polynomials=[NASAPolynomial(coeffs=[3.67359,0.00201095,5.73022e-06,-6.87117e-09,2.54386e-12,16445,1.60456], Tmin=(200,'K'), Tmax=(1000,'K')), NASAPolynomial(coeffs=[2.28572,0.0072399,-2.98714e-06,5.95685e-10,-4.67154e-14,16775.6,8.48007], Tmin=(1000,'K'), Tmax=(3500,'K'))], Tmin=(200,'K'), Tmax=(3500,'K'), E0=(136.42,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(83.1447,'J/(mol*K)'), label="""CH3""", comment="""Thermo library: GRI-Mech3.0"""),
+        '[CH2]': NASA(polynomials=[NASAPolynomial(coeffs=[4.01192,-0.000154978,3.26298e-06,-2.40422e-09,5.69497e-13,45867.7,0.533201], Tmin=(100,'K'), Tmax=(1104.62,'K')), NASAPolynomial(coeffs=[3.14983,0.00296674,-9.76056e-07,1.54115e-10,-9.50338e-15,46058.1,4.77808], Tmin=(1104.62,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(381.37,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(58.2013,'J/(mol*K)'), label="""CH2(T)""", comment="""Thermo library: primaryThermoLibrary"""),
+        'O' : NASA(polynomials=[NASAPolynomial(coeffs=[4.05764,-0.000787936,2.90877e-06,-1.47519e-09,2.12842e-13,-30281.6,-0.311364], Tmin=(100,'K'), Tmax=(1130.24,'K')), NASAPolynomial(coeffs=[2.84325,0.00275109,-7.81031e-07,1.07244e-10,-5.79392e-15,-29958.6,5.91042], Tmin=(1130.24,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), E0=(-251.755,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(58.2013,'J/(mol*K)'), label="""H2O""", comment="""Thermo library: primaryThermoLibrary"""),
+        }
+        
+        for spc in spcs[:3]:
+            cerm.addSpeciesToCore(spc)
+            
+        reaction = TemplateReaction(
+            reactants = [spcs[0],spcs[2]],
+            products = [spcs[-1],spcs[-2]],
+            degeneracy = 1,
+            reversible = True,
+            family = 'H_Abstraction',
+        )
+        
+        cerm.processNewReactions(newReactions=[reaction],newSpecies=[]) #add CH2 and O to edge
+        
+        for spc in cerm.core.species+cerm.edge.species:
+            spc.thermo = thermoDict[spc.molecule[0].toSMILES()] #assign thermo
+        
+        cerm.setThermodynamicFilteringParameters(Tmax=300.0, 
+                                                 toleranceThermoKeepSpeciesInEdge=1000.0,
+                                                 minCoreSizeForPrune=0,
+                                                 maximumEdgeSpecies=1,
+                                                 reactionSystems=[])
+           
+        difset = set([x.molecule[0].toSMILES() for x in cerm.edge.species])-set([x.molecule[0].toSMILES() for x in cerm.core.species])
+        
+        self.assertEquals(len(difset),2) #no change because toleranceThermoKeepSpeciesInEdge is high
+        
+        cerm.thermoFilterDown(maximumEdgeSpecies=1)
+        
+        difset = set([x.molecule[0].toSMILES() for x in cerm.edge.species])-set([x.molecule[0].toSMILES() for x in cerm.core.species])
+        
+        self.assertEquals(len(difset),1) #should be one because we thermo filtered down to one edge species
+        
     def testInflate(self):
         """
         Test that CoreEdgeReactionModel.inflate method correctly works.
@@ -214,7 +337,6 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         """
         Test that checkForExistingReaction catches duplicate reactions
         """
-        from rmgpy.data.kinetics.family import TemplateReaction
         cerm = CoreEdgeReactionModel()
 
         # make species' objects
