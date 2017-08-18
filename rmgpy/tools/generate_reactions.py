@@ -39,53 +39,12 @@ The input file is a subset of that used with regular RMG jobs.
 import os.path
 import argparse
 import logging
+import sys
 
 from rmgpy.rmg.main import initializeLog, RMG
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
-
-def parseCommandLineArguments():
-    """
-    Parse the command-line arguments being passed to RMG Py. This uses the
-    :mod:`argparse` module, which ensures that the command-line arguments are
-    sensible, parses them, and returns them.
-    """
-
-    parser = argparse.ArgumentParser(description=
-    """
-    Reaction Mechanism Generator (RMG) is an automatic chemical reaction
-    mechanism generator that constructs kinetic models composed of
-    elementary chemical reaction steps using a general understanding of
-    how molecules react.
-    """)
-    parser.add_argument('file', metavar='FILE', type=str, nargs=1,
-        help='a file describing the job to execute')
-
-    # Options for controlling the amount of information printed to the console
-    # By default a moderate level of information is printed; you can either
-    # ask for less (quiet), more (verbose), or much more (debug)
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
-    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
-    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
-
-    # Add options for controlling what directories files are written to
-    parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as output directory')
-    parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as scratch directory')
-    parser.add_argument('-l', '--library-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as library directory')
-
-    # Add option to output a folder that stores the details of each kinetic database entry source
-    parser.add_argument('-k', '--kineticsdatastore', action='store_true',
-                        help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
-
-    args = parser.parse_args()
-    args.walltime = '0'
-    args.restart = False
-
-    return args
+from rmg import parseCommandLineArguments
 
 
 def main():
@@ -93,7 +52,7 @@ def main():
     Driver function that parses command line arguments and passes them to the execute function.
     """
     # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    args = parseCommandLineArguments(sys.argv[1:])
 
     # For output and scratch directories, if they are empty strings, set them
     # to match the input file location

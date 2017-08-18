@@ -39,6 +39,8 @@ from rmgpy.rmg.react import react
 from rmgpy.restart import saveRestartFile
 import rmgpy
 from rmgpy.data.base import ForbiddenStructures
+
+from rmg import *
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
@@ -225,3 +227,24 @@ def findTargetRxnsContaining(mol1, mol2, reactions):
                     if rxn_spec1.isIsomorphic(mol2):
                         target_rxns.append(rxn)
     return target_rxns
+
+
+class TestRMGScript(unittest.TestCase):
+    """
+    Contains unit tests for rmg.py
+    """
+
+    def test_parse_command_line_arguments_defaults(self):
+        """
+        Test the default values for the parseCommandLineArguments module
+        """
+
+        # Acquire default arguments
+        args = parseCommandLineArguments(['input.py',])
+
+        # Test default values
+        self.assertEqual(args.walltime, '00:00:00:00')
+        self.assertEqual(args.output_directory, '')
+        self.assertEqual(args.scratch_directory, '')
+        self.assertEqual(args.library_directory, '')
+
