@@ -218,7 +218,7 @@ class KineticsLibrary(Database):
         Merge all marked duplicate reactions in the kinetics library
         into single reactions with multiple kinetics.
         """
-        print "trying to find duplicates"
+        logging.debug("Searching for duplicate reactions...")
         entries_to_remove = []
         for entry0 in self.entries.values():
             if entry0 in entries_to_remove:
@@ -226,7 +226,7 @@ class KineticsLibrary(Database):
             reaction0 = entry0.item
             if not reaction0.duplicate:
                 continue
-            print "Found a duplicate reaction: {0}".format(reaction0)
+            logging.debug("Found a duplicate reaction: {0}".format(reaction0))
             duplicates = [entry0]
             for entry in self.entries.values():
                 reaction = entry.item
@@ -234,7 +234,7 @@ class KineticsLibrary(Database):
                     continue
                 if reaction0.isIsomorphic(reaction, eitherDirection=False):
                     if reaction0.reversible != reaction.reversible:
-                        print "Reactions isomorphic but with different reversibilities"
+                        logging.debug("Reactions isomorphic but with different reversibilities.")
                         continue
                     duplicates.append(entry)
             if len(duplicates)<=1:
@@ -271,9 +271,9 @@ class KineticsLibrary(Database):
             entry0.longDesc = longDesc
             entries_to_remove.extend(duplicates[1:])
         for entry in entries_to_remove:
-            print "removing duplicate reaction with index {0}.".format(entry.index)
+            logging.debug("Removing duplicate reaction with index {0}.".format(entry.index))
             del(self.entries[entry.index])
-        print "NB. the entries have not been renumbered, so these indices are missing."
+        logging.debug("NB. the entries have not been renumbered, so these indices are missing.")
         
         
     def load(self, path, local_context=None, global_context=None):
