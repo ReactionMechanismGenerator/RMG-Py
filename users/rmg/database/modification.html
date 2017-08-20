@@ -104,19 +104,16 @@ add to the training set instead of modifying the kinetic groups.</p>
 <div class="section" id="adding-reaction-family">
 <h3>12.4.2.1. Adding Reaction Family<a class="headerlink" href="#adding-reaction-family" title="Permalink to this headline">¶</a></h3>
 <p>There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:</p>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt><code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/[family</span> <span class="pre">name]</span></code></dt>
 <dd><ul class="first last">
-<li><p class="first">add folder for your family name</p>
-</li>
-<li><p class="first">create <code class="docutils literal"><span class="pre">groups.py</span></code>, <code class="docutils literal"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal"><span class="pre">reactions.py</span></code>.</p>
-</li>
-<li><p class="first">fill the files with rate data that you plan to use.</p>
-</li>
+<li>add folder for your family name</li>
+<li>create <code class="docutils literal"><span class="pre">groups.py</span></code>, <code class="docutils literal"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal"><span class="pre">reactions.py</span></code>.</li>
+<li>fill the files with rate data that you plan to use.</li>
 <li><dl class="first docutils">
 <dt>Many tools exist to help with the conversion process:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li><code class="docutils literal"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code></li>
 <li><code class="docutils literal"><span class="pre">importChemkinLibrary.py</span></code> in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code></li>
 </ul>
@@ -129,7 +126,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.family</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li><code class="docutils literal"><span class="pre">applyRecipe</span></code>: swapping the atom labels (eg. <cite>*1</cite> and <cite>*2</cite>) around</li>
 <li><code class="docutils literal"><span class="pre">getReactionPairs</span></code>: figuring out which species becomes which for flux analyses</li>
 <li><code class="docutils literal"><span class="pre">__generateReactions</span></code>: correcting degeneracy eg. dividing by 2 for radical recombination</li>
@@ -139,7 +136,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.rules</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li><code class="docutils literal"><span class="pre">processOldLibraryEntry</span></code>: determining units when importing RMG-Java database</li>
 <li><code class="docutils literal"><span class="pre">getAllRules</span></code>: for radical recombination add reverse templates</li>
 </ul>
@@ -148,7 +145,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.groups</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li><code class="docutils literal"><span class="pre">getReactionTemplate</span></code>: for radical recombination duplicate the template</li>
 </ul>
 </dd>
@@ -156,7 +153,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 </li>
 <li><dl class="first docutils">
 <dt>RMG-database/input/kinetics/families/recommended.py</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>allows the usage of the database with the recommended families.</li>
 </ul>
 </dd>
@@ -458,28 +455,22 @@ will want to add your reaction to the training set.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<ul>
-<li><p class="first">The index can be any number not already used in rules.py.</p>
-</li>
-<li><p class="first">The label is the name of the rule.</p>
-</li>
-<li><p class="first">The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</p>
-</li>
+<ul class="simple">
+<li>The index can be any number not already used in rules.py.</li>
+<li>The label is the name of the rule.</li>
+<li>The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</li>
 <li><dl class="first docutils">
 <dt>The value and units of kinetic parameters must be given.</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Multiplicative uncertainty is given as <code class="docutils literal"><span class="pre">'*\|/,'</span> <span class="pre">5</span></code> meaning within a factor of 5</li>
 <li>Additive uncertainty is given as <code class="docutils literal"><span class="pre">'+\|/-',</span> <span class="pre">2</span></code> meaning plus or minus 2.</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first">Rank determines the priority of the rule when compared with other rules.</p>
-</li>
-<li><p class="first">The short description will appear in the annotated chemkin file.</p>
-</li>
-<li><p class="first">The long description only appears in the database.</p>
-</li>
+<li>Rank determines the priority of the rule when compared with other rules.</li>
+<li>The short description will appear in the annotated chemkin file.</li>
+<li>The long description only appears in the database.</li>
 </ul>
 </div>
 <div class="section" id="adding-training-reactions">

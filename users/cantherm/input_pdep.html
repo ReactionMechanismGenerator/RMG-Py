@@ -264,29 +264,63 @@ Option #1 or #2 mentioned above.</p>
 parameter (<code class="docutils literal"><span class="pre">'acetylperoxy.py'</span></code> above) points to the location of another python file containing details of the species. This file
 will be referred to as the species input file.</p>
 <p>The species input file accepts the following parameters:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/mjliu/Code/RMG-Py/documentation/source/users/cantherm/input_pdep.rst</tt>, line 174)</p>
-<p>Malformed table.
-Column span alignment problem in table line 11.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>======================= =========================== ====================================
-Parameter               Required?                   Description
-======================= =========================== ====================================
-``atoms``               yes                         Type and number of atoms in the species
-``bonds``               optional                    Type and number of bonds in the species
-``linear``              yes                         ``True`` if the molecule is linear, ``False`` if not
-``externalSymmetry``    yes                         The external symmetry number for rotation
-``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
-``opticalIsomers``      yes                         The number of optical isomers of the species
-``energy``              yes                         The ground-state 0 K atomization energy in Hartree (without zero-point energy)
-                                                    **or**
-                                                    The path to the quantum chemistry output file containing the energy
-``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
-``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
-``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
-======================= =========================== ====================================
-</pre></div>
-</div>
-</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="17%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">atoms</span></code></td>
+<td>yes</td>
+<td>Type and number of atoms in the species</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">bonds</span></code></td>
+<td>optional</td>
+<td>Type and number of bonds in the species</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">linear</span></code></td>
+<td>yes</td>
+<td><code class="docutils literal"><span class="pre">True</span></code> if the molecule is linear, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">externalSymmetry</span></code></td>
+<td>yes</td>
+<td>The external symmetry number for rotation</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">spinMultiplicity</span></code></td>
+<td>yes</td>
+<td>The ground-state spin multiplicity (degeneracy)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">opticalIsomers</span></code></td>
+<td>yes</td>
+<td>The number of optical isomers of the species</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">energy</span></code></td>
+<td>yes</td>
+<td>The ground-state 0 K atomization energy in Hartree (without zero-point energy)
+<strong>or</strong>
+The path to the quantum chemistry output file containing the energy</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">geometry</span></code></td>
+<td>yes</td>
+<td>The path to the quantum chemistry output file containing the optimized geometry</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">frequencies</span></code></td>
+<td>yes</td>
+<td>The path to the quantum chemistry output file containing the computed frequencies</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">rotors</span></code></td>
+<td>optional</td>
+<td>A list of <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></code> and/or <code class="xref py py-class docutils literal"><span class="pre">FreeRotor()</span></code> objects describing the hindered/free rotors</td>
+</tr>
+</tbody>
+</table>
 <p>The <code class="docutils literal"><span class="pre">atom</span></code> and <code class="docutils literal"><span class="pre">bond</span></code> parameters are used to apply atomization energy corrections (AEC), bond corrections (BC), and spin orbit corrections (SOC) for a given <code class="docutils literal"><span class="pre">modelChemistry()</span></code> (see <a class="reference external" href="input.html#model-chemistry">Model Chemistry</a>).</p>
 <p>Allowed atom symbols for the <code class="docutils literal"><span class="pre">atoms</span></code> parameter are
 <code class="docutils literal"><span class="pre">'C'</span></code>, <code class="docutils literal"><span class="pre">'N'</span></code>, <code class="docutils literal"><span class="pre">'O'</span></code>, <code class="docutils literal"><span class="pre">'S'</span></code>, <code class="docutils literal"><span class="pre">'P'</span></code>, and <code class="docutils literal"><span class="pre">'H'</span></code>. For example, for acetylperoxy radical we would write:</p>
