@@ -1502,9 +1502,9 @@ def initializeLog(verbose, log_file_name):
     if os.path.exists(log_file_name):
         backup = os.path.join(log_file_name[:-7], 'RMG_backup.log')
         if os.path.exists(backup):
-            print "Removing old "+backup
+            logging.info("Removing old "+backup)
             os.remove(backup)
-        print 'Moving {0} to {1}\n'.format(log_file_name, backup)
+        logging.info('Moving {0} to {1}\n'.format(log_file_name, backup))
         shutil.move(log_file_name, backup)
     fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
     fh.setLevel(min(logging.DEBUG,verbose)) # always at least VERBOSE in the file
