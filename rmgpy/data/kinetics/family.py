@@ -2243,7 +2243,7 @@ class KineticsFamily(Database):
             elif line.startswith('Estimated'):
                 pass
             elif line.startswith('Multiplied by'):
-                degeneracy = int(line.split()[-1])
+                degeneracy = float(line.split()[-1])
 
         # Extract the rate rule information 
         fullCommentString = reaction.kinetics.comment.replace('\n', ' ')
