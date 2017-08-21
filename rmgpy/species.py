@@ -677,6 +677,10 @@ class Species(object):
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
         assert self.conformer.E0 is not None
+        if not self.hasStatMech():
+            from rmgpy.exceptions import StatmechError
+            logging.error('The conformer in question is {}'.format(self.conformer))
+            raise StatmechError('species {0} does not have stat mech after generateStatMech called'.format(self.label))
         
     def generateEnergyTransferModel(self):
         """
