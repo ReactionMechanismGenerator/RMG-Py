@@ -408,9 +408,9 @@ class RMG(util.Subject):
             pass
 
         data = self.wallTime.split(':')
-        self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
         if not len(data) == 4:
-            raise ValueError('Invalid format for wall time; should be DD:HH:MM:SS.')
+            raise ValueError('Invalid format for wall time {0}; should be DD:HH:MM:SS.'.format(self.wallTime))
+        self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
 
         # Initialize reaction model
         if restart:
