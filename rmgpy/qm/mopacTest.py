@@ -39,18 +39,19 @@ from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
 from rmgpy.molecule import Molecule
 from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
+from rmgpy.exceptions import DependencyError
 
-executablePath = Mopac.executablePath
-if not os.path.exists(executablePath):
-    NO_MOPAC = NO_LICENCE = True
-else:
-    NO_MOPAC = False
-    process = subprocess.Popen(executablePath,
-                               stdin=subprocess.PIPE,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate("\n")
-    NO_LICENCE = 'To install the MOPAC license' in stderr
+
+NO_MOPAC = NO_LICENCE = False
+try:
+    Mopac().testReady()
+except DependencyError, e:
+    if "Couldn't find MOPAC executable" in e.message:
+        NO_MOPAC = NO_LICENCE = True
+    elif 'To install the MOPAC license' in e.message or 'MOPAC_LICENSE' in e.message:
+        NO_LICENCE = True
+    else:
+        raise
 
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
