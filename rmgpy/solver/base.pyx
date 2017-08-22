@@ -663,7 +663,7 @@ cdef class ReactionSystem(DASx):
                             invalidObjects.append(obj)
                     
                     if invalidObjects != []:
-                        return False,invalidObjects,surfaceSpecies,surfaceReactions
+                        return False,True,invalidObjects,surfaceSpecies,surfaceReactions
                     else:
                         logging.error('Model Resurrection has failed')
                         logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
@@ -672,7 +672,7 @@ cdef class ReactionSystem(DASx):
                         logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
                         logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
                         logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
-                        raise DASxError
+                        raise ValueError('invalidObjects could not be filled during resurrection process')
             
             y_coreSpecies = self.y[:numCoreSpecies]
             totalMoles = numpy.sum(y_coreSpecies)
@@ -1067,7 +1067,7 @@ cdef class ReactionSystem(DASx):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, invalidObjects, surfaceSpecies, surfaceReactions
+        return terminated, False, invalidObjects, surfaceSpecies, surfaceReactions
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """

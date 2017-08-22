@@ -598,6 +598,8 @@ class RMG(util.Subject):
                 
                 allTerminated = True
                 numCoreSpecies = len(self.reactionModel.core.species)
+
+                notResurrectedVec = [True for i in xrange(len(self.reactionSystems))]
                 
                 for index, reactionSystem in enumerate(self.reactionSystems):
                     self.reactionSystem = reactionSystem
@@ -611,7 +613,7 @@ class RMG(util.Subject):
                         # Turn pruning off if we haven't reached minimum core size.
                         prune = False
                         
-                    try: terminated, obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
+                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
                         edgeSpecies = self.reactionModel.edge.species,
@@ -632,7 +634,9 @@ class RMG(util.Subject):
                             logging.error(prettify(repr(self.reactionModel.core.reactions)))
                         self.makeSeedMech()
                         raise
-
+                    
+                    notResurrectedVec[index] = not resurrected
+                    
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
                         
@@ -685,20 +689,23 @@ class RMG(util.Subject):
                             # Run a raw simulation to get updated reaction system threshold values
                             for index, reactionSystem in enumerate(self.reactionSystems):
                                 # Run with the same conditions as with pruning off
-                                reactionSystem.simulate(
-                                    coreSpecies = self.reactionModel.core.species,
-                                    coreReactions = self.reactionModel.core.reactions,
-                                    edgeSpecies = [],
-                                    edgeReactions = [],
-                                    surfaceSpecies = self.reactionModel.surface.species,
-                                    surfaceReactions = self.reactionModel.surface.reactions,
-                                    pdepNetworks = self.reactionModel.networkList,
-                                    modelSettings = tempModelSettings,
-                                    simulatorSettings = simulatorSettings,
-                                )
-                                self.updateReactionThresholdAndReactFlags(
-                                    rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                    rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+                                if notResurrectedVec[index]:
+                                    reactionSystem.simulate(
+                                        coreSpecies = self.reactionModel.core.species,
+                                        coreReactions = self.reactionModel.core.reactions,
+                                        edgeSpecies = [],
+                                        edgeReactions = [],
+                                        surfaceSpecies = self.reactionModel.surface.species,
+                                        surfaceReactions = self.reactionModel.surface.reactions,
+                                        pdepNetworks = self.reactionModel.networkList,
+                                        modelSettings = tempModelSettings,
+                                        simulatorSettings = simulatorSettings,
+                                    )
+                                    self.updateReactionThresholdAndReactFlags(
+                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+                                else:
+                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
         
                             logging.info('')    
                         else:
@@ -756,7 +763,7 @@ class RMG(util.Subject):
                     csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
                     sensWorksheet.append(csvfilePath)
                 
-                terminated, obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
+                terminated, resurrected,obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
