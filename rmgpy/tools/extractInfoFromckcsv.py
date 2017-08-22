@@ -28,6 +28,7 @@
 import csv
 import numpy
 from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.reaction import Reaction
 import re
 
 """
@@ -283,6 +284,16 @@ def parseRxnStr(reactionStr, speciesDict):
             for i in range(multipleReactants[label][1]):
                 productStr.insert(index, multipleReactants[label][0])
 
+    return reactantStr, productStr
+
+def makeDummyReaction(reactantStr, productStr, speciesDict):
+    """
+
+    Returns: a :class:Reaction object
+
+    """
     reactants = [speciesDict[label] for label in reactantStr]
     products = [speciesDict[label] for label in productStr]
-    return reactants, products, reactantStr, productStr
+    dummyReaction = Reaction(reactants, products)
+
+    return dummyReaction
