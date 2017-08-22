@@ -28,6 +28,7 @@
 import csv
 import numpy
 from rmgpy.chemkin import getSpeciesIdentifier
+import re
 
 """
 Assume ckcsv contains only one Soln
@@ -93,7 +94,7 @@ def getROPFromCKCSV(ckcsvFile):
                         raise Exception("ckcsv file has two {} which is not in proper format!".format(species_string))
                 else: # where tokens[-1] is something like GasRxn#123
                     header += species_string + ' ROP ' \
-                    + tokens[-1] + '_(' + units + ')'
+                    + tokens[-2] + '_' + tokens[-1] + '_(' + units + ')'
                     if species_string not in spc_indiv_dict:
                         spc_indiv_dict[species_string] = [(header, contentCol)]
                     else:
@@ -233,6 +234,9 @@ def getFluxGraphEdgesDict(spc_rop_dict, core_reactions):
 def getROPFlux(spc_rop_dict, species_string, rxn_index):
     """
     get the flux (numpy:array) for a given species and given rxn
+
+    Development note from nyee: if we switch to parsing by species identifier/str then how
+    do we handle isomorphic checks on duplicate reactions? Do we fall back to index?
     """
     if species_string in spc_rop_dict:
         flux_tup_list = spc_rop_dict[species_string]
@@ -243,3 +247,42 @@ def getROPFlux(spc_rop_dict, species_string, rxn_index):
                 flux = flux_tup[1]
                 return flux
     return []
+
+def parseRxnStr(reactionStr, speciesDict):
+    """
+    Returns lists reactants and products, lists of species objects
+    Also returns lists of the chemkinStr which is not the same as species.label
+    """
+    #Parse the reactionStr correctly for products and reactants
+    splitStr0 = re.sub(re.escape("(+M)"),'',reactionStr) #remove (+M) showing unimolecular as RMG doesn't use this
+    splitStr1 = re.split('\=', splitStr0)
+    reactantStr = re.split('\+', splitStr1[0])
+    productStr = re.split('\+', splitStr1[1])
+
+    multipleReactants = {}
+    removeThese = []
+    for label in reactantStr + productStr:
+        try:
+            assert label in speciesDict, "{0} not in dictionary".format(label)
+        except AssertionError:
+            if re.match('[0-9]', label):
+                removeThese.append(label)
+                newReactant = label[1:]
+                multipleReactants[label] = (newReactant,int(label[0]))
+            assert newReactant in speciesDict, "{0} not in dictionary".format(label)
+
+    for label in removeThese:
+        if label in reactantStr:
+            index = reactantStr.index(label)
+            reactantStr.remove(label)
+            for i in range(multipleReactants[label][1]):
+                reactantStr.insert(index, multipleReactants[label][0])
+        if label in productStr:
+            index = productStr.index(label)
+            productStr.remove(label)
+            for i in range(multipleReactants[label][1]):
+                productStr.insert(index, multipleReactants[label][0])
+
+    reactants = [speciesDict[label] for label in reactantStr]
+    products = [speciesDict[label] for label in productStr]
+    return reactants, products, reactantStr, productStr
