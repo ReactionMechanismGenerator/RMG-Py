@@ -1366,38 +1366,11 @@ class CoreEdgeReactionModel:
         logging.info('Adding seed mechanism {0} to model core...'.format(seedMechanism))
 
         seedMechanism = database.kinetics.libraries[seedMechanism]
-
-        for entry in seedMechanism.entries.values():                
-            if entry._longDesc and 'Originally from reaction library: ' in entry._longDesc:
-                lib = entry._longDesc.replace('Originally from reaction library: ','')
-                lib = lib.replace('\n','')
-                logging.info(lib)
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible
-                 )
-            elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
-                c = entry._longDesc.split('\n')
-                familyname = c[-1].replace('family: ','')
-                logging.info(familyname)
-                tstring = c[0]
-                ind = tstring.find('rate rule')
-                tstring = tstring[ind+9:]
-                tstrings = tstring.split(';')
-                tstrings[0] = tstrings[0][1:]
-                tstrings[-1] = tstrings[-1][:-1]
-                logging.info(tstring)
-                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible,family=familyname,template=tstrings
-                 )
-            else: #pdep or standard library reaction
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=seedMechanism.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible
-                 )
-                
+        
+        rxns = seedMechanism.getLibraryReactions()
+        for rxn in rxns:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             
         # Perform species constraints and forbidden species checks
         
@@ -1461,36 +1434,8 @@ class CoreEdgeReactionModel:
         logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
-        # Load library reactions, keep reversibility as is
-        for entry in reactionLibrary.entries.values():
-            if entry._longDesc and 'Originally from reaction library: ' in entry._longDesc:
-                lib = entry._longDesc.replace('Originally from reaction library: ','')
-                lib = lib.replace('\n','')
-                logging.info(lib)
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible
-                 )
-            elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
-                c = entry._longDesc.split('\n')
-                familyname = c[-1].replace('family: ','')
-                logging.info(familyname)
-                tstring = c[0]
-                ind = tstring.find('rate rule')
-                tstring = tstring[ind+9:]
-                tstrings = tstring.split(';')
-                tstrings[0] = tstrings[0][1:]
-                tstrings[-1] = tstrings[-1][:-1]
-                logging.info(tstring)
-                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible,family=familyname,template=tstrings
-                 )
-            else: #pdep or standard library reaction
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=reactionLibrary.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible
-                 )
+        rxns = reactionLibrary.getLibraryReactions()
+        for rxn in rxns:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
 

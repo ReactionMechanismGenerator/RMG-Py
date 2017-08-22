@@ -50,6 +50,7 @@ from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from .common import saveEntry
+from .family import TemplateReaction
 import codecs
 
 ################################################################################
@@ -132,7 +133,46 @@ class KineticsLibrary(Database):
     
     def __repr__(self):
         return '<KineticsLibrary "{0}">'.format(self.label)
-
+    
+    def getLibraryReactions(self):
+        """
+        makes library and template reactions as appropriate from the library comments
+        and returns at list of all of these LibraryReaction and TemplateReaction objects
+        """
+        rxns = []
+        for entry in self.entries.values():                
+            if entry._longDesc and 'Originally from reaction library: ' in entry._longDesc:
+                lib = entry._longDesc.replace('Originally from reaction library: ','')
+                lib = lib.replace('\n','')
+                logging.info(lib)
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                 reversible=entry.item.reversible
+                 )
+            elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
+                c = entry._longDesc.split('\n')
+                familyname = c[-1].replace('family: ','')
+                logging.info(familyname)
+                tstring = c[0]
+                ind = tstring.find('rate rule')
+                tstring = tstring[ind+9:]
+                tstrings = tstring.split(';')
+                tstrings[0] = tstrings[0][1:]
+                tstrings[-1] = tstrings[-1][:-1]
+                logging.info(tstring)
+                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                 reversible=entry.item.reversible,family=familyname,template=tstrings
+                 )
+            else: #pdep or standard library reaction
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+                 library=self.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                 reversible=entry.item.reversible
+                 )
+            rxns.append(rxn)
+        
+        return rxns
+    
     def markValidDuplicates(self, reactions1, reactions2):
         """
         Check for reactions that appear in both lists,
