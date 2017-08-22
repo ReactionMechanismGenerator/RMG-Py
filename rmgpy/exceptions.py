@@ -78,6 +78,13 @@ class DatabaseError(Exception):
     """
     pass
 
+class DependencyError(Exception):
+    """
+    An exception that occurs when an error is encountered with a dependency.
+    Pass a string describing the circumstances that caused the exception.
+    """
+    pass
+
 class ElementError(Exception):
     """
     An exception class for errors that occur while working with elements.
