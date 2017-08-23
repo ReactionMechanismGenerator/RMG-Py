@@ -458,6 +458,7 @@ class StatmechDatabase(object):
             'HinderedRotor': HinderedRotor,
             'IdealGasTranslation': IdealGasTranslation,
             'GroupFrequencies': GroupFrequencies,
+            'Conformer': Conformer,
         }
         self.global_context = {}
 
