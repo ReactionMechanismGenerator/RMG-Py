@@ -1,0 +1,422 @@
+
+H2O2
+1 O u0 p2 c0 {2,S}
+2 O u0 p2 c0 {1,S}
+
+
+OH
+multiplicity 2
+1 O u1 p2 c0
+
+
+H2
+1 H u0 p0 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+
+
+H
+multiplicity 2
+1 H u1 p0 c0
+
+
+O
+multiplicity 3
+1 O u2 p2 c0
+
+
+H2O
+1 O u0 p2 c0
+
+
+HO2
+multiplicity 2
+1 O u0 p2 c0 {2,S}
+2 O u1 p2 c0 {1,S}
+
+
+O2
+multiplicity 3
+1 O u1 p2 c0 {2,S}
+2 O u1 p2 c0 {1,S}
+
+
+AR
+1 Ar u0 p4 c0
+
+
+N2
+1 N u0 p1 c0 {2,T}
+2 N u0 p1 c0 {1,T}
+
+
+HE
+1 He u0 p1 c0
+
+
+CO
+1 C u0 p1 c-1 {2,T}
+2 O u0 p1 c+1 {1,T}
+
+
+CO2
+1 C u0 p0 c0 {2,D} {3,D}
+2 O u0 p2 c0 {1,D}
+3 O u0 p2 c0 {1,D}
+
+
+CH4
+1 C u0 p0 c0
+
+
+CH3
+multiplicity 2
+1 C u1 p0 c0
+
+
+CH3OH
+1 C u0 p0 c0 {2,S}
+2 O u0 p2 c0 {1,S}
+
+
+C
+1 C u0 p2 c0
+
+
+CH
+multiplicity 4
+1 C u3 p0 c0
+
+
+C2H
+multiplicity 2
+1 C u0 p0 c0 {2,T}
+2 C u1 p0 c0 {1,T}
+
+
+C2H4
+1 C u0 p0 c0 {2,D}
+2 C u0 p0 c0 {1,D}
+
+
+C2H5
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u1 p0 c0 {1,S}
+
+
+C2H6
+1 C u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S}
+
+
+CH3O
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 O u1 p2 c0 {1,S}
+
+
+CH2OH
+multiplicity 2
+1 C u1 p0 c0 {2,S}
+2 O u0 p2 c0 {1,S}
+
+
+CH2(S)
+multiplicity 3
+1 C u2 p0 c0
+
+
+C2H3
+multiplicity 2
+1 C u0 p0 c0 {2,D}
+2 C u1 p0 c0 {1,D}
+
+
+CH2O
+1 C u0 p0 c0 {2,D}
+2 O u0 p2 c0 {1,D}
+
+
+C2H2
+1 C u0 p0 c0 {2,T}
+2 C u0 p0 c0 {1,T}
+
+
+HCO
+multiplicity 2
+1 C u1 p0 c0 {2,D}
+2 O u0 p2 c0 {1,D}
+
+
+// Warning! Duplicate of CH2(S)
+CH2
+multiplicity 3
+1 C u2 p0 c0
+
+
+HOCO
+multiplicity 2
+1 C u1 p0 c0 {2,S} {3,D}
+2 O u0 p2 c0 {1,S}
+3 O u0 p2 c0 {1,D}
+
+
+CH3OO
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 O u0 p2 c0 {1,S} {3,S}
+3 O u1 p2 c0 {2,S}
+
+
+HOCHO
+1 C u0 p0 c0 {2,S} {3,D}
+2 O u0 p2 c0 {1,S}
+3 O u0 p2 c0 {1,D}
+
+
+CH3OOH
+1 C u0 p0 c0 {2,S}
+2 O u0 p2 c0 {1,S} {3,S}
+3 O u0 p2 c0 {2,S}
+
+
+OCHO
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,D}
+2 O u1 p2 c0 {1,S}
+3 O u0 p2 c0 {1,D}
+
+
+CH3CH2O
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,S}
+3 O u1 p2 c0 {2,S}
+
+
+CH2OOH
+multiplicity 2
+1 C u1 p0 c0 {2,S}
+2 O u0 p2 c0 {1,S} {3,S}
+3 O u0 p2 c0 {2,S}
+
+
+CH3CHO
+1 C u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,D}
+3 O u0 p2 c0 {2,D}
+
+
+CH3CH2OH
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u0 p0 c0 {1,S}
+3 O u0 p2 c0 {1,S}
+
+
+CH2CHO
+multiplicity 2
+1 C u1 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,D}
+3 O u0 p2 c0 {2,D}
+
+
+CH2CH2OH
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u1 p0 c0 {1,S}
+3 O u0 p2 c0 {1,S}
+
+
+CH3CHOH
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u1 p0 c0 {1,S} {3,S}
+3 O u0 p2 c0 {2,S}
+
+
+CH2CHOH
+1 C u0 p0 c0 {2,D} {3,S}
+2 C u0 p0 c0 {1,D}
+3 O u0 p2 c0 {1,S}
+
+
+CH3CO
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u1 p0 c0 {1,S} {3,D}
+3 O u0 p2 c0 {2,D}
+
+
+CHCHOH
+multiplicity 2
+1 C u0 p0 c0 {2,D} {3,S}
+2 C u1 p0 c0 {1,D}
+3 O u0 p2 c0 {1,S}
+
+
+CH2CO
+1 C u0 p0 c0 {2,D}
+2 C u0 p0 c0 {1,D} {3,D}
+3 O u0 p2 c0 {2,D}
+
+
+HCCOH
+1 C u0 p0 c0 {2,T} {3,S}
+2 C u0 p0 c0 {1,T}
+3 O u0 p2 c0 {1,S}
+
+
+CH2CHOOH
+1 C u0 p0 c0 {2,D} {3,S}
+2 C u0 p0 c0 {1,D}
+3 O u0 p2 c0 {1,S} {4,S}
+4 O u0 p2 c0 {3,S}
+
+
+HCCO
+multiplicity 2
+1 C u0 p0 c0 {2,T}
+2 C u0 p0 c0 {1,T} {3,S}
+3 O u1 p2 c0 {2,S}
+
+
+CH2CHOO
+multiplicity 2
+1 C u0 p0 c0 {2,D} {3,S}
+2 C u0 p0 c0 {1,D}
+3 O u0 p2 c0 {1,S} {4,S}
+4 O u1 p2 c0 {3,S}
+
+
+CH3CH2OO
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u0 p0 c0 {1,S}
+3 O u0 p2 c0 {1,S} {4,S}
+4 O u1 p2 c0 {3,S}
+
+
+HOCH2CH2OO
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u0 p0 c0 {1,S} {4,S}
+3 O u0 p2 c0 {1,S} {5,S}
+4 O u0 p2 c0 {2,S}
+5 O u1 p2 c0 {3,S}
+
+
+CH3CH2OOH
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u0 p0 c0 {1,S}
+3 O u0 p2 c0 {1,S} {4,S}
+4 O u0 p2 c0 {3,S}
+
+
+CH2CH2OOH
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u1 p0 c0 {1,S}
+3 O u0 p2 c0 {1,S} {4,S}
+4 O u0 p2 c0 {3,S}
+
+
+CH3CHOOH
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u1 p0 c0 {1,S} {3,S}
+3 O u0 p2 c0 {2,S} {4,S}
+4 O u0 p2 c0 {3,S}
+
+
+cC2H4O
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u0 p0 c0 {1,S} {3,S}
+3 O u0 p2 c0 {1,S} {2,S}
+
+
+cC2H3O
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S}
+2 C u1 p0 c0 {1,S} {3,S}
+3 O u0 p2 c0 {1,S} {2,S}
+
+
+OCHCHO
+1 C u0 p0 c0 {2,S} {3,D}
+2 C u0 p0 c0 {1,S} {4,D}
+3 O u0 p2 c0 {1,D}
+4 O u0 p2 c0 {2,D}
+
+
+HOCH2O
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S}
+2 O u0 p2 c0 {1,S}
+3 O u1 p2 c0 {1,S}
+
+
+OCHCO
+multiplicity 2
+1 C u0 p0 c0 {2,D} {3,S}
+2 C u0 p0 c0 {1,D} {4,D}
+3 O u1 p2 c0 {1,S}
+4 O u0 p2 c0 {2,D}
+
+
+CH3C(O)O
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,S} {4,D}
+3 O u1 p2 c0 {2,S}
+4 O u0 p2 c0 {2,D}
+
+
+C2
+multiplicity 3
+1 C u1 p0 c0 {2,T}
+2 C u1 p0 c0 {1,T}
+
+
+CH3C(O)OO
+multiplicity 2
+1 C u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,S} {4,D}
+3 O u0 p2 c0 {2,S} {5,S}
+4 O u0 p2 c0 {2,D}
+5 O u1 p2 c0 {3,S}
+
+
+CH3C(O)OOH
+1 C u0 p0 c0 {2,S}
+2 C u0 p0 c0 {1,S} {3,S} {5,D}
+3 O u0 p2 c0 {2,S} {4,S}
+4 O u0 p2 c0 {3,S}
+5 O u0 p2 c0 {2,D}
+
+
+C2O
+multiplicity 3
+1 C u0 p0 c0 {2,T} {3,S}
+2 C u1 p0 c0 {1,T}
+3 O u1 p2 c0 {1,S}
+
+
+HCOH
+multiplicity 3
+1 C u2 p0 c0 {2,S}
+2 O u0 p2 c0 {1,S}
+
+
+CHCHO
+multiplicity 3
+1 C u0 p0 c0 {2,D} {3,S}
+2 C u1 p0 c0 {1,D}
+3 O u1 p2 c0 {1,S}
+
+
+H2CC
+multiplicity 3
+1 C u0 p0 c0 {2,D}
+2 C u2 p0 c0 {1,D}
+
+

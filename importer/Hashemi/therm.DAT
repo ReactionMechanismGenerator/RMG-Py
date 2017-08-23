@@ -1,0 +1,2288 @@
+
+THERMO ALL
+0200.00  1000.00  6000.00
+
+
+H                       H  1                G   200.00   6000.00   1000.000    1
+ 0.25000000E+01 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.25473660E+05-0.44668285E+00 0.25000000E+01 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00 0.25473660E+05-0.44668285E+00 0.26219035E+05    4
+ 
+	!1333-74-0
+	!H2   Calc from Gurvic's table  HF298= 0.0  REF=Gurvich 78  Max Lst Sq Error Cp
+	!@ 400 & 1300 K 0.33%
+H2 REF ELEMENT    tpis78H  2.   0.   0.   0.G   200.000  6000.000  1000.000	   1
+2.93286575E+00  8.26608026E-04-1.46402364E-07 1.54100414E-11-6.88804800E-16    2
+-8.13065581E+02-1.02432865E+00 2.34433112E+00 7.98052075E-03-1.94781510E-05    3
+2.01572094E-08 -7.37611761E-12-9.17935173E+02 6.83010238E-01 0.00000000E+00    4 	
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+	
+
+ 
+	!7440-59-7
+	!He  HF298=0.0 KJ  Atomic Energy levels Moore  NSRDS-NBS 35 1971  Max Lst Sq
+	!Error Cp 0.0%
+HE REF ELEMENT    g 5/97HE 1.   0.   0.   0.G   200.000  6000.000  1000.000	   1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 9.28723974E-01 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 9.28723974E-01 0.00000000E+00    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+ 
+	!17778-80-2
+	!O  HF298=249.175+/-0.1 KJ  REF=C.E. Moore "Selected Tables of Atomic Spectra"
+	!NSRDS-NBS Sec 7 1976 p. A8 I {HF298=249.229+/-0.002 kJ  REF=ATcT B}
+	
+O                 L 1/90O  1.   0.   0.   0.G   200.000  6000.000  1000.000	   1
+ 2.54363697E+00-2.73162486E-05-4.19029520E-09 4.95481845E-12-4.79553694E-16    2
+ 2.92260120E+04 4.92229457E+00 3.16826710E+00-3.27931884E-03 6.64306396E-06    3
+-6.12806624E-09 2.11265971E-12 2.91222592E+04 2.05193346E+00 2.99687009E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+
+
+	
+	!	3352-57-6
+	!	OH  HYDROXYL RADICAL T0=0 STATWT=2 WE=3738   WEXE=-84.88  WEYE=0.54 B0=18.550
+	!	T0=139.7 STATWT=2  T0=32403 STATWT=2 WE=3184.3 WEXE=97.845 BE=17.355  REF=Poly-
+	!	nomials were calculated directly from Gurvich's Tables wich are direct summation,
+	!	HF298=37.3+/-0.3 kJ  HF0=37.1+/-0.3 kJ   REF=Ruscic et al JPC 106,(2002),2727.
+	!	Ruscic et al JPCRD 2005  {HF298=37.5+/-0.03 kJ  REF=ATcT B}   Max Lst Sq Error
+	!	Cp @ 1200 K 0.28%
+OH HYDROXYL RADI  IU3/03O  1.H  1.   0.   0.G   200.000  6000.000  1000.000	   1
+ 2.83853033E+00 1.10741289E-03-2.94000209E-07 4.20698729E-11-2.42289890E-15    2
+ 3.69780808E+03 5.84494652E+00 3.99198424E+00-2.40106655E-03 4.61664033E-06    3
+-3.87916306E-09 1.36319502E-12 3.36889836E+03-1.03998477E-01 4.48615380E+03    4
+
+ 
+
+	!7732-18-5
+	!H2O REF=Wooley J. RES. NBS 92 (1987), 35. HF298=-241.826+/-0.04 KJ based on
+	!HF298(L) from Cox, Wagman & Medvedev CODATA KEY VAL. for THERMO, Hemisphere 1989
+	!p.21 and heat of vap. from Haar, Gallagher & Kell NBS/NRC Tables, Hemisphere
+	!1984.   {HF298=-241.822+/-0.03 kJ  REF=ATcT A}.
+H2O               L 5/89H   2O   1    0    0G   200.000  6000.000  1000.000	   1
+0.26770389E+01  0.29731816E-02-0.77376889E-06 0.94433514E-10-0.42689991E-14    2
+-0.29885894E+05 0.68825500E+01 0.41986352E+01-0.20364017E-02 0.65203416E-05    3
+-0.54879269E-08 0.17719680E-11-0.30293726E+05-0.84900901E+00-0.29084817E+05    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+	
+ 
+
+	!7727-37-9
+	!N2  REFERENCE ELEMENT HF=0. from TSIV Tables  Max Lst Sq Error Cp @ 6000 K 0.29%
+N2  REF ELEMENT   G 8/02N  2.   0.   0.   0.G   200.000  6000.000  1000.000	   1
+ 2.95257637E+00 1.39690040E-03-4.92631603E-07 7.86010195E-11-4.60755204E-15    2
+-9.23948688E+02 5.87188762E+00 3.53100528E+00-1.23660988E-04-5.02999433E-07    3
+ 2.43530612E-09-1.40881235E-12-1.04697628E+03 2.96747038E+00 0.00000000E+00    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+ 
+	!7782-44-7
+	!O2  CALCULATED FROM ORIGINAL VALUES  HF298=0 KJ  REF=Gurvich 1989. Corrected by
+	!B.McBride NASA TP-2002-211556 Max Lst Sq Error Cp @ 1200 K 0.31%
+	
+O2 REF ELEMENT    TPIS89O  2.   0.   0.   0.G   200.000  6000.000  1000.000	   1
+ 3.66096065E+00 6.56365811E-04-1.41149627E-07 2.05797935E-11-1.29913436E-15    2
+-1.21597718E+03 3.41536279E+00 3.78245636E+00-2.99673416E-03 9.84730201E-06    3
+-9.68129509E-09 3.24372837E-12-1.06394356E+03 3.65767573E+00 0.00000000E+00    4
+ ! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+	!3170-83-0
+	!HO2 RADICAL  GROUND STATE STATWT=2  A0=20.356 B0=1.118 C0=1.056 NU=3436.2,
+	!1391.75,1097.63 EXCITED STATE T0=7029.684 A0=20.486  B0=1.021 C0=0.968
+	!NU=3268.5,1285,929.068 STATWT=2 REF=JACOX JPCRD 17, (1988) P.269   HF298=12.296
+	!+/-0.25  REF=ATcT A   {HF298=12.27+/-0.16  kJ  REF=ATcT B;  HF298=12.55 kJ
+	!REF=Hills & Howard J. CHEM. PHYS 81,(1984),4458;  HF298=-12.41 +/-0.58 kJ
+	!REF=Karton, Parthiban, Martin JPC A 2009}  Max lst Sq Error Cp @ 700 K 0.27%
+	
+HO2               T 1/09H  1.O  2.   0.   0.G   200.000  5000.000  1000.000	   1
+ 4.17228741E+00 1.88117627E-03-3.46277286E-07 1.94657549E-11 1.76256905E-16    2
+ 3.10206839E+01 2.95767672E+00 4.30179807E+00-4.74912097E-03 2.11582905E-05    3
+-2.42763914E-08 9.29225225E-12 2.64018485E+02 3.71666220E+00 1.47886045E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+	! 7722-84-1
+	! H2O2 Hydrogen Peroxide  SIGMA=2  IAIBIC=2.976026 E-117 Ir=0.071093 NU=3599,
+	! 1388,875,3611,1266  X11=90.9 x12=11 x13=11 x15=167.6 x16=3 x22=10 x23=7
+	! x25=11.5 x26=4  x33=10 x35=11.1 x36=2 x55=90.2 x56=3 x66=3  ALFAA1=0.234
+	! ALFAA2=-0.104  ALFAA3=-0.034  ALFAA5=0.234 ALFAA6=-0.174  ALFAB1=0.003
+	! ALFAB2=0.004  ALFAB3=.007 ALFAB5=.003 ALFAB6=.003 ALFAC1=-.001 ALFAC2=.004
+	! ALFAC3=.013 ALFAC5=-.001 ALFAC6=.007  HF298= -135.88+/-0.2 kJ HF0=-129.9 kJ
+	! REF=Dorofeeva et al JPCRD 32 (2003),879  {HF298=-135.77+/-0.07  kJ REF=ATcT A;
+	! HF298=-135.44+/-0.07 kJ  REF=ATcT B}  Max Lst Sq Error CP @ 6000 K 0.29%
+	! Calculated directly from Original tables
+	
+H2O2 DOROFEEVA e  T 8/03H  2.O  2.   0.   0.G   200.000  6000.000  1000.000	   1
+ 4.57977305E+00 4.05326003E-03-1.29844730E-06 1.98211400E-10-1.13968792E-14    2
+-1.80071775E+04 6.64970694E-01 4.31515149E+00-8.47390622E-04 1.76404323E-05    3
+-2.26762944E-08 9.08950158E-12-1.77067437E+04 3.27373319E+00-1.63425145E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+ 
+	!7440-37-1
+	!Ar  HF298=0.  REF=C.E. Moore "Atomic Energy Levels" NSRDS-NBS 35 (1971) p.211
+	!Max Lst Sq Error 0.%
+	
+AR REF ELEMENT    g 5/97AR 1.   0.   0.   0.G   200.000  6000.000  1000.000	   1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967491E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967491E+00 0.00000000E+00    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+!						C1 species:
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> 
+	!7440-44-0
+	!C  Amorphous Carbon, Acetylene black, Lamp black   HF298=716.68+/-0.45 kJ
+	!REF=C.E. Moore "Selected Tables of Atomic Spectra"  NSRDS-NBS Sec 3 (1970)
+	!p A6 I. {HF298=716.87+/-0.06 kJ  REF=ATcT B; HF0=711.53 kJ ATcT rev value as
+	!quoted by Karton Tarnopolsky and Martin Mol Phys 2009}
+	
+	!C                 L 7/88C   1    0    0    0G   200.000  6000.000  1000.000	   1
+	! 0.26055830E+01-0.19593434E-03 0.10673722E-06-0.16423940E-10 0.81870580E-15    2
+	! 0.85411742E+05 0.41923868E+01 0.25542395E+01-0.32153772E-03 0.73379223E-06    3
+	!-0.73223487E-09 0.26652144E-12 0.85442681E+05 0.45313085E+01 0.86195097E+05    4
+	!! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+	!! http://burcat.technion.ac.il/dir/
+	!! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+	!! Accessed April 2016 
+C                       H  0 C  1 O  0      G   200.0   3000.0   1000.0        1
+ 2.49890977E+00 2.41251693E-06-1.88941591E-09 6.24308817E-13-7.45464315E-17    2
+ 8.54861801E+04 3.66709658E+00 2.49975500E+00 5.02138576E-07 1.93092758E-09    3
+-4.94633147E-12 2.74089371E-15 8.54858461E+04 3.66241113E+00                   4
+!DHf(0K) =   170.13 [kcal/mol], taken from SJK v0.9.
+!Q(T) from B3LYP/6-311++G(d,p) by CFG on  06Sep2013
+
+ 
+	!3315-37-5
+	!CH  METHYLIDYNE RADICAL CALCULATED FROM Gurvich's Tables IB=01973   We=2732.46
+	!HF298=595.8+/-0.6 kJ HF0=592.5+/-0.6 kJ  REF= Ruscic et al JPCRD 2005
+	!{HF298=596.17+/-0.12 kJ  REF-ATcT A}
+	!CH               IU3/03 C  1.H  1.   0.   0.G   200.000  6000.000  1000.000	   1
+	! 0.25209369E+01 0.17653639E-02-0.46147660E-06 0.59289675E-10-0.33474501E-14    2
+	! 0.70946769E+05 0.74051829E+01 0.34897583E+01 0.32432160E-03-0.16899751E-05    3
+	! 0.31628420E-08-0.14061803E-11 0.70612646E+05 0.20842841E+01 0.71658188E+05    4
+	!! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+	!! http://burcat.technion.ac.il/dir/
+	!! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+	!! Accessed April 2016 
+CH                      H  1 C  1 O  0      G   200.0   3000.0   1000.0        1
+ 2.66195304E+00 1.70244788E-03-6.83824471E-07 1.30979907E-10-9.71842879E-15    2
+ 7.09589051E+04 6.52673006E+00 3.47158580E+00 4.04745085E-04-1.89387555E-06    3
+ 3.33209599E-09-1.51271339E-12 7.07017941E+04 2.14542345E+00                   4
+!DHf(0K) =   141.76 [kcal/mol], taken from SJK v0.9.
+!Q(T) from B3LYP/6-311++G(d,p) by CFG on  06Sep2013	
+ 
+ 
+	!2465-56-7
+	!CH2 METHYLENE RAD TRIPLET This is for applications where triplet methylene is
+	!not equilibrated with single methylene. Only HF0 is identical to the one given
+	!for the equilibrium Singlet and Triplet. HF298 is o,oo5 kJ lower than given for
+	!the equilibrium HF1000=1.1 kJ lower and HF3000 is 6.8 kJ lower than the
+	!equilibrium    STATWT=3 SIGMA=2   A0=73.811  B0=8.450  C0=7.184   NU=3031,963,
+	!3190  T0=3500  SIGMA=2   HF298=391.2+/-1.6   HF0=390.7 +/-1.6 kJ  REF=Ruscic et
+	!al JPCRD 2003 IUPAC Task Group {HF298=391.46+/-0.13  REF=ATcT C}  Max Lst Sq
+	!Error Cp @ 6000 K 0.27%	
+	!CH2 TRIPLET RAD   IU3/03C  1.H  2.   0.   0.G   200.000  6000.000  1000.000	   1
+	! 3.14631886E+00 3.03671259E-03-9.96474439E-07 1.50483580E-10-8.57335515E-15    2
+	! 4.60412605E+04 4.72341711E+00 3.71757846E+00 1.27391260E-03 2.17347251E-06    3
+	!-3.48858500E-09 1.65208866E-12 4.58723866E+04 1.75297945E+00 4.70504920E+04    4
+	!! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+	!! http://burcat.technion.ac.il/dir/
+	!! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+	!! Accessed April 2016
+	
+CH2                     H  2 C  1 O  0      G   200.0   3000.0   1000.0        1
+ 3.16228823E+00 2.81797936E-03-7.56234720E-07 5.05446460E-11 5.65235508E-15    2
+ 4.60991347E+04 4.77655783E+00 3.83279532E+00 2.24446214E-04 4.68032539E-06    3
+-6.04742859E-09 2.59009153E-12 4.59208129E+04 1.40665998E+00                   4
+!DHf(0K) =    93.49 [kcal/mol], taken from SJK v0.9.
+!Q(T) from B3LYP/6-311++G(d,p) by CFG on  06Sep2013
+	
+ 
+ 
+	!2465-56-7
+	!CH2 METHYLENE RADICAL SINGLET   SIGMA=2  STATWT=1   T0=0  IA=0.1391  IB=0.2498
+	!IC=0.3960   NU=2806,1353,2865.   T0(b 1B1)=8350.  NU=3000,570,3000  A0=73.8
+	!B0=8.59  C0=7.2   HF298=428.8+/-1.6 kJ  HF0=428.3+/-1.6 kJ  REF=Ruscic et al
+	!JPCRD IUPAC Task Group 2003. {HF298=429.04+/-0.14 kJ REF=ATcT A}  Max Lst Sq
+	!Error Cp @ 1300 K 0.40%
+	!CH2(S) SINGLET    IU6/03C  1.H  2.   0.   0.G   200.000  6000.000  1000.000	   1
+	! 3.13501686E+00 2.89593926E-03-8.16668090E-07 1.13572697E-10-6.36262835E-15    2
+	! 5.05040504E+04 4.06030621E+00 4.19331325E+00-2.33105184E-03 8.15676451E-06    3
+	!-6.62985981E-09 1.93233199E-12 5.03662246E+04-7.46734310E-01 5.15727280E+04    4
+	!! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+	!! http://burcat.technion.ac.il/dir/
+	!! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+	!! Accessed April 2016
+
+CH2(S)                  H  2 C  1 O  0      G   200.0   3000.0   1000.0        1
+ 2.28555698E+00 4.60255468E-03-1.97412470E-06 4.09547538E-10-3.34695477E-14    2
+ 5.09224394E+04 8.67683691E+00 4.19194506E+00-2.30793137E-03 8.05090105E-06    3
+-6.60122583E-09 1.95637604E-12 5.04843433E+04-7.54589150E-01                   4
+!DHf(0K) =   102.62 [kcal/mol], taken from SJK v0.9.
+!Q(T) from B3LYP/6-311++G(d,p) by CFG on  06Sep2013
+	
+	
+	
+	!2229-07-4
+	!CH3 METHYL-RAD STATWT=1. SIGMA=6. IA=IB=.2923  IC=.5846  NU=3004,606.4,3161(2),
+	!1396(2)  HF298=146.7 +/-0.3 KJ HF0=150.0+/-0.3 kJ REF= Ruscic et al JPCRD 2003.
+	!{HF298=146.5+/-0.08 kJ  REF=ATcT C}   Max Lst Sq Error Cp @ 6000 K 0.44%.
+	!METHYL RADICAL    IU0702C  1.H  3.   0.   0.G   200.000  6000.000  B  15.03452 1
+
+CH3               IU0702C  1.H  3.   0.   0.G   200.000  6000.000  1000.000	   1
+ 0.29781206E+01 0.57978520E-02-0.19755800E-05 0.30729790E-09-0.17917416E-13    2
+ 0.16509513E+05 0.47224799E+01 0.36571797E+01 0.21265979E-02 0.54583883E-05    3
+-0.66181003E-08 0.24657074E-11 0.16422716E+05 0.16735354E+01 0.17643935E+05    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 
+	!74-82-8
+	!CH4  METHANE  Same as the Anharmonic but calculated Using the RRHO method rather
+	!than the NRRAO2.  Max Lst Sq Error Cp @ 6000. K 0.62%.
+CH4   RRHO        g 8/99C  1.H  4.   0.   0.G   200.000  6000.000  1000.000	   1
+ 1.91178600E+00 9.60267960E-03-3.38387841E-06 5.38797240E-10-3.19306807E-14    2
+-1.00992136E+04 8.48241861E+00 5.14825732E+00-1.37002410E-02 4.93749414E-05    3
+-4.91952339E-08 1.70097299E-11-1.02453222E+04-4.63322726E+00-8.97226656E+03    4
+
+	!74-82-8
+	!CH4 METHANE  STATWT=1. SIGMA=12.  IA=IB=IC=0.52410356  NU=2916.7,1533.295(2),
+	!3019.491(3),1310.756(3)  X11=-26 X12=-3 X13=-75 X14=-4 X22=-.4,X23=-9 X24=-20
+	!X33=-17 X34=-17 X44=-11  ALFA1=.01 ALFA2=-.09 ALFA3=.04 ALFA4=.07 D0=1.10864E-4
+	!HF298=-74.6+/-0.3 KJ HF0=66.63 kJ REF=TSIV 91 {HF298=-74.554+/-0.60 kJ  REF=ATcT
+	!C}   MAX LST SQ ERROR CP @ 1300 K 0.54%.
+	!	CH4   ANHARMONIC  g 8/99C  1.H  4.   0.   0.G   200.000  6000.000  1000.000	   1
+	!	1.65326226E+00 1.00263099E-02-3.31661238E-06 5.36483138E-10-3.14696758E-14    2
+	!	-1.00095936E+04 9.90506283E+00 5.14911468E+00-1.36622009E-02 4.91453921E-05    3
+	!	-4.84246767E-08 1.66603441E-11-1.02465983E+04-4.63848842E+00-8.97226656E+03    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+ 
+	!630-08-0
+	!CO  CARBON-MONOXIDE  CALCULATED FROM TSIV TABLE. REF=TSIV 79  HF298=-110.53+/-
+	!0.17 kJ {HF298=-110.53+/-0.026  REF=ATcT C} Max Lst Sq Error Cp @ 1300 K 0.12%.
+CO                RUS 79C   1O   1    0    0G   200.000  6000.000  1000.000	   1
+ 0.30484859E+01 0.13517281E-02-0.48579405E-06 0.78853644E-10-0.46980746E-14    2
+-0.14266117E+05 0.60170977E+01 0.35795335E+01-0.61035369E-03 0.10168143E-05    3
+ 0.90700586E-09-0.90442449E-12-0.14344086E+05 0.35084093E+01-0.13293628E+05    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!2597-44-6
+	!CHO SIGMA=1 STATWT=2 A0=24.562 B0=1.498 C0=1.403 NU=2435,1878,1087 REF=Marenich
+	!& Boggs JPC 107 (2003),2343-2350 Direct summation using CCSD(T) method. Calc.
+	!from their tables  HF298=42.3+/-2.0 kJ   HF0=41.9 kJ  {HF298=41.83+/-0.1 kJ
+	!REF=ATcT C;  HF298=38.8+/-3.3 kJ  G4  REF=Marochkin & Dorofeeva Comp Theor Chem
+	!991,(2012},182}   Max Lst Sq Error Cp @ 1500 K 0.63%.
+	!CHO               T 5/03C  1.H  1.O  1.   0.G   200.000  6000.000  A  29.01804 1
+HCO               T 5/03C  1.H  1.O  1.   0.G   200.000  6000.000  1000.000	   1
+ 3.92001542E+00 2.52279324E-03-6.71004164E-07 1.05615948E-10-7.43798261E-15    2
+ 3.65342928E+03 3.58077056E+00 4.23754610E+00-3.32075257E-03 1.40030264E-05    3
+-1.34239995E-08 4.37416208E-12 3.87241185E+03 3.30834869E+00 5.08749163E+03    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 
+	!50-00-0
+	!CH2O  FORMALDEHYDE  SIGMA=2 A0=9.40546 B0=1.295407 C0=1.134216 NU=2782.4,1746.1,
+	!1500.1,1167.2,2843.2,1249.1   HF298=-109.164+/-0.1 kJ     REF=ATcT C 2011.
+	!{HF298=-108.58 kJ  REF=Gurvich 89;  HF298=-112.5+/-8. kJ  REF=Burcat G3B3}  Max
+	!Lst Sq Error Cp @ 1300 K 0.61%.
+	!HCHO Formaldehyde T 5/11H  2.C  1.O  1.   0.G   200.000  6000.000  B  30.02598 1
+CH2O Formaldehyde T 5/11H  2.C  1.O  1.   0.G   200.000  6000.000  1000.000	   1
+ 3.16952665E+00 6.19320560E-03-2.25056366E-06 3.65975660E-10-2.20149458E-14    2
+-1.45486831E+04 6.04207898E+00 4.79372312E+00-9.90833322E-03 3.73219990E-05    3
+-3.79285237E-08 1.31772641E-11-1.43791953E+04 6.02798058E-01-1.31293365E+04    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+ 
+ 
+	! from Xiong et al., Combust. Flame 161 (2014) 885–897
+	!3-HCOH                  C   1H   2O   1    0G   298.150  6000.000 1000.00      1
+	! 0.62184153E+01 0.18701090E-02-0.17117529E-06-0.44242689E-10 0.63999362E-14    2
+	! 0.23486822E+05-0.97996712E+01 0.36513441E+01 0.46834047E-02 0.11223500E-05    3
+	!-0.80289814E-09-0.77469460E-12 0.24561953E+05 0.49211311E+01                   4
+	!1-HCOH                  C   1H   2O   1    0G   298.150  6000.000 1000.00      1
+	! 0.57648468E+01 0.21295433E-02-0.19747641E-06-0.51074096E-10 0.74327861E-14    2
+	! 0.10621689E+05-0.77241540E+01 0.32130404E+01 0.32250737E-02 0.24648079E-05    3
+	! 0.15449875E-08-0.27946393E-11 0.11899702E+05 0.76449280E+01                   4
+	
+	!19710-56-6   
+	!CHOH trans Hydroxymethylene trans  SIGMA=1  STATWT=1  IA=0.2970  IB=2.3197
+	!IC=2.6167  Nu=3634,2827,1536,1330,1224,1099  REF=Burcat G3B3  HF298=108.16+/-.43
+	!kJ  REF=Ruscic ATcT D 2013  {HF298=106.47+/-8 kJ  REF=Burcat G3B3}  Max Lst Sq
+	!Error Cp @ 6000 K 0.45%.
+	!CHOH trans  Hydr  T12/14C  1.H  2.O  1.   0.G   200.000  6000.000  B  30.02598 1
+	!3.63500546E+00 5.45479239E-03-1.91285077E-06 3.03882849E-10-1.79904440E-14    2
+	!5.28968001E+04 4.34543184E+00 4.72862471E+00-1.02082828E-02 4.21639528E-05    3
+	!-4.64774522E-08 1.72559970E-11 5.31829869E+04 1.69093263E+00 5.44279146E+04    4
+    !
+	!19710-56-6
+	!CH2O cis  Hydroxymethylene  CH**OH cis  SIGMA=1 STATWT=1  IA=0.3036  IB=2.3235
+	!IC=2.6260  Nu=3410,2727,1492,1346,1284.5,1019  HF298=30.0139+/-2 kcal
+	!REF=Burcat G3B3  {HF298(trans)=108.19+/-0.42 kJ  HF298(cis)=126.66+/-0.42  kJ
+	!REF=ATcT C 2011}  Max Lst Sq Error Cp @ 6000 K 0.49%.
+HCOH  CH**-OH cis T 9/09C  1.H  2.O  1.   0.G   200.000  6000.000 1000.00      1
+ 3.65237205E+00 5.55807060E-03-1.97617181E-06 3.16823378E-10-1.88747598E-14    2
+ 1.35536156E+04 4.22140840E+00 4.65733258E+00-9.53742306E-03 4.04679152E-05    3
+-4.45317569E-08 1.64761516E-11 1.38615127E+04 1.97860732E+00 1.51034947E+04    4	
+	
+	
+	
+	
+	
+	
+	
+
+ 
+	!2143-68-2
+	!CH3O  METHOXY RADICAL  SYMNO=3.  A0=5.2  B0=C0=0.93  T0 STATWT=3 NU=2840,1417,
+	!1047,2774(2),1465,1210,914,653 T0=61.97 STATWT=1  Specific calculations perfo-
+	!rmed and the polynomials were calculated from tabular values obtained.
+	!HF298=21.0+/-2.1 kJ   HF0=28.4 +/-2.1 kJ  REF=Ruscic et al IUPAC Group JPCRD
+	!2003  {HF298=21.85+/-0.4 kJ  REF=ATcT C}   Max Lst Sq Error Cp @ 200 K 0.93%.
+CH3O  METHOXY RA  IU1/03C  1.H  3.O  1.   0.G   200.000  6000.000 1000.00      1
+ 4.75779238E+00 7.44142474E-03-2.69705176E-06 4.38090504E-10-2.63537098E-14    2
+ 3.78111940E+02-1.96680028E+00 3.71180502E+00-2.80463306E-03 3.76550971E-05    3
+-4.73072089E-08 1.86588420E-11 1.29569760E+03 6.57240864E+00 2.52571660E+03    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!2597-43-5
+	!H3CO  HYDROXYMETHYLENE RAD (CH2OH)  STATWT=2.  SIGMA=1.  IA=.4274  IB=2.789
+	!IC=3.2164    NU=3650,3169,3071,1459,1334,1176,1048,420,234   HF298=-17.0+/-0.7
+	!kJ.  HF0=-10.7+/-0.7  Polynomials calculated from original Tables of Johnson &
+	!Hudgens JPC 100 (1996),19874  extrapolated to 6000 K    REF=Ruscic et al JPCRD
+	!2003 IUPAC Group   {HF298=-16.1+/-0.4 kJ  REF=ATcT C}   Max Lst Sq Error Cp @
+	!200 & 6000 K 0.38%
+CH2OH RADICAL     IU2/03C  1.H  3.O  1.   0.G   200.000  6000.000 1000.00      1
+ 5.09314370E+00 5.94761260E-03-2.06497460E-06 3.23008173E-10-1.88125902E-14    2
+-4.03409640E+03-1.84691493E+00 4.47834367E+00-1.35070310E-03 2.78484980E-05    3
+-3.64869060E-08 1.47907450E-11-3.50072890E+03 3.30913500E+00-2.04462770E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!67-56-1
+	!CH4O  METHANOL (CH3OH) STATWT=1.  SIGMA=1. IA=.6578  IB=3.4004  IC=3.5306
+	!Brot=28.182 ROSYM=3  V3=373.21  V6=-0.521 cm-1  NU=3681,3000,2844,1477,1455,
+	!1345,1060,1033,2960,1477,1165    HF298=-201. KJ  REF=CHEN WILHOIT &  ZWOLINSKI
+	!JPCRD 6,(1977),105  {HF298=-200.70+/-0.17 kJ REF=ATcT C}  MAX LST SQ ERROR Cp
+	!@ 1300 K  0.82%.
+CH3OH Methyl alc  T06/02C  1.H  4.O  1.   0.G   200.000  6000.000 1000.00      1
+ 3.52726795E+00 1.03178783E-02-3.62892944E-06 5.77448016E-10-3.42182632E-14    2
+-2.60028834E+04 5.16758693E+00 5.65851051E+00-1.62983419E-02 6.91938156E-05    3
+-7.58372926E-08 2.80427550E-11-2.56119736E+04-8.97330508E-01-2.41746056E+04    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!124-38-9
+	!CO2  CARBON-DIOXIDE   SIGMA=2   B0=0.39027   NU=1333.5,667(2),2351   X11=-3.014
+	!X12=-5.058   X12=-19.048   X22=1.521   X23=-12.616   X33=-12.597   G22=-1.422
+	!Y111=.0184   Y112=-.0667   Y113=-.0944    Y122=-.0657  Y123=.0880   Y133=.0268
+	!Y222=.0105   Y223=-.0168   Y233=.0320   Y333=.0115   W0=51.834   ALPHA1=.00115
+	!ALPHA2=-.000715   ALPHA3=.00311   D000=.129E-6   T0=30000 STATWT=3;   T0=33000
+	!STATWT=6  T0=36000  STATWT=3;  T0=45000  STATWT=2;  REF=Gurvich Vol 2 1991 p.27
+	!HF298=-393.51 KJ  {HF298=-393.472+/-0.014 kJ  REF=ATcT A}   Max Lst Sq Error Cp
+	!@ 1400 K 0.4%
+CO2               L 7/88C   1O   2    0    0G   200.000  6000.000 1000.00      1
+ 0.46365111E+01 0.27414569E-02-0.99589759E-06 0.16038666E-09-0.91619857E-14    2
+-0.49024904E+05-0.19348955E+01 0.23568130E+01 0.89841299E-02-0.71220632E-05    3
+ 0.24573008E-08-0.14288548E-12-0.48371971E+05 0.99009035E+01-0.47328105E+05    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+	!2564-86-5
+	!COOH  HydroxyFormil Rad Equil   HOCO   SIGMA=1 STATWT=2 IAIBIC=35. NU=3316,1797,
+	!1261,1088,620,615  REF=TSIV   HF298=-183.971+/-0.533 kJ equil  REF=ATcT C 2011;  
+	!{HF298=-181.32+/-2.3 kJ  REF=ATcT A;  HF298=-213.+/-13 KJ  REF=Gurvich 91;
+	!HF298=-185.7 kJ  REF=Burcat G3B3}  Max Lst Sq Error Cp @ 6000 K 0.39%.  The 
+	!polynomials were adjusted by B. Ruscic.
+	!COOH   equilib    A 5/14C  1.O  2.H  1.   0.G   200.000  6000.000  B  45.01744 1
+	!HOCO   equilib    A 5/14C  1.O  2.H  1.   0.G   200.000  6000.000 1000.00      1
+	!5.39206152E+00 4.11221455E-03-1.48194900E-06 2.39875460E-10-1.43903104E-14    2
+	!-2.36480760E+04-2.23529091E+00 2.92207919E+00 7.62453859E-03 3.29884437E-06    3
+	!-1.07135205E-08 5.11587057E-12-2.33512327E+04 1.12925886E+01-2.21265065E+04    4
+	!! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+	!! http://burcat.technion.ac.il/dir/
+	!! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+	!! Accessed April 2016
+HOCO           FAB/JAN05C   1O   2H   1    0G   200.00   3000.00   998.402     1 !H298 =-44.33 kcal/mol [FAB/JAN05]
+ 4.63988707E+00 5.66362726E-03-2.67855311E-06 6.17048884E-10-5.60953531E-14    2 !S298 = 60.07 cal/mol/K [FAB/JAN05]
+-2.40527335E+04 1.90175132E+00 2.82191157E+00 9.66218175E-03-2.78560177E-06    3 !Cp [FAB/JAN05] (polyfit RAS/GLA08a)
+-4.12692493E-09 2.61472072E-12-2.35465218E+04 1.14284719E+01                   4 !
+! Fabian WMF Janoschek R J Mol Struct THEOCHEM 2005, 713, 227–234
+! CL Rasmussen J Hansen P Marshall P Glarborg Int J Chem Kinet 40 (2008) 454-480
+
+
+
+OCHO              1104  C   1H   1N   0O   2G   298.150  3000.000 1000.00      1 ! fitted to litt data
+ 4.41052368E+00 7.50888367E-03-4.25889679E-06 1.12761124E-09-1.14144138E-13    2
+-1.70297531E+04 3.43148293E+00 3.62860375E+00 8.12496033E-03-1.41560718E-06    3
+-3.27951824E-09 1.61553900E-12-1.67477889E+04 7.83169538E+00                   4
+! Marshall and Glarborg, Proc. Combust. Inst. 35 (2015) 153–160 
+ 
+	!64-18-6
+	!CH2O2  METHANOIC (FORMIC) ACID  HCOOH MONOMER  STATWT=1 SIGMA=1  IA=1.0953
+	!IB=6.9125  IC=8.0078  BROT=24.96 ROSYM=1 V(1)=2011.  V(2)=3123. V(3)=192.
+	!NU=3570,2943,1770,1387,1229,1105,625,1033  NEL=100  HF298=-378.5+/-0.25 kJ for 
+	!equil. mix.  REF=ATcT C   {HF298=-378.6 kJ  REF=CHAO & ZWOLINSKI JPCRD 7.(1978),
+	!363   HF298=-363.9 kJ  REF=Burcat G3B3 calc}  Max Lst Sq Error Cp @6000 K 0.47%
+	!The polynomials were adjusted by B Ruscic.
+HOCHO FORMIC ACID A 5/14H   2C   1O   2    0G   200.000  6000.000 1000.00      1
+ 0.46138316E+01 0.64496364E-02-0.22908251E-05 0.36716047E-09-0.21873675E-13    2
+-4.53303180E+04 0.84788383E+00 0.38983616E+01-0.35587795E-02 0.35520538E-04    3
+-0.43849959E-07 0.17107769E-10-4.67785744E+04 0.73495397E+01-4.55218865E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!2143-58-0
+	!CH3O2  METHYLPEROXIDE RAD (CH3OO)  SIGMA=3  STATWT=2  IA= 1.6120 IB= 7.4226
+	!IC=8.4941    NU=3380,3167,3075,1511,1500,1462,1228,1169,1140,929,493,137.8
+	!HF298=2.854+/-2. kcal  REF=Burcat G3B3  {HF298=12.055+/-0.9 kJ  REF=ATcT C 2011;
+	!HF298-9.0+/-5.1 kJ   REF=Janoscheck IUPAC Sheets JPC 102,(1998) 1770.}  MAX LST
+	!SQ ERROR Cp @ 6000 K 0.50 %
+	!CH3O2 Methyl Per  T04/10C  1.H  3.O  2.   0.G   200.000  6000.000  B  47.03332 1
+	!5.55530486E+00 9.12236137E-03-3.23851661E-06 5.18713798E-10-3.08834151E-14    2
+	!-1.03569402E+03-3.99158547E+00 4.97169544E+00-5.29356557E-03 4.77334149E-05    3
+	!-5.77065617E-08 2.22219969E-11-1.29022161E+02 2.81501182E+00 1.43618036E+03    4
+ 
+!  H. Hashemi, et al., High-Pressure Oxidation of  Methane, 2016
+CH3OO                   C   1H   3O   2     G   300.000  3000.000 1000.00      1
+ 2.88425280E+00 1.40067710E-02-6.88363514E-06 1.63789865E-09-1.53129010E-13    2
+-2.00432571E+01 1.18152986E+01 2.93065328E+00 8.68504133E-03 8.80315108E-06    3
+-1.39560866E-08 5.02939926E-12 2.27483038E+02 1.28754751E+01                   4
+
+
+
+
+CH2OOH                  C   1H   3O   2    0G   200.00   2500.00  1000.00      1 !H298 = 15.79 kcal/mol [JAN/ROS04]
+ 6.98746029E+00 9.00484259E-03-3.24366912E-06 5.24324826E-10-3.13587080E-14    2 !S298 = 65.89 cal/mol/K [JAN/ROS04]
+ 5.01257769E+03-1.02619220E+01 5.83126679E+00-3.51771199E-03 4.54550577E-05    3 !Cp(T) scaled Cp[CH3OO](T) to Cp298 = 14.89 cal/mol/K [JAN/ROS04]
+-5.66903320E-08 2.21633070E-11 6.06187060E+03-5.79143222E-01                   4 ! 
+! Aranda, V., et al., Int. J. Chemical Kinet. 45.5 (2013): 283-294.	
+ 
+ 
+HOCHOH            1311  C   1H   3N   0O   2G   298.150  3000.000 1000.00      1 ! PM
+ 4.86295370E+00 1.23471277E-02-5.95787471E-06 1.34757724E-09-1.18911894E-13    2
+-2.71063590E+04 1.47289499E+00 1.70704907E+00 2.28906928E-02-1.86531423E-05    3
+ 7.73103555E-09-1.19476312E-12-2.63711754E+04 1.72183239E+01                   4
+! Marshall and Glarborg, Proc. Combust. Inst. 35 (2015) 153–160  
+
+ 
+HOCH2O            1311  C   1H   3N   0O   2G   298.000  3000.000 1000.00      1
+3.64142330E+00  1.46738744E-02-8.24143161E-06 2.24789889E-09-2.38670785E-13    2
+-2.22304345E+04 7.15858335E+00-1.97308533E+00 4.26372227E-02-5.84444247E-05    3
+4.12218747E-08 -1.13584932E-11-2.13827984E+04 3.28690136E+01                   4
+! Marshall and Glarborg, Proc. Combust. Inst. 35 (2015) 153–160  
+
+ 
+ 
+ 
+CH3OOH                  C   1H   4O   2     G   300.000  3000.000 1000.00      1
+ 4.45931439E+00 1.41050786E-02-6.53177245E-06 1.47662893E-09-1.32512049E-13    2
+-1.74300966E+04 4.03866676E+00 2.85836613E+00 1.59700646E-02-2.52104084E-06    3
+-5.73599921E-09 2.80534675E-12-1.68829666E+04 1.28970185E+01                   4 
+!  H. Hashemi, et al., High-Pressure Oxidation of Methane, 2016
+ 
+ 
+ 
+OCH2O2H    4/ 9/98 THERMC   1H   3O   3    0G   300.000  5000.000 1420.000     1
+ 1.15398246E+01 5.34291432E-03-1.81878917E-06 2.81968625E-10-1.63584348E-14    2
+-1.68237489E+04-3.20700633E+01 1.93823075E+00 3.01465730E-02-2.61053152E-05    3
+ 1.09463562E-08-1.78312692E-12-1.38166625E+04 1.85042002E+01                   4 
+! Dooley, et al., Int. J. Chem. Kinet. 42 (2010) 527–549.
+ 
+ 
+
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+!						C2 species:
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> 
+ 
+
+	!12070-15-4
+	!C2  singlet T0=0  SIGMA=2  STATWT=1 Be=1.7930  We=1854.71  WeXe=13.34
+	!WeYe=-0.17  ALPHAE=0.0421  De=6.92E-6  REF=Hubert & Herzberg Webbook 2009 and
+	!Gurvich 91  HF298=826.8+/-8. kJ  REF=Karton & Martin Mol Phys 107,(2009),977
+	!{HF298=828.374+/-0.3 kJ  REF=ATcT C 2011;  HF298=830.457+/-10 kJ
+	!REF=Gurvich 91; HF298=815.9 kJ REF=Van-Orden  Saykally Chem. Rev 98,(1998),2313}
+	!Max Lst Sq Error Cp @ 1300 K 0.32%.
+C2 singlet        T05/09C  2.   0.   0.   0.G   200.000  6000.000 1000.        1
+ 3.25289233E+00 1.23190307E-03-4.50354156E-07 7.49356656E-11-4.57925077E-15    2
+ 9.83737348E+04 3.95859964E+00 3.69386038E+00-1.84767427E-03 5.23712984E-06    3
+-3.83965401E-09 8.61135711E-13 9.83822318E+04 2.23677006E+00 9.94405213E+04    4
+	!
+	!12070-15-4
+	!C2 triplet  T0=716.2  SIGMA=2  STATWT=3  Be=1.6324  We=1641.35  WeXe=11.67
+	!ALPHAE=0.01661  De=6.44E-6  REF=Hubert & Herzberg Webbook and Gurvich 91
+	!HF0=827.26+/-8. kJ  REF=Karton Tarnopolsky Martin Mol Phys 107,(2009),977
+	!Max Lst Sq Error Cp @ 1300 K 0.30%
+	!C2 triplet        T05/09C  2.   0.   0.   0.G   200.000  6000.000  B  24.02140 1
+	!3.43350371E+00 1.07185010E-03-3.97897382E-07 6.67457391E-11-4.10152154E-15    2
+	!1.00178987E+05 4.10588356E+00 3.76163273E+00-2.72143299E-03 8.69879462E-06    3
+	!-8.19304667E-09 2.62415296E-12 1.00254566E+05 3.18038623E+00 1.01317039E+05    4 
+
+
+ 
+	!2122-48-7
+	!C2H ETHYNYL RADICAL SIGMA=1  STATWT=2    B0=1.457 NU=3328,372(2),1841  T0=4000
+	!STATWT=4  B0=1.457 NU=3460,560(2),1850  REF=Kiefer, Sidhu, Kern, Xie,Chen,
+	!Harding 1992  HF298=568.056+/-0.3 kJ  REF=ATcT A {HF298=567.9+/-0.2 kJ
+	!REF=ATcT C 2011;  HF298=568.522+/-4 kJ REF= NIST Webbook 1999. HF298=567.4+/-1.5
+	!kJ  REF=Szalay Tajti & Stanton Mol Phys 103,(2005),xxx}   MAX LST SQ ERROR Cp @
+	!400 K 0.34 % .
+C2H Ethynyl Rad   T 5/10C  2.H  1.   0.   0.G   200.000  6000.000 1000.        1
+ 3.66270248E+00 3.82492252E-03-1.36632500E-06 2.13455040E-10-1.23216848E-14    2
+ 6.71683790E+04 3.92205792E+00 2.89867676E+00 1.32988489E-02-2.80733327E-05    3
+ 2.89484755E-08-1.07502351E-11 6.70616050E+04 6.18547632E+00 6.83210436E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 
+	!74-86-2
+	!C2H2 ACETYLENE SIGMA=2 B0=1.1766 NU=3372.83,1973.8,3283.83,612.88(2),730.29(2)
+	!X11=-18.57,X12=-13.09 X13=-102.39 X14=-16.54 X15=-10.85 X22=-7.92 X23=-2.83
+	!X24=-12.70 X25=-1.38 X33=-30.95 X34=-8.22 X35=-8.68 X44=3.3 X45=-5.24 X55=-2.27
+	!G44=-1.36 G55=3.45 ALPHA1=6.83E-3 ALPHA2=6.3E-3 ALPHA3=5.6E-3 ALPHA4=-1.3E-3
+	!ALPHA5=-2.2E-3 D0=1.598E-6 T0=25000(3),35000(6),42198(1),50000(3),54116(1)
+	!REF=TSIV HF298=228.2+/-0.8 kJ  HF0=228.769 {HF298=228.32+/-0.15 kJ  REF=ATcT C}
+	!Max Lst Sq Error Cp @ 6000 K 0.24%
+!C2H2,acetylene    g 1/91C  2.H  2.   0.   0.G   200.000  6000.000  A  26.03728 1
+C2H2              g 1/91C  2.H  2.   0.   0.G   200.000  6000.000 1000.        1
+ 4.65878489E+00 4.88396667E-03-1.60828888E-06 2.46974544E-10-1.38605959E-14    2
+ 2.57594042E+04-3.99838194E+00 8.08679682E-01 2.33615762E-02-3.55172234E-05    3
+ 2.80152958E-08-8.50075165E-12 2.64289808E+04 1.39396761E+01 2.74459950E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 
+
+
+
+
+	!	H2CC                    H  2 C  2 O  0      G     298.0    6000.0    1000.0    1
+	!	4.64241230E+00 4.45101029E-03-1.51900528E-06 2.36126946E-10-1.37457668E-14    2
+	!	4.83798914E+04-5.81740342E-01 2.62922318E+00 1.33909598E-02-1.98275249E-05    3
+	!	1.80813401E-08-6.47719980E-12 4.88573332E+04 9.20664687E+00                   4
+	!	! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+	!2143-69-3
+	!CH2C   VINYLIDENE RADICAL  SIGMA=2  STATWT=1  IA=0.29432  IB=2.17453  IC=2.46885
+	!NU=3344,3239,1710,1288,787,444 REF=OSAMURA, SCHAFER, GRAY & MILER J.A.C.S. 103
+	!(1981) 1904.  HF298=412.272+/-0.61 kJ  REF=ATcT C 2011  {HF0=414.489 kJ
+	!REF=Chen, Jonas,Kinsey & Field J Chem Phys 91,(1989),3976;  HF298=413.36+/-1.8
+	!kJ REF=ATcT A}   Max Lst Sq Error Cp @ 6000 K 0.35%.
+H2CC Vinylidene   T 7/11C  2.H  2.   0.   0.G   200.000  6000.000    1000.0    1
+ 4.27807305E+00 4.75622626E-03-1.63007378E-06 2.54622680E-10-1.48860086E-14    2
+ 4.80140478E+04 6.39978600E-01 3.28154941E+00 6.97642650E-03-2.38527914E-06    3
+-1.21077631E-09 9.82041734E-13 4.83191706E+04 5.92035686E+00 4.95846418E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+
+
+
+	!2669-89-8
+	!C2H3  VINYL-RAD  STATWT=2.  SIGMA=1.  A0=7.49   B0=1.07   C0=0.93  Nu=3265,3190,
+	!3115,1670,1445,1185,920,825,785  REF=Ervin JACS 112 (1990),5750}  HF298=296.58
+	!+/-0.92 kJ  HF0=300.867 kJ  REF=ATcT A   {HF298=297.272+/-0.5  kJ  REF=ATcT C;
+	!HF298=299.74+/-5 kJ  REF=Ervin JACS 112,(1990),5750; also Kromkin Chimicheskaya
+	!Fizika 22,(2002),30;   HF298=295.4+/-1.7 kJ  REF=Russell & Gutman JPC 93,(1989),
+	!5184 also  Kaiser & Wallington JPC 100,(1996),4111 also Parthiban & Martin JCP
+	!114,(2001),6014; HF298=299.6+/-3 kJ  REF=Tsang Energetics of Organic Free Rad
+	!1996;  HF298=297.1+/-4.2  REF=De Moore et al JPL 97-4 1997}  Max Lst Sq Error
+	!Cp @ 400 K 0.54%.
+C2H3  Vinyl Radi  ATcT/AC  2.H  3.   0.   0.G   200.000  6000.000    1000.0    1
+ 4.15026763E+00 7.54021341E-03-2.62997847E-06 4.15974048E-10-2.45407509E-14    2
+ 3.38566380E+04 1.72812235E+00 3.36377642E+00 2.65765722E-04 2.79620704E-05    3
+-3.72986942E-08 1.51590176E-11 3.44749589E+04 7.91510092E+00 3.56701718E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+	!74-85-1
+	!C2H4  ETHYLENE STATWT=1.  SIGMA=4.  A0=4.86596  B0=1.001329  C0=0.828424
+	!NU=3021,1625,1344,1026,3083,1222,949,940,3105,826,2989,1444   REF=CHAO &
+	!ZWOLINSKY, JPCRD 4,(1975),251  HF298=52.5 kJ HF0=61.025 kJ   REF=TRC 4/1988
+	!{HF298=52.55 +/-0.14 kJ  REF=ATcT C}  MAX LST SQ ERROR Cp 20K 0.80 .
+C2H4              g 1/00C  2.H  4.   0.   0.G   200.000  6000.000    1000.0    1
+ 3.99182724E+00 1.04833908E-02-3.71721342E-06 5.94628366E-10-3.53630386E-14    2
+ 4.26865851E+03-2.69081762E-01 3.95920063E+00-7.57051373E-03 5.70989993E-05    3
+-6.91588352E-08 2.69884190E-11 5.08977598E+03 4.09730213E+00 6.31426266E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+
+	!2025-56-1
+	!C2H5  ETHYL RAD.  STATWT=2  SIGMA=1  IA=0.2917  IB=3.6874  IC=3.9786  IR=0.1812
+	!ROSYM=6.   V6=16.6 cm-1  NU=3128.7,3037,2987,2920,2842,1440(2),1425,1366,1175,
+	!1138,958,780,528.1  HF298=119.7+/-0.7 kJ  REF=Ruscic IUPAC Task Group
+	!{HF298=119.9+/-0.4 kJ  REF=ATcT C 2011;  HF298=28.36 Kcal. REF= Chen, Rauk &
+	!Tschuikow-Roux (1990)}     Max Lst Sq Error Cp & 6000 K 0.58%
+C2H5 ethyl radic  IU1/07C  2.H  5.   0.   0.G   200.000  6000.000    1000.0    1
+ 4.32195633E+00 1.23930542E-02-4.39680960E-06 7.03519917E-10-4.18435239E-14    2
+ 1.21759475E+04 1.71103809E-01 4.24185905E+00-3.56905235E-03 4.82667202E-05    3
+-5.85401009E-08 2.25804514E-11 1.29690344E+04 4.44703782E+00 1.43965189E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+	!74-84-0
+	!C2H6  ETHANE  STATWT=1.  SIGMA=6.  IA=1.0481  IB=IC=4.22486 Ir=.26203 ROSYM=3
+	!V0=2.96 kcal   NU=2954,1388,995,2896,1379,2969(2),1468(2),1190(2),2985(2),
+	!1469(2),822(2) HF298=-83.863 kJ  REF=CHAO WILHOIT & ZWOLINSKI JPCRD 2,(1973),
+	!427   {HF298=-83.77 +/-0.16 kJ  REF=ATcT C}  MAX LST SQ ERROR Cp @ 6000K 0.63%.
+C2H6              g 8/88C  2.H  6.   0.   0.G   200.000  6000.000    1000.0    1
+ 4.04666411E+00 1.53538802E-02-5.47039485E-06 8.77826544E-10-5.23167531E-14    2
+-1.24473499E+04-9.68698313E-01 4.29142572E+00-5.50154901E-03 5.99438458E-05    3
+-7.08466469E-08 2.68685836E-11-1.15222056E+04 2.66678994E+00-1.00849652E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+	!12071-23-7
+	!C2O        SIGMA=1  STATWT=3  B0=0.385  NU=1971,379.53(2),1063
+	!T0=5310.   SIGMA=1  STATWT=2  B0=0.385  NU=1950,379.53(2),1063
+	!T0=8190.   SIGMA=1  STATWT=1  B0=0.385  NU=2010,379.53(2),1063
+	!T0=11651.  SIGMA=1  STATWT=6  B0=0.407  Nu=2046,594.75(2),1284  REF=Jacox 98
+	!HF298=378.86+/-1.2 kJ  REF=ATcT C 2011  {HF298=291.04+/-12 kJ HF0=287.0 kJ
+	!REF=Gurvich 91; HF298=286.6 kJ REF=JANAF; both values were declared erroneous by
+	!Newmark JCP 108,(1998),4070 and Williams & Fleming Proc. Comb. Inst 31,(2007),
+	!1109}  Max Lst Sq Error Cp @ 1200 K 0.23%.
+C2O               T 8/11C  2.O  1    0.   0.G   200.000  6000.000    1000.0    1
+ 5.42468378E+00 1.85393945E-03-5.17932956E-07 6.77646230E-11-3.53315237E-15    2
+ 4.37161379E+04-3.69608405E+00 2.86278214E+00 1.19701204E-02-1.80851222E-05    3
+ 1.52777730E-08-5.20063163E-12 4.43125964E+04 8.89759099E+00 4.55661248E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+	
+
+ 
+	!51095-15-9
+	!C2HO  KETENYL RAD  T0=0  SIGMA=1  STATWT=2  A0=34.99  B0=0.3640  C0=0.3602
+	!NU=3371,2099,1249,568,506,511  T0=643  STATWT=2  B0=0.3597 Nu=3485,2108,1302,
+	!398(2),522(2)  T0=33423.92  STATWT=4  SIGMA=1    B0=0.324  Nu=3485,2338,1037,
+	!416(2),365(2)  REF=Osborn, Mordaunt, Choi, Bise, Neumark, JCP 106,(1997),10087
+	!Molecular data for the ground states and nu1 and nu2 for the excited
+	!states were taken from ab initio calculations of Szalay, Fogarasi, Nemes, Chem.
+	!Phys. Lett. 263,(1996) 91. For the lowest non-linear level the CCSD(T)/PVTZ
+	!basis set data were used except for the missing nu5 frequency which was taken
+	!from EOMIP-CCSD/TZ2P (table 1). The Renner-Teller split yields a linear
+	!conformation. For that conformation CCSD(T)/TZ2P data were used (table2). For the
+	!excited state, nu1 and nu2 were taken from the EOM-IP/TZ2P data (table 3).
+	!The remaining data for the excited state were taken from: Jacox JPCRD 27,(1998),
+	!115-393. HF298=178.242+/-0.68  REF=ATcT A  {HF298=177.97+/-0.59 kJ  REF=ATcT C
+	!2011;  HF298=178.3+/-1.5 kJ  REF=Szalay, Tajti & Stanton  Mol Phys. 103,(2005),
+	!xxx;  HF298=42.4+/- 2.1 kcal  REF=Oakes, Jones, Blerbaum & Ellison  JPC 87,
+	!(1983),4810}   MAX LST SQ ERROR Cp @ 1300 K 0.31%
+HCCO              T 4/09H  1.C  2.O  1.   0.G   200.000  6000.000  1000.00     1
+ 5.91479333E+00 3.71408730E-03-1.30137010E-06 2.06473345E-10-1.21476759E-14    2
+ 1.93596301E+04-5.50567269E+00 1.87607969E+00 2.21205418E-02-3.58869325E-05    3
+ 3.05402541E-08-1.01281069E-11 2.01633840E+04 1.36968290E+01 2.14444387E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 
+	!32038-79-2
+	!C2H2O  ETHYNOL  HCC-OH   SIGMA=1  IA=0.121318  IB=8.4583675  IC=8.5796856
+	!NU=346,383,523,600,1072,1232,2198,3339,3501  REF= M. JACOX JPCRD 19,(1990),1469
+	!HF298=22.3+/-4.37 KCAL REF=Allendorf & C. Melius BAC/MP4 Sandia Database 2002.
+	!{HF298=92.73+/-1.33 kJ  REF=ATcT C 2011; HF298=21.536+/-2 kcal  REF=Burcat G3B3}
+	!Max Lst Sq Error Cp @ 6000 K 0.31%
+!HCC-OH  Ethynol   T12/09C  2.H  2.O  1.   0.G   200.000  6000.000  B  42.03668 1
+HCCOH   Ethynol   T12/09C  2.H  2.O  1.   0.G   200.000  6000.000  1000.00     1
+ 6.37509678E+00 5.49429011E-03-1.88136576E-06 2.93803536E-10-1.71771901E-14    2
+ 8.93277676E+03-8.24498007E+00 2.05541154E+00 2.52003372E-02-3.80821654E-05    3
+ 3.09890632E-08-9.89799902E-12 9.76872113E+03 1.22271534E+01 1.12217316E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+ 
+	!463-51-4
+	!C2H2O  KETENE SIGMA=2  A0=.940922  B0=.343370  C0=.330736  NU=3070.4,2152.6,
+	!1387.5,1116,3158.7,977.8,439,587.3,528.4  REF=Duncan et al J Mol Spec 125,(1987)
+	!196  HF298=-48.57+/-0.14 kJ  REF=ATcT A   {HF298=-11.4+/-0.4 kcal REF= Vogt,
+	!Williamson & Beauchamp JACS 100 (1978),3478;  HF298=-49.576 kJ  REF=B McBride
+	!NASA TP-2002-211556}  MAX Lst Sq ERROR Cp @ 6000 K 0.43%.
+!CH2CO,ketene      g 4/02C  2.H  2.O  1.   0.G   200.000  6000.000  B  42.03668 1
+CH2CO             g 4/02C  2.H  2.O  1.   0.G   200.000  6000.000  1000.00     1
+ 5.75871449E+00 6.35124053E-03-2.25955361E-06 3.62321512E-10-2.15855515E-14    2
+-8.08533464E+03-4.96490444E+00 2.13241136E+00 1.81319455E-02-1.74093315E-05    3
+ 9.35336040E-09-2.01724844E-12-7.14808520E+03 1.33807969E+01-5.84267744E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+CHCHO                   H  2 C  2 O  1      G   200.0   3000.0   1000.0        1
+ 5.96287949E+00 7.99898746E-03-4.30605647E-06 1.11076174E-09-1.11415021E-13    2
+ 2.87255915E+04-5.17392496E+00 2.06863692E+00 1.87233234E-02-1.21318942E-05    3
+-3.33726595E-10 2.32881768E-12 2.97393543E+04 1.47865706E+01                   4
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kin., 2016
+
+CHCHOH                  H  3 C  2 O  1      G     298.0    6000.0    1000.0    1
+ 8.78246275E+00 5.24796644E-03-1.71857235E-06 2.59722068E-10-1.48227402E-14    2
+ 1.28836399E+04-2.10851258E+01-1.99180555E+00 4.73233467E-02-6.66058794E-05    3
+ 4.68997052E-08-1.30686109E-11 1.52000823E+04 3.14259422E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+ 
+ 
+
+	!31586-84-2
+	!C2H3O  OXIRANE (ETHYLENE OXIDE) RADICAL SIGMA=1  STATWT=2  IA=2.8160  IB=3.5503
+	!IC=5.6365    Nu=3204,3144,3114,1551,1366,1195,1133,1089,1049,949,817,793
+	!HF298=164.473 kJ  HF0=172.90 kJ  REF=Burcat G3B3 calc {HF298 = 139.83 KJ est of
+	!THERM}.  Max Lst Sq Error Cp @ 200 K *** 1.0% ***  @ 6000 K 0.51%.
+!C2H3O Oxyrane Rad A 1/05C  2.H  3.O  1.   0.G   200.000  6000.000  B  43.04462 1
+cC2H3O            A 1/05C  2.H  3.O  1.   0.G   200.000  6000.000    1000.0    1
+ 5.60158035E+00 9.17613962E-03-3.28028902E-06 5.27903888E-10-3.15362241E-14    2
+ 1.71446252E+04-5.47228512E+00 3.58349017E+00-6.02275805E-03 6.32426867E-05    3
+-8.18540707E-08 3.30444505E-11 1.85681353E+04 9.59725926E+00 1.97814471E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+ 
+	!3170-69-2
+	!C2H3O  Acetyl Radical  CH3*CO  SIGMA=1  STATWT=2  A=2.9436  B=0.334  C=0.3186
+	!BROT=10.51589   ROSYM=3  V(3)=92 1/cm   NU=2904,2903,2826,1886,1405,1402,1325,
+	!1025,925,817,454  REF=NIMLOS SODERQUIST & ELLISON JACS 111,(1989),7675
+	!HF298=-10.3+/-1.8 kJ  REF=Niiaranen, Gutman & Krasnoperov J. Phys. Chem. 96
+	!(1992) 5881.; Ruscic et al JPCRD 2003  {HF298=-9.68+/-0.4 kJ  REF=ATcT C 2011;
+	!HF298=-13.3 kJ G4  REF=Marochkin & Dorofeeva Comp. Theor. Chem 991,(2012},182}
+	!Max Lst Sq Error Cp @ 6000 K 0.62%
+CH3CO  RADICAL    IU2/03C  2.H  3.O  1.   0.G   200.000  6000.000    1000.0    1
+ 0.53137165E+01 0.91737793E-02-0.33220386E-05 0.53947456E-09-0.32452368E-13    2
+-0.36450414E+04-0.16757558E+01 0.40358705E+01 0.87729487E-03 0.30710010E-04    3
+-0.39247565E-07 0.15296869E-10-0.26820738E+04 0.78617682E+01-0.12388039E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+ 
+	!6912-06-7
+	!C2H3O Vinyl oxy radical (CH2=CHO*)  This radical is in resonance with the next
+	!radical CH2=CHO*<==>*CH2-CH=O which is probably preferred, therefore both
+	!radicals have the same polynomial   SIGMA=1  STATWT=2  Ia=1.2527  Ib=7.3645
+	!Ic=8.6172  Nu=3284,3174,2965,1572,1495,1416,1168,985,976,751,505,459
+	!HF298=12.75 kJ  HF0=20.189 kJ  REF=Burcat G3B3 calc  Max Lst Sq Error Cp @
+	!6000 K 0.49%
+ !CH2=CHO*  Vinyl-  T04/06C  2.H  3.O  1.   0.G   200.000  6000.000  B  43.04462 1
+CH2CHO    Vinyl-  T04/06C  2.H  3.O  1.   0.G   200.000  6000.000    1000.0    1
+ 5.91636535E+00 8.84650426E-03-3.14954895E-06 5.05413189E-10-3.01304621E-14    2
+-1.04779892E+03-6.10649981E+00 2.66873956E+00 9.62329538E-03 1.60617438E-05    3
+-2.87681820E-08 1.25030066E-11 2.19438429E+02 1.25694476E+01 1.53380440E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+
+	!75-07-0
+	!C2OH4  ACETALDEHYDE (CH3CHO)  STATWT=1.  SIGMA=1.  IA=2.76748  IB=6.9781
+	!IC=9.03498  Ir=0.44 ROSYM=3 V(3)=412.03 cm-1  Nu=3005,2967,2917,2822,1743,1441,
+	!1420,1400,1352,1113,919,867,763,509   HF298=-166.19 kJ  REF=CHAO, HALL,MARSH &
+	!WILHOIT JCPRD 15, (1986) p.1369   {HF298=-165.364+/-0.3 kJ REF=ATcT C;
+	!HF298=-170.7+/-1.5 kJ  REF=Wiberg & Croker JACS 113,(1991),3447}  Max Lst
+	!Sq Error Cp @ 6000 K 0.59%.
+CH3CHO            L 8/88C   2H   4O   1    0G   200.000  6000.000    1000.0    1
+ 0.54041108E+01 0.11723059E-01-0.42263137E-05 0.68372451E-09-0.40984863E-13    2
+-0.22593122E+05-0.34807917E+01 0.47294595E+01-0.31932858E-02 0.47534921E-04    3
+-0.57458611E-07 0.21931112E-10-0.21572878E+05 0.41030159E+01-0.19987949E+05    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+	!75-21-8
+	!C2H4O  OXYRANE (ETHYLENE OXIDE)    SIGMA=2  IA=3.2793  IB=3.8059  IC=5.9511
+	!NU=3006,1498,1271,1120,877,3063,1300,860,3006,1472,1151,892,3065,1142,822
+	!REF=SHIMANOUCHI  HF298=-52.635 kJ FROM JANAF 1985. HF0=-40.082 kJ {HF298=-53.668
+	!kJ REF=Burcat G3B3 calc 1/2005; HF298=-52.681+/-1.32  REF=ATcT C 2011)   Max Lst
+	!Sq Error Cp @ 200 K ***1.17%*** @ 6000 K  0.59%.
+cC2H4O OXYRANE    L 8/88C   2H   4O   1    0G   200.000  6000.000    1000.0    1
+ 0.54887641E+01 0.12046190E-01-0.43336931E-05 0.70028311E-09-0.41949088E-13    2
+-0.91804251E+04-0.70799605E+01 0.37590532E+01-0.94412180E-02 0.80309721E-04    3
+-0.10080788E-06 0.40039921E-10-0.75608143E+04 0.78497475E+01-0.63304657E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!557-75-5
+	!C2H4O Vinyl Alcohol IA=1.363243 IB=7.9930197 IC=9.3562625  NU=412,470.5,693.4,
+	!922,926.3,1029,1054.3,1293,1315.3,1434.7,1645.4,2964.6,3022,3050,3461
+	!BROT=6.414  ROSYM=1  V(3)=1067. V(6)=-1.49 Ref= Ab-Initio Calc Karni,Oref &
+	!Burcat TAE Report 643 1989. HF298=-29.8 kcal REF=Holm & Losing JACS 104
+	!(1982) 2648. {HF298=-28.85+/-2. kcal  REF=Burcat G3B3}     Max Lst Sq Error Cp @
+	!6000 K 0.45%
+!C2H4O vinyl alco  T03/10C  2.H  4.O  1.   0.G   200.000  6000.000  B  44.05256 1
+CH2CHOH           T03/10C  2.H  4.O  1.   0.G   200.000  6000.000    1000.0    1
+ 7.49818166E+00 1.03957000E-02-3.66891058E-06 5.85205827E-10-3.47373827E-14    2
+-1.81643092E+04-1.38388104E+01 2.28758479E+00 1.97013262E-02 1.96382662E-06    3
+-1.94389758E-08 1.02616778E-11-1.65373421E+04 1.41333462E+01-1.49958566E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 	!CH2CHOH           BOZ06 C   2H   4O   1    0G   300.00   1500.00  1500.        1 !SIL/BOZ06
+	!-0.09611513E+01 0.39459205E-01-0.45157340E-04 0.26804884E-07-0.62063875E-11    2 !H298 =-30.000kcal/mol
+	!-0.16213850E+05 0.26561595E+02-0.09611513E+01 0.39459205E-01-0.45157340E-04    3 !S298 = 61.73 cal/mol/K
+	!0.26804884E-07-0.62063875E-11-0.16213850E+05 0.26561595E+02                   4 !
+	!! G da Silva CH Kim J Bozzelli W J Phys Chem A 110 (2006) 7925–7934
+ 
+	!2154-50-9
+	!C2H5O  ETHYL-OXIDE RAD (CH3CH2O) SIGMA=1 STATWT=2  IA=2.1281  IB=8.8117
+	!IC=9.9060  Ir=0.4303  ROSYM=3  V(3)=737.5 cm-1     NU=3015,3004,2937,2824,
+	!2790,1468,1458,1378,1360,1321,1206,1064,1046,872,856,475,406 T0=355 IA=2.3996
+	!IB=8.1338  IC=9.4591  IR=0.4375  V(3)=1029.5 cm-1 ROSYM=3 NU=3040,3028,2951,
+	!2866,2850,1514,1471,1445,1356,1268,1216,1107,934,912,874,577,369,(249 torrsion)
+	!HF298=-11.47+/-0.5 kJ  REF=ATcT C 2011  {HF298=-13.6+/-4.0 kJ HF0=-0.2+/-4.0 kJ
+	!REF=DeTuri & Ervin JPC 103 (1999),6911 for HF298 and G3MP2B3 calculations for
+	!the vibrations and moments of inertia.  Ruscic et al JPCRD 34,(2005),573}  MAX
+	!LST SQ ERROR @ 6000 K 0.56 %.
+  !C2H5O  CH3CH2O*   T06/11C  2.H  5.O  1.   0.G   200.000  6000.000  B  45.06050 1
+CH3CH2O           T06/11C  2.H  5.O  1.   0.G   200.000  6000.000  1000.0      1
+ 6.55053877E+00 1.32525511E-02-4.74726060E-06 7.64699226E-10-4.57008357E-14    2
+-4.47191998E+03-9.61231141E+00 3.26905655E+00 9.33562904E-03 2.96317166E-05    3
+-4.53411341E-08 1.88795595E-11-2.95022955E+03 1.04200942E+01-1.37951605E+03    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+ 
+	!2348-46-1
+	!C2H5O  (CH3CHOH)    RADICAL  SIGMA =1  STATWT=2  IA=1.8971    IB=8.9667
+	!IC=10.2405    IR(CH3)=.47087 IR(OH)=.14477  ROSYM(CH3)=3  V(3)=1158. cm-1
+	!ROSYM(OH)=1  V(3)=70.3 cm-1  NU=3734,3203,3164,3027,2956,1519,1500,1459,1425,
+	!1327,1213,1072,1037,923,612,407.  REF=Janoschek & Rossi Int.J. Chem. Kinet 36
+	!(2004),661  HF298=-55.29+/-0.6 kJ  REF=ATcT C 2011   {HF298=-54.03+/-4.0 kJ
+	!REF=Janoschek & Rossi Int.J. Chem. Kinet 36 (2004),661;  HF298=-13.34+/-.85 kcal
+	!REF=Bozzelli et al JCP 105,(2001),9543; HF298=-5.0 KCAL  REF= Benson.}  Max  Lst
+	!Sq Error Cp @ 6000 K  0.48%
+CH3CHOH           T06/11C  2.H  5.O  1.   0.G   200.000  6000.000  1000.0      1
+ 6.35842302E+00 1.24356276E-02-4.33096839E-06 6.84530381E-10-4.03713238E-14    2
+-9.53018581E+03-6.05106112E+00 4.22283250E+00 5.12174798E-03 3.48386522E-05    3
+-4.91943637E-08 2.01183723E-11-8.35622088E+03 8.01675700E+00-6.64945980E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+ 
+	!4422-54-2
+	!C2H5O  (CH2CH2OH) RADICAL  SIGMA=1  STATWT=2  IA=2.1001  IB=8.6720  IC=10.0014
+	!REF=Chem3D  Ir(CH2)=0.79  Ir(OH)=.1363  ROSYM(OH)=1  V(3)=70.3 cm-1 ROSYN(CH2)=2
+	!V(3)=1049  cm-1  REF= Burcat, Miller & Gardiner  TAE Report 504 1983  NU=3705,
+	!3093,2985,2855,2811,1501,1458,1409,1254,1223,1102,1042,951,853,433,376
+	!REF=Yamada, Bozzelli, Lay JPC A 103 (1999),7646  Vib=scaled x 0.9;  HF298=-25.82
+	!+/-0.6 kJ  REF=ATcT C 2011 {HF298=5.70+/-0.85 kcal  REF=Bozzelli JCP 105,(2001),
+	!9543     MAX LST SQ ERROR Cp @ 6000 K 0.48 %
+CH2CH2OH          T05/11C  2.H  5.O  1.   0.G   200.000  6000.000 1000.        1
+ 7.01348674E+00 1.20204391E-02-4.21992012E-06 6.70675981E-10-3.97135273E-14    2
+-6.16161779E+03-8.62052409E+00 4.20954137E+00 9.12964578E-03 2.47462263E-05    3
+-3.92945764E-08 1.66541312E-11-4.91511371E+03 8.30445413E+00-3.10541451E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+	!16520-04-0
+	!C2H5O  CH2-O-CH3 RAD   SIGMA=1  STATWT=2.   IA=1.7787  IB=7.8857  IC=9.0727
+	!IR(CH2)=0.30289  V(3)=700 cm-1   ROSYM=2   IR(CH3)=0.47197  V(3)=951 cm-1
+	!ROSYM=3  NU=3262,3155,3112,3079,3020,1530,1521,1515,1479,1301,1264,1183,1151,
+	!976,678,431  HF298=0.98 kJ  HF0=14.08 kJ  REF=Janoshcek Rossi IJCK 36,(2004),
+	!661  {HF298=-2 kcal REF=Benson;  HF298=-2.8+/-1.2 kcal REF=MacMillen Golden 1982
+	!HF298=-1.2 kcal REF=NIST 94} MAX LST SQ ERROR Cp @ 6000 K 0.52 %.
+	!C2H5O  CH3-O-CH2  A10/04C  2.H  5.O  1.   0.G   200.000  6000.000  B  45.06050 1
+	!5.94067593E+00 1.29906358E-02-4.56921036E-06 7.26888932E-10-4.30599587E-14    2
+	!-2.58503562E+03-4.52841964E+00 4.53195381E+00 7.81884271E-03 1.94968539E-05    3
+	!-2.74538336E-08 1.06521135E-11-1.70629244E+03 5.06122980E+00 1.15460803E+02    4
+	!
+	!CH3OCH2    7/20/98 THERMC   2H   5O   1    0G   300.000  5000.000 1376.000    21
+	!8.17137842E+00 1.10086181E-02-3.82352277E-06 5.99637202E-10-3.50317513E-14    2
+	!-3.41941605E+03-1.78650856E+01 2.91327415E+00 2.03364659E-02-9.59712342E-06    3
+	!2.07478525E-09-1.71343362E-13-1.18844240E+03 1.16066817E+01                   4
+ 	! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 :
+
+CH3OCH2                 H  5 C  2 O  1      G     298.0    6000.0    1000.0    1
+ 6.91002444E+00 1.20687508E-02-4.20911973E-06 6.64633276E-10-3.91409568E-14    2
+-2.84102422E+03-1.02945847E+01 1.56025906E+00 2.77197117E-02-3.02782585E-05    3
+ 2.72306538E-08-1.08372186E-11-1.10891598E+03 1.78880730E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346
+
+ 
+	!64-17-5
+	!C2H6O  ETHANOL (C2H5OH)    STATWT=1.  SIGMA=3 ROSYM(CH3)=3.  ROSYM(OH)=1
+	!This is an equilibrium mixture of one trans and two gauche isomers, therefore
+	!sigma was set artificialy to 3. The two gauche isomers are equal. The trans
+	!values are: IAIBIC=218.459  Brot(CH3)=6.4144 cm-1 V(3)CH3=1166. Brot(OH)=21.07
+	!cm-1  V(OH) (1)=57 (2)=8.025 (3)=395.  NU=3659,2985,2939,2900,1460,1430,1395,
+	!1320,1245,1055,1026,883,422,2887(2),1460,1270,1117,801 The cis values are:
+	!IAIBIC=233.455E-117 Brot(CH3)=6.416 cm-1 Brot(OH)=20.94 cm-1  V(3) CH3=1331
+	!V(OH) as for trans NU=3675,2985,2939,2900,1460(2),1430,1395,1320,1245,1055,1026,
+	!887,596,2887(2)1270,1070,801  HF298=-234.95 kJ  REF=CHAO, HALL, MARSH & WILHOIT
+	!JPCRD 15 (1986),1369.  {HF298=-234.56+/-0.2 kJ  REF=ATcT A}
+CH3CH2OH          L 8/88C   2H   6O   1    0G   200.000  6000.000    1000.0    1
+ 0.65624365E+01 0.15204222E-01-0.53896795E-05 0.86225011E-09-0.51289787E-13    2
+-0.31525621E+05-0.94730202E+01 0.48586957E+01-0.37401726E-02 0.69555378E-04    3
+-0.88654796E-07 0.35168835E-10-0.29996132E+05 0.48018545E+01-0.28257829E+05    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+	!115-10-6
+	!C2H6O  DIMETHYL-ETHER SIGMA=2  IAIBIC=170.493 IR=0.4291   ROSYM=3
+	!V(3)=903.4 cal  Nu=2999(2),2935,2920,2820(2),1485,1467,1463,1459,1449,1432,1250,
+	!1179,1178,1148,1104,931,424  HF298=-183.935+/-0.46 kJ REF=ATcT A  {HF298=-184.02
+	!+/-0.43  kJ  REF=ATcT C 2011;  HF298=-184.05 kJ  REF=CHAO, HALL, MARSH & WILHOIT
+	!JPCRD 15, (1986),1369}   Max Lst Sq Error Cp @ 1300 K 0.64%
+CH3OCH3        A  T03/10C  2.H  6.O  1.   0.G   200.000  6000.000    1000.0    1
+ 5.64844274E+00 1.63381875E-02-5.86802189E-06 9.46836384E-10-5.66504295E-14    2
+-2.50864216E+04-5.96267354E+00 5.30562273E+00-2.14253958E-03 5.30873092E-05    3
+-6.23146897E-08 2.30730916E-11-2.39655820E+04 7.13244569E-01-2.21221696E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+	!CH3OCH3    7/20/98 THERMC   2H   6O   1    0G   300.000  5000.000 1368.000    21
+	!8.27745836E+00 1.32135539E-02-4.53264362E-06 7.05316507E-10-4.09933283E-14    2
+	!-2.61982700E+04-2.15190894E+01 1.50763450E+00 2.39914228E-02-8.68910500E-06    3
+	!-9.66835762E-11 4.89319361E-13-2.32810894E+04 1.67317297E+01                   4
+	! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549
+
+
+OCHCO                  0C   2O   2H   1     G   350.000  2900.000 1000.00      1 
+ 0.49499388E+01 0.10163032E-01-0.55772010E-05 0.14572026E-08-0.14743475E-12    2
+-0.90965061E+04 0.25798798E+01 0.33940561E+01 0.14362856E-01-0.88413766E-05    3
+ 0.16096129E-08 0.32038938E-12-0.86841442E+04 0.10592041E+02                   4
+! Marshall and Glarborg, Proc. Combust. Inst. 35 (2015) 153–160
+
+	!107-22-2
+	!C2H2O2 (CHO-CHO) Trans-Cis-GLYOXAL   SIGMA=2   T0=0 (trans)  STATWT=1
+	!IAIBIC=504.42  ROSYM=1  Brot1=4.213  Brot2=-1.117  Brot3=0.421  Brot4==0.126
+	!Brot5=0.040  Brot6=-0.015 ROSYM=1  V(1)=1588.   V2=1140. V(3)=-59.0  V(4)-110.9
+	!V(5)=40. V(6)=0  NEL=150   REF=Dorofeeva  JPCRD 30,(2001),475   NU=2843,1744,
+	!1353,1066,551,801,1048,2835,1732,1312,339   REF= SCUSERIA  & SCHAEFER JACS 111,
+	!(1989),7761
+	!T0=1555. (Cis) SIGMA=2  STATWT=1  IAIBIC=710.17 (No internal rotation for the
+	!cis exited state B. McBride and Zeleznik) Nu=2841,1746,1369,827,284.5,1050,750,
+	!2810,1761,1360,825,10**10 (for the missing frequency or rotation!)
+	!HF298=-212.082+/-0.8 kJ REF=Dorofeeva JPCRD 30,(2001),475 & ATcT A  HF0=-213.38
+	!kJ  {HF298=-212.0+/-0.79 KJ  REF=Fletcher & Pilcher  Trans Faraday Soc 66(1970),
+	!794}  HF298=-193.249+/-0.8 for Cis only  REF=ATcT A   Max Lst Sq Error Cp @
+	!1300 K 0.48%
+	!!O(CH)2O Glyoxal   g 3/02C  2.H  2.O  2.   0.G   200.000  6000.000  B  58.03608 1
+OCHCHO                  H  2 C  2 O  2      G    200.0    6000.0    1000.0     1
+ 8.72506895E+00 6.33096819E-03-2.35574814E-06 3.89782853E-10-2.37486912E-14    2
+-2.91024131E+04-2.03903909E+01 4.68412461E+00 4.78012819E-04 4.26390768E-05    3
+-5.79018239E-08 2.31669328E-11-2.71985007E+04 4.51187184E+00-2.55074562E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+
+CH2CHOO                0C   2H   3O   2     G   300.00   2000.00  1000.00      1 
+ 0.14160300E+01 0.29933721E-01-0.26385173E-04 0.11770709E-07-0.20511571E-11    2
+ 0.11361727E+05 0.18969526E+02 0.14146113E+01 0.29754629E-01-0.25839387E-04    3
+ 0.11222085E-07-0.18678097E-11 0.11371249E+05 0.19022561E+02                   4
+! J Gimenez CL Rasmussen MU Alzueta P Marshall P Glarborg Proc. Combust. Inst. 32 (2009) 367-375
+
+ 
+cC2H3O2   0/12/95  ThmCaC   2H   3O   2    0G   300.00   5000.00  1371.000    01 
+ 1.05759247E+01 7.64138208E-03-2.75090226E-06 4.41965845E-10-2.62615949E-14    2
+ 1.58485138E+04-3.19285458E+01-7.68159204E-01 3.22158546E-02-2.19360581E-05    3
+ 6.70379708E-09-7.12036021E-13 1.99191420E+04 2.95789589E+01                   4
+! W-C Ing CY Sheng JW Bozzelli Fuel Proc Tech 83 (2003) 111–145
+
+ 
+CH3C(O)O          1508  C   2H   3N   0O   2G   298.000  3000.000 1000.00      1 ! Bozzelli 2015; PM
+ 4.15456832E+00 1.68674623E-02-8.75191344E-06 2.18661448E-09-2.13394222E-13    2
+-2.52304326E+04 5.95052997E+00 1.30016170E+00 2.37699204E-02-1.23328477E-05    3
+ 5.87354833E-11 1.44736765E-12-2.44337929E+04 2.08501841E+01                   4
+! in Marshall and Glarborg, Proc. Combust. Inst. 35 (2015) 153–160
+
+
+	!CH3OCO     4/15/ 8 THERMC   2H   3O   2    0G   300.000  5000.000 1423.000    21
+	!1.02053021E+01 7.12269668E-03-2.57594255E-06 4.15104358E-10-2.47168227E-14    2
+	!-2.46870635E+04-2.86407262E+01 2.83313145E+00 1.53447505E-02 1.89583962E-06    3
+	!-7.70200413E-09 2.41564410E-12-2.13431832E+04 1.39524183E+01                   4
+	!Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549
+
+CH3OCO                  H  3 C  2 O  2      G     298.0    6000.0    1000.0    1
+ 7.91314981E+00 9.29187300E-03-3.39055058E-06 5.51476622E-10-3.31456507E-14    2
+-2.25539318E+04-1.38371329E+01 1.72824351E+00 2.73309827E-02-3.33734715E-05    3
+ 3.11204287E-08-1.24733806E-11-2.05484644E+04 1.87594450E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346
+
+ 
+OCH2CHO                 H  3 C  2 O  2      G     298.0    6000.0    1000.0    1
+ 9.13152010E+00 8.28189098E-03-2.95254744E-06 4.73480540E-10-2.81970407E-14    2
+-1.29340890E+04-2.08290694E+01-1.42846391E+00 4.63529922E-02-6.49805155E-05    3
+ 5.25405736E-08-1.75784396E-11-1.02403911E+04 3.20914616E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346
+ 
+ 
+CH2OCHO    4/15/ 8 THERMC   2H   3O   2    0G   300.000  5000.000 1442.000    21
+ 1.00960096E+01 7.19887066E-03-2.59813465E-06 4.18110812E-10-2.48723387E-14    2
+-2.36389018E+04-2.71144175E+01 2.31031671E+00 1.80474065E-02-2.71519637E-06    3
+-4.60918579E-09 1.70037078E-12-2.02910878E+04 1.71549722E+01                   4 
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 ==> FROM NUIG
+
+CH2CHOOH               0C   2H   4O   2     G   300.00   2000.00  1000.00      1 !JIM/GLA08
+ 0.28251887E+01 0.27416672E-01-0.20445609E-04 0.77739928E-08-0.11866050E-11    2
+-0.63252694E+04 0.89664101E+01 0.27982099E+01 0.27437708E-01-0.20346847E-04    3
+ 0.76212730E-08-0.11267055E-11-0.63155298E+04 0.91182864E+01                   4
+! J Gimenez CL Rasmussen MU Alzueta P Marshall P Glarborg Proc. Combust. Inst. 32 (2009) 367-375
+ 
+ 
+ 
+	!107-31-3
+	!C2H4O2  MethylFormate HCOOCH3  SIGMA=1  STATWT=1  IA=4.1878  IB=12.2832
+	!IC=15.9404  Ir(CH3)=0.51926  ROSYM=3  V(3)=272. cm-1  Nu=3188,3154,3079,3071,
+	!1832,1524,1514,1488,1417,12461197,1185,1037,947,760,348,300  HF298=-357.796+/-
+	!0.6  kJ  REF=ATcT C 2011  {HF298=-363.6+/-8. kJ;  REF=Burcat G3B3 calc;
+	!HF298=-362. kJ REF=Hine & Klueppel JACS 96,(1974),2924;  HF298=-355.5 kJ
+	!REF=Hall & Baldt JACS 93,(1971),140; HF298=-358.15+/-7. kJ  REF=Allendorf-Melius,
+	!Sandia Database BAC/MP4 2008; HF298=-371.5+/-15. kJ/mol  REF=Catoire et al IJCK
+	!39,(2007),481}  Max Lst Sq Error Cp @ 6000 K 0.58 %.
+CH3OCHO                 C   2H   4O   2    0G   200.000  6000.00  1000.00      1
+ 6.33360880E+00 1.34851485E-02-4.84305805E-06 7.81719241E-10-4.67917447E-14    2
+-4.61313237E+04-6.91542601E+00 5.96757028E+00-9.38085425E-03 7.07648417E-05    3
+-8.29932227E-08 3.13522917E-11-4.48709982E+04 7.50341113E-01-4.30327223E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016
+
+	!	CH3OCHO    4/15/ 8 THERMC   2H   4O   2    0G   300.000  5000.000 1452.000    21
+	!	1.06569185E+01 9.38112723E-03-3.37677206E-06 5.42455596E-10-3.22295330E-14    2
+	!	-4.84651758E+04-3.27579443E+01 2.43526200E+00 1.81948325E-02 1.91236590E-06    3
+	!	-8.44248945E-09 2.61758910E-12-4.46514732E+04 1.49522265E+01                   4
+	!	! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+ 
+ 
+	!3170-61-4
+	!C2H5OO PEROXYETHYL RADICAL  STATWT=2  IA=2.4505  IB=18.5705  IC=19.984
+	!Ir(CH3)=0.49487  ROSYM=3  V(3)=1144. cm-1  Ir(C2H5)=2.859  ROSYM=1  V(3)=1479.
+	!cm-1  NU=2955,2936,2934,2901,2874,1493,1467,1454,1410,1371,1259,1152,1145,1129,
+	!1006,860,786,491,300,231,91.9  REF=Melius MP4 A40 1988   HF298=-6.86 kcal
+	!REF=Atkinson et. al, JPCRD 28 (1999),191 {HF298= -2.32 kcal  REF=Melius 1988;
+	!HF298=-4. kcal REF=NIST 1994 estimate} Max Lst sq Error Cp @ 200 & 6000 K 0.52%
+	!C2H5O2  C2H5OO    T10/10C  2.H  5.O  2.   0.G   200.000  6000.000  B  61.05990 1
+CH3CH2OO                C   2H   5O   2    0G   200.00   6000.00  1000.        1
+ 8.88872432E+00 1.35833179E-02-4.91116949E-06 7.92343362E-10-4.73525704E-14    2
+-7.44107388E+03-1.90789836E+01 4.50099327E+00 6.87965342E-03 4.74143971E-05    3
+-6.92287127E-08 2.87395324E-11-5.39547911E+03 7.91490068E+00-3.45206633E+03    4 
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+
+
+CH3CHOOH                C   2H   5O   2    0G   200.00   2500.00   999.993     1 !
+ 9.10837027E+00 1.52964186E-02-5.54863574E-06 9.02285762E-10-5.44120016E-14    2 !H298 =  6.43 kcal/mol [JAN/ROS04]
+-9.32702959E+02-2.03914131E+01 6.26853790E+00 1.11351157E-04 6.15943537E-05    3 !S298 = 74.84 cal/mol/K [JAN/ROS04]
+-7.95035384E-08 3.12333450E-11 9.62571275E+02-1.80971233E-01                   4 !Cp(T) scaled Cp[CH3CH2OO](T) to Cp298 = 19.70 cal/mol/K [JAN/ROS04]
+! Janoschek R Rossi MJ Int J Chem Kinet 2004 36 661–686
+! CL Rasmussen JG Jacobsen P Glarborg Int J Chem Kinet 40 (2008) 778-807
+ 
+ 
+	!126898-98-4
+	!C2H4OOH HydroperoxylEthyl Radical  SIGMA=1  STATWT=2  IA=2.5032  IB=19.3176
+	!IC=20.7280  Nu=3699,3295,3187,3029,2972,1529,1477,1398,1380,1239,1160,1070,1004,
+	!932,823,510,461,299,206,130,121  HF298=11.841+/-2. kcal  REF=Burcat G3B3
+	!{HF298=12.2+/-0.9 kcal  REF=Green et al JPC A 116,(2012),9033}  Max Lst Sq Error
+	!Cp @ 6000 K 0.44%.    
+	!!C2H4OOH hydroper  T 4/15C  2.H  5.O  2.   0.G   200.000  6000.000  B  61.05990 1
+CH2CH2OOH         T 4/15C  2.H  5.O  2.   0.G   200.000  6000.000 1000.        1
+ 9.41379980E+00 1.33542122E-02-4.68067639E-06 7.43230845E-10-4.39824231E-14    2
+ 1.98459602E+03-2.24516643E+01 5.07456388E+00 1.32389561E-02 2.53758646E-05    3
+-4.38089546E-08 1.89061540E-11 3.71063204E+03 2.72289544E+00 5.95858854E+03    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+	!CH2CH2OOH CBS-Q//B3LYP  C   2H   5O   2    0G   300.000  5000.000 1405.000    31 
+	!1.02538840E+01 1.07067444E-02-3.57347410E-06 5.45355058E-10-3.12522454E-14    2
+	!1.31664933E+03-2.19734246E+01 3.26495428E+00 2.91609353E-02-2.29001252E-05    3
+	!9.93668113E-09-1.78518267E-12 3.56067276E+03 1.48547673E+01                   4
+	!! W-C Ing CY Sheng JW Bozzelli Fuel Proc Tech 83 (2003) 111–145
+ 
+	!CH2CH2OOH               H  5 C  2 O  2      G     298.0    6000.0    1000.0    1
+	!9.94719358E+00 1.14730988E-02-3.96870805E-06 6.23121554E-10-3.65488844E-14    2
+	!2.33352925E+03-2.17163906E+01 6.49571381E-01 4.51634030E-02-6.02115954E-05    3
+	!4.92121132E-08-1.67753354E-11 4.73413790E+03 2.49288138E+01                   4 
+	!! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+CH3OCH2O   2/ 9/96 THERMC   2H   5O   2    0G   300.000  5000.000 2012.000    21
+ 8.60261845E+00 1.35772195E-02-4.84661602E-06 7.77766193E-10-4.62633624E-14    2
+-2.13762444E+04-1.75775023E+01 3.25889339E+00 2.22146359E-02-7.78556340E-06    3
+-2.41484158E-10 4.51914496E-13-1.92377212E+04 1.23680069E+01                   4
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 ==> FROM NUIG
+
+
+	!3031-74-1
+	!C2H6O2 PEROXYETHANE C2H5O-OH  SIGMA=1 STATWT=1   IA=21.607  IB=20.135  IC=2.7509
+	!IR(CH3)=0.49484  ROSYM=3  V(3)(CH3)=1143.7 cm-1 IR(C2H5)=2.859  ROSYM=1
+	!V(3)(C2H5)=1479.46 cm-1 IR(OH)=0.1428  ROSYM=1 V(3)(OH)=2427.3 cm-1  REF=Lay et
+	!al JPC 100,(1996),8240   NU=3697,3141,3135,3068,3063,3021,1561,1532,1514,1441,
+	!1407,1387,1286,1201,1171,1051,960,836,478,296   HF298=-38.738+/-2 kcal
+	!REF=Burcat G3B3  {HF298=-41.5 Kcal REF=Lay et al JPC 100,(1996),8240}   Max Lst
+	!Sq Error Cp @ 200 & 6000 K 0.50%
+CH3CH2OOH         T02/10C  2.H  6.O  2.   0.G   200.000  6000.000    1000.0    1
+ 9.58691079E+00 1.48603589E-02-5.29787964E-06 8.47317148E-10-5.03436325E-14    2
+-2.38367900E+04-2.28310676E+01 4.14672004E+00 9.78668137E-03 4.91492257E-05    3
+-7.42532076E-08 3.11169441E-11-2.14671219E+04 9.84024999E+00-1.94936072E+04    4
+! E Goos A Burcat B Ruscic Ideal gas thermochemical database with updates from active thermochemical
+! http://burcat.technion.ac.il/dir/
+! mirrored at http://garfield.chem.elte.hu/burcat/burcat.html.
+! Accessed April 2016 
+
+
+CH3OCH2OH  2/ 9/96 THERMC   2H   6O   2    0G   300.000  5000.000 2014.000    31
+ 8.70981570E+00 1.53602372E-02-5.41003788E-06 8.60573446E-10-5.08819752E-14    2
+-4.76607115E+04-1.80226702E+01 3.15851876E+00 2.44325751E-02-8.66984784E-06    3
+-5.93319328E-11 4.36400003E-13-4.54488899E+04 1.30511235E+01                   4 
+
+
+CHOOCO    11/28/99      C   2H   1O   3    0G   300.000  5000.000 1400.000     1
+ 1.13111696E+01 3.41167336E-03-1.24322295E-06 2.01350134E-10-1.20310784E-14    2
+-3.66759553E+04-3.07533656E+01 2.78875605E+00 2.44800708E-02-2.08392263E-05    3
+ 8.32687865E-09-1.27754638E-12-3.39103033E+04 1.44765150E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+CYOCH2OC*O 4/ 7/ 9 THERMC   2H   2O   3    0G   300.000  5000.000 1386.000     1
+ 1.06779996E+01 8.40705617E-03-3.17522951E-06 5.22906441E-10-3.14983967E-14    2
+-7.26935531E+04-5.14822929E+01 8.41405379E-01 3.18010824E-02-2.47239866E-05    3
+ 9.69003748E-09-1.54901401E-12-6.93103061E+04 1.21495367E+00                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+OOCH2CHO       11/99CBSQC   2H   3O   3    0G   300.000  5000.000 1393.000     1 
+ 1.22620276E+01 7.75188408E-03-2.75192727E-06 4.38058762E-10-2.58630913E-14    2
+-1.58998196E+04-3.49062151E+01-1.86306895E+00 4.75179531E-02-4.67009879E-05    3
+ 2.26738748E-08-4.29973840E-12-1.16547704E+04 3.85830605E+01                   4
+! INGBOZ03 HC*OCOO.
+
+
+HOOCH2CO        7/98CBSQC   2H   3O   3    0G   300.000  5000.000 1404.000     1 
+ 1.32854968E+01 6.11013741E-03-2.10913640E-06 3.29794310E-10-1.92393829E-14    2
+-1.51213283E+04-3.87817614E+01 1.90588368E+00 3.73111462E-02-3.51052936E-05    3
+ 1.61591790E-08-2.89988982E-12-1.16903462E+04 2.05975345E+01                   4
+! INGBOZ03 C.*OCOOH
+
+
+OCH2OCHO   4/ 9/98 THERMC   2H   3O   3    0G   300.000  5000.000 1475.000    21
+ 1.20233916E+01 8.11262659E-03-2.91356462E-06 4.67340384E-10-2.77375525E-14    2
+-4.33647231E+04-3.33691809E+01 5.19690837E+00 1.58839723E-02 3.53540547E-07    3
+-6.10456923E-09 1.94661801E-12-4.02242792E+04 6.11645828E+00                   4
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 ==> FROM NUIG
+
+
+
+HOCH2OCO   8/31/99 THERMC   2H   3O   3    0G   300.000  5000.000 1603.000    31
+ 1.13737391E+01 8.17663898E-03-2.92034021E-06 4.66695616E-10-2.76276823E-14    2
+-4.65575743E+04-2.86035265E+01 6.08180801E+00 1.28768359E-02 2.04419418E-06    3
+-6.10154921E-09 1.79820559E-12-4.39526183E+04 2.54054449E+00                   4
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 ==> FROM NUIG
+
+
+CH3OC*OO   4/ 7/ 9 THERMC   2H   3O   3    0G   300.000  5000.000 1390.000    21
+ 1.04552282E+01 9.46056573E-03-3.33210424E-06 5.24507118E-10-3.06485357E-14    2
+-4.75669047E+04-2.79831921E+01 8.88927626E-01 3.27996604E-02-2.55169919E-05    3
+ 1.02865123E-08-1.69918065E-12-4.43352800E+04 2.30572118E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+CH3C(O)OO         1508  C   2H   3N   0O   3G   298.000  3000.000 1000.00      1 
+ 5.76603946E+00 1.88598136E-02-9.95181008E-06 2.52994204E-09-2.50541483E-13    2
+-2.21268244E+04-4.84080352E-01 2.12837736E+00 2.94919132E-02-2.00221362E-05    3
+ 5.32494396E-09 3.03452421E-14-2.12033645E+04 1.80451737E+01                   4 
+! Bozzelli 2015; PM
+
+
+CH3C(O)OOH        1508  C   2H   4N   0O   3G   298.000  3000.000 1000.00      1 
+ 5.64132391E+00 2.17230931E-02-1.11238026E-05 2.75682193E-09-2.67754066E-13    2
+-4.51408748E+04-1.61172400E+00 1.43747508E+00 3.39384339E-02-2.25467319E-05    3
+ 5.77205354E-09 1.28451673E-13-4.40701023E+04 1.98194302E+01                   4
+! Bozzelli 2015; PM
+
+
+! 40135-01-1
+!H298 =-40.30 kcal/mol
+!S298 = 78.1 cal/mol/K
+HOCH2CH2OO              C   2H   5O   3    0G   300.00   2500.00   800.0       1 
+ 0.05564182E+01 0.41251869E-01-0.31064687E-04 0.12292960E-07-0.19969071E-11    2 
+-0.22047390E+05 0.24998308E+02 0.05564182E+01 0.41251869E-01-0.31064687E-04    3 
+ 0.12292960E-07-0.19969071E-11-0.22047390E+05 0.24998308E+02                   4
+! S Olivella A Sole J Phys Chem A 108 (2004) 11651–11663
+! J Gimenez CL Rasmussen MU Alzueta P Marshall P Glarborg Proc. Combust. Inst. 32 (2009) 367-375
+
+
+CH3OCH2OO  7/20/98 THERMC   2H   5O   3    0G   300.000  5000.000 1389.000    31
+ 1.24249729E+01 1.18705986E-02-4.07906532E-06 6.35310809E-10-3.69427867E-14    2
+-2.29679238E+04-3.53740145E+01 2.21029612E+00 3.68877454E-02-2.82561555E-05    3
+ 1.15730533E-08-1.97130470E-12-1.94940940E+04 1.91463601E+01                   4
+
+
+CH2OCH2OOH 7/20/98 THERMC   2H   5O   3    0G   300.000  5000.000 1393.000    41
+ 1.51191783E+01 9.23718883E-03-3.19127505E-06 4.99114678E-10-2.91162488E-14    2
+-1.84114867E+04-4.85706618E+01 2.52895507E+00 4.24128290E-02-3.73406386E-05    3
+ 1.66639333E-08-2.96443312E-12-1.44293306E+04 1.76899251E+01                   4
+
+
+
+CH3OCH2OOH 7/20/98 THERMC   2H   6O   3    0G   300.000  5000.000 1392.000    41
+ 1.49370964E+01 1.19465829E-02-4.12746359E-06 6.45422590E-10-3.76427939E-14    2
+-4.11001068E+04-4.99552737E+01 1.19855761E+00 4.59060764E-02-3.66252420E-05    3
+ 1.49318970E-08-2.46057445E-12-3.65363161E+04 2.31339904E+01                   4
+
+ 
+
+CH2OC*OOOH 4/ 7/ 9 THERMC   2H   3O   4    0G   300.000  5000.000 1555.000    31
+ 1.67528250E+01 4.34872057E-03-6.61871751E-07-9.00583788E-11 1.87411064E-14    2
+-4.45275797E+04-5.96940567E+01 9.23200116E-01 5.06973646E-02-5.15574288E-05    3
+ 2.49726017E-08-4.66963329E-12-4.02681931E+04 2.15436744E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+ 
+
+OOCH2OCHO  4/ 7/ 9 THERMC   2H   3O   4    0G   300.000  5000.000 1382.000    31
+ 1.15045951E+01 1.25661604E-02-4.82668895E-06 8.01056488E-10-4.84342868E-14    2
+-3.29437502E+04-2.86531360E+01 4.37892472E+00 2.44519189E-02-1.06796682E-05    3
+ 1.17817008E-09 1.93563149E-13-2.98847507E+04 1.14853967E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+ 
+
+HOOCH2OC*O 4/ 7/ 9 THERMC   2H   3O   4    0G   300.000  5000.000 1390.000     1
+ 1.26330558E+01 9.66560881E-03-3.36711212E-06 5.25062958E-10-3.04768875E-14    2
+-3.77695888E+04-3.36376189E+01 5.11474887E+00 2.73221124E-02-1.94733818E-05    3
+ 7.33888643E-09-1.15678100E-12-3.51479389E+04 6.74108256E+00                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+ 
+
+CH3OC*OOO  4/ 7/ 9 THERMC   2H   3O   4    0G   300.000  5000.000 1391.000    31
+ 1.29061864E+01 9.32560962E-03-3.28229206E-06 5.18501472E-10-3.03780137E-14    2
+-5.08606685E+04-4.00550928E+01 2.08944078E+00 3.64050388E-02-2.97236018E-05    3
+ 1.24453283E-08-2.11116434E-12-4.72863967E+04 1.73944833E+01                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+ 
+ 
+
+HO2CH2OCHO 8/31/99 THERMC   2H   4O   4    0G   300.000  5000.000 1387.000    41
+ 1.64584298E+01 8.52683511E-03-3.04113500E-06 4.85596908E-10-2.87316334E-14    2
+-6.23959608E+04-5.38924139E+01 3.47935703E+00 4.02952392E-02-3.30109296E-05    3
+ 1.34360117E-08-2.18601580E-12-5.80629934E+04 1.52521392E+01                   4 
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 ==> FROM NUIG
+
+
+CH3OC*OOOH 4/ 7/ 9 THERMC   2H   4O   4    0G   300.000  5000.000 1392.000    31
+ 1.50414766E+01 1.00095140E-02-3.59573999E-06 5.80243758E-10-3.44753359E-14    2
+-6.90519307E+04-5.32132817E+01 7.48748730E-01 4.71605967E-02-4.12450952E-05    3
+ 1.81267757E-08-3.17649574E-12-6.44855307E+04 2.21797208E+01                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+ 
+ 
+
+O*CHOC*OOOH             C   2H   2O   5    0G   300.000  5000.000 1414.000    41
+ 1.82377988E+01 4.43615293E-03-1.62378040E-06 2.63759046E-10-1.57922565E-14    2
+-7.75666653E+04-6.29454126E+01 3.51628845E+00 4.37714935E-02-4.16373612E-05    3
+ 1.85721086E-08-3.18173704E-12-7.30839724E+04 1.41389409E+01                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+O2CH2OCH2O2H 7/20/98 TRMC   2H   5O   5    0G   300.000  5000.000 1402.000    51
+ 1.92038046E+01 1.04394841E-02-3.60582939E-06 5.63792843E-10-3.28807214E-14    2
+-3.79207055E+04-6.51847273E+01 1.99640551E+00 5.83226232E-02-5.53259778E-05    3
+ 2.59810540E-08-4.77141005E-12-3.27628742E+04 2.44215005E+01                   4 
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 ==> FROM NUIG
+ 
+
+OOCH2OC*OOOH       THERMC   2H   3O   6    0G   300.000  5000.000 1391.000    51
+ 1.70110947E+01 1.02440244E-02-3.62709601E-06 5.74313030E-10-3.36882726E-14    2
+-6.59620793E+04-5.55098083E+01 4.58829266E+00 4.14370938E-02-3.41746760E-05    3
+ 1.43886217E-08-2.44860058E-12-6.18681612E+04 1.04339333E+01                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+HOOCH2OC*OOO       THERMC   2H   3O   6    0G   300.000  5000.000 1391.000     1
+ 1.70110947E+01 1.02440244E-02-3.62709601E-06 5.74313030E-10-3.36882726E-14    2
+-6.59620793E+04-5.55098083E+01 4.58829266E+00 4.14370938E-02-3.41746760E-05    3
+ 1.43886217E-08-2.44860058E-12-6.18681612E+04 1.04339333E+01                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+!						C3 species:
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> 
+
+	!67152-18-5
+	!C3H2(3) RAD   *HC=C=CH* PROP-2-VINYLIDENE TRIPLET  SIGMA=2   STATWT=2   Ia=0.075
+	!Ib=8.2828   Ic=8.3057  {HF298=129.39 kcal} REF=Melius 1988 A69K
+	!Nu=[3318],3265,1621,[1238,434],401,[337],246,[209] REF=Webbook NIST2000
+	!+[]Vereecken, et al JCP 108,(1998),1068     HF298=180.5 kcal  REF=Kiefer et. al.
+	!JPC 101, (1997),4057 2-propargyl=87.71 kcal +92.8 kcal Vereecken et.al
+	!Max Lst Sq Error Cp @ 6000 K 0.38%
+C3H2 HC*=C=C*H (3)S 4/01C  3.H  2.   0.   0.G   200.000  6000.000 1000.00      1 
+ 7.47247827E+00 4.57765160E-03-1.56482125E-06 2.43991965E-10-1.42462924E-14    2
+ 8.83321441E+04-1.27113314E+01 3.74356467E+00 2.51955211E-02-4.62608277E-05    3
+ 4.34360520E-08-1.53992558E-11 8.89297787E+04 4.22612394E+00 9.08356403E+04    4
+
+	!16165-40-5
+	!C3H2 cyclopropenylidene BI-RADICAL SINGLET SIGMA=2 STATWT=1 Ia=2.35340 Ib=2.4065
+	!Ic=4.8941  Nu=788,887,[898,979],1063,1277,[1588,3080,3114] REF=Webbook NIST2000
+	!+[]Vereecken, et al JCP 108,(1998),1068   HF298=114 kcal  REF= Kiefer et.al.
+	!J. Phys. Chem 101, (1997), 4057   {HF298=121.63+/-6.3 kcal REF=Melius 1988 P60V}
+	!{HF298=136 kcal   REF=PM3 RHF calculation}   Max Lst Sq  Error Cp @ 200 K 0.82%
+  ! C3H2(1) Cyclo     T12/00C  3.H  2.   0.   0.G   200.000  6000.000  B  38.04888 1
+cC3H2 Cyclo     T12/00  C  3.H  2.   0.   0.G   200.000  6000.000 1000.00      1 
+ 5.69445684E+00 6.53821901E-03-2.35907266E-06 3.82037384E-10-2.29227460E-14    2
+ 5.49264274E+04-6.96163733E+00 3.18167129E+00-3.37611741E-04 3.95343765E-05    3
+-5.49792422E-08 2.28335240E-11 5.61816758E+04 9.06482468E+00 5.73666999E+04    4
+
+	!89342-91-6
+	!C3H3 Propynyl CH3-CC*  Compiled from TRC 4/98 Tables by B.McBride.  HF298=528.35
+	!+/-1. kJ  REF=ATcT C 2011  {HF298=450. kJ  REF=TRC 4/98}  Max Lst Sq Error Cp @
+	!1400 K 0.73%
+C3H3-1            T 7/11C  3.H  3.   0.   0.G   200.000  6000.000 1000.00      1 
+ 5.07601725E+00 9.54327408E-03-3.41355348E-06 5.52182339E-10-3.31245505E-14    2
+ 6.13160707E+04-2.15967259E+00 4.44068226E+00 5.31924738E-04 2.99752229E-05    3
+-3.79521360E-08 1.47291017E-11 6.20011226E+04 3.69024341E+00 6.35455367E+04    4
+
+	!2932-78-7
+	!C3H3 Propargyl Rad  *CH2-CCH  STATWT=2.  SIGMA=2.  IA=.29055  IB=8.8826
+	!IC=9.16487    NU=3264,3081,2990,1912,1390,1007,930,607,585,449,364,331
+	!REF=Kumaran et.al. Israel J. Chem, 36,(1996),223  HF298=351.506+/-0.5 kJ
+	!REF=ATcT C 2011  {HF298=331.8 kJ  REF=TRC 4/98;  HF298=346. kJ  REF=TSANG, Int.
+	!J. Chem. Kinet 10 (1978),687} Max Lst Sq Error Cp @ 1700 K 0.13%
+C3H3              T 7/11C  3.H  3.   0.   0.G   200.000  6000.000 1000.00      1
+ 7.14221719E+00 7.61902211E-03-2.67460030E-06 4.24914904E-10-2.51475443E-14    2
+ 3.95709594E+04-1.25848690E+01 1.35110873E+00 3.27411291E-02-4.73827407E-05    3
+ 3.76310220E-08-1.18541128E-11 4.07679941E+04 1.52058598E+01 4.22762135E+04    4
+
+	!6401-87-2
+	!C3H3 Allenyl Radical CH2=C=CH*  SIGMA=1  STATWT=2  IA=0.2894  IB=8.8243
+	!IC=9.1137  REF=Burcat G3B3  Nu=3308,[3253],3028,1935,1440,1062,1017(2),687,
+	!620(2),484  REF=Jacox Webbook 2009 + [] G3B3  HF298=348.43+/-8. kJ  REF=Burcat
+	!G3B3  Max Lst Sq Error Cp @ 6000 K 0.44%
+CH2CCH            T06/09C  3.H  3.   0.   0.G   200.000  6000.000 1000.00      1
+ 6.32980309E+00 8.34146204E-03-2.93568490E-06 4.67354593E-10-2.77041642E-14    2
+ 3.92839304E+04-8.87103848E+00 1.31886167E+00 2.13679507E-02-1.10465018E-05    3
+-3.52008462E-09 4.05500469E-12 4.06655512E+04 1.70807075E+01 4.19058711E+04    4
+
+	!463-49-0
+	!C3H4  ALLENE  STATWT=1.  SIGMA=4.  IA=.555  IB=IC=9.4389  NU=3015,1443,1073,
+	!865,3007,1957,1398,3086(2),999(2),841(2),355(2)  REF SHIMANOUCHI HF298=190.92 kJ
+	!REF=TRC(1988).   {HF298=190.163+/-0.35.kJ  REF=ATcT C}  MAX LST SQ ERROR Cp @
+	!1300K 0.3%.
+CH2CCH2           L 8/89C   3H   4    0    0G   200.000  6000.000 1000.00      1
+ 0.63168722E+01 0.11133728E-01-0.39629378E-05 0.63564238E-09-0.37875540E-13    2
+ 0.20117495E+05-0.10995766E+02 0.26130445E+01 0.12122575E-01 0.18539880E-04    3
+-0.34525149E-07 0.15335079E-10 0.21541567E+05 0.10226139E+02 0.22962267E+05    4
+
+
+	!74-99-7
+	!H4C3  PROPYNE  STATWT=1.  SIGMA=3.  IA=.5283  IB=IC=9.8172  NU=3334,2918,2142,
+	!1382,931,3008(2),1452(2),1053(2),633(2),328(2) REF=SHIMANOUCHI  HF298=44.319
+	!kcal  REF=TRC(API #44). {HF298=185.828+/-0.36 kJ REF=ATcT C}    MAX LST SQ
+	!ERROR CP @ 1300K 0.59%.
+CH3CCH            T 2/90H   4C   3    0    0G   200.000  6000.000 1000.00      1
+ 0.60252400E+01 0.11336542E-01-0.40223391E-05 0.64376063E-09-0.38299635E-13    2
+ 0.19620942E+05-0.86043785E+01 0.26803869E+01 0.15799651E-01 0.25070596E-05    3
+-0.13657623E-07 0.66154285E-11 0.20802374E+05 0.98769351E+01 0.22302059E+05    4
+
+	!2781-85-3
+	!C3H4  CYCLOPROPENE  STATWT=1  SIGMA=2  IA=2.792  IB=3.846  IC=6.085  NU=3152,
+	!2909,1653,1483,1105,905,996,815,3116,1043,1011,769,2995,1088,569  REF=YUM &
+	!EGGERS JPC 83,(1979),501  HF298=283.93+/-0.57 kJ  REF=ATcT C 2011  {HF298=277.1
+	!kJ  HF0=285.82 kJ    REF=Dorofeeva, Gurvich & Jorish JPCRD 15 (1986) 437;
+	!HF298=277.19+/-2.46 kJ  REF=ATcT A}  MAX LST SQ ERROR Cp @ 200 K **1.02%***.
+cC3H4 cyPropene   T 7/11C  3.H  4.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.28078872E+00 1.12393798E-02-4.01957416E-06 6.46920405E-10-3.86433056E-14    2
+ 3.11629635E+04-1.11420363E+01 2.24666571E+00 5.76237942E-03 4.42080338E-05    3
+-6.62906810E-08 2.81824735E-11 3.29498944E+04 1.33451493E+01 3.41487352E+04    4
+
+
+	!1981-80-2
+	!C3H5 ALLYL RAD SYMMETRIC STABILIZED BY RESONANCE CH2-C*H-CH2   STATWT=2  SIGMA=2
+	!IA=1.52057 IB=8.20036 IC=9.70572  REF=Nicolaides & Borden JACS 114,(1992), 8682
+	!NU=3257(2),3164,3155,3152,1522,1510,1418,1274,1183,1037,1011,931,804,784,558,   
+	!532,422  HF298=168.6+/-1.5 kJ  REF=Tabor Harding Ichino Stanton JPC A 116,(2012)
+	!7668  {HF298=39.9 kcal  REF=Wu & Kern JPC 91 (1987),6291;  HF298=40.1+/-2. kcal
+	!REF=Burcat G3B3}  Max Lst Sq Error Cp @ 200 K 0.62%.
+CH2CHCH2    Symet T 5/14C  3.H  5.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.74633155E+00 1.31071760E-02-4.60059113E-06 7.31029510E-10-4.32759674E-14    2
+ 1.71151431E+04-1.25248814E+01 1.65533607E+00 1.63688750E-02 2.10544223E-05    3
+-4.24018394E-08 1.92638759E-11 1.89454047E+04 1.61040987E+01 2.02778035E+04    4
+
+
+	!6067-68-1
+	!C3H5 SECONDARY RAD (CH3-CH=CH*) ALLYL RADICAL  SIGMA=1  STATWT=2  IA=1.4621
+	!IB=8.8517  IC=9.7923  Ir=0.4336  ROSYM=3  [V3=705.5 cm-1 REF=East& Radom JCP
+	!106,(1997),6655]. Nu=3258,3141,3091,3042,3033,1705,1514(2),1431,1288,1125,1074,
+	!941,813,807,613,408  HF298=63.464 kcal HF0=66.33 kcal  REF=Burcat G3B3 calc.
+	!{HF298=62.8 Kcal  REF=Wo & Kern JPC 91 (1992),6291}  Max Lst Sq Error Cp @ 6000
+	!K 0.59%.
+CH3CHCH           A12/04C  3.H  5.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.05091412E+00 1.34052084E-02-4.73450586E-06 7.55380897E-10-4.48421084E-14    2
+ 2.90860210E+04-6.73692060E+00 3.33277282E+00 1.06102499E-02 2.17559727E-05    3
+-3.47145235E-08 1.44476835E-11 3.03404530E+04 9.78922358E+00 3.19361425E+04    4
+
+
+	!15552-77-9
+	!C3H5 TERTIARY NONSYMMETRIC RAD  (CH2=C*CH3) STATWT=2.  SIGMA=1. IA=1.2558815
+	!IB=10.379297 IC=11.08304  Ir=0.3945E-39 [V3=17.7 kcal.  REF=Nicolaides & Borden
+	!JACS 114 (1992),8682]  ROSYM=3.   NU=315,470.8,834.5,836,911.6,1018.8,1090.8,
+	!1356,1390,1435,1448,1507,2830,2888,2902.5,2906.8,2999.7  REF=Ab-Initio Calculat.
+	!Karni, Oref & Burcat TAE #643 1989. HF298=56.8 Kcal   REF=Wo & Kern JPC 91
+	!(1987),6291   Max Lst Sq Error Cp @ 6000 K 0.61%.
+CH3CCH2           T 6/96C   3H   5    0    0G   200.000  6000.000    1000.0    1
+ 0.61101805E+01 0.14673395E-01-0.53676822E-05 0.86904932E-09-0.51932006E-13    2
+ 0.25532442E+05-0.83555712E+01 0.25544033E+01 0.10986798E-01 0.30174305E-04    3
+-0.47253568E-07 0.19771073E-10 0.27150242E+05 0.13207592E+02 0.28582707E+05    4
+
+
+	!2417-82-5
+	!C3H5 Cyclopropyl Radical  STATWT=2 SIGMA=2  IA=3.5282671  IB=3.97392  IC=6.28245
+	!NU=3042,3007,2994,2938,2933,1469,1432,1196,1150,1098,1080,1063,1044,899,831,764,
+	!756,628  REF=Melius H4  HF298=66.9+/-2.5 REF=McMillen & Golden { HF298=69.29
+	!REF=Melius H4} Max Lst Sq Error Cp @ 200 K **1.25%**  @ 6000 K 0.55%.
+cC3H5             T02/03C  3.H  5.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.62512238E+00 1.36577057E-02-4.90066661E-06 7.90436486E-10-4.72860275E-14    2
+ 3.03239999E+04-1.31845240E+01 2.15143774E+00 3.80171682E-03 6.14538989E-05    3
+-8.83383102E-08 3.70565687E-11 3.24689062E+04 1.48309194E+01 3.36651949E+04    4
+
+
+	!115-07-1
+	!C3H6  PROPYLENE  STATWT=1  SIGMA=1  IA=1.8133  IB=9.0187  IC=10.317   IR=0.3945
+	!ROSYM=3 V3=698.46 cm-1  NU=3091,3022,2991,2973,2932,1653,1459,1414,1378,1298,
+	!1178,935,919,428,2953,1443,1045,990,912,575  REF=CHAO & ZWOLINSKI JPCRD 4,(1975)
+	!251   HF298=4.88 kcal HF0=8.4 kcal  REF=TRC(API #44),1988  {HF298=20.265+/-0.32
+	!kJ  REF=ATcT C 2011}  MAX LST SQR ERROR Cp @ 6000 K 0.60 %.
+C3H6 propylene    g 2/00C  3.H  6.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.03870234E+00 1.62963931E-02-5.82130800E-06 9.35936829E-10-5.58603143E-14    2
+-7.41715057E+02-8.43825992E+00 3.83464468E+00 3.29078952E-03 5.05228001E-05    3
+-6.66251176E-08 2.63707473E-11 7.88717123E+02 7.53408013E+00 2.40543339E+03    4
+
+	!75-19-4
+	!C3H6  CYCLOPROPANE  STATWT=1  SIGMA=6  IA=IB=4.1766  IC=6.6358 NU=3038,1479,
+	!1188,1126,1070,3102,854,3024(2),1438(2),1029(2),867(2),3082(2),1188(2),739(2)
+	!REF=SHIMANOUCHI  HF298=53.3 KJ REF=Dorofeeva, Gurvich & Jorish JPCRD 15 (1986),
+	!437.  {HF298=53.415+/-0.54 kJ  REF=ATcT A}  MAX LST SQ ERROR Cp @ 200 K
+	!***1.55%***  @ 6000 K 0.59%
+cC3H6             g 1/00C  3.H  6.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.21663437E+00 1.65393591E-02-5.90075838E-06 9.48095199E-10-5.65661522E-14    2
+ 2.95937491E+03-1.36041009E+01 2.83278674E+00-5.21028618E-03 9.29583210E-05    3
+-1.22753194E-07 4.99191366E-11 5.19520048E+03 1.08306333E+01 6.41047999E+03    4
+
+
+	!2025-55=0
+	!C3H7  ISO-Propyl Rad CH3-CH*-CH3  SIGMA=2  STATWT=2  IA=2.2406  IB=10.1496
+	!IC=11.3383  (Ir(CH3)=0.4745  ROSYM=3 V(3)=0)x2  Nu=3180,3103(2),3043(2),2959,
+	!2953,1522,1510.5(2),1500,1443,1436,1388,1193,1158,1049,955,949,890,413,361
+	!HF298=90.19+/-2 kJ HF0=108.237 kJ REF=Ruscic G3B3 calc {HF298= 93.3  KJ.
+	!REF=  WING  TSANG JACS 107,(1985),2872} Max Lst Sq Error Cp @ 6000 K 0.62%
+IC3H7             A 5/05C  3.H  7.   0.   0.G   200.000  6000.000    1000.0    1
+ 5.30597255E+00 1.89854588E-02-6.74315384E-06 1.07993730E-09-6.42785036E-14    2
+ 7.78748910E+03-2.23233935E+00 5.47421257E+00-8.42536682E-03 8.04607759E-05    3
+-9.49287824E-08 3.59830971E-11 9.04939013E+03 3.40542323E+00 1.08473019E+04    4
+
+
+	!ipropyl                 H  7 C  3 O  0      G     298.0    6000.0    1000.0    1
+	!6.70775549E+00 1.74048076E-02-6.07615926E-06 9.60084351E-10-5.65656490E-14    2
+	!7.55377821E+03-1.03686516E+01-8.97467137E-01 4.15744022E-02-4.94778349E-05    3
+	!4.56493655E-08-1.79085437E-11 9.93950407E+03 2.92641758E+01                   4
+	!! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+	!2143-61-5
+	!C3H7 n-Propyl Rad  CH3CH2CH2*  SIGMA=1 STATWT=2 IA=2.5613  IB=9.4162  IC=10.8387
+	!Ir(CH3)=0.4784  ROSYM=3  [V(3)=1253.9 cm-1 REF W. TSANG] Ir(CH2*)=0.278 ROSYM=2
+	!V(3)=0    NU=3258,3161,3119,3112,3047,3033,2938,1536,1528,1500,1490,1436,1379,
+	!1284,1187,1093,1064,930,890,761,465,367  HF298=101.32+/-1. kJ   HF0=119.149 kJ
+	!REF=Ruscic G3B3 calc.  {HF298= 100.5 KJ  REF= WING TSANG  JACS 107,(1985},2872}
+	!Max Lst Sq Error Cp @6000 K 0.55%
+NC3H7             A 5/05C  3.H  7.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.49636579E+00 1.77337992E-02-6.24898046E-06 9.95389495E-10-5.90199770E-14    2
+ 8.85973885E+03-8.56389710E+00 4.08211458E+00 5.23240341E-03 5.13554466E-05    3
+-6.99343598E-08 2.81819493E-11 1.04074558E+04 8.39534919E+00 1.21859256E+04    4
+
+
+	!npropyl                 H  7 C  3 O  0      G     298.0    6000.0    1000.0    1
+	!7.48614243E+00 1.65769478E-02-5.74876481E-06 9.04103694E-10-5.30867231E-14    2
+	!8.93710008E+03-1.42595379E+01-2.20120865E+00 5.29641653E-02-7.23640506E-05    3
+	!6.36996940E-08-2.29332581E-11 1.15130744E+04 3.43669174E+01                   4
+	!! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+	! 74-98-6
+	! C3H8  PROPANE  CH3CH2CH3 SIGMA=2  STATWT=1.    IA=2.8899   IB=IC=10.5472
+	! IR=.44202  ROSYM=3. V0=3.29 kcal  NU=2977,2962,2887,1476,1462,1392,1158,869,369,
+	! 2967,1451,1278,940,2968,2887,1464,1378,1338,1054,922,2973,2968,1472,1192,748
+	! HF298=-25.02+/-0.15 kcal  HF0=-19.69 kcal  REF=CHAO WILHOIT & ZWOLINSKI JPCRD 2,
+	! (1973),427  {HF298=-104.4+/-0.3  REF=ATcT C}  MAX LST SQ ERROR CP @ 200 K 0.64%
+C3H8              g 2/00C  3.H  8.   0.   0.G   200.000  6000.000    1000.0    1
+ 6.66919760E+00 2.06108751E-02-7.36512349E-06 1.18434262E-09-7.06914630E-14    2
+-1.62754066E+04-1.31943379E+01 4.21093013E+00 1.70886504E-03 7.06530164E-05    3
+-9.20060565E-08 3.64618453E-11-1.43810883E+04 5.61004451E+00-1.25900384E+04    4
+
+
+
+
+
+! CAS# : 624-67-9
+! DfH = 126.79 kJ/mol, Cp = 63.73 J/mol/K, S = 275.12 J/mol/K
+C3H2O             G3B3  H   2C   3O   1N   0G   300.000  3000.000  1000.000    1
+ 5.51551710E+00 1.20296564E-02-6.09058988E-06 1.48866261E-09-1.42588474E-13    2
+ 1.29567538E+04-2.05439127E+00 1.89401982E+00 2.66301486E-02-2.97185216E-05    3
+ 1.94290386E-08-5.43402767E-12 1.37271761E+04 1.55182339E+01 1.38364944E+04    4
+! Pitsch et al., 2009
+! G. Blanquart, P. Pepiot-Desjardins, H. Pitsch, Combust. Flame 156 (2009) 588–607
+
+	!propynal                H  2 C  3 O  1      G     298.0    6000.0    1000.0    1
+	!7.83306970E+00 7.04267772E-03-2.46906091E-06 3.91379396E-10-2.31147582E-14    2
+	!1.37434798E+04-1.47141316E+01 5.07022489E-01 3.65081568E-02-5.58695368E-05    3
+	!4.80897618E-08-1.64604534E-11 1.54998182E+04 2.13370424E+01                   4
+	!! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+	
+	!107-02-8
+	!C3H4O  2-PROPENAL, ACROLEIN, ACRYLALDEHYDE  CH2=CH-CHO   SIGMA=1    STATWT=1
+	!IA=1.7491  IB=18.1314  IC=19.8805 Ir=1.61967  ROSYM=1  (V(3)=200 cm-1 est.)
+	!REF=Burcat G3B3   Nu=3103,3028,3000,2800,1724,1625,1420,1360,1275,1158,912,564,
+	!327,993,980,959,593,157  REF=Shimanuchi, HF298=-68.065 kJ  HF0=-59.554 kJ
+	!REF=Burcat G3B3 calc   {HF298=-17.8+/- 0.3 kcal  REF=NIST 94}  Max Lst Sq Error
+	!Cp @ 6000 K 0.55%
+C2H3CHO           T11/10C  3.H  4.O  1.   0.G   200.000  6000.000  1000.000    1
+ 8.20654919E+00 1.28492916E-02-4.64285331E-06 7.51738738E-10-4.51298116E-14    2
+-1.18838341E+04-1.49881933E+01 4.69868861E+00 4.99965957E-03 4.38587397E-05    3
+-6.12883900E-08 2.48508985E-11-1.00875286E+04 7.29812046E+00-8.18629119E+03    4
+	
+	!acrolein                H  4 C  3 O  1      G     298.0    6000.0    1000.0    1
+	! 8.98562475E+00 1.11429887E-02-3.98457684E-06 6.39809682E-10-3.81229207E-14    2
+	!-1.11606093E+04-2.33501850E+01-1.30819989E+00 4.86770250E-02-6.98543790E-05    3
+	! 6.09330392E-08-2.17017624E-11-8.41778158E+03 2.84760680E+01                   4	
+	!! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+	
+	
+	
+	!6004-44-0
+	!C3H4O Methyl Ketene  CH3-CH=C=O  SIGMA=3  STATWT=1  IA=2.1424  IB=18.8979
+	!IC=20.5149  Nu=3201,3131,3093,3042,2227,1539,1513,1445,1429,1166,1095,1066,909,
+	!646,541,513,211,149  HF298=-66.241+/-8 kJ  REF=Burcat G3B3  {HF298=-63.6+/-2.8
+	!kJ  REF=Simmie Curran ChemPhysChem 9,(2008),700}  Max Lst Sq Error Cp @ 6000 K
+	!0.53%.
+CH3CHCO           T11/14C  3.H  4.O  1.   0.G   300.000  3000.000  1000.000    1
+ 7.20129717E+00 1.30584825E-02-4.66526861E-06 7.50272508E-10-4.47918619E-14    2
+-1.12218280E+04-1.27195589E+01 3.80368785E+00 1.20462120E-02 1.94920393E-05    3
+-3.26602134E-08 1.36182659E-11-9.75050952E+03 7.40497549E+00-7.96692625E+03    4
+	
+	!CH3CHCO                 H  4 C  3 O  1      G     298.0    6000.0    1000.0    1
+	!7.74733669E+00 1.18538743E-02-4.15269115E-06 6.57787768E-10-3.88251811E-14    2
+	!-1.04588344E+04-1.44754814E+01 2.33263042E-01 3.88629387E-02-5.28591433E-05    3
+	!4.70818090E-08-1.72513854E-11-8.37730220E+03 2.36025285E+01                   4
+	!! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+	
+!allyloxy:
+CH2CHCH2O               H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 9.34720957E+00 1.30735257E-02-4.58398309E-06 7.26633413E-10-4.29140495E-14    2
+ 8.42259965E+03-2.23111344E+01-1.22904891E+00 5.10682935E-02-6.93185536E-05    3
+ 5.84958068E-08-2.04960267E-11 1.12279936E+04 3.09764754E+01                   4	
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+	
+
+propen1oxy              H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 8.29634516E+00 1.43107610E-02-5.13501118E-06 8.22908478E-10-4.88736049E-14    2
+-6.16554258E+03-1.69642961E+01-2.25678119E-01 4.28814739E-02-5.48714506E-05    3
+ 4.86486419E-08-1.81868578E-11-3.67889917E+03 2.67938468E+01                   4	
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+	
+	
+propen2oxy              H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 9.07281261E+00 1.32865648E-02-4.73702969E-06 7.58247637E-10-4.50561316E-14    2
+-7.25826854E+03-2.07104447E+01-2.13010409E+00 5.52945218E-02-7.94937825E-05    3
+ 6.90379248E-08-2.43730213E-11-4.34473900E+03 3.53690806E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+	
+CH2CCH2OH  9/ 8/95 THERMC   3H   5O   1    0G   300.000  5000.000 1372.00     21
+ 9.70702027E+00 1.13972660E-02-3.77993962E-06 5.75209277E-10-3.29229125E-14    2
+ 9.13212884E+03-2.25012933E+01 2.88422544E+00 2.42428071E-02-1.14152268E-05    3
+ 1.71775334E-09 1.42177454E-13 1.17935615E+04 1.52102335E+01                   4	
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+! Goldsmith: ! allyl-alcohol radical from Curran.  Please fix!
+
+	
+	
+CH2C(OH)CH2             C   3H   5O   1    0G   300.000  5000.000 1372.00     21
+ 9.70702027E+00 1.13972660E-02-3.77993962E-06 5.75209277E-10-3.29229125E-14    2
+ 9.13212884E+03-2.25012933E+01 2.88422544E+00 2.42428071E-02-1.14152268E-05    3
+ 1.71775334E-09 1.42177454E-13 1.17935615E+04 1.52102335E+01                   4		
+! set equal to CH2CCH2OH!
+
+
+
+CH3C(OH)CH              C   3H   5O   1    0G   300.000  5000.000 1372.00     21
+ 9.70702027E+00 1.13972660E-02-3.77993962E-06 5.75209277E-10-3.29229125E-14    2
+ 9.13212884E+03-2.25012933E+01 2.88422544E+00 2.42428071E-02-1.14152268E-05    3
+ 1.71775334E-09 1.42177454E-13 1.17935615E+04 1.52102335E+01                   4		
+! set equal to CH2CCH2OH!
+
+
+	! 15843-24-0
+	! C3H5O  PROPANAL RADICAL CH3CH2*CO  SIGMA=1 STATWT=2 IA=4.5640  IB=14.4953
+	! IC=18.0265  Ir(CH3)=0.51267  ROSYM=3 V(3)=272 cm-1  Ir(CO)=0.35506  ROSYM=2
+	! V(3)=200 cm-1 Nu=3143,3133,3085,3063,3055,1928,1528,1523,1477,1435,1335,1281,
+	! 1095,1054,981,807,738,625,240  HF298=-32.83 kJ  HF0=-19.86 kJ  REF=Janoschek &
+	! Rossi, Int JCK 36 (2004),661.  {HF298 = -36.02 kJ REF=THERM;  HF298=-46.86 kJ
+	! REF=NIST 94;  HF298=-31.7+/-3.4 kJ  REF=Luo Compr. Handbook Chem Bond Ener. 2007
+	! HF298=-35.4+/-3.3 kJ G4  REF=Marochkin & Dorofeeva Comp Theor Chem 991,(2012),
+	! 182}   Max Lst Sq Error Cp @ 6000 K 0.58%
+CH3CH2CO          A10/04C  3.H  5.O  1.   0.G   200.000  6000.000  1000.000    1
+ 6.52325448E+00 1.54211952E-02-5.50898157E-06 8.85889862E-10-5.28846399E-14    2
+-7.19631634E+03-5.19862218E+00 6.25722402E+00-9.17612184E-03 7.61190493E-05    3
+-9.05514997E-08 3.46198215E-11-5.91616484E+03 2.23330599E+00-3.94851891E+03    4
+
+
+	!!CH3CH2CO
+	!propionyl               H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+	!7.90889104E+00 1.38589960E-02-4.85273848E-06 7.68424694E-10-4.53453288E-14    2
+	!-6.80357824E+03-1.30117980E+01 1.51342895E+00 3.37502304E-02-4.00026717E-05    3
+	!3.69548970E-08-1.45776572E-11-4.77724465E+03 2.04211417E+01                   4
+	! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+	!3122-07-4
+	!C3H5O ACETONE RADICAL *CH2COCH3 SIGMA=1  STATWT=2 SYMNO=1.  IA=7.7005  IB=9.3110
+	!IC=16.4899  IR(CH3)=0.49327  ROSYM=3  V(3)=272 cm-1  Ir(CH2)=.28265  ROSYM=2
+	!(V(3)=230 cm-1 est).    NU=3283,3172,3166,3109,3051,1609,1508,1502,1482,1418,
+	!1281,1076,1038,936,822,745,523,506,383  HF298=-33.34 kJ  HF0=-20.62 kJ
+	!REF=Janoschek Rossi Int JCK 36 (2004),661  {HF298=-3.36+/-0.5 KCAL REF=THERM}
+	!MAX LST SQ ERROR Cp @ 6000 0.52%.
+CH3C(O)CH2        A10/04C  3.H  5.O  1.   0.G   200.000  6000.000  1000.000    1
+ 7.54410697E+00 1.43443222E-02-5.08381081E-06 8.13200521E-10-4.83673315E-14    2
+-7.48672286E+03-1.14792587E+01 4.70187196E+00 5.51653762E-03 4.27505858E-05    3
+-5.94680816E-08 2.40685378E-11-5.92845491E+03 7.12932590E+00-4.00985747E+03    4	
+	
+
+
+	
+
+CH3CHCHO                H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 8.34937244E+00 1.42417768E-02-5.10227499E-06 8.16594011E-10-4.84484394E-14    2
+-6.40349910E+03-1.75027048E+01 3.23047975E-01 4.10420412E-02-5.19924735E-05    3
+ 4.62789953E-08-1.73945917E-11-4.04361237E+03 2.37684172E+01                   4	
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+	
+	
+	
+CH2CHCHOH               H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 8.34937244E+00 1.42417768E-02-5.10227499E-06 8.16594011E-10-4.84484394E-14    2
+-6.40349910E+03-1.75027048E+01 3.23047975E-01 4.10420412E-02-5.19924735E-05    3
+ 4.62789953E-08-1.73945917E-11-4.04361237E+03 2.37684172E+01                   4	
+! set equal to CH3CHCHO!
+	
+	
+	
+!2-formyl-ethyl //  formylethyl 
+CH2CH2CHO               H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 8.85691307E+00 1.30156260E-02-4.55093768E-06 7.19909372E-10-4.24513072E-14    2
+-1.80261247E+02-1.77053560E+01 2.23085078E+00 3.51044754E-02-4.40998043E-05    3
+ 4.00355717E-08-1.52720345E-11 1.80133296E+03 1.64536197E+01                   4	
+	
+!vinoxyl-methyl
+!CH2OCHCH2               H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+vinoxylmethyl           H  5 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 1.00397568E+01 1.18952742E-02-4.13512716E-06 6.51590471E-10-3.83196617E-14    2
+ 7.27301530E+03-2.57171542E+01-1.44860882E+00 5.42514911E-02-7.45556749E-05    3
+ 6.03597706E-08-2.01938036E-11 1.01608402E+04 3.16318657E+01                   4
+ 
+ 
+ 
+	! 123-38-6
+	! C3H6O  PROPIONALDEHYDE  CH2CH2CHO  SIGMA=1  STATWT=1 IA=3.2235  IB=19.6377
+	! IC=20.3885  Ir(CH3)=0.5078 calc  ROSYM=3  V(3)=1150. cm-1 estm  Nu=3132,3126,
+	! 3108,3055,3028,2878,1839,1535,1530,1494,1447,1437,1343,1288,1166,1141,1019,926,
+	! 881,763,507,326,213  HF298=-44.253+/-2 kcal  REF=Burcat G3B3  {HF298=-45.90 kcal
+	! REF=Stull Westrum & Sinke 1969;  HF298=-45.1+/-0.18 kcal REF=Wiberg et al JACS
+	! 113,(1991),3447}  Max Lst Sq Error Cp @ 6000 K 0.58%
+CH3CH2CHO         T05/10C  3.H  6.O  1.   0.G   200.000  6000.000  1000.000    1
+ 7.44085690E+00 1.77301764E-02-6.34081568E-06 1.02040803E-09-6.09461714E-14    2
+-2.60055814E+04-1.44195446E+01 4.24529681E+00 6.68296706E-03 4.93337933E-05    3
+-6.71986124E-08 2.67262347E-11-2.41473007E+04 6.90738560E+00-2.22688471E+04    4
+! a typo in above, as it should be CH3CH2CHO and not CH2CH2CHO
+
+
+
+
+	!16545-68-9
+	!C3H6O CYCLOPROPANOL  C3H5-OH  SIGMA=2  STATWT=1 IA=5.0221  IB=12.2088 IC=14.1629
+	!Ir=0.141315  ROSYM=1  V(3)=1854. cm-1 est according to Bozzelli JPC A 108,(2004)
+	!,8353  Nu=3728,3242,3226,3156,3146,3110,1530,1479,1437,1315,1239,1206,1200,1134,
+	!1077,1059,994,935,842,822,763,409,403  HF298=-101.5 kJ  HF0=-81.907 kJ
+	!REF=Burcat G3B3 calc  {HF298=-114.3 KJ  REF=NIST 94}  Max Lst Sq Error Cp @ 200
+	!K ** 1.00%**  @ 6000 K 0.5%
+cC3H6O CyC3H5-OH  A01/05C  3.H  6.O  1.   0.G   200.000  6000.000  1000.000    1
+ 8.95739587E+00 1.60217198E-02-5.65131014E-06 9.01550505E-10-5.35370086E-14    2
+-1.65852904E+04-2.45939234E+01 2.12818440E+00 8.44261433E-03 6.99012101E-05    3
+-1.04542243E-07 4.42460530E-11-1.36496693E+04 1.64564771E+01-1.22080363E+04    4
+
+
+	!107-18-6
+	!C3H6O  2-Propen-1-ol  CH2=CHCH2OH  SIGMA=1  STATWT=1  IA=2.9862  IB=19.6207
+	!IC=20.4808  Ir(OH)=0.1416  ROSYM=1  V(3)=1213. cm-1  Ir(-CH2OH)=2.1389  ROSYM=1
+	!V(3)=~3200. cm-1 Nu=3749,3238,3169,3156,3009,2968,1740,1540,1493,1444,1325,
+	!1286,1249,1170,1073,1038,977,951,923,653,448,331   HF298=-29.552+/-2 kcal
+	!REF=Elke Goos G3B3   {HF298=-123.6+/-1.5 kJ  REF=Cox & Pilcher 1970}  Max Lst Sq
+	!Error Cp @  6000 K 0.57%
+CH2CHCH2OH        T06/10C  3.H  6.O  1.   0.G   200.000  6000.000  1000.000    1
+ 8.72477114E+00 1.63942712E-02-5.90852993E-06 9.53262253E-10-5.70318010E-14    2
+-1.90496618E+04-1.97198674E+01 3.15011905E+00 1.28538274E-02 4.28438434E-05    3
+-6.67818707E-08 2.80408237E-11-1.66413668E+04 1.35066359E+01-1.48710589E+04    4
+
+
+	!3965-44-4
+	!C3H6O 1-Propen-1-ol CH3CH=CHOH  SIGMA=1  STATWT=1  IA=1.9972  IB=21.5388
+	!IC=23.0164  Nu=3796,3175,3150,3103,3069,3026,1785,1532,1510,1450,1389,1366,1239,
+	!1170,1120,1075,961,936,806,539,307,293,216.160  HF298=-34.886+/-2. kcal 
+	!REF=Burcat  G3B3  {HF298=35.8+/-0.9 kcal  REF=Green et al JPC A 116,(2012),9033}
+	!Max Lst Sq Error Cp @ 6000 K 0.52%
+CH3CHCHOH         T 4/15C  3.H  6.O  1.   0.G   200.000  6000.000  1000.000    1
+ 8.11285474E+00 1.71952419E-02-6.06427393E-06 9.67014746E-10-5.73968013E-14    2
+-2.14419954E+04-1.72623867E+01 5.11393563E+00 4.69115954E-03 5.42574797E-05    3
+-7.29774751E-08 2.90683409E-11-1.96373114E+04 3.16334698E+00-1.75552166E+04    4
+
+
+! acetone 
+CH3C(O)CH3              H  6 C  3 O  1      G   298.0    6000.0    1000.0      1
+ 7.99087832E+00 1.63574365E-02-5.72443430E-06 9.06140669E-10-5.34595749E-14    2
+-2.98079535E+04-1.65239590E+01-1.47587550E+00 4.84871367E-02-6.21982696E-05    3
+ 5.53066033E-08-2.06430338E-11-2.70636389E+04 3.19911831E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+		!16499-18-6
+		!C3H7O N-PROPOXY RADICAL  SIGMA=1  STATWT=2  IA=5.5249  IB=16.0730  IC=19.0674
+		!Ir(CH3)=0.5206  ROSYM=3  V3=1200.cm-1 est Nu=3133,3114, 3077,3048,3041,2945,
+		!2885,1539,1528,1513,1443,1401,1386,1353,1301,1226,1110,1097,1000,990,871,798,
+		!558,491,303,(222 CH3 ROT),141  HF298=-8.477+/-2. kcal  REF=Burcat G3B3 calc
+		!{HF298=-9.0 KCAL REF=NIST 94} Max Lst Sq Error Cp @ 6000 K 0.58%.
+		!C3H7O Propoxy rad T07/10C  3.H  7.O  1.   0.G   200.000  6000.000  B  59.08708 1
+		!8.38041157E+00 1.95206120E-02-6.97374143E-06 1.12144919E-09-6.69467831E-14    2
+		!-8.48625211E+03-1.89916219E+01 4.21934640E+00 7.38556641E-03 6.02825529E-05    3
+		!-8.38680247E-08 3.39623435E-11-6.23491852E+03 8.08139850E+00-4.26576768E+03    4
+
+!npropoxy OR npropyloxy
+NC3H7O                  H  7 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 9.81364858E+00 1.73771209E-02-6.08124759E-06 9.62489073E-10-5.67742325E-14    2
+-8.28665862E+03-9.09598745E+00-1.17155136E+00 5.71847556E-02-7.76865820E-05    3
+ 6.86649602E-08-2.49763463E-11-5.27853461E+03 4.64445206E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+ 
+ 
+		!3958-66-5
+		!C3H7O iso-propoxy radical (CH3)2CHO*  SIGMA=2  STATWT=2  IA=9.1329  IB=10.4815
+		!IC=17.3936  [Ir(CH3)=0.52061  ROSYM=3  V(3)=2000. cm-1]x2  Nu=3141.7(2),3127.5,
+		!3121.5,3058,3051,2859,1533.5,1524,1515,1509.5,1433.5,1409,1275,1213,1181,1092,
+		!1062,991,921.5,899.5,811,451,391,355,[246,203 int rot]  HF298=-11.38+/-2 kcal
+		!REF=Burcat G3B3  {HF298=-12.6 kcal  REF=NIST 94;  HF298=-12.34 kcal  REF=Curran
+		!et al "corrected" THERM  JPCRD 44(1),(2015),013101-1-29}  Max Lst Sq Error Cp @
+		!6000 K 0.56%.
+		!C3H7O iso-propox  T12/15C  3.H  7.O  1.   0.G   200.000  6000.000  B  59.08708 1
+		!9.75648312E+00 1.80073414E-02-6.47125189E-06 1.04515875E-09-6.25932151E-14    2
+		!-1.04736442E+04-2.82868993E+01 3.58381906E+00 9.98483519E-03 6.04218846E-05    3
+		!-8.75798110E-08 3.58644103E-11-7.61659748E+03 9.48819708E+00-5.72660566E+03    4
+
+!ipropoxy OR ipropyloxy
+IC3H7O                  H  7 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 9.71868461E+00 1.73364489E-02-6.03843825E-06 9.52608279E-10-5.60612009E-14    2
+-9.55374804E+03-2.59029039E+01-2.33606300E+00 6.29762296E-02-8.83393968E-05    3
+ 7.68294572E-08-2.72169852E-11-6.42226536E+03 3.43769892E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+CH3CH2CHOH              H  7 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 9.88682656E+00 1.65430360E-02-5.71290452E-06 8.96146144E-10-5.25322805E-14    2
+-1.31167605E+04-2.33703506E+01-8.44487657E-01 5.50593301E-02-7.20861844E-05    3
+ 6.09960440E-08-2.15641307E-11-1.02418216E+04 3.07738879E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+CH3CHCH2OH              H  7 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 9.23458251E+00 1.71053538E-02-5.91031827E-06 9.27480668E-10-5.43848233E-14    2
+-1.09926232E+04-1.88514557E+01 8.13578057E-01 4.49797675E-02-5.42286280E-05    3
+ 4.76008075E-08-1.78628117E-11-8.50936874E+03 2.44978545E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+CH2CH2CH2OH             H  7 C  3 O  1      G     298.0    6000.0    1000.0    1
+ 1.00832156E+01 1.62937976E-02-5.60808929E-06 8.77733810E-10-5.13726471E-14    2
+-1.00631630E+04-2.39279927E+01 1.09670831E+00 4.57123711E-02-5.33837881E-05    3
+ 4.40964478E-08-1.59264545E-11-7.49037161E+03 2.21804089E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+EFP        2/16/ 9      C   3H   5O   2    0G   300.000  5000.000 1390.000    21
+ 1.20525175E+01 1.34637907E-02-4.74081422E-06 7.45448294E-10-4.35193115E-14    2
+-2.82388610E+04-3.47415442E+01-7.47334845E-01 4.43661991E-02-3.37887836E-05    3
+ 1.33936483E-08-2.18630956E-12-2.38766390E+04 3.36762018E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+EFS        2/16/ 9      C   3H   5O   2    0G   300.000  5000.000 1392.000    21
+ 1.44073339E+01 1.09304240E-02-3.91608795E-06 6.31923892E-10-3.75846961E-14    2
+-2.90204394E+04-5.01493116E+01-6.85439382E-01 5.00252018E-02-4.34039222E-05    3
+ 1.89832679E-08-3.31649025E-12-2.41829015E+04 2.95152689E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+EFF        2/16/ 9      C   3H   5O   2    0G   300.000  5000.000 1391.000    21
+ 1.27374646E+01 1.18561811E-02-4.08962745E-06 6.44230948E-10-3.78135176E-14    2
+-2.86865136E+04-3.98529368E+01 8.81409461E-01 4.12955492E-02-3.26059781E-05    3
+ 1.34182687E-08-2.25445426E-12-2.47395062E+04 2.32108191E+01                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+ME2J      11/28/99      C   3H   5O   2    0G   300.000  5000.000 1376.000    31
+ 1.34749717E+01 1.14688572E-02-4.05151839E-06 6.42781967E-10-3.78606108E-14    2
+-3.16810801E+04-4.61602203E+01 2.69086507E+00 3.38248090E-02-2.08509956E-05    3
+ 6.00451093E-09-6.34484103E-13-2.76337923E+04 1.27963293E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+ 
+
+MEMJ      12/ 9/ 6      C   3H   5O   2    0G   300.000  5000.000 1392.000    31
+ 1.38587401E+01 1.13235183E-02-3.91663105E-06 6.00684427E-10-3.40584427E-14    2
+-3.08875399E+04-4.66699226E+01 3.87187920E+00 3.46323614E-02-2.50705349E-05    3
+ 9.51853192E-09-1.50518911E-12-2.73821006E+04 7.03163958E+00                   4 
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+
+!2-formyl-ethoxy, frag_1                  
+OCHCH2CH2O              H  5 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.08162478E+01 1.42673665E-02-5.07333766E-06 8.11888154E-10-4.82713892E-14    2
+-1.75002033E+04-2.65683503E+01-5.00838068E-01 5.19868081E-02-6.76895492E-05    3
+ 5.81287856E-08-2.11513136E-11-1.42793836E+04 3.13661013E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+!oxiranyl-methoxy, frag_3 
+oxiranylmet             H  5 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.11186780E+01 1.43803689E-02-5.10146129E-06 8.15258156E-10-4.84301415E-14    2
+-6.20136369E+03-3.20717878E+01-3.25790882E+00 6.35984482E-02-8.40196636E-05    3
+ 6.84776972E-08-2.36341598E-11-2.32621290E+03 4.08214635E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+!acetyl-methoxy, frag_4
+CH3COCH2O               H  5 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.20468243E+01 1.30215084E-02-4.60027946E-06 7.33462319E-10-4.35106903E-14    2
+-2.07614264E+04-3.54795005E+01-1.63400217E+00 5.80880540E-02-7.34135076E-05    3
+ 5.78597454E-08-1.97422853E-11-1.70179459E+04 3.42469683E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+! 1-formyl-ethoxy, frag_5
+CH3CH(CHO)O             H  5 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.16740100E+01 1.33335148E-02-4.70205748E-06 7.48354315E-10-4.43251788E-14    2
+-1.83895944E+04-3.31263121E+01-4.66591600E-01 5.66230006E-02-7.74174869E-05    3
+ 6.48509146E-08-2.25803408E-11-1.51736963E+04 2.80727052E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+
+
+CH2CHCH2OO              C   3H   5O   2     G   300.000  1500.000 1000.00      1
+ 2.51048868E+01-1.99386217E-02 8.72377199E-06 1.37679538E-08-7.65493513E-12    2
+ 1.95478601E+03-1.00413362E+02 4.23857095E+00 1.79397874E-02 2.02864401E-05    3
+-3.95273461E-08 1.70656035E-11 8.40739191E+03 1.16512643E+01                   4
+! Fit to data in Jongwoo Lee, Joseph W. Bozzelli, Proc. Combust. 30 (2005) 1015–1022
+
+
+
+
+CHCHCH2OOH              C   3H   5O   2     G   300.000  1500.000 1000.00      1
+ 2.35735779E+01-1.51660911E-02 6.93565489E-06 1.09379083E-08-6.11196013E-12    2
+ 1.55063846E+04-9.01088874E+01 5.21337566E+00 2.18322250E-02 6.10191984E-06    3
+-2.49487611E-08 1.19703304E-11 2.10005497E+04 7.57909841E+00                   4
+! Fit to data in Jongwoo Lee, Joseph W. Bozzelli, Proc. Combust. 30 (2005) 1015–1022
+
+
+
+
+	!109-94-4
+	!C3H6O2 EthylFormate ester HC(O)-O-C2H5  SYGMA=1  STATWT=1  IA=4.5665 IB=32.8433
+	!IC=33.9592  Ir(CH3)=0.5216  ROSYM=3  V(3)=1126 cm-1  Ir(HC(O)O-)=3.5178  ROSYM=1
+	!V(3)=272. cm-1  Nu=3144,3132,3113,3059,3046,2966,1872,1543,1524,1516,1453,1440,
+	!1414,1345,1242,1141,1131,1056,1038,927,811,628,408384,233   HF298=-90.15 kcal
+	!REF=Burcat G3B3 calc.  {HF298=-96.8 kcal  REF=Osmont et al IJCK 39,(2007),481;
+	!HF298=-95.2 kcal REF=Hine, Klueppel JACS 96,(1974),2924;  HF298=-361.7 kJ
+	!REF=NIST Webbook 2008}  HF298(liq.)=-394.2 +/0.8 kJ REF=Frolov Petrov J Appl
+	!Chem. USSR, 74,(1991).2361  Max Lst Sq Error Cp @ 6000 K 0.58%.
+	!C3H6O2 EthylForm  T03/08C  3.H  6.O  2.   0.G   200.000  6000.000  B  74.07854 1
+	!EF     EthylForm  T03/08C  3.H  6.O  2.   0.G     200.0    6000.0    1000.0    1
+	!8.65736746E+00 1.90386888E-02-6.86671205E-06 1.10734809E-09-6.61562843E-14    2
+	!-4.96314922E+04-1.70491120E+01 5.59040899E+00 2.42724317E-03 6.61618398E-05    3
+	!-8.61263826E-08 3.38174267E-11-4.75699454E+04 4.84087081E+00-4.53649824E+04    4
+
+
+EF         2/15/ 9 THERMC   3H   6O   2    0G   300.000  5000.000 1504.000    41
+ 2.02292289E+01 7.66469826E-03-3.27542709E-06 5.86421881E-10-3.74910131E-14    2
+-5.77474792E+04-8.71050440E+01 1.05374367E+01-1.05556651E-02 6.08786793E-05    3
+-4.88300375E-08 1.17075642E-11-5.01803547E+04-2.03409794E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+
+
+	!79-20-9
+	!C3H6O2 Methylacetate ester CH3-O-C(O)-CH3  SIGMA=1  STATWT=1  IA=8.2712
+	!IB=20.2323  IC=27.4534  Ir(CH3-O)=0.5213 ROSYM=3  V(3)=272. cm-1 Ir(CH3-C)=.5086
+	!ROSYM=3  V(3)=411. cm-1  Nu=3184,3180,3148,3134,3073(2),1837,1526,1514,1506,
+	!1502,1494,1423,1290,1220,1186,1087,1077,996,865,645,605,422,283,182
+	!HF298=-415.17 kJ  REF=Burcat G3B3  {HF298=-410.0 kJ REF=Hall & Baldt JACS 93,
+	!(1971),140. HF298=-105.86 kcal  REF=Stull Westrum & Sinke 1969;
+	!HF298(liq)=-445.89 kJ  REF=Hall & Baldt JACS 93,(1971),140}  Max Lst Sq Error
+	!Cp @ 6000 K 0.57%
+	!ME     Methyl ac  T10/07C  3.H  6.O  2.   0.G   200.000  6000.000  B  74.07854 1
+	!8.38776809E+00 1.90836514E-02-6.82197320E-06 1.09765423E-09-6.55561842E-14    2
+	!-5.40805971E+04-1.64156253E+01 7.18744749E+00-6.29221513E-03 8.17059377E-05    3
+	!-9.82940778E-08 3.73744521E-11-5.23417155E+04-3.24161798E+00-4.99331833E+04    4
+
+ME        12/ 9/ 6      C   3H   6O   2    0G   300.000  5000.000 1388.000    31
+ 1.06495263E+01 1.75944655E-02-6.24213581E-06 9.77186686E-10-5.64391305E-14    2
+-5.42575676E+04-3.07561590E+01 2.52235820E+00 3.41931289E-02-1.89047438E-05    3
+ 5.32401883E-09-6.33100827E-13-5.11185412E+04 1.38680663E+01                   4
+! Wijaya, Sumathi, Green, J. Phys. Chem. A  107 (2003) 4908-4920
+! Dooley et al., Int. J. Chem. Kinet. 42 (2010) 527–549 
+
+
+! allyl-hydroperoxide
+!prod_2                  H  6 C  3 O  2      G     298.0    6000.0    1000.0    1
+CH2CHCH2OOH             H  6 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.20838649E+01 1.47946591E-02-5.13212591E-06 8.07504999E-10-4.74394983E-14    2
+-1.02184463E+04-3.36434791E+01 3.18124993E+00 4.35233041E-02-5.16277353E-05    3
+ 4.32011427E-08-1.57714983E-11-7.63521503E+03 1.21725683E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+! propene-1-hydroperoxide
+!propen1ooh              H  6 C  3 O  2      G     298.0    6000.0    1000.0    1
+!prod_6                  H  6 C  3 O  2      G     298.0    6000.0    1000.0    1
+CH3CHCHOOH              H  6 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.17366777E+01 1.50781115E-02-5.22873766E-06 8.22569776E-10-4.83198810E-14    2
+-1.19051570E+04-3.21649975E+01 6.05480242E-03 5.72962550E-02-7.65094431E-05    3
+ 6.36300985E-08-2.20626642E-11-8.82238404E+03 2.68572270E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+! propene-2-hydroperoxide //!propen2ooh  // prod_7
+CH3C(CH2)OOH            H  6 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.25352860E+01 1.41801036E-02-4.86408170E-06 7.59244931E-10-4.43443519E-14    2
+-1.42746980E+04-3.75622448E+01-1.92214080E+00 7.47575190E-02-1.14477005E-04    3
+ 9.60658373E-08-3.18580028E-11-1.10322543E+04 3.27197181E+01                   4
+ 
+ 
+ 
+ 
+
+	!42953-38-8
+	!C3H7O2 Propyl Peroxy Radical C3H7OO*  SIGMA=1  STATWT=2  IA=3.6575  IB=38.8184
+	!IC=40.9001  Ir(CH3)=0.5148  ROSYM=3  V(3)=258 cm-1  Nu=3131,3128,3114,3008,3072,
+	!3057,3050,1543,1531,1527,1521,1444,1424,1343,1330,1266,1207,1172,1156,1053,956,
+	!927,897,768,492,398,235.5,199,114.6  HF298=-10.15+/-2 kcal  REF=Burcat G3B3
+	!{HF298=9.0 kcal  REF=NIST 94}  Max Lst Sq Error Cp @ 6000 K 0.58%.
+	!C3H7OO PropylPer  T04/10C  3.H  7.O  2.   0.G   200.000  6000.000  B  75.08648 1
+	!9.24489759E+00 2.14800809E-02-7.69335773E-06 1.23945160E-09-7.40911693E-14    2
+	!-9.81187945E+03-2.20401438E+01 6.99488957E+00-7.50355088E-03 1.01250579E-04    3
+	!-1.25012534E-07 4.84675978E-11-7.53004240E+03-2.03740242E+00-5.10764916E+03    4
+	
+!npropylperoxy           H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+NC3H7OO                 H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.13928391E+01 1.81795820E-02-6.36612872E-06 1.00817882E-09-5.95000270E-14    2
+-9.53850281E+03-3.05901531E+01-2.18764216E+00 6.63266676E-02-8.85670635E-05    3
+ 7.52623609E-08-2.66793523E-11-5.87082784E+03 3.80774389E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+	!4399-86-4
+	!C3H7O2 iso-PropylPeroxy radical (CH3)2CHOO*  SIGMA=1  STATWT=2  IA=10.6345
+	!IB=20.7075  IC=28.4840  Ir(-OO*)=3.250  ROSYM=1  V(3)=1200 cm-1  [Ir(CH3)=0.5123
+	!ROSYM=3  V(3)=2000. cm-1]x2  Nu=3149,3139,3135,3126,3080,3058,3054,1524,1506,
+	!1501,1495,1431,1414,1371,1346,1215,1202,1161,1131,953,942,892,798,523.5,452,342,
+	!301,[244,204,99.14 int rota]  HF298=15.550+/-2 kcal  REF=Burcat G3B3  Max Lst Sq
+	!Error Cp @ 6000 K 0.52%.
+	!C3H7O2 iso-peroxy T12/15C  3.H  7.O  2.   0.G   200.000  6000.000  B  75.08648 1
+	!1.19405543E+01 1.83233057E-02-6.60253757E-06 1.06426615E-09-6.35772707E-14    2
+	!-1.32962837E+04-3.57257224E+01 4.12005687E+00 1.69176962E-02 5.01416359E-05    3
+	!-8.05117092E-08 3.39943315E-11-1.01052940E+04 1.00073971E+01-7.82501915E+03    4
+	
+!ipropylperoxy           H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+IC3H7OO                 H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.16518761E+01 1.78468509E-02-6.22317562E-06 9.82584904E-10-5.78627616E-14    2
+-1.18137559E+04-3.30378983E+01-1.26789412E+00 6.59175817E-02-9.14324526E-05    3
+ 7.88419970E-08-2.78589590E-11-8.43089252E+03 3.17397573E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+! 3-hydroperoxyl-1-propyl // !QOOH_1  
+CH2CH2CH2OOH            H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.27534230E+01 1.64990825E-02-5.75149933E-06 9.07558827E-10-5.34133116E-14    2
+-1.89797992E+03-3.51115892E+01-1.53407267E+00 7.04778409E-02-9.92876404E-05    3
+ 8.31696376E-08-2.84706143E-11 1.69677071E+03 3.60558537E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+!QOOH_2 // 3-hydroperoxyl-2-propyl
+CH3CHCH2OOH             H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.19117459E+01 1.72429343E-02-6.02133940E-06 9.51631116E-10-5.60794491E-14    2
+-2.80135372E+03-3.07150037E+01-2.31788195E-01 5.89403220E-02-7.58216034E-05    3
+ 6.40075479E-08-2.28655864E-11 5.58163402E+02 3.10560403E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+!QOOH_3 // 2-hydroperoxyl-1-propyl
+CH2CH(OOH)CH3           H  7 C  3 O  2      G     298.0    6000.0    1000.0    1
+ 1.31297157E+01 1.59433631E-02-5.50990122E-06 8.64640808E-10-5.06975031E-14    2
+-3.27395713E+03-3.84214936E+01 4.96681747E-01 6.23815568E-02-8.42822521E-05    3
+ 6.96046015E-08-2.38234674E-11-3.30058597E+01 2.48222677E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+	! 6068-96-8
+	! C3H8O2  n-Hydroxyperoxypropane C3H7-OOH  SIGMA=1 STATWT=1  IA=4.0138  IB=40.0138
+	! IC=42.4032  Ir(CH3)=0.515  ROSYM=3  V3=1399. cm-1  Ir(C2H5)=2.859  ROSYM=1
+	! V(3)=1479.5 cm-1  Ir(C3H7)=1.835  ROSYM=1  V(3)=258. cm-1  Ir(OH)=0.1281
+	! ROSYM=1  V(3)=30.4 cm-1  Nu=3696,3123,3117,3091,3059,3054,3048,3011,1559,1539,
+	! 1530,1525,1442,1431,1388,1348,1326,1270,1204,1163,1059,1040,938,918.5(2),778,
+	! 455,403,237  HF298=-43.416+/-2. kcal  REF=Burcat G3B3  {HF298=-49.3 kcal
+	! REF=Benson JCP 40,(1964),1007  GA;  HF298=-45.11 kcal  REF=Thergas}  Max Lst Sq
+	! Error Cp @ 200 K 0.63%
+NC3H7OOH          T02/10C  3.H  8.O  2.   0.G   200.000  6000.000  1000.000    1
+ 1.04115631E+01 2.13763889E-02-7.55819870E-06 1.20207180E-09-7.11798090E-14    2
+-2.68935445E+04-2.35428789E+01 7.08977756E+00-4.86163264E-03 1.03253531E-04    3
+-1.33200956E-07 5.30799252E-11-2.44194556E+04 1.74859215E+00-2.18476548E+04    4
+
+	! 3031-75-2
+	! C3H8O2 iso-propyl-hydroxyprtoxy  (CH3)2CHOOH  SIGMA=1  STATWT=1  IA=10.8101
+	! IB=21.9187  IC=29.6643  Ir(OH)=0.13901  ROSYM=1  V(3)=1500. cm-1  [Ir(CH3)=.5206
+	! ROSYM=3  V(3)=2000. cm-1]x2  Nu=3764,3138.3(2),3130,3118,3055,3047,3032,1529,
+	! 1509,1502,1494,1425,1415,1387,1374,1342,1201,1180,1145,959,955,933,907,826,501,
+	! 470,350,289,257,[224.5,206,136 int rot]  HF298=-48.220+/-2 kcal  REF=Burcat G3B3
+	! {HF298=-47.63 kcal Curran et al "corrected" THERM JPCRD 44(1),(2015),013101-1;
+	! HF298=-197.1 kJ  REF=Khursan & Martemyanov  Rus JPC 65,(1991),321}  Max Lst Sq
+	! Error Cp @ 6000 K 0.50
+IC3H7OOH          T12/15C  3.H  8.O  2.   0.G   200.000  6000.000  1000.000    1
+ 1.27454370E+01 1.99086003E-02-7.08133666E-06 1.13614316E-09-6.77390723E-14    2
+-3.01510915E+04-4.22378046E+01 3.00148276E+00 2.48858762E-02 4.19631776E-05    3
+-7.66070730E-08 3.33976412E-11-2.65012187E+04 1.31195741E+01-2.42651076E+04    4
+
+
+!2-formyl-ethyl-hydroperoxide // OCHCH2CH2OOH
+OCHCH2CH2OOH            H  6 C  3 O  3      G     298.0    6000.0    1000.0    1
+ 1.40949820E+01 1.56175081E-02-5.50405747E-06 8.74852801E-10-5.17497813E-14    2
+-3.63943081E+04-4.16291747E+01 5.41530167E+00 4.35927794E-02-5.43753738E-05    3
+ 4.93856476E-08-1.89868197E-11-3.37525093E+04 3.35182219E+00                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+!oxiranyl-methyl-hydroperoxide   // prod_3 
+cC2H3OCH2OOH            H  6 C  3 O  3      G     298.0    6000.0    1000.0    1
+ 1.67494899E+01 1.32161418E-02-4.55229086E-06 7.13196225E-10-4.17831703E-14    2
+-2.65236037E+04-6.11371989E+01-3.00958599E+00 8.82766190E-02-1.25553178E-04    3
+ 9.65507241E-08-3.01798261E-11-2.18929109E+04 3.63822959E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+!prod_4 // acetyl-methyl-hydroperoxide
+CH3COCH2OOH             H  6 C  3 O  3      G     298.0    6000.0    1000.0    1
+ 1.56732435E+01 1.41688444E-02-4.97861024E-06 7.89884981E-10-4.66686640E-14    2
+-4.06606558E+04-5.26950835E+01-1.32774111E+00 7.80340410E-02-1.11371969E-04    3
+ 8.99625701E-08-2.96902072E-11-3.64922801E+04 3.17616966E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+!2-formyl-ethyl-hydroperoxide // prod_5 
+CH3CHOOHCHO             H  6 C  3 O  3      G     298.0    6000.0    1000.0    1
+ 1.56065854E+01 1.41895282E-02-4.98349534E-06 7.90805961E-10-4.67403378E-14    2
+-3.83162320E+04-5.24540536E+01 2.15186644E-01 7.00064965E-02-9.69200722E-05    3
+ 7.87555973E-08-2.65005248E-11-3.43882327E+04 2.46424651E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+ 
+ 
+! 3-hydroperoxyl-n-propylperoxy
+!HOOCH2CH2CH2OO          H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+well_1                  H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+ 1.77220428E+01 1.71127050E-02-6.00138642E-06 9.50850996E-10-5.61219256E-14    2
+-2.05082883E+04-5.90167760E+01 3.13644827E+00 7.08966637E-02-9.88121604E-05    3
+ 8.35368568E-08-2.90297184E-11-1.67295306E+04 1.40731005E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+! 1-methyl-2-hydroperoxyl-ethylperoxy
+!CH3CHOOCH2OOH           H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+well_2                  H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+ 1.82762511E+01 1.64989318E-02-5.74012117E-06 9.03430575E-10-5.30406277E-14    2
+-2.20174364E+04-6.26721543E+01-3.81397617E-01 9.85120058E-02-1.58283818E-04    3
+ 1.34562530E-07-4.45238697E-11-1.80390351E+04 2.70337651E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+!2-hydroperoxyl-n-propylperoxy
+!CH3CHOOHCH2OO           H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+well_3                  H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+ 1.97278309E+01 1.53754381E-02-5.37583603E-06 8.49063129E-10-4.99797627E-14    2
+-2.25760448E+04-7.12852199E+01 1.29331456E+00 8.54394489E-02-1.21025094E-04    3
+ 9.56711649E-08-3.08523183E-11-1.81688389E+04 1.99097432E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+! 1,3-dihydroperoxyl-2-propyl
+!HOOCH2CHCH2OOH          H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+well_4                  H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+ 2.47340984E+01 9.31789907E-03-2.96089976E-06 4.35339341E-10-2.42645993E-14    2
+-1.58592083E+04-9.79721562E+01-2.01973459E+01 2.18541200E-01-3.67299543E-04    3
+ 2.81167703E-07-8.07098415E-11-8.13917550E+03 1.11943226E+02                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+
+
+
+! 2,3-dihydroperoxyl-n-propyl
+!CH2CHOOHCH2OOH          H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+well_5                  H  7 C  3 O  4      G     298.0    6000.0    1000.0    1
+ 1.92920199E+01 1.53125250E-02-5.36239915E-06 8.48522339E-10-5.00319374E-14    2
+-1.48744597E+04-6.55354976E+01 9.32176447E-01 8.54901848E-02-1.23079234E-04    3
+ 9.91652847E-08-3.24677763E-11-1.04601429E+04 2.53027474E+01                   4
+! Goldsmith et al., J. Phys. Chem. A 2012, 116, 3325−3346 
+ 
+ 
+ 
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+!						C4 species:
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> 
+
+	! 106-99-0
+	! 1,3-C4H6  1,3-BUTADIENE  CH2=CH-CH=CH2  SIGMA=2  STATWT=1  IA=1.9937  IB=19.0347
+	! IC=21.0184  Ir=1.79466  V(3)=524 cm-1 ROSYM=1  HF298=26.49 kcal  NU=3246(2),
+	! 3164.5(2),3158,3147,1730,1677,1496,1435,1331,1329,1241,1065,1011,1004,932,928,
+	! 907,782,540,516,297  REF=Burcat G3B3 calc  Max Lst Sq Error Cp @ 200 K 0.58%.
+C4H6  1,3-butadi  T05/04C  4.H  6.   0.   0.G     298.0    6000.0    1000.0    1
+ 7.62637466E+00 1.72523403E-02-6.09184911E-06 9.70800102E-10-5.76169721E-14    2
+ 9.55306395E+03-1.48325259E+01 4.10599669E+00 5.05575563E-03 5.83885454E-05    3
+-8.05950198E-08 3.27447711E-11 1.15092468E+04 8.42978067E+00 1.33302095E+04    4
+
+	! 590-12-2
+	! C4H6  1,2-Butadiene CH2=C=CH-CH3 SIGMA=2 STATWT=1 Ia=2.4309  IB=20.1467
+	! IC=21.4816  Ir=0.50734 V(3)=1230. ROSYM=3  Nu=3206,3144,3139,3129,3089,3039,
+	! 2078,1533,1514,1501,1435,1385,1164,1106,1072,1038,901,887,869,580,541,355,215
+	! HF298=38.555 kcal  REF=Burcat G3B3  {HF298=38.77 kcal  REF=Prosen Maron & Rosini
+	! J. Res NBS 46,(1951),106-112}  Max Lst Sq Error Cp @ 6000 K 0.53%.
+C4H6-2            T07/04C  4.H  6.   0.   0.G     298.0    6000.0    1000.0    1
+ 8.13872997E+00 1.68655431E-02-5.97324908E-06 9.54915173E-10-5.67693708E-14    2
+ 1.55467985E+04-1.77959041E+01 2.90828336E+00 1.79025349E-02 2.61486503E-05    3
+-4.81598832E-08 2.11295844E-11 1.75928783E+04 1.23118106E+01 1.94015186E+04    4
+! HH: seems to be a typo: CAS number should be 590-19-2
+
+
+
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+!						END
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>  
+END

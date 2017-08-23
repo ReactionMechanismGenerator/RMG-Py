@@ -1,0 +1,106 @@
+[21/Aug/2017:11:35:13] ENGINE Bus STARTING
+[21/Aug/2017:11:35:13] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:35:13] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:35:13] ENGINE Bus STARTED
+[21/Aug/2017:11:35:15] ENGINE Bus STOPPING
+[21/Aug/2017:11:35:15] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:35:15] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:35:15] ENGINE Bus STOPPED
+[21/Aug/2017:11:35:15] ENGINE Bus EXITING
+[21/Aug/2017:11:35:15] ENGINE Bus EXITED
+[21/Aug/2017:11:35:15] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:36:49] ENGINE Bus STARTING
+[21/Aug/2017:11:36:49] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:36:49] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:36:49] ENGINE Bus STARTED
+[21/Aug/2017:11:36:49] ENGINE Bus STOPPING
+[21/Aug/2017:11:36:49] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:36:49] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:36:49] ENGINE Bus STOPPED
+[21/Aug/2017:11:36:49] ENGINE Bus EXITING
+[21/Aug/2017:11:36:49] ENGINE Bus EXITED
+[21/Aug/2017:11:43:35] ENGINE Bus STARTING
+[21/Aug/2017:11:43:35] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:43:35] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:43:35] ENGINE Bus STARTED
+[21/Aug/2017:11:44:06] ENGINE Bus STOPPING
+[21/Aug/2017:11:44:06] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:44:06] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:44:06] ENGINE Bus STOPPED
+[21/Aug/2017:11:44:06] ENGINE Bus EXITING
+[21/Aug/2017:11:44:06] ENGINE Bus EXITED
+[21/Aug/2017:11:44:07] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:47:46] ENGINE Bus STARTING
+[21/Aug/2017:11:47:46] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:47:46] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:47:46] ENGINE Bus STARTED
+[21/Aug/2017:11:48:14] ENGINE Bus STOPPING
+[21/Aug/2017:11:48:14] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:48:14] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:48:14] ENGINE Bus STOPPED
+[21/Aug/2017:11:48:14] ENGINE Bus EXITING
+[21/Aug/2017:11:48:14] ENGINE Bus EXITED
+[21/Aug/2017:11:48:14] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:49:06] ENGINE Bus STARTING
+[21/Aug/2017:11:49:06] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:49:06] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:49:06] ENGINE Bus STARTED
+[21/Aug/2017:11:49:34] ENGINE Bus STOPPING
+[21/Aug/2017:11:49:34] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:49:34] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:49:34] ENGINE Bus STOPPED
+[21/Aug/2017:11:49:34] ENGINE Bus EXITING
+[21/Aug/2017:11:49:34] ENGINE Bus EXITED
+[21/Aug/2017:11:49:34] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:50:34] ENGINE Bus STARTING
+[21/Aug/2017:11:50:34] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:50:34] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:50:34] ENGINE Bus STARTED
+[21/Aug/2017:11:51:02] ENGINE Bus STOPPING
+[21/Aug/2017:11:51:02] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:51:02] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:51:02] ENGINE Bus STOPPED
+[21/Aug/2017:11:51:02] ENGINE Bus EXITING
+[21/Aug/2017:11:51:02] ENGINE Bus EXITED
+[21/Aug/2017:11:51:02] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:51:31] ENGINE Bus STARTING
+[21/Aug/2017:11:51:31] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:51:31] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:51:31] ENGINE Bus STARTED
+[21/Aug/2017:11:51:59] ENGINE Bus STOPPING
+[21/Aug/2017:11:51:59] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:51:59] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:51:59] ENGINE Bus STOPPED
+[21/Aug/2017:11:51:59] ENGINE Bus EXITING
+[21/Aug/2017:11:51:59] ENGINE Bus EXITED
+[21/Aug/2017:11:51:59] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:53:11] ENGINE Bus STARTING
+[21/Aug/2017:11:53:11] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:53:12] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:53:12] ENGINE Bus STARTED
+[21/Aug/2017:11:53:40] ENGINE Bus STOPPING
+[21/Aug/2017:11:53:40] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:11:53:40] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:11:53:40] ENGINE Bus STOPPED
+[21/Aug/2017:11:53:40] ENGINE Bus EXITING
+[21/Aug/2017:11:53:40] ENGINE Bus EXITED
+[21/Aug/2017:11:53:40] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:11:54:49] ENGINE Bus STARTING
+[21/Aug/2017:11:54:49] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:11:54:49] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:11:54:49] ENGINE Bus STARTED
+[21/Aug/2017:12:08:34] ENGINE Bus STOPPING
+[21/Aug/2017:12:08:35] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[21/Aug/2017:12:08:35] ENGINE Stopped thread '_TimeoutMonitor'.
+[21/Aug/2017:12:08:35] ENGINE Bus STOPPED
+[21/Aug/2017:12:08:35] ENGINE Bus EXITING
+[21/Aug/2017:12:08:35] ENGINE Bus EXITED
+[21/Aug/2017:12:08:35] ENGINE Waiting for child threads to terminate...
+[21/Aug/2017:12:08:39] ENGINE Bus STARTING
+[21/Aug/2017:12:08:39] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:12:08:39] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:12:08:39] ENGINE Bus STARTED
+[21/Aug/2017:12:56:40] ENGINE Bus STARTING
+[21/Aug/2017:12:56:40] ENGINE Started monitor thread '_TimeoutMonitor'.
+[21/Aug/2017:12:56:40] ENGINE Serving on http://0.0.0.0:8084
+[21/Aug/2017:12:56:40] ENGINE Bus STARTED

@@ -1,0 +1,89 @@
+efficiencies:
+
+CH2OH(+M)=CH2O+H(+M) 		7.37E10	 0.811	 39558.7
+LOW / 3.50E+21	-1.9900	23983.4  /
+TROE / 0.844  	900  1  3315 /
+HE/0.67/AR/0.85/O2/1/H2/2/CO/1.5/CO2/2/H2O/6/CH4/2/CH2O/2.5/C2H6/3/CH3OH/3/
+
+
+
+CH3O(+M)=CH2O+H(+M) 	 1.13E10	 1.210	 24068.8
+LOW/ 6.02E+16	-0.5470	18011.9 / 
+TROE / 0.341  	28  1000   2339  /
+HE/0.67/AR/0.85/O2/1/H2/2/CO/1.5/CO2/2/H2O/6/CH4/2/CH2O/2.5/C2H6/3/CH3OH/3/
+
+
+
+speies adjlists:
+
+CH2(S)
+
+
+
+
+
+FFCM:
+ 	[CH2]O[CH2]  is C1CO1
+[CH2]C=O \\ C=C[O]  is  [CH]1CO1
+[C]=C=O  is  [C]=C=O \\ [C]#C[O]
+
+
+
+
+
+
+C2H6	CC
+C2H5	C[CH2]
+C2H4	C=C
+
+C2H	[C]#C
+CH2OH	[CH2]O	! Confirmed by Anonymous
+CH3O	C[O]	! Confirmed by Anonymous
+CH2O	C=O	! Confirmed by Anonymous
+C2H3	[CH]=C	! Confirmed by Anonymous
+HCO	[CH]=O	! Confirmed by Anonymous
+C2H2	C#C	! Confirmed by Anonymous
+CH2	[CH2]	! Confirmed by Anonymous
+CH2(S)	[CH2]	! Confirmed by Anonymous
+HOCO	O=[C]O	! Confirmed by Anonymous
+CH2CHOO	C=CO[O]	! Confirmed by Anonymous
+HOCHO	O=CO	! Confirmed by Anonymous
+CH2CHOOH	C=COO	! Confirmed by Anonymous
+OCHO	[O]C=O	! Confirmed by Anonymous
+CH2CHO	[CH2]C=O	! Confirmed by Anonymous
+OCHCHO	O=CC=O	! Confirmed by Anonymous
+CH3CHO	CC=O	! Confirmed by Anonymous
+CH2CHOH	C=CO	! Confirmed by Anonymous
+CH3CH2O	CC[O]	! Confirmed by Anonymous
+CH3CHOH	C[CH]O	! Confirmed by Anonymous
+CH3CH2OH	CCO	! Confirmed by Anonymous
+CH3CO	C[C]=O	! Confirmed by Anonymous
+CH2CH2OH	[CH2]CO	! Confirmed by Anonymous
+CH2CO	C=C=O	! Confirmed by Anonymous
+CH3CH2OO	CCO[O]	! Confirmed by Anonymous
+HOCH2CH2OO	[O]OCCO	! Confirmed by Anonymous
+CH3CH2OOH	CCOO	! Confirmed by Anonymous
+CH3OO	CO[O]	! Confirmed by Anonymous
+CH3CHOOH	C[CH]OO	! Confirmed by Anonymous
+CH3OOH	COO	! Confirmed by Anonymous
+HCCO	C#C[O]	! Confirmed by Anonymous
+CH2OOH	[CH2]OO	! Confirmed by Anonymous
+OCHCO	O=[C]C=O	! Confirmed by Anonymous
+HCCOH	C#CO	! Confirmed by Anonymous
+cC2H3O	[CH]1CO1	! Confirmed by Anonymous
+cC2H4O	C1CO1	! Confirmed by Anonymous
+HOCH2O	[O]CO	! Confirmed by Anonymous
+CH2CH2OOH	[CH2]COO	! Confirmed by Anonymous
+CH3C(O)O	CC([O])=O	! Confirmed by Anonymous
+C2	[C]#[C]	! Confirmed by Anonymous
+CH3C(O)OO	CC(=O)O[O]	! Confirmed by Anonymous
+CH3C(O)OOH	CC(=O)OO	! Confirmed by Anonymous
+C2O	[C]#C[O]	! Confirmed by Anonymous
+CHCHOH	[CH]=CO	! Confirmed by Anonymous
+
+
+
+
+
+
+
