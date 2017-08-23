@@ -234,14 +234,18 @@ class StatMechJob:
             
         try:
             linear = local_context['linear']
+            symfromlog = False
         except KeyError:
-            raise InputError('Required attribute "linear" not found in species file {0!r}.'.format(path))
-        
+            externalSymmetry = None
+            symfromlog = True
+
         try:
             externalSymmetry = local_context['externalSymmetry']
+            symfromlog = False
         except KeyError:
-            raise InputError('Required attribute "externalSymmetry" not found in species file {0!r}.'.format(path))
-        
+            externalSymmetry = None
+            symfromlog = True
+            
         try:
             spinMultiplicity = local_context['spinMultiplicity']
         except KeyError:
@@ -317,7 +321,7 @@ class StatMechJob:
                                     'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
-        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
+        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers, symfromlog = symfromlog)
         
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geomLog.loadGeometry()
@@ -561,6 +565,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
     `bonds` is a dictionary associating bond types with the number
     of that bond in the molecule.
     """
+
     if applyAtomEnergyCorrections:
         # Spin orbit correction (SOC) in Hartrees
         # Values taken from ref 22 of http://dx.doi.org/10.1063/1.477794 and converted to hartrees

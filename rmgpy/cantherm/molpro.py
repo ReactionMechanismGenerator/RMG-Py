@@ -142,7 +142,7 @@ class MolproLog:
                 print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):
+    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1, symfromlog=None):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a MolPro "Freq" quantum chemistry calculation with the thermo printed.
@@ -173,7 +173,8 @@ class MolproLog:
                         modes.append(translation)
                     # Read MolPro's estimate of the external symmetry number
                     elif 'Rotational Symmetry factor' in line and symmetry is None:
-                        symmetry = int(float(line.split()[3]))
+                        if symfromlog is True:
+                            symmetry = int(float(line.split()[3]))
 
                     # Read moments of inertia for external rotational modes
                     elif 'Rotational Constants' in line and line.split()[-1]=='[GHz]':
@@ -184,7 +185,7 @@ class MolproLog:
                         modes.append(rotation)
 
                     elif 'Rotational Constant' in line and line.split()[3]=='[GHz]':
-                        inertia = [float(line.split()[2])]
+                        inertia = float(line.split()[2])
                         inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
                         rotation = LinearRotor(inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
@@ -226,7 +227,7 @@ class MolproLog:
         #search for basisSet
         while line!='':
             if 'basis' in line.lower():
-                if 'vtz' in line.lower() or'vdz' in line.lower():
+                if 'vtz' in line.lower() or 'vdz' in line.lower():
                     f12a=True
                 else: f12a=False
                 break
