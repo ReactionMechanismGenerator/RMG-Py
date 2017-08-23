@@ -157,7 +157,7 @@ class GaussianLog:
             elif number[i] == 17:
                 mass[i] = 35.4527
             else:
-                print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
+                raise NotImplementedError('Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i]))
         
         return coord, number, mass
 

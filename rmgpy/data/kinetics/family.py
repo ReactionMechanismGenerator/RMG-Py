@@ -944,8 +944,8 @@ class KineticsFamily(Database):
                     try:
                         if s.isIdentical(struct): break
                     except KeyError:
-                        print struct.toAdjacencyList()
-                        print s.toAdjacencyList()
+                        logging.error(struct.toAdjacencyList())
+                        logging.error(s.toAdjacencyList())
                         raise
                 else:
                     productStructureList[i].append(struct)
