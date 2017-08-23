@@ -53,7 +53,7 @@ class MolproLog:
         """
 
         Natoms = 0
-        # Open Gaussian log file for parsing
+        # Open Molpro log file for parsing
         f = open(self.path, 'r')
         line = f.readline()
         while line != '' and Natoms == 0:
@@ -67,9 +67,8 @@ class MolproLog:
         # Close file when finished
         f.close()
         # Return the result
-        Natoms -= 1
 
-        return Natoms
+        return Natoms - 1
 
     def loadForceConstantMatrix(self):
         """
@@ -83,7 +82,7 @@ class MolproLog:
     def loadGeometry(self):
         """
         Return the optimum geometry of the molecular configuration from the
-        Gaussian log file. If multiple such geometries are identified, only the
+        Molpro .out file. If multiple such geometries are identified, only the
         last is returned.
         """
 
@@ -94,14 +93,12 @@ class MolproLog:
         while line != '':
             # Automatically determine the number of atoms
             if 'Current geometry' in line:
-                number = []; coord = []
+                symbol = []; coord = []
                 for i in range(4): line = f.readline()
-                count = 0
                 while line != '\n':
                     data = line.split()
                     symbol.append(str(data[0]))
                     coord.append([float(data[1]), float(data[2]), float(data[3])])
-                    count += 1
                     line = f.readline()
             line = f.readline()
         # Close file when finished
