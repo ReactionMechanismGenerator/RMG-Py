@@ -274,9 +274,9 @@ class Species(object):
         if self.thermo:
             try:
                 ctSpecies.thermo = self.thermo.toCantera()
-            except Exception, e:
-                print e
-                raise Exception('Could not convert thermo to create Cantera Species object. Check that thermo is a NASA polynomial.')
+            except Exception:
+                logging.error('Could not convert thermo to create Cantera Species object. Check that thermo is a NASA polynomial.')
+                raise
         
         if self.transportData:
             ctSpecies.transport = self.transportData.toCantera()

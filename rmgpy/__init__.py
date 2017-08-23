@@ -65,7 +65,7 @@ class Settings(dict):
         elif key == 'test_data.directory':
             value = os.path.abspath(os.path.expandvars(value))
         else:
-            print('Unexpecting setting "{0}" encountered.'.format(key))
+            raise SettingsError('Unexpecting setting "{0}" encountered.'.format(key))
         self.sources[key] = '-'
         super(Settings, self).__setitem__(key, value)
     

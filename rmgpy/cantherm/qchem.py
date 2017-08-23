@@ -175,7 +175,7 @@ class QchemLog:
                 mass[i] = 35.4527
                 number.append('17')
             else:
-                print 'Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i])
+                raise NotImplementedError('Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i]))
         number = numpy.array(number, numpy.int)       
         return coord, number, mass
     
