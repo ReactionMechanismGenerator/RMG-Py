@@ -37,6 +37,8 @@ import os.path
 
 from rmgpy.chemkin import loadChemkinFile
 
+from rmgpy.solver.liquid import LiquidReactor
+
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 
 def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False, useChemkinNames=False):
@@ -83,7 +85,10 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:
-        reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
+        if isinstance(reactionSystem, LiquidReactor):
+            reactionSystem.initialConcentrations = dict([(speciesDict[spec], conc) for spec, conc in reactionSystem.initialConcentrations.iteritems()])
+        else:
+            reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]
