@@ -348,3 +348,493 @@ cdef class LiquidReactor(ReactionSystem):
         
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
+
+    @cython.boundscheck(False)
+    def jacobian(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, double cj, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
+        """
+        Return the analytical Jacobian for the reaction system.
+        """
+        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
+        cdef int numCoreReactions, numCoreSpecies, i, j
+        cdef double k, V, Ctot, deriv, corr
+
+        ir = self.reactantIndices
+        ip = self.productIndices
+
+        kf = self.kf
+        kr = self.kb
+        numCoreReactions = len(self.coreReactionRates)
+        numCoreSpecies = len(self.coreSpeciesConcentrations)
+
+        pd = -cj * numpy.identity(numCoreSpecies, numpy.float64)
+
+        V = self.V  # volume is constant
+
+        C = numpy.zeros_like(self.coreSpeciesConcentrations)
+        for j in xrange(numCoreSpecies):
+            C[j] = y[j] / V
+
+        Ctot = numpy.sum(C[:numCoreSpecies])  # total concentration is sum of individual ones
+
+        for j in xrange(numCoreReactions):
+
+            k = kf[j]
+            if ir[j,1] == -1: # only one reactant
+                deriv = k
+                pd[ir[j,0], ir[j,0]] -= deriv
+
+                pd[ip[j,0], ir[j,0]] += deriv
+                if ip[j,1] != -1:
+                    pd[ip[j,1], ir[j,0]] += deriv
+                    if ip[j,2] != -1:
+                        pd[ip[j,2], ir[j,0]] += deriv
+
+
+            elif ir[j,2] == -1: # only two reactants
+                corr = - k * C[ir[j,0]] * C[ir[j,1]] / Ctot
+                if ir[j,0] == ir[j,1]:  # reactants are the same
+                    deriv = 2 * k * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,0]] -= 2 * deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= 2 * corr
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+                else:
+                    # Derivative with respect to reactant 1
+                    deriv = k * C[ir[j, 1]]
+                    pd[ir[j,0], ir[j,0]] -= deriv
+                    pd[ir[j,1], ir[j,0]] -= deriv
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+
+                    # Derivative with respect to reactant 2
+                    deriv = k * C[ir[j, 0]]
+                    pd[ir[j,0], ir[j,1]] -= deriv
+                    pd[ir[j,1], ir[j,1]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= corr
+                        pd[ir[j,1], i] -= corr
+
+                    pd[ip[j,0], ir[j,1]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+
+            else: # three reactants!! (really?)
+                corr = - 2* k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]] / Ctot
+                if (ir[j,0] == ir[j,1] & ir[j,0] == ir[j,2]):
+                    deriv = 3 * k * C[ir[j,0]] * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,0]] -= 3 * deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= 3 * corr
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+                elif ir[j,0] == ir[j,1]:
+                    # derivative with respect to reactant 1
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,2]]
+                    pd[ir[j,0], ir[j,0]] -= 2 * deriv
+                    pd[ir[j,2], ir[j,0]] -= deriv
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ir[j,0]] * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,2]] -= 2 * deriv
+                    pd[ir[j,2], ir[j,2]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= 2 * corr
+                        pd[ir[j,2], i] -= corr
+
+                    pd[ip[j,0], ir[j,2]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,2]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,2]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+
+                elif ir[j,1] == ir[j,2]:
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ir[j,1]] * C[ir[j,1]]
+                    pd[ir[j,0], ir[j,0]] -= deriv
+                    pd[ir[j,1], ir[j,0]] -= 2 * deriv
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                    # derivative with respect to reactant 2
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,1]]
+                    pd[ir[j,0], ir[j,1]] -= deriv
+                    pd[ir[j,1], ir[j,1]] -= 2 * deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= corr
+                        pd[ir[j,1], i] -= 2 * corr
+
+                    pd[ip[j,0], ir[j,1]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+                elif ir[j,0] == ir[j,2]:
+                    # derivative with respect to reactant 1
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,1]]
+                    pd[ir[j,0], ir[j,0]] -= 2 * deriv
+                    pd[ir[j,1], ir[j,0]] -= deriv
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                    # derivative with respect to reactant 2
+                    deriv = k * C[ir[j,0]] * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,1]] -= 2 * deriv
+                    pd[ir[j,1], ir[j,1]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= 2 * corr
+                        pd[ir[j,1], i] -= corr
+
+                    pd[ip[j,0], ir[j,1]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+                else:
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ir[j,1]] * C[ir[j,2]]
+                    pd[ir[j,0], ir[j,0]] -= deriv
+                    pd[ir[j,1], ir[j,0]] -= deriv
+                    pd[ir[j,2], ir[j,0]] -= deriv
+
+                    pd[ip[j,0], ir[j,0]] += deriv
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+
+                    # derivative with respect to reactant 2
+                    deriv = k * C[ir[j,0]] * C[ir[j,2]]
+                    pd[ir[j,0], ir[j,1]] -= deriv
+                    pd[ir[j,1], ir[j,1]] -= deriv
+                    pd[ir[j,2], ir[j,1]] -= deriv
+
+                    pd[ip[j,0], ir[j,1]] += deriv
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv
+
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ir[j,0]] * C[ir[j,1]]
+                    pd[ir[j,0], ir[j,2]] -= deriv
+                    pd[ir[j,1], ir[j,2]] -= deriv
+                    pd[ir[j,2], ir[j,2]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] -= corr
+                        pd[ir[j,1], i] -= corr
+                        pd[ir[j,2], i] -= corr
+
+                    pd[ip[j,0], ir[j,2]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] += corr
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,2]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ip[j,1], i] += corr
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,2]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ip[j,2], i] += corr
+
+
+
+            k = kr[j]
+            if ip[j,1] == -1: # only one reactant
+                deriv = k
+                pd[ip[j,0], ip[j,0]] -= deriv
+
+                pd[ir[j,0], ip[j,0]] += deriv
+                if ir[j,1] != -1:
+                    pd[ir[j,1], ip[j,0]] += deriv
+                    if ir[j,2] != -1:
+                        pd[ir[j,2], ip[j,0]] += deriv
+
+
+            elif ip[j,2] == -1: # only two reactants
+                corr = -k * C[ip[j,0]] * C[ip[j,1]] / Ctot
+                if ip[j,0] == ip[j,1]:
+                    deriv = 2 * k * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,0]] -= 2 * deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= 2 * corr
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+                else:
+                    # Derivative with respect to reactant 1
+                    deriv = k * C[ip[j, 1]]
+                    pd[ip[j,0], ip[j,0]] -= deriv
+                    pd[ip[j,1], ip[j,0]] -= deriv
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+
+                    # Derivative with respect to reactant 2
+                    deriv = k * C[ip[j, 0]]
+                    pd[ip[j,0], ip[j,1]] -= deriv
+                    pd[ip[j,1], ip[j,1]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= corr
+                        pd[ip[j,1], i] -= corr
+
+                    pd[ir[j,0], ip[j,1]] += deriv
+                    for i in xrange(numCoreSpecies):
+                         pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+
+            else: # three reactants!! (really?)
+                corr = - 2 * k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]] / Ctot
+                if (ip[j,0] == ip[j,1] & ip[j,0] == ip[j,2]):
+                    deriv = 3 * k * C[ip[j,0]] * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,0]] -= 3 * deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= 3 * corr
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+                elif ip[j,0] == ip[j,1]:
+                    # derivative with respect to reactant 1
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,2]]
+                    pd[ip[j,0], ip[j,0]] -= 2 * deriv
+                    pd[ip[j,2], ip[j,0]] -= deriv
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ip[j,0]] * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,2]] -= 2 * deriv
+                    pd[ip[j,2], ip[j,2]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= 2 * corr
+                        pd[ip[j,2], i] -= corr
+
+                    pd[ir[j,0], ip[j,2]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,2]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,2]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+
+                elif ip[j,1] == ip[j,2]:
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ip[j,1]] * C[ip[j,1]]
+                    pd[ip[j,0], ip[j,0]] -= deriv
+                    pd[ip[j,1], ip[j,0]] -= 2 * deriv
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+
+                    # derivative with respect to reactant 2
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,1]]
+                    pd[ip[j,0], ip[j,1]] -= deriv
+                    pd[ip[j,1], ip[j,1]] -= 2 * deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= corr
+                        pd[ip[j,1], i] -= 2 * corr
+
+                    pd[ir[j,0], ip[j,1]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+                elif ip[j,0] == ip[j,2]:
+                    # derivative with respect to reactant 1
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,1]]
+                    pd[ip[j,0], ip[j,0]] -= 2 * deriv
+                    pd[ip[j,1], ip[j,0]] -= deriv
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                    # derivative with respect to reactant 2
+                    deriv = k * C[ip[j,0]] * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,1]] -= 2 * deriv
+                    pd[ip[j,1], ip[j,1]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= 2 * corr
+                        pd[ip[j,1], i] -= corr
+
+                    pd[ir[j,0], ip[j,1]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+                else:
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ip[j,1]] * C[ip[j,2]]
+                    pd[ip[j,0], ip[j,0]] -= deriv
+                    pd[ip[j,1], ip[j,0]] -= deriv
+                    pd[ip[j,2], ip[j,0]] -= deriv
+
+                    pd[ir[j,0], ip[j,0]] += deriv
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+
+                    # derivative with respect to reactant 2
+                    deriv = k * C[ip[j,0]] * C[ip[j,2]]
+                    pd[ip[j,0], ip[j,1]] -= deriv
+                    pd[ip[j,1], ip[j,1]] -= deriv
+                    pd[ip[j,2], ip[j,1]] -= deriv
+
+                    pd[ir[j,0], ip[j,1]] += deriv
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv
+
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ip[j,0]] * C[ip[j,1]]
+                    pd[ip[j,0], ip[j,2]] -= deriv
+                    pd[ip[j,1], ip[j,2]] -= deriv
+                    pd[ip[j,2], ip[j,2]] -= deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ip[j,0], i] -= corr
+                        pd[ip[j,1], i] -= corr
+                        pd[ip[j,2], i] -= corr
+
+                    pd[ir[j,0], ip[j,2]] += deriv
+                    for i in xrange(numCoreSpecies):
+                        pd[ir[j,0], i] += corr
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,2]] += deriv
+                        for i in xrange(numCoreSpecies):
+                            pd[ir[j,1], i] += corr
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,2]] += deriv
+                            for i in xrange(numCoreSpecies):
+                                pd[ir[j,2], i] += corr
+
+        self.jacobianMatrix = pd + cj * numpy.identity(numCoreSpecies, numpy.float64)
+        return pd
