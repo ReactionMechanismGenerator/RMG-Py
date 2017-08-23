@@ -540,6 +540,9 @@ Miscellaneous Options
 Miscellaneous options:: 
 
     options(
+        name='Seed',
+        generateSeedEachIteration=True,
+        saveSeedToDatabase=True,
         units='si',
         saveRestartPeriod=(1,'hour'),
         generateOutputHTML=True,
@@ -548,6 +551,12 @@ Miscellaneous options::
         verboseComments=False,
         saveEdgeSpecies=True,
     )
+
+The ``name`` field is the name of any generated seed mechanisms
+
+Setting ``generateSeedEachIteration`` to ``True`` tells RMG to save and update a seed mechanism and thermo library during the current run
+
+Setting ``saveSeedToDatabase`` to ``True`` tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database
 
 The ``units`` field is set to ``si``.  Currently there are no other unit options.
 
