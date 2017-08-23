@@ -114,11 +114,8 @@ class QchemLog:
         last is returned.
         """
         atom = []; coord = []; number = []; 
-        try:
-            f = open(self.path, 'r')
-        except IndexError:
-            print('File not found')
-        f = open(self.path, 'r')  
+
+        f = open(self.path, 'r')
         line = f.readline()
         while line != '':
             if 'Final energy is' in line:
