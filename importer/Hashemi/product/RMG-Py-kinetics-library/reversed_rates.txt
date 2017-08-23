@@ -1,0 +1,713 @@
+Forwards reaction:   ! Library reaction: Unclassified
+H+O2(+M)=HO2(+M)                                    4.700e+12 0.440     0.0000   
+H2/2.00/ O2/0.78/ H2O/14.00/ AR/0.67/ CO/1.90/ CO2/3.80/ 
+    LOW/ 6.366000e+20 -1.720    0.5248   /
+    TROE/ 5.000000e-01 1e-30     1e+30    /
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(4.7e+12,'cm^3/(mol*s)'), n=0.44, Ea=(0,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(6.366e+20,'cm^6/(mol^2*s)'), n=-1.72, Ea=(524.8,'cal/mol'), T0=(1,'K')), alpha=0.5, T3=(1e-30,'K'), T1=(1e+30,'K'), efficiencies={Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="[H][H]"): 2.0, Molecule(SMILES="O"): 14.0, Molecule(SMILES="[Ar]"): 0.67, Molecule(SMILES="[O][O]"): 0.78})
+Reversed reaction:   ! Library reaction: Unclassified
+HO2(+M)=H+O2(+M)                                    1.450e+12 0.621     48.6221  
+H2/2.00/ O2/0.78/ H2O/14.00/ AR/0.67/ CO/1.90/ CO2/3.80/ 
+    LOW/ 1.963895e+20 -1.539    49.1469  /
+    TROE/ 5.000000e-01 1e-30     1e+30    /
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(1.44994e+12,'s^-1'), n=0.62053, Ea=(203.435,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.21721, dn = +|- 0.0260222, dEa = +|- 0.136039 kJ/mol"""), arrheniusLow=Arrhenius(A=(1.9639e+14,'m^3/(mol*s)'), n=-1.53947, Ea=(205.631,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.21721, dn = +|- 0.0260222, dEa = +|- 0.136039 kJ/mol"""), alpha=0.5, T3=(1e-30,'K'), T1=(1e+30,'K'), efficiencies={Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="[H][H]"): 2.0, Molecule(SMILES="O"): 14.0, Molecule(SMILES="[Ar]"): 0.67, Molecule(SMILES="[O][O]"): 0.78})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H+O2=O+OH                                           1.000e+14 0.000     15.2860  
+Forwards rate:       Arrhenius(A=(1e+14,'cm^3/(mol*s)'), n=0, Ea=(15286,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.10806, dn = +|- 0.0135849, dEa = +|- 0.071019 kJ/mol
+O+OH=H+O2                                           4.849e+11 0.323     -1.3812  
+Reversed rate:       Arrhenius(A=(484851,'m^3/(mol*s)'), n=0.323408, Ea=(-5.7789,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.10806, dn = +|- 0.0135849, dEa = +|- 0.071019 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+O+H2=OH+H                                           3.800e+12 0.000     7.9480   
+DUPLICATE
+! Library reaction: Unclassified
+O+H2=OH+H                                           8.800e+14 0.000     19.1750  
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(3.8e+12,'cm^3/(mol*s)'), n=0, Ea=(7948,'cal/mol'), T0=(1,'K')), Arrhenius(A=(8.8e+14,'cm^3/(mol*s)'), n=0, Ea=(19175,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.02377, dn = +|- 0.00311056, dEa = +|- 0.0162613 kJ/mol
+OH+H=O+H2                                           1.837e+12 -0.009    6.5044   
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.02377, dn = +|- 0.00311056, dEa = +|- 0.0162613 kJ/mol
+OH+H=O+H2                                           4.255e+14 -0.009    17.7314  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(1.83724e+06,'m^3/(mol*s)'), n=-0.0088552, Ea=(27.2145,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.02377, dn = +|- 0.00311056, dEa = +|- 0.0162613 kJ/mol"""), Arrhenius(A=(4.25467e+08,'m^3/(mol*s)'), n=-0.0088552, Ea=(74.1883,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.02377, dn = +|- 0.00311056, dEa = +|- 0.0162613 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+OH+H2=H+H2O                                         2.200e+08 1.510     3.4300   
+Forwards rate:       Arrhenius(A=(2.2e+08,'cm^3/(mol*s)'), n=1.51, Ea=(3430,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.17546, dn = +|- 0.0214016, dEa = +|- 0.111883 kJ/mol
+H+H2O=OH+H2                                         6.319e+08 1.576     18.1268  
+Reversed rate:       Arrhenius(A=(631.879,'m^3/(mol*s)'), n=1.57561, Ea=(75.8425,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.17546, dn = +|- 0.0214016, dEa = +|- 0.111883 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+OH+OH=O+H2O                                         2.015e+07 1.651     0.6307   
+DUPLICATE
+! Library reaction: Unclassified
+OH+OH=O+H2O                                         2.595e+11 -0.057    -0.8270  
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(2.015e+07,'cm^3/(mol*s)'), n=1.651, Ea=(630.7,'cal/mol'), T0=(1,'K')), Arrhenius(A=(2.595e+11,'cm^3/(mol*s)'), n=-0.057, Ea=(-827,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.1482, dn = +|- 0.0182952, dEa = +|- 0.0956433 kJ/mol
+O+H2O=OH+OH                                         1.197e+08 1.725     16.7711  
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.1482, dn = +|- 0.0182952, dEa = +|- 0.0956433 kJ/mol
+O+H2O=OH+OH                                         1.542e+12 0.017     15.3134  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(119.703,'m^3/(mol*s)'), n=1.72547, Ea=(70.1702,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.1482, dn = +|- 0.0182952, dEa = +|- 0.0956433 kJ/mol"""), Arrhenius(A=(1.54158e+06,'m^3/(mol*s)'), n=0.0174668, Ea=(64.0712,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.1482, dn = +|- 0.0182952, dEa = +|- 0.0956433 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2+M=H+H+M                                          4.600e+19 -1.400    104.3800 
+H2/2.50/ H2O/12.00/ AR/0.00/ CO/1.90/ CO2/3.80/ 
+Forwards rate:       ThirdBody(arrheniusLow=Arrhenius(A=(4.6e+19,'cm^3/(mol*s)'), n=-1.4, Ea=(104380,'cal/mol'), T0=(1,'K')), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="[Ar]"): 0.0})
+Reversed reaction:   ! Library reaction: Unclassified
+H+H+M=H2+M                                          3.098e+20 -1.805    0.9749   
+H2/2.50/ H2O/12.00/ AR/0.00/ CO/1.90/ CO2/3.80/ 
+Reversed rate:       ThirdBody(arrheniusLow=Arrhenius(A=(3.09794e+08,'m^6/(mol^2*s)'), n=-1.80522, Ea=(4.07892,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.07004, dn = +|- 0.00896166, dEa = +|- 0.0468497 kJ/mol"""), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="[Ar]"): 0.0})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2+AR=H+H+AR                                        5.800e+18 -1.100    104.3800 
+Forwards rate:       Arrhenius(A=(5.8e+18,'cm^3/(mol*s)'), n=-1.1, Ea=(104380,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.07004, dn = +|- 0.00896166, dEa = +|- 0.0468497 kJ/mol
+H+H+AR=H2+AR                                        3.906e+19 -1.505    0.9749   
+Reversed rate:       Arrhenius(A=(3.9061e+07,'m^6/(mol^2*s)'), n=-1.50522, Ea=(4.07892,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.07004, dn = +|- 0.00896166, dEa = +|- 0.0468497 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H+O+M=OH+M                                          4.700e+18 -1.000    0.0000   
+H2/2.50/ H2O/12.00/ AR/0.75/ CO/1.90/ CO2/3.80/ 
+Forwards rate:       ThirdBody(arrheniusLow=Arrhenius(A=(4.7e+18,'cm^6/(mol^2*s)'), n=-1, Ea=(0,'cal/mol'), T0=(1,'K')), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="[Ar]"): 0.75, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="O=C=O"): 3.8})
+Reversed reaction:   ! Library reaction: Unclassified
+OH+M=H+O+M                                          3.374e+17 -0.604    101.9615 
+H2/2.50/ H2O/12.00/ AR/0.75/ CO/1.90/ CO2/3.80/ 
+Reversed rate:       ThirdBody(arrheniusLow=Arrhenius(A=(3.37416e+11,'m^3/(mol*s)'), n=-0.603635, Ea=(426.607,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.09449, dn = +|- 0.0119525, dEa = +|- 0.062485 kJ/mol"""), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="[Ar]"): 0.75, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="O=C=O"): 3.8})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+O+O+M=O2+M                                          1.900e+13 0.000     -1.7880  
+H2/2.50/ H2O/12.00/ AR/0.00/ CO/1.90/ CO2/3.80/ 
+Forwards rate:       ThirdBody(arrheniusLow=Arrhenius(A=(1.9e+13,'cm^6/(mol^2*s)'), n=0, Ea=(-1788,'cal/mol'), T0=(1,'K')), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="[Ar]"): 0.0, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="O=C=O"): 3.8})
+Reversed reaction:   ! Library reaction: Unclassified
+O2+M=O+O+M                                          2.813e+14 0.073     116.8407 
+H2/2.50/ H2O/12.00/ AR/0.00/ CO/1.90/ CO2/3.80/ 
+Reversed rate:       ThirdBody(arrheniusLow=Arrhenius(A=(2.81328e+08,'m^3/(mol*s)'), n=0.0729573, Ea=(488.862,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.2043, dn = +|- 0.0246107, dEa = +|- 0.12866 kJ/mol"""), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="[Ar]"): 0.0, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="O=C=O"): 3.8})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O+M=H+OH+M                                        6.100e+27 -3.322    120.7900 
+H2/3.00/ O2/1.50/ H2O/0.00/ N2/2.00/ CO/1.90/ CO2/3.80/ 
+Forwards rate:       ThirdBody(arrheniusLow=Arrhenius(A=(6.1e+27,'cm^3/(mol*s)'), n=-3.322, Ea=(120790,'cal/mol'), T0=(1,'K')), efficiencies={Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="[H][H]"): 3.0, Molecule(SMILES="O"): 0.0, Molecule(SMILES="N#N"): 2.0, Molecule(SMILES="[O][O]"): 1.5})
+Reversed reaction:   ! Library reaction: Unclassified
+H+OH+M=H2O+M                                        1.430e+28 -3.793    2.6881   
+H2/3.00/ O2/1.50/ H2O/0.00/ N2/2.00/ CO/1.90/ CO2/3.80/ 
+Reversed rate:       ThirdBody(arrheniusLow=Arrhenius(A=(1.43032e+16,'m^6/(mol^2*s)'), n=-3.79283, Ea=(11.2469,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.25406, dn = +|- 0.0299707, dEa = +|- 0.156681 kJ/mol"""), efficiencies={Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9, Molecule(SMILES="[H][H]"): 3.0, Molecule(SMILES="O"): 0.0, Molecule(SMILES="N#N"): 2.0, Molecule(SMILES="[O][O]"): 1.5})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O+H2O=H+OH+H2O                                    1.000e+26 -2.440    120.1800 
+Forwards rate:       Arrhenius(A=(1e+26,'cm^3/(mol*s)'), n=-2.44, Ea=(120180,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.25406, dn = +|- 0.0299707, dEa = +|- 0.156681 kJ/mol
+H+OH+H2O=H2O+H2O                                    2.345e+26 -2.911    2.0781   
+Reversed rate:       Arrhenius(A=(2.34479e+14,'m^6/(mol^2*s)'), n=-2.91083, Ea=(8.69469,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.25406, dn = +|- 0.0299707, dEa = +|- 0.156681 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+HO2+H=H2+O2                                         2.800e+06 2.090     -1.4510  
+Forwards rate:       Arrhenius(A=(2.8e+06,'cm^3/(mol*s)'), n=2.09, Ea=(-1451,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.14281, dn = +|- 0.017672, dEa = +|- 0.0923856 kJ/mol
+H2+O2=HO2+H                                         1.348e+06 2.315     53.3320  
+Reversed rate:       Arrhenius(A=(1.34769,'m^3/(mol*s)'), n=2.31469, Ea=(223.141,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.14281, dn = +|- 0.017672, dEa = +|- 0.0923856 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+HO2+H=OH+OH                                         7.100e+13 0.000     0.2950   
+Forwards rate:       Arrhenius(A=(7.1e+13,'cm^3/(mol*s)'), n=0, Ea=(295,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.2366, dn = +|- 0.0281146, dEa = +|- 0.146977 kJ/mol
+OH+OH=HO2+H                                         8.011e+10 0.539     36.9672  
+Reversed rate:       Arrhenius(A=(80109.1,'m^3/(mol*s)'), n=0.539243, Ea=(154.671,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.2366, dn = +|- 0.0281146, dEa = +|- 0.146977 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+HO2+H=H2O+O                                         1.400e+12 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(1.4e+12,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.08469, dn = +|- 0.0107623, dEa = +|- 0.056263 kJ/mol
+H2O+O=HO2+H                                         9.384e+09 0.614     52.8126  
+Reversed rate:       Arrhenius(A=(9383.82,'m^3/(mol*s)'), n=0.61371, Ea=(220.968,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.08469, dn = +|- 0.0107623, dEa = +|- 0.056263 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+HO2+O=O2+OH                                         2.900e+10 1.000     -0.7240  
+Forwards rate:       Arrhenius(A=(2.9e+10,'cm^3/(mol*s)'), n=1, Ea=(-724,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.11663, dn = +|- 0.0146039, dEa = +|- 0.076346 kJ/mol
+O2+OH=HO2+O                                         6.749e+09 1.216     52.6154  
+Reversed rate:       Arrhenius(A=(6748.6,'m^3/(mol*s)'), n=1.21584, Ea=(220.143,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.11663, dn = +|- 0.0146039, dEa = +|- 0.076346 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+HO2+OH=H2O+O2                                       1.900e+20 -2.490    0.5840   
+DUPLICATE
+! Library reaction: Unclassified
+HO2+OH=H2O+O2                                       1.200e+09 1.240     -1.3100  
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(1.9e+20,'cm^3/(mol*s)'), n=-2.49, Ea=(584,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.2e+09,'cm^3/(mol*s)'), n=1.24, Ea=(-1310,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.03295, dn = +|- 0.00429218, dEa = +|- 0.0224386 kJ/mol
+H2O+O2=HO2+OH                                       2.627e+20 -2.200    70.0638  
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.03295, dn = +|- 0.00429218, dEa = +|- 0.0224386 kJ/mol
+H2O+O2=HO2+OH                                       1.659e+09 1.530     68.1698  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(2.62662e+14,'m^3/(mol*s)'), n=-2.1997, Ea=(293.147,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.03295, dn = +|- 0.00429218, dEa = +|- 0.0224386 kJ/mol"""), Arrhenius(A=(1658.92,'m^3/(mol*s)'), n=1.5303, Ea=(285.222,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.03295, dn = +|- 0.00429218, dEa = +|- 0.0224386 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+HO2+HO2=H2O2+O2                                     1.200e+09 0.771     -1.8250  
+DUPLICATE
+! Library reaction: Unclassified
+HO2+HO2=H2O2+O2                                     1.300e+12 0.295     7.3970   
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(1.2e+09,'cm^3/(mol*s)'), n=0.7712, Ea=(-1825,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.3e+12,'cm^3/(mol*s)'), n=0.295, Ea=(7397,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.00925, dn = +|- 0.0012193, dEa = +|- 0.00637425 kJ/mol
+H2O2+O2=HO2+HO2                                     5.724e+10 0.526     36.6710  
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.00925, dn = +|- 0.0012193, dEa = +|- 0.00637425 kJ/mol
+H2O2+O2=HO2+HO2                                     6.201e+13 0.050     45.8930  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(57240.6,'m^3/(mol*s)'), n=0.526111, Ea=(153.432,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.00925, dn = +|- 0.0012193, dEa = +|- 0.00637425 kJ/mol"""), Arrhenius(A=(6.20106e+07,'m^3/(mol*s)'), n=0.0499111, Ea=(192.016,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.00925, dn = +|- 0.0012193, dEa = +|- 0.00637425 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O2(+M)=OH+OH(+M)                                  2.000e+12 0.900     48.7490  
+H2/3.70/ H2O2/7.70/ O2/1.20/ H2O/7.50/ AR/1.00/ N2/1.50/ CO/2.80/ CO2/1.60/ 
+    LOW/ 2.500000e+24 -2.300    48.7490  /
+    TROE/ 4.300000e-01 1e-30     1e+30    /
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(2e+12,'s^-1'), n=0.9, Ea=(48749,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(2.5e+24,'cm^3/(mol*s)'), n=-2.3, Ea=(48749,'cal/mol'), T0=(1,'K')), alpha=0.43, T3=(1e-30,'K'), T1=(1e+30,'K'), efficiencies={Molecule(SMILES="O=C=O"): 1.6, Molecule(SMILES="[C-]#[O+]"): 2.8, Molecule(SMILES="OO"): 7.7, Molecule(SMILES="[H][H]"): 3.7, Molecule(SMILES="O"): 7.5, Molecule(SMILES="[Ar]"): 1.0, Molecule(SMILES="N#N"): 1.5, Molecule(SMILES="[O][O]"): 1.2})
+Reversed reaction:   ! Library reaction: Unclassified
+OH+OH(+M)=H2O2(+M)                                  1.533e+08 1.504     -1.6969  
+H2/3.70/ H2O2/7.70/ O2/1.20/ H2O/7.50/ AR/1.00/ N2/1.50/ CO/2.80/ CO2/1.60/ 
+    LOW/ 1.916854e+20 -1.696    -1.6969  /
+    TROE/ 4.300000e-01 1e-30     1e+30    /
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(153.348,'m^3/(mol*s)'), n=1.5038, Ea=(-7.09983,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.49216, dn = +|- 0.0529848, dEa = +|- 0.276994 kJ/mol"""), arrheniusLow=Arrhenius(A=(1.91685e+08,'m^6/(mol^2*s)'), n=-1.6962, Ea=(-7.09983,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.49216, dn = +|- 0.0529848, dEa = +|- 0.276994 kJ/mol"""), alpha=0.43, T3=(1e-30,'K'), T1=(1e+30,'K'), efficiencies={Molecule(SMILES="O=C=O"): 1.6, Molecule(SMILES="[C-]#[O+]"): 2.8, Molecule(SMILES="OO"): 7.7, Molecule(SMILES="[H][H]"): 3.7, Molecule(SMILES="O"): 7.5, Molecule(SMILES="[Ar]"): 1.0, Molecule(SMILES="N#N"): 1.5, Molecule(SMILES="[O][O]"): 1.2})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O2+H=H2O+OH                                       2.400e+13 0.000     3.9700   
+Forwards rate:       Arrhenius(A=(2.4e+13,'cm^3/(mol*s)'), n=0, Ea=(3970,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.20173, dn = +|- 0.0243281, dEa = +|- 0.127182 kJ/mol
+H2O+OH=H2O2+H                                       7.848e+08 1.075     71.6260  
+Reversed rate:       Arrhenius(A=(784.795,'m^3/(mol*s)'), n=1.07463, Ea=(299.683,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.20173, dn = +|- 0.0243281, dEa = +|- 0.127182 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O2+H=HO2+H2                                       4.800e+13 0.000     7.9500   
+Forwards rate:       Arrhenius(A=(4.8e+13,'cm^3/(mol*s)'), n=0, Ea=(7950,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.13676, dn = +|- 0.0169697, dEa = +|- 0.0887138 kJ/mol
+HO2+H2=H2O2+H                                       4.843e+11 0.470     24.2370  
+Reversed rate:       Arrhenius(A=(484341,'m^3/(mol*s)'), n=0.469779, Ea=(101.408,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.13676, dn = +|- 0.0169697, dEa = +|- 0.0887138 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O2+O=HO2+OH                                       9.600e+06 2.000     3.9700   
+Forwards rate:       Arrhenius(A=(9.6e+06,'cm^3/(mol*s)'), n=2, Ea=(3970,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.11093, dn = +|- 0.0139264, dEa = +|- 0.0728042 kJ/mol
+HO2+OH=H2O2+O                                       4.683e+04 2.461     18.8134  
+Reversed rate:       Arrhenius(A=(0.0468343,'m^3/(mol*s)'), n=2.46092, Ea=(78.7153,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.11093, dn = +|- 0.0139264, dEa = +|- 0.0728042 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+H2O2+OH=HO2+H2O                                     1.700e+12 0.000     0.3180   
+DUPLICATE
+! Library reaction: Unclassified
+H2O2+OH=HO2+H2O                                     7.600e+13 0.000     7.2700   
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(1.7e+12,'cm^3/(mol*s)'), n=0, Ea=(318,'cal/mol'), T0=(1,'K')), Arrhenius(A=(7.6e+13,'cm^3/(mol*s)'), n=0, Ea=(7270,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.04069, dn = +|- 0.00527964, dEa = +|- 0.0276008 kJ/mol
+HO2+H2O=H2O2+OH                                     4.927e+10 0.535     31.3018  
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.04069, dn = +|- 0.00527964, dEa = +|- 0.0276008 kJ/mol
+HO2+H2O=H2O2+OH                                     2.203e+12 0.535     38.2538  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(49268.6,'m^3/(mol*s)'), n=0.535391, Ea=(130.967,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.04069, dn = +|- 0.00527964, dEa = +|- 0.0276008 kJ/mol"""), Arrhenius(A=(2.2026e+06,'m^3/(mol*s)'), n=0.535391, Ea=(160.054,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.04069, dn = +|- 0.00527964, dEa = +|- 0.0276008 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CO+O(+M)=CO2(+M)                                    1.800e+10 0.000     2.3840   
+H2/2.50/ H2O/12.00/ CO/1.90/ CO2/3.80/ 
+    LOW/ 1.400000e+24 -2.790    4.1910   /
+    TROE/ 1.000000e+00 1e-30     1e+30     1e+30    /
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(1.8e+10,'cm^3/(mol*s)'), n=0, Ea=(2384,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(1.4e+24,'cm^6/(mol^2*s)'), n=-2.79, Ea=(4191,'cal/mol'), T0=(1,'K')), alpha=1, T3=(1e-30,'K'), T1=(1e+30,'K'), T2=(1e+30,'K'), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9})
+Reversed reaction:   ! Library reaction: Unclassified
+CO2(+M)=CO+O(+M)                                    1.345e+15 -0.671    129.6533 
+H2/2.50/ H2O/12.00/ CO/1.90/ CO2/3.80/ 
+    LOW/ 1.046103e+29 -3.461    131.4603 /
+    TROE/ 1.000000e+00 1e-30     1e+30     1e+30    /
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(1.34499e+15,'s^-1'), n=-0.670763, Ea=(542.469,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.32714, dn = +|- 0.0374694, dEa = +|- 0.195882 kJ/mol"""), arrheniusLow=Arrhenius(A=(1.0461e+23,'m^3/(mol*s)'), n=-3.46076, Ea=(550.03,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.32714, dn = +|- 0.0374694, dEa = +|- 0.195882 kJ/mol"""), alpha=1, T3=(1e-30,'K'), T1=(1e+30,'K'), T2=(1e+30,'K'), efficiencies={Molecule(SMILES="[H][H]"): 2.5, Molecule(SMILES="O"): 12.0, Molecule(SMILES="O=C=O"): 3.8, Molecule(SMILES="[C-]#[O+]"): 1.9})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CO+OH=CO2+H                                         1.000e+00 0.000     0.000    
+    PLOG/ 0.0131    2.100e+05 1.900     -1.0640  /
+    PLOG/ 0.1315    2.500e+05 1.880     -1.0430  /
+    PLOG/ 1.3150    8.700e+05 1.730     -0.6850  /
+    PLOG/ 13.1580   6.800e+06 1.480     0.0480   /
+    PLOG/ 131.5800  2.300e+07 1.350     0.9740   /
+Forwards rate:       PDepArrhenius(pressures=([0.01315,0.1315,1.315,13.158,131.58],'atm'), arrhenius=[Arrhenius(A=(210000,'cm^3/(mol*s)'), n=1.9, Ea=(-1064,'cal/mol'), T0=(1,'K')), Arrhenius(A=(250000,'cm^3/(mol*s)'), n=1.88, Ea=(-1043,'cal/mol'), T0=(1,'K')), Arrhenius(A=(870000,'cm^3/(mol*s)'), n=1.73, Ea=(-685,'cal/mol'), T0=(1,'K')), Arrhenius(A=(6.8e+06,'cm^3/(mol*s)'), n=1.48, Ea=(48,'cal/mol'), T0=(1,'K')), Arrhenius(A=(2.3e+07,'cm^3/(mol*s)'), n=1.35, Ea=(974,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+CO2+H=CO+OH                                         1.000e+00 0.000     0.000    
+    PLOG/ 0.0132    1.912e+11 0.850     24.2175  /
+    PLOG/ 0.1315    2.276e+11 0.830     24.2385  /
+    PLOG/ 1.3150    7.922e+11 0.680     24.5965  /
+    PLOG/ 13.1580   6.192e+12 0.430     25.3295  /
+    PLOG/ 131.5800  2.094e+13 0.300     26.2555  /
+Reversed rate:       PDepArrhenius(pressures=([0.0133242,0.133242,1.33242,13.3323,133.323],'bar'), arrhenius=[Arrhenius(A=(191225,'m^3/(mol*s)'), n=0.850066, Ea=(101.326,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.22998, dn = +|- 0.0274747, dEa = +|- 0.14051 kJ/mol"""), Arrhenius(A=(227649,'m^3/(mol*s)'), n=0.830066, Ea=(101.414,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.22998, dn = +|- 0.0274747, dEa = +|- 0.14051 kJ/mol"""), Arrhenius(A=(792218,'m^3/(mol*s)'), n=0.680066, Ea=(102.912,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.22998, dn = +|- 0.0274747, dEa = +|- 0.14051 kJ/mol"""), Arrhenius(A=(6.19205e+06,'m^3/(mol*s)'), n=0.430066, Ea=(105.979,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.22998, dn = +|- 0.0274747, dEa = +|- 0.14051 kJ/mol"""), Arrhenius(A=(2.09437e+07,'m^3/(mol*s)'), n=0.300066, Ea=(109.853,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.22998, dn = +|- 0.0274747, dEa = +|- 0.14051 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CO+HO2=CO2+OH                                       1.600e+05 2.180     17.9430  
+Forwards rate:       Arrhenius(A=(160000,'cm^3/(mol*s)'), n=2.18, Ea=(17943,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.0161, dn = +|- 0.00211455, dEa = +|- 0.0110544 kJ/mol
+CO2+OH=CO+HO2                                       1.879e+08 1.652     79.9230  
+Reversed rate:       Arrhenius(A=(187.898,'m^3/(mol*s)'), n=1.65211, Ea=(334.398,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.0161, dn = +|- 0.00211455, dEa = +|- 0.0110544 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CO+O2=CO2+O                                         4.700e+12 0.000     60.5000  
+Forwards rate:       Arrhenius(A=(4.7e+12,'cm^3/(mol*s)'), n=0, Ea=(60500,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.10379, dn = +|- 0.0130736, dEa = +|- 0.0683461 kJ/mol
+CO2+O=CO+O2                                         2.372e+16 -0.744    69.1406  
+Reversed rate:       Arrhenius(A=(2.37184e+10,'m^3/(mol*s)'), n=-0.743721, Ea=(289.284,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.10379, dn = +|- 0.0130736, dEa = +|- 0.0683461 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH3+H(+M)=CH4(+M)                                   2.300e+14 0.032     0.1440   
+C2H6/4.50/ H2/4.00/ H2O/10.00/ AR/0.61/ N2/1.40/ HE/2.00/ CO/1.40/ CO2/4.00/ CH4/3.85/ 
+    LOW/ 2.700000e+35 -5.345    3.3800   /
+    TROE/ 3.950000e-01 163.5     4250.3    1.25368e+06/
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(2.3e+14,'cm^3/(mol*s)'), n=0.032, Ea=(144,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(2.7e+35,'cm^6/(mol^2*s)'), n=-5.345, Ea=(3380,'cal/mol'), T0=(1,'K')), alpha=0.395, T3=(163.5,'K'), T1=(4250.3,'K'), T2=(1.25368e+06,'K'), efficiencies={Molecule(SMILES="O=C=O"): 4.0, Molecule(SMILES="[C-]#[O+]"): 1.4, Molecule(SMILES="[H][H]"): 4.0, Molecule(SMILES="O"): 10.0, Molecule(SMILES="[Ar]"): 0.61, Molecule(SMILES="C"): 3.85, Molecule(SMILES="CC"): 4.5, Molecule(SMILES="N#N"): 1.4, Molecule(SMILES="[He]"): 2.0})
+Reversed reaction:   ! Library reaction: Unclassified
+CH4(+M)=CH3+H(+M)                                   3.173e+14 0.601     104.5663 
+C2H6/4.50/ H2/4.00/ H2O/10.00/ AR/0.61/ N2/1.40/ HE/2.00/ CO/1.40/ CO2/4.00/ CH4/3.85/ 
+    LOW/ 3.724758e+35 -4.776    107.8023 /
+    TROE/ 3.950000e-01 163.5     4250.3    1.25368e+06/
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(3.17294e+14,'s^-1'), n=0.601299, Ea=(437.506,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.61768, dn = +|- 0.0636773, dEa = +|- 0.332891 kJ/mol"""), arrheniusLow=Arrhenius(A=(3.72476e+29,'m^3/(mol*s)'), n=-4.7757, Ea=(451.045,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.61768, dn = +|- 0.0636773, dEa = +|- 0.332891 kJ/mol"""), alpha=0.395, T3=(163.5,'K'), T1=(4250.3,'K'), T2=(1.25368e+06,'K'), efficiencies={Molecule(SMILES="O=C=O"): 4.0, Molecule(SMILES="[C-]#[O+]"): 1.4, Molecule(SMILES="[H][H]"): 4.0, Molecule(SMILES="O"): 10.0, Molecule(SMILES="[Ar]"): 0.61, Molecule(SMILES="C"): 3.85, Molecule(SMILES="CC"): 4.5, Molecule(SMILES="N#N"): 1.4, Molecule(SMILES="[He]"): 2.0})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH4+H=CH3+H2                                        4.100e+03 3.156     8.7550   
+Forwards rate:       Arrhenius(A=(4100,'cm^3/(mol*s)'), n=3.156, Ea=(8755,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.518, dn = +|- 0.0552575, dEa = +|- 0.288874 kJ/mol
+CH3+H2=CH4+H                                        4.413e+02 2.992     7.7378   
+Reversed rate:       Arrhenius(A=(0.0004413,'m^3/(mol*s)'), n=2.99192, Ea=(32.3749,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.518, dn = +|- 0.0552575, dEa = +|- 0.288874 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH4+O=CH3+OH                                        4.400e+05 2.500     6.5770   
+Forwards rate:       Arrhenius(A=(440000,'cm^3/(mol*s)'), n=2.5, Ea=(6577,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.48282, dn = +|- 0.0521535, dEa = +|- 0.272648 kJ/mol
+CH3+OH=CH4+O                                        2.290e+04 2.327     4.1162   
+Reversed rate:       Arrhenius(A=(0.0228974,'m^3/(mol*s)'), n=2.32707, Ea=(17.2222,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.48282, dn = +|- 0.0521535, dEa = +|- 0.272648 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH4+OH=CH3+H2O                                      1.000e+06 2.182     2.5060   
+Forwards rate:       Arrhenius(A=(1e+06,'cm^3/(mol*s)'), n=2.182, Ea=(2506,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.29151, dn = +|- 0.0338664, dEa = +|- 0.177047 kJ/mol
+CH3+H2O=CH4+OH                                      3.091e+05 2.084     16.1856  
+Reversed rate:       Arrhenius(A=(0.309144,'m^3/(mol*s)'), n=2.08353, Ea=(67.7205,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.29151, dn = +|- 0.0338664, dEa = +|- 0.177047 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH4+HO2=CH3+H2O2                                    4.700e+04 2.500     21.0000  
+Forwards rate:       Arrhenius(A=(47000,'cm^3/(mol*s)'), n=2.5, Ea=(21000,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.33744, dn = +|- 0.0384926, dEa = +|- 0.201231 kJ/mol
+CH3+H2O2=CH4+HO2                                    5.013e+05 1.866     3.6958   
+Reversed rate:       Arrhenius(A=(0.501347,'m^3/(mol*s)'), n=1.86614, Ea=(15.4632,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.33744, dn = +|- 0.0384926, dEa = +|- 0.201231 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH4+O2=CH3+HO2                                      2.030e+05 2.745     51.7140  
+Forwards rate:       Arrhenius(A=(203000,'cm^3/(mol*s)'), n=2.745, Ea=(51714,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.32945, dn = +|- 0.0376994, dEa = +|- 0.197084 kJ/mol
+CH3+HO2=CH4+O2                                      4.540e+04 2.356     -4.0862  
+Reversed rate:       Arrhenius(A=(0.0453956,'m^3/(mol*s)'), n=2.35623, Ea=(-17.0967,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.32945, dn = +|- 0.0376994, dEa = +|- 0.197084 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH4+CH=C2H4+H                                       3.000e+13 0.000     -0.4000  
+Forwards rate:       Arrhenius(A=(3e+13,'cm^3/(mol*s)'), n=0, Ea=(-400,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.17814, dn = +|- 0.0217031, dEa = +|- 0.113459 kJ/mol
+C2H4+H=CH4+CH                                       7.132e+18 -1.167    60.6071  
+Reversed rate:       Arrhenius(A=(7.13243e+12,'m^3/(mol*s)'), n=-1.16674, Ea=(253.58,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.17814, dn = +|- 0.0217031, dEa = +|- 0.113459 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH3+M=CH+H2+M                                       3.100e+15 0.000     80.8710  
+
+Forwards rate:       ThirdBody(arrheniusLow=Arrhenius(A=(3.1e+15,'cm^3/(mol*s)'), n=0, Ea=(80871,'cal/mol'), T0=(1,'K')), efficiencies={})
+Reversed reaction:   ! Library reaction: Unclassified
+CH+H2+M=CH3+M                                       3.996e+13 0.084     -26.4542 
+
+Reversed rate:       ThirdBody(arrheniusLow=Arrhenius(A=(39.9585,'m^6/(mol^2*s)'), n=0.0838907, Ea=(-110.684,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.56526, dn = +|- 0.0593161, dEa = +|- 0.310092 kJ/mol"""), efficiencies={})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH3+O=H2+CO+H                                       1.500e+13 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(1.5e+13,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.4943, dn = +|- 0.0531745, dEa = +|- 0.277985 kJ/mol
+H2+CO+H=CH3+O                                       1.720e+13 -0.010    69.2171  
+Reversed rate:       Arrhenius(A=(17.2004,'m^6/(mol^2*s)'), n=-0.00968128, Ea=(289.604,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.4943, dn = +|- 0.0531745, dEa = +|- 0.277985 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH3+OH=CH3OH                                        1.000e+00 0.000     0.000    
+    PLOG/ 0.0013    6.900e+30 -6.638    2.8290   /
+    PLOG/ 0.0132    1.100e+32 -6.637    3.3640   /
+    PLOG/ 0.1316    1.500e+32 -6.361    3.9540   /
+    PLOG/ 1.3158    5.600e+30 -5.648    4.2140   /
+    PLOG/ 13.1579   1.400e+27 -4.333    3.6850   /
+    PLOG/ 131.5789  1.300e+22 -2.664    2.4510   /
+Forwards rate:       PDepArrhenius(pressures=([0.001316,0.013158,0.131579,1.31579,13.1579,131.579],'atm'), arrhenius=[Arrhenius(A=(6.9e+30,'cm^3/(mol*s)'), n=-6.63794, Ea=(2829,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.1e+32,'cm^3/(mol*s)'), n=-6.63695, Ea=(3364,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.5e+32,'cm^3/(mol*s)'), n=-6.36057, Ea=(3954,'cal/mol'), T0=(1,'K')), Arrhenius(A=(5.6e+30,'cm^3/(mol*s)'), n=-5.64842, Ea=(4214,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.4e+27,'cm^3/(mol*s)'), n=-4.33275, Ea=(3685,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.3e+22,'cm^3/(mol*s)'), n=-2.66369, Ea=(2451,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+CH3OH=CH3+OH                                        1.000e+00 0.000     0.000    
+    PLOG/ 0.0013    6.587e+33 -6.748    94.8139  /
+    PLOG/ 0.0132    1.050e+35 -6.747    95.3489  /
+    PLOG/ 0.1316    1.432e+35 -6.471    95.9389  /
+    PLOG/ 1.3158    5.346e+33 -5.759    96.1989  /
+    PLOG/ 13.1579   1.337e+30 -4.443    95.6699  /
+    PLOG/ 131.5789  1.241e+25 -2.774    94.4359  /
+Reversed rate:       PDepArrhenius(pressures=([0.00133344,0.0133323,0.133322,1.33322,13.3322,133.322],'bar'), arrhenius=[Arrhenius(A=(6.58736e+33,'s^-1'), n=-6.74812, Ea=(396.701,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.84896, dn = +|- 0.0815783, dEa = +|- 0.417204 kJ/mol"""), Arrhenius(A=(1.05016e+35,'s^-1'), n=-6.74713, Ea=(398.94,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.84896, dn = +|- 0.0815783, dEa = +|- 0.417204 kJ/mol"""), Arrhenius(A=(1.43203e+35,'s^-1'), n=-6.47075, Ea=(401.408,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.84896, dn = +|- 0.0815783, dEa = +|- 0.417204 kJ/mol"""), Arrhenius(A=(5.34626e+33,'s^-1'), n=-5.7586, Ea=(402.496,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.84896, dn = +|- 0.0815783, dEa = +|- 0.417204 kJ/mol"""), Arrhenius(A=(1.33656e+30,'s^-1'), n=-4.44293, Ea=(400.283,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.84896, dn = +|- 0.0815783, dEa = +|- 0.417204 kJ/mol"""), Arrhenius(A=(1.2411e+25,'s^-1'), n=-2.77387, Ea=(395.12,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.84896, dn = +|- 0.0815783, dEa = +|- 0.417204 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH3+CH3=C2H5+H                                      5.400e+13 0.000     16.0550  
+Forwards rate:       Arrhenius(A=(5.4e+13,'cm^3/(mol*s)'), n=0, Ea=(16055,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.37555, dn = +|- 0.0422124, dEa = +|- 0.220678 kJ/mol
+C2H5+H=CH3+CH3                                      9.771e+17 -0.846    6.2949   
+Reversed rate:       Arrhenius(A=(9.77079e+11,'m^3/(mol*s)'), n=-0.846219, Ea=(26.3379,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.37555, dn = +|- 0.0422124, dEa = +|- 0.220678 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH+H=C+H2                                           1.200e+14 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(1.2e+14,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.0483, dn = +|- 0.00624531, dEa = +|- 0.0326492 kJ/mol
+C+H2=CH+H                                           5.564e+14 0.087     23.2316  
+Reversed rate:       Arrhenius(A=(5.56433e+08,'m^3/(mol*s)'), n=0.0872962, Ea=(97.201,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.0483, dn = +|- 0.00624531, dEa = +|- 0.0326492 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH+O=CO+H                                           5.700e+13 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(5.7e+13,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.0489, dn = +|- 0.00632103, dEa = +|- 0.033045 kJ/mol
+CO+H=CH+O                                           5.071e+15 -0.094    176.5422 
+Reversed rate:       Arrhenius(A=(5.07076e+09,'m^3/(mol*s)'), n=-0.093572, Ea=(738.653,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.0489, dn = +|- 0.00632103, dEa = +|- 0.033045 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH+OH=H+CO+H                                        1.796e+23 -2.473    19.9273  
+Forwards rate:       Arrhenius(A=(1.796e+23,'cm^3/(mol*s)'), n=-2.473, Ea=(19927.3,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.05462, dn = +|- 0.00704022, dEa = +|- 0.0368048 kJ/mol
+H+CO+H=CH+OH                                        2.226e+26 -2.963    94.5080  
+Reversed rate:       Arrhenius(A=(2.22555e+14,'m^6/(mol^2*s)'), n=-2.96294, Ea=(395.421,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.05462, dn = +|- 0.00704022, dEa = +|- 0.0368048 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH+OH=C+H2O                                         4.000e+07 2.000     3.0000   
+Forwards rate:       Arrhenius(A=(4e+07,'cm^3/(mol*s)'), n=2, Ea=(3000,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.12154, dn = +|- 0.0151853, dEa = +|- 0.0793854 kJ/mol
+C+H2O=CH+OH                                         5.327e+08 2.153     40.9284  
+Reversed rate:       Arrhenius(A=(532.725,'m^3/(mol*s)'), n=2.15291, Ea=(171.244,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.12154, dn = +|- 0.0151853, dEa = +|- 0.0793854 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH+O2=H+CO+O                                        1.975e+23 -2.473    19.9273  
+Forwards rate:       Arrhenius(A=(1.975e+23,'cm^3/(mol*s)'), n=-2.473, Ea=(19927.3,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.14966, dn = +|- 0.0184632, dEa = +|- 0.0965219 kJ/mol
+H+CO+O=CH+O2                                        1.187e+24 -2.640    77.8408  
+Reversed rate:       Arrhenius(A=(1.1866e+12,'m^6/(mol^2*s)'), n=-2.63953, Ea=(325.686,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.14966, dn = +|- 0.0184632, dEa = +|- 0.0965219 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH+CO2=H+CO+CO                                      5.268e+16 -0.723    18.8873  
+Forwards rate:       Arrhenius(A=(5.268e+16,'cm^3/(mol*s)'), n=-0.723, Ea=(18887.3,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.26595, dn = +|- 0.0312196, dEa = +|- 0.16321 kJ/mol
+H+CO+CO=CH+CO2                                      6.272e+13 -0.146    68.1602  
+Reversed rate:       Arrhenius(A=(62.7188,'m^6/(mol^2*s)'), n=-0.145809, Ea=(285.182,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.26595, dn = +|- 0.0312196, dEa = +|- 0.16321 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C+OH=CO+H                                           5.000e+13 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(5e+13,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.07391, dn = +|- 0.00943994, dEa = +|- 0.04935 kJ/mol
+CO+H=C+OH                                           1.984e+15 -0.172    154.7542 
+Reversed rate:       Arrhenius(A=(1.98405e+09,'m^3/(mol*s)'), n=-0.172013, Ea=(647.492,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.07391, dn = +|- 0.00943994, dEa = +|- 0.04935 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C+O2=CO+O                                           2.000e+13 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(2e+13,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.03328, dn = +|- 0.00433433, dEa = +|- 0.0226589 kJ/mol
+CO+O=C+O2                                           3.848e+12 0.151     138.0870 
+Reversed rate:       Arrhenius(A=(3.84788e+06,'m^3/(mol*s)'), n=0.151395, Ea=(577.756,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.03328, dn = +|- 0.00433433, dEa = +|- 0.0226589 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+CH3+CH3(+M)=C2H6(+M)                                9.500e+14 -0.538    0.1790   
+
+    LOW/ 1.269000e+41 -7.000    2.7620   /
+    TROE/ 6.200000e-01 73        1180      1e+30    /
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(9.5e+14,'cm^3/(mol*s)'), n=-0.538, Ea=(179,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(1.269e+41,'cm^6/(mol^2*s)'), n=-7, Ea=(2762,'cal/mol'), T0=(1,'K')), alpha=0.62, T3=(73,'K'), T1=(1180,'K'), T2=(1e+30,'K'), efficiencies={})
+Reversed reaction:   ! Library reaction: Unclassified
+C2H6(+M)=CH3+CH3(+M)                                5.843e+20 -1.201    90.7533  
+
+    LOW/ 7.805049e+46 -7.663    93.3363  /
+    TROE/ 6.200000e-01 73        1180      1e+30    /
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(5.84302e+20,'s^-1'), n=-1.2007, Ea=(379.712,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.97821, dn = +|- 0.090314, dEa = +|- 0.472143 kJ/mol"""), arrheniusLow=Arrhenius(A=(7.80505e+40,'m^3/(mol*s)'), n=-7.6627, Ea=(390.519,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.97821, dn = +|- 0.090314, dEa = +|- 0.472143 kJ/mol"""), alpha=0.62, T3=(73,'K'), T1=(1180,'K'), T2=(1e+30,'K'), efficiencies={})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H6+H=C2H5+H2                                      7.350e+03 3.100     5.3400   
+DUPLICATE
+! Library reaction: Unclassified
+C2H6+H=C2H5+H2                                      3.260e+14 0.000     13.6668  
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(7350,'cm^3/(mol*s)'), n=3.1, Ea=(5340.02,'cal/mol'), T0=(1,'K')), Arrhenius(A=(3.26e+14,'cm^3/(mol*s)'), n=0, Ea=(13666.8,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.35532, dn = +|- 0.0402505, dEa = +|- 0.210421 kJ/mol
+C2H5+H2=C2H6+H                                      3.211e+01 3.322     8.4108   
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.35532, dn = +|- 0.0402505, dEa = +|- 0.210421 kJ/mol
+C2H5+H2=C2H6+H                                      1.424e+12 0.222     16.7376  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(3.21065e-05,'m^3/(mol*s)'), n=3.3217, Ea=(35.1908,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.35532, dn = +|- 0.0402505, dEa = +|- 0.210421 kJ/mol"""), Arrhenius(A=(1.42405e+06,'m^3/(mol*s)'), n=0.221696, Ea=(70.0301,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.35532, dn = +|- 0.0402505, dEa = +|- 0.210421 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H6+O=C2H5+OH                                      1.800e+05 2.800     5.8000   
+Forwards rate:       Arrhenius(A=(180000,'cm^3/(mol*s)'), n=2.8, Ea=(5800,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.32396, dn = +|- 0.0371513, dEa = +|- 0.194219 kJ/mol
+C2H5+OH=C2H6+O                                      3.802e+02 3.013     7.4272   
+Reversed rate:       Arrhenius(A=(0.000380156,'m^3/(mol*s)'), n=3.01284, Ea=(31.0754,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.32396, dn = +|- 0.0371513, dEa = +|- 0.194219 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H6+OH=C2H5+H2O                                    1.610e+06 2.224     0.7407   
+Forwards rate:       Arrhenius(A=(1.61e+06,'cm^3/(mol*s)'), n=2.224, Ea=(740.73,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.15335, dn = +|- 0.0188876, dEa = +|- 0.0987402 kJ/mol
+C2H5+H2O=C2H6+OH                                    2.020e+04 2.511     18.5083  
+Reversed rate:       Arrhenius(A=(0.0201996,'m^3/(mol*s)'), n=2.51131, Ea=(77.4388,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.15335, dn = +|- 0.0188876, dEa = +|- 0.0987402 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H6+HO2=C2H5+H2O2                                  2.600e+01 3.370     15.9000  
+Forwards rate:       Arrhenius(A=(26,'cm^3/(mol*s)'), n=3.37, Ea=(15900,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.19385, dn = +|- 0.0234574, dEa = +|- 0.12263 kJ/mol
+C2H5+H2O2=C2H6+HO2                                  1.126e+01 3.122     2.6838   
+Reversed rate:       Arrhenius(A=(1.12556e-05,'m^3/(mol*s)'), n=3.12192, Ea=(11.229,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.19385, dn = +|- 0.0234574, dEa = +|- 0.12263 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H6+O2=C2H5+HO2                                    2.920e+07 1.900     49.5480  
+Forwards rate:       Arrhenius(A=(2.92e+07,'cm^3/(mol*s)'), n=1.9, Ea=(49548,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.18672, dn = +|- 0.0226643, dEa = +|- 0.118484 kJ/mol
+C2H5+HO2=C2H6+O2                                    2.650e+05 1.897     -2.1642  
+Reversed rate:       Arrhenius(A=(0.265007,'m^3/(mol*s)'), n=1.89701, Ea=(-9.05509,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.18672, dn = +|- 0.0226643, dEa = +|- 0.118484 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H6+CH3=C2H5+CH4                                   3.500e+01 3.440     10.3840  
+Forwards rate:       Arrhenius(A=(35,'cm^3/(mol*s)'), n=3.44, Ea=(10384,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.1203, dn = +|- 0.0150383, dEa = +|- 0.078617 kJ/mol
+C2H5+CH4=C2H6+CH3                                   1.420e+00 3.826     14.4720  
+Reversed rate:       Arrhenius(A=(1.42044e-06,'m^3/(mol*s)'), n=3.82577, Ea=(60.5508,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.1203, dn = +|- 0.0150383, dEa = +|- 0.078617 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H4+H(+M)=C2H5(+M)                                 1.400e+09 1.463     1.3550   
+H2/2.00/ H2O/10.00/ N2/1.20/ CO/1.50/ CO2/3.00/ 
+    LOW/ 2.000000e+39 -6.642    5.7690   /
+    TROE/ -5.690000e-01 299       9147      152.4    /
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(1.4e+09,'cm^3/(mol*s)'), n=1.463, Ea=(1355,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(2e+39,'cm^6/(mol^2*s)'), n=-6.642, Ea=(5769,'cal/mol'), T0=(1,'K')), alpha=-0.569, T3=(299,'K'), T1=(9147,'K'), T2=(152.4,'K'), efficiencies={Molecule(SMILES="[H][H]"): 2.0, Molecule(SMILES="N#N"): 1.2, Molecule(SMILES="O=C=O"): 3.0, Molecule(SMILES="[C-]#[O+]"): 1.5, Molecule(SMILES="O"): 10.0})
+Reversed reaction:   ! Library reaction: Unclassified
+C2H5(+M)=C2H4+H(+M)                                 8.897e+08 1.536     36.8957  
+H2/2.00/ H2O/10.00/ N2/1.20/ CO/1.50/ CO2/3.00/ 
+    LOW/ 1.271018e+39 -6.569    41.3097  /
+    TROE/ -5.690000e-01 299       9147      152.4    /
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(8.89713e+08,'s^-1'), n=1.53555, Ea=(154.372,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.2167, dn = +|- 0.0259671, dEa = +|- 0.135751 kJ/mol"""), arrheniusLow=Arrhenius(A=(1.27102e+33,'m^3/(mol*s)'), n=-6.56945, Ea=(172.84,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.2167, dn = +|- 0.0259671, dEa = +|- 0.135751 kJ/mol"""), alpha=-0.569, T3=(299,'K'), T1=(9147,'K'), T2=(152.4,'K'), efficiencies={Molecule(SMILES="[H][H]"): 2.0, Molecule(SMILES="N#N"): 1.2, Molecule(SMILES="O=C=O"): 3.0, Molecule(SMILES="[C-]#[O+]"): 1.5, Molecule(SMILES="O"): 10.0})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H5+H(+M)=C2H6(+M)                                 5.200e+17 -0.990    1.5800   
+C2H6/3.00/ H2/2.00/ H2O/6.00/ AR/0.70/ N2/1.00/ CO/1.50/ CO2/2.00/ CH4/2.00/ 
+    LOW/ 1.990000e+41 -7.080    6.6850   /
+    TROE/ 8.422000e-01 125       2219      6882     /
+Forwards rate:       Troe(arrheniusHigh=Arrhenius(A=(5.2e+17,'cm^3/(mol*s)'), n=-0.99, Ea=(1580,'cal/mol'), T0=(1,'K')), arrheniusLow=Arrhenius(A=(1.99e+41,'cm^6/(mol^2*s)'), n=-7.08, Ea=(6685,'cal/mol'), T0=(1,'K')), alpha=0.8422, T3=(125,'K'), T1=(2219,'K'), T2=(6882,'K'), efficiencies={Molecule(SMILES="O=C=O"): 2.0, Molecule(SMILES="[C-]#[O+]"): 1.5, Molecule(SMILES="[H][H]"): 2.0, Molecule(SMILES="O"): 6.0, Molecule(SMILES="[Ar]"): 0.7, Molecule(SMILES="C"): 2.0, Molecule(SMILES="CC"): 3.0, Molecule(SMILES="N#N"): 1.0})
+Reversed reaction:   ! Library reaction: Unclassified
+C2H6(+M)=C2H5+H(+M)                                 1.768e+19 -0.806    101.9143 
+C2H6/3.00/ H2/2.00/ H2O/6.00/ AR/0.70/ N2/1.00/ CO/1.50/ CO2/2.00/ CH4/2.00/ 
+    LOW/ 6.764428e+42 -6.896    107.0193 /
+    TROE/ 8.422000e-01 125       2219      6882     /
+Reversed rate:       Troe(arrheniusHigh=Arrhenius(A=(1.76759e+19,'s^-1'), n=-0.806476, Ea=(426.41,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.44406, dn = +|- 0.0486468, dEa = +|- 0.254315 kJ/mol"""), arrheniusLow=Arrhenius(A=(6.76443e+36,'m^3/(mol*s)'), n=-6.89648, Ea=(447.769,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.44406, dn = +|- 0.0486468, dEa = +|- 0.254315 kJ/mol"""), alpha=0.8422, T3=(125,'K'), T1=(2219,'K'), T2=(6882,'K'), efficiencies={Molecule(SMILES="O=C=O"): 2.0, Molecule(SMILES="[C-]#[O+]"): 1.5, Molecule(SMILES="[H][H]"): 2.0, Molecule(SMILES="O"): 6.0, Molecule(SMILES="[Ar]"): 0.7, Molecule(SMILES="C"): 2.0, Molecule(SMILES="CC"): 3.0, Molecule(SMILES="N#N"): 1.0})
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H5+O=C2H4+OH                                      3.100e+13 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(3.1e+13,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.11459, dn = +|- 0.0143626, dEa = +|- 0.0750848 kJ/mol
+C2H4+OH=C2H5+O                                      3.502e+12 0.324     66.4208  
+Reversed rate:       Arrhenius(A=(3.50193e+06,'m^3/(mol*s)'), n=0.323811, Ea=(277.905,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.11459, dn = +|- 0.0143626, dEa = +|- 0.0750848 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H5+OH=C2H4+H2O                                    1.000e+00 0.000     0.000    
+    PLOG/ 0.0010    1.300e+19 -1.960    0.2730   /
+    PLOG/ 0.0100    1.200e+19 -1.953    0.2390   /
+    PLOG/ 0.1000    4.100e+19 -2.101    0.6250   /
+    PLOG/ 1.0000    7.900e+22 -2.989    3.8630   /
+    PLOG/ 10.0000   2.800e+24 -3.329    7.7490   /
+    PLOG/ 100.0000  4.700e+18 -1.581    7.9990   /
+Forwards rate:       PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100],'atm'), arrhenius=[Arrhenius(A=(1.3e+19,'cm^3/(mol*s)'), n=-1.96, Ea=(273,'cal/mol'), T0=(1,'K')), Arrhenius(A=(1.2e+19,'cm^3/(mol*s)'), n=-1.9533, Ea=(239,'cal/mol'), T0=(1,'K')), Arrhenius(A=(4.1e+19,'cm^3/(mol*s)'), n=-2.1007, Ea=(625,'cal/mol'), T0=(1,'K')), Arrhenius(A=(7.9e+22,'cm^3/(mol*s)'), n=-2.9892, Ea=(3863,'cal/mol'), T0=(1,'K')), Arrhenius(A=(2.8e+24,'cm^3/(mol*s)'), n=-3.3287, Ea=(7749,'cal/mol'), T0=(1,'K')), Arrhenius(A=(4.7e+18,'cm^3/(mol*s)'), n=-1.5805, Ea=(7999,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+C2H4+H2O=C2H5+OH                                    1.000e+00 0.000     0.000    
+    PLOG/ 0.0010    8.594e+18 -1.560    82.8312  /
+    PLOG/ 0.0100    7.932e+18 -1.553    82.7972  /
+    PLOG/ 0.1000    2.710e+19 -1.700    83.1832  /
+    PLOG/ 1.0000    5.222e+22 -2.589    86.4212  /
+    PLOG/ 10.0000   1.851e+24 -2.928    90.3072  /
+    PLOG/ 100.0000  3.107e+18 -1.180    90.5572  /
+Reversed rate:       PDepArrhenius(pressures=([0.00101325,0.0101325,0.101325,1.01325,10.1325,101.325],'bar'), arrhenius=[Arrhenius(A=(8.59351e+12,'m^3/(mol*s)'), n=-1.55978, Ea=(346.566,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.03073, dn = +|- 0.00401704, dEa = +|- 0.0205437 kJ/mol"""), Arrhenius(A=(7.93247e+12,'m^3/(mol*s)'), n=-1.55308, Ea=(346.424,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.03073, dn = +|- 0.00401704, dEa = +|- 0.0205437 kJ/mol"""), Arrhenius(A=(2.71026e+13,'m^3/(mol*s)'), n=-1.70048, Ea=(348.039,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.03073, dn = +|- 0.00401704, dEa = +|- 0.0205437 kJ/mol"""), Arrhenius(A=(5.22221e+16,'m^3/(mol*s)'), n=-2.58898, Ea=(361.586,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.03073, dn = +|- 0.00401704, dEa = +|- 0.0205437 kJ/mol"""), Arrhenius(A=(1.85091e+18,'m^3/(mol*s)'), n=-2.92848, Ea=(377.845,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.03073, dn = +|- 0.00401704, dEa = +|- 0.0205437 kJ/mol"""), Arrhenius(A=(3.10689e+12,'m^3/(mol*s)'), n=-1.18028, Ea=(378.891,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.03073, dn = +|- 0.00401704, dEa = +|- 0.0205437 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H5+CH3=C2H4+CH4                                   9.000e+11 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(9e+11,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.3305, dn = +|- 0.0378041, dEa = +|- 0.197632 kJ/mol
+C2H4+CH4=C2H5+CH3                                   1.954e+12 0.497     68.8816  
+Reversed rate:       Arrhenius(A=(1.95369e+06,'m^3/(mol*s)'), n=0.496745, Ea=(288.201,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.3305, dn = +|- 0.0378041, dEa = +|- 0.197632 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H5+C2H5=C2H6+C2H4                                 1.500e+12 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(1.5e+12,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.18795, dn = +|- 0.0228011, dEa = +|- 0.119199 kJ/mol
+C2H6+C2H4=C2H5+C2H5                                 8.023e+13 0.111     64.7936  
+Reversed rate:       Arrhenius(A=(8.0232e+07,'m^3/(mol*s)'), n=0.11097, Ea=(271.096,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.18795, dn = +|- 0.0228011, dEa = +|- 0.119199 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H4+O=CH3+H+CO                                     2.335e+22 -2.473    21.4213  
+DUPLICATE
+! Library reaction: Unclassified
+C2H4+O=CH3+H+CO                                     3.711e+23 -2.473    26.7823  
+DUPLICATE
+
+Forwards rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(2.335e+22,'cm^3/(mol*s)'), n=-2.473, Ea=(21421.3,'cal/mol'), T0=(1,'K')), Arrhenius(A=(3.711e+23,'cm^3/(mol*s)'), n=-2.473, Ea=(26782.3,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.79414, dn = +|- 0.0773837, dEa = +|- 0.404546 kJ/mol
+CH3+H+CO=C2H4+O                                     6.333e+18 -1.969    32.5341  
+DUPLICATE
+! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.79414, dn = +|- 0.0773837, dEa = +|- 0.404546 kJ/mol
+CH3+H+CO=C2H4+O                                     1.007e+20 -1.969    37.8951  
+DUPLICATE
+
+Reversed rate:       MultiArrhenius(arrhenius=[Arrhenius(A=(6.33337e+06,'m^6/(mol^2*s)'), n=-1.96913, Ea=(136.123,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.79414, dn = +|- 0.0773837, dEa = +|- 0.404546 kJ/mol"""), Arrhenius(A=(1.00656e+08,'m^6/(mol^2*s)'), n=-1.96913, Ea=(158.553,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.79414, dn = +|- 0.0773837, dEa = +|- 0.404546 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H4+HO2=C2H5+O2                                    1.000e+00 0.000     0.000    
+    PLOG/ 0.0132    2.800e+12 -0.447    12.6585  /
+    PLOG/ 0.9869    3.407e+08 0.818     12.0899  /
+    PLOG/ 9.8692    9.504e+14 -1.012    16.5820  /
+    PLOG/ 98.6923   2.553e+22 -3.074    22.6352  /
+Forwards rate:       PDepArrhenius(pressures=([0.01316,0.98692,9.86923,98.6923],'atm'), arrhenius=[Arrhenius(A=(2.8e+12,'cm^3/(mol*s)'), n=-0.447, Ea=(12658.5,'cal/mol'), T0=(1,'K')), Arrhenius(A=(3.407e+08,'cm^3/(mol*s)'), n=0.818, Ea=(12089.9,'cal/mol'), T0=(1,'K')), Arrhenius(A=(9.504e+14,'cm^3/(mol*s)'), n=-1.012, Ea=(16582,'cal/mol'), T0=(1,'K')), Arrhenius(A=(2.553e+22,'cm^3/(mol*s)'), n=-3.074, Ea=(22635.2,'cal/mol'), T0=(1,'K'))])
+Reversed reaction:   ! Library reaction: Unclassified
+C2H5+O2=C2H4+HO2                                    1.000e+00 0.000     0.000    
+    PLOG/ 0.0132    5.827e+12 -0.556    -0.4209  /
+    PLOG/ 0.9869    7.090e+08 0.709     -0.9895  /
+    PLOG/ 9.8692    1.978e+15 -1.121    3.5026   /
+    PLOG/ 98.6923   5.313e+22 -3.183    9.5558   /
+Reversed rate:       PDepArrhenius(pressures=([0.0133344,0.999997,10,100],'bar'), arrhenius=[Arrhenius(A=(5.82699e+06,'m^3/(mol*s)'), n=-0.556284, Ea=(-1.76087,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.01362, dn = +|- 0.00179606, dEa = +|- 0.00918535 kJ/mol"""), Arrhenius(A=(709.02,'m^3/(mol*s)'), n=0.708716, Ea=(-4.14014,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.01362, dn = +|- 0.00179606, dEa = +|- 0.00918535 kJ/mol"""), Arrhenius(A=(1.97785e+09,'m^3/(mol*s)'), n=-1.12128, Ea=(14.6548,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.01362, dn = +|- 0.00179606, dEa = +|- 0.00918535 kJ/mol"""), Arrhenius(A=(5.31297e+16,'m^3/(mol*s)'), n=-3.18328, Ea=(39.9815,'kJ/mol'), T0=(1,'K'), Tmin=(294.118,'K'), Tmax=(2000,'K'), comment="""Fitted to 30 data points; dA = *|/ 1.01362, dn = +|- 0.00179606, dEa = +|- 0.00918535 kJ/mol""")])
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H+O=CH+CO                                         5.000e+13 0.000     0.0000   
+Forwards rate:       Arrhenius(A=(5e+13,'cm^3/(mol*s)'), n=0, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.06373, dn = +|- 0.00817891, dEa = +|- 0.0427576 kJ/mol
+CH+CO=C2H+O                                         2.692e+10 1.001     78.5185  
+Reversed rate:       Arrhenius(A=(26915.1,'m^3/(mol*s)'), n=1.00086, Ea=(328.521,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.06373, dn = +|- 0.00817891, dEa = +|- 0.0427576 kJ/mol""")
+
+================================================================================
+Forwards reaction:   ! Library reaction: Unclassified
+C2H+O2=CO+CO+H                                      4.700e+13 -0.160    0.0000   
+Forwards rate:       Arrhenius(A=(4.7e+13,'cm^3/(mol*s)'), n=-0.16, Ea=(0,'cal/mol'), T0=(1,'K'))
+Reversed reaction:   ! Library reaction: Unclassified
+! Fitted to 29 data points; dA = *|/ 1.22283, dn = +|- 0.0266324, dEa = +|- 0.139229 kJ/mol
+CO+CO+H=C2H+O2                                      1.520e+11 0.674     136.4320 
+Reversed rate:       Arrhenius(A=(0.152006,'m^6/(mol^2*s)'), n=0.674331, Ea=(570.831,'kJ/mol'), T0=(1,'K'), Tmin=(303.03,'K'), Tmax=(2000,'K'), comment="""Fitted to 29 data points; dA = *|/ 1.22283, dn = +|- 0.0266324, dEa = +|- 0.139229 kJ/mol""")
+
+================================================================================

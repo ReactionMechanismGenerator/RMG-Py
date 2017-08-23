@@ -1,0 +1,3338 @@
+! release date: 2016-07-18; 68 species, 631 reactions
+! ---------------------------------------------------------------------------------------------------------- !
+! -------------       | DTU mechanism    
+! -------------       | Peter Glarborg   pgl@kt.dtu.dk
+! -------------       | Hamid Hashemi    hah@kt.dtu.dk 
+! -------------       | DTU Chemical Engineering	 
+! -------------       
+! -------------       | http://www.chec.kt.dtu.dk/
+! -------------       | CHEC (Combustion and Harmful Emission Control) 
+! -------------       | Technical University of Denmark
+! -------------       | Department of Chemical and Biochemical Engineering
+! -------------       | Søltofts Plads, Building 229
+! -------------       | 2800  Kgs. Lyngby, Denmark
+! ---------------------------------------------------------------------------------------------------------- !
+
+! ----- Ref:
+! ----- H. Hashemi, J. M. Christensen, S. Gersen, H. Levinskyb, S.J. Klippenstein, P. Glarborg, 
+! ----- "High-Pressure Oxidation of Methane", Combust. Flame (2016), in Press (doi: 10.1016/j.combustflame.2016.07.016)
+!
+! ----- H. Hashemi, J. M. Christensen, S. Gersen, P. Glarborg, "Hydrogen oxidation at high pressure and
+! ----- intermediate temperatures: Experiments and kinetic modeling", Proc. Combust. Inst. 35 (2015) 553–560.
+! 
+! ----- J.G. Lopez, C.L.Rasmussen, H. Hashemi, M.U. Alzueta, Y. Gao, P. Marshall, C.F. Goldsmith, P. Glarborg,
+! ----- "Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure", Int. J. Chem. Kinet. (2016), in Press
+! 
+! ---------------------------------------------------------------------------------------------------------- !
+! ---------------------------------------------------------------------------------------------------------- !
+
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> !
+!     PRIOR TO ITS USE IN THE CALCULATIONS, THIS FILE HAS TO BE MODIFIED.
+!     DEPENDING ON WHAT BATH GAS (DILUTANT) IS MOST ABUNDANT IN YOUR SYSTEM
+!     (THE PRESENT CHOICES ARE N2, AR, OR HE),  YOU  SHOULD UNCOMMENT THE
+!     CORRESPONDING BLOCK FOR THE REACTION H+O2(+M)=HO2(+M), AND COMMENT THE
+!     BLOCK FOR OTHER DILUTANT(S).  AS GIVEN, THE MAIN DILUTANT IS SET TO BE N2.
+!
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> !
+ELEMENTS
+H O C N AR HE
+END
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> !
+
+
+
+SPECIES !---------------------------------------------------!
+!                 !            !  MOLECULAR !  COMPOSITION  !
+!                 ! CAS Number !   WEIGHT   !               !
+!-----------------------------------------------------------!
+H                 !            !    1.008   !     H1        !
+H2                !            !   2.0159   !     H2        !
+HE                !            !   4.0026   !               !
+O                 !            !   15.999   !         O1    !
+OH                !            !   17.007   !     H1  O1    !
+H2O               !            !   18.015   !     H2  O1    !
+N2                !            !   28.013   !             N2!
+O2                !            !   31.999   !         O2    !
+HO2               !            !   33.007   !     H1  O2    !
+H2O2              !            !   34.015   !     H2  O2    !
+AR                !            !   39.948   !               !
+                  !            !            !               !
+                  !            !            !               !
+!----------------          C1         ----------------------!
+C                 !            !   12.011   ! C1            !
+CH                !            !   13.019   ! C1  H1        !
+CH2               !            !   14.027   ! C1  H2        !
+CH2(S)            !            !   14.027   ! C1  H2        !
+CH3               !            !   15.035   ! C1  H3        !
+CH4               !            !   16.043   ! C1  H4        !
+CO                !            !   28.011   ! C1      O1    !
+HCO               !            !   29.019   ! C1  H1  O1    !
+CH2O              ! 50-00-0    !   30.026   ! C1  H2  O1    !
+HCOH              ! 19710-56-6 !   30.026   ! C1  H2  O1    !
+CH3O              !  2143-68-2 !   31.034   ! C1  H3  O1    !
+CH2OH             ! 2597-43-5  !   31.034   ! C1  H3  O1    !
+CH3OH             ! 67-56-1    !   32.042   ! C1  H4  O1    !
+CO2               ! 124-38-9   !    44.01   ! C1      O2    !
+HOCO              !            !   45.018   ! C1  H1  O2    !
+OCHO              !            !   45.018   ! C1  H1  O2    !
+HOCHO             ! 64-18-6    !   46.026   ! C1  H2  O2    !
+CH3OO             ! 2143-58-0  !   47.034   ! C1  H3  O2    !
+CH2OOH            !            !   47.034   ! C1  H3  O2    !
+HOCH2O            !            !   47.034   ! C1  H3  O2    !
+CH3OOH            !            !   48.042   ! C1  H4  O2    !
+! OCH2O2H         !            !   63.033   ! C1  H3  O3    !
+                  !            !            !               !
+!----------------          C2         ----------------------!
+C2                ! 12070-15-4 !   24.022   ! C2            !
+C2H               !            !    25.03   ! C2  H1        !
+C2H2              ! 74-86-2    !   26.038   ! C2  H2        !
+H2CC              ! 2143-69-3  !   26.038   ! C2  H2        !
+C2H3              ! 2669-89-8  !   27.046   ! C2  H3        !
+C2H4              ! 74-85-1    !   28.054   ! C2  H4        !
+C2H5              ! 2025-56-1  !   29.062   ! C2  H5        !
+C2H6              ! 74-84-0    !    30.07   ! C2  H6        !
+C2O               ! 12071-23-7 !   40.022   ! C2      O1    !
+HCCO              ! 51095-15-9 !    41.03   ! C2  H1  O1    !
+HCCOH             ! 32038-79-2 !   42.038   ! C2  H2  O1    !
+CH2CO             ! 463-51-4   !   42.038   ! C2  H2  O1    !
+CHCHO             !            !   42.038   ! C2  H2  O1    !
+CHCHOH            !            !   43.046   ! C2  H3  O1    !
+cC2H3O            ! 31586-84-2 !   43.046   ! C2  H3  O1    !
+CH3CO             !  3170-69-2 !   43.046   ! C2  H3  O1    !
+CH2CHO            ! 6912-06-7  !   43.046   ! C2  H3  O1    !
+CH3CHO            ! 75-07-0    !   44.054   ! C2  H4  O1    !
+cC2H4O            ! 75-21-8    !   44.054   ! C2  H4  O1    !
+CH2CHOH           ! 557-75-5   !   44.054   ! C2  H4  O1    !
+CH3CH2O           ! 2154-50-9  !   45.062   ! C2  H5  O1    !
+CH3CHOH           ! 2348-46-1  !   45.062   ! C2  H5  O1    !
+CH2CH2OH          ! 4422-54-2  !   45.062   ! C2  H5  O1    !
+! CH3OCH2         ! 16520-04-0 !   45.062   ! C2  H5  O1    !
+CH3CH2OH          ! 64-17-5    !    46.07   ! C2  H6  O1    !
+! CH3OCH3         ! 115-10-6   !    46.07   ! C2  H6  O1    !
+OCHCO             !            !   57.029   ! C2  H1  O2    !
+OCHCHO            ! 107-22-2   !   58.037   ! C2  H2  O2    !
+CH2CHOO           !            !   59.045   ! C2  H3  O2    !
+CH3C(O)O          !            !   59.045   ! C2  H3  O2    !
+! CH3OCO          !            !   59.045   ! C2  H3  O2    !
+! OCH2CHO         !            !   59.045   ! C2  H3  O2    !
+! CH2OCHO         !            !   59.045   ! C2  H3  O2    !
+CH2CHOOH          !            !   60.053   ! C2  H4  O2    !
+! CH3OCHO         ! 107-31-3   !   60.053   ! C2  H4  O2    !
+CH3CH2OO          !            !   61.061   ! C2  H5  O2    !
+CH3CHOOH          !            !   61.061   ! C2  H5  O2    !
+CH2CH2OOH         ! 126898-98-4!   61.061   ! C2  H5  O2    !
+! CH3OCH2O        !            !   61.061   ! C2  H5  O2    !
+CH3CH2OOH         !  3031-74-1 !   62.069   ! C2  H6  O2    !
+! CH3OCH2OH       !            !   62.069   ! C2  H6  O2    !
+! CHOOCO          !            !   73.028   ! C2  H1  O3    !
+! CYOCH2OC*O      !            !   74.036   ! C2  H2  O3    !
+! OOCH2CHO        !            !   75.044   ! C2  H3  O3    !
+! HOOCH2CO        !            !   75.044   ! C2  H3  O3    !
+! OCH2OCHO        !            !   75.044   ! C2  H3  O3    !
+! HOCH2OCO        !            !   75.044   ! C2  H3  O3    !
+! CH3OC*OO        !            !   75.044   ! C2  H3  O3    !
+CH3C(O)OO         ! 36709-10-1 !   75.044   ! C2  H3  O3    !
+CH3C(O)OOH        !            !   76.052   ! C2  H4  O3    !
+HOCH2CH2OO        ! 40135-01-1 !    77.06   ! C2  H5  O3    !
+! CH3OCH2OO       !            !    77.06   ! C2  H5  O3    !
+! CH2OCH2OOH      !            !    77.06   ! C2  H5  O3    !
+! CH3OCH2OOH      !            !   78.068   ! C2  H6  O3    !
+! CH2OC*OOOH      !            !   91.044   ! C2  H3  O4    !
+! OOCH2OCHO       !            !   91.044   ! C2  H3  O4    !
+! HOOCH2OC*O      !            !   91.044   ! C2  H3  O4    !
+! CH3OC*OOO       !            !   91.044   ! C2  H3  O4    !
+! HO2CH2OCHO      !            !   92.052   ! C2  H4  O4    !
+! CH3OC*OOOH      !            !   92.052   ! C2  H4  O4    !
+! O*CHOC*OOOH     !            !   106.04   ! C2  H2  O5    !
+! O2CH2OCH2O2H    !            !   109.06   ! C2  H5  O5    !
+! OOCH2OC*OOOH    !            !   123.04   ! C2  H3  O6    !
+! HOOCH2OC*OOO    !            !   123.04   ! C2  H3  O6    !
+END !-------------------------------------------------------!
+
+
+
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> !
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> !
+! <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> !
+REACTIONS
+
+
+! *****************************************************************************
+!    H2/O2 subset                                                             *
+! *****************************************************************************
+!=====================================================================
+! MAIN BATH GAS IS N2 (comment this reaction otherwise)
+!
+H+O2(+M)=HO2(+M)                     4.7E12   0.440       0 !
+ LOW/6.366E+20 -1.72  5.248E+02/
+ TROE/0.5  1E-30  1E+30/
+ H2/2.0/ H2O/14/ O2/0.78/ CO/1.9/ CO2/3.8/ AR/0.67/
+!=====================================================================
+! MAIN BATH GAS IS AR (comment this reaction otherwise)
+!
+!H+O2(+M)=HO2(+M)                     4.7E12   0.440       0 !
+! LOW/9.042E+19 -1.50  4.922E+02/
+! TROE/0.5 1E-30  1E+30/
+! H2/3.0/ H2O/21/ O2/1.1/ CO/2.7/ CO2/5.4/ N2/1.5/
+!=====================================================================
+! High-pressure limit from Troe, Proc. Comb. Inst. 28:1463-1469 (2000)
+! Low-pressure  limit from Michael et al., J. Phys. Chem. A 106:5297-5313
+! Centering factors from Fernandes et al., Phys. Chem. Chem. Phys. 10:4313-4321 (2008)
+
+H+O2=O+OH                            1.0E14   0.000   15286 !
+! Hong et al., Proc. Comb. Inst. 33:309-316 (2011)
+
+O+H2=OH+H                            3.8E12   0.000    7948 !
+ DUPLICATE                                                  !
+O+H2=OH+H                            8.8E14   0.000   19175 !
+ DUPLICATE                                                  !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+OH+H2=H+H2O                          2.2E08   1.510    3430 !
+! Michael and Sutherland, J. Phys. Chem. 92:3853 (1988)
+
+!OH+OH=O+H2O                          1.4E07   1.689   -1167 !
+! DUPLICATE
+!OH+OH=O+H2O                         -2.7E10   0.567       0 !
+! DUPLICATE
+! M. Sangwan, L. N. Krasnoperov, J Phys Chem A 116 (2012) 11817–11822.
+OH+OH=O+H2O							2.015E+07   1.651    630.7
+DUPLICATE
+OH+OH=O+H2O							2.595E+11   -0.057   -827.0
+DUPLICATE
+! Refitted (400-3000 K) for better stability of the solver
+
+H2+M=H+H+M                           4.6E19  -1.400  104380 !
+ H2/2.5/ H2O/12/ CO/1.9/ CO2/3.8/ AR/0.0/
+H2+AR=H+H+AR                         5.8E18  -1.100  104380 !
+! Tsang and Hampson, J. Phys. Chem. Ref. Data, 15:1087 (1986)
+
+H+O+M=OH+M                           4.7E18  -1.000       0 !
+ H2/2.5/  H2O/12/ AR/0.75/ CO/1.9/  CO2/3.8/
+! Tsang and Hampson, J. Phys. Chem. Ref. Data, 15:1087 (1986)
+
+O+O+M=O2+M                           1.9E13   0.000   -1788 !
+ H2/2.5/ H2O/12/ AR/0.0/ CO/1.9/ CO2/3.8/
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+H2O+M = H+OH+M                       6.1E27  -3.322  120790 !
+ H2/3.0/ H2O/0.0/ N2/2.0/ O2/1.5/ CO/1.9/ CO2/3.8/
+! Srinivasan and Michael, Int. J. Chem. Kinetic. 38 (2006)
+! Rate constant is for Ar with efficiencies from Michael et al., J. Phys. Chem. A, 106 (2002)
+! Efficiencies for CO and CO2 taken from Li et al., Int. J. Chem. Kinet. 36:566-575 (2004)
+H2O+H2O = H+OH+H2O                   1.0E26  -2.440  120180 !
+! Srinivasan and Michael, Int. J. Chem. Kinetic. 38 (2006)
+
+HO2+H=H2+O2                          2.8E06   2.090   -1451 !
+! Michael et al., Proc. Comb. Inst. 28:1471 (2000)
+! Scaled by 0.75 Burke et al. (2012)
+
+HO2+H=OH+OH                          7.1E13   0.000     295 !
+! Mueller et al., Int. J. Chem. Kinetic. 31:113 (1999)
+
+HO2+H=H2O+O                          1.4E12   0.000       0 !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+HO2+O=O2+OH                          2.9E10   1.000    -724 !
+! Fernandez-Ramos and Varandas, J. Phys. Chem. A 106:4077-4083 (2002)
+! Scaled by 0.60 by Burke et al. 2012
+
+HO2+OH = H2O+O2                      1.9E20  -2.490     584 !
+ DUPLICATE
+HO2+OH = H2O+O2                      1.2E09   1.240   -1310 !
+ DUPLICATE
+! M. P. Burke, S. J. Klippenstein, L. B. Harding, Proc Combust Inst 34 (2013) 547–555.
+
+HO2+HO2=H2O2+O2                      1.2E09   0.7712  -1825 !
+ DUPLICATE
+HO2+HO2=H2O2+O2                      1.3E12   0.295    7397 !                   	
+   DUPLICATE
+! D. D. Y. Zhou, K. Han, P. Zhang, L. B. Harding, M. J. Davis, R. T. Skodje, J Phys Chem A 116 (2012) 2089–2100.
+
+H2O2(+M) = OH+OH(+M)                 2.0E12   0.900   48749 !
+ LOW/                                2.5E24  -2.300   48749/
+ TROE/0.43 1E-30 1E+30/
+ AR/1.0/ H2O/7.5/ CO2/1.6/ N2/1.5/ O2/1.2/ H2O2/7.7/ H2/3.7/ CO/2.8/
+! Troe, Combust. Flame 158:594-601 (2011)
+! Efficiencies for H2 and CO taken from Li et al., Int. J. Chem. Kinet. 36:566-575 (2004)
+
+H2O2+H=H2O+OH                        2.4E13   0.000    3970 !
+! Tsang and Hampson, J. Phys. Chem. Ref. Data, 15:1087 (1986)
+
+H2O2+H=HO2+H2                        4.8E13   0.000    7950 !
+! Tsang and Hampson, J. Phys. Chem. Ref. Data, 15:1087 (1986)
+
+H2O2+O=HO2+OH                        9.6E06   2.000    3970 !
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+H2O2+OH=HO2+H2O                      1.7E12   0.000     318 !
+   DUPLICATE
+H2O2+OH=HO2+H2O                      7.6E13   0.000    7270 !
+   DUPLICATE
+! Hong et al., J. Phys. Chem. A  114 (2010) 5718–5727
+
+! *****************************************************************************
+! *     CO/CO2	subset	                                                      *
+! *****************************************************************************
+
+CO+O(+M)=CO2(+M)                     1.8E10   0.000    2384 !
+ LOW  /                              1.4E24  -2.790    4191/                                  !
+ TROE /1.0 1E-30 1E30 1E30/                                 !
+ H2/2.5/ H2O/12/ CO/1.9/ CO2/3.8/                           !
+! Mueller MA Yetter RA Dryer FL IJCK 31:705 1999
+
+CO+OH=CO2+H                          8.7E05   1.730    -685 !
+ PLOG/  0.01315                      2.1E05   1.900   -1064/
+ PLOG/  0.1315                       2.5E05   1.880   -1043/
+ PLOG/  1.315                        8.7E05   1.730    -685/				
+ PLOG/ 13.158                        6.8E06   1.480      48/
+ PLOG/ 131.58                        2.3E07   1.350     974/
+! J.P. Senosiain, S.J. Klippenstein, J.A. Miller, Proc. Combust. Inst. 30 (2005) 945-953.
+
+CO+OH=HOCO                           2.0E20  -3.500    1309 !  1.0 atm interpolation - LPL (JPS,SJK,&JAM 30th Symp)
+ PLOG/ 0.013158                      1.7E15  -2.680     859/						
+ PLOG/ 0.13158                       5.9E18  -3.350     887/					
+ PLOG/ 1.3158	                     2.6E20  -3.500    1309/						
+ PLOG/ 13.158	                     7.1E20  -3.320    1763/					
+ PLOG/ 131.58                        1.1E20  -2.780    2056/	
+! J.P. Senosiain, S.J. Klippenstein, J.A. Miller, Proc. Combust. Inst. 30 (2005) 945-953.	
+
+CO+HO2=CO2+OH                        1.6E05   2.180   17943 !
+! You X Wang H Goos E Sung C-J Klippenstein SJ JCPA 111:4031-4042 2007
+
+CO+O2=CO2+O                          4.7E12   0.000   60500 !
+! Bacskay GB Mackie JC JPCA 109:2019-2025 2005
+
+CO+H2O2=HOCO+OH                      3.6E04   2.500   28660 !
+! P Glarborg P Marshall CPL 475 (2009) 40-43
+
+HOCO(+M)=CO2+H(+M)                   8.2E11   0.413   35335 !
+ LOW  /                              6.0E26  -3.148   37116 /                               !
+ TROE / 0.39 1.0E-30 1.0E30 /                               ! Fc = 0.39
+! DM Golden GP Smith AB McEwen C-L Yu B Eiteneer M Frenklach GL Vaghjiani AR Ravishankara FP Tully J Phys Chem. A 102 (1998) 8598-8606.
+
+
+HOCO+H=CO2+H2                        3.1E17  -1.3475    555 !
+! H.G. Yu, J.S. Francisco, J. Chem. Phys. 128 (2008) 244315.
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160 (300-1000 K, fit).
+
+HOCO+H=CO+H2O                        6.0E15  -0.525    2125 !
+! H.G. Yu, J.S. Francisco, J. Chem. Phys. 128 (2008) 244315.
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160 (300-1000 K, fit).
+
+HOCO+O=CO2+OH                        9.0E12   0.000       0 !
+! H.G. Yu, J.T. Muckerman, J.S. Francisco, J. Chem. Phys. 127 (2007) 094302.
+
+HOCO+OH=CO2+H2O                      4.6E12   0.000     -89 !
+ DUPLICATE                                                  !
+HOCO+OH=CO2+H2O                      9.5E06   2.000     -89 !
+ DUPLICATE                                                  !
+! Yu H-G Muckerman JT Francisco JS JPCA 109:5230-5236 2005
+
+HOCO+HO2=CO2+H2O2                    4.0E13   0.000       0 !
+! H.G. Yu, G. Poggi, J.S. Francisco, J.T. Muckerman, J. Chem. Phys. 129 (2008) 214307.
+
+HOCO+O2=CO2+HO2                      4.0E09   1.000       0 !
+! H.G. Yu, J.T. Muckerman, J. Phys. Chem. A 110 (2006) 5312-5316.
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160 (300-1000 K, fit).	
+	
+	
+! *****************************************************************************
+!    CH2O subset                                                              *
+! *****************************************************************************
+CH2O(+M)=HCO+H(+M)                   8.0E15   0.000   87726 !
+ LOW /                               1.3E36  -5.500   93932/
+! Troe J JPCA 109:8320-8328 2005
+! J. Troe, J. Phys. Chem. A 111 (2007) 3862–3867.
+
+CH2O(+M)=CO+H2(+M)                   3.7E13   0.000   71969 !
+ LOW /                               4.4E38  -6.100   93932/
+! Troe J JPCA 109:8320-8328 2005
+! J. Troe, J. Phys. Chem. A 111 (2007) 3862–3867.
+
+	!CH2O+H=HCO+H2                        5.9E03   3.130    1510 !
+	! Wang SK Dames EE Davidson DF Hanson RK, J. Phys. Chem. A  118 10201-10209 2014
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH2O+H=H+CO+H2	5.11E+07	2.182	11524	
+PLOG/0.04		7.20E+08	1.903	11733	/
+PLOG/1			5.11E+07	2.182	11524	/
+PLOG/10			1.16E+09	1.812	13163	/
+CH2O+H=HCO+H2	1	1	1
+PLOG/0.04		7.435E+23   -2.732   16379.1  /
+PLOG/0.04      	2.098E+10   1.057   3719.6    / 
+PLOG/1			1.357E+23   -2.355   17518.7  /
+PLOG/1      	1.639E+15   -0.444   5682.4   / 
+PLOG/10			7.314E+23   -2.665   17634.6  /
+PLOG/10			4.189E+09   1.294   3590.9    / 
+
+	!CH2O+O=HCO+OH                        4.2E11   0.570    2760 !
+	! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005	
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH2O+O=H+CO+OH          2.5141e+21          -1.903           22674
+CH2O+O=HCO+OH 		5.634E+31   -5.189   19968.2
+DUPLICATE
+CH2O+O=HCO+OH 		 1.358E+15   -0.530   4010.7
+DUPLICATE
+
+	! CH2O+O2=HCO+HO2                      2.4E05   2.500   36461 !
+	! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH2O+O2=HCO+HO2          2.4E05   2.500   36461
+     DUPLICATE
+CH2O+O2=HCO+HO2          -1.437E+15   0.027   56388.3
+     DUPLICATE
+CH2O+O2=H+CO+HO2          1.437E+15   0.027   56388.3
+
+	!CH2O+OH=HCO+H2O                      2.4E07   1.830   -1116 !
+	! S. Wang, D. F. Davidson, R. K. Hanson, Proc. Combust. Inst. 35 473-480 2015
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH2O+OH=H+CO+H2O	7.24E+10	0.892	9310	
+PLOG/0.04			7.03E+10	0.911	8646	/
+PLOG/1				7.24E+10	0.892	9310	/
+PLOG/10				8.37E+10	0.879	9843	/
+CH2O+OH=HCO+H2O		1.854E+09   1.256   -302.4
+PLOG/0.04		3.559E+09   1.167   -205.7    /  
+PLOG/1			1.854E+09   1.256   -302.4    /  
+PLOG/10        1.070E+09   1.330   -391.7    /  
+
+	
+! CH2O+HO2=HCO+H2O2                    4.1E04   2.500   10206 ! RAS/GLA08b EIT/FRE98
+! Eiteneer B Yu CL Goldenberg M Frenklach M JPCA 102:5196 1998
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH2O+HO2=HCO+H2O2                    4.1E04   2.500   10206 
+     DUPLICATE
+CH2O+HO2=HCO+H2O2          -2.454E+14   0.027   30133.3
+     DUPLICATE
+CH2O+HO2=H+CO+H2O2 		2.4543e+14          0.027           30120
+
+! CH2O+CH3=HCO+CH4                     3.2E01   3.360    4310 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH2O+CH3=HCO+CH4                     3.2E01   3.360    4310
+     DUPLICATE
+CH2O+CH3=HCO+CH4          -1.916E+11   0.887   24237.3
+     DUPLICATE
+CH2O+CH3=H+CO+CH4 		1.9155e+11          0.887           24224
+
+HCO(+M)=H+CO(+M)             4.93E16  -0.93  19724     					
+  LOW/ 7.43E21  -2.36  19383/								
+  TROE/ 0.103  139. 10900. 4550/								
+  N2/1.5/ HE/1.3/ O2/1.5/ CO/1.5/   H2/2.0/  CH4/5.0/ CO2/3./ H2O/15./
+! Yang et al., 8th U. S. National Combustion Meeting, 2013, 070RK-0163.
+
+ HCO+H=CO+H2                          1.1E14   0.000       0 
+! Friedrichs G Herbon JT Davidson DF Hanson RK CPPC 4:5778-5788 2002
+
+HCO+O=CO+OH                          3.0E13   0.000       0 
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+
+HCO+O=CO2+H                          3.0E13   0.000       0 
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+
+HCO+OH=CO+H2O                        1.1E14   0.000       0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+HCO+O2=CO+HO2                        6.9E06   1.900   -1369 
+! FassheberN Friedrichs G Marshall P Glarborg P J. Phys. Chem. A 119 (2015) 7305-7315.
+
+HCO+HO2=CO2+OH+H                     3.0E13   0.000       0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+HCO+HCO=CO+CH2O                      2.7E13   0.000       0 
+! Friedrichs G Herbon JT Davidson DF Hanson RK CPPC 4:5778-5788 2002
+	
+! *****************************************************************************
+!    CH4 subset                                                               *
+! *****************************************************************************
+
+CH3+H(+M)=CH4(+M)                    2.3E14   0.032     144 
+  LOW/2.7E35 -5.345 3380/
+  TROE /0.395 163.5 4250.3 1253676/
+  AR/0.61/ CH4/3.85/  H2O/10/ H2/4/ CO/1.4/ CO2/4/ C2H6/4.5/ N2/1.4/ HE/2/ 
+! J. Troe, V. G. Ushakov, J. Chem. Phys. 136 (2012) 214309
+
+CH4+H=CH3+H2                         4.1E03   3.156    8755
+! Sutherland JW Su M-C Michael JV IJCK 33:669-684 2001
+
+CH4+O=CH3+OH                         4.4E05   2.500    6577
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH4+OH=CH3+H2O                       1.0E06   2.182    2506
+! Srinivasan NK Su M-C Sutherland JW Michael JV JPCA 109:7902-7914 2005
+
+CH4+HO2=CH3+H2O2                     4.7E04   2.500   21000
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH4+O2=CH3+HO2					2.03E5  2.745  51714
+! Srinivasan, Michael, Harding, Klippenstein, Combust Flame 149, 104 (2007)
+
+CH4+CH2=CH3+CH3                      4.3E12   0.000   10030
+! Bohland T Dobe S Wagner HGg BBPC 89:1110 (1985)
+
+CH4+CH2(S)=CH3+CH3                   4.3E13   0.000       0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH4+CH=C2H4+H                        3.0E13   0.000    -400 
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+
+CH3+M=CH+H2+M                        3.1E15   0.00    80871
+! V Vasudevan, RK Hanson, DM Golden, CT Bowman, DF Davidson, J. Phys. Chem. A 2007, 111, 4062-4072
+
+CH3+M=CH2+H+M                        2.2E15   0.00    82659
+! V Vasudevan, RK Hanson, DM Golden, CT Bowman, DF Davidson, J. Phys. Chem. A 2007, 111, 4062-4072
+
+CH2+H2=CH3+H                         4.4E05   2.39     7350
+! K-W Lu, H Matsui, C-L Huang, P Raghunath, N-S Wang, MC Lin, J. Phys. Chem. A 2010, 114, 5493–5502
+
+CH2(S)+H2=CH3+H                      7.2E13   0.000       0 
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+
+CH3+O=CH2O+H                         6.9E13   0.000       0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3+O=H2+CO+H                        1.5E13   0.000       0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3+OH=CH2+H2O                       4.3E04   2.568    3997 
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+! 300-3000 K abstraction on the triplet surface (not in paper)
+
+CH3+OH=CH3OH           6.196e13 -0.01761 -33.26 ! 100-4000 K high P limit for CH3+OH total capture
+PLOG /    0.001316                   6.9E30  -6.63794  2829/ 
+PLOG /    0.013158                   1.1E32  -6.63695  3364/ 
+PLOG /    0.131579                   1.5E32  -6.36057  3954/
+PLOG /    1.315789                   5.6E30  -5.64842  4214/
+PLOG /   13.157895                   1.4E27  -4.33275  3685/
+PLOG /  131.578947                   1.3E22  -2.66369  2451/
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+
+CH3+OH=CH2(S)+H2O                    4.3E15  -0.85972  1888 !
+ PLOG /   0.001316                   1.1E14  -0.45845  -496 /
+ PLOG /   0.013158                   2.2E14  -0.53832  -220 /
+ PLOG /   0.131579                   1.2E15  -0.72747   600 /
+ PLOG /   1.315789                   4.3E15  -0.85972  1888 /
+ PLOG /  13.157895                   4.4E14  -0.53864  2932 /
+ PLOG / 131.578947                   6.1E10   0.59560  2923 /
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+
+CH3+OH=H2+CH2O                       3.6E12  -0.53245  2042 !
+ PLOG /   0.001316                   3.9E09   0.25392 -1221 /
+ PLOG /   0.013158                   2.0E10   0.06025  -624 /
+ PLOG /   0.131579                   2.8E11  -0.24957   498 /
+ PLOG /   1.315789                   3.6E12  -0.53245  2042 /
+ PLOG /  13.157895                   2.2E12  -0.43166  3415 /
+ PLOG / 131.578947                   2.4E09   0.45344  3791 /
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+!
+CH3+OH=H+CH2OH                       5.6E10   0.73966  3971 !
+ PLOG /   0.001316                   8.4E09   0.96279  3230 /
+ PLOG /   0.013158                   8.4E09   0.96279  3230 /
+ PLOG /   0.131579                   1.0E10   0.94201  3295 /
+ PLOG /   1.315789                   5.6E10   0.73966  3971 /
+ PLOG /  13.157895                   5.5E11   0.48620  5443 /
+ PLOG / 131.578947                   2.5E10   0.90920  6402 /
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+!
+CH3+OH=H+CH3O                        7.9E08   1.06457 11859 !
+ PLOG /   0.001316                   7.9E08   1.06509 11859 /
+ PLOG /   0.013158                   7.9E08   1.06509 11859 /
+ PLOG /   0.131579                   7.9E08   1.06509 11859 /
+ PLOG /   1.315789                   7.9E08   1.06457 11859 /
+ PLOG /  13.157895                   1.0E09   1.03413 11970 /
+ PLOG / 131.578947                   3.1E09   0.92189 12981 /
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+!
+CH3+OH=H2+HCOH                       6.5E11   0.11155   932 !
+ PLOG /   0.001316                   1.2E09   0.83024 -2323 /
+ PLOG /   0.013158                   6.4E09   0.63305 -1701 /
+ PLOG /   0.131579                   8.0E10   0.33964  -565 /
+ PLOG /   1.315789                   6.5E11   0.11155   932 /
+ PLOG /  13.157895                   2.1E11   0.29509  2200 /
+ PLOG / 131.578947                   9.4E07   1.28631  2424 /
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+! cis and trans products are combined as HCOH
+
+CH3+HO2=CH3O+OH                      1.0E12   0.2688    688
+! Jasper, Klippenstein, Harding, Proc. Combust. Inst. 32, 279 (2009)
+
+CH3+O2=CH3O+O                        7.5E12   0.000   28297 !
+! Srinivasan NK Su M-C Sutherland JW Michael JV JPCA 109:7902-7914 2005
+
+CH3+O2=CH2O+OH                       1.9E11   0.000    9842 !
+! Srinivasan NK Su M-C Sutherland JW Michael JV JPCA 109:7902-7914 2005
+
+CH3+O2=CH3OO                    5.0E22    -3.85    2000
+  PLOG/ 1.0		                5.0E22   -3.85    2000/
+  PLOG/10.0						3.35E21  -3.20    2300/
+  PLOG/20.0						3.25E29  -5.6     6850/
+  PLOG/50.0		                2.83E18  -2.20    1400/
+  PLOG/100.0					1.05E19  -2.30    1800/
+duplicate
+CH3+O2=CH3OO                    5.0E22    -3.85    2000
+  PLOG/20.0						4.10E20  -2.94    1900/
+  PLOG/50.0		                5.60E28  -5.25    6850/
+  PLOG/100.0					4.10E30  -5.7     8750/
+duplicate
+! Fernandes RX Luther K Troe J JPCA 110:4442-4449 2006 (fit to data)
+
+CH3+HCO=CH4+CO                       1.8E20  -2.300    4781
+ PLOG/ 5.00E-02                      2.9E18  -1.840    2134/
+ PLOG/ 1.00E-01                      8.7E18  -1.970    2684/
+ PLOG/ 1.00E+00                      1.8E20  -2.300    4781/
+ PLOG/ 1.00E+01                      1.1E21  -2.450    7417/
+! R. Sivaramakrishnan, J.V. Michael, L.B. Harding, S.J. Klippenstein, J Phys Chem A 2015, 119, 7724-7733.
+
+CH3+HCO=CH2CO+H2                     4.9E08   0.750     842
+ PLOG/ 5.00E-02                      6.1E06   1.240   -1733/
+ PLOG/ 1.00E-01                      1.1E07   1.180   -1303/
+ PLOG/ 1.00E+00                      4.9E08   0.750     842/
+ PLOG/ 1.00E+01                      1.6E11   0.109    4387/
+! R. Sivaramakrishnan, J.V. Michael, L.B. Harding, S.J. Klippenstein, J Phys Chem A 2015, 119, 7724-7733.
+
+CH3+CH3=C2H5+H                       5.4E13   0.000   16055 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3+CH2=C2H4+H                       1.2E15  -0.3432    153 
+! Jasper AW Klippenstein SJ Harding LB JPCA 111:8689-8707 2007
+
+CH3+CH2(S)=C2H4+H                    2.0E13   0.000       0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3+CH=C2H3+H                        3.0E13   0.000       0 
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+CH3+C=C2H2+H                         5.0E13   0.000       0 
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+	! CH2+...
+CH2+M=CH+H+M                         5.6E15  0.000    89000 
+! Bauerle S Klatt M Wagner HGg BBPC 99:870 1995
+
+CH2+M=C+H2+M                         5.8E12  0.500    68500 
+! Bauerle S Klatt M Wagner HGg BBPC 99:870 1995
+
+CH2+H=CH+H2                          1.2E14  0.000        0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2+O=CO+H+H                         1.2E14  0.000      536 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2+O=CO+H2                          8.0E13  0.000      536 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2+OH=CH2O+H                        2.8E13  0.1228     161 
+! A.W. Jasper, S.J. Klippenstein, L.B. Harding, J. Phys. Chem. A 111 (2007) 8699-8707.
+
+CH2+OH=CH+H2O                        8.6E05  2.019     6776 
+! A.W. Jasper, S.J. Klippenstein, L.B. Harding, J. Phys. Chem. A 111 (2007) 8699-8707.
+
+CH2+O2=CO2+H+H                       2.1E09   0.9929   -269 
+! SJK unpublished (2013)
+
+CH2+O2=CH2O+O                        1.3E06   2.4202   1604 
+! SJK unpublished (2013)
+
+CH2+CO2=CO+CH2O                      1.0E11   0.000    1000 
+! Glarborg P Miller JA Kee RJ CF 65:177 1986 est
+
+CH2+CH2=C2H2+H+H                     7.0E13   0.0022      8 
+! Jasper AW Klippenstein SJ Harding LB JPCA 111:8689-8707 2007
+
+CH2+CH2=C2H2+H2                      1.8E13   0.0022      8 
+! Jasper AW Klippenstein SJ Harding LB JPCA 111:8689-8707 2007
+
+CH2+CH=C2H2+H                        4.0E13   0.000       0 
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+CH2+C=C2H+H                          5.0E13   0.000       0 
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+CH2(S)+N2=CH2+N2                     1.3E13  0.000      430 
+! Hayes F Lawrance WD Staker WS King KD JPC 100:11314 1996 (N2)
+
+CH2(S)+AR=CH2+AR                     1.5E13  0.000      884 
+! Hayes F Lawrance WD Staker WS King KD JPC 100:11314 1996
+
+CH2(S)+H=CH2+H                       2.0E14  0.000        0 
+! JAM est
+
+CH2(S)+H=CH+H2                       3.0E13  0.000        0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH2(S)+O=CO+2H                       3.0E13  0.000        0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH2(S)+OH=CH2O+H                     3.0E13  0.000        0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH2(S)+O2=CH2+O2                     3.1E13  0.000        0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2(S)+H2O=CH2+H2O                   3.0E13  0.000        0 
+! Hack W Wagner HGg Wilms A BBPC 92:620-627 1988
+! Carstensen HH Wagner HGg BBPC 99:1539 1995
+
+CH2(S)+CO2=CH2O+CO                   1.1E13  0.000        0 
+! Koch M Temps FWagener R Wagner HGg BBPC 94:645-650
+
+	! CH+...
+CH+H=C+H2                            1.2E14  0.000        0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH+O=CO+H                            5.7E13  0.000        0 
+! Messing I Filseth SV Sadowski CM Carrington T JCP 74:3874 1981
+
+	!CH+OH=HCO+H                          3.0E13   0.000       0 !
+	! JAM est
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH+OH=HCO+H                          3.0E13  0.000        0
+     DUPLICATE
+CH+OH=HCO+H          -1.796E+23   -2.473   19927.3
+     DUPLICATE
+CH+OH=H+CO+H          1.796E+23   -2.473   19927.3
+
+CH+OH=C+H2O                          4.0E07  2.000     3000 
+! GLA/MIL98 JAM est
+
+	!CH+O2=HCO+O                          3.3E13   0.000       0 
+	! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH+O2=HCO+O                           3.3E13  0.000        0
+     DUPLICATE
+CH+O2=HCO+O          				-1.975E+23   -2.473   19927.3
+     DUPLICATE
+CH+O2=H+CO+O          				 1.975E+23   -2.473   19927.3
+
+CH+H2O=CH2O+H                        8.5E08  1.144    -2051 
+! SJK unpublished (2012)
+
+	!CH+CO2=HCO+CO                        8.8E06   1.750   -1040 
+	! P Glarborg, LLB Bentzen, EF 22, 291-296 (2008)
+	! Butler, J. E.; Fleming, J. W.; Goss, L. P.; Lin, M. C. ACS Symp. Ser. 1980, 134, 397.
+	! Berman, M. R.; Fleming, J. W.; Harvey, A. B.; Lin, M. C. Proc. Combust. Inst. 1982, 19, 73.
+	! Mehlmann, C.; Frost, M. J.; Heard, D. E.; Orr, B. J.; Nelson, P. F. J. Chem. Soc., Faraday Trans. 1996, 92, 2335–2341.
+	! Markus, M. W.; Roth, P.; Just, T. Int. J. Chem. Kinet. 1996, 28, 171–179.
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH+CO2=HCO+CO                        8.8E06		  1.750    -1040
+     DUPLICATE
+CH+CO2=HCO+CO          				-5.268E+16   -0.723   18887.3
+     DUPLICATE
+CH+CO2=H+CO+CO				         5.268E+16   -0.723   18887.3
+
+CH+CH2O=CH2CO+H                      9.5E13   0.000    -517 
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+
+	! C+...
+C+OH=CO+H                            5.0E13   0.000       0 
+! JAM est
+
+C+O2=CO+O                            2.0E13   0.000       0 
+! Husain D Kirsch LJ Trans Faraday Soc 67:2025 1971
+
+! *****************************************************************************
+!    MeOH subset                                                              *
+! *****************************************************************************
+
+	! CH3OH+...
+
+CH3OH(+M)=CH2(S)+H2O(+M)             3.1E18  -1.017   91712
+ LOW  /5.4E23 -8.3446 99596/
+ TROE /0.9922 943 47310 47110/
+! Jasper AW Klippenstein SJ Harding LB Ruscic B JPCA 111:3932-3950 2007
+
+!CH3OH(+M)=CH2OH+H(+M)
+CH2OH+H(+M)=CH3OH(+M)                4.3E15  -0.790       0 !
+ LOW  /3.844E37 -6.21 1333/                                 !
+ TROE /0.25 210 1434 1E30/                                  !
+
+CH3O+H(+M)=CH3OH(+M)                 2.4E12   0.515      50 !
+ LOW  /4.66E41 -7.44 14080/                                 !
+ TROE /0.7 100 90000 10000/                                 !
+ N2/1/ H2/2/ H2O/6/ CH4/2/ CO/1.5/ CO2/2/ C2H6/3/           !
+! GRI3.0
+! Ewig F Rhasa D Zellner R Ber. Bunsenges. Phys. Chem. 91:708-717 1987
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! (k/ktot=0.25[CEC05])
+
+CH3OH+H=CH2OH+H2                     6.6E04   2.728    4449 !
+! Moses JI Visscher C Fortney JJ Showman AP Lewis NK Griffith CA Klippenstein SJ Shabram M Friedson AJ Marley MS Freedman RS Astrophys J 2011, 737, 15.
+
+CH3OH+H=CH3O+H2                      4.1E04   2.658    9221 !
+! Moses JI Visscher C Fortney JJ Showman AP Lewis NK Griffith CA Klippenstein SJ Shabram M Friedson AJ Marley MS Freedman RS Astrophys J 2011, 737, 15.
+
+CH3OH+O=CH2OH+OH                     2.1E13   0.000    5305 !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! CL Rasmussen, KH Andersen, K Dam-Johansen, P Glarborg, IJCK 40, 423-441 (2008)
+
+CH3OH+O=CH3O+OH                      3.7E12   0.000    5305 ! (~15% est)
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! CL Rasmussen, KH Andersen, K Dam-Johansen, P Glarborg, IJCK 40, 423-441 (2008)
+
+CH3OH+OH=CH2OH+H2O                   1.5E08   1.4434    113 ! RAS/GLA08c SRI/MIC07 (85%)
+! Srinivasan NK Su M-C Michael JV JPCA 111:3951-3958 2007
+! CL Rasmussen, KH Andersen, K Dam-Johansen, P Glarborg, IJCK 40, 423-441 (2008)
+
+CH3OH+OH=CH3O+H2O                    2.7E07   1.4434    113 ! RAS/GLA08c SRI/MIC07 (15%)
+! Srinivasan NK Su M-C Michael JV JPCA 111:3951-3958 2007
+! CL Rasmussen, KH Andersen, K Dam-Johansen, P Glarborg, IJCK 40, 423-441 (2008)
+
+CH3OH+HO2=CH2OH+H2O2                 3.5E-4   4.850   10346 !
+! Alecu, I.M.; Truhlar, D.G. J Phys Chem A 2011, 115, 14599-14611.
+
+CH3OH+HO2=CH3O+H2O2			 	        1.5E-3	  4.61	15828	
+! Alecu, I.M.; Truhlar, D.G. J Phys Chem A 2011, 115, 14599-14611.
+
+CH3OH+O2=CH2OH+HO2                   3.6E+05	2.27	42760 
+! Klippenstein SJ Harding LB Davis MJ Tomlin AS Skodje RT PCI 2011, 33, 351-357.
+
+	!CH3OH+O2=CH3O+HO2          6.0E13   0.000   54800 
+	! RAS/GLA08c est
+	
+	!CH3O+HO2=CH3OH+O2			3.01E11		0.0		0.0	
+	! Tsang & Hampson, J. Phys. Chem. Ref. Data, 15, 1986
+	
+CH3O+HO2=CH3OH+O2		    1.4E+11	0.00	0  
+! Mousavipour, S. H.; Homayoon, Z. J Phys Chem A 2011, 115, 3291-3300.
+
+
+CH2OH(+M)=CH2O+H(+M) 		7.37E10	 0.811	 39558.7
+LOW / 3.50E+21	-1.9900	23983.4  /
+TROE / 0.844  	900  1  3315 /
+HE/0.67/AR/0.85/H2/2/CO/1.5/CO2/2/H2O/6/
+
+CH2OH+H=CH2O+H2                      4.0E06   1.860     147 !
+! XU K Xu ZF Lin MC Mol Phys 105:2763-2776 2007
+
+! CH2OH+H=CH3+OH 			! See the reverse reaction
+! CH2OH+H(+M)=CH3OH(+M) see it in CH3OH subset
+
+CH2OH+O=CH2O+OH                      6.6E13   0.000    -693 
+! Seetula JA Kalinovski IJ Slagle IR Gutman D Chem. Phys. Lett. 224:533 1994
+
+CH2OH+OH=CH2O+H2O                    2.4E13   0.000       0 
+! Tsang W JPCRD 16:471 1987
+
+CH2OH+HO2=CH2O+H2O2                  1.2E13   0.000       0 
+! Tsang W JPCRD 16:471 1987
+
+CH2OH+O2=CH2O+HO2                    7.2E13   0.000    3736 
+   DUPLICATE                                                
+CH2OH+O2=CH2O+HO2                    2.9E16  -1.500       0 
+   DUPLICATE                                                
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2OH+CH3=C2H4+H2O                   7.2E29  -5.0344   9245 
+ PLOG/   0.001                       6.3E24  -3.7134   2798 /
+ PLOG/   0.010                       1.2E25  -3.7867   3001 /
+ PLOG/   0.100                       3.2E27  -4.4500   5345 /
+ PLOG/   1.000                       7.2E29  -5.0344   9245 /
+ PLOG/   10.00                       1.7E27  -4.1839  11152 /
+ PLOG/   100.0                       3.9E17  -1.3688   8978 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+
+CH2OH+HCO=CH3OH+CO                   1.0E13   0.000       0 !
+! Tsang W JPCRD 16:471 1987
+! Friedrichs G Herbon JT Davidson DF Hanson RK IJCK 36:157-169 2004
+
+CH2OH+HCO=CH2O+CH2O                  1.5E13   0.000       0 !
+! Tsang W JPCRD 16:471 1987
+! Friedrichs G Herbon JT Davidson DF Hanson RK IJCK 36:157-169 2004
+
+! CH3OH+HCO=CH2OH+CH2O			4.91E-14	7.3700	9730.8
+! Shi, Ran, Qin, Qi, Zhang, Comput. Theor. Chem. 1074 (2015) 73-82
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH3OH+HCO=CH2OH+CH2O			4.91E-14	7.3700	9730.8
+     DUPLICATE
+CH3OH+HCO=CH2OH+CH2O          -2.939E-04   4.897   29658.1 
+     DUPLICATE
+CH3OH+H+CO=CH2OH+CH2O          8.316E-05   5.095   14283.2 
+
+CH2OH+CH2OH=CH3OH+CH2O               4.8E12   0.000       0 ! RAS/GLA08c NBS87
+! Tsang W JPCRD 16:471 1987
+
+CH2OH+CH3O=CH3OH+CH2O                2.4E12   0.000       0 ! RAS/GLA08c NBS87
+! Tsang W JPCRD 16:471 1987
+
+
+CH3O(+M)=CH2O+H(+M) 	 1.13E10	 1.210	 24068.8
+LOW/ 6.02E+16	-0.5470	18011.9 / 
+TROE / 0.341  	28  1000   2339  /
+HE/0.67/AR/0.85/O2/1/H2/2/CO/1.5/CO2/2/H2O/6/
+! Dames and Golden,  J. Phys. Chem. A 2013, 117, 7686−7696
+
+CH3O+H=CH2O+H2                       7.6E08   1.500    -519 !
+! XU K Xu ZF Lin MC Mol Phys 105:2763-2776 2007 (1 atm)
+
+CH3O+O=CH2O+OH                       3.8E12   0.000       0 !
+! Ewig F Rhasa D Zellner R Ber. Bunsenges. Phys. Chem. 91:708-717 1987
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! (k/ktot=0.25[CEC05])
+
+CH3O+OH=CH2O+H2O                     1.8E13   0.000       0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3O+HO2=CH2O+H2O2                   3.0E11   0.000       0 !
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3O+O2=CH2O+HO2                     4.8E-1   3.567   -1055 !
+! V Aranda JM Christensen MU Alzueta AD Jensen P Glarborg S Gersen Y Gao P Marshall, IJCK 45 (2013) 283-294.
+
+CH3O+CO=CH3+CO2                      9.5E25  -4.930    9080 
+! Wang B Hou H Gu Y JPCA 103:8021-8029 1999 (1 bar,200-1000 K)
+
+CH3O+CH3=CH2O+CH4                    2.4E13   0.000       0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3OH+CH3=CH3O+CH4		1.25E-2	4.161	6002	!T: 400-2000 K
+! Hashemi et al., High-Pressure Oxidation of Methane, Combust. Flame 2016
+
+CH3OH+CH3=CH2OH+CH4				2.19E-07	5.5800	3896.3
+! Shi, Ran, Qin, Qi, Zhang, Comput. Theor. Chem. 1074 (2015) 73-82
+
+CH3OH+CH2(S)=CH2OH+CH3		3.54E-04	4.1900	3600.4
+! Shi, Ran, Qin, Qi, Zhang, Comput. Theor. Chem. 1074 (2015) 73-82
+
+CH3OH+CH2(S)=CH3O+CH3		1.36E-04	4.2600	5626.0
+! Shi, Ran, Qin, Qi, Zhang, Comput. Theor. Chem. 1074 (2015) 73-82
+
+! CH3OH+HCO=CH3O+CH2O			1.21E-03	4.3400	23046.1
+! Shi, Ran, Qin, Qi, Zhang, Comput. Theor. Chem. 1074 (2015) 73-82
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016):
+CH3OH+HCO=CH3O+CH2O			1.21E-03	4.3400	23046.1
+     DUPLICATE
+CH3OH+HCO=CH3O+CH2O          -7.243E+06   1.867   42973.4 
+     DUPLICATE
+CH3OH+H+CO=CH3O+CH2O          2.049E+06   2.065   27598.5 
+
+
+CH3O+CH3O=CH3OH+CH2O                 6.0E13   0.000       0
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3OOH(+M)=CH3O+OH(+M)               4.1E19  -1.153   44226 !
+ LOW /                               3.9E42  -7.502   46730/
+ TROE /0.8375  36562  498.8  9990/
+! A.W. Jasper, S.J. Klippenstein, L.B. Harding, Proc. Combust. Inst. 32 (2009) 279-286.
+
+	
+CH3OOH+H=CH2OOH+H2                   5.4E10   0.000    1860 
+! Slemr F Warneck P IJCK 9:267 1977
+
+CH3OOH+H=CH3OO+H2                    5.4E10   0.000    1860 
+! Slemr F Warneck P IJCK 9:267 1977
+
+CH3OOH+H=CH3O+H2O                    1.2E10   0.000    1860 
+! Slemr F Warneck P IJCK 9:267 1977
+
+CH3OOH+O=CH2OOH+OH                   1.6E13   0.000    4750 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3OOH+O=CH3OO+OH                    8.7E12   0.000    4750 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3OOH+OH=CH3OO+H2O                  1.1E12   0.000    -437 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3OOH+OH=CH2OOH+H2O                 7.2E11   0.000    -258 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3OOH+HO2=CH3OO+H2O2                4.1E04   2.500   10206
+! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+
+CH3OO+H=CH3O+OH                      1.0E14   0.000       0
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3OO+O=CH3O+O2                      2.850E+10  1. -724 
+! est HO2+O
+
+CH3OO+OH=CH3OH+O2  							1.7E14  		0 		0	
+! A. Bossolasco, E. P. Farago, C. Schoemaecker, C. Fittschen, A. Bossolasco, E. P. Farago, Chem. Phys. Lett. 593 (2014) 7–13."
+
+CH3OO+HO2=CH3OOH+O2                  2.5E11   0.000   -1490 
+! Tyndall GS Cox RA Granier C Lesclaux R Moortgat GK Pilling MJ Ravishankara AR Wallington TJ J Geophys Res 106:12157-12182 2001
+
+CH3OO+CH3=CH3O+CH3O                  5.1E12   0.000   -1411 
+! Keiffer M Miscampbell AJ Pilling MJ JCSFT2 84:505 1988
+
+! CH3OOH+CH3=CH3OO+CH4	             1.6E-3   4.322    -235 !
+! Hashemi et al., High-Pressure Oxidation of Natural Gas: Methane, Combust. Flame 2016
+CH3OO+CH4=CH3OOH+CH3				4.45E-3	4.691	19868	!T: 400-2000 K
+! Hashemi et al., High-Pressure Oxidation of Natural Gas: Methane, Combust. Flame 2016
+
+CH3OO+CH2OH=CH2O+CH3OOH              1.2E13   0.000       0 !
+! est CH2OH+HO2=CH2O+H2O2
+
+ CH3OO+HCO=CH3O+H+CO2                 3.0E13   0.000       0 !
+! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+! est HCO+HO2=CO2+OH+H
+
+CH3OO+CO=CH3O+CO2                    1.6E05   2.180   17940 !
+! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+! est CO+HO2=CO2+OH
+
+	! CH3OO+CH2O=CH3OOH+HCO                4.1E04   2.500   10206 !
+	! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+	! est CH2O+HO2=HCO+H2O2
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH3OO+CH2O=CH3OOH+HCO 			 1.981E+09   1.111   12499.5  
+	
+CH3OO+CH2O=CH3OOH+H+CO          2.454E+14   0.027   30133.3
+
+CH3OO+CH3O=CH2O+CH3OOH               3.0E11   0.000       0
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3OO+CH3OH=CH3OOH+CH2OH             4.0E13   0.000   19400 !
+! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+! est CH3OH+HO2=CH2OH+H2O2
+
+CH3OO+CH3OO=CH3O+CH3O+O2             1.1E18  -2.400    1800 
+   DUPLICATE                                                
+CH3OO+CH3OO=CH3O+CH3O+O2             7.0E10   0.000     800 
+   DUPLICATE
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+
+CH3OO+CH3OO=CH3OH+CH2O+O2            2.0E11  -0.550   -1600 !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+
+CH2OOH=CH2O+OH                      2.4E12  -0.925    1567 !
+ PLOG/ 0.04                          9.6E10  -0.925    1567/ ! extrapolation 
+ PLOG/ 1.0                           2.4E12  -0.925    1567/ 
+ PLOG/ 10.                           2.5E13  -0.927    1579/ 
+ PLOG/ 100.                          7.0E14  -1.064    1744/ 
+! Ing W-C Sheng CY Bozzelli JW FPT 83:111-145 2003
+
+
+HCOH=CO+H2	6.560E+13	0.000	49465
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+	
+HCOH=CH2O	5.150E+13	0.000	32109	
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+
+HCOH+H=CH2O+H                        1.0E14   0.000       0 
+! est
+!
+HCOH+H=HCO+H2                        2.0E13   0.000       0 
+! est
+!
+HCOH+H=H+CO+H2                       1.0E13   0.000       0 
+! est
+!
+HCOH+O=CO2+2H                        3.0E13   0.000       0 
+! est
+!
+HCOH+OH=HCO+H2O                      2.0E13   0.000       0 
+! est
+!
+HCOH+OH=H+CO+H2O                     1.0E13   0.000       0 
+! est
+
+
+! *****************************************************************************
+!    C2 subset                                                                *
+! *****************************************************************************
+ 	
+
+CH3+CH3(+M)=C2H6(+M)                 9.5E14  -0.538     179 !
+ LOW  /1.269E41 -7.0 2762/                                  !
+ TROE /0.62 73 1180 1E30/                                   ! Fc=0.38exp(-T/73)+0.62exp(-T/1180)
+! S.J. Klippenstein, et al., Phys. Chem. Chem. Phys. 8 (2006) 1133–1147.
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+C2H6+H=C2H5+H2  7.35E+03	3.1	5340.02
+DUPLICATE
+C2H6+H=C2H5+H2	3.26E+14	0	13666.81
+DUPLICATE
+! R. Sivaramakrishnan, et al.,  Int. J. Chem. Kinet. 44 (2012) 194–205.
+
+C2H6+O=C2H5+OH                       1.8E05   2.800    5800
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+C2H6+OH=C2H5+H2O 						1.61E+06		2.224		740.73
+! L. N. Krasnoperov, J. V. Michael,  J. Phys. Chem. A, 108 (2004) 5643–5648.
+
+C2H6+HO2=C2H5+H2O2                   2.6E01   3.370   15900
+! H-H Carstensen, AM Dean Proc Combust Inst 30 (2005) 995-1003
+
+C2H6+O2=C2H5+HO2      						2.92E07   1.9   49548
+! A. S. Sharipov, A. M. Starik, J. Phys. Chem. A 116 (2012) 8444–8454.
+
+C2H6+CH3=C2H5+CH4                    3.5E01   3.440   10384 !
+! S.L. Peukert, N.J. Labbe, R. Sivaramakrishnan, J.V. Michael, J. Phys. Chem. A 117 (2013) 10228–10238 (500 - 2000 K)
+	
+C2H6+CH2(S)=C2H5+CH3                 1.2E14   0.000       0
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+C2H6+CH3OO=CH3OOH+C2H5               1.9E01   3.640   17100 ! RAS/GLA08b CAR/DEA05
+! Carstensen H-H Dean AM PCI 30:995-1003 2005
+
+
+C2H4+H(+M)=C2H5(+M)                  1.4E09   1.463    1355
+  LOW /2.0E39 -6.642 5769/                                 !
+  TROE /-0.569 299 9147 152.4/                              !
+  N2/1.2/ CO/1.5/ H2/2/ CO2/3/ H2O/10./
+! Miller JA Klippenstein PCCP 6:1192-1202 2004
+	
+C2H5+H(+M)=C2H6(+M)                  5.2E17  -0.990    1580
+  LOW /1.99E41 -7.08 6685/                                 !
+  TROE /0.8422 125 2219 6882/                               !
+N2/1/ H2/2/ H2O/6/ CH4/2/ CO/1.5/ CO2/2/ C2H6/3/ AR/0.7/  !
+! Stewart PH Rothem T Golden DM PCI 22:943-952
+
+C2H5+O=CH3+CH2O                      4.2E13   0.000       0
+! Slagle IR Sarzynski D Gutman D Miller JA Melius CF JCSFT2 84:491 1988
+
+C2H5+O=CH3CHO+H                      5.3E13   0.000       0
+! Slagle IR Sarzynski D Gutman D Miller JA Melius CF JCSFT2 84:491 1988
+
+C2H5+O=C2H4+OH                       3.1E13   0.000       0
+! Slagle IR Sarzynski D Gutman D Miller JA Melius CF JCSFT2 84:491 1988
+
+C2H5+OH=C2H4+H2O                     7.9E22  -2.9892   3863 !
+ PLOG/   0.001                       1.3E19  -1.960     273 /
+ PLOG/   0.010                       1.2E19  -1.9533    239 /
+ PLOG/   0.100                       4.1E19  -2.1007    625 /
+ PLOG/   1.000                       7.9E22  -2.9892   3863 /
+ PLOG/   10.00                       2.8E24  -3.3287   7749 /
+ PLOG/   100.0                       4.7E18  -1.5805   7999 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+
+C2H5+OH=CH3+CH2OH                    6.5E21  -2.3515   6023 !
+ PLOG/   0.001                       9.2E17  -1.2994   2505 /
+ PLOG/   0.010                       1.1E18  -1.3206   2569 /
+ PLOG/   0.100                       5.7E18  -1.5182   3185 /
+ PLOG/   1.000                       6.5E21  -2.3515   6023 /
+ PLOG/   10.00                       1.9E25  -3.2495  10576 /
+ PLOG/   100.0                       6.5E22  -2.4427  12647 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+	
+C2H5+HO2=CH3CH2O+OH                  3.1E13   0.000       0 ! RAS/GLA08b LUD/TEM06
+! Ludwig W Brandt B Friedrichs G Temps F JPCA 110:3330-3337 2006
+
+
+C2H5+O2(+M)=CH3CH2OO(+M)             1.5E15  -1.000       0 
+	LOW  /3.3E31 -4.90 		0/                                 
+	TROE /1E-30 540 1E30 1E-30/                               
+! R.X. Fernandes, K. Luther, G. Marowsky, M.P. Rissanen, R. Timonen, J. Troe, J Phys Chem A 2015, 119, 7263-7269.
+   
+
+C2H6+HCO=C2H5+CH2O                   2.3E00   3.740   16933
+! Huynh L.K.; Truong T.N. Theor. Chem. Acct. 120 (2008) 107-118
+
+C2H5+HCO=CH2CHO+CH3                  6.5E21  -2.3515   6023
+ PLOG/   0.001                       9.2E17  -1.2994   2505 /
+ PLOG/   0.010                       1.1E18  -1.3206   2569 /
+ PLOG/   0.100                       5.7E18  -1.5182   3185 /
+ PLOG/   1.000                       6.5E21  -2.3515   6023 /
+ PLOG/   10.00                       1.9E25  -3.2495  10576 /
+ PLOG/   100.0                       6.5E22  -2.4427  12647 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+
+C2H5+CH3=C2H4+CH4                    9.0E11   0.000       0
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+
+C2H5+HCO=C2H6+CO                     4.3E13   0.000       0 ! 
+! Baggott, J.E.; Frey, H.M.; Lightfoot, P.D.; Walsh, R. J. Phys. Chem. 91 (1987) 3386
+
+
+C2H5+CH3OO=CH3O+CH3CH2O              5.1E12   0.000   -1410
+ ! CL Rasmussen JG Jacobsen P Glarborg IJCK 40 (2008) 778-807
+ ! est CH3OO+CH3=CH3O+CH3O
+
+C2H5+C2H5=C2H6+C2H4                  1.5E12   0.000       0
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+
+
+	
+C2H3+H(+M)=C2H4(+M)                  3.9E13   0.200       0 !
+  LOW /2.10E24 -1.3 0/                                      !
+  TROE /0.5 1E-30 1E30 1E30/                                 !
+! Harding LB Georgievskii Y Klippenstein SJ JPCA 109:4646-4656 2005  #
+! Monks PS Nesbitt FL Payne WA Scanlon M Stief LJ Shallcross DE JPC 99:17151-17159 1995
+
+C2H4(+M)=H2CC+H2(+M)                 8.0E12   0.440   88800 ! GIM/GLA09  WAN01
+    LOW/7.0E50 -9.31 99900/
+    TROE/0.735 180 1035 5417/
+    H2O/6/ AR/0.7/
+! Wang H IJCK 33:698-706 2001
+	
+C2H4+H=C2H3+H2                       2.4E02   3.620   11266 ! RAS/GLA08b CEC05
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+	!C2H4+O=CH3+HCO                       3.9E12   0.000    1494 !
+	! DUPLICATE                                                  !
+	!C2H4+O=CH3+HCO                       6.2E13   0.000    6855 !
+	! DUPLICATE                                                  !
+	! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+	! Klemm RB Sutherland JW Wickramaaratchi MA Yarwood G JPC 94:3354-3357 1990
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+C2H4+O=CH3+HCO              3.9E12   0.000    1494
+     DUPLICATE
+C2H4+O=CH3+HCO          	-2.335E+22   -2.473   21421.3
+     DUPLICATE
+C2H4+O=CH3+HCO              6.2E13   0.000    6855
+     DUPLICATE
+C2H4+O=CH3+HCO          	-3.711E+23   -2.473   26782.3
+     DUPLICATE	
+
+C2H4+O=CH3+H+CO          2.335E+22   -2.473   21421.3
+   DUPLICATE
+C2H4+O=CH3+H+CO          3.711E+23   -2.473   26782.3
+   DUPLICATE
+
+C2H4+O=CH2CHO+H                      1.7E12   0.000    1494
+   DUPLICATE
+C2H4+O=CH2CHO+H                      2.8E13   0.000    6855
+   DUPLICATE
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+! Klemm RB Sutherland JW Wickramaaratchi MA Yarwood G JPC 94:3354-3357 1990
+
+C2H4+OH=C2H3+H2O                     1.3E-1   4.200    -860 ! GIM/GLA09 SEN/MIL06
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:6960-6970 2006
+
+C2H4+OH=CH3+CH2O                     1.8E05   1.68     2061 !
+ PLOG /0.01                          5.4E00   2.92    -1733/
+ PLOG /0.025                         3.2E01   2.71    -1172/
+ PLOG /0.1                           5.6E02   2.36     -181/
+ PLOG /1.                            1.8E05   1.68     2061/
+ PLOG /10.                           2.4E09   0.56     6007/
+ PLOG /100.                          2.8E13  -0.50    11455/
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:6960-6970 2006
+
+C2H4+OH=CH3CHO+H                     2.4E-2   3.91     1723 !
+ PLOG /0.01                          2.4E-7   5.30    -2051./
+ PLOG /0.025                         8.7E-5   4.57     -618./
+ PLOG /0.1                           4.0E-1   3.54     1882./
+ PLOG /1.                            2.4E-2   3.91     1723./
+ PLOG /10.                           8.3E08   1.01    10507./
+ PLOG /100.                          6.8E09   0.81    13867./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:6960-6970 2006
+
+C2H4+OH=CH2CHOH+H 	             3.2E05   2.19     5256 !
+ PLOG /0.01                          1.0E04   2.60     4121./
+ PLOG /0.025                         1.1E04   2.60     4129./
+ PLOG /0.1                           1.5E04   2.56     4238./
+ PLOG /1.                            3.2E05   2.19     5256./
+ PLOG /10.                           1.9E08   1.43     7829./
+ PLOG /100.                          8.6E10   0.75    11491./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:6960-6970 2006
+
+C2H4+OH=CH2CH2OH    5.91E+41    -10.43    4832.    ! JPCA 110 6960-6970 (2006)
+ PLOG /0.01    2.76E+47    -11.64  11099./
+ PLOG /0.025   6.02E+37    -9.76    1995./
+ PLOG /0.1     6.02E+37    -9.65    2363./
+ PLOG /1.      6.02E+37    -8.14    8043./
+ PLOG /10.     6.02E+37    -7.77   10736./
+ PLOG /100.    6.02E+37    -7.44   14269./
+! inf    6.02E+37   -8.88     5170
+! inf    4.46E+07    1.55    -1564
+DUPLICATE
+C2H4+OH=CH2CH2OH	1 	1 	1
+ PLOG /0.025   4.96E+37    -8.68    5355./
+ PLOG /0.1     2.56E+35    -7.79    5017./
+ PLOG /1.      7.29E+31    -6.91    2855./
+ PLOG /10.     3.02E+26    -4.87    2297./
+ PLOG /100.    2.79E+19    -2.41    1011./
+DUPLICATE
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:6960-6970 2006
+
+C2H4+HO2=C2H5+O2    1	 1	 1
+  PLOG/0.01316   2.800E+12	-0.447	12658.52/
+  PLOG/0.98692   3.407E+08	0.818	12089.86/
+  PLOG/9.86923   9.504E+14	-1.012	16581.97/
+  PLOG/98.69233  2.553E+22	-3.074	22635.18/
+! J. Zador, S. J. Klippenstein, J. A. Miller, J. Phys. Chem. A 115 (2011) 10218–10225.
+
+C2H4+HO2=cC2H4O+OH    1 1 1
+  PLOG/0.01316   3.342E+04	2.311	13735.46/
+  PLOG/0.98692   1.796E+06	1.809	14760.59/
+  PLOG/9.86923   1.181E+09	1.006	16673.46/
+  PLOG/98.69233   1.892E+15	-0.736	21411.27/
+! J. Zador, S. J. Klippenstein, J. A. Miller, J. Phys. Chem. A 115 (2011) 10218–10225.
+
+C2H4+HO2=CH3CH2OO  1	 1		 1
+  PLOG/0.01316   2.603E+47	-12.450	18714.68/
+  PLOG/0.98692   6.596E+47	-12.159	20887.07 /
+  PLOG/9.86923   1.602E+45	-11.101	21253.55 /
+  PLOG/98.69233  1.005E+41	-9.543	21399.20/
+  PLOG/1000 	 1.124E+01	 2.950	7093.14 /
+! J. Zador, S. J. Klippenstein, J. A. Miller, J. Phys. Chem. A 115 (2011) 10218–10225.
+
+C2H4+HO2=CH2CH2OOH    1 1 1
+  PLOG/0.01316   	1.323E+07	-0.142	11075.88/
+  PLOG/0.98692   	1.438E+05	0.878	7815.54/
+  PLOG/9.86923   	3.377E+16	-2.209	13289.24/
+  PLOG/98.69233   	6.496E+26	-4.893	19947.94/
+  PLOG/1000   		2.818E+04	2.487	14733.97/  
+! J. Zador, S. J. Klippenstein, J. A. Miller, J. Phys. Chem. A 115 (2011) 10218–10225.
+
+
+C2H4+O2=C2H3+HO2                     7.1E13   0.000   60010 ! GIM/GLA09 HOU/WAN05
+! Hua H Ruscic B Wang B CP 311:335-341 2005
+
+	! C2H4+CH3=C2H3+CH4                    6.0E07   1.560   16630
+	! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+C2H4+CH3=C2H3+CH4		9.76E+02	2.9470	15148.0
+DUPLICATE
+C2H4+CH3=C2H3+CH4		8.13E-05	4.4170	8835.8
+DUPLICATE
+! Miller and Klippenstein, J. Phys. Chem. A, 2013, 117 (13), pp 2718–2727
+
+C2H4+CH2(S)=C2H3+CH3	4.92E+09	1.02	600
+PLOG / 0.01		1.77E+19	-1.95	6787     /
+PLOG / 0.1		1.68E+19	-1.80	4310     /
+PLOG / 1 		4.16E+24	-3.19	9759     /
+PLOG / 10 		7.89E+24	-3.08	13894    /
+PLOG / 100 		7.36E+29	-4.28	23849    /
+DUPLICATE
+C2H4+CH2(S)=C2H3+CH3	4.92E+09	1.02	600
+PLOG / 0.01		4.30E+12	0.19	-110    /
+PLOG / 0.1		2.26E+11	0.54	48      /
+PLOG / 1 		4.92E+09	1.02	600     /
+PLOG / 10 		1.47E+08	1.33	1228    /
+PLOG / 100 		8.11E+10	0.55	5507    /
+DUPLICATE
+! Ye, Georgievskii, Klippenstein, Proceed. Combust. Inst. 35 (2015) 223–230
+
+C2H2+H(+M)=C2H3(+M)                  1.7E10   1.266    2709 !
+ LOW  /6.3E31 -4.664 3780 /                                 !
+ TROE /0.7878 -10212 1.E-30 /                                !
+ H2/2/ CO/2/ CO2/3/ H2O/5/                                  !
+! Miller JA Klippenstein PCCP 6:1192-1202 2004
+
+C2H3+H=C2H2+H2                       4.5E13   0.000       0 
+! Monks PS Nesbitt FL Payne WA Scanlon M Stief LJ Shallcross DE JPC 99:17151-17159 1995
+
+! C2H3+H=CH3+CH		! see the reverse
+
+C2H3+O=CH2CO+H                       3.0E13   0.000       0 
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+C2H3+OH=C2H2+H2O                     2.0E13   0.000       0 
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+C2H3+HO2=CH2CHO+OH                   3.0E13   0.000       0 
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+C2H3+O2=CH2CHOO                      4.07E+27       -4.67    5222.0
+ PLOG/1.00E-02                       1.6E24  -5.450    9662/
+ PLOG/1.00E-02                       1.8E-9   4.150   -4707/
+ PLOG/1.00E-01                       3.5E56 -15.010   19160/
+ PLOG/1.00E-01                       2.4E22  -4.520    2839/
+ PLOG/3.16E-01                       1.3E64 -16.970   21290/
+ PLOG/3.16E-01                       2.0E26  -5.430    2725/
+ PLOG/1.00E+00                       3.3E61 -15.790   20150/
+ PLOG/1.00E+00                       6.1E28  -5.890    3154/
+ PLOG/3.16E+00                       7.3E53 -13.110   17300/
+ PLOG/3.16E+00                       2.1E29  -5.800    3520/
+ PLOG/1.00E+01                       4.2E48 -11.210   16000/
+ PLOG/1.00E+01                       3.5E28  -5.370    3636/
+ PLOG/3.16E+01                       2.3E43  -9.380   14810/
+ PLOG/3.16E+01                       3.3E27  -4.950    3610/
+ PLOG/1.00E+02                       3.4E39  -8.040   14360/
+ PLOG/1.00E+02                       1.0E27  -4.720    3680/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+C2H3+O2=CHCHO+OH                     2.84E+14       -0.80    7232.0 
+ PLOG/1.00E-02                       3.9E11  -0.110    2131/
+ PLOG/1.00E-02                       9.9E11  -0.660      -1/
+ PLOG/1.00E-01                       1.1E09   0.550      46/
+ PLOG/1.00E-01                       6.9E14  -1.160    4542/
+ PLOG/3.16E-01                       8.5E08   0.560       1/
+ PLOG/3.16E-01                       2.8E13  -0.720    3479/
+ PLOG/1.00E+00                       2.8E14  -1.830       5/
+ PLOG/1.00E+00                       5.0E11  -0.140    1995/
+ PLOG/3.16E+00                       2.6E20  -2.840    7530/
+ PLOG/3.16E+00                       2.4E10   0.230    1573/
+ PLOG/1.00E+01                       9.2E14  -2.260       0/
+ PLOG/1.00E+01                       1.7E14  -0.820    4450/
+ PLOG/3.16E+01                       6.1E25  -4.210   13050/
+ PLOG/3.16E+01                       1.4E11   0.050    3774/
+ PLOG/1.00E+02                       1.7E30  -5.350   18430/
+ PLOG/1.00E+02                       3.2E11  -0.020    5338/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+C2H3+O2=CH2CO+OH                     1.17E+03        2.43    7074.0
+ PLOG/1.00E-02                       8.7E02   2.41    6061/
+ PLOG/1.00E-02                       1.8E-1   3.12    1331/
+ PLOG/1.00E-01                       8.9E02   2.41    6078/
+ PLOG/1.00E-01                       2.1E-1   3.11    1383/
+ PLOG/3.16E-01                       9.4E02   2.40    6112/
+ PLOG/3.16E-01                       2.7E-1   3.08    1496/
+ PLOG/1.00E+00                       1.1E03   2.39    6180/
+ PLOG/1.00E+00                       5.3E-1   3.01    1777/
+ PLOG/3.16E+00                       1.1E03   2.38    6179/
+ PLOG/3.16E+00                       1.4E00   2.90    2225/
+ PLOG/1.00E+01                       1.4E03   2.36    6074/
+ PLOG/1.00E+01                       4.2E-1   2.93    2052/
+ PLOG/3.16E+01                       2.5E06   1.42    8480/
+ PLOG/3.16E+01                       1.2E-4   4.21    2043/
+ PLOG/1.00E+02                       1.7E10   0.36   12010/
+ PLOG/1.00E+02                       1.3E-3   3.97    3414/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+C2H3+O2=CH2CHO+O                     1.60E+12        0.15    4205.0
+ PLOG/1.00E-02                       7.2E20  -2.670    6742/
+ PLOG/1.00E-02                       1.2E10   0.620    -278/
+ PLOG/1.00E-01                       7.0E20  -2.670    6713/
+ PLOG/1.00E-01                       1.3E10   0.620    -248/
+ PLOG/3.16E-01                       9.0E20  -2.700    6724/
+ PLOG/3.16E-01                       1.5E10   0.600    -163/
+ PLOG/1.00E+00                       6.5E20  -2.650    6489/
+ PLOG/1.00E+00                       1.8E10   0.580      38/
+ PLOG/3.16E+00                       4.1E20  -2.530    6406/
+ PLOG/3.16E+00                       8.9E09   0.670     248/
+ PLOG/1.00E+01                       1.6E23  -3.220    8697/
+ PLOG/1.00E+01                       6.7E09   0.720     778/
+ PLOG/3.16E+01                       2.9E25  -3.770   11530/
+ PLOG/3.16E+01                       1.4E09   0.920    1219/
+ PLOG/1.00E+02                       9.3E25  -3.800   13910/
+ PLOG/1.00E+02                       7.1E07   1.280    1401/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+!
+
+C2H3+O2=C2H2+HO2                     6.49E+06        1.50    5218.0
+ PLOG/1.00E-02                       1.1E07   1.28    3322/
+ PLOG/1.00E-02                       4.8E01   2.75    -796/
+ PLOG/1.00E-01                       7.8E06   1.33    3216/
+ PLOG/1.00E-01                       5.2E01   2.73    -768/
+ PLOG/3.16E-01                       1.2E07   1.27    3311/
+ PLOG/3.16E-01                       5.6E01   2.73    -659/
+ PLOG/1.00E+00                       2.2E07   1.19    3367/
+ PLOG/1.00E+00                       4.6E01   2.76    -493/
+ PLOG/3.16E+00                       1.1E08   1.00    3695/
+ PLOG/3.16E+00                       3.8E00   3.07    -601/
+ PLOG/1.00E+01                       1.3E11   0.12    5872/
+ PLOG/1.00E+01                       5.5E00   3.07      86/
+ PLOG/3.16E+01                       1.2E09   0.82    5617/
+ PLOG/3.16E+01                       4.5E08  -0.00     955/
+ PLOG/1.00E+02                       1.1E17  -1.45   12230/
+ PLOG/1.00E+02                       2.0E01   2.94    1847/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+!
+C2H3+O2=OCHCHO+H                     3.08E+12       -0.26    3277.0
+ PLOG/1.00E-02                       4.8E14  -1.03     912/
+ PLOG/1.00E-02                       2.8E-4   4.04   -7019/
+ PLOG/1.00E-01                       5.0E14  -1.04     923/
+ PLOG/1.00E-01                       3.5E-4   4.01   -6978/
+ PLOG/3.16E-01                       6.4E14  -1.07     983/
+ PLOG/3.16E-01                       9.7E-4   3.89   -6768/
+ PLOG/1.00E+00                       3.7E15  -1.29    1441/
+ PLOG/1.00E+00                       5.0E-1   3.15   -5496/
+ PLOG/3.16E+00                       2.4E18  -2.13    3234/
+ PLOG/3.16E+00                       1.3E05   1.67   -2931/
+ PLOG/1.00E+01                       1.3E15  -1.09    2393/
+ PLOG/1.00E+01                       4.5E15  -3.08   -4836/
+ PLOG/3.16E+01                       3.6E33  -6.50   14910/
+ PLOG/3.16E+01                       3.8E10   0.22     941/
+ PLOG/1.00E+02                       3.3E31  -5.76   16250/
+ PLOG/1.00E+02                       2.8E08   0.83     858/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+! 70% of HCO was replaced by H+CO
+C2H3+O2=CH2O+HCO                     1.29E+16       -1.13    3791.0
+ PLOG/1.00E-02                       2.8E36  -7.60   12610/
+ PLOG/1.00E-01                       5.1E15  -1.28     513/
+ PLOG/3.16E-01                       2.2E36  -7.57   12490/
+ PLOG/3.16E-01                       5.3E15  -1.29     521/
+ PLOG/1.00E+00                       3.0E35  -7.32   11820/
+ PLOG/1.00E+00                       6.8E15  -1.31     646/
+ PLOG/3.16E+00                       1.6E36  -7.47   12460/
+ PLOG/3.16E+00                       1.1E16  -1.36    1066/
+ PLOG/1.00E+01                       5.8E35  -7.20   13430/
+ PLOG/1.00E+01                       2.8E15  -1.18    1429/
+ PLOG/3.16E+01                       3.5E20  -2.57    5578/
+ PLOG/3.16E+01                       1.1E69 -19.23   14760/
+ PLOG/1.00E+02                       3.0E33  -6.28   16000/
+ PLOG/1.00E+02                       4.7E10   0.19     831/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+C2H3+O2=CH2O+H+CO                   1.29E+16       -1.13    3791.0
+ PLOG/1.00E-02                       6.5E36  -7.60   12640/
+ PLOG/1.00E-02                       1.2E16  -1.28     515/
+ PLOG/1.00E-01                       6.3E36  -7.60   12610/
+ PLOG/1.00E-01                       1.2E16  -1.28     513/
+ PLOG/3.16E-01                       5.1E36  -7.57   12490/
+ PLOG/3.16E-01                       1.3E16  -1.29     521/
+ PLOG/1.00E+00                       7.1E35  -7.32   11820/
+ PLOG/1.00E+00                       1.6E16  -1.31     646/
+ PLOG/3.16E+00                       3.7E36  -7.47   12460/
+ PLOG/3.16E+00                       2.4E16  -1.36    1066/
+ PLOG/1.00E+01                       1.3E36  -7.20   13430/
+ PLOG/1.00E+01                       6.6E15  -1.18    1429/
+ PLOG/3.16E+01                       8.3E20  -2.57    5578/
+ PLOG/3.16E+01                       2.7E69 -19.23   14760/
+ PLOG/1.00E+02                       7.1E33  -6.28   16000/
+ PLOG/1.00E+02                       1.1E11   0.19     831/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+C2H3+O2=CH3O+CO                                  3.09E+13       -0.89    3682.0
+ PLOG/1.00E-02                       8.2E18  -2.66    3201/
+ PLOG/1.00E-02                       1.3E09   0.18   -1717/
+ PLOG/1.00E-01                       4.1E14  -1.32     886/
+ PLOG/1.00E-01                       6.0E11  -2.93   -9564/
+ PLOG/3.16E-01                       4.3E14  -1.33     901/
+ PLOG/3.16E-01                       2.9E11  -2.93  -10120/
+ PLOG/1.00E+00                       1.0E11  -0.33    -748/
+ PLOG/1.00E+00                       5.8E21  -3.54    4772/
+ PLOG/3.16E+00                       1.9E12  -3.00   -8995/
+ PLOG/3.16E+00                       5.0E15  -1.62    1849/
+ PLOG/1.00E+01                       1.9E24  -5.63       2/
+ PLOG/1.00E+01                       9.3E16  -1.96    3324/
+ PLOG/3.16E+01                       1.1E18  -2.22    5178/
+ PLOG/3.16E+01                       1.0E72 -20.69   15860/
+ PLOG/1.00E+02                       5.8E32  -6.45   16810/
+ PLOG/1.00E+02                       1.1E09   0.31    1024/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+C2H3+O2=CO2+CH3                                   6.16E+13       -1.05    3743.0
+ PLOG/1.00E-02                       2.4E35  -7.76   12630/
+ PLOG/1.00E-02                       6.3E13  -1.16     406/
+ PLOG/1.00E-01                       1.7E35  -7.72   12520/
+ PLOG/1.00E-01                       6.2E13  -1.16     401/
+ PLOG/3.16E-01                       4.5E34  -7.55   12140/
+ PLOG/3.16E-01                       6.1E13  -1.16     397/
+ PLOG/1.00E+00                       7.3E31  -6.70   10440/
+ PLOG/1.00E+00                       5.3E13  -1.14     447/
+ PLOG/3.16E+00                       3.6E35  -7.75   12830/
+ PLOG/3.16E+00                       1.5E14  -1.26     988/
+ PLOG/1.00E+01                       2.1E35  -7.53   14050/
+ PLOG/1.00E+01                       5.0E13  -1.11    1409/
+ PLOG/3.16E+01                       3.8E18  -2.44    5408/
+ PLOG/3.16E+01                       1.4E70 -20.11   15430/
+ PLOG/1.00E+02                       1.2E32  -6.32   16190/
+ PLOG/1.00E+02                       9.2E08   0.25     855/
+! C.F. Goldsmith, L.B. Harding, Y. Georgievskii, J.A. Miller, S.J. Klippenstein, J Phys Chem A 2015, 119, 7766-7779 (400-2200).
+
+	! C2H3+CH2O=C2H4+HCO                   1.4E10   0.209    3934
+	! PLOG/ 0.001                         1.1E07   1.090    1807/
+	! PLOG/ 0.01                          2.5E07   0.993    1995/
+	! PLOG/ 0.1                           2.5E08   0.704    2596/
+	! PLOG/ 1                             1.4E10   0.209    3934/
+	! PLOG/ 10                            3.5E13  -0.726    6944/
+	! PLOG/ 100                           3.3E14  -0.866   10966/
+	! PLOG/ 1000                          1.7E01   3.170    9400/
+	! ! C.F. Goldsmith et al., J. Phys. Chem. A 116 (2012) 3325–3346.
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+C2H3+CH2O=C2H4+HCO     1.0E11  0.0  0.0
+     PLOG/     1.000E-03   1.110E+07   1.090   1807.2 /
+     PLOG/     1.000E-03   -2.333E+16   -1.269   20616.8 /
+     PLOG/     1.000E-02   2.470E+07   0.993   1994.9 /
+     PLOG/     1.000E-02   -5.192E+16   -1.366   20804.5 /
+     PLOG/     1.000E-01   2.470E+08   0.704   2596.2 /
+     PLOG/     1.000E-01   -1.479E+18   -1.769   22523.5 /
+     PLOG/     1.000E+00   1.420E+10   0.209   3934.2 /
+     PLOG/     1.000E+00   -8.500E+19   -2.264   23861.5 /
+     PLOG/     1.000E+01   3.450E+13   -0.726   6944.3 /
+     PLOG/     1.000E+01   -4.364E+23   -3.278   27795.2 /
+     PLOG/     1.000E+02   3.310E+14   -0.866   10965.7 /
+     PLOG/     1.000E+02   -4.187E+24   -3.418   31816.6 /
+     PLOG/     1.000E+03   1.650E+01   3.170   9399.8 /
+     PLOG/     1.000E+03   -2.087E+11   0.618   30250.7 /
+C2H3+CH2O=C2H4+H+CO     5.986E+20   -2.473   19927.3
+    PLOG/     1.000E-03   2.333E+16   -1.269   20616.8 /
+     PLOG/     1.000E-02   5.192E+16   -1.366   20804.5 /
+     PLOG/     1.000E-01   1.479E+18   -1.769   22523.5 /
+     PLOG/     1.000E+00   8.500E+19   -2.264   23861.5 /
+     PLOG/     1.000E+01   4.364E+23   -3.278   27795.2 /
+     PLOG/     1.000E+02   4.187E+24   -3.418   31816.6 /
+     PLOG/     1.000E+03   2.087E+11   0.618   30250.7 /
+	
+
+C2H3+HCO=C2H4+CO                     9.0E13   0.000       0 !
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+C2H3+CH3=C2H2+CH4                    9.0E12   0.000    -765 !
+! Stoliarov SI Knyazev VD Slagle IR JPCA 104:9687-9697 2000
+
+C2H3+CH=CH2+C2H2                     5.0E13   0.000       0 !
+! JAM est
+
+C2H3+C2H3=C2H4+C2H2                  1.5E13   0.000       0 !
+! Fahr A Laufer A Klein R Braun W JPC 95:3218-3224 1991
+
+C2H3+C2H=C2H2+C2H2                   3.0E13   0.000       0 !
+! JAM est
+
+
+C2H3+CH3OH=C2H4+CH3O	1.03E6	1.51	26630
+! Chen et al., Int. J. Chem. Kinet. 47 (2015) 764--772
+
+C2H3+CH3OH=C2H4+CH2OH	1.75E-2	4.02	23370
+! Chen et al., Int. J. Chem. Kinet. 47 (2015) 764--772
+
+
+C2H2+M=C2H+H+M                       9.1E30  -3.700  127138 !
+     H2/2/ CO/2/ CO2/3/  H2O/5/
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+C2H2(+M)=H2CC(+M)                    1.8E04   3.510   43300
+ LOW  /2.5E15 -0.640 49700/
+ TROE / 0.5 1.E-30 1.E30 /
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+C2H+H2=C2H2+H                        4.1E05   2.390     864 !
+! Harding LB Schatz GC Chiles RA JCP 76:5172-5173 1982
+	
+C2H2+O=HCCO+H                        1.4E07   2.000    1900 ! GLA/MIL98 JAM lr
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+
+C2H2+O=CH2+CO                        6.1E06   2.000    1900 ! GLA/MIL98 JAM lr
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+
+ C2H2+OH=CH3+CO                       1.3E09   0.730    2579 !
+ PLOG   / .01                        4.8E05   1.680    -330./
+ PLOG   / .025                       4.4E06   1.400     227./
+ PLOG   / 0.1                        7.7E07   1.050    1115./
+ PLOG   / 1.0                        1.3E09   0.730    2579./
+ PLOG   / 10.0                       4.3E08   0.920    3736./
+ PLOG   / 100.                       8.3E05   1.770    4697./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 109:6045-6055 2005
+
+C2H2+OH=HCCOH+H                      2.4E06   2.000   12713 !
+ PLOG  /.01                          2.8E05   2.280   12419./
+ PLOG  /.025                         7.5E05   2.160   12547./
+ PLOG  /.1                           1.8E06   2.040   12669./
+ PLOG  / 1.0                         2.4E06   2.000   12713./
+ PLOG  / 10.                         3.2E06   1.970   12810./
+ PLOG  / 100.                        7.4E06   1.890   13603./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 109:6045-6055 2005
+
+C2H2+OH=CHCHOH                       3.5E31  -6.200    6635  !
+ PLOG   / .01                        2.9E64 -18.570   10009. /
+ PLOG   / .01                        2.6E33  -7.360    6392. /
+ PLOG   / .025                       4.7E59 -16.870    9087. /
+ PLOG   / .025                       4.4E32  -7.020    5933. /
+ PLOG   / 0.1                        1.2E28  -5.560    3724. /
+ PLOG   / 0.1                        6.4E42  -9.960   11737. /
+ PLOG   / 1.0                        1.9E44 -11.380    6299. /
+ PLOG   / 1.0                        3.5E31  -6.200    6635. / ! dominating
+ PLOG   / 10.0                       1.5E24  -4.060    3261. /
+ PLOG   / 10.0                       4.5E31  -5.920    8761. /
+ PLOG   / 100.                       6.2E20  -2.800    2831. /
+ PLOG   / 100.                       1.6E29  -4.910    9734. /
+! Senosiain JP Klippenstein SJ Miller JA JPCA 109:6045-6055 2005
+
+C2H2+OH=CH2CO+H                      7.5E06   1.550    2106 !
+ PLOG   /.01                         1.7E03   2.560    -844. /
+ PLOG   /.025                        1.5E04   2.280    -292. /
+ PLOG   / 0.1                        3.0E05   1.920     598. /
+ PLOG   / 1.0                        7.5E06   1.550    2106. /
+ PLOG   / 10.0                       5.1E06   1.650    3400. /
+ PLOG   / 100.                       1.5E04   2.450    4477. /
+! Senosiain JP Klippenstein SJ Miller JA JPCA 109:6045-6055 2005
+
+C2H2+OH=C2H+H2O                      2.6E06   2.140   17060. !
+!Senosiain JP Klippenstein SJ Miller JA JPCA 109:6045-6055 2005
+
+C2H2+HO2=CH2CHOO                                  7.11E+20       -3.15    15650.0
+  PLOG/1.000E-02    4.99E+06       -1.02    9152.0/
+  PLOG/1.000E-02    1.88E+26       -8.34    9249.0/
+  PLOG/1.000E-01    6.02E+17       -3.82    10790.0/
+  PLOG/1.000E-01    5.26E+129      -41.74    35930.0/
+  PLOG/3.160E-01    2.47E+48      -12.82    25220.0/
+  PLOG/3.160E-01    1.96E+18       -3.67    10480.0/
+  PLOG/1.000E+00    4.06E+50      -13.07    27220.0/
+  PLOG/1.000E+00    4.93E+21       -4.37    12220.0/
+  PLOG/3.160E+00    9.08E+46      -11.57    26880.0/
+  PLOG/3.160E+00    1.92E+22       -4.28    13080.0/
+  PLOG/1.000E+01    4.60E+43      -10.24    26930.0/
+  PLOG/1.000E+01    2.11E+21       -3.78    13380.0/
+  PLOG/3.160E+01    5.61E+38       -8.49    26210.0/
+  PLOG/3.160E+01    1.39E+20       -3.30    13410.0/
+  PLOG/1.000E+02    2.53E+35       -7.26    26390.0/
+  PLOG/1.000E+02    1.42E+19       -2.91    13420.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+  C2H2+HO2=CHCHO+OH                               3.24E+09        1.05    16950.0
+  PLOG/1.000E-02    5.49E+09        0.91    18500.0/
+  PLOG/1.000E-02    2.41E+07        1.54    14690.0/
+  PLOG/1.000E-01    5.93E+09        0.90    18550.0/
+  PLOG/1.000E-01    2.48E+07        1.54    14700.0/
+  PLOG/3.160E-01    6.80E+09        0.88    18640.0/
+  PLOG/3.160E-01    2.63E+07        1.54    14730.0/
+  PLOG/1.000E+00    1.56E+10        0.77    19040.0/
+  PLOG/1.000E+00    2.50E+07        1.56    14790.0/
+  PLOG/3.160E+00    3.48E+09        0.99    18810.0/
+  PLOG/3.160E+00    1.47E+08        1.32    15090.0/
+  PLOG/1.000E+01    5.39E+10        0.61    20740.0/
+  PLOG/1.000E+01    1.61E+08        1.36    15420.0/
+  PLOG/3.160E+01    3.70E+08        1.23    15960.0/
+  PLOG/3.160E+01    1.67E+07        1.59    15910.0/
+  PLOG/1.000E+02    1.45E+11        0.48    17730.0/
+  PLOG/1.000E+02    7.21E+06        1.73    16020.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+C2H2+HO2=CH2CO+OH                                  5.16E-04        3.99    18890.0
+  PLOG/1.000E-02    6.25E-07        4.75    15530.0/
+  PLOG/1.000E-02    1.31E-14        6.58    10270.0/
+  PLOG/1.000E-01    6.70E-07        4.74    15550.0/
+  PLOG/1.000E-01    1.29E-14        6.59    10330.0/
+  PLOG/3.160E-01    4.18E-07        4.81    15410.0/
+  PLOG/3.160E-01    3.99E-14        6.36    10270.0/
+  PLOG/1.000E+00    5.28E-07        4.78    15460.0/
+  PLOG/1.000E+00    3.28E-15        6.70    10090.0/
+  PLOG/3.160E+00    1.04E-06        4.69    15640.0/
+  PLOG/3.160E+00    8.71E-21        8.30    8107.0/
+  PLOG/1.000E+01    4.68E-05        4.22    16780.0/
+  PLOG/1.000E+01    8.36E-22        8.76    8804.0/
+  PLOG/3.160E+01    8.99E-01        2.97    19730.0/
+  PLOG/3.160E+01    6.87E-14        6.67    13130.0/
+  PLOG/1.000E+02    3.58E+03        1.97    23010.0/
+  PLOG/1.000E+02    6.63E-12        6.15    14730.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+C2H2+HO2=CH2CHO+O                              1.41E+05        1.86    15460.0
+  PLOG/1.000E-02    5.50E+06        1.19    12880.0/
+  PLOG/1.000E-02    2.94E-04        4.16    7736.0/
+  PLOG/1.000E-01    1.16E+08        0.77    13600.0/
+  PLOG/1.000E-01    6.14E-03        3.81    8394.0/
+  PLOG/3.160E-01    1.20E+07        1.09    13050.0/
+  PLOG/3.160E-01    5.44E-04        4.09    8044.0/
+  PLOG/1.000E+00    3.02E+07        0.98    13310.0/
+  PLOG/1.000E+00    2.48E-04        4.19    8203.0/
+  PLOG/3.160E+00    1.98E+74      -16.33    109200.0/
+  PLOG/3.160E+00    6.57E+04        1.85    12360.0/
+  PLOG/1.000E+01    7.50E+14       -1.17    18350.0/
+  PLOG/1.000E+01    2.92E-01        3.38    10590.0/
+  PLOG/3.160E+01    8.63E+18       -2.27    22230.0/
+  PLOG/3.160E+01    1.95E+00        3.17    11740.0/
+  PLOG/1.000E+02    5.78E+18       -2.09    24350.0/
+  PLOG/1.000E+02    1.10E-01        3.52    11980.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+C2H2+HO2=OCHCHO+H                                   3.94E+04        1.68    13980.0
+  PLOG/1.000E-02    8.51E+07        0.48    11720.0/
+  PLOG/1.000E-02    2.43E-06        4.43    5578.0/
+  PLOG/1.000E-01    7.43E+07        0.50    11690.0/
+  PLOG/1.000E-01    2.00E-06        4.45    5564.0/
+  PLOG/3.160E-01    7.91E+07        0.49    11700.0/
+  PLOG/3.160E-01    1.81E-06        4.46    5654.0/
+  PLOG/1.000E+00    2.18E+09        0.06    12470.0/
+  PLOG/1.000E+00    2.24E-05        4.17    6416.0/
+  PLOG/3.160E+00    7.00E+49      -10.18    77110.0/
+  PLOG/3.160E+00    7.65E+05        1.18    11340.0/
+  PLOG/1.000E+01    4.06E+16       -2.03    17630.0/
+  PLOG/1.000E+01    2.01E-02        3.38    8696.0/
+  PLOG/3.160E+01    9.38E+16       -2.03    19590.0/
+  PLOG/3.160E+01    6.06E-03        3.53    9217.0/
+  PLOG/1.000E+02    5.91E+21       -3.32    25030.0/
+  PLOG/1.000E+02    6.76E-02        3.27    10760.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+! Replace HCO with 70% H + CO
+! C2H2+HO2=CH2O+HCO                                 8.66E+07        0.87    14170.0
+!   PLOG/1.000E-02    1.30E+14       -1.17    13750.0/
+!   PLOG/1.000E-02    2.81E+01        2.56    7382.0/
+!   PLOG/1.000E-01    1.42E+01        2.64    7253.0/
+!   PLOG/1.000E-01    5.19E+13       -1.05    13520.0/
+!   PLOG/3.160E-01    8.64E-06        4.34    4525.0/
+!   PLOG/3.160E-01    2.30E+10       -0.00    11720.0/
+!   PLOG/1.000E+00    1.11E+103      -24.18    138600.0/
+!   PLOG/1.000E+00    2.69E+08        0.60    10850.0/
+!   PLOG/3.160E+00    1.74E+16       -1.75    15180.0/
+!   PLOG/3.160E+00    1.18E+01        2.69    8025.0/
+!   PLOG/1.000E+01    2.44E+36       -7.77    26970.0/
+!   PLOG/1.000E+01    3.28E+07        0.91    11710.0/
+!   PLOG/3.160E+01    5.92E+28       -5.30    25130.0/
+!   PLOG/3.160E+01    5.98E+04        1.70    11250.0/
+!   PLOG/1.000E+02    8.24E+16       -1.70    20030.0/
+!   PLOG/1.000E+02    1.44E-05        4.31    6829.0/
+C2H2+HO2=CH2O+HCO                                 8.66E+07        0.87    14170.0
+  PLOG/1.000E-02    3.90E+13       -1.17    13750.0/
+  PLOG/1.000E-02    8.43E+00        2.56    7382.0/
+  PLOG/1.000E-01    4.26E+00        2.64    7253.0/
+  PLOG/1.000E-01    1.56E+13       -1.05    13520.0/
+  PLOG/3.160E-01    2.59E-06        4.34    4525.0/
+  PLOG/3.160E-01    6.90E+09       -0.00    11720.0/
+  PLOG/1.000E+00    3.33E+102      -24.18    138600.0/
+  PLOG/1.000E+00    8.07E+07        0.60    10850.0/
+  PLOG/3.160E+00    5.22E+15       -1.75    15180.0/
+  PLOG/3.160E+00    3.54E+00        2.69    8025.0/
+  PLOG/1.000E+01    7.32E+35       -7.77    26970.0/
+  PLOG/1.000E+01    9.84E+06        0.91    11710.0/
+  PLOG/3.160E+01    1.78E+28       -5.30    25130.0/
+  PLOG/3.160E+01    1.79E+04        1.70    11250.0/
+  PLOG/1.000E+02    2.47E+16       -1.70    20030.0/
+  PLOG/1.000E+02    4.32E-06        4.31    6829.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+C2H2+HO2=CH2O+H+CO                                 8.66E+07        0.87    14170.0
+  PLOG/1.000E-02    9.10E+13       -1.17    13750.0/
+  PLOG/1.000E-02    1.97E+01        2.56    7382.0/
+  PLOG/1.000E-01    9.94E+00        2.64    7253.0/
+  PLOG/1.000E-01    3.63E+13       -1.05    13520.0/
+  PLOG/3.160E-01    6.05E-06        4.34    4525.0/
+  PLOG/3.160E-01    1.61E+10       -0.00    11720.0/
+  PLOG/1.000E+00    7.77E+102      -24.18    138600.0/
+  PLOG/1.000E+00    1.88E+08        0.60    10850.0/
+  PLOG/3.160E+00    1.22E+16       -1.75    15180.0/
+  PLOG/3.160E+00    8.26E+00        2.69    8025.0/
+  PLOG/1.000E+01    1.71E+36       -7.77    26970.0/
+  PLOG/1.000E+01    2.30E+07        0.91    11710.0/
+  PLOG/3.160E+01    4.14E+28       -5.30    25130.0/
+  PLOG/3.160E+01    4.19E+04        1.70    11250.0/
+  PLOG/1.000E+02    5.77E+16       -1.70    20030.0/
+  PLOG/1.000E+02    1.01E-05        4.31    6829.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+C2H2+HO2=CO+CH3O                                3.06E+05        1.07    14220.0
+  PLOG/1.000E-02    3.54E+11        0.00    49510.0/
+  PLOG/1.000E-02    2.89E+04        1.23    9903.0/
+  PLOG/1.000E-01    2.78E+08        0.01    11920.0/
+  PLOG/1.000E-01    9.67E-07        4.15    5173.0/
+  PLOG/3.160E-01    8.06E+07        0.18    11650.0/
+  PLOG/3.160E-01    1.84E-08        4.62    4517.0/
+  PLOG/1.000E+00    8.94E+69      -15.85    102500.0/
+  PLOG/1.000E+00    5.38E+05        0.86    10700.0/
+  PLOG/3.160E+00    5.66E+12       -1.25    14570.0/
+  PLOG/3.160E+00    5.37E-04        3.42    7218.0/
+  PLOG/1.000E+01    3.30E+23       -4.45    21210.0/
+  PLOG/1.000E+01    2.86E+02        1.84    10460.0/
+  PLOG/3.160E+01    2.43E+22       -3.96    22650.0/
+  PLOG/3.160E+01    8.11E+00        2.30    10560.0/
+  PLOG/1.000E+02    1.17E+18       -2.57    22360.0/
+  PLOG/1.000E+02    6.86E-04        3.42    9329.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+C2H2+HO2=CO2+CH3                                 4.13E+05        0.96    14140.0
+  PLOG/1.000E-02    1.15E-07        4.31    4614.0/
+  PLOG/1.000E-02    2.01E+08        0.00    11790.0/
+  PLOG/1.000E-01    1.10E-07        4.32    4622.0/
+  PLOG/1.000E-01    2.01E+08        0.00    11780.0/
+  PLOG/3.160E-01    1.75E+142      -35.04    188700.0/
+  PLOG/3.160E-01    1.55E+05        0.95    10200.0/
+  PLOG/1.000E+00    3.96E+84      -19.80    119800.0/
+  PLOG/1.000E+00    1.38E+06        0.68    10810.0/
+  PLOG/3.160E+00    5.02E+13       -1.60    14980.0/
+  PLOG/3.160E+00    9.29E-03        3.00    7659.0/
+  PLOG/1.000E+01    8.56E+28       -6.15    24030.0/
+  PLOG/1.000E+01    1.86E+04        1.26    11230.0/
+  PLOG/3.160E+01    1.28E+27       -5.42    25380.0/
+  PLOG/3.160E+01    2.89E+02        1.79    11240.0/
+  PLOG/1.000E+02    1.71E+15       -1.80    20370.0/
+  PLOG/1.000E+02    3.90E-07        4.21    7314.0/
+! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+
+	!	C2H2+O2=HCO+HCO                      6.1E12   0.000   53250 !
+	!	DUPLICATE
+	!	C2H2+O2=HCO+HCO                      1.7E07   1.670   70960 ! triplet surface
+	!	DUPLICATE
+	!	! Lopez et al., Experimental and Kinetic Modeling Study of C2H2 Oxidation at High Pressure, Int. J. Chem. Kinet., 2016
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+! and refitting:
+
+C2H2+O2=HCO+HCO				1.008E+18   -1.601   55209.9 
+C2H2+O2=HCO+H+CO			2.651E+25   -3.259   74127.2   
+C2H2+O2=H+CO+H+CO          	6.094E+26   -3.276   110814.6 
+     DUPLICATE
+C2H2+O2=H+CO+H+CO          	2.185E+32   -4.946   93104.6 
+     DUPLICATE
+
+ C2H2+CH2(S)=C2H2+CH2                 4.0E13   0.000       0 !           HAC/WAG89	
+! Hack W Koch M Wagener R Wagner HGg BBPC 93:165 1989
+
+	
+	
+H2CC+H=C2H2+H                        1.0E14   0.000       0 !           LAS/LAW00
+! Laskin A Wang H Law CK IJCK 32:589 2000
+
+H2CC+OH=CH2CO+H                      2.0E13   0.000       0 !           LAS/LAW00
+! Laskin A Wang H Law CK IJCK 32:589 2000
+
+H2CC+O2=CH2+CO2                      1.0E13   0.000       0 !           LAS/WAN99,JAM prd
+! Laskin A Wang H Law CK IJCK 32:589 2000
+! JAM est prod
+
+
+C2+H2=C2H+H                          4.0E05   2.40     1000 ! GLA/MIL98 JAM lr
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+
+! C2H+H=CH2+C see the reverse!
+
+C2H+O=CH+CO                          5.0E13   0.000       0 ! GLA/MIL98 JAM est
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+C2H+OH=HCCO+H                        2.0E13   0.000       0 ! GLA/MIL98 JAM est
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+C2H+OH=C2+H2O                        4.0E07   2.000    8000 ! GLA/MIL98 JAM est
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+!C2H+H2=C2H2+H 			see C2H2 subset
+
+C2H+O2=CO+CO+H                       4.7E13  -0.16        0 !           THI/TAA97
+! Thiesemann H Taatjes CA CPL 270:580-586 1997
+
+C2H+CH4=CH3+C2H2                     7.2E12   0.000     976 ! GLA/MIL98 OPA/LEO96
+! Opansky BJ Leone SR JPC 100:4888-4892 1996
+
+
+C2+M=C+C+M                           1.5E16   0.000  142300 !
+! Kruse T Roth P JPCA 101:2138-2146 1997
+
+C2+O=C+CO                            1.0E14   0.000       0 !
+! est
+
+C2+OH=C2O+H                          5.0E13   0.000       0 !
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+C2+O2=CO+CO                          9.0E12   0.000     980 !
+! Baughum SL Oldenborg RC ACS SS (ed TM Sloane) 249:257-266 1984
+! JAM est prod
+
+
+! *****************************************************************************
+!    EtOH (CH3CH2OH) subset                                                                *
+! *****************************************************************************
+
+CH3CH2OH=CH2OH+CH3                   5.6E64 -14.470  107039
+ PLOG/0.001                          1.3E51 -10.590  100869/
+ PLOG/0.01                           5.2E59 -13.980   99850/
+ PLOG/0.1                            1.6E66 -15.300  105331/
+ PLOG/1.0                            5.6E64 -14.470  107039/
+ PLOG/10.0                           1.6E58 -12.290  105708/
+ PLOG/100.0                          1.8E47  -8.960  101002/
+!R. Sivaramakrishnan, M.-C. Su, J. Michael, S. Klippenstein, L. Harding, B. Ruscic, M.-C.Su, Journal of Physical Chemistry A 114 (2010) 9425-9439.	
+!
+CH3CH2OH=C2H5+OH                     1.5E65 -14.89   112282
+ PLOG/0.001                          8.1E46 -11.33   110991/
+ PLOG/0.01                           1.8E56 -13.49   107178/
+ PLOG/0.1                            4.7E63 -14.99   109561/
+ PLOG/1.0                            1.5E65 -14.89   112282/
+ PLOG/10.0                           2.8E61 -13.40   113016/
+ PLOG/100.0                          6.2E51 -10.34   109879/
+!R. Sivaramakrishnan, M.-C. Su, J. Michael, S. Klippenstein, L. Harding, B. Ruscic, M.-C.Su, Journal of Physical Chemistry A 114 (2010) 9425-9439.	
+!
+CH3CH2OH=C2H4+H2O                    5.2E43  -8.900   81461
+ PLOG/0.001                          3.4E59 -14.220   83625/
+ PLOG/0.01                           2.6E57 -13.290   85214/
+ PLOG/0.1                            1.7E52 -11.520   84698/
+ PLOG/1.0                            5.2E43  -8.900   81461/
+ PLOG/10.0                           4.6E32  -5.600   76019/
+ PLOG/100.0                          3.8E20  -2.060   69426/
+!R. Sivaramakrishnan, M.-C. Su, J. Michael, S. Klippenstein, L. Harding, B. Ruscic, M.-C.Su, Journal of Physical Chemistry A 114 (2010) 9425-9439.	
+
+CH3CHOH+H=CH3CH2OH                   1.2E53 -12.330   14505
+ PLOG/  1.00E-02                     9.9E42 -10.770    8942/
+ PLOG/  1.00E-01                     1.9E55 -13.560   14306/
+ PLOG/  1.00E+00                     1.2E53 -12.330   14505/
+ PLOG/  1.00E+01                     1.7E50 -11.040   15896/
+ PLOG/  1.00E+02                     1.6E40  -7.820   12916/
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455; personal communication 650-2000 K fit
+
+CH3CH2O+H(+M)=CH3CH2OH(+M)            3.1E11   0.894      13 !
+ LOW /                                3.8E51 -15.550   11101 /
+! Xu et al., J. Phys. Chem. A 115 (2011) 3509–3522.
+
+CH3CH2OH+H=CH3CHOH+H2                8.8E03   2.680    2913 !
+!R. Sivaramakrishnan, M.-C. Su, J. Michael, S. Klippenstein, L. Harding, B. Ruscic, M.-C.Su, Journal of Physical Chemistry A 114 (2010) 9425-9439.	
+!
+CH3CH2OH+H=CH2CH2OH+H2               5.3E03   2.810    7491 !
+!R. Sivaramakrishnan, M.-C. Su, J. Michael, S. Klippenstein, L. Harding, B. Ruscic, M.-C.Su, Journal of Physical Chemistry A 114 (2010) 9425-9439.	
+!
+CH3CH2OH+H=CH3CH2O+H2                9.5E02   3.140    8696 !
+!R. Sivaramakrishnan, M.-C. Su, J. Michael, S. Klippenstein, L. Harding, B. Ruscic, M.-C.Su, Journal of Physical Chemistry A 114 (2010) 9425-9439.	
+
+CH3CH2OH+O=CH2CH2OH+OH               9.7E02   3.230    4660
+! Wu CW Lee Yuan P Xu S Lin MC J Phys Chem A 111 (2007) 6693-6703
+!
+CH3CH2OH+O=CH3CHOH+OH                1.5E05   2.470     876
+! Wu CW Lee Yuan P Xu S Lin MC J Phys Chem A 111 (2007) 6693-6703
+!
+CH3CH2OH+O=CH3CH2O+OH                1.5E-3   4.700    1730
+! Wu CW Lee Yuan P Xu S Lin MC J Phys Chem A 111 (2007) 6693-6703
+
+CH3CH2OH+OH=CH3CHOH+H2O	             4.5E02   3.110   -2666 !
+! Our fitting to J. Zheng and D. G. Truhlar,  Faraday Discuss, 157 (2012) 59–88.
+!
+CH3CH2OH+OH=CH2CH2OH+H2O             9.4E03   2.670   -1004 !
+! Our fitting to J. Zheng and D. G. Truhlar,  Faraday Discuss, 157 (2012) 59–88.
+!
+CH3CH2OH+OH=CH3CH2O+H2O	             2.4E03   2.820    -691 !
+ DUPLICATE
+CH3CH2OH+OH=CH3CH2O+H2O	             7.9E07   1.180    -303 !
+ DUPLICATE
+! Our fitting to J. Zheng and D. G. Truhlar,  Faraday Discuss, 157 (2012) 59–88.
+
+CH3CH2OH+HO2=CH3CHOH+H2O2            8.2E03   2.550   10750 !
+! Marinov NM IJCK 31:183 1999
+!
+CH3CH2OH+HO2=CH2CH2OH+H2O2           1.2E04   2.550   15750 !
+! Marinov NM IJCK 31:183 1999
+!
+CH3CH2OH+HO2=CH3CH2O+H2O2            2.5E12   0.000   24000 !
+! Marinov NM IJCK 31:183 1999
+
+CH3CH2OH+CH3=CH3CHOH+CH4             2.0E01   3.370    7630 !
+! Xu et al., J. Chem. Phys. 120 (2004).
+!
+CH3CH2OH+CH3=CH2CH2OH+CH4            2.0E00   3.570    7717 !
+! Xu et al., J. Chem. Phys. 120 (2004).
+!
+CH3CH2OH+CH3=CH3CH2O+CH4             3.3E02   3.300   12283 !
+! Xu et al., J. Chem. Phys. 120 (2004).
+
+CH3CHOH(+M)=CH3CHO+H(+M)             6.2E09   1.310   33778 !
+ LOW  /                              1.8E16   0.000   20782 /
+ TROE /0.187 65.2 2568 41226 /
+! E.E. Dames,  Int. J. Chem. Kinet. 46 (2014) 176–188.
+!
+CH3CHOH(+M)=CH2CHOH+H (+M)           6.4E09   1.330   35974 !
+ LOW  /                              8.2E14   0.000   21517 /
+ TROE / 0.473 10 2218 2615 /
+! E.E. Dames,  Int. J. Chem. Kinet. 46 (2014) 176–188.
+!
+CH3CHOH(+M)=CH3+CH2O(+M)             2.2E09   1.180   33987 !
+ LOW  /                              5.9E15   0.000   21333 /
+ TROE / 0.124  1  1729  50000  	/
+! E.E. Dames,  Int. J. Chem. Kinet. 46 (2014) 176–188.
+
+CH3CHOH+H=CH2CHOH+H2                 3.1E12   0.2728   -334 !
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+!
+CH3CHOH+H=C2H4+H2O                   1.8E17  -1.216     386
+ PLOG/   0.001                       1.2E17  -1.166     284 /
+ PLOG/   0.010                       1.2E17  -1.162     266 /
+ PLOG/   0.100                       1.8E17  -1.216     386 /
+ PLOG/   1.000                       2.6E20  -2.079    3148 /
+ PLOG/   10.00                       9.3E23  -2.996    7954 /
+ PLOG/   100.0                       1.6E20  -1.812    9448 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+!
+CH3CHOH+H=CH3+CH2OH                  2.3E20  -1.795    5893 !
+ PLOG/   0.001                       1.4E17  -0.912    3081 /
+ PLOG/   0.010                       1.5E17  -0.923    3116 /
+ PLOG/   0.100                       4.5E17  -1.052    3509 /
+ PLOG/   1.000                       2.3E20  -1.795    5893 /
+ PLOG/   10.00                       5.0E24  -2.949   10754 /
+ PLOG/   100.0                       4.0E23  -2.527   13637 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+!
+CH3CHOH+H=C2H5+OH                    1.6E16  -0.697    6677 !
+ PLOG/   0.001                       4.0E13   0.021    4442 /
+ PLOG/   0.010                       4.4E13   0.010    4476 /
+ PLOG/   0.100                       1.1E14  -0.095    4790 /
+ PLOG/   1.000                       1.6E16  -0.697    6677 /
+ PLOG/   10.00                       6.8E20  -1.943   11331 /
+ PLOG/   100.0                       6.3E21  -2.106   15269 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+
+CH3CHOH+O=CH3CHO+OH                  1.0E14   0.000       0 !
+! Marinov NM IJCK 31:183 1999
+!
+CH3CHOH+OH=CH3CHO+H2O                5.0E12   0.000       0 !
+! Marinov NM IJCK 31:183 1999
+!
+CH3CHOH+HO2=CH3CHO+OH+OH             4.0E13   0.000       0 !
+! Marinov NM IJCK 31:183 1999
+	
+CH3CHOH+O2=CH3CHO+HO2	             5.3E17  -1.638     839
+ PLOG/ 0.001                         5.3E17  -1.637     838/
+ PLOG/ 0.01                          5.3E17  -1.637     838/
+ PLOG/ 0.1                           5.3E17  -1.637     838/
+ PLOG/ 1                             5.3E17  -1.638     839/
+ PLOG/ 10                            1.5E18  -1.771    1120/
+ PLOG/ 100                           3.8E20  -2.429    3090/
+! da Silva et al., J. Phys. Chem. A 113 (2009) 8923–8933
+
+CH3CHOH+O2=CH2CHOH+HO2	             7.6E02   2.450    -296
+ PLOG/ 0.001                         5.1E02   2.495    -414/
+ PLOG/ 0.01                          5.1E02   2.496    -414/
+ PLOG/ 0.1                           5.3E02   2.490    -402/
+ PLOG/ 1                             7.6E02   2.450    -296/		
+ PLOG/ 10                            8.9E03   2.146     470/
+ PLOG/ 100                           4.4E05   1.699    2330/
+! da Silva et al., J. Phys. Chem. A 113 (2009) 8923–8933
+
+CH2CH2OH=CH2CHOH+H                   3.3E28  -5.260   35583
+ PLOG/ 0.0013                        2.7E15  -1.920   29383/		
+ PLOG/ 1                             3.3E28  -5.260   35583/		
+ PLOG/ 100                           2.7E27  -4.440   37205/
+! Xu, Z. F.; Xu, K.; Lin, M. C. ChemPhysChem 2009, 10, 972-982
+
+CH2CH2OH+H=C2H4+H2O                  2.6E22  -2.599    5235 !
+ PLOG/   0.001                       1.7E17  -1.184     335 /
+ PLOG/   0.010                       1.6E17  -1.176     299 /
+ PLOG/   0.100                       1.7E18  -1.461    1107 /
+ PLOG/   1.000                       2.6E22  -2.599    5235 /
+ PLOG/   10.00                       6.5E23  -2.883    9307 /
+ PLOG/   100.0                       3.6E16  -0.716    8767 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+!
+CH2CH2OH+H=CH3+CH2OH                 1.9E22  -2.300    7693
+ PLOG/   0.001                       1.5E17  -0.903    3024 /
+ PLOG/   0.010                       1.9E17  -0.935    3120 /
+ PLOG/   0.100                       2.5E18  -1.243    4062 /
+ PLOG/   1.000                       1.9E22  -2.300    7693 /
+ PLOG/   10.00                       2.8E25  -3.100   12454 /
+ PLOG/   100.0                       7.5E20  -1.693   13429 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+!
+CH2CH2OH+H=C2H5+OH                   9.2E17  -1.15762  8193
+ PLOG/   0.001                       3.6E13   0.05139  4302 /
+ PLOG/   0.01                        4.6E13   0.02101  4392 /
+ PLOG/   0.1                         3.4E14  -0.21686  5113 /
+ PLOG/   1                           9.2E17  -1.15762  8193 /
+ PLOG/   10                          1.6E22  -2.27331 13261 /
+ PLOG/   100                         8.1E19  -1.50969 15534 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+
+CH2CH2OH+H(+M)=CH3CH2OH(+M)          5.2E17  -0.990    1580 !
+ LOW  /                              2.0E41  -7.080    6685/                                 !
+ TROE /0.8422 125 2219 6882/                               !
+! est C2H5+H+M
+
+CH2CH2OH+O=CH2O+CH2OH                4.0E13   0.000       0 !
+! est C2H5+O
+
+CH2CH2OH+OH=CH2CHOH+H2O    4.6961E+18   -1.5805   7999.2
+     PLOG/   0.001   1.2926E+19   -1.9600   272.7   /
+     PLOG/   0.010   1.2184E+19   -1.9533   238.8   /
+     PLOG/   0.100   4.1052E+19   -2.1007   625.4   /
+     PLOG/   1.000   7.9406E+22   -2.9892   3862.6   /
+     PLOG/   10.000   2.7926E+24   -3.3287   7748.8   /
+     PLOG/   100.000   4.6961E+18   -1.5805   7999.2   /
+! est C2H5+OH
+
+CH2CH2OH+HO2=CH3CH2OH+O2             1.0E12   0.000       0 !
+! est C2H5+HO2
+
+CH2CH2OH+HO2=>CH2OH+CH2O+OH          3.0E13   0.000       0 !
+! est C2H5+HO2
+
+CH2CH2OH+O2=CH2CHOH+HO2              3.6E13  -0.880    3074.0  
+PLOG/  1.30E-02                     1.3E53 -11.880   35927.0/             
+PLOG/  1.30E-02                     2.3E10  -0.150    -791.0/                
+PLOG/  1.00E-01                     5.0E12  -0.790     877.0/                 
+PLOG/  1.00E-01                     2.8E61 -14.170   43492.0/             
+PLOG/  1.00E+00                     3.6E13  -0.880    3074.0/              
+PLOG/  1.00E+00                     6.0E03 -10.000     199.0/              
+PLOG/  1.00E+01                     4.4E20  -2.850    8516.0/              
+PLOG/  1.00E+01                     6.0E03 -10.000     199.0/              
+PLOG/  1.00E+02                     1.9E30  -5.510   16616.0/             
+PLOG/  1.00E+02                     6.0E03 -10.000     199.0/              
+! Zador J Fernandes RX Georgievskii Y Meloni G Taatjes CA Miller JA Proc Combust Inst 2009 32 271-277
+
+CH2CH2OH+O2=HOCH2CH2OO              6.4E38  -8.770    5859 ! 1 atm
+PLOG/  1.30E-02                     1.5E44 -11.150    5523.0/              
+PLOG/  1.00E-01                     4.9E42 -10.340    5913.0/              
+PLOG/  1.00E+00                     6.4E38  -8.770    5859.0/              
+PLOG/  1.00E+01                     5.6E32  -6.580    5046.0/              
+PLOG/  1.00E+02                     4.2E26  -4.460    3940.0/              
+! Zador J Fernandes RX Georgievskii Y Meloni G Taatjes CA Miller JA Proc Combust Inst 2009 32 271-277
+
+CH2CH2OH+O2=CH2O+CH2O+OH             4.4E24  -4.360    4396 ! 1 atm
+PLOG/  1.30E-02                     5.6E22  -3.950    1210.0/               
+PLOG/  1.00E-01                     1.4E24  -4.310    2664.0/               
+PLOG/  1.00E+00                     4.4E24  -4.360    4396.0/              
+PLOG/  1.00E+01                     3.0E25  -4.500    6763.0/              
+PLOG/  1.00E+02                     1.2E29  -5.440   11323.0/             
+! Zador J Fernandes RX Georgievskii Y Meloni G Taatjes CA Miller JA Proc Combust Inst 2009 32 271-277
+
+CH3CH2O(+M)=CH3+CH2O(+M)             6.3E10   0.930   17098
+ LOW /                               4.7E25   0.930   16532/ ! N2
+ TROE /0.426 0.3 2278 100000/
+! E.E. Dames,  Int. J. Chem. Kinet. 46 (2014) 176–188.
+
+CH3CHO+H=CH3CH2O                     4.6E07   1.710    7090
+! Sivaramakrishnan R Michael JV Klippenstein SJ, J. Phys. Chem. A 114 (2010) 755–764.
+
+CH3CH2O+H(+M)=CH2OH+CH3(+M)          2.6E18  -1.050    5128
+ LOW /                               3.0E11   0.893      17 /
+! Z.F. Xu, K. Xu, M.C. Lin, J. Phys. Chem. A 115 (2011) 3509–3522.
+
+CH3CH2O+H=CH3CHO+H2                  7.5E09   1.150     673
+! Xu et al., J. Phys. Chem. A 115 (2011) 3509–3522.
+
+CH3CH2O+OH=CH3CHO+H2O                3.0E13   0.000       0
+! est
+
+CH3CH2O+O2=CH3CHO+HO2                1.5E10   0.000     645
+! Fittschen, C.; Frenzel, A.; Imrik, K.; Devolder, P. Int J Chem Kinet 1999, 31, 860–866.
+
+CH3CH2O+CO=C2H5+CO2                  9.5E25  -4.930    9080
+! est CH3O+CO=CH3+CO2
+
+
+CH3CHO(+M)=CH3+HCO(+M)               2.7E22  -1.740   86355
+ LOW /                               1.1E59 -11.300   95912/
+ TROE/ 1.8E-1 4.62E02 1.6773E05 1.58E06/	
+ H2/2.86/ H2O/8.57/ CH4/4.23/ CO/2.14/ CO2/2.86/ C2H6/4.23/ N2/1.43/
+! Sivaramakrishnan, R.; Michael, J.V.; Klippenstein, S.J. J Phys Chem A 114, 755-764 (2010).
+
+CH3CHO=CH2CO+H2                      8.5E44  -9.770   90905
+ PLOG/  5.0E-2                       4.0E44 -10.070   87428/	
+ PLOG/  1.0E-01                      7.4E44 -10.050   88422/	
+ PLOG/  1.0E+00                      8.5E44  -9.770   90905/	
+ PLOG/  1.0E+01                      2.2E45  -9.550   94879/	
+! Sivaramakrishnan, R.; Michael, J.V.; Klippenstein, S.J. J Phys Chem A 114, 755-764 (2010).
+! R. Sivaramakrishnan, J.V. Michael, L.B. Harding, S.J. Klippenstein, J Phys Chem A 2015, 119, 7724-7733.
+!
+CH3CHO=CH4+CO                        1.9E45  -9.430   89415
+ PLOG/  5.00E-02                     5.1E45  -9.850   89018/	
+ PLOG/  1.00E-01                     1.4E45  -9.650   87925/	
+ PLOG/  1.00E+00                     1.9E45  -9.430   89415/	
+ PLOG/  1.00E+01                     1.6E45  -9.100   92793/	
+! Sivaramakrishnan, R.; Michael, J.V.; Klippenstein, S.J. J Phys Chem A 114, 755-764 (2010).
+! R. Sivaramakrishnan, J.V. Michael, L.B. Harding, S.J. Klippenstein, J Phys Chem A 2015, 119, 7724-7733.
+
+CH3CHO=CH2CHOH                       1.1E46  -9.760   81964
+ PLOG/  5.00E-02                     7.3E45 -10.040   78785/	
+ PLOG/  1.00E-01                     2.9E45  -9.860   78884/	
+ PLOG/  1.00E+00                     1.1E46  -9.760   81964/	
+ PLOG/  1.00E+01                     2.8E45  -9.350   84645/	
+! R. Sivaramakrishnan, J.V. Michael, L.B. Harding, S.J. Klippenstein, J Phys Chem A 2015, 119, 7724-7733.
+
+ CH3CHO+H=CH3CO+H2                    1.3E05   2.580    1219
+! R Sivaramakrishnan JV Michael SJ Klippenstein, J. Phys. Chem. A 114 (2010) 755–764.
+
+CH3CHO+H=CH2CHO+H2                   2.7E03   3.100    5203
+! R Sivaramakrishnan JV Michael SJ Klippenstein, J. Phys. Chem. A 114 (2010) 755–764.
+!
+CH3CHO+O=CH3CO+OH                    5.8E12   0.000    1808
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3CHO+O=CH2CHO+OH                   9.0E04   2.800    5800
+! est 1/2 of c2h6+o
+
+CH3CHO+OH=CH3CO+H2O                  2.8E12   0.000    -709
+! S. Wang, D.F. Davidson, R.K. Hanson, Proc. Combust. Inst. 35 (2015) 473-480.
+!
+CH3CHO+OH=CH2CHO+H2O                 8.5E13   0.000    5313
+! S. Wang, D.F. Davidson, R.K. Hanson, Proc. Combust. Inst. 35 (2015) 473-480.
+
+CH3CHO+HO2=CH3CO+H2O2                1.7E13   0.000   16293
+! M Altarawneh AH Al-Muhtaseb BZ Dlugogorski EM Kennedy JC Mackie J Comput Chem 32: 1725–1733, 2011
+!
+CH3CHO+HO2=CH2CHO+H2O2               1.1E13   0.000   23248
+! M Altarawneh AH Al-Muhtaseb BZ Dlugogorski EM Kennedy JC Mackie J Comput Chem 32: 1725–1733, 2011
+
+CH3CHO+O2=CH3CO+HO2                  1.2E05   2.500   37554
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3CHO+O2=CH2CHO+HO2                 1.5E07   1.900   49548
+! est 1/2 of c2h6+o2
+
+CH3CHO+CH3=CH3CO+CH4                 3.5E-8   6.210    1629 !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH3CHO+CH3=CH2CHO+CH4                1.8E-1   3.440   10384 !
+! est 1/2 of c2h6+ch3
+
+CH3CHO+CH3O=CH3CO+CH3OH              1.0E11   0.000    2981 !
+! est ch2o+ch3o
+
+CH3CHO+CH3O=CH2CHO+CH3OH             1.2E11   0.000    7100 !
+! est 1/2 of c2h6+ch3o
+
+CH3CHO+CH3OO=CH3CO+CH3OOH            1.7E13   0.000   16293 !
+! est ch3hco+ho2
+
+CH3CHO+CH3OO=CH2CHO+CH3OOH           1.1E13   0.000   23248 !
+! est ch3hco+ho2
+
+
+cC2H4O=CH2CHO+H                      1.8E13   0.200   71780 !
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O=CH3+HCO                       5.6E13   0.400   61880 !
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O=CH3CO+H                       2.4E13   0.250   65310 !
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O=CH2CO+H2                      3.6E12  -0.200   63030 !
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O=CH3CHO                        3.2E12  -0.750   46424 !
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O=C2H2+H2O                      7.6E12   0.060   69530 !
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O+H=CH3CHO+H                    5.6E13   0.000   10950 ! # commented out previously?
+! A. Joshi, X. You, T.A. Barckholtz, H. Wang, J. Phys. Chem. A 109 (2005) 8016-8027
+!
+cC2H4O+H=cC2H3O+H2                   2.0E13   0.000    8310 !
+! A. Lifshitz, H. Ben-Hamou, J. Phys. Chem. 87 (1983) 1782
+!
+cC2H4O+H=C2H3+H2O                    5.0E09   0.000    5000 !
+! A. Lifshitz, H. Ben-Hamou, J. Phys. Chem. 87 (1983) 1782
+!
+cC2H4O+H=C2H4+OH                     9.5E10   0.000    5000 !
+! A. Lifshitz, H. Ben-Hamou, J. Phys. Chem. 87 (1983) 1782
+!
+cC2H4O+O=cC2H3O+OH                   1.9E12   0.000    5250 !
+! D.J. Bogan, C.W. Hand, J. Phys. Chem. 82 (1978) 2067
+!
+cC2H4O+OH=cC2H3O+H2O                 1.8E13   0.000    3610 !
+! R.R. Baldwin, A. Keen, R.W. Walker, J. Chem. Soc. Faraday Trans. 80 (1984) 435
+!
+cC2H4O+HO2=cC2H3O+H2O2               4.0E12   0.000   17000 !
+! P. Dagaut, D. Voisin, M. Cathonnet, M. McGuinness, J.M. Simmie, Combust. Flame 106 (1996) 62-68.
+!
+cC2H4O+O2=cC2H3O+HO2                 4.0E13   0.000   61500 !
+! P. Dagaut, D. Voisin, M. Cathonnet, M. McGuinness, J.M. Simmie, Combust. Flame 106 (1996) 62-68.
+!
+cC2H4O+CH3=cC2H3O+CH4                1.1E12   0.000   11830 !
+! R.R. Baldwin, A. Keen, R.W. Walker, J. Chem. Soc. Faraday Trans. 80 (1984) 435
+
+
+CH2CHOH+H=CH2CHO+H2                  1.5E03   3.077    7230 !
+! H-B Rao X-Y Zeng H He Z-R Li J Phys Chem A 2011, 115, 1602-1608
+
+CH2CHOH+H=CHCHOH+H2                  2.5E07   2.030   15180 !
+! H-B Rao X-Y Zeng H He Z-R Li J Phys Chem A 2011, 115, 1602-1608
+!
+
+!CH2CHOH+O=CH2OH+HCO                  3.9E12   0.000    1494 !
+! DUPLICATE
+!CH2CHOH+O=CH2OH+HCO                  6.2E13   0.000    6855 !
+! DUPLICATE
+! est C2H4+O
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH2CHOH+O=CH2OH+HCO                  3.9E12   0.000    1494
+     DUPLICATE
+CH2CHOH+O=CH2OH+HCO          -2.335E+22   -2.473   21421.3
+     DUPLICATE
+CH2CHOH+O=CH2OH+HCO                  6.2E13   0.000    6855
+     DUPLICATE
+CH2CHOH+O=CH2OH+HCO          -3.711E+23   -2.473   26782.3
+     DUPLICATE
+CH2CHOH+O=CH2OH+H+CO          3.711E+23   -2.473   26782.3
+     DUPLICATE
+CH2CHOH+O=CH2OH+H+CO          2.335E+22   -2.473   21421.3
+     DUPLICATE
+
+CH2CHOH+O=CH2CHO+OH                  1.6E07   2.000    4400
+! est CH3CH2OH+O=CH3CH2O+OH
+
+CH2CHOH+OH=CHCHOH+H2O                1.3E-1   4.200    -860
+! est C2H4+OH
+
+CH2CHOH+OH=CH2CHO+H2O					2.372E+03	2.82	-691.48
+	DUPLICATE
+CH2CHOH+OH=CH2CHO+H2O					7.905E+07	1.18	-303.17
+	DUPLICATE
+! est CH3CH2OH+OH=CH3CH2O+H2O
+
+CH2CHOH+HO2=CH2CHO+H2O2              1.6E12   0.000   16293
+! M Altarawneh AH Al-Muhtaseb BZ Dlugogorski EM Kennedy JC Mackie J Comput Chem 32: 1725–1733, 2011
+
+CH2CHOH+HO2=CH3CHO+HO2               1.5E05   1.670    6810 !
+! G. da Silva, J.W. Bozzelli, Chem. Phys. Lett. 483 (2009) 25–29 (1 atm) # check SUP
+
+	!CH2CHOH+O2=>CH2O+HCO+OH              3.5E07   1.800   39000 !
+	! est C2H4+O2
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH2CHOH+O2=>CH2O+HCO+OH              3.5E07   1.800   39000 ! GIM/GLA09 C2H4+O2
+     DUPLICATE
+CH2CHOH+O2=>CH2O+HCO+OH          -2.095E+17   -0.673   58927.3
+     DUPLICATE
+CH2CHOH+O2=>CH2O+H+CO+OH          2.095E+17   -0.673   58927.3
+
+CHCHOH=HCCOH+H                       1.1E31  -6.153   51383 !
+ PLOG   /0.04                        4.4E29  -6.153   51383. / ! extrapolation
+ PLOG   /1.0                         1.1E31  -6.153   51383. /
+ PLOG   /10.                         1.5E32  -6.168   52239. /
+ PLOG   /100.                        5.5E29  -5.057   52377. /
+! Ing W-C Sheng CY Bozzelli JW FPT 83:111-145 2003
+
+CHCHOH+H=CH2CHO+H                    5.0E13   0.000       0 !
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+CHCHOH+H=HCCOH+H2                    4.5E13   0.000       0 !
+! est C2H3+H
+
+CHCHOH+O=OCHCHO+H                    5.0E13   0.000       0 !
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+CHCHOH+OH=HCCOH+H2O                  2.0E13   0.000       0 !
+! est C2H3+OH
+
+! CHCHOH+O2=OCHCHO+OH                  2.5E12   0.000       0 !
+! Siese, M.; Zetzsch, C. Z. Phys. Chem. (Munich) 188 75-89 1995
+! c2h2 paper (br = 60%)
+CHCHOH+O2=OCHCHO+OH                  1.8E12   0.000       -187 !
+
+
+	!CHCHOH+O2=HOCHO+HCO                  1.7E12   0.000       0 !
+	! Siese, M.; Zetzsch, C. Z. Phys. Chem. (Munich) 188 75-89 1995
+	! c2h2 paper (br = 40%)
+!  including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CHCHOH+O2=HOCHO+HCO		2.848E+14   -0.586   1237.3   
+CHCHOH+O2=HOCHO+H+CO  1.112E+22   -2.498   20265.6   
+	
+	
+	!CHCHOH+CH2O=CH2CHOH+HCO              5.4E03   2.810    5860
+	! est c2h3+ch2o
+	! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CHCHOH+CH2O=CH2CHOH+HCO   1.549E+11   0.413   8163.9   
+DUPLICATE
+CHCHOH+CH2O=CH2CHOH+HCO    5.117E+13   -0.005   14641.6 
+DUPLICATE
+	 
+CHCHOH+CH2O=CH2CHOH+H+CO          3.232E+13   0.337   25787.3
+
+CHCHOH+HCO=CH2CHOH+CO                9.0E13   0.000       0 !
+! est c2h3+hco
+
+CHCHOH+CH3=HCCOH+CH4                 2.1E13   0.000       0 !
+! est c2h3+ch3
+
+cC2H3O=CH2CHO                        8.7E31  -6.900   14994 !
+! Joshi A You X Barckholtz TA Wang H JPCA 109:8016-8027 2005
+	
+cC2H3O=CH2CO+H                       5.0E13   0.000   14863 !
+! Joshi A You X Barckholtz TA Wang H JPCA 109:8016-8027 2005
+
+cC2H3O=CH3+CO                        7.1E12   0.000   14280 !
+! Joshi A You X Barckholtz TA Wang H JPCA 109:8016-8027 2005
+
+CH3CO=CH3+CO                         6.5E18  -2.520   16436 !
+ PLOG /0.01                          6.9E14  -1.970   14585./
+ PLOG /0.025                         2.4E15  -2.000   14805./
+ PLOG /0.1                           2.0E16  -2.090   15197./
+ PLOG /1.                            6.5E18  -2.520   16436./
+ PLOG /10.                           8.2E19  -2.550   17263./
+ PLOG /100.                          1.3E20  -2.320   18012./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:5772-5781 2006
+
+CH2CO+H=CH3CO                        2.3E08   1.610    2627 ! (kinf)
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:5772-5781 2006
+	
+	! CH3CO+H=CH3+HCO                      2.1E13   0.000       0 !
+	! Bartels M Edelbuttal J Hoyermann K PCI 23:131 1991
+	! Ohmori K Miyoshi A Matsui H Washida N JPC 94:3253 1990
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)	
+CH3CO+H=CH3+HCO 					2.1E13 0.000 0
+     DUPLICATE
+CH3CO+H=CH3+HCO          -1.257E+23   -2.473   19927.3
+     DUPLICATE
+CH3CO+H=CH3+H+CO          1.257E+23   -2.473   19927.3
+	
+CH3CO+H=CH2CO+H2                     1.2E13   0.000       0 !
+! Bartels M Edelbuttal J Hoyermann K PCI 23:131 1991
+! Ohmori K Miyoshi A Matsui H Washida N JPC 94:3253 1990
+!
+CH3CO+O=CH3+CO2                      1.6E14   0.000       0 !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+!
+CH3CO+O=CH2CO+OH                     5.3E13   0.000       0 !
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+!
+CH3CO+OH=CH2CO+H2O                   1.2E13   0.000       0 !
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH3CO+O2=CH3C(O)OO                   2.8E34  -7.210    6060 ! ¤
+ PLOG /0.1                           3.6E31  -4.769    2188 /
+ PLOG /1.0                           2.8E34  -7.210    6060 /
+ PLOG /10                            4.9E31  -6.087    6541 /
+! J.W. Allen, C.F. Goldsmith, W.H. Green, PhysChemChemPhys 2012, 14, 1131-1155.
+! fitted from figure
+
+CH3CO+O2=CH2CO+HO2                   3.6E10   0.544    3721 ! ¤
+ PLOG /0.1                           1.3E08   1.986     228 /
+ PLOG /1.0                           3.6E10   0.544    3721 /
+ PLOG /10                            7.7E13  -0.335    7510 /
+! J.W. Allen, C.F. Goldsmith, W.H. Green, PhysChemChemPhys 2012, 14, 1131-1155.
+! fitted from figure
+
+CH3CO+O2=CH2O+CO+OH                  4.9E23  -3.712    5895 ! ¤
+ PLOG /0.1                           5.1E22  -3.524    3255 /
+ PLOG /1.0                           4.9E23  -3.712    5895 /
+ PLOG /10                            4.8E22  -3.303    8598 /
+! J.W. Allen, C.F. Goldsmith, W.H. Green, PhysChemChemPhys 2012, 14, 1131-1155.
+! fitted from figure
+
+CH3CO+CH3=C2H6+CO                    3.3E13   0.000       0 !
+! Adachi H Basco N James DGL IJCK 13:1251-1276 1981
+
+CH3CO+CH3=CH2CO+CH4                  5.3E13   0.000       0 !
+! Adachi H Basco N James DGL IJCK 13:1251-1276 1981
+
+CH3CO+CH3OO=CH3+CO2+CH3O             2.4E13   0.000       0 !
+! Tsang W Hampson RF JPCRD 15:1087 1986
+
+CH2CHO=CH2CO+H                       1.3E34  -6.570   49454 !
+ PLOG   / 0.01                       2.4E25  -4.800   43424./
+ PLOG   / 0.1                        2.4E30  -5.860   46114./
+ PLOG   / 1.0                        1.3E34  -6.570   49454./
+ PLOG   / 10.                        3.5E36  -6.920   52979./
+ PLOG   / 100.                       1.2E36  -6.480   55191./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:5772-5781 2006
+
+CH2CHO=CH3+CO                        6.5E34  -6.870   47191 !
+ PLOG /0.01                          1.2E30  -6.070   41332./
+ PLOG /0.025                         1.5E31  -6.270   42478./
+ PLOG /0.1                           6.4E32  -6.570   44282./
+ PLOG /1.                            6.5E34  -6.870   47191./
+ PLOG /10.                           2.2E35  -6.760   49548./
+ PLOG /100.                          2.2E33  -5.970   50448./
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:5772-5781 2006
+
+	!CH2CHO+H=CH3+HCO                     1.9E22  -2.300    7693
+	!PLOG/   0.001                       1.5E17  -0.903    3024 /
+	!PLOG/   0.010                       1.9E17  -0.935    3120 /
+	!PLOG/   0.100                       2.5E18  -1.243    4062 /
+	!PLOG/   1.000                       1.9E22  -2.300    7693 /
+	!PLOG/   10.00                       2.8E25  -3.100   12454 /
+	!PLOG/   100.0                       7.5E20  -1.693   13429 /
+	! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH2CHO+H=CH3+HCO 		1.9E22 -2.300 7693
+     PLOG/     1.000E-02   1.900E+17   -0.935   3120.0 /
+     PLOG/     1.000E-02   -1.137E+27   -3.408   23047.3 /
+     PLOG/     1.000E-01   2.500E+18   -1.243   4062.0 /
+     PLOG/     1.000E-01   -1.496E+28   -3.716   23989.3 /
+     PLOG/     1.000E+00   1.900E+22   -2.300   7693.0 /
+     PLOG/     1.000E+00   -1.137E+32   -4.773   27620.3 /
+     PLOG/     1.000E+01   2.800E+25   -3.100   12454.0 /
+     PLOG/     1.000E+01   -1.676E+35   -5.573   32381.3 /
+     PLOG/     1.000E+02   7.500E+20   -1.693   13429.0 /
+     PLOG/     1.000E+02   -4.489E+30   -4.166   33356.3 /
+
+CH2CHO+H=CH3+H+CO     1.137E+32   -4.773   27620.3
+     PLOG/     1.000E-02   1.137E+27   -3.408   23047.3 /
+     PLOG/     1.000E-01   1.496E+28   -3.716   23989.3 /
+     PLOG/     1.000E+00   1.137E+32   -4.773   27620.3 /
+     PLOG/     1.000E+01   1.676E+35   -5.573   32381.3 /
+     PLOG/     1.000E+02   4.489E+30   -4.166   33356.3 /
+
+CH2CHO+H=CH3CO+H                     9.2E17  -1.15762  8193
+ PLOG/   0.001                       3.6E13   0.05139  4301 /
+ PLOG/   0.01                        4.6E13   0.02101  4392 /
+ PLOG/   0.1                         3.4E14  -0.21686  5113 /
+ PLOG/   1                           9.2E17  -1.15762  8193 /
+ PLOG/   10                          1.6E22  -2.27331 13261 /
+ PLOG/   100                         8.1E19  -1.50969 15534 /
+! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455	
+	
+	! CH2CHO+O = CH2O+HCO                  5.0E13   0.000       0 !
+	! Labbe NJ Sivaramakrishnan R Klippenstein SJ, Proc. Combust. Inst. 35 (2015) 447-455	
+	! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH2CHO+O=CH2O+HCO					5.0E13   0.000       0
+     DUPLICATE
+CH2CHO+O=CH2O+HCO          -2.993E+23   -2.473   19927.3
+     DUPLICATE
+CH2CHO+O=CH2O+H+CO          2.993E+23   -2.473   19927.3
+	
+CH2CHO+OH=CH2CO+H2O                  2.0E13   0.000       0 !
+! Glarborg P Alzueta MU Dam-Johansen K Miller JA CF 115:1 1998
+! JAM est
+
+	!CH2CHO+OH=CH2OH+HCO                  1.0E13   0.000       0 !
+	! JAM est	
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH2CHO+OH=CH2OH+HCO                  1.0E13   0.000       0 ! RAS/GLA08b GLA/MIL98
+     DUPLICATE
+CH2CHO+OH=CH2OH+HCO          -5.986E+22   -2.473   19927.3
+     DUPLICATE
+CH2CHO+OH=CH2OH+H+CO          5.986E+22   -2.473   19927.3	
+	
+	
+CH2CHO+HO2=CH2O+HCO+OH               3.1E13   0.000       0 ! ##151210##
+! est as C2H5+HO2; prod Marinov NM IJCK 31:183 1999	
+
+CH2CHO+O2=CH2O+CO+OH                 7.0E10   0.000       0 ! ##160416
+! E. Delbos, C. Fittschen, H. Hippler, N. Krasteva, M. Olzmann, B. Viskolcz, J. Phys. Chem. A 110 (2006) 3238-3245. 
+
+	!CH2CHO+CH2=C2H4+HCO                  5.0E13   0.000       0 !
+	! JAM est
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)	
+CH2CHO+CH2=C2H4+HCO                  5.0E13   0.000       0 ! GLA/MIL98  JAM est
+     DUPLICATE
+CH2CHO+CH2=C2H4+HCO          -2.993E+23   -2.473   19927.3
+     DUPLICATE
+CH2CHO+CH2=C2H4+H+CO          2.993E+23   -2.473   19927.3
+
+	!CH2CHO+CH=C2H3+HCO                   1.0E14   0.000       0 !
+	! JAM est
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)	
+CH2CHO+CH=C2H3+HCO                   1.0E14   0.000       0 ! GLA/MIL98  JAM est
+     DUPLICATE
+CH2CHO+CH=C2H3+HCO          -5.986E+23   -2.473   19927.3
+     DUPLICATE
+CH2CHO+CH=C2H3+H+CO          5.986E+23   -2.473   19927.3
+
+CHCHO+H=CH2CO+H                      1.0E14   0.000       0 !
+! est
+
+CHCHO+O2=CO2+H+HCO                   2.1E09   0.9929   -269 !
+! est as CH2+O2
+
+CHCHO+O2=OCHCHO+O                    1.3E06   2.4202   1604 ! #
+! est as CH2+O2
+
+CH2+CO(+M)=CH2CO(+M)                 8.1E11   0.500    4510 !
+ LOW  / 2.69E33 -5.11 7095/
+ TROE/ 0.5907 275 1226 5185 /
+ N2/1.0/ H2O/6/  AR/0.7/
+! GRI2.11
+!
+CH2CO+H=CH3+CO                       7.8E08   1.45     2780 !
+! Senosiain JP Klippenstein SJ Miller JA JPCA 110:5772-5781 2006 !
+!
+CH2CO+H=HCCO+H2                      3.0E07   2.000   10000 !
+! JAM est
+
+CH2CO+O=CO2+CH2                      1.8E12   0.000    1350 !
+! Washida N Hatakeyama S Takagi H Kyogoku T Sato S JCP 78:4533-4540 1983
+
+CH2CO+OH=CH2OH+CO                    1.0E12   0.000   -1013 !
+! Grussdorf J Nolte J Temps F Wagner HGg Ber. Bun. Phys. Chem. 98:546-553 1994
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2CO+OH=CH3+CO2                     6.7E11   0.000   -1013 !
+! Grussdorf J Nolte J Temps F Wagner HGg Ber. Bun. Phys. Chem. 98:546-553 1994
+! Baulch DL Bowman CT Cobos CJ Cox RA Just Th Kerr JA Pilling MJ Stocker D Troe J Tsang W Walker RW Warnatz J JPCRD 34:757-1397 2005
+
+CH2CO+OH=HCCO+H2O                    1.0E07   2.000    3000 !
+! JAM est
+
+CH2CO+CH2(S)=C2H4+CO                 1.6E14   0.000       0 !
+! Hack W Koch M Wagener R Wagner HGg BBPC 93:165 1989
+
+
+HCCOH+H=HCCO+H2                      3.0E07   2.000    1000 !
+! JAM est
+
+	
+HCCOH+OH=HCCO+H2O                    1.0E07   2.000    1000 !
+! JAM est
+
+
+CH+CO(+M)=HCCO(+M)                   5.0E13   0.000       0 !
+ LOW  /                              2.7E28  -3.740    1936/
+ TROE/ 0.5757 237 1652 5069 /
+ N2/1.0/ H2O/6/  AR/0.7/  H2/2.0/ CH4/2.0/ CO/1.5/ CO2/2.0/ C2H6/3.0/
+! GRI2.11
+!
+HCCO+H=CH2(S)+CO                     1.5E14   0.000       0 !
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+!
+HCCO+O=CO+CO+H                       1.0E14   0.000       0 !
+! Baulch DL Cobos CJ Cox RA Esser C Frank P Just Th Kerr JA Pilling MJ Troe J Walker RW Warnatz J JPCRD 21:403 1992
+!
+
+HCCO+OH=C2O+H2O	1.439E+04	2.650	1472	
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+
+HCCO+OH=CH2CO+O	1.265E+06	1.990	11280	
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+
+	!	HCCO+OH=HCOH+CO		1.0		0.0		0.0
+	!	PLOG / 1	2.770E+13	0.090	-20		/
+	!	PLOG / 1	-1.403E+15	-0.280	10792	/
+	!	PLOG / 10	5.679E+12	0.310	-232	/
+	!	PLOG / 10	-2.921E+11	0.720	5000	/
+	!	PLOG / 100	3.758E+13	0.050	70		/
+	!	PLOG / 100	-6.805E+13	0.100	10302	/
+	! Xiong et al., Combust. Flame 161 (2014) 885–897
+	!assuming 3-HCOH=1-HCOH=HCOH
+! our fitting:
+HCCO+OH=HCOH+CO     1.0           0.0       0.0
+PLOG / 1    3.032E+16   -0.935    659.4    /
+PLOG / 1    8.694E+19   -1.792   5994.3    /               
+PLOG / 10      1.143E+18   -1.392   1395.1    /
+PLOG / 10      3.490E+22   -2.475   9162.6    /           
+PLOG / 100       3.224E+18   -1.523   1626.7    /
+PLOG / 100       1.261E+24   -2.902   10522.1    /     
+DUPLICATE
+HCCO+OH=HCOH+CO		2.873E+12	0.370	-24	
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+!assuming 3-HCOH=1-HCOH=HCOH
+DUPLICATE
+
+	!	HCCO+OH=CH2O+CO		1.0		0.0		0.0
+	!	PLOG / 1	3.770E+13	-0.060	156		/
+	!	PLOG / 1	-2.909E+16	-0.800	5071	/
+	!	PLOG / 10	2.096E+08	0.030	97		/
+	!	PLOG / 10	-1.578E+16	-0.720	4883	/
+	!	PLOG / 100	1.072E+08	0.110	52		/
+	!	PLOG / 100	-6.444E+07	-1.140	6914	/
+	!	! Xiong et al., Combust. Flame 161 (2014) 885–897
+! our fitting:
+HCCO+OH=CH2O+CO		1.0		0.0		0.0
+PLOG / 1               1.187E+21   -2.459   2527.6    /
+	! PLOG / 10                            2.1E08   0.030      97/
+    ! PLOG / 10                           -1.6E16  -0.720    4883/
+PLOG / 100          1.100E+08   0.110     52.0   / 
+
+HCCO+OH=OCHCO+H		1.0		0.0		0.0
+PLOG / 0.01	2.632E+08	1.410	845	  /
+PLOG / 0.1	2.632E+08	1.410	845	  /
+PLOG / 1	2.638E+08	1.410	849	  /
+PLOG / 10	2.963E+08	1.400	917	  /
+PLOG / 100	8.190E+08	1.280	1531  /
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+
+HCCO+OH=CO2+CH2		1.0		0.0		0.0
+PLOG / 0.1	1.698E+15	-1.190	-521 /
+PLOG / 0.1	-7.407E+17	-1.920	1686 /
+PLOG/  1.00     7.292E+27   -5.023   2468.0   / 
+PLOG/  1.00     1.116E+21   -2.280   16960.4 / 
+PLOG / 10	5.974E+15	-0.640	363	 /
+PLOG / 10	-2.577E+19	-1.640	3539 /
+DUPLICATE
+HCCO+OH=CO2+CH2		1.0		0.0		0.0
+PLOG / 0.01	1.018E+19	-2.080	44	  /
+PLOG / 0.1	1.397E+19	-2.120	88	  /
+PLOG / 1	7.106E+19	-2.300	824	  /
+PLOG / 10	1.789E+20	-2.340	2421  /
+DUPLICATE
+! our fitting:
+! Xiong et al., Combust. Flame 161 (2014) 885–897
+! ASSUMING 3-CHCOOH = 1-CHCOOH ==fast==> CO2+CH2
+	
+
+HCCO+O2=CO2+CO+H                     4.9E12  -0.142    1150 !
+! Klippenstein SJ Miller JA Harding LB PCI 29:1209-1217 2002
+
+HCCO+O2=CO+CO+OH                     1.6E11  -0.020    1020 !
+! Klippenstein SJ Miller JA Harding LB PCI 29:1209-1217 2002
+
+	! HCCO+O2=HCO+CO+O                     2.2E02   2.690    3540 !
+	! Klippenstein SJ Miller JA Harding LB PCI 29:1209-1217 2002
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+HCCO+O2=HCO+CO+O                     2.2E02   2.690    3540
+     DUPLICATE
+HCCO+O2=HCO+CO+O          -1.317E+12   0.217   23467.3
+     DUPLICATE
+HCCO+O2=H+CO+CO+O          1.317E+12   0.217   23467.3
+	
+
+HCCO+CH2=C2H3+CO                     3.0E13   0.000       0 !
+! JAM est
+
+HCCO+CH=C2H2+CO                      5.0E13   0.000       0 !
+! JAM est
+
+HCCO+HCCO=C2H2+CO+CO                 1.0E13   0.000       0 !
+! JAM est
+
+C2O+M=C+CO+M                         2.0E15   0.000   44200 !
+! Fridriechs, G.; Wagner, H.Gg. Z. Phys. Chem. 203, 1-14, 1998.
+!
+C2O+H=CH+CO                          1.3E13   0.000       0 !
+! Bauer W Becker KH Meuser R BBPC 89:340 1985
+!
+C2O+O=CO+CO                          5.2E13   0.000       0 !
+! Bauer W Becker KH Meuser R BBPC 89:340 1985
+!
+C2O+OH=CO+CO+H                       2.0E13   0.000       0 !
+! JAM est
+!
+C2O+O2=CO+CO+O                       1.0E13   0.000    2600 !
+! Becker KH Konig R Meuser R Wiesen P Bayes KD J Photochem Photobiol A 64:1-14 1992
+! Williamson DG Bayes KD JACS 89:3390 1967
+!
+C2O+O2=CO+CO2                        1.0E13   0.000    2600 !
+! Becker KH Konig R Meuser R Wiesen P Bayes KD J Photochem Photobiol A 64:1-14 1992
+! Williamson DG Bayes KD JACS 89:3390 1967
+!
+C2O+C=CO+C2                          1.0E14   0.000       0 !
+! Fridriechs, G.; Wagner, H.Gg. Z. Phys. Chem. 203, 1-14, 1998.
+
+
+
+CH3CH2OOH=CH3CH2O+OH   1  1  1
+  PLOG/ 0.1   6.05E58   -14.05   54131 /
+  PLOG/ 1.0   9.26E52   -11.91   53378 /
+  PLOG/ 100   1.38E33   -5.27    48696 /
+! (300-1000 K) from D. Chen et al., J. Phys. Chem. A 115 (2011) 602–611.
+
+CH3CH2OOH+H=CH3CHOOH+H2              6.5E10   0.000    1860
+! est CH3OOH+H
+
+CH3CH2OOH+H=CH3CH2OO+H2              4.3E10   0.000    1860
+! est CH3OOH+H
+
+CH3CH2OOH+H=CH3CH2O+H2O              1.2E10   0.000    1860
+! est CH3OOH+H
+
+CH3CH2OOH+O=CH3CHOOH+OH              1.6E13   0.000    4750
+! est  CH3OOH+O
+
+CH3CH2OOH+O=CH3CH2OO+OH              8.7E12   0.000    4750
+! est CH3OOH+O
+
+CH3CH2OOH+OH=CH3CHOOH+H2O            7.2E11   0.000    -258
+! est CH3OOH+OH
+
+CH3CH2OOH+OH=CH3CH2OO+H2O            1.1E12   0.000    -437
+! est CH3OOH+OH
+
+CH3CH2OOH+HO2=CH3CH2OO+H2O2          4.1E04   2.500   10206
+! est CH2O+HO2
+
+CH3CHOOH=CH3CHO+OH                   3.50E12  -0.947     979
+    PLOG/1.0         		         3.50E12  -0.947     979/
+    PLOG/10.0			             3.50E13  -0.947     980/
+    PLOG/100.0			             5.75E14  -1.012    1068/
+! RAS/GLA08b ING/BOZ03
+
+
+CH3CH2OO=CH2CH2OOH 		1	1	1
+PLOG/ 0.001		4.29E+08	-0.97	22110 /
+PLOG/ 0.003		2.77E+07	-0.52	21990 /
+PLOG/ 0.01		3.51E+05	0.16	21700 /
+PLOG/ 0.03		1.58E+03	0.99	21290 /
+PLOG/ 0.1		6.51E-01	2.17	20650 /
+PLOG/ 0.3		4.30E+02	1.31	21600 /
+PLOG/ 1			7.32E-03	2.96	20660 /
+PLOG/ 3			3.79E-08	4.77	19590 /
+PLOG/ 10		7.38E-08	4.78	20030 /
+PLOG/ 30		8.17E-08	4.87	20420 /
+PLOG/ 100		2.27E-14	7.09	18990 /
+
+! Peter Glarborg, et al., High Pressure Oxidation of  Ethane, 2016
+
+
+CH3CH2OO+H=CH3CH2O+OH                9.6E13   0.000       0
+! est CH3OO+H
+
+CH3CH2OO+O=CH3CH2O+O2                2.850E+10  1.0 -724
+! est CH3OO+O
+
+CH3CH2OO+OH=CH3CH2OH+O2					 1.7E14   0 		0	
+! est CH3OO+OH
+
+CH3CH2OO+HO2=CH3CH2OOH+O2            4.5E11   0.000   -1391
+! RAS/GLA08b TYN/WAL01
+
+CH3CH2OO+CO=CH3CH2O+CO2              1.6E05   2.180   17940
+! est CH3OO+CO
+
+CH3CH2OO+CH3=CH3CH2O+CH3O            5.1E12   0.000   -1411
+! est CH3OO+CH3
+
+CH3CH2OO+CH4=CH3CH2OOH+CH3           4.7E04   2.500   21000
+! est CH4+HO2
+
+CH3CH2OO+CH3OH=CH3CH2OOH+CH2OH       4.0E13   0.000   19400
+! est CH3OO+CH3OH
+
+	! CH3CH2OO+CH2O=CH3CH2OOH+HCO          4.1E04   2.500   10206
+	! est CH3OO+CH2O
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH3CH2OO+CH2O=CH3CH2OOH+HCO          4.1E04   2.500   10206
+    DUPLICATE
+CH3CH2OO+CH2O=CH3CH2OOH+HCO          -2.454E+14   0.027   30133.3
+    DUPLICATE
+CH3CH2OO+CH2O=CH3CH2OOH+H+CO          2.454E+14   0.027   30133.3
+
+CH3CH2OO+C2H5=CH3CH2O+CH3CH2O        5.1E12   0.000   -1411
+! est CH3OO+CH3
+
+CH3CH2OO+C2H6=CH3CH2OOH+C2H5         8.6E00   3.760   17200
+! RAS/GLA08b CAR/DEA05
+
+CH3CH2OO+CH3CHO=CH3CH2OOH+CH3CO      2.4E19  -2.200   14030
+! est CH3CHO+HO2
+
+CH3CH2OO+CH3CHO=CH3CH2OOH+CH2CHO     2.3E11   0.400   14864
+! est CH3CHO+HO2
+
+CH3CH2OO+CH3CH2OO=CH3CH2O+CH3CH2O+O2 2.9E11  -0.270     408
+! RAS/GLA08b FEN/LIG93
+
+CH3CH2OO+CH3CH2OO=CH3CHO+CH3CH2OH+O2 4.3E09   0.000    -850
+! RAS/GLA08b FEN/LIG93
+
+
+CH2CH2OOH=cC2H4O+OH    1 1 1
+  PLOG/0.01316   	3.342E+27	-6.117	15373.90/
+  PLOG/0.98692   	4.361E+28	-5.830	17202.08/
+  PLOG/9.86923   	2.689E+32	-6.633	20310.67/
+  PLOG/98.69233   	7.544E+35	-7.331	23906.80/
+  PLOG/1000   6.672E+10	0.637	15974.18/
+! J. Zador, S. J. Klippenstein, J. A. Miller, J. Phys. Chem. A 115 (2011) 10218–10225.
+
+CH2CHOOH=CH2CHO+OH                   2.0E35  	-6.700   47450
+	PLOG/1.00			              2.0E35  	-6.700   47450/
+	PLOG/10.0			  			  1.12E28   -4.15    46190/
+	PLOG/50.0               		  2.8E26  	-3.500   46340/
+	PLOG/100.0	                      2.22E17 	-0.42    44622/	
+	! est CH3OOH
+	
+CH2CHOOH+H=CH2CHOO+H2                4.3E10   0.000    1860
+! est CH3OOH+H
+
+CH2CHOOH+H=CH2CHO+H2O                1.2E10   0.000    1860
+! est CH3OOH+H
+
+CH2CHOOH+O=CH2CHOO+OH                8.7E12   0.000    4750
+! est CH3OOH+O
+
+CH2CHOOH+OH=CH2CHOO+H2O              1.1E12   0.000    -437
+! est CH3OOH+OH
+
+CH2CHOOH+HO2=CH2CHOO+H2O2            4.1E04   2.500   10206
+! est CH2O+HO2
+
+CH2CHOO=CHCHO+OH               5.89E+36       -7.10    51440.0
+  PLOG/1.000E-02    3.64E+49      -12.13    67420.0/
+  PLOG/1.000E-02    1.17E+56      -14.81    60700.0/
+  PLOG/1.000E-01    1.44E+36       -9.92    41220.0/
+  PLOG/1.000E-01    2.32E+40       -9.39    50420.0/
+  PLOG/3.160E-01    4.18E+40      -10.53    43670.0/
+  PLOG/3.160E-01    1.61E+43       -9.99    50290.0/
+  PLOG/1.000E+00    3.79E+46      -10.72    51900.0/
+  PLOG/1.000E+00    2.33E+124      -36.77    70100.0/
+  PLOG/3.160E+00    1.60E+49      -11.24    54150.0/
+  PLOG/3.160E+00    1.88E+103      -29.49    65410.0/
+  PLOG/1.000E+01    2.38E+51      -11.64    56980.0/
+  PLOG/1.000E+01    5.96E+86      -23.81    62170.0/
+  PLOG/3.160E+01    2.00E+54      -12.22    61840.0/
+  PLOG/3.160E+01    1.51E+57      -13.94    55390.0/
+  PLOG/1.000E+02    9.54E+195      -52.27    163500.0/
+  PLOG/1.000E+02    1.79E+34       -6.40    50000.0/
+  ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+CH2CHOO=CH2CHO+O                               1.22E+29       -4.71    42340.0
+  PLOG/1.000E-02    2.70E+180      -48.19    169300.0/
+  PLOG/1.000E-02    1.47E+30       -6.64    41110.0/
+  PLOG/1.000E-01    3.90E+38       -8.69    42770.0/
+  PLOG/1.000E-01    9.65E-12        5.96    22890.0/
+  PLOG/3.160E-01    4.57E+47      -11.21    47050.0/
+  PLOG/3.160E-01    3.95E+22       -3.71    36270.0/
+  PLOG/1.000E+00    7.62E+81      -21.28    65080.0/
+  PLOG/1.000E+00    2.39E+33       -6.62    41280.0/
+  PLOG/3.160E+00    1.86E+68      -16.83    60680.0/
+  PLOG/3.160E+00    6.37E+31       -5.96    41260.0/
+  PLOG/1.000E+01    2.02E+55      -12.69    55840.0/
+  PLOG/1.000E+01    2.13E+29       -5.10    40710.0/
+  PLOG/3.160E+01    1.11E+53      -11.79    56690.0/
+  PLOG/3.160E+01    4.66E+27       -4.50    40530.0/
+  PLOG/1.000E+02    4.30E+48      -10.31    56090.0/
+  PLOG/1.000E+02    5.99E+25       -3.85    40120.0/
+  ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+CH2CHOO=OCHCHO+H                                    4.72E+20       -2.69    32320.0
+  PLOG/1.000E-02    6.41E+80      -22.20    51750.0/
+  PLOG/1.000E-02    1.19E+28       -6.01    28740.0/
+  PLOG/1.000E-01    3.31E+65      -17.01    48090.0/
+  PLOG/1.000E-01    1.40E+25       -4.80    28940.0/
+  PLOG/3.160E-01    5.98E+51      -12.62    43000.0/
+  PLOG/3.160E-01    2.91E+20       -3.29    27550.0/
+  PLOG/1.000E+00    1.48E+44      -10.12    40790.0/
+  PLOG/1.000E+00    1.58E+19       -2.82    27620.0/
+  PLOG/3.160E+00    1.26E+59      -14.33    51390.0/
+  PLOG/3.160E+00    1.93E+22       -3.54    29980.0/
+  PLOG/1.000E+01    4.93E+26       -4.67    34320.0/
+  PLOG/1.000E+01    7.51E+29       -5.75    34490.0/
+  PLOG/3.160E+01    2.06E+33       -6.38    39520.0/
+  PLOG/3.160E+01    7.14E+61      -16.16    43280.0/
+  PLOG/1.000E+02    1.30E+32       -5.92    40660.0/
+  PLOG/1.000E+02    1.14E+19       -2.56    29670.0/
+  ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+CH2CHOO=CH2CO+OH                                   1.55E+24       -3.87    49850.0
+  PLOG/1.000E-02    1.15E+47      -12.28    75330.0/
+  PLOG/1.000E-02    2.31E+02       -0.73    25710.0/
+  PLOG/1.000E-01    8.43E+09       -2.06    33720.0/
+  PLOG/1.000E-01    1.83E-23        7.84    20190.0/
+  PLOG/3.160E-01    6.06E+04        0.17    34220.0/
+  PLOG/3.160E-01    3.82E+63      -20.44    43420.0/
+  PLOG/1.000E+00    1.51E+19       -3.61    43060.0/
+  PLOG/1.000E+00    3.18E+27       -7.76    37230.0/
+  PLOG/3.160E+00    2.13E+33       -7.39    51610.0/
+  PLOG/3.160E+00    2.32E-05        3.47    31560.0/
+  PLOG/1.000E+01    4.44E+36       -7.99    54680.0/
+  PLOG/1.000E+01    1.06E-01        2.64    34160.0/
+  PLOG/3.160E+01    1.19E+37       -7.80    56460.0/
+  PLOG/3.160E+01    5.62E+02        1.70    36450.0/
+  PLOG/1.000E+02    9.08E+35       -7.21    57550.0/
+  PLOG/1.000E+02    1.11E+07        0.52    38670.0/
+  ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+! Replace HCO with 70% H+CO
+! CH2CHOO=CH2O+HCO                                  1.19E+20       -2.29    30170.0
+!   PLOG/1.000E-02    5.54E+174      -55.52    60320.0/
+!   PLOG/1.000E-02    7.56E+35       -7.97    31280.0/
+!   PLOG/1.000E-01    3.01E+67      -17.25    48120.0/
+!   PLOG/1.000E-01    6.93E+26       -4.96    28780.0/
+!   PLOG/3.160E-01    6.08E+43       -9.87    37960.0/
+!   PLOG/3.160E-01    4.82E+20       -3.08    26630.0/
+!   PLOG/1.000E+00    2.88E+34       -6.88    34370.0/
+!   PLOG/1.000E+00    3.52E+130      -39.38    54700.0/
+!   PLOG/3.160E+00    2.43E+172      -43.53    191900.0/
+!   PLOG/3.160E+00    7.84E+34       -6.87    35700.0/
+!   PLOG/1.000E+01    3.43E+32       -6.06    35500.0/
+!   PLOG/1.000E+01    7.27E+175      -53.78    68500.0/
+!   PLOG/3.160E+01    6.17E+34       -6.57    38510.0/
+!   PLOG/3.160E+01    3.56E+185      -54.22    88990.0/
+!   PLOG/1.000E+02    1.90E+30       -5.19    36800.0/
+!   PLOG/1.000E+02    1.56E+03        1.81    18100.0/
+CH2CHOO=CH2O+HCO                                  1.19E+20       -2.29    30170.0
+  PLOG/1.000E-02    1.66E+174      -55.52    60320.0/
+  PLOG/1.000E-02    2.27E+35       -7.97    31280.0/
+  PLOG/1.000E-01    9.03E+66      -17.25    48120.0/
+  PLOG/1.000E-01    2.08E+26       -4.96    28780.0/
+  PLOG/3.160E-01    1.82E+43       -9.87    37960.0/
+  PLOG/3.160E-01    1.45E+20       -3.08    26630.0/
+  PLOG/1.000E+00    8.64E+33       -6.88    34370.0/
+  PLOG/1.000E+00    1.06E+130      -39.38    54700.0/
+  PLOG/3.160E+00    7.29E+171      -43.53    191900.0/
+  PLOG/3.160E+00    2.35E+34       -6.87    35700.0/
+  PLOG/1.000E+01    1.03E+32       -6.06    35500.0/
+  PLOG/1.000E+01    2.18E+175      -53.78    68500.0/
+  PLOG/3.160E+01    1.85E+34       -6.57    38510.0/
+  PLOG/3.160E+01    1.07E+185      -54.22    88990.0/
+  PLOG/1.000E+02    5.70E+29       -5.19    36800.0/
+  PLOG/1.000E+02    4.68E+02        1.81    18100.0/
+  ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+CH2CHOO=CH2O+H+CO                                  1.19E+20       -2.29    30170.0
+  PLOG/1.000E-02    3.88E+174      -55.52    60320.0/
+  PLOG/1.000E-02    5.29E+35       -7.97    31280.0/
+  PLOG/1.000E-01    2.11E+67      -17.25    48120.0/
+  PLOG/1.000E-01    4.85E+26       -4.96    28780.0/
+  PLOG/3.160E-01    4.26E+43       -9.87    37960.0/
+  PLOG/3.160E-01    3.37E+20       -3.08    26630.0/
+  PLOG/1.000E+00    2.02E+34       -6.88    34370.0/
+  PLOG/1.000E+00    2.46E+130      -39.38    54700.0/
+  PLOG/3.160E+00    1.70E+172      -43.53    191900.0/
+  PLOG/3.160E+00    5.49E+34       -6.87    35700.0/
+  PLOG/1.000E+01    2.40E+32       -6.06    35500.0/
+  PLOG/1.000E+01    5.09E+175      -53.78    68500.0/
+  PLOG/3.160E+01    4.32E+34       -6.57    38510.0/
+  PLOG/3.160E+01    2.49E+185      -54.22    88990.0/
+  PLOG/1.000E+02    1.33E+30       -5.19    36800.0/
+  PLOG/1.000E+02    1.09E+03        1.81    18100.0/
+   ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+ CH2CHOO=CO+CH3O                                 1.16E-01        3.16    18420.0
+  PLOG/1.000E-02    5.20E+33       -7.92    31320.0/
+  PLOG/1.000E-02    2.31E+129      -41.86    45850.0/
+  PLOG/1.000E-01    1.26E+98      -27.09    64060.0/
+  PLOG/1.000E-01    2.42E+28       -5.99    30540.0/
+  PLOG/3.160E-01    1.80E+33       -7.27    33760.0/
+  PLOG/3.160E-01    8.69E-50       16.63    -3900.0/
+  PLOG/1.000E+00    3.83E+33       -7.20    35100.0/
+  PLOG/1.000E+00    1.19E-39       13.61    -1317.0/
+  PLOG/3.160E+00    1.28E+79      -19.61    74870.0/
+  PLOG/3.160E+00    8.80E+86      -23.08    61010.0/
+  PLOG/1.000E+01    4.07E+32       -6.62    37210.0/
+  PLOG/1.000E+01    1.27E+03        1.44    18660.0/
+  PLOG/3.160E+01    6.86E+44      -10.04    47030.0/
+  PLOG/3.160E+01    1.97E+17       -2.23    28590.0/
+  PLOG/1.000E+02    -1.07E+04        1.33    15620.0/
+  PLOG/1.000E+02    1.16E-07        4.81    12010.0/
+ ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+CH2CHOO=CO2+CH3                                  6.03E-03        3.46    17420.0
+  PLOG/1.000E-02    5.09E+33       -7.95    31290.0/
+  PLOG/1.000E-02    4.20E+122      -39.75    43640.0/
+  PLOG/1.000E-01    1.21E+118      -33.13    73790.0/
+  PLOG/1.000E-01    1.96E+29       -6.29    30920.0/
+  PLOG/3.160E-01    8.56E+32       -7.21    33550.0/
+  PLOG/3.160E-01    5.10E-66       21.37    -11110.0/
+  PLOG/1.000E+00    3.27E+33       -7.22    34990.0/
+  PLOG/1.000E+00    1.76E-47       15.85    -5283.0/
+  PLOG/3.160E+00    3.49E-79       25.01    -21020.0/
+  PLOG/3.160E+00    3.82E+32       -6.80    35690.0/
+  PLOG/1.000E+01    8.16E+32       -6.76    37270.0/
+  PLOG/1.000E+01    4.62E+00        2.10    17170.0/
+  PLOG/3.160E+01    7.01E+37       -8.06    42200.0/
+  PLOG/3.160E+01    3.49E+14       -1.58    26470.0/
+  PLOG/1.000E+02    -2.51E+03        1.41    14420.0/
+  PLOG/1.000E+02    4.05E-09        5.14    10480.0/
+   ! Goldsmith et al., 2015, J. Phys. Chem. A 2015, 119, 7766-7779 (DOI: 10.1021/acs.jpca.5b01088)
+
+
+CH2CHOO+H=CH2CHO+OH                  9.6E13   0.000       0 ! 
+! est CH3OO+H=CH3O+OH
+
+CH2CHOO+O=CH2CHO+O2                  1.6E13   0.000    -145 ! 
+! est CH3OO+O=CH3O+O2
+
+
+CH2CHOO+OH=CH2CHOH+O2                2.0E15  -0.600       0 ! 
+! est CH3OO+OH=CH3OH+O2
+
+CH2CHOO+OH=CH2CHO+HO2                4.0E11   0.600       0 ! 
+! est H3OO+OH=CH3O+HO2
+
+
+CH2CHOO+HO2=CH2CHOOH+O2              4.5E11   0.000   -1391 ! 
+! est CH3CH2OO+HO2
+
+CH2CHOO+CO=CH2CHO+CO2                1.6E05   2.180   17940 ! 
+! est CH3OO+CO=CH3O+CO2
+
+
+CH2CHOO+CH3=CH2CHO+CH3O              5.1E12   0.000   -1411 ! 
+! est CH3OO+CH3=CH3O+CH3O
+
+CH2CHOO+CH4=CH2CHOOH+CH3             4.7E04   2.500   21000 ! 
+! est CH4+HO2=CH3+H2O2
+
+CH2CHOO+CH3OH=CH2CHOOH+CH2OH         4.0E13   0.000   19400 ! 
+! est CH3OO+CH3OH=CH3OOH+CH2OH
+
+	! CH2CHOO+CH2O=CH2CHOOH+HCO            4.1E04   2.500   10206
+	! est CH3OO+CH2O
+	! HH@160407: including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+CH2CHOO+CH2O=CH2CHOOH+HCO            4.1E04   2.500   10206 ! GIM/GLA09 CH3OO+CH2O
+     DUPLICATE
+CH2CHOO+CH2O=CH2CHOOH+HCO          -2.454E+14   0.027   30133.3
+     DUPLICATE
+CH2CHOO+CH2O=CH2CHOOH+H+CO          2.454E+14   0.027   30133.3
+
+CH2CHOO+C2H6=CH2CHOOH+C2H5           8.6E00   3.760   17200
+! est CH3CH2OO+C2H6
+
+
+
+OCHCHO=CH2O+CO                       8.0E55  -12.600  76713 !1.0 bar, 800 K < T < 2500 K
+ PLOG/ 0.009869                      4.2E53  -12.500  70845/
+ PLOG/ 0.04935                       5.1E54  -12.600  73012/
+ PLOG/ 0.09869                       1.0E55  -12.600  73877/
+ PLOG/ 0.4935                        4.5E55  -12.600  75869/
+ PLOG/ 0.9869                        8.0E55  -12.600  76713/
+ PLOG/ 4.935                         1.1E56  -12.200  77643/
+ PLOG/ 9.869                         5.5E56  -12.600  79964/
+! Friedrichs G. Colberg M. Dammeier J. Bentz T. Olzmann M. Phys. Chem. Chem. Phys. 10 (2008) 6520-6533.
+!
+OCHCHO=HCOH+CO 	                     2.6E57  -13.200  79754 ! 1.0 bar, 800 K < T < 2500 K
+ PLOG/ 0.009869                      8.4E52  -12.600  72393/
+ PLOG/ 0.04935                       8.3E54  -12.900  75113/
+ PLOG/ 0.09869                       4.4E55  -13.000  76257/
+ PLOG/ 0.4935                        1.3E57  -13.200  78851/
+ PLOG/ 0.9869                        2.6E57  -13.200  79754/
+ PLOG/ 4.935                         1.0E57  -12.900  81161/
+ PLOG/ 9.869                         5.7E59  -13.300  83539/
+! Friedrichs G. Colberg M. Dammeier J. Bentz T. Olzmann M. Phys. Chem. Chem. Phys. 10 (2008) 6520-6533.
+!
+OCHCHO=CO+CO+H2                      6.1E57  -13.100  80147 ! 1.0 bar, 800 K < T < 2500 K
+ PLOG/ 0.009869                      6.0E51  -12.100  71854/
+ PLOG/ 0.04935                       1.4E54  -12.500  74751/
+ PLOG/ 0.09869                       1.8E55  -12.700  76137/
+ PLOG/ 0.4935                        1.3E57  -13.000  78972/
+ PLOG/ 0.9869                        6.1E57  -13.100  80147/
+ PLOG/ 4.935                         5.8E57  -12.900  81871/
+ PLOG/ 9.869                         3.4E59  -13.300  84294/
+! Friedrichs G. Colberg M. Dammeier J. Bentz T. Olzmann M. Phys. Chem. Chem. Phys. 10 (2008) 6520-6533.
+!
+OCHCHO=HCO+HCO                       1.9E57  -12.800  84321 ! 1.0 bar, 800 K < T < 2500 K
+ PLOG/ 0.009869                       1.0E42   -9.700  73534/
+ PLOG/ 0.04935                        6.0E48  -11.100  77462/
+ PLOG/ 0.09869                        1.7E51  -11.600  79111/
+ PLOG/ 0.4935                         5.3E55  -12.500  82774/
+ PLOG/ 0.9869                         1.9E57  -12.800  84321/
+ PLOG/ 4.935                          2.2E59  -13.100  87258/
+ PLOG/ 9.869                          3.0E60  -13.300  88993/
+! Friedrichs G. Colberg M. Dammeier J. Bentz T. Olzmann M. Phys. Chem. Chem. Phys. 10 (2008) 6520-6533.
+
+	! OCHCHO+H=CH2O+HCO                    5.4E13   0.000    4300 !
+	! Colberg, M., Friedrichs, G. J. Phys. Chem. A 110 (2006) 160-170.
+	! HH@160407: including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+OCHCHO+H=CH2O+HCO                    5.4E13   0.000    4300 !
+     DUPLICATE
+OCHCHO+H=CH2O+HCO          -3.232E+23   -2.473   24227.3
+     DUPLICATE
+OCHCHO+H=CH2O+H+CO          3.232E+23   -2.473   24227.3
+	
+	
+	
+OCHCHO+O=OCHCO+OH                    4.2E11   0.570    2760 !
+! est CH2O+O
+!
+OCHCHO+OH=OCHCO+H2O                  4.0E06   2.000   -1630 !
+! Feierabend, K.J., Zhu, L., Talukdar, R.K., Burkholder, J.B. J. Phys. Chem. A 112 (2008) 73-82.
+!
+!OCHCHO+HO2=>HOCH(OO)CHO             1.3E31  -7.532    1440 !
+!HOCH(OO)CHO => OCHCHO+HO2           1.9E29  -5.781   15790 !
+!HOCH(OO)CHO => HOCHO+CO+OH          1.6E10   0.051   15190 !
+! da Silva, G. J. Phys. Chem. A 115 (2011) 191-197.
+
+OCHCHO+HO2=HOCHO+CO+OH               3.3E-4   3.995     300 !
+! da Silva, G. J. Phys. Chem. A 115 (2011) 191-197.
+
+OCHCHO+HO2=OCHCO+H2O2                4.1E04   2.500   10206 !
+! est CH2O+HO2
+
+OCHCHO+O2=OCHCO+HO2                  2.4E05   2.500   36461 !
+! est CH2O+O2
+
+	! OCHCO=HCO+CO                         4.1E14   0.000    8765 ! 1.0 atm
+	! PLOG/  0.01                         3.8E12   0.000    8610/
+	! PLOG/  0.1                          3.8E13   0.000    8665/
+	! PLOG/  1.0                          4.1E14   0.000    8765/
+	! ! kinf                                1.1E14   0.133   10140 !
+	! ! da Silva, G. Phys. Chem. Chem. Phys. 12 (2010) 6698-6705.
+! including prompt dissociation of HCO (following Labbe et al., J. Phys. Chem. Lett. 2016)
+OCHCO=HCO+CO	4.100E+14   0.000   8765.0
+PLOG/     1.000E-02   3.800E+12   0.000   8610.0 /
+PLOG/     1.000E-02   -7.988E+21   -2.359   27419.6 /
+PLOG/     1.000E-01   3.800E+13   0.000   8665.0 /
+PLOG/     1.000E-01   -2.275E+23   -2.473   28592.3 /
+PLOG/     1.000E+00   4.100E+14   0.000   8765.0 /
+PLOG/     1.000E+00   -2.454E+24   -2.473   28692.3 /
+PLOG/     1.000E+02   1.100E+14   0.133   10140.0 /
+PLOG/     1.000E+02   -1.391E+24   -2.419   30990.9 /
+OCHCO=H+CO+CO	2.454E+24   -2.473   28692.3
+PLOG/     1.000E-02   7.988E+21   -2.359   27419.6 /
+PLOG/     1.000E-01   2.275E+23   -2.473   28592.3 /
+PLOG/     1.000E+00   2.454E+24   -2.473   28692.3 /
+PLOG/     1.000E+02   1.391E+24   -2.419   30990.9 /
+
+OCHCO+O2=CO+CO2+OH                   3.3E14   0.000    2075 ! 1.0 atm
+ PLOG/  0.01                         1.6E14   0.000    1540/
+ PLOG/  0.1                          1.1E14   0.000    1300/
+ PLOG/  1.0                          3.3E14   0.000    2075/
+! kinf                                3.4E04   1.929     344 !
+! da Silva, G. Phys. Chem. Chem. Phys. 12 (2010) 6698-6705.
+
+CH2O+OH=HOCH2O								6.3E06	1.63		4282
+! Xu, et al., Int. J. Chem. Kinet. 38 (2006) 322–326:
+HOCH2O=HOCHO+H                            1.000E+14  0.00  1.490E+04
+! Z. Zhao, M. Chaos, A. Kazakov, F. L. Dryer, Int. J. Chem. Kinet. 40 (2008) 1–18.
+
+HOCHO(+M)=CO+H2O(+M)                 7.5E14   0.000   68710 !
+ LOW  /4.1E15 0 52980/                                !
+! J.-G. Chang, H.-T. Chen, S. Xu, M.C. Lin, J. Phys. Chem. A 111 (2007) 6789-6797.
+!
+HOCHO(+M)=CO2+H2(+M)                 4.5E13   0.000   68240 !
+ LOW  /1.7E15 0 51110/                                      !
+! J.-G. Chang, H.-T. Chen, S. Xu, M.C. Lin, J. Phys. Chem. A 111 (2007) 6789-6797.
+!
+HOCHO+H=HOCO+H2                      2.3E02   3.272    4858 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCHO+H=OCHO+H2                      4.2E05   2.255   14091 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+	
+HOCHO+O=HOCO+OH                      5.1E01   3.422    4216 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCHO+O=OCHO+OH                      1.7E05   2.103    9880 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCHO+OH=HOCO+H2O                    7.8E-6   5.570   -2365 !
+! J.M. Anglada, J. Am. Chem. Soc. 126 (2004) 9809-9820.
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCHO+OH=OCHO+H2O                    4.9E-5   4.910   -5067 !
+! J.M. Anglada, J. Am. Chem. Soc. 126 (2004) 9809-9820.
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCHO+HO2=HOCO+H2O2                  4.7E-1   3.975   16787 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCHO+HO2=OCHO+H2O2                  3.9E01   3.080   25206 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+HOCO+HO2=HOCHO+O2                    4.0E11   0.000       0 !
+! H.G. Yu, G. Poggi, J.S. Francisco, J.T. Muckerman, J. Chem. Phys. 129 (2008) 214307.
+!
+HOCHO+O2=OCHO+HO2                    3.0E13   0.000   63000 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+
+
+
+
+OCHO=CO2+H                           1.0E10   0.000       0 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+!
+OCHO+O2=CO2+HO2                      5.0E13   0.000       0 !
+! P. Marshall, P. Glarborg, Proc. Combust. Inst. 35 (2015) 153-160.
+
+
+
+CH3C(O)OOH=CH3C(O)O+OH               5.0E14   0.000   40142 !
+! Sahetchian, K.A.; Rigny, R.; Tardieu de Maleissye, J.; Batt, L.; Anwar Khan, M.; Mathews, S., Proc. Combust. Inst. 24, 637-643, 1992.
+!
+CH3C(O)OOH+H=CH3C(O)OO+H2            5.4E10   0.000    1860 !
+! est ch3ooh+h
+!
+CH3C(O)OOH+O=CH3C(O)OO+OH            8.7E12   0.000    4750 !
+! est ch3ooh+o
+!
+CH3C(O)OOH+OH=CH3C(O)OO+H2O          1.1E12   0.000    -437 !
+! est ch3ooh+o
+!
+CH3C(O)OOH+HO2=CH3C(O)OO+H2O2        4.1E04   2.500   10206 !
+! est ch2o+ho2
+!
+CH3C(O)OO+H=CH3C(O)O+OH              1.0E14   0.000       0 !
+! est ch3oo+h
+!
+CH3C(O)OO+O=CH3+CO2+O2               5.0E12   0.000       0 !
+! A. Miyoshi, H. Matsui, N. Washida, J. Phys. Chem. 1989, 93, 5813-5818.
+! est
+!
+CH3C(O)OO+O=CH3O+CO+O2               1.5E13   0.000       0 !
+! A. Miyoshi, H. Matsui, N. Washida, J. Phys. Chem. 1989, 93, 5813-5818.
+! est
+!
+CH3C(O)OO+OH=CH3C(O)O+HO2            4.0E11   0.600       0 !
+! est ch3oo+oh
+!
+CH3C(O)OO+HO2=CH3C(O)O+OH+O2         1.9E11   0.000   -1950 !
+! C.B.M. Gross, T.J. Dillon, G. Schuster, J. Lelieveld, J. N. Crowley, J. Phys. Chem. A 2014, 118, 974-985.
+! R. Atkinson, D.L. Baulch, R.A. Cox, J.N. Crowley, R.F. Hampson, R.G. Hynes, M.E. Jenkin, M.J. Rossi, J. Troe, Atmos. Chem. Phys., 6, 3625-4055, 2006
+!
+CH3C(O)OO+HO2=CH3C(O)OOH+O2          1.2E11   0.000   -1950 !
+! C.B.M. Gross, T.J. Dillon, G. Schuster, J. Lelieveld, J. N. Crowley, J. Phys. Chem. A 2014, 118, 974-985.
+! R. Atkinson, D.L. Baulch, R.A. Cox, J.N. Crowley, R.F. Hampson, R.G. Hynes, M.E. Jenkin, M.J. Rossi, J. Troe, Atmos. Chem. Phys., 6, 3625-4055, 2006
+!
+CH3C(O)OO+CH3OO=CH3C(O)O+CH3O+O2     1.1E12   0.000   -1000 !
+! R. Atkinson, D.L. Baulch, R.A. Cox, J.N. Crowley, R.F. Hampson, R.G. Hynes, M.E. Jenkin, M.J. Rossi, J. Troe, Atmos. Chem. Phys., 6, 3625-4055, 2006
+!
+!CH3C(O)OO+CH3OO=CH3C(O)OH+CH2O+O2    1.2E11   0.000   -1000 !
+! R. Atkinson, D.L. Baulch, R.A. Cox, J.N. Crowley, R.F. Hampson, R.G. Hynes, M.E. Jenkin, M.J. Rossi, J. Troe, Atmos. Chem. Phys., 6, 3625-4055, 2006
+!
+CH3CHO+CH3C(O)OO=CH3CO+CH3C(O)OOH    1.7E13   0.000   16293 !
+! est ch3cho+ho2
+!
+CH3CHO+CH3C(O)OO=CH2CHO+CH3C(O)OOH   1.1E13   0.000   23248 !
+! est ch3cho+ho2
+!
+CH3C(O)O=CH3+CO2                     2.2E11   0.290    4579 !
+! Zhou, Y.Z.; Li, S.; Li, Q.S.; Zhang, S.W. J. Mol. Struct. Theochem 854, 40-45, 2008
+
+
+HOCH2CH2OO=CH2O+CH2O+OH              2.0E15  -2.030   15913.0 ! 1 atm    
+PLOG/  1.30E-02                     5.6E13  -1.900   14338.0/              
+PLOG/  1.00E-01                     2.2E14  -1.920   14870.0/              
+PLOG/  1.00E+00                     2.0E15  -2.030   15913.0/             
+PLOG/  1.00E+01                     5.0E16  -2.260   17552.0/             
+PLOG/  1.00E+02                     3.8E18  -2.600   19972.0/             
+! Zador J Fernandes RX Georgievskii Y Meloni G Taatjes CA Miller JA Proc Combust Inst 2009 32 271-277
+
+HOCH2CH2OO=CH2CHOH+HO2               1.4E10  -0.780   14836 ! 1 atm
+PLOG/  1.30E-02                     2.0E09  -1.010   13160.0/              
+PLOG/  1.00E-01                     2.1E09  -0.810   13598.0/              
+PLOG/  1.00E+00                     1.4E10  -0.780   14836.0/             
+PLOG/  1.00E+01                     8.5E11  -1.010   17045.0/             
+PLOG/  1.00E+02                     5.8E14  -1.510   20561.0/             
+! Zador J Fernandes RX Georgievskii Y Meloni G Taatjes CA Miller JA Proc Combust Inst 2009 32 271-277
+
+
+HOCH2CH2OO+HO2=>CH2OOH+CH2OH+O2      2.5E11   0.000   -1490
+! GIM/GLA09 est CH3OO+HO2
+
+HOCH2CH2OO+CH2O=>CH2OOH+CH2OH+HCO    4.1E04   2.500   10206
+! GIM/GLA09 CH2O+HO2
+
+HOCH2CH2OO+C2H4=>CH2O+CH2OH+CH3CHO   2.2E12   0.000   17200 
+! JIM/GLA08 est=C2H4+HO2
+
+END
