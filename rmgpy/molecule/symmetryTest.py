@@ -76,6 +76,76 @@ class TestMoleculeSymmetry(unittest.TestCase):
                 symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
         self.assertEqual(symmetryNumber, 9)
     
+    def testAtomSymmetryNumberEthanewithDeuteriumTritium(self):
+        """
+        Test the Molecule.calculateAtomSymmetryNumber() on CC(D)(T)
+
+        This is meant to test whether chirality is accounted for, which
+        should half the symmetry term.
+
+        The total number is 1.5 because the methyl group contributes *3 and
+        the chiral center contributes *0.5
+        """
+        molecule = Molecule().fromAdjacencyList(
+"""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+3 D u0 p0 c0 {1,S}
+4 T u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+
+""")
+        symmetryNumber = 1
+        for atom in molecule.atoms:
+            if not molecule.isAtomInCycle(atom):
+                symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+        self.assertAlmostEqual(symmetryNumber, 1.5)
+
+    def testAtomSymmetryNumberWithTwoChiralCenters(self):
+        """
+        Test the Molecule.calculateAtomSymmetryNumber() on [CH2]CC([CH2])C(C)C=C
+
+        This is meant to test whether chirality is accounted for, which
+        should half the symmetry term.
+
+        The molecule has one methyl group (*3), two CH2dot groups (*2 each), and
+        two chiral centers (*0.5), leading to a total atom symmetry number of 3
+        """
+        molecule = Molecule().fromAdjacencyList(
+"""
+multiplicity 3
+1  C u1 p0 c0 {2,S} {3,S} {4,S}
+2  H u0 p0 c0 {1,S}
+3  H u0 p0 c0 {1,S}
+4  C u0 p0 c0 {1,S} {5,S} {13,S} {14,S}
+5  C u0 p0 c0 {4,S} {6,S} {9,S} {15,S}
+6  C u1 p0 c0 {5,S} {7,S} {8,S}
+7  H u0 p0 c0 {6,S}
+8  H u0 p0 c0 {6,S}
+9  C u0 p0 c0 {5,S} {10,S} {11,S} {16,S}
+10 C u0 p0 c0 {9,S} {17,S} {18,S} {19,S}
+11 C u0 p0 c0 {9,S} {12,D} {20,S}
+12 C u0 p0 c0 {11,D} {21,S} {22,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {5,S}
+16 H u0 p0 c0 {9,S}
+17 H u0 p0 c0 {10,S}
+18 H u0 p0 c0 {10,S}
+19 H u0 p0 c0 {10,S}
+20 H u0 p0 c0 {11,S}
+21 H u0 p0 c0 {12,S}
+22 H u0 p0 c0 {12,S}
+""")
+        symmetryNumber = 1
+        for atom in molecule.atoms:
+            if not molecule.isAtomInCycle(atom):
+                symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+        self.assertAlmostEqual(symmetryNumber, 3)
+
     def testAtomSymmetryNumberPropane(self):
         """
         Test the Molecule.calculateAtomSymmetryNumber() on CCC
