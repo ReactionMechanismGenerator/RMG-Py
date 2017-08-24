@@ -115,7 +115,7 @@ cdef class Bond(Edge):
 cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
-    cdef public int symmetryNumber
+    cdef public float symmetryNumber
     cdef public int multiplicity
     cdef public object rdMol
     cdef public int rdMolConfId
@@ -211,7 +211,7 @@ cdef class Molecule(Graph):
 
     cpdef bint isArylRadical(self, list aromaticRings=?) except -2
 
-    cpdef int calculateSymmetryNumber(self) except -1
+    cpdef float calculateSymmetryNumber(self) except -1
 
     cpdef list generateResonanceIsomers(self, bint keepIsomorphic=?)
 
