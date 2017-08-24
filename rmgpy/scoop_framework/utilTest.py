@@ -72,7 +72,6 @@ def funcBroadcast():
 
     broadcast(data, key)
 
-    result = True
     try:
         assert data == shared.getConst(key)
     except AssertionError:

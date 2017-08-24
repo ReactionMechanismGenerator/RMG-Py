@@ -45,11 +45,9 @@ from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
-from rmgpy.molecule import Molecule, Atom, Bond, Group
+from rmgpy.molecule import Molecule, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
-
-from rmgpy.scoop_framework.util import get
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
@@ -250,8 +248,7 @@ def averageThermoData(thermoDataList=None):
     """
     if thermoDataList is None:
         thermoDataList = []
-        
-    import copy
+
     numValues = len(thermoDataList)
         
     if numValues == 0:
@@ -260,10 +257,10 @@ def averageThermoData(thermoDataList=None):
         logging.debug('Averaging thermo data over {0} value(s).'.format(numValues))
         
         if numValues == 1:
-            return copy.deepcopy(thermoDataList[0])
+            return deepcopy(thermoDataList[0])
         
         else:
-            averagedThermoData = copy.deepcopy(thermoDataList[0])
+            averagedThermoData = deepcopy(thermoDataList[0])
             for thermoData in thermoDataList[1:]:
                 averagedThermoData = addThermoData(averagedThermoData, thermoData)
 
@@ -337,7 +334,6 @@ def convertRingToSubMolecule(ring):
     This function takes a ring structure (can either be monoring or polyring) to create a new 
     submolecule with newly deep copied atoms
     """
-    from rmgpy.molecule.molecule import Molecule, Bond
     
     atomsMapping = {}
     for atom in ring:
@@ -358,8 +354,6 @@ def combineTwoRingsIntoSubMolecule(ring1, ring2):
     This function combines 2 rings (with common atoms) to create a new 
     submolecule with newly deep copied atoms
     """
-
-    from rmgpy.molecule.molecule import Molecule, Bond
 
     assert len(commonAtoms(ring1, ring2))>0, "The two input rings don't have common atoms."
 
@@ -680,7 +674,7 @@ class ThermoGroups(Database):
         parentR = groupToRemove.parent
 
         #look for other pointers that point toward entry
-        for entryName, entry in self.entries.iteritems():
+        for entry in self.entries.itervalues():
             if isinstance(entry.data, basestring):
                 if entry.data == groupToRemove.label:
                     #if the entryToRemove.data is also a pointer, then copy
@@ -1239,12 +1233,12 @@ class ThermoDatabase(object):
         Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.
         """
         items = []
-        for label, entry in self.depository['stable'].entries.iteritems():
+        for entry in self.depository['stable'].entries.itervalues():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item):
                     items.append((deepcopy(entry.data), self.depository['stable'], entry))
                     break
-        for label, entry in self.depository['radical'].entries.iteritems():
+        for entry in self.depository['radical'].entries.itervalues():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item):
                     items.append((deepcopy(entry.data), self.depository['radical'], entry))
@@ -1263,7 +1257,7 @@ class ThermoDatabase(object):
         Returns a tuple: (ThermoData, library, entry)  or None.
         """
         match = None
-        for label, entry in library.entries.iteritems():
+        for entry in library.entries.itervalues():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)

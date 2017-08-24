@@ -25,12 +25,10 @@
 #
 ################################################################################
 
-import sys
 import os.path
 import numpy as np
 import cantera as ct
 from rmgpy.chemkin import getSpeciesIdentifier
-from rmgpy.species import Species
 from rmgpy.tools.data import GenericData
 from rmgpy.tools.plot import GenericPlot, SimulationPlot, ReactionSensitivityPlot
 from rmgpy.quantity import Quantity

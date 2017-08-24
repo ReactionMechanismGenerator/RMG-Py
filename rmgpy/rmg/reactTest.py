@@ -34,12 +34,11 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
-from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 
 from rmgpy.rmg.main import RMG
-from rmgpy.species import Species
 from rmgpy.rmg.react import *
 
 ###################################################
@@ -192,8 +191,6 @@ class TestReact(unittest.TestCase):
         molA = Species().fromSMILES('[OH]')
         molB = Species().fromSMILES('CC')
         molC = Species().fromSMILES('[CH3]')
-
-        reactants = [molA, molB]
 
         # both reactants were already part of the core:
         reactantIndices = [1, 2]

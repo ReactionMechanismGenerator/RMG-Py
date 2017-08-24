@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.statmech.translation` module.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.statmech.translation import IdealGasTranslation

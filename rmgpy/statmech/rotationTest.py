@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.statmech.rotation` module.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor

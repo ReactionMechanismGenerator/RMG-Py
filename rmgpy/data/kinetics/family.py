@@ -36,14 +36,12 @@ import os.path
 import logging
 import codecs
 from copy import deepcopy
-import itertools
-import numpy as np
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius, ArrheniusEP
+from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 

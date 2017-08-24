@@ -45,8 +45,7 @@ from rmgpy.data.base import DatabaseError, Database, Entry
 
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           PDepKineticsModel
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from .common import saveEntry

@@ -202,8 +202,7 @@ class QchemLog:
             # The rest of the data we want is in the Thermochemistry section of the output
             elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
-                
-                inPartitionFunctions = False
+
                 line = f.readline()
                 while line != '':
 
@@ -254,7 +253,6 @@ class QchemLog:
                         else:
                             for i in range(3):
                                 inertia[i] *= (constants.a0/1e-10)**2
-                                pass
                                 rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                                 #modes.append(rotation)
                             rot.append(rotation) 
@@ -281,9 +279,7 @@ class QchemLog:
         in the file is returned. The zero-point energy is *not* included in 
         the returned value.
         """
-        modes = []
-        E0 = None 
-        spinMultiplicity = 1
+        E0 = None
     
         f = open(self.path, 'r')
         line = f.readline()
@@ -314,9 +310,7 @@ class QchemLog:
         Load the unscaled zero-point energy in J/mol from a Qchem output file.
         """
 
-        modes = []
         ZPE = None
-        spinMultiplicity = 1
     
         f = open(self.path, 'r')
         line = f.readline()

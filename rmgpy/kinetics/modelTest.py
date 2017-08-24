@@ -36,7 +36,6 @@ import unittest
 
 from rmgpy.kinetics.model import getReactionOrderFromRateCoefficientUnits, \
                                  getRateCoefficientUnitsFromReactionOrder
-import rmgpy.constants as constants
 
 ################################################################################
 

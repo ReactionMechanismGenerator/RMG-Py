@@ -33,10 +33,7 @@ This script contains unit tests of the :mod:`rmgpy.statmech.conformer` module.
 """
 
 import unittest
-from external.wip import work_in_progress
-import math
 import numpy
-import scipy.interpolate
 
 from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator, \
                            LinearRotor, HinderedRotor 

@@ -1,9 +1,6 @@
 """
 This scripts runs tests on the database
 """
-import os.path
-import logging
-from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from copy import copy
@@ -557,7 +554,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         # set of all end_labels should be backbone label
         backboneLabel = set([])
-        for end, end_label in endLabels.iteritems():
+        for end_label in endLabels.itervalues():
             for label in end_label:
                 backboneLabel.add(label)
 

@@ -1567,7 +1567,7 @@ class CoreEdgeReactionModel:
         # Two partial networks having the same source and containing one or
         # more explored isomers in common must be merged together to avoid
         # double-counting of rates
-        for source, networks in self.networkDict.iteritems():
+        for networks in self.networkDict.itervalues():
             networkCount = len(networks)
             for index0, network0 in enumerate(networks):
                 index = index0 + 1

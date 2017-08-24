@@ -27,13 +27,11 @@
 
 import os
 import unittest
-import logging
-from external.wip import work_in_progress 
 
 from .main import RMG, CoreEdgeReactionModel
 from .model import Species
 from rmgpy import settings
-from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react
 from rmgpy.restart import saveRestartFile

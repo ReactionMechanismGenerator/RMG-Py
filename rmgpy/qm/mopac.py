@@ -163,8 +163,7 @@ class Mopac:
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
-    
-        InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
+
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
         
         # Initialize dictionary with "False"s 
@@ -187,16 +186,16 @@ class Mopac:
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
                     if self.uniqueIDlong in logFileInChI:
-                        InChIMatch = True
+                        pass
                     elif self.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
-                        InChIMatch = True
+
                     else:
                         logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
                         # Use only up to first 80 characters to match due to MOPAC bug which deletes 81st character of InChI string
                         if self.uniqueIDlong.startswith(logFileInChI[:80]):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
-                            InChIMatch = True
+
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
@@ -221,9 +220,6 @@ class Mopac:
 
         logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
-        
-        #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-        return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
     
     def getParser(self, outputFile):
         """
