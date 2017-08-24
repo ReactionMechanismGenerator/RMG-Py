@@ -2135,7 +2135,7 @@ class KineticsFamily(Database):
             
             lines = kinetics.comment.split('\n')
             
-            lines = [line for line in lines if not line.startswith('Euclid')] #remove the Euclidean distance line to help parser
+            lines = [line for line in lines if not line.startswith('Euclid') and not line.startswith('family:')] #remove the Euclidean distance and family lines to help parser
             
             # Discard the last line, unless it's the only line!
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'
