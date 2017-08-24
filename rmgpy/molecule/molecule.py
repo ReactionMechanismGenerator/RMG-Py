@@ -399,17 +399,6 @@ class Atom(Vertex):
         else:
             raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
 
-    def setSpinMultiplicity(self,spinMultiplicity):
-        """
-        Set the spin multiplicity.
-        """
-        raise NotImplementedError("I thought multiplicity was now a molecule attribute not atom?")
-        # Set the spin multiplicity
-        self.spinMultiplicity = spinMultiplicity
-        if self.spinMultiplicity < 0:
-            raise gr.ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
-        self.updateCharge()
-
     def getBondOrdersForAtom(self):
         """
         This helper function is to help calculate total bond orders for an

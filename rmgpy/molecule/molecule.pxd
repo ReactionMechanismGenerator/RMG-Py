@@ -73,8 +73,6 @@ cdef class Atom(Vertex):
     cpdef decrementLonePairs(self)
     
     cpdef updateCharge(self)
-    
-    cpdef setSpinMultiplicity(self, int spinMultiplicity)
 
     cpdef getBondOrdersForAtom(self)
     
