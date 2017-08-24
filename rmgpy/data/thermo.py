@@ -1745,6 +1745,7 @@ class ThermoDatabase(object):
                     data = entry.data
                     comment = entry.label
                     break
+            else: raise DatabaseError("Node {0} points to a non-existant group called {1} in database: {2}".format(node.label, data, database.label))
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging

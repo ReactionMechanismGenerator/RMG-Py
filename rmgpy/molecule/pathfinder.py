@@ -260,7 +260,7 @@ def findAllDelocalizationPaths(atom1):
                     paths.append([atom1, atom2, atom3, bond12, bond23])
     return paths
 
-def findAllDelocalizationPathsLonePairRadical(atom1):
+def findAllDelocalizationPathsLonePairRadicalCharge(atom1):
     """
     Find all the delocalization paths of lone electron pairs next to the radical center indicated
     by `atom1`. Used to generate resonance isomers.
@@ -271,9 +271,8 @@ def findAllDelocalizationPathsLonePairRadical(atom1):
     # No paths if atom1 is not a radical
     if atom1.radicalElectrons <= 0:
         return []
-    
-    # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
-    if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen())):
+    # In a first step we only consider nitrogen, sulfur and oxygen atoms as possible radical centers
+    if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen()) or (atom1.lonePairs <= 1 and atom1.isSulfur())):
         return []
     
     # Find all delocalization paths
@@ -282,9 +281,48 @@ def findAllDelocalizationPathsLonePairRadical(atom1):
         # Only single bonds are considered
         if bond12.isSingle():
             # Neighboring atom must posses a lone electron pair to loose it
-            if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen())) and (atom2.radicalElectrons == 0):
+            if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen()) or (atom2.lonePairs == 2 and atom2.isSulfur())) and (atom2.radicalElectrons == 0):
                 paths.append([atom1, atom2])
                 
+    return paths
+
+def findAllDelocalizationPathsLonePairRadicalDoubleBond(atom1):
+    """
+    Find all the delocalization paths of lone electron pairs next to the radical center indicated
+    by `atom1`. Used to generate resonance isomers.
+    """
+    cython.declare(paths=list)
+    cython.declare(atom2=Atom, bond12=Bond)
+
+    # No paths if atom1 is not a radical
+    if atom1.radicalElectrons <= 0:
+        return []
+    if atom1.charge != 0:
+        return []
+
+    # Find all delocalization paths
+    #radical splits a lone pair on a sulfur atom
+    paths = []
+    for atom2, bond12 in atom1.edges.items():
+        if atom2.charge != 0:
+            continue
+        # Only single bonds are considered
+        if bond12.isSingle():
+            if (atom2.lonePairs >= 1 and atom2.isSulfur()) and (atom2.radicalElectrons == 0):
+                paths.append([atom1, atom2, bond12, 1])
+
+    #sulfur radical resonates to form a lone pair and radical on the adjacent atom
+    #only consider sulfur radicals that have less than 2 lone pairs (i.e. can form another lone pair)
+    if not (atom1.lonePairs <= 1 and atom1.isSulfur()):
+        return paths
+
+    #cycle through adjacent atoms until you find one that is not a radical itself and connected to atom1 by a double or triple bond
+    for atom2, bond12 in atom1.edges.items():
+        if atom2.charge != 0:
+            continue
+        if bond12.isDouble() or bond12.isTriple():
+            if atom2.radicalElectrons == 0:
+                paths.append([atom1, atom2, bond12, 2])
     return paths
 
 def findAllDelocalizationPathsN5dd_N5ts(atom1):

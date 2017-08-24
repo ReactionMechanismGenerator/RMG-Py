@@ -79,7 +79,8 @@ def create_atom_types():
     #bivalent:
     bivalent = []
     for type in [Xs, Xd]:
-        bivalent.extend(create_types(type, ['O', 'S']))
+        #bivalent.extend(create_types(type, ['O', 'S']))
+        bivalent.extend(create_types(type, ['O']))
     
     for at in bivalent: at.lp = 2
     

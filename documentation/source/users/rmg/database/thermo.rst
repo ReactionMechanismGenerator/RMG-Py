@@ -113,7 +113,7 @@ is organized in a hierarchical tree, and is defined at the bottom of the databas
 	        L3: Cb
 	            L4: Cb-H
 	            L4: Cb-Os
-	            L4: Cb-Ss
+	            L4: Cb-S2s
 	            L4: Cb-C
 	                L5: Cb-Cs
 	                L5: Cb-Cds

@@ -70,7 +70,8 @@ def populateResonanceAlgorithms(features=None):
     if features is None:
         methodList = [
             generateAdjacentResonanceStructures,
-            generateLonePairRadicalResonanceStructures,
+            generateLonePairRadicalResonanceChargeStructures,
+            generateLonePairRadicalResonanceDoubleBondStructures,
             generateN5dd_N5tsResonanceStructures,
             generateAromaticResonanceStructures,
             generateKekuleStructure,
@@ -86,7 +87,9 @@ def populateResonanceAlgorithms(features=None):
         if features['hasNitrogen']:
             methodList.append(generateN5dd_N5tsResonanceStructures)
         if features['hasLonePairs']:
-            methodList.append(generateLonePairRadicalResonanceStructures)
+            methodList.append(generateLonePairRadicalResonanceChargeStructures)
+        if features['hasLonePairs']:
+            methodList.append(generateLonePairRadicalResonanceDoubleBondStructures)
 
     return methodList
 
@@ -105,6 +108,7 @@ def analyzeMolecule(mol):
                 'isArylRadical': False,
                 'hasNitrogen': False,
                 'hasOxygen': False,
+                'hasSulfur': False,
                 'hasLonePairs': False,
                 }
 
@@ -121,6 +125,8 @@ def analyzeMolecule(mol):
             features['hasNitrogen'] = True
         if atom.isOxygen():
             features['hasOxygen'] = True
+        if atom.isSulfur():
+            features['hasSulfur'] = True
         if atom.lonePairs > 0:
             features['hasLonePairs'] = True
 
@@ -300,7 +306,7 @@ def generateAdjacentResonanceStructures(mol):
 
     return isomers
 
-def generateLonePairRadicalResonanceStructures(mol):
+def generateLonePairRadicalResonanceChargeStructures(mol):
     """
     Generate all of the resonance structures formed by lone electron pair - radical shifts.
     """
@@ -314,7 +320,7 @@ def generateLonePairRadicalResonanceStructures(mol):
     if mol.isRadical():
         # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = pathfinder.findAllDelocalizationPathsLonePairRadical(atom)
+            paths = pathfinder.findAllDelocalizationPathsLonePairRadicalCharge(atom)
             for atom1, atom2 in paths:
                 # Adjust to (potentially) new resonance isomer
                 atom1.decrementRadical()
@@ -346,6 +352,85 @@ def generateLonePairRadicalResonanceStructures(mol):
                 isomers.append(isomer)
 
     return isomers
+
+def generateLonePairRadicalResonanceDoubleBondStructures(mol):
+    """
+    Generate all of the resonance structures formed by lone electron pair - radical shifts.
+    """
+    cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
+    cython.declare(atom=Atom, atom1=Atom, atom2=Atom)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    isomers = []
+
+    # Radicals
+    if mol.isRadical():
+        # Iterate over radicals in structure
+        for atom in mol.vertices:
+            paths = pathfinder.findAllDelocalizationPathsLonePairRadicalDoubleBond(atom)
+            for atom1, atom2, bond12, direction in paths:
+                 #a radical adjacent to a sulfur atom forms a higher order bond and moves the radical electron to the sulfur
+                 if direction == 1:
+                    # Adjust to (potentially) new resonance isomer
+                    atom1.decrementRadical()
+                    atom2.incrementRadical()
+                    atom2.decrementLonePairs()
+                    bond12.incrementOrder()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    # Make a copy of isomer
+                    isomer = mol.copy(deep=True)
+                    # Also copy the connectivity values, since they are the same
+                    # for all resonance forms
+                    for index in range(len(mol.vertices)):
+                        v1 = mol.vertices[index]
+                        v2 = isomer.vertices[index]
+                        v2.connectivity1 = v1.connectivity1
+                        v2.connectivity2 = v1.connectivity2
+                        v2.connectivity3 = v1.connectivity3
+                        v2.sortingLabel = v1.sortingLabel
+                    # Restore current isomer
+                    atom1.incrementRadical()
+                    atom2.decrementRadical()
+                    atom2.incrementLonePairs()
+                    bond12.decrementOrder()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    # Append to isomer list if unique
+                    isomer.updateAtomTypes(logSpecies=False)
+                    isomers.append(isomer)
+                 #now adsorb an electron from an adjacent double or triple bond to a sulfur into a lone pair
+                 elif direction == 2:
+                    # Adjust to (potentially) new resonance isomer
+                    atom1.decrementRadical()
+                    atom2.incrementRadical()
+                    atom1.incrementLonePairs()
+                    bond12.decrementOrder()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    # Make a copy of isomer
+                    isomer = mol.copy(deep=True)
+                    # Also copy the connectivity values, since they are the same
+                    # for all resonance forms
+                    for index in range(len(mol.vertices)):
+                        v1 = mol.vertices[index]
+                        v2 = isomer.vertices[index]
+                        v2.connectivity1 = v1.connectivity1
+                        v2.connectivity2 = v1.connectivity2
+                        v2.connectivity3 = v1.connectivity3
+                        v2.sortingLabel = v1.sortingLabel
+                    # Restore current isomer
+                    atom1.incrementRadical()
+                    atom2.decrementRadical()
+                    atom1.decrementLonePairs()
+                    bond12.incrementOrder()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    # Append to isomer list if unique
+                    isomer.updateAtomTypes(logSpecies=False)
+                    isomers.append(isomer)
+    return isomers
+
 
 def generateN5dd_N5tsResonanceStructures(mol):
     """
