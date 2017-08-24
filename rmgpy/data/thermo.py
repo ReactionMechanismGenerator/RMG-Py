@@ -1679,8 +1679,7 @@ class ThermoDatabase(object):
         if thermoData is None:
             return data, node, isPartialMatch
         else:
-            return addThermoData(thermoData, data, groupAdditivity=True, verbose = True), node, isPartialMatch
-            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node
+            return addThermoData(thermoData, data, groupAdditivity=True, verbose=True), node, isPartialMatch
             # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
             # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
