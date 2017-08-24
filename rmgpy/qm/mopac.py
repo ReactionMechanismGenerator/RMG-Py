@@ -204,10 +204,6 @@ class Mopac:
         if not InChIFound:
             logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
             return False
-        
-        if not InChIMatch:
-            #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-            return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
 
         # Compare the optimized geometry to the original molecule
         qmData = self.parse()
