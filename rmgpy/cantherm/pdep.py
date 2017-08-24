@@ -629,13 +629,11 @@ class PressureDependenceJob(object):
                 f.write('    products = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.products])))
                 f.write('    transitionState = {0!r},\n'.format(rxn.transitionState.label))
                 if rxn.kinetics is not None:
+                    if isinstance(rxn, LibraryReaction) and 'Reaction library:' not in rxn.kinetics.comment:
+                        rxn.kinetics.comment += 'Reaction library: {0!r}'.format(rxn.library)
                     f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
                 if ts.tunneling is not None:
                     f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
-                if isinstance(rxn,LibraryReaction):
-                    f.write('    comment = "Library reaction: {0!r}",\n'.format(rxn.library))
-                else:
-                    f.write('    comment = "Template reaction: {0!r}",\n'.format(rxn.family))
                 f.write(')\n\n')
             
             # Write network
