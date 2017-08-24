@@ -43,7 +43,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'RMG Py'
-copyright = u'2002-2015, William H. Green, Richard H. West, and the RMG Team'
+copyright = u'2002-2017, William H. Green, Richard H. West, and the RMG Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

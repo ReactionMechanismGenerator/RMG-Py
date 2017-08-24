@@ -54,6 +54,9 @@ Cython.Compiler.Options.annotate = True
 # Turn on profiling capacity for all Cython modules
 #Cython.Compiler.Options.directive_defaults['profile'] = True
 
+# Embed docstrings in cythonized files - enable when building documentation
+#Cython.Compiler.Options._directive_defaults['embedsignature'] = True
+
 ################################################################################
 
 def getMainExtensionModules():
