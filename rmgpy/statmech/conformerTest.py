@@ -275,16 +275,7 @@ class TestConformer(unittest.TestCase):
         result = sorted(abs(V).flat)
         for i,j in zip(expected, result):
             self.assertAlmostEqual(i, j, 4)
-        return # now because the following often fails:
-        self.assertAlmostEqual(V[0,0],  0.497140, 4)
-        self.assertAlmostEqual(V[0,1], -0.610114, 4)
-        self.assertAlmostEqual(V[0,2], -0.616938, 4)
-        self.assertAlmostEqual(V[1,0],  0.787360, 4)
-        self.assertAlmostEqual(V[1,1],  0.018454, 4)
-        self.assertAlmostEqual(V[1,2],  0.616218, 4)
-        self.assertAlmostEqual(V[2,0],  0.364578, 4)
-        self.assertAlmostEqual(V[2,1],  0.792099, 4)
-        self.assertAlmostEqual(V[2,2], -0.489554, 4)
+        return
 
     def test_getInternalReducedMomentOfInertia(self):
         """
