@@ -301,7 +301,7 @@ class KineticsLibrary(Database):
         f = open(path, 'r')
         try:
             exec f in global_context, local_context
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(path))
             raise
         f.close()

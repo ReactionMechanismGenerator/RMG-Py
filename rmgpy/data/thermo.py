@@ -1045,7 +1045,7 @@ class ThermoDatabase(object):
 
         try:
             quantumMechanics = getInput('quantumMechanics')
-        except Exception, e:
+        except Exception:
             logging.debug('Quantum Mechanics DB could not be found.')
             quantumMechanics = None
             
