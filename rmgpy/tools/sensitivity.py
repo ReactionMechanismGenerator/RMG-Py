@@ -32,9 +32,7 @@ import os.path
 import logging
 from time import time
 
-from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
-import csv
 from .loader import loadRMGJob
 import rmgpy.util as util 
 from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
