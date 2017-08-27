@@ -31,7 +31,6 @@
 import unittest
 import numpy
 import os
-from external.wip import work_in_progress
 
 import rmgpy.quantity
 
@@ -41,9 +40,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.thermo import ThermoData
 from rmgpy.solver.liquid import LiquidReactor
-from rmgpy.solver.base import TerminationTime, TerminationConversion
-import rmgpy.constants as constants
-from rmgpy.chemkin import loadChemkinFile
+from rmgpy.solver.base import TerminationTime
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 
@@ -144,10 +141,9 @@ class LiquidReactorCheck(unittest.TestCase):
 
         # Convert the solution vectors to numpy arrays
         t = numpy.array(t, numpy.float64)
-        y = numpy.array(y, numpy.float64)
+        # y = numpy.array(y, numpy.float64)
         reactionRates = numpy.array(reactionRates, numpy.float64)
         speciesRates = numpy.array(speciesRates, numpy.float64)
-        V = constants.R * rxnSystem.T.value_si * numpy.sum(y) / rxnSystem.P.value_si       
 
         # Check that we're computing the species fluxes correctly
         for i in xrange(t.shape[0]):
@@ -159,7 +155,6 @@ class LiquidReactorCheck(unittest.TestCase):
         # Check that we've reached equilibrium 
         self.assertAlmostEqual(reactionRates[-1, 0], 0.0, delta=1e-2)
 
-    @work_in_progress
     def test_jacobian(self):
         """
         Unit test for the jacobian function:
@@ -167,17 +162,11 @@ class LiquidReactorCheck(unittest.TestCase):
         the finite difference jacobian.
         """
 
-        coreSpecies = [self.CH4, self.CH3, self.C2H6, self.C2H5]
+        coreSpecies = [self.CH4, self.CH3, self.C2H6, self.C2H5, self.H2]
         edgeSpecies = []
-
-        rxn1 = Reaction(
-            reactants=[self.C2H6, self.CH3],
-            products=[self.C2H5, self.CH4],
-            kinetics=Arrhenius(A=(686.375*6, 'm^3/(mol*s)'), n=4.40721, Ea=(7.82799, 'kcal/mol'), T0=(298.15, 'K'))
-        )
-        coreReactions = [rxn1]
-        edgeReactions = []
         numCoreSpecies = len(coreSpecies)
+        c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
+        edgeReactions = []
 
         rxnList = []
         rxnList.append(Reaction(
@@ -193,40 +182,40 @@ class LiquidReactorCheck(unittest.TestCase):
         
         rxnList.append(Reaction(
             reactants=[self.C2H6, self.CH3],
-            products=[self.C2H5,self.CH4],
-            kinetics=Arrhenius(A=(46.375*6, 'm^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15, 'K'))
+            products=[self.C2H5, self.CH4],
+            kinetics=Arrhenius(A=(46.375*6, 'm^3/(mol*s)'), n=3.40721, Ea=(6.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         rxnList.append(Reaction(
             reactants=[self.C2H5, self.CH4],
-            products=[self.C2H6,self.CH3],
+            products=[self.C2H6, self.CH3],
             kinetics=Arrhenius(A=(46.375*6, 'm^3/(mol*s)'), n=3.40721, Ea=(6.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         
         rxnList.append(Reaction(
             reactants=[self.C2H5, self.CH4],
-            products=[self.CH3,self.CH3,self.CH3],
-            kinetics=Arrhenius(A=(246.375*6, 'm^3/(mol*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15, 'K'))
+            products=[self.CH3, self.CH3, self.CH3],
+            kinetics=Arrhenius(A=(246.375*6, 'm^3/(mol*s)'), n=1.40721, Ea=(3.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         rxnList.append(Reaction(
             reactants=[self.CH3, self.CH3, self.CH3],
-            products=[self.C2H5,self.CH4],
-            kinetics=Arrhenius(A=(246.375*6, 'm^6/(mol^2*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15, 'K'))
+            products=[self.C2H5, self.CH4],
+            kinetics=Arrhenius(A=(246.375*6, 'm^6/(mol^2*s)'), n=1.40721, Ea=(3.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         
         rxnList.append(Reaction(
             reactants=[self.C2H6, self.CH3, self.CH3],
-            products=[self.C2H5,self.C2H5, self.H2],
+            products=[self.C2H5, self.C2H5, self.H2],
             kinetics=Arrhenius(A=(146.375*6, 'm^6/(mol^2*s)'), n=2.40721, Ea=(8.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         rxnList.append(Reaction(
             reactants=[self.C2H5, self.C2H5, self.H2],
-            products=[self.C2H6,self.CH3, self.CH3],
+            products=[self.C2H6, self.CH3, self.CH3],
             kinetics=Arrhenius(A=(146.375*6, 'm^6/(mol^2*s)'), n=2.40721, Ea=(8.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
-        
+
         rxnList.append(Reaction(
             reactants=[self.C2H6, self.C2H6],
-            products=[self.CH3,self.CH4, self.C2H5],
+            products=[self.CH3, self.CH4, self.C2H5],
             kinetics=Arrhenius(A=(1246.375*6, 'm^3/(mol*s)'), n=0.40721, Ea=(8.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         rxnList.append(Reaction(
@@ -235,38 +224,75 @@ class LiquidReactorCheck(unittest.TestCase):
             kinetics=Arrhenius(A=(46.375*6, 'm^6/(mol^2*s)'), n=0.10721, Ea=(8.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
 
-        for rxn in rxnList:
-            coreSpecies = [self.CH4, self.CH3, self.C2H6, self.C2H5, self.H2]
-            edgeSpecies = []
+        # Analytical Jacobian for reaction 6
+        def jacobian_rxn6(c, kf, kr, s):
+            c1, c2, c3, c4 = c[s[1]], c[s[2]], c[s[3]], c[s[4]]
+            J = numpy.zeros((5, 5))
+
+            J[1, 1] = -4 * kf * c1 * c2
+            J[1, 2] = -2 * kf * c1 * c1
+            J[1, 3] = 4 * kr * c3 * c4
+            J[1, 4] = 2 * kr * c3 * c3
+            J[2, 1:] = 0.5 * J[1, 1:]
+            J[3, 1:] = -J[1, 1:]
+            J[4, 1:] = -0.5 * J[1, 1:]
+            return J
+
+        # Analytical Jacobian for reaction 7
+        def jacobian_rxn7(c, kf, kr, s):
+            c1, c2, c3, c4 = c[s[1]], c[s[2]], c[s[3]], c[s[4]]
+            J = numpy.zeros((5, 5))
+
+            J[1, 1] = -4 * kr * c1 * c2
+            J[1, 2] = -2 * kr * c1 * c1
+            J[1, 3] = 4 * kf * c3 * c4
+            J[1, 4] = 2 * kf * c3 * c3
+            J[2, 1:] = 0.5 * J[1, 1:]
+            J[3, 1:] = -J[1, 1:]
+            J[4, 1:] = -0.5 * J[1, 1:]
+            return J
+
+        for rxn_num, rxn in enumerate(rxnList):
             coreReactions = [rxn]
-            
-            c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
+
             rxnSystem0 = LiquidReactor(self.T, c0, termination=[])
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             
             dN = .000001*sum(rxnSystem0.y)
-            dN_array = dN*numpy.eye(numCoreSpecies)
-            
-            dydt = []
-            for i in xrange(numCoreSpecies):
-                rxnSystem0.y[i] += dN 
-                dydt.append(rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0])
-                rxnSystem0.y[i] -= dN  # reset y to original y0
-            
-            # Let the solver compute the jacobian       
-            solverJacobian = rxnSystem0.jacobian(0.0, rxnSystem0.y, dydt0, 0.0)     
-            # Compute the jacobian using finite differences
-            jacobian = numpy.zeros((numCoreSpecies, numCoreSpecies))
-            for i in xrange(numCoreSpecies):
-                for j in xrange(numCoreSpecies):
-                    jacobian[i, j] = (dydt[j][i]-dydt0[i])/dN
-                    self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
-        
-        # print 'Solver jacobian'
-        # print solverJacobian
-        # print 'Numerical jacobian'
-        # print jacobian
+
+            # Let the solver compute the jacobian
+            solverJacobian = rxnSystem0.jacobian(0.0, rxnSystem0.y, dydt0, 0.0)
+
+            if rxn_num not in (6, 7):
+                dydt = []
+                for i in xrange(numCoreSpecies):
+                    rxnSystem0.y[i] += dN
+                    dydt.append(rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0])
+                    rxnSystem0.y[i] -= dN  # reset y
+
+                # Compute the jacobian using finite differences
+                jacobian = numpy.zeros((numCoreSpecies, numCoreSpecies))
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(numCoreSpecies):
+                        jacobian[i, j] = (dydt[j][i]-dydt0[i])/dN
+                        self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
+            # The forward finite difference is very unstable for reactions
+            # 6 and 7. Use Jacobians calculated by hand instead.
+            elif rxn_num == 6:
+                kforward = rxn.getRateCoefficient(self.T)
+                kreverse = kforward / rxn.getEquilibriumConstant(self.T)
+                jacobian = jacobian_rxn6(c0, kforward, kreverse, coreSpecies)
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(numCoreSpecies):
+                        self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
+            elif rxn_num == 7:
+                kforward = rxn.getRateCoefficient(self.T)
+                kreverse = kforward / rxn.getEquilibriumConstant(self.T)
+                jacobian = jacobian_rxn7(c0, kforward, kreverse, coreSpecies)
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(numCoreSpecies):
+                        self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
      
     def test_compute_derivative(self):
         rxnList = []
@@ -276,8 +302,8 @@ class LiquidReactorCheck(unittest.TestCase):
             kinetics=Arrhenius(A=(686.375e6, '1/s'), n=4.40721, Ea=(7.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         rxnList.append(Reaction(
-            reactants=[self.C2H6,self.CH3],
-            products=[self.C2H5,self.CH4],
+            reactants=[self.C2H6, self.CH3],
+            products=[self.C2H5, self.CH4],
             kinetics=Arrhenius(A=(46.375*6, 'm^3/(mol*s)'), n=3.40721, Ea=(6.82799, 'kcal/mol'), T0=(298.15, 'K'))
         ))
         rxnList.append(Reaction(
@@ -338,7 +364,7 @@ class LiquidReactorCheck(unittest.TestCase):
             
         for i in xrange(numCoreSpecies):
             for j in xrange(len(rxnList)):
-                self.assertAlmostEqual(dfdk[i,j], solver_dfdk[i, j], delta=abs(1e-3*dfdk[i, j]))
+                self.assertAlmostEqual(dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3*dfdk[i, j]))
                 
     def test_storeConstantSpeciesNames(self):
         """
@@ -346,8 +372,8 @@ class LiquidReactorCheck(unittest.TestCase):
         (ii) if attributes are not mix/equal for multiple conditions generation.
         """
         
-        c0={self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
-        Temp= 1000
+        c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
+        Temp = 1000
 #         
         # set up the liquid phase reactor 1
         terminationConversion = []
@@ -411,7 +437,7 @@ class LiquidReactorCheck(unittest.TestCase):
         sensitivityThreshold = 0.001
         ConstSpecies = ["CH4"]
         
-        rxnSystem = LiquidReactor(self.T, c0, terminationConversion, sensitivity,sensitivityThreshold,ConstSpecies)
+        rxnSystem = LiquidReactor(self.T, c0, terminationConversion, sensitivity, sensitivityThreshold, ConstSpecies)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxnSystem.constSPCIndices = [0]
         
