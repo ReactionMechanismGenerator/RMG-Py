@@ -1740,7 +1740,14 @@ class ThermoDatabase(object):
 
         data = node.data
         comment = node.label
+        loop_count = 0
         while isinstance(data, basestring):
+            loop_count += 1
+            if loop_count > 100:
+                raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                    " reference may exist. Last node was {0} pointing to group called {1} in "
+                                    "database {2}".format(node.label, data, database.label))
+
             for entry in database.entries.itervalues():
                 if entry.label == data:
                     data = entry.data
