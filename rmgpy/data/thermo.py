@@ -1968,10 +1968,6 @@ class ThermoCentralDatabaseInterface(object):
         self.application = application
         self.client = self.connect()
 
-    def getThermoData(self, species):
-        pass
-
-
     def connect(self):
 
         import pymongo
