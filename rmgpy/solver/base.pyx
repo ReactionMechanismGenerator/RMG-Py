@@ -573,8 +573,11 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
         terminateAtMaxObjects = True if not prune else modelSettings.terminateAtMaxObjects 
+
+        dynamicsTimeScale = modelSettings.dynamicsTimeScale
         
         useDynamics = not (toleranceMoveEdgeReactionToCore == numpy.inf and toleranceMoveEdgeReactionToSurface == numpy.inf)
         
@@ -742,12 +745,11 @@ cdef class ReactionSystem(DASx):
                 invalidObjects.append(maxSpecies)
                 break
             
-            if useDynamics and not firstTime:
-                
+            if useDynamics and not firstTime and self.t >= dynamicsTimeScale:
                 #######################################################
                 # Calculation of dynamics criterion for edge reactions#
                 #######################################################
-                
+
                 totalDivAccumNums = numpy.ones(numEdgeReactions)
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
@@ -904,9 +906,9 @@ cdef class ReactionSystem(DASx):
                 tempNewObjects = []
                 tempNewObjectInds = []
                 tempNewObjectVals = []
-            
-            if useDynamics and not firstTime:     
-                #movement of reactions to core/surface based on dynamics number 
+                              
+            if useDynamics and not firstTime and self.t >= dynamicsTimeScale:     
+                #movement of reactions to core/surface based on dynamics number  
                 validLayeringIndices = self.validLayeringIndices
                 tempSurfaceObjects = []
                 
