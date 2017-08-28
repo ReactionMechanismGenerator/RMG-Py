@@ -32,13 +32,14 @@ import os.path
 import logging
 from time import time
 
-from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
-import csv
 from .loader import loadRMGJob
 import rmgpy.util as util 
 from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
 from rmgpy.rmg.settings import ModelSettings
+from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.rmg.model import Species
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
@@ -75,8 +76,6 @@ def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, 
         ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
         ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
 
-
-
 def simulate(rmg):
     """
     Simulate the RMG job and run the sensitivity analysis if it is on, generating
@@ -96,9 +95,7 @@ def simulate(rmg):
             reactionSystem.attach(SimulationProfileWriter(
                 rmg.outputDirectory, index, rmg.reactionModel.core.species))   
             reactionSystem.attach(SimulationProfilePlotter(
-                    rmg.outputDirectory, index, rmg.reactionModel.core.species))  
-        else:
-            worksheet = None
+                    rmg.outputDirectory, index, rmg.reactionModel.core.species))
             
         sensWorksheet = []
         for spec in reactionSystem.sensitiveSpecies:
@@ -109,21 +106,32 @@ def simulate(rmg):
         for source, networks in rmg.reactionModel.networkDict.items():
             pdepNetworks.extend(networks)
         
-        modelSettings = ModelSettings(toleranceKeepInEdge = 0, toleranceMoveToCore = 1, toleranceInterruptSimulation = 1)
+        modelSettings = ModelSettings(toleranceKeepInEdge=0, toleranceMoveToCore=1, toleranceInterruptSimulation=1)
         simulatorSettings = rmg.simulatorSettingsList[-1]
+
+        if isinstance(reactionSystem, LiquidReactor):
+            rmg.loadDatabase()
+            Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+            Species.solventName = rmg.solvent
+            Species.solventStructure = rmg.database.solvation.getSolventStructure(rmg.solvent)
+            diffusionLimiter.enable(Species.solventData, rmg.database.solvation)
+
+            # Store constant species indices
+            if reactionSystem.constSPCNames is not None:
+                reactionSystem.get_constSPCIndices(rmg.reactionModel.core.species)
         
-        terminated, obj,sspcs,srxns = reactionSystem.simulate(
-            coreSpecies = rmg.reactionModel.core.species,
-            coreReactions = rmg.reactionModel.core.reactions,
-            edgeSpecies = rmg.reactionModel.edge.species,
-            edgeReactions = rmg.reactionModel.edge.reactions,
-            surfaceSpecies = [],
-            surfaceReactions = [],
-            pdepNetworks = pdepNetworks,
-            sensitivity = True if reactionSystem.sensitiveSpecies else False,
-            sensWorksheet = sensWorksheet,
-            modelSettings = modelSettings,
-            simulatorSettings = simulatorSettings,
+        reactionSystem.simulate(
+            coreSpecies=rmg.reactionModel.core.species,
+            coreReactions=rmg.reactionModel.core.reactions,
+            edgeSpecies=rmg.reactionModel.edge.species,
+            edgeReactions=rmg.reactionModel.edge.reactions,
+            surfaceSpecies=[],
+            surfaceReactions=[],
+            pdepNetworks=pdepNetworks,
+            sensitivity=True if reactionSystem.sensitiveSpecies else False,
+            sensWorksheet=sensWorksheet,
+            modelSettings=modelSettings,
+            simulatorSettings=simulatorSettings,
         )
         
         if reactionSystem.sensitiveSpecies:
