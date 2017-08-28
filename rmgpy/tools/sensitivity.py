@@ -38,6 +38,8 @@ import rmgpy.util as util
 from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.rmg.model import Species
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
@@ -110,6 +112,12 @@ def simulate(rmg):
         simulatorSettings = rmg.simulatorSettingsList[-1]
 
         if isinstance(reactionSystem, LiquidReactor):
+            rmg.loadDatabase()
+            Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+            Species.solventName = rmg.solvent
+            Species.solventStructure = rmg.database.solvation.getSolventStructure(rmg.solvent)
+            diffusionLimiter.enable(Species.solventData, rmg.database.solvation)
+
             # Store constant species indices
             if reactionSystem.constSPCNames is not None:
                 reactionSystem.get_constSPCIndices(rmg.reactionModel.core.species)
