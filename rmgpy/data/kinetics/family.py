@@ -1246,6 +1246,11 @@ class KineticsFamily(Database):
                 atomLabels['*1'].label = '*3'
                 atomLabels['*3'].label = '*1'
 
+            elif label == 'intra_substitutions_isomerization':
+                # Swap *2 and *3
+                atomLabels['*2'].label = '*3'
+                atomLabels['*3'].label = '*2'
+
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
 
