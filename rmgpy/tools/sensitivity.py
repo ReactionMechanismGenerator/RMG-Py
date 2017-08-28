@@ -109,7 +109,8 @@ def simulate(rmg):
 
         if isinstance(reactionSystem, LiquidReactor):
             # Store constant species indices
-            reactionSystem.get_constSPCIndices(rmg.reactionModel.core.species)
+            if reactionSystem.constSPCNames is not None:
+                reactionSystem.get_constSPCIndices(rmg.reactionModel.core.species)
         
         reactionSystem.simulate(
             coreSpecies=rmg.reactionModel.core.species,
