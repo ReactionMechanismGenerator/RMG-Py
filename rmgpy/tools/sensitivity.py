@@ -78,10 +78,12 @@ def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, 
 
 
 
-def simulate(rmg):
+def simulate(rmg, diffusionLimited=True):
     """
     Simulate the RMG job and run the sensitivity analysis if it is on, generating
     output csv files
+    diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
+    otherwise they will not be in a liquid reactor
     """
     util.makeOutputSubdirectory(rmg.outputDirectory, 'solver')
 
@@ -112,11 +114,12 @@ def simulate(rmg):
         simulatorSettings = rmg.simulatorSettingsList[-1]
 
         if isinstance(reactionSystem, LiquidReactor):
-            rmg.loadDatabase()
-            Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
-            Species.solventName = rmg.solvent
-            Species.solventStructure = rmg.database.solvation.getSolventStructure(rmg.solvent)
-            diffusionLimiter.enable(Species.solventData, rmg.database.solvation)
+            if diffusionLimited:
+                rmg.loadDatabase()
+                Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+                Species.solventName = rmg.solvent
+                Species.solventStructure = rmg.database.solvation.getSolventStructure(rmg.solvent)
+                diffusionLimiter.enable(Species.solventData, rmg.database.solvation)
 
             # Store constant species indices
             if reactionSystem.constSPCNames is not None:
@@ -139,16 +142,18 @@ def simulate(rmg):
         if reactionSystem.sensitiveSpecies:
             plotSensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
-def runSensitivity(inputFile, chemkinFile, dictFile):
+def runSensitivity(inputFile, chemkinFile, dictFile, diffusionLimited=True):
     """
     Runs a standalone simulation of RMG.  Runs sensitivity analysis if sensitive species are given.
+    diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
+    otherwise they will not be in a liquid reactor
     """
     
     rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False)    
     
     start_time = time()
     # conduct sensitivity simulation
-    simulate(rmg)
+    simulate(rmg,diffusionLimited)
     end_time = time()
     time_taken = end_time - start_time
     print "Simulation took {0} seconds".format(time_taken)

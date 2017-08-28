@@ -59,7 +59,7 @@ class SensitivityTest(unittest.TestCase):
         chemkinFile = os.path.join(folder, 'chem.inp')
         dictFile = os.path.join(folder, 'species_dictionary.txt')
 
-        runSensitivity(inputFile, chemkinFile, dictFile)
+        runSensitivity(inputFile, chemkinFile, dictFile, diffusionLimited=False)
 
         simfile = os.path.join(folder, 'solver', 'simulation_1_28.csv')
         sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
