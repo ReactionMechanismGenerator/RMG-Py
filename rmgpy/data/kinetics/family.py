@@ -53,7 +53,7 @@ from .rules import KineticsRules
 from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
                              UndeterminableKineticsError, ForbiddenStructureException,\
                              KekulizationError, ActionError, DatabaseError
-
+import itertools
 ################################################################################
 
 class TemplateReaction(Reaction):
@@ -2064,30 +2064,35 @@ class KineticsFamily(Database):
         elif len(reactants0) == 2:
             moleculeA = reactants0[0]
             moleculeB = reactants0[1]
+            # get mappings in forward direction
             mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
             mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+            mappingPairs = list(itertools.product(mappingsA,mappingsB))
+            # get mappings in the reverse direction
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+            mappingPairs.extend(list(itertools.product(mappingsA,mappingsB)))
 
+            reactantStructures = [moleculeA, moleculeB]
             # Iterate over each pair of matches (A, B)
-            for mapA in mappingsA:
-                for mapB in mappingsB:
-                    reactantStructures = [moleculeA, moleculeB]
-                    try:
-                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
-                    except ForbiddenStructureException:
-                        pass
-                    else:
-                        if productStructures is not None:
-                            if len(products) == 1 and len(productStructures) == 1:
-                                if products[0].isIsomorphic(productStructures[0]):
+            for mapA, mapB in mappingPairs:
+                try:
+                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
+                except ForbiddenStructureException:
+                    pass
+                else:
+                    if productStructures is not None:
+                        if len(products) == 1 and len(productStructures) == 1:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                return reactantStructures, productStructures
+                        elif len(products) == 2 and len(productStructures) == 2:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                if products[1].isIsomorphic(productStructures[1]):
                                     return reactantStructures, productStructures
-                            elif len(products) == 2 and len(productStructures) == 2:
-                                if products[0].isIsomorphic(productStructures[0]):
-                                    if products[1].isIsomorphic(productStructures[1]):
-                                        return reactantStructures, productStructures
-                                if products[0].isIsomorphic(productStructures[1]):
-                                    if products[1].isIsomorphic(productStructures[0]):
-                                        return reactantStructures, productStructures
-                            else: continue
+                            if products[0].isIsomorphic(productStructures[1]):
+                                if products[1].isIsomorphic(productStructures[0]):
+                                    return reactantStructures, productStructures
+                        else: continue
             # if there're some mapping available but cannot match the provided products
             # raise exception
             if len(mappingsA)*len(mappingsB) > 0:
