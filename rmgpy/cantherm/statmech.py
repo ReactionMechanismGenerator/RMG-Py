@@ -704,8 +704,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # H-Cl correction from CBS-QB3 enthalpy difference with Gurvich 1989, HF298=-92.31 kJ
     # 'N=O', 'N-N', 'N=N', 'N-O' corrections taken from Table 2 in R. Ashcraft, S. Raman, W.H. Green J. Phys. Chem. B, Vol. 111, No. 41, 2007; doi: 10.1021/jp073539t
     elif modelChemistry == 'CBS-QB3':
-        bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
-            'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2,
+        # bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
+        #     'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2,
+        #     'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'O=S': -0.78, 'S-H': 0.0,
+        #     'N-H': -0.42, 'C-N': -0.13, 'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58,
+        #     'N-O': 0.35, }
+
+        # corrections updated according to:  Paraskevas, P. D. et al, (2013). Chemistry-A European Journal, 19(48), 16431-16452.
+        bondEnergies = { 'C-C': -0.495, 'C-H': -0.045, 'C=C': -0.825, 'C-O': 0.378, 'C=O': 0.743, 'O-H': -0.423,
+            'C#C': -0.64,'N#N': -2.0, 'O=O': -0.2,
             'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'O=S': -0.78, 'S-H': 0.0,
             'N-H': -0.42, 'C-N': -0.13, 'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58,
             'N-O': 0.35, }

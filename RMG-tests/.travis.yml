@@ -1,0 +1,47 @@
+language: python
+sudo: false
+python:
+  - "2.7"
+virtualenv:
+    system_site_packages: true
+env:
+  global:
+    - secure: "L2ja+ZnV83w4qG3E8FwTjm0D6IWNOnj5wuFOjYTwbzQP4OAgLAWBzCMtxzWy5sMxFLtRgkswBH1d5f5kg8Ab7GIyAMFgQwe8UFqMJ+N05QNszE1mJkAvJtv2XN7669XXQhTt5EXfHrCcGZaODVnI2CEA8GB5DxiHO2Lcqf/xvgE="
+addons:
+  apt:
+    packages:
+    - git
+
+before_install: 
+  - chmod +x before_install.sh
+  - . ./before_install.sh
+
+install: 
+  - chmod +x install.sh
+  - . ./install.sh
+
+script: 
+  - make ARGS="eg1" run
+  - make ARGS="eg3" run
+  - make ARGS="eg5" run
+  - make ARGS="eg6" run
+  - make ARGS="eg7" run
+  - make ARGS="NC" run
+  - make ARGS="MCH" run
+  - make ARGS="solvent_hexane" run
+  - make ARGS="methane" run
+
+after_script:
+  - chmod +x after_install.sh
+  - . ./after_install.sh
+  
+cache:
+  pip: true
+  apt: true
+  # directories:
+  #   - $HOME/anaconda/pkgs
+
+branches:
+  only:
+    - /^rmgpy-.*$/
+    - /^rmgdb-.*$/
