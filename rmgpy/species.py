@@ -282,7 +282,24 @@ class Species(object):
             ctSpecies.transport = self.transportData.toCantera()
             
         return ctSpecies
-
+    
+    def getRadicalCount(self):
+        """
+        returns the minimum number of radicals on any resonance structure
+        """
+        mols = self.molecule
+        nums = []
+        for mol in mols:
+            rcnt = mol.getRadicalCount()
+            if rcnt == 0:
+                return 0
+            elif rcnt == 1:
+                return 1
+            else:
+                nums.append(rcnt)
+        
+        return min(nums)
+    
     def hasStatMech(self):
         """
         Return ``True`` if the species has statistical mechanical parameters,
