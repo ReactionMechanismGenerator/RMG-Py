@@ -232,9 +232,13 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
-
+        self.speciesWeightVec = numpy.ones((self.numCoreSpecies))
+        self.reactionWeightVec = numpy.ones((self.numCoreReactions+self.numEdgeReactions))
+        
         surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
         
+        if self.modelSettings: #if weights defined generate them, otherwise leave them as ones
+            self.generateWeights(coreSpecies, coreReactions, edgeReactions)
         
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
@@ -333,7 +337,42 @@ cdef class ReactionSystem(DASx):
             self.rtol_array = numpy.ones(self.neq , numpy.float64) * rtol
             
             self.senpar = numpy.zeros(self.numCoreReactions, numpy.float64)
-
+    
+    cpdef generateWeights(self, list coreSpecies, list coreReactions, list edgeReactions):
+        """
+        set weight vectors for species and reactions
+        """
+        cdef numpy.ndarray speciesWeightVec, reactionWeightVec
+        cdef dict speciesWeights
+        cdef double radicalChangeWeightBase
+        cdef list coreLabels
+        cdef str label
+        cdef double wt
+        cdef object spc,rxn
+        cdef int rdif,ind
+        
+        speciesWeightVec = self.speciesWeightVec
+        reactionWeightVec = self.reactionWeightVec
+        speciesWeights = self.modelSettings.speciesWeights
+        radicalChangeWeightBase = self.modelSettings.radicalChangeWeightBase
+        
+        coreLabels = [spc.label for spc in coreSpecies]
+        for label,wt in speciesWeights.iteritems():
+            ind = coreLabels.index(label)
+            speciesWeightVec[ind] = wt
+        
+        for ind,rxn in enumerate(coreReactions+edgeReactions):
+            rdif = 0
+            for rct in rxn.reactants:
+                rdif += rct.getRadicalCount()
+            for prod in rxn.products:
+                rdif -= prod.getRadicalCount()
+            rdif = abs(rdif)
+            reactionWeightVec[ind] = radicalChangeWeightBase**rdif
+        
+        self.speciesWeightVec = speciesWeightVec
+        self.reactionWeightVec = reactionWeightVec
+        
     def get_species_index(self, spc):
         """
         Retrieves the index that is associated with the parameter species
@@ -556,7 +595,8 @@ cdef class ReactionSystem(DASx):
 
         assert set(coreReactions) >= set(surfaceReactions), 'given surface reactions are not a subset of core reactions'
         assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species' 
-
+        
+        self.modelSettings = modelSettings
         toleranceKeepInEdge = modelSettings.fluxToleranceKeepInEdge if prune else 0
         toleranceMoveToCore = modelSettings.fluxToleranceMoveToCore
         toleranceMoveEdgeReactionToCore = modelSettings.toleranceMoveEdgeReactionToCore
