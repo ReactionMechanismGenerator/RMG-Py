@@ -30,29 +30,45 @@ import os
 import os.path
 import shutil
 
-from rmgpy.tools.sensitivity import *
+from rmgpy.tools.sensitivity import runSensitivity
 import rmgpy
 
 class SensitivityTest(unittest.TestCase):
 
     def test_minimal(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools/data/sens')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sens/simple')
         
-        inputFile = os.path.join(folder,'input.py')
-        chemkinFile = os.path.join(folder,'chem.inp')
-        dictFile = os.path.join(folder,'species_dictionary.txt')
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chem.inp')
+        dictFile = os.path.join(folder, 'species_dictionary.txt')
         
         runSensitivity(inputFile, chemkinFile, dictFile)
 
-        simfile = os.path.join(folder,'solver', 'simulation_1_13.csv')
-        sensfile = os.path.join(folder,'solver', 'sensitivity_1_SPC_1.csv')
+        simfile = os.path.join(folder, 'solver', 'simulation_1_13.csv')
+        sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
 
         self.assertTrue(os.path.isfile(simfile))
         self.assertTrue(os.path.isfile(sensfile))
         
-        os.remove(simfile)
-        os.remove(sensfile)
-        
+        shutil.rmtree(os.path.join(folder, 'solver'))
+
+    def test_liquid(self):
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sens/liquid')
+
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chem.inp')
+        dictFile = os.path.join(folder, 'species_dictionary.txt')
+
+        runSensitivity(inputFile, chemkinFile, dictFile, diffusionLimited=False)
+
+        simfile = os.path.join(folder, 'solver', 'simulation_1_28.csv')
+        sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
+
+        self.assertTrue(os.path.isfile(simfile))
+        self.assertTrue(os.path.isfile(sensfile))
+
+        shutil.rmtree(os.path.join(folder, 'solver'))
+
     def tearDown(self):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None

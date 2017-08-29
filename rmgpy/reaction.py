@@ -110,9 +110,7 @@ class Reaction:
         self.duplicate = duplicate
         self.pairs = pairs
         self.comment = comment
-        
-        if diffusionLimiter.enabled:
-            self.k_effective_cache = {}
+        self.k_effective_cache = {}
 
     def __repr__(self):
         """
