@@ -1049,13 +1049,14 @@ class ThermoDatabase(object):
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
             return thermo0
-        #ypli
+
         thermo0 = self.getThermoDataFromCentralDatabase(species)
+
         if thermo0 is not None:
             # Make sure to calculate Cp0 and CpInf if it wasn't done already
             findCp0andCpInf(species, thermo0)
             return thermo0
-        #ypli
+
 
         try:
             quantumMechanics = getInput('quantumMechanics')
@@ -1997,7 +1998,7 @@ class ThermoCentralDatabaseInterface(object):
 
         # choose registration table
         db =  getattr(self.client, 'thermoCentralDB')
-        registration_table = getattr(db, 'registration_table')
+        #registration_table = getattr(db, 'registration_table')
         results_table = getattr(db, 'results_table')
 
         try:
@@ -2008,20 +2009,20 @@ class ThermoCentralDatabaseInterface(object):
 
             if len(entries) == 0 :
                 # No data in the results_table, try to register in the registration_table
-                if self.satisfyRegistrationRequirements(species) \
-                and registration_table.find({"aug_inchi": aug_inchi}).count() > 0:
-                    SMILES_input = species.molecule[0].toSMILES()
-                    status = 'pending'
-                    species_registration_entry = {'aug_inchi': aug_inchi,
-                                                'SMILES_input': SMILES_input,
-                                                'radical_number': species.molecule[0].getRadicalCount(),
-                                                'status': status,
-                                                'user': self.username,
-                                                'application': self.application,
-                                                'timestamp': time.time()
-                                                }
-
-                    registration_table.insert(species_registration_entry)
+                # if self.satisfyRegistrationRequirements(species) \
+                # and registration_table.find({"aug_inchi": aug_inchi}).count() < 1:
+                #     SMILES_input = species.molecule[0].toSMILES()
+                #     status = 'pending'
+                #     species_registration_entry = {'aug_inchi': aug_inchi,
+                #                                 'SMILES_input': SMILES_input,
+                #                                 'radical_number': species.molecule[0].getRadicalCount(),
+                #                                 'status': status,
+                #                                 'user': self.username,
+                #                                 'application': self.application,
+                #                                 'timestamp': time.time()
+                #                                 }
+                #
+                #     registration_table.insert(species_registration_entry)
                 return None
             else:
                 # Convert data from mongodb to ThermoData of ,
@@ -2045,16 +2046,68 @@ class ThermoCentralDatabaseInterface(object):
         except ValueError:
             logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
 
-    def satisfyRegistrationRequirements(self, species):
+    def registerInCentralThermoDB(self, species):
+
+        # choose registration table
+        db =  getattr(self.client, 'thermoCentralDB')
+        registration_table = getattr(db, 'registration_table')
+        results_table = getattr(db, 'results_table')
+
+        # prepare registration entry
+        try:
+            aug_inchi = species.getAugmentedInChI()
+
+            # check if it's registered before or
+            # already have available data in results_table
+            registered_entries = list(registration_table.find({"aug_inchi": aug_inchi}))
+            finished_entries = list(results_table.find({"aug_inchi": aug_inchi}))
+
+            if len(registered_entries) + len(finished_entries) > 0 :
+                return
+
+            SMILES_input = species.molecule[0].toSMILES()
+            status = 'pending'
+            species_registration_entry = {'aug_inchi': aug_inchi,
+                                        'SMILES_input': SMILES_input,
+                                        'radical_number': species.molecule[0].getRadicalCount(),
+                                        'status': status,
+                                        'user': self.username,
+                                        'application': self.application,
+                                        'timestamp': time.time()
+                                        }
+
+            registration_table.insert(species_registration_entry)
+
+        except ValueError:
+            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
+
+    def satisfyRegistrationRequirements(self, species, thermo, thermodb):
         """
         Given a species, check if it's allowed to register in
         central thermo database.
-
         Requirements for now:
-        ???
+        cyclic,
+        its thermo is estimated by GAV and no exact match/use heuristics
         """
-        return False
+        if not species.molecule[0].isCyclic():
+            return False
 
+        GAV_keywords = 'Thermo group additivity estimation'
+        if isinstance(thermo, ThermoData) and thermo.comment.startswith(GAV_keywords):
+            ringGroups, polycyclicGroups = thermodb.getRingGroupsFromComments(thermo)
+
+            # use GAV generic node to estimate thermo
+            for group in ringGroups + polycyclicGroups:
+                if group.label in thermodb.groups['ring'].genericNodes + thermodb.groups['polycyclic'].genericNodes:
+                    return True
+
+            # used some heuristic way to estimate thermo
+            if ") - ring(" in thermo.comment:
+                return True
+            else:
+                return False
+        else:
+            return False
 
 def findCp0andCpInf(species, heatCap):
     """
