@@ -135,6 +135,46 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEqual(set(surfaceSpecies),set(edgeSpecies)) #all edge species should now be in the surface
         self.assertEqual(set(surfaceReactions),set(edgeReactions)) #all edge reactions should now be in the surface
     
+    def testGenerateWeights(self):
+        """
+        test that proper weight vectors are generated
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        species = reactionModel.core.species
+        reactions = reactionModel.core.reactions
+        
+        coreSpecies = species
+        coreReactions = reactions
+        surfaceSpecies = []
+        surfaceReactions = []
+        edgeSpecies = []
+        edgeReactions = []
+        
+        reactionSystem.modelSettings = ModelSettings()
+        
+        reactionSystem.modelSettings.speciesWeights = {species[0].label:2.0}
+        reactionSystem.modelSettings.radicalChangeWeightBase = 2.0
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        spcWts = numpy.ones(reactionSystem.numCoreSpecies)
+        spcWts[0] = 2.0
+        
+        for ind,rxn in enumerate(coreReactions):
+            rdif = 0
+            for reactant in rxn.reactants:
+                rdif += reactant.getRadicalCount()
+            for prod in rxn.products:
+                rdif -= prod.getRadicalCount()
+            rdif = abs(rdif)
+            self.assertEqual(2.0**rdif,reactionSystem.reactionWeightVec[ind])
+        
+        self.assertSequenceEqual(spcWts.tolist(),reactionSystem.speciesWeightVec.tolist())
+        
+        
     def testEdgeDynamicsNumberCalculations(self):
         """
         test an edge dynamics number calculation
