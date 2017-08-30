@@ -539,7 +539,7 @@ cdef class ReactionSystem(DASx):
         """
         calculates and returns the dynamics numbers for surface reactions
         """
-        cdef int spcIndex, index, numCoreSpecies, numCoreReactions, numEdgeReactions
+        cdef int i,spcIndex, index, numCoreSpecies, numCoreReactions, numEdgeReactions
         cdef numpy.ndarray[numpy.float64_t, ndim=1] surfaceTotalDivLnAccumNums, edgeReactionRates, coreSpeciesConsumptionRates, coreSpeciesRateRatios, coreSpeciesProductionRates, speciesWeightVec, reactionWeightVec
         cdef numpy.ndarray[numpy.int_t,ndim=2] reactantIndices, productIndices
         cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
@@ -567,29 +567,45 @@ cdef class ReactionSystem(DASx):
         for i in xrange(len(surfaceReactionIndices)):
             index = surfaceReactionIndices[i]
             reactionRate = coreReactionRates[index]
-            
+            if reactionRate == 0.0:
+                continue
             for spcIndex in reactantIndices[index,:]:
                 if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
-                    consumption = coreSpeciesConsumptionRates[spcIndex]
-                    if abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
-                        surfaceTotalDivLnAccumNums[i] = numpy.inf
-                    elif reactionRate > 0:
+                    if reactionRate > 0:
+                        consumption = coreSpeciesConsumptionRates[spcIndex]
+                        if consumption == 0.0 or abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
+                            continue
                         if useFluxRatioInWeights:
                             surfaceTotalDivLnAccumNums[i] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))
                         else:
-                            surfaceTotalDivLnAccumNums[i] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))    
-
+                            surfaceTotalDivLnAccumNums[i] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))
+                    else:
+                        production = coreSpeciesProductionRates[spcIndex]
+                        if production == 0.0 or abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
+                            continue
+                        if useFluxRatioInWeights:
+                            surfaceTotalDivLnAccumNums[i] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((production-reactionRate)/production))
+                        else:
+                            surfaceTotalDivLnAccumNums[i] += speciesWeightVec[spcIndex]*abs(numpy.log((production-reactionRate)/production))
             for spcIndex in productIndices[index,:]:
                 if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
-                    production = coreSpeciesProductionRates[spcIndex]
-                    if abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
-                        surfaceTotalDivLnAccumNums[i] = numpy.inf
-                    elif reactionRate > 0:
+                    if reactionRate > 0:
+                        production = coreSpeciesProductionRates[spcIndex]
+                        if production == 0.0 or abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
+                            continue
                         if useFluxRatioInWeights:
                             surfaceTotalDivLnAccumNums[i] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+production)/production))
                         else:
                             surfaceTotalDivLnAccumNums[i] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+production)/production))
-
+                    else:
+                        consumption = coreSpeciesConsumptionRates[spcIndex]
+                        if consumption == 0.0 or abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
+                            continue
+                        if useFluxRatioInWeights:
+                            surfaceTotalDivLnAccumNums[i] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((consumption-reactionRate)/consumption))
+                        else:
+                            surfaceTotalDivLnAccumNums[i] += speciesWeightVec[spcIndex]*abs(numpy.log((consumption-reactionRate)/consumption))
+                            
             surfaceTotalDivLnAccumNums[i] *= reactionWeightVec[index]
         
         return surfaceTotalDivLnAccumNums
@@ -602,7 +618,7 @@ cdef class ReactionSystem(DASx):
         cdef int spcIndex,index,numCoreSpecies,numCoreReactions,numEdgeReactions
         cdef numpy.ndarray[numpy.float64_t, ndim=1] totalDivLnAccumNums,edgeReactionRates, coreSpeciesConsumptionRates, coreSpeciesRateRatios, coreSpeciesProductionRates, speciesWeightVec
         cdef numpy.ndarray[numpy.int_t,ndim=2] reactantIndices,productIndices
-        cdef double reactionRate,consumption,production
+        cdef double reactionRate,consumption,production, absoluteTolerance
         cdef bool useFluxRatioInWeights
         
         edgeReactionRates = self.edgeReactionRates
@@ -611,6 +627,7 @@ cdef class ReactionSystem(DASx):
         numCoreSpecies = self.numCoreSpecies
         numCoreReactions = self.numCoreReactions
         numEdgeReactions = self.numEdgeReactions
+        absoluteTolerance = self.simulatorSettings.atol
         useFluxRatioInWeights = self.modelSettings.useFluxRatioInWeights
         coreSpeciesProductionRates = self.coreSpeciesProductionRates
         coreSpeciesConsumptionRates = self.coreSpeciesConsumptionRates
@@ -623,22 +640,45 @@ cdef class ReactionSystem(DASx):
         
         for index in xrange(numEdgeReactions):
             reactionRate = edgeReactionRates[index]
+            if reactionRate == 0.0:
+                continue
             for spcIndex in reactantIndices[index+numCoreReactions,:]:
                 if spcIndex != -1 and spcIndex<numCoreSpecies:
-                    consumption = coreSpeciesConsumptionRates[spcIndex]
-                    if useFluxRatioInWeights:
-                        totalDivLnAccumNums[index] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))
+                    if reactionRate > 0:
+                        consumption = coreSpeciesConsumptionRates[spcIndex]
+                        if consumption == 0.0 or abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
+                            continue
+                        if useFluxRatioInWeights:
+                            totalDivLnAccumNums[index] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))
+                        else:
+                            totalDivLnAccumNums[index] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))
                     else:
-                        totalDivLnAccumNums[index] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+consumption)/consumption))
-    
-            for spcIndex in self.productIndices[index+numCoreReactions,:]:
+                        production = coreSpeciesProductionRates[spcIndex]
+                        if production == 0.0 or abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
+                            continue
+                        if useFluxRatioInWeights:
+                            totalDivLnAccumNums[index] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((production-reactionRate)/production))
+                        else:
+                            totalDivLnAccumNums[index] += speciesWeightVec[spcIndex]*abs(numpy.log((production-reactionRate)/production))
+            for spcIndex in productIndices[index+numCoreReactions,:]:
                 if spcIndex != -1 and spcIndex<numCoreSpecies:
-                    production = coreSpeciesProductionRates[spcIndex]
-                    if useFluxRatioInWeights:
-                        totalDivLnAccumNums[index] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+production)/production))
+                    if reactionRate > 0:
+                        production = coreSpeciesProductionRates[spcIndex]
+                        if production == 0.0 or abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
+                            continue
+                        if useFluxRatioInWeights:
+                            totalDivLnAccumNums[index] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+production)/production))
+                        else:
+                            totalDivLnAccumNums[index] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+production)/production))
                     else:
-                        totalDivLnAccumNums[index] += speciesWeightVec[spcIndex]*abs(numpy.log((reactionRate+production)/production))
-
+                        consumption = coreSpeciesConsumptionRates[spcIndex]
+                        if consumption == 0.0 or abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
+                            continue
+                        if useFluxRatioInWeights:
+                            totalDivLnAccumNums[index] += coreSpeciesRateRatios[spcIndex]*speciesWeightVec[spcIndex]*abs(numpy.log((consumption-reactionRate)/consumption))
+                        else:
+                            totalDivLnAccumNums[index] += speciesWeightVec[spcIndex]*abs(numpy.log((consumption-reactionRate)/consumption))
+                            
         totalDivLnAccumNums *= self.reactionWeightVec[numCoreReactions:]
         
         return totalDivLnAccumNums
