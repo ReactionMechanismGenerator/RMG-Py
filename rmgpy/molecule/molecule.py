@@ -884,6 +884,19 @@ class Molecule(Graph):
             radicals += atom.radicalElectrons
         return radicals
 
+    def getSingletCarbeneCount(self):
+        """
+        Return the total number of singlet carbenes (lone pair on a carbon atom)
+        in the molecule. Counts the number of carbon atoms with a lone pair.
+        In the case of [C] with two lone pairs, this method will return 1.
+        """
+        cython.declare(atom=Atom, carbenes=cython.short)
+        carbenes = 0
+        for atom in self.vertices:
+            if atom.isCarbon() and atom.lonePairs > 0:
+                carbenes += 1
+        return carbenes
+
     def getNumAtoms(self, element = None):
         """
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",

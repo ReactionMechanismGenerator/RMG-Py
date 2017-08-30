@@ -145,6 +145,8 @@ cdef class Molecule(Graph):
 
     cpdef short getRadicalCount(self)
 
+    cpdef short getSingletCarbeneCount(self)
+
     cpdef double getMolecularWeight(self)
 
     cpdef int getNumAtoms(self, str element=?)
