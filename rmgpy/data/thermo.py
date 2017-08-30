@@ -1050,7 +1050,7 @@ class ThermoDatabase(object):
             thermo0 = thermo0[0]
             return thermo0
 
-#        thermo0 = self.getThermoDataFromCentralDatabase(species)
+        thermo0 = self.getThermoDataFromCentralDatabase(species)
 
         if thermo0 is not None:
             # Make sure to calculate Cp0 and CpInf if it wasn't done already
