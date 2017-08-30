@@ -78,6 +78,7 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray coreSpeciesConsumptionRates
     cdef public numpy.ndarray edgeSpeciesRates
     cdef public numpy.ndarray edgeReactionRates
+    cdef public numpy.ndarray coreSpeciesRateRatios
 
     cdef public numpy.ndarray networkLeakRates    
 
@@ -108,6 +109,7 @@ cdef class ReactionSystem(DASx):
     cdef public list termination
     
     cdef public object modelSettings
+    cdef public object simulatorSettings
     
     # reaction threshold settings
     cdef public numpy.ndarray unimolecularThreshold
@@ -133,3 +135,7 @@ cdef class ReactionSystem(DASx):
     cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list surfaceSpecies,list surfaceReactions,list edgeSpecies)
     
     cpdef generateWeights(self, list coreSpecies, list coreReactions, list edgeReactions)
+    
+    cpdef calculateEdgeDynamicsNumbers(self)
+    
+    cpdef calculateSurfaceDynamicsNumbers(self)
