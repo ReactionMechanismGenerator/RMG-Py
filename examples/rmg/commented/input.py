@@ -180,7 +180,7 @@ options(
     saveEdgeSpecies=False,
     # Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
     # do not converge.
-    # wallTime = '00:00:00', 
+    # wallTime = '00:00:00',
     # Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
     # reactions while keeping the reversibility as as.
     keepIrreversible=False,
@@ -223,6 +223,11 @@ generatedSpeciesConstraints(
     # maximumHeavyAtoms=20,
     # maximum radicals on a molecule
     maximumRadicalElectrons=1,
+    # maximum number of singlet carbenes (lone pair on a carbon atom) in a molecule
+    maximumSingletCarbenes=1,
+    # maximum number of radicals on a molecule with a singlet carbene
+    # should be lower than maximumRadicalElectrons in order to have an effect
+    maximumCarbeneRadicals=0,
     # If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered
     # which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
     # allowSingletO2=False,
