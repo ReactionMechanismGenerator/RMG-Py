@@ -1308,7 +1308,7 @@ class ThermoDatabase(object):
             return thermo0
             #thermoCentralDatabase = None
 
-        if thermoCentralDatabaseis not None and thermoCentralDatabase.client:
+        if thermoCentralDatabase is not None and thermoCentralDatabase.client:
             thermo0 = thermoCentralDatabase.getThermoData(species)
 
         return thermo0
