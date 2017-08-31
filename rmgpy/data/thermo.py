@@ -1049,6 +1049,13 @@ class ThermoDatabase(object):
             thermo0 = thermo0[0]
             return thermo0
 
+        thermo0 = self.getThermoDataFromCentralDatabase(species)
+
+        if thermo0 is not None:
+            # Make sure to calculate Cp0 and CpInf if it wasn't done already
+            findCp0andCpInf(species, thermo0)
+            return thermo0
+
         try:
             quantumMechanics = getInput('quantumMechanics')
         except Exception, e:
@@ -1278,6 +1285,30 @@ class ThermoDatabase(object):
             species.molecule.remove(molecule)
             species.molecule.insert(0, molecule)
         return match
+
+    def getThermoDataFromCentralDatabase(self, species):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Species` object `species` from the central database
+        If no match is found in that database,
+        ``None`` is returned. If no corresponding library is found, a
+        :class:`DatabaseError` is raised.
+
+        Returns a tuple: ThermoData or None.
+        """
+        from rmgpy.rmg.input import getInput
+
+        thermo0 = None
+        try:
+            thermoCentralDatabase = getInput('thermoCentralDatabase')
+        except Exception, e:
+            logging.debug('thermoCentralDatabase could not be found.')
+            return thermo0
+
+        if thermoCentralDatabase is not None and thermoCentralDatabase.client:
+            thermo0 = thermoCentralDatabase.getThermoData(species)
+
+        return thermo0
 
     def getThermoDataFromGroups(self, species):
         """
@@ -1939,7 +1970,10 @@ class ThermoCentralDatabaseInterface(object):
         
         import pymongo
 
-        remote_address = 'mongodb://{0}:{1}@{2}/thermoCentralDB'.format(self.username, 
+        if self.username is None:
+            remote_address = 'mongodb://{}/thermoCentralDB'.format(self.host)
+        else:
+            remote_address = 'mongodb://{0}:{1}@{2}/thermoCentralDB'.format(self.username,
                                                             self.password,
                                                             self.host)
         client = pymongo.MongoClient(remote_address, 
@@ -1955,7 +1989,41 @@ class ThermoCentralDatabaseInterface(object):
             logging.info("\nConnection failure to RMG Thermo Central Database...")
             logging.info("This RMG job still can run but cannot utilize data from central database.\n")
             return None
+    
+    def getThermoData(self, species):
+        # choose registration table
+        db =  getattr(self.client, 'thermoCentralDB')
+        results_table = getattr(db, 'results_table')
+        try:
+            aug_inchi = species.getAugmentedInChI()
+            # check if it already has available data in results_table
+            entries = list(results_table.find({"aug_inchi": aug_inchi}))
 
+            if len(entries) == 0 :
+                # Should we register the molecule here?
+                return None
+            else:
+                # Convert data from mongodb to ThermoData
+                entry = entries[0]
+
+                def mongoToRMG(entry):
+                    for i,x in enumerate(entry):
+                        if type(x) is unicode:
+                            entry[i] = str(x)
+                    return tuple(entry)
+
+                thermoData = ThermoData(
+                    Tdata = mongoToRMG(entry['Tdata']),
+                    Cpdata = mongoToRMG(entry['Cpdata']),
+                    H298 = mongoToRMG(entry['H298']),
+                    S298 = mongoToRMG(entry['S298'])
+                )
+                thermoData.comment += 'Thermo library: thermoCentralDB'
+                return thermoData
+
+        except ValueError:
+            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
+            
     def satisfyRegistrationRequirements(self, species, thermo, thermodb):
         """
         Given a species, check if it's allowed to register in 
