@@ -295,6 +295,25 @@ multiplicity 2
         self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should now be the first one
         self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
 
+    def testThermoEstimationNotAffectDatabase(self):
+
+        poly_root = self.database.groups['polycyclic'].entries['PolycyclicRing']
+        previous_enthalpy = poly_root.data.getEnthalpy(298)/4184.0
+        smiles = 'C1C2CC1C=CC=C2'
+        spec = Species().fromSMILES(smiles)
+        spec.generateResonanceIsomers()
+
+        thermo_gav = self.database.getThermoDataFromGroups(spec)
+        _, polycyclicGroups = self.database.getRingGroupsFromComments(thermo_gav)
+
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('PolycyclicRing', polycyclicGroupLabels)
+
+        latter_enthalpy = poly_root.data.getEnthalpy(298)/4184.0
+
+        self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """
