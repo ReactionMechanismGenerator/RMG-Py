@@ -79,15 +79,20 @@ class Species(object):
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
+    `isSolvent`             Boolean describing whether this species is the solvent
+    `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
     ======================= ====================================================
 
     note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
+    # these are class level attributes?
+
+
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1):
+                 symmetryNumber = -1, creationIteration = 0):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -100,13 +105,14 @@ class Species(object):
         self.props = props or {}
         self.aug_inchi = aug_inchi
         self.symmetryNumber = symmetryNumber
+        self.isSolvent = False
+        self.creationIteration = creationIteration
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
             for m in molecule[1:]:
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
-
         
 
 
