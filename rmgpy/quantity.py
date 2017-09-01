@@ -116,6 +116,12 @@ class Units(object):
         """
         return 1.0 / self.getConversionFactorToSI()
 
+    def si_units(self):
+        """
+        Return the corresponding si units for dimensionality checks.
+        """
+        return pq.Quantity(1.0, self.units).simplified.units
+
 ################################################################################
 
 class ScalarQuantity(Units):
