@@ -101,6 +101,8 @@ Below is a list of pre-packaged kinetics library reactions in RMG:
 +---------------------------------------+------------------------------------------------------------------------------------------+
 |JetSurF2.0                             |Jet Surrogate Fuel model up tp C12 (excited species removed)                              |
 +---------------------------------------+------------------------------------------------------------------------------------------+
+|Klippenstein_Glarborg2016              |Methane oxidation at high pressures and intermediate temperatures                         |
++---------------------------------------+------------------------------------------------------------------------------------------+
 |Mebel_C6H5_C2H2                        |Pathways from benzene to naphthalene                                                      |
 +---------------------------------------+------------------------------------------------------------------------------------------+
 |Mebel_Naphthyl                         |Reactions of naphthyl-1 and naphthyl-2                                                    |
