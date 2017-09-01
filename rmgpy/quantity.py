@@ -122,6 +122,13 @@ class Units(object):
         """
         return pq.Quantity(1.0, self.units).simplified.units
 
+    def return_compounded_units(self, other):
+        """
+        Return the compound unit upon multiplication of two ScalarQuantities
+        """
+        compound_unit = pq.CompoundUnit(self.units + "*" + other.units).name
+        return compound_unit[1:-1]
+
 ################################################################################
 
 class ScalarQuantity(Units):
@@ -206,6 +213,10 @@ class ScalarQuantity(Units):
 
         else:
             raise QuantityError('Cannot subtract items with units of "{0}" and "{1}"'.format(self.units, other.units))
+
+    def __mul__(self, other):
+        product = self.value * other.value
+        return ScalarQuantity(product, self.return_compounded_units(other))
 
     def additive_uncertainty(self, other):
         """
