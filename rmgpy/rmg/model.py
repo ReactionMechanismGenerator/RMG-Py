@@ -196,6 +196,7 @@ class CoreEdgeReactionModel:
     `networkList`              A list of pressure-dependent reaction networks (:class:`Network` objects)
     `networkCount`             A counter for the number of pressure-dependent networks created
     `indexSpeciesDict`         A dictionary with a unique index pointing to the species objects
+    `solventName`              String describing solvent name for liquid reactions. Empty for non-liquid estimation
     =========================  ==============================================================
 
 
@@ -249,7 +250,8 @@ class CoreEdgeReactionModel:
         self.newSurfaceRxnsAdd = set()
         self.newSurfaceSpcsLoss = set()
         self.newSurfaceRxnsLoss = set()
-    
+        self.solventName = ''
+
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
@@ -338,7 +340,7 @@ class CoreEdgeReactionModel:
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
-        submit(spec)
+        submit(spec,self.solventName)
         
         if spec.label == '':
             if spec.thermo and spec.thermo.label != '': #check if thermo libraries have a name for it
@@ -1448,7 +1450,7 @@ class CoreEdgeReactionModel:
 
         for spec in self.newSpeciesList:            
             if spec.reactive:
-                submit(spec)
+                submit(spec,self.solventName)
 
             self.addSpeciesToCore(spec)
 
@@ -1458,7 +1460,7 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
-                    submit(spec)
+                    submit(spec,self.solventName)
 
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
@@ -1514,7 +1516,7 @@ class CoreEdgeReactionModel:
 
         for spec in self.newSpeciesList:
             if spec.reactive: 
-                submit(spec)
+                submit(spec,self.solventName)
 
             self.addSpeciesToEdge(spec)
 

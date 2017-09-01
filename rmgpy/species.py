@@ -533,7 +533,7 @@ class Species(object):
         candidates.sort()
         return candidates[0] 
 
-    def getThermoData(self):
+    def getThermoData(self, solventName = ''):
         """
         Returns a `thermoData` object of the current Species object.
 
@@ -553,7 +553,7 @@ class Species(object):
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
         else:
-            submit(self)
+            submit(self, solventName)
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
 
