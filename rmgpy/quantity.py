@@ -129,6 +129,13 @@ class Units(object):
         compound_unit = pq.CompoundUnit(self.units + "*" + other.units).name
         return compound_unit[1:-1]
 
+    def return_divided_units(self, other):
+        """
+        Return the compound unit upon division of two ScalarQuantities
+        """
+        divided_unit = pq.CompoundUnit(self.units + "/(" + other.units + ")").name
+        return divided_unit[1:-1]
+
 ################################################################################
 
 class ScalarQuantity(Units):
@@ -218,6 +225,12 @@ class ScalarQuantity(Units):
         product = self.value * other.value
         product_uncertainty = self.multiplicative_uncertainty(other)
         return ScalarQuantity(product, self.return_compounded_units(other), uncertainty=product_uncertainty,
+                              uncertaintyType='*|/')
+
+    def __div__(self, other):
+        result = float(self.value) / float(other.value)
+        result_uncertainty = self.multiplicative_uncertainty(other)
+        return ScalarQuantity(result, self.return_divided_units(other), uncertainty=result_uncertainty,
                               uncertaintyType='*|/')
 
     def additive_uncertainty(self, other):
