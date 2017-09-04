@@ -188,8 +188,10 @@ class ScalarQuantity(Units):
     def __add__(self, other):
         if self.si_units() == other.si_units():
             sum_si = float(self.value_si + other.value_si)
+            sum_uncertainty = self.additive_uncertainty(other)
 
-            return ScalarQuantity(sum_si*self.getConversionFactorFromSI(), self.units)
+            return ScalarQuantity(sum_si*self.getConversionFactorFromSI(), self.units, uncertainty=sum_uncertainty,
+                                  uncertaintyType='+|-')
 
         else:
             raise QuantityError('Cannot add items with units of "{0}" and "{1}"'.format(self.units, other.units))
@@ -197,11 +199,30 @@ class ScalarQuantity(Units):
     def __sub__(self, other):
         if self.si_units() == other.si_units():
             result_si = float(self.value_si - other.value_si)
+            result_uncertainty = self.additive_uncertainty(other)
 
-            return ScalarQuantity(result_si*self.getConversionFactorFromSI(), self.units)
+            return ScalarQuantity(result_si*self.getConversionFactorFromSI(), self.units,
+                                  uncertainty=result_uncertainty, uncertaintyType='+|-')
 
         else:
             raise QuantityError('Cannot subtract items with units of "{0}" and "{1}"'.format(self.units, other.units))
+
+    def additive_uncertainty(self, other):
+        """
+        Returns the value of the resultant uncertainty for addition and subtraction operations
+        """
+
+        if self.isUncertaintyAdditive():
+            uncertainty_a = self.uncertainty_si
+        else:
+            uncertainty_a = self.uncertainty * self.value_si
+
+        if other.isUncertaintyAdditive():
+            uncertainty_b = other.uncertainty_si
+        else:
+            uncertainty_b = other.uncertainty * other.value_si
+
+        return ((uncertainty_a ** 2 + uncertainty_b ** 2) ** 0.5) * self.getConversionFactorFromSI()
 
     def copy(self):
         """

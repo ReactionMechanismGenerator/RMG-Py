@@ -966,10 +966,20 @@ class TestQuantity(unittest.TestCase):
         self.H_scalar = quantity.ScalarQuantity(33.1097,'kcal/mol',24.8344,'+|-',)
         self.A_scalar = quantity.ScalarQuantity(7.25e+13, 'cm^3/(mol*s)',  5,'*|/')
         self.Temp_scalar = quantity.ScalarQuantity(273.15, 'K')
-        self.Length_scalar1 = quantity.ScalarQuantity(100, 'ft')
-        self.Length_scalar2 = quantity.ScalarQuantity(3.14, 'ft')
-        self.Length_scalar3 = quantity.ScalarQuantity(100, 'm')
-        self.Length_scalar4 = quantity.ScalarQuantity(3.14, 'm')
+        self.Length_scalar1 = quantity.ScalarQuantity(100, 'ft', uncertainty=10, uncertaintyType='+|-')
+        self.Length_scalar2 = quantity.ScalarQuantity(3.14, 'ft', uncertainty=0.75, uncertaintyType='*|/')
+        self.Length_scalar3 = quantity.ScalarQuantity(100, 'm', uncertainty=20, uncertaintyType='+|-')
+        self.Length_scalar4 = quantity.ScalarQuantity(3.14, 'm', uncertainty=0.85, uncertaintyType='*|/')
+
+        self.sum_Length_3_4 = self.Length_scalar3 + self.Length_scalar4
+        self.sum_Length_1_2 = self.Length_scalar1 + self.Length_scalar2
+        self.sum_Length_1_3 = self.Length_scalar1 + self.Length_scalar3
+        self.sum_Length_3_1 = self.Length_scalar3 + self.Length_scalar1
+        self.sum_Length_2_4 = self.Length_scalar2 + self.Length_scalar4
+        self.result_Length_3_4 = self.Length_scalar3 - self.Length_scalar4
+        self.result_Length_1_2 = self.Length_scalar1 - self.Length_scalar2
+        self.result_Length_1_3 = self.Length_scalar1 - self.Length_scalar3
+        self.result_Length_3_1 = self.Length_scalar3 - self.Length_scalar1
         
     def test_scalar_conversion(self):
         """
@@ -1060,36 +1070,46 @@ class TestQuantity(unittest.TestCase):
 
         # Test addition
         # SI units
-        self.sum_Length_3_4 = self.Length_scalar3 + self.Length_scalar4
         self.assertAlmostEqual(self.sum_Length_3_4.value, 103.14)
         self.assertEqual(self.sum_Length_3_4.units, 'm')
         # non-SI units
-        self.sum_Length_1_2 = self.Length_scalar1 + self.Length_scalar2
         self.assertAlmostEqual(self.sum_Length_1_2.value, 103.14)
         self.assertEqual(self.sum_Length_1_2.units, 'ft')
         # non-SI first
-        self.sum_Length_1_3 = self.Length_scalar1 + self.Length_scalar3
         self.assertAlmostEqual(self.sum_Length_1_3.value, 428.08398950131226)
         self.assertEqual(self.sum_Length_1_3.units, 'ft')
         # SI first
-        self.sum_Length_3_1 = self.Length_scalar3 + self.Length_scalar1
         self.assertAlmostEqual(self.sum_Length_3_1.value, 130.48)
         self.assertEqual(self.sum_Length_3_1.units, 'm')
 
         # Test subtraction
         # SI units
-        self.result_Length_3_4 = self.Length_scalar3 - self.Length_scalar4
         self.assertAlmostEqual(self.result_Length_3_4.value, 96.86)
         self.assertEqual(self.result_Length_3_4.units, 'm')
         # non-SI units
-        self.result_Length_1_2 = self.Length_scalar1 - self.Length_scalar2
         self.assertAlmostEqual(self.result_Length_1_2.value, 96.86)
         self.assertEqual(self.result_Length_1_2.units, 'ft')
         # non-SI first
-        self.result_Length_1_3 = self.Length_scalar1 - self.Length_scalar3
         self.assertAlmostEqual(self.result_Length_1_3.value, -228.08398950131226)
         self.assertEqual(self.result_Length_1_3.units, 'ft')
         # SI first
-        self.result_Length_3_1 = self.Length_scalar3 - self.Length_scalar1
         self.assertAlmostEqual(self.result_Length_3_1.value, 69.52)
         self.assertEqual(self.result_Length_3_1.units, 'm')
+
+    def test_additive_uncertainty(self):
+        """
+        Test that ScalarQuantity uncertainties work properly
+        """
+
+        # Both absolute uncertainties
+        self.assertAlmostEqual(self.sum_Length_1_3.uncertainty, 66.37442404031758)
+        self.assertEqual(self.sum_Length_1_3.uncertaintyType, '+|-')  # Always returns '+|-' type
+        self.assertAlmostEqual(self.sum_Length_3_1.uncertainty, 20.2309244474888)
+
+        # Mixed uncertainties
+        self.assertAlmostEqual(self.sum_Length_1_2.uncertainty, 10.273559509731763)
+        self.assertEqual(self.sum_Length_1_2.uncertaintyType, '+|-')  # Always returns '+|-' type
+
+        # Both relative uncertainties
+        self.assertAlmostEqual(self.sum_Length_2_4.uncertainty, 9.067711809049024)
+        self.assertEqual(self.sum_Length_2_4.uncertaintyType, '+|-')  # Always returns '+|-' type
