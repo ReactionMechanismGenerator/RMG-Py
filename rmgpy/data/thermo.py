@@ -1969,9 +1969,13 @@ class ThermoCentralDatabaseInterface(object):
     def connect(self):
         
         import pymongo
-
+        
         if self.username is None:
             remote_address = 'mongodb://{}/thermoCentralDB'.format(self.host)
+        elif self.application == 'ecp':
+            remote_address = 'mongodb://{0}:{1}@{2}/ecp'.format(self.username,
+                                                            self.password,
+                                                            self.host)
         else:
             remote_address = 'mongodb://{0}:{1}@{2}/thermoCentralDB'.format(self.username,
                                                             self.password,
@@ -1992,33 +1996,60 @@ class ThermoCentralDatabaseInterface(object):
     
     def getThermoData(self, species):
         # choose registration table
-        db =  getattr(self.client, 'thermoCentralDB')
+        if self.application:
+            db =  getattr(self.client, 'ecp')
+        else:
+            db =  getattr(self.client, 'thermoCentralDB')
+            
         results_table = getattr(db, 'results_table')
         try:
-            aug_inchi = species.getAugmentedInChI()
+            augInChI = species.getAugmentedInChI()
             # check if it already has available data in results_table
-            entries = list(results_table.find({"aug_inchi": aug_inchi}))
+            import pymongo
+            entry = results_table.find_one({"augInChI": augInChI}, sort=[("uncertainty", pymongo.ASCENDING)])
 
-            if len(entries) == 0 :
+            if entry is None:
                 # Should we register the molecule here?
                 return None
             else:
-                # Convert data from mongodb to ThermoData
-                entry = entries[0]
-
+                # Convert data from list and unicode string to tuple and string
                 def mongoToRMG(entry):
                     for i,x in enumerate(entry):
                         if type(x) is unicode:
                             entry[i] = str(x)
                     return tuple(entry)
-
-                thermoData = ThermoData(
-                    Tdata = mongoToRMG(entry['Tdata']),
-                    Cpdata = mongoToRMG(entry['Cpdata']),
-                    H298 = mongoToRMG(entry['H298']),
-                    S298 = mongoToRMG(entry['S298'])
-                )
-                thermoData.comment += 'Thermo library: thermoCentralDB'
+                
+                if 'NASAPolynomial' in entry.keys():
+                    p = entry['NASAPolynomial']
+                    Tmin = mongoToRMG(p['Tmin'])
+                    Tmax = mongoToRMG(p['Tmax'])
+                    polynomials = p['polynomials']
+                    
+                    for i, p in enumerate(polynomials):
+                        coeffs = p['coeffs']
+                        Tmin = mongoToRMG(p['Tmin'])
+                        Tmax = mongoToRMG(p['Tmax'])
+                        polynomials[i] = NASAPolynomial(
+                            coeffs = coeffs, 
+                            Tmin = Tmin, 
+                            Tmax = Tmax
+                        )
+                        
+                    thermoData = NASA(
+                        polynomials = polynomials,
+                        Tmin = Tmin,
+                        Tmax = Tmax,
+                    )  
+                                      
+                elif 'ThermoData' in entry.keys():
+                    thermoData = ThermoData(
+                        Tdata = mongoToRMG(entry['ThermoData']['Tdata']),
+                        Cpdata = mongoToRMG(entry['ThermoData']['Cpdata']),
+                        H298 = mongoToRMG(entry['ThermoData']['H298']),
+                        S298 = mongoToRMG(entry['ThermoData']['S298'])
+                    )
+                    
+                thermoData.comment += 'Thermo library: CentralDB, uncertainty {}'.format(entry['uncertainty'])
                 return thermoData
 
         except ValueError:
