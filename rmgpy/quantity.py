@@ -38,6 +38,8 @@ import quantities as pq
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import QuantityError
+import re
+from logging import warn
 
 ################################################################################
 
@@ -127,16 +129,158 @@ class Units(object):
         Return the compound unit upon multiplication of two ScalarQuantities
         """
         compound_unit = pq.CompoundUnit(self.units + "*" + other.units).name
-        return compound_unit[1:-1]
+        return Units.simplify_units(compound_unit[1:-1])  # [1:-1] removes extraneous parenthesis
 
     def return_divided_units(self, other):
         """
         Return the compound unit upon division of two ScalarQuantities
         """
         divided_unit = pq.CompoundUnit(self.units + "/(" + other.units + ")").name
-        return divided_unit[1:-1]
+        return Units.simplify_units(divided_unit[1:-1])  # [1:-1] removes extraneous parenthesis
+
+# Helper functions for simplifying units
+
+    @staticmethod
+    def simplify_units(unit_string):
+        """
+        Return a simplified version of a unit string to remove duplicate entries for a given unit. This will simplify
+        things like m**3/m**2 to m, but will not simplify things like N*m to J or things like ft*m.
+        """
+
+        original_unit_string = unit_string  # save original string for checking at the end
+
+        # Replace all '**' exponential operators with '^' so regex does not confuse with '*'
+        unit_string = re.sub('\*\*', '^', unit_string) + '*'  # extra '*' for pattern matching of last unit
+
+        # Simplify groups inside of parenthesis first
+        start, end = Units.find_unit_pattern('\([^\)]*\)', unit_string)  # get indices of the embedded parenthesis
+        loop_count = 0
+        while start is not None:
+            paren_unit = unit_string[start + 1:end - 1] + '*'
+            paren_dict = Units.return_unit_dictionary(paren_unit)  # dictionary of units with their respective powers
+
+            # If this term was being divided, invert the powers for every unit and switch to multiplication
+            if (unit_string[start - 1] == '/') and (start-1 > 0):
+                unit_string = unit_string[:start - 1] + '*' + unit_string[start:]  # switch to multiplication
+                for unit in paren_dict.iterkeys():
+                    paren_dict[unit] *= -1.0
+
+            # If this term was being raised to a power, adjust the powers accordingly
+            if unit_string[end] == '^':
+                # Find the exponent
+                end_string = unit_string[end:]
+                power_start, power_end = Units.find_unit_pattern('\^[^\*,\(,\),/,\^]*', end_string)
+                overall_power = float(end_string[power_start + 1:power_end])
+                end = end + power_end  # this will allow us to get rid of the overall power later
+                for unit in paren_dict.iterkeys():
+                    paren_dict[unit] *= overall_power
+
+            # Replace the part in parenthesis with the above simplified string to remove parenthesis
+            unit_string = unit_string[:start] + Units.process_unit_dict(paren_dict) + unit_string[end:]
+
+            # Move on to next parenthesis (if any)
+            start, end = Units.find_unit_pattern('\([^\)]*\)', unit_string)
+
+            if loop_count > 100:
+                warn('Unable to simplify units {}. Maximum iteration for parenthesis exceeded. Original unit string '
+                     'returned'.format(original_unit_string))
+                return original_unit_string
+
+        # To simplify the string, convert the unit string into a unit-power dictionary
+        new_unit_dict = Units.return_unit_dictionary(unit_string)
+        new_unit_string = Units.process_unit_dict(new_unit_dict)
+
+        # Check that the dimensions of the unit string was not change (if so this was unsuccessful)
+        if pq.CompoundUnit(new_unit_string) == pq.CompoundUnit(original_unit_string):
+            return new_unit_string
+        else:
+            warn('unit string {} could not be simplified. Original unit string returned'.format(original_unit_string))
+            return original_unit_string
+
+    @staticmethod
+    def return_unit_dictionary(unit_string):
+        """
+        Simplify a unit string (that does not contain parenthesis) by converting into a dictionary with units as keys and
+        simplified powers as values
+        """
+
+        # Convert any division groups into multiplication to the inverse power
+        start, end = Units.find_unit_pattern('/[^\*, /]*\*', unit_string)  # Get the indices of the division group
+        loop_count = 0
+        while start is not None:
+            dividing_unit = unit_string[start:end].split('^')  # Separate units and their powers
+            if len(dividing_unit) == 2:
+                power = float(dividing_unit[1][:-1])
+                unit_string = unit_string[:start] + '*' + dividing_unit[0][1:] + '^' + str(power * -1.0) + \
+                                                    dividing_unit[1][-1] + unit_string[end:]
+            elif len(dividing_unit) == 1:  # Then the unit was to the first power
+                power = '-1'
+                unit_string = unit_string[:start] + '*' + dividing_unit[0][1:-1] + '^' + power + \
+                                                    dividing_unit[0][-1] + unit_string[end:]
+
+            # Move on to next division group, if any
+            start, end = Units.find_unit_pattern('/[^\*, /]*[\*, /]', unit_string)
+
+            if loop_count > 100:
+                warn('Unable to return unit-power dictionary. Maximum loop count exceeded')
+                return {}  # This will be dealt with in simplify_units
+
+        # At this point, we have only units (with powers) being multiplied. Split into groups of units^power
+        unit_parts = unit_string[:-1].split('*')  # [:-1] gets rid of extraneous '*' that we added
+        new_unit_dict = {}
+
+        for parts in unit_parts:
+            # Split into units and powers
+            part_fragment = parts.split('^')
+            if len(part_fragment) == 2:
+                unit = part_fragment[0]
+                power = part_fragment[1]
+            elif len(part_fragment) == 1:  # Then this unit was to the first power
+                unit = part_fragment[0]
+                power = 1
+
+            # Add units and powers to the unit-power dictionary and update along the way
+            if unit in new_unit_dict.keys():
+                new_unit_dict[unit] += float(power)
+            else:
+                new_unit_dict[unit] = float(power)
+
+        return new_unit_dict
+
+    @staticmethod
+    def process_unit_dict(new_unit_dict):
+        """
+        Convert a unit-power dictionary {unit1:power1, ...} into a sting with units raised to their respective powers
+        """
+        new_unit_string = ''
+        for unit, power in new_unit_dict.iteritems():
+            if power != 0:
+                if power == 1:  # No need for a power
+                    new_unit_string += unit + '*'
+                else:
+                    new_unit_string += unit + '^' + str(power) + '*'
+        if new_unit_string == '':
+            return new_unit_string
+        else:
+            return new_unit_string[:-1]  # [:-1] gets rid of extraneous '*' at end
+
+    @staticmethod
+    def find_unit_pattern(pattern, string):
+        """
+        Return the start and end indices of a sub-string in 'string' that matches the regex pattern
+        """
+
+        try:
+            start = re.search(pattern, string).start()
+            end = re.search(pattern, string).end()
+        except AttributeError:  # No pattern found, return None for verification
+            start = None
+            end = None
+
+        return start, end
 
 ################################################################################
+
 
 class ScalarQuantity(Units):
     """
