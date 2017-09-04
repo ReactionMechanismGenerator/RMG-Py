@@ -1147,6 +1147,20 @@ class TestQuantity(unittest.TestCase):
         self.assertAlmostEqual(self.scalar_division_test.value, 0.12)
         self.assertEqual(self.scalar_division_test.units, 'm^-1.0*N')
 
+    def test_scalar_quantity_rich_comparisons(self):
+        """
+        Test that scalar quantities can be compared together
+        """
+        self.assertTrue(self.Length_scalar1 < self.Length_scalar3)
+        self.assertTrue(self.Length_scalar4 > self.Length_scalar2)
+        self.assertTrue(self.Length_scalar1 == quantity.ScalarQuantity(100, 'ft'))
+        self.assertTrue(self.Length_scalar1 != self.Length_scalar2)
+        self.assertTrue(self.Length_scalar1 <= self.Length_scalar3)
+        self.assertTrue(self.Length_scalar1 >= quantity.ScalarQuantity(100, 'ft'))
+
+        with self.assertRaises(QuantityError):
+            self.invalid_comparison = self.Length_scalar1 < self.Force_scalar
+
     def test_simplify_units(self):
         """
         Test that simplify_units is able to handle various unit operations

@@ -200,7 +200,7 @@ class ScalarQuantity(Units):
             return result
     
     def __add__(self, other):
-        if self.si_units() == other.si_units():
+        if self.has_same_dimensions_as(other):
             sum_si = float(self.value_si + other.value_si)
             sum_uncertainty = self.additive_uncertainty(other)
 
@@ -211,7 +211,7 @@ class ScalarQuantity(Units):
             raise QuantityError('Cannot add items with units of "{0}" and "{1}"'.format(self.units, other.units))
 
     def __sub__(self, other):
-        if self.si_units() == other.si_units():
+        if self.has_same_dimensions_as(other):
             result_si = float(self.value_si - other.value_si)
             result_uncertainty = self.additive_uncertainty(other)
 
@@ -232,6 +232,33 @@ class ScalarQuantity(Units):
         result_uncertainty = self.multiplicative_uncertainty(other)
         return ScalarQuantity(result, self.return_divided_units(other), uncertainty=result_uncertainty,
                               uncertaintyType='*|/')
+
+    def __richcmp__(self, other, cmp_type):
+        if self.has_same_dimensions_as(other):
+            if cmp_type == 0:
+                return self.value_si < other.value_si
+            if cmp_type == 1:
+                return self.value_si <= other.value_si
+            if cmp_type == 2:
+                return self.value_si == other.value_si
+            if cmp_type == 3:
+                return self.value_si != other.value_si
+            if cmp_type == 4:
+                return self.value_si > other.value_si
+            if cmp_type == 5:
+                return self.value_si >= other.value_si
+            else:
+                raise Exception('Unsupported operation between ScalarQuantity types')
+        else:
+            raise QuantityError('Cannot compare Scalar Quantities with dimensions of {0} and {1}. Original units of '
+                                'the objects are {2} and {3}'.format(self.si_units(), other.si_units(),
+                                                                     self.units, other.units))
+
+    def has_same_dimensions_as(self, other):
+        """
+        Returns True if two ScalarQuantity objects have the same dimensions
+        """
+        return self.si_units() == other.si_units()
 
     def additive_uncertainty(self, other):
         """
