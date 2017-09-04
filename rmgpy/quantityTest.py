@@ -37,6 +37,7 @@ import numpy
 
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.exceptions import QuantityError
 
 ################################################################################
 
@@ -964,6 +965,11 @@ class TestQuantity(unittest.TestCase):
         self.v_array = quantity.ArrayQuantity([5,10,12],'cm/s',[1.2,0.4,1],'*|/')
         self.H_scalar = quantity.ScalarQuantity(33.1097,'kcal/mol',24.8344,'+|-',)
         self.A_scalar = quantity.ScalarQuantity(7.25e+13, 'cm^3/(mol*s)',  5,'*|/')
+        self.Temp_scalar = quantity.ScalarQuantity(273.15, 'K')
+        self.Length_scalar1 = quantity.ScalarQuantity(100, 'ft')
+        self.Length_scalar2 = quantity.ScalarQuantity(3.14, 'ft')
+        self.Length_scalar3 = quantity.ScalarQuantity(100, 'm')
+        self.Length_scalar4 = quantity.ScalarQuantity(3.14, 'm')
         
     def test_scalar_conversion(self):
         """
@@ -1040,3 +1046,50 @@ class TestQuantity(unittest.TestCase):
         self.assertEqual(repr(self.Cp),repr(self.Cp_array))
         self.assertEqual(repr(v),repr(self.v))
         self.assertEqual(repr(self.v),repr(self.v_array))
+
+    def test_addition_and_subtraction(self):
+        """
+        Test that ScalarQuantity objects can be added and subtracted successfully
+        """
+        # Test that dimensionally inconsistent objects cannot be added or subtracted.
+        with self.assertRaises(QuantityError):
+            self.invaild_scalar = self.Temp_scalar + self.Length_scalar3
+
+        with self.assertRaises(QuantityError):
+            self.invaild_scalar = self.Temp_scalar - self.Length_scalar3
+
+        # Test addition
+        # SI units
+        self.sum_Length_3_4 = self.Length_scalar3 + self.Length_scalar4
+        self.assertAlmostEqual(self.sum_Length_3_4.value, 103.14)
+        self.assertEqual(self.sum_Length_3_4.units, 'm')
+        # non-SI units
+        self.sum_Length_1_2 = self.Length_scalar1 + self.Length_scalar2
+        self.assertAlmostEqual(self.sum_Length_1_2.value, 103.14)
+        self.assertEqual(self.sum_Length_1_2.units, 'ft')
+        # non-SI first
+        self.sum_Length_1_3 = self.Length_scalar1 + self.Length_scalar3
+        self.assertAlmostEqual(self.sum_Length_1_3.value, 428.08398950131226)
+        self.assertEqual(self.sum_Length_1_3.units, 'ft')
+        # SI first
+        self.sum_Length_3_1 = self.Length_scalar3 + self.Length_scalar1
+        self.assertAlmostEqual(self.sum_Length_3_1.value, 130.48)
+        self.assertEqual(self.sum_Length_3_1.units, 'm')
+
+        # Test subtraction
+        # SI units
+        self.result_Length_3_4 = self.Length_scalar3 - self.Length_scalar4
+        self.assertAlmostEqual(self.result_Length_3_4.value, 96.86)
+        self.assertEqual(self.result_Length_3_4.units, 'm')
+        # non-SI units
+        self.result_Length_1_2 = self.Length_scalar1 - self.Length_scalar2
+        self.assertAlmostEqual(self.result_Length_1_2.value, 96.86)
+        self.assertEqual(self.result_Length_1_2.units, 'ft')
+        # non-SI first
+        self.result_Length_1_3 = self.Length_scalar1 - self.Length_scalar3
+        self.assertAlmostEqual(self.result_Length_1_3.value, -228.08398950131226)
+        self.assertEqual(self.result_Length_1_3.units, 'ft')
+        # SI first
+        self.result_Length_3_1 = self.Length_scalar3 - self.Length_scalar1
+        self.assertAlmostEqual(self.result_Length_3_1.value, 69.52)
+        self.assertEqual(self.result_Length_3_1.units, 'm')

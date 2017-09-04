@@ -185,6 +185,24 @@ class ScalarQuantity(Units):
             result += ')'
             return result
     
+    def __add__(self, other):
+        if self.si_units() == other.si_units():
+            sum_si = float(self.value_si + other.value_si)
+
+            return ScalarQuantity(sum_si*self.getConversionFactorFromSI(), self.units)
+
+        else:
+            raise QuantityError('Cannot add items with units of "{0}" and "{1}"'.format(self.units, other.units))
+
+    def __sub__(self, other):
+        if self.si_units() == other.si_units():
+            result_si = float(self.value_si - other.value_si)
+
+            return ScalarQuantity(result_si*self.getConversionFactorFromSI(), self.units)
+
+        else:
+            raise QuantityError('Cannot subtract items with units of "{0}" and "{1}"'.format(self.units, other.units))
+
     def copy(self):
         """
         Return a copy of the quantity.
