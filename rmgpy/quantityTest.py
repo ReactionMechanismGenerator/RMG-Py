@@ -970,6 +970,7 @@ class TestQuantity(unittest.TestCase):
         self.Length_scalar2 = quantity.ScalarQuantity(3.14, 'ft', uncertainty=0.75, uncertaintyType='*|/')
         self.Length_scalar3 = quantity.ScalarQuantity(100, 'm', uncertainty=20, uncertaintyType='+|-')
         self.Length_scalar4 = quantity.ScalarQuantity(3.14, 'm', uncertainty=0.85, uncertaintyType='*|/')
+        self.Force_scalar = quantity.ScalarQuantity(12, 'N', uncertainty=0.2, uncertaintyType='*|/')
 
         self.sum_Length_3_4 = self.Length_scalar3 + self.Length_scalar4
         self.sum_Length_1_2 = self.Length_scalar1 + self.Length_scalar2
@@ -980,6 +981,8 @@ class TestQuantity(unittest.TestCase):
         self.result_Length_1_2 = self.Length_scalar1 - self.Length_scalar2
         self.result_Length_1_3 = self.Length_scalar1 - self.Length_scalar3
         self.result_Length_3_1 = self.Length_scalar3 - self.Length_scalar1
+        self.product_energy_1 = self.Force_scalar * self.Length_scalar1
+        self.product_energy_2 = self.Force_scalar * self.Length_scalar2
         
     def test_scalar_conversion(self):
         """
@@ -1113,3 +1116,24 @@ class TestQuantity(unittest.TestCase):
         # Both relative uncertainties
         self.assertAlmostEqual(self.sum_Length_2_4.uncertainty, 9.067711809049024)
         self.assertEqual(self.sum_Length_2_4.uncertaintyType, '+|-')  # Always returns '+|-' type
+
+    def test_scalar_quantity_multiplication(self):
+        """
+        Test that scalar quantities can be multiplied successfully
+        """
+
+        self.assertAlmostEqual(self.product_energy_2.value, 37.68)
+        self.assertEqual(self.product_energy_2.units, 'N*ft')
+        self.assertEqual(self.Force_scalar.return_compounded_units(self.Temp_scalar), 'N*K')
+
+    def test_multiplicative_uncertainty(self):
+        """
+        Test that product uncertainties have correct values and units
+        """
+
+        self.assertAlmostEqual(self.product_energy_2.uncertainty, 0.7762087348130012)
+        self.assertEqual(self.product_energy_2.uncertaintyType, '*|/')  # Always returns '*|/' type
+
+        # Test Mixed Uncertainty Types
+        self.assertEqual(self.product_energy_1.uncertainty, 0.223606797749979)
+        self.assertEqual(self.product_energy_1.uncertaintyType, '*|/')  # Always returns '*|/' type

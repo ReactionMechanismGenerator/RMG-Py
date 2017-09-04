@@ -216,7 +216,9 @@ class ScalarQuantity(Units):
 
     def __mul__(self, other):
         product = self.value * other.value
-        return ScalarQuantity(product, self.return_compounded_units(other))
+        product_uncertainty = self.multiplicative_uncertainty(other)
+        return ScalarQuantity(product, self.return_compounded_units(other), uncertainty=product_uncertainty,
+                              uncertaintyType='*|/')
 
     def additive_uncertainty(self, other):
         """
@@ -234,6 +236,23 @@ class ScalarQuantity(Units):
             uncertainty_b = other.uncertainty * other.value_si
 
         return ((uncertainty_a ** 2 + uncertainty_b ** 2) ** 0.5) * self.getConversionFactorFromSI()
+
+    def multiplicative_uncertainty(self, other):
+        """
+        Returns the value of the resultant uncertainty for multiplication and division operations
+        """
+
+        if self.isUncertaintyMultiplicative():
+            uncertainty_a = self.uncertainty
+        else:
+            uncertainty_a = self.uncertainty_si/self.value_si
+
+        if other.isUncertaintyMultiplicative():
+            uncertainty_b = other.uncertainty
+        else:
+            uncertainty_b = other.uncertainty_si/other.value_si
+
+        return (uncertainty_a ** 2 + uncertainty_b ** 2)**0.5
 
     def copy(self):
         """
