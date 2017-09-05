@@ -2003,10 +2003,12 @@ class ThermoCentralDatabaseInterface(object):
             
         results_table = getattr(db, 'results_table')
         try:
-            augInChI = species.getAugmentedInChI()
+            InChI = species.get_inchi()
+            multiplicity = species.get_multiplicity()
             # check if it already has available data in results_table
             import pymongo
-            entry = results_table.find_one({"augInChI": augInChI}, sort=[("uncertainty", pymongo.ASCENDING)])
+            entry = results_table.find_one({"InChI": InChI,"multiplicity":multiplicity}, 
+                                            sort=[("uncertainty", pymongo.ASCENDING),("timeStamp", pymongo.DESCENDING)])
 
             if entry is None:
                 # Should we register the molecule here?

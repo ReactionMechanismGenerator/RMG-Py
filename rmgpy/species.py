@@ -100,15 +100,14 @@ class Species(object):
         self.props = props or {}
         self.aug_inchi = aug_inchi
         self.symmetryNumber = symmetryNumber
+        self.multiplicity = None
+        self.inchi = None
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
-            mult = molecule[0].multiplicity
+            self.multiplicity = molecule[0].multiplicity
             for m in molecule[1:]:
-                if mult != m.multiplicity:
+                if self.multiplicity != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
-
-        
-
 
     def __repr__(self):
         """
@@ -532,9 +531,25 @@ class Species(object):
 
         candidates.sort()
         return candidates[0] 
-
+    
+    def get_multiplicity(self):
+        if self.multiplicity is None:
+            self.multiplicity = self.molecule[0].multiplicity
+            for m in self.molecule[1:]:
+                if self.multiplicity != m.multiplicity:
+                    raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=self.label))
+        return self.multiplicity
+                
+    def get_inchi(self):
+        if self.inchi is None:
+            self.inchi = self.molecule[0].toInChI()
+            for m in self.molecule[1:]:
+                if self.inchi != m.toInChI():
+                    raise SpeciesError('InChis of molecules in species {species} do not match.'.format(species=self.label))
+        return self.inchi
+    
     def getThermoData(self):
-        """
+        """ 
         Returns a `thermoData` object of the current Species object.
 
         If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
