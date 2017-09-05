@@ -100,7 +100,7 @@ class Species(object):
         self.props = props or {}
         self.aug_inchi = aug_inchi
         self.symmetryNumber = symmetryNumber
-        self.multiplicity = None
+        self.multiplicity = -1
         self.inchi = None
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
@@ -533,7 +533,7 @@ class Species(object):
         return candidates[0] 
     
     def get_multiplicity(self):
-        if self.multiplicity is None:
+        if self.multiplicity == -1:
             self.multiplicity = self.molecule[0].multiplicity
             for m in self.molecule[1:]:
                 if self.multiplicity != m.multiplicity:
