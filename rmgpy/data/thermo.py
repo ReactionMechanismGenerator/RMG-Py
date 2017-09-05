@@ -1996,7 +1996,7 @@ class ThermoCentralDatabaseInterface(object):
     
     def getThermoData(self, species):
         # choose registration table
-        if self.application:
+        if self.application == 'ecp':
             db =  getattr(self.client, 'ecp')
         else:
             db =  getattr(self.client, 'thermoCentralDB')
@@ -2049,7 +2049,7 @@ class ThermoCentralDatabaseInterface(object):
                         S298 = mongoToRMG(entry['ThermoData']['S298'])
                     )
                     
-                thermoData.comment += 'Thermo library: CentralDB, uncertainty {}'.format(entry['uncertainty'])
+                thermoData.comment += 'CentralDB, {}, uncertainty: {}'.format(entry['shortDesc'], entry['uncertainty'])
                 return thermoData
 
         except ValueError:
