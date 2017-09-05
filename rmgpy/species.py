@@ -542,10 +542,16 @@ class Species(object):
                 
     def get_inchi(self):
         if self.inchi is None:
-            self.inchi = self.molecule[0].toInChI()
-            for m in self.molecule[1:]:
-                if self.inchi != m.toInChI():
-                    raise SpeciesError('InChis of molecules in species {0} do not match: {1} {2}'.format(self.label, self.inchi, m.toInChI()))
+            inchi_old = ''
+            for m in self.molecule:
+                inchi_new = m.toInChI()
+                if inchi_old == '':
+                    inchi_old = inchi_new
+                elif inchi_new == '':
+                    pass
+                elif inchi_old != inchi_new:
+                    raise SpeciesError('InChis of molecules in species {0} do not match.')
+            self.inchi = inchi_old
         return self.inchi
     
     def getThermoData(self):

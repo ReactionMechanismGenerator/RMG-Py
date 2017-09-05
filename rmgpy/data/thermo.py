@@ -2006,56 +2006,59 @@ class ThermoCentralDatabaseInterface(object):
             InChI = species.get_inchi()
             multiplicity = species.get_multiplicity()
             # check if it already has available data in results_table
-            import pymongo
-            entry = results_table.find_one({"InChI": InChI,"multiplicity":multiplicity}, 
-                                            sort=[("uncertainty", pymongo.ASCENDING),("timeStamp", pymongo.DESCENDING)])
+        except:
+            logging.info('Fail to get inchi/multiplicity for species below:\n{0}'.format(species.toAdjacencyList()))
+            return None
+            
+        import pymongo
+        entry = results_table.find_one({"InChI": InChI,"multiplicity":multiplicity}, 
+                                        sort=[("uncertainty", pymongo.ASCENDING),("timeStamp", pymongo.DESCENDING)])
 
-            if entry is None:
-                # Should we register the molecule here?
-                return None
-            else:
-                # Convert data from list and unicode string to tuple and string
-                def mongoToRMG(entry):
-                    for i,x in enumerate(entry):
-                        if type(x) is unicode:
-                            entry[i] = str(x)
-                    return tuple(entry)
+        if entry is None:
+            # Should we register the molecule here?
+            return None
+        else:
+            # Convert data from list and unicode string to tuple and string
+            def mongoToRMG(entry):
+                for i,x in enumerate(entry):
+                    if type(x) is unicode:
+                        entry[i] = str(x)
+                return tuple(entry)
+            
+            if 'NASAPolynomial' in entry.keys():
+                p = entry['NASAPolynomial']
+                Tmin = mongoToRMG(p['Tmin'])
+                Tmax = mongoToRMG(p['Tmax'])
+                polynomials = p['polynomials']
                 
-                if 'NASAPolynomial' in entry.keys():
-                    p = entry['NASAPolynomial']
+                for i, p in enumerate(polynomials):
+                    coeffs = p['coeffs']
                     Tmin = mongoToRMG(p['Tmin'])
                     Tmax = mongoToRMG(p['Tmax'])
-                    polynomials = p['polynomials']
-                    
-                    for i, p in enumerate(polynomials):
-                        coeffs = p['coeffs']
-                        Tmin = mongoToRMG(p['Tmin'])
-                        Tmax = mongoToRMG(p['Tmax'])
-                        polynomials[i] = NASAPolynomial(
-                            coeffs = coeffs, 
-                            Tmin = Tmin, 
-                            Tmax = Tmax
-                        )
-                        
-                    thermoData = NASA(
-                        polynomials = polynomials,
-                        Tmin = Tmin,
-                        Tmax = Tmax,
-                    )  
-                                      
-                elif 'ThermoData' in entry.keys():
-                    thermoData = ThermoData(
-                        Tdata = mongoToRMG(entry['ThermoData']['Tdata']),
-                        Cpdata = mongoToRMG(entry['ThermoData']['Cpdata']),
-                        H298 = mongoToRMG(entry['ThermoData']['H298']),
-                        S298 = mongoToRMG(entry['ThermoData']['S298'])
+                    polynomials[i] = NASAPolynomial(
+                        coeffs = coeffs, 
+                        Tmin = Tmin, 
+                        Tmax = Tmax
                     )
                     
-                thermoData.comment += 'CentralDB, {}, uncertainty: {}'.format(entry['shortDesc'], entry['uncertainty'])
-                return thermoData
+                thermoData = NASA(
+                    polynomials = polynomials,
+                    Tmin = Tmin,
+                    Tmax = Tmax,
+                )  
+                                  
+            elif 'ThermoData' in entry.keys():
+                thermoData = ThermoData(
+                    Tdata = mongoToRMG(entry['ThermoData']['Tdata']),
+                    Cpdata = mongoToRMG(entry['ThermoData']['Cpdata']),
+                    H298 = mongoToRMG(entry['ThermoData']['H298']),
+                    S298 = mongoToRMG(entry['ThermoData']['S298'])
+                )
+                
+            thermoData.comment += 'CentralDB, {}, uncertainty: {}'.format(entry['shortDesc'], entry['uncertainty'])
+            return thermoData
 
-        except ValueError:
-            logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.toAdjacencyList()))
+
             
     def satisfyRegistrationRequirements(self, species, thermo, thermodb):
         """
