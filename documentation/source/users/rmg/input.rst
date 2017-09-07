@@ -586,13 +586,15 @@ all of RMG's reaction families. ::
     generatedSpeciesConstraints(
         allowed=['input species','seed mechanisms','reaction libraries'],
         maximumCarbonAtoms=10,
-        maximumHydrogenAtoms=10,
-        maximumOxygenAtoms=10,
-        maximumNitrogenAtoms=10,
-        maximumSiliconAtoms=10,
-        maximumSulfurAtoms=10,
+        maximumOxygenAtoms=2,
+        maximumNitrogenAtoms=2,
+        maximumSiliconAtoms=2,
+        maximumSulfurAtoms=2,
         maximumHeavyAtoms=10,
-        maximumRadicalElectrons=10,
+        maximumRadicalElectrons=2,
+        maximumSingletCarbenes=1,
+        maximumCarbeneRadicals=0,
+        maximumIsotopicAtoms=2,
         allowSingletO2 = False,
     )
 

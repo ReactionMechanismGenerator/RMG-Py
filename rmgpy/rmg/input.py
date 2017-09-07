@@ -353,6 +353,8 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumSulfurAtoms',
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
+        'maximumSingletCarbenes',
+        'maximumCarbeneRadicals',
         'allowSingletO2',
         'maximumIsotopicAtoms'
     ]

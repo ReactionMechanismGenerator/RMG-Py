@@ -1089,6 +1089,29 @@ class TestMolecule(unittest.TestCase):
         """
         molecule = Molecule().fromSMILES('[CH2]C[CH2]')
         self.assertEqual(molecule.getRadicalCount(), 2)
+
+    def testSingletCarbene(self):
+        """Test radical and carbene count on singlet carbene."""
+        mol = Molecule().fromAdjacencyList("""
+1 C u0 p1 {2,S}
+2 C u0 p1 {1,S}
+""", saturateH=True)
+        self.assertEqual(mol.getRadicalCount(), 0)
+        self.assertEqual(mol.getSingletCarbeneCount(), 2)
+
+    def testTripletCarbene(self):
+        """Test radical and carbene count on triplet carbene."""
+        mol = Molecule().fromAdjacencyList("""
+1 C u2 p0 {2,S}
+2 C u0 p1 {1,S}
+""", saturateH=True)
+        self.assertEqual(mol.getRadicalCount(), 2)
+        self.assertEqual(mol.getSingletCarbeneCount(), 1)
+
+    def testSingletCarbon(self):
+        """Test that getSingletCarbeneCount returns 1 for singlet carbon atom."""
+        mol = Molecule().fromAdjacencyList('1 C u0 p2')
+        self.assertEqual(mol.getSingletCarbeneCount(), 1)
         
     def testSMILES(self):
         """

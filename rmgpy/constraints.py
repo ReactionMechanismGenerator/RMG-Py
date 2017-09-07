@@ -93,6 +93,16 @@ def failsSpeciesConstraints(species):
         if (struct.getRadicalCount() > maxRadicals):
             return True
 
+    maxCarbenes = speciesConstraints.get('maximumSingletCarbenes', 1)
+    if maxRadicals != -1:
+        if struct.getSingletCarbeneCount() > maxCarbenes:
+            return True
+
+    maxCarbeneRadicals = speciesConstraints.get('maximumCarbeneRadicals', 0)
+    if maxCarbeneRadicals != -1:
+        if struct.getSingletCarbeneCount() > 0 and struct.getRadicalCount() > maxCarbeneRadicals:
+            return True
+
     maxIsotopes = speciesConstraints.get('maximumIsotopicAtoms', -1)
     if maxIsotopes != -1:
         counter = 0

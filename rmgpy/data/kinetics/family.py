@@ -1329,8 +1329,11 @@ class KineticsFamily(Database):
         
         forbidden_structures = getDB('forbidden')
 
+        # check family-specific forbidden structures 
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
+
+        # check RMG globally forbidden structures
         if forbidden_structures.isMoleculeForbidden(molecule):
             return True
         return False
