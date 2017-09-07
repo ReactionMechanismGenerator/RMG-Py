@@ -31,8 +31,7 @@
 import unittest
 import numpy
 import os
-
-import rmgpy.quantity
+import rmgpy
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species

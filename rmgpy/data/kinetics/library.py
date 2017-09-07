@@ -45,8 +45,7 @@ from rmgpy.data.base import DatabaseError, Database, Entry
 
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           PDepKineticsModel
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from .common import saveEntry
@@ -302,7 +301,7 @@ class KineticsLibrary(Database):
         f = open(path, 'r')
         try:
             exec f in global_context, local_context
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(path))
             raise
         f.close()

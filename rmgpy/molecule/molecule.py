@@ -39,7 +39,6 @@ describe the corresponding atom or bond.
 import cython
 import logging
 import os
-import re
 import numpy
 import urllib
 from collections import OrderedDict
@@ -50,7 +49,6 @@ try:
     import openbabel
 except:
     pass
-from rdkit import Chem
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 import rmgpy.molecule.group as gr
 from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
@@ -400,17 +398,6 @@ class Atom(Vertex):
             for i in range(abs(action[2])): self.decrementLonePairs()
         else:
             raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
-
-    def setSpinMultiplicity(self,spinMultiplicity):
-        """
-        Set the spin multiplicity.
-        """
-        raise NotImplementedError("I thought multiplicity was now a molecule attribute not atom?")
-        # Set the spin multiplicity
-        self.spinMultiplicity = spinMultiplicity
-        if self.spinMultiplicity < 0:
-            raise gr.ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
-        self.updateCharge()
 
     def getBondOrdersForAtom(self):
         """
@@ -1903,7 +1890,7 @@ class Molecule(Graph):
 
         global atom_id_counter
 
-        for i, atom in enumerate(self.atoms):
+        for atom in self.atoms:
             atom.id = atom_id_counter
             atom_id_counter += 1
             if atom_id_counter == 2**15:

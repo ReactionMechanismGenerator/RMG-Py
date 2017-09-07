@@ -43,7 +43,7 @@ def failsSpeciesConstraints(species):
 
     try:
         speciesConstraints = getInput('speciesConstraints')
-    except Exception, e:
+    except Exception:
         logging.debug('Species constraints could not be found.')
         speciesConstraints = {}
     

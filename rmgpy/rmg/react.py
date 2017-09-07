@@ -34,7 +34,6 @@ Contains functions for generating reactions.
 import logging
 import itertools
 
-from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_
 from rmgpy.species import Species

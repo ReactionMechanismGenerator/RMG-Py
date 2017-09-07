@@ -34,8 +34,6 @@ from external.wip import work_in_progress
 from .molecule import Atom, Bond, Molecule
 from .group import Group, ActionError
 from .element import getElement, elementList
-from .resonance import generateAromaticResonanceStructures
-
 
 ################################################################################
 class TestAtom(unittest.TestCase):

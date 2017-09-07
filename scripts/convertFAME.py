@@ -7,14 +7,12 @@ Convert a FAME input file to a MEASURE input file.  MEASURE is the previous vers
 
 import argparse
 import logging
-import numpy
 import os.path
 
 from rmgpy.molecule import Molecule
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity, Energy
 
-from rmgpy.cantherm.main import CanTherm
 from rmgpy.cantherm.pdep import PressureDependenceJob
 
 from rmgpy.pdep import Network, Configuration, SingleExponentialDown

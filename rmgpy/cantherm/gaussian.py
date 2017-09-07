@@ -260,9 +260,7 @@ class GaussianLog:
         CBS-QB3 value.
         """
 
-        modes = []
         E0 = None; E0_cbs = None; scaledZPE = None
-        spinMultiplicity = 1
 
         f = open(self.path, 'r')
         line = f.readline()
@@ -307,9 +305,7 @@ class GaussianLog:
         Load the unscaled zero-point energy in J/mol from a Gaussian log file.
         """
 
-        modes = []
         ZPE = None
-        spinMultiplicity = 1
 
         f = open(self.path, 'r')
         line = f.readline()

@@ -29,7 +29,6 @@
 ################################################################################
 
 #global imports
-import copy
 import os.path
 import numpy as np
 import re
@@ -38,7 +37,6 @@ import re
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.scoop_framework.util import broadcast, get, map_
 from rmgpy.scoop_framework.util import logger as logging
-from rmgpy.rmg.main import RMG
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 
 from model import ReductionReaction
@@ -373,8 +371,6 @@ def reduceModel(tolerance, targets, reactionModel, rmg, reactionSystemIndex):
 
     # reduce model with the tolerance specified earlier:
     importantReactions = findImportantReactions(rmg, tolerance)
-
-    original_size = len(reactionModel.core.reactions)
 
     no_importantReactions = len(importantReactions)
     logging.info('No. of reactions in tested reduced model: {}'.format(no_importantReactions))

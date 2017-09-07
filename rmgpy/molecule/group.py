@@ -209,7 +209,6 @@ class GroupAtom(Vertex):
         or 3 radical electrons.
         """
         radicalElectrons = []
-        pairs = set()
         if any([len(atomType.decrementRadical) == 0 for atomType in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
 
@@ -1282,7 +1281,7 @@ class Group(Graph):
 
         #list of :class:AtomType which are elements with more sub-divided atomtypes beneath them
         specifics= [elementLabel for elementLabel in allElements if elementLabel not in nonSpecifics]
-        for index, atom in enumerate(self.atoms):
+        for atom in self.atoms:
             claimedAtomType = atom.atomType[0]
             newAtomType = None
             element = None
@@ -1366,7 +1365,7 @@ class Group(Graph):
             #Do not perform is this atom has wildCards
             if atom.hasWildCards: continue
             elif claimedAtomType is atomTypes['CO'] or claimedAtomType is atomTypes['CS']:
-                for atom2, bond12 in atom.bonds.iteritems():
+                for bond12 in atom.bonds.itervalues():
                     if bond12.isDouble():
                         break
                 else: atomsToAddTo.append(index)
@@ -1392,9 +1391,7 @@ class Group(Graph):
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
 
-        modified = False
-
-        #If viable then we apply current conventions:
+        # If viable then we apply current conventions:
         checkList=[]
         checkList.append(self.standardizeAtomType())
         checkList.append(self.addExplicitLigands())

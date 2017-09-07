@@ -39,7 +39,6 @@ import logging
 import time
 import shutil
 import numpy
-import csv
 import gc
 import copy
 from copy import deepcopy
@@ -55,7 +54,6 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
-from rmgpy.chemkin import loadChemkinFile, getSpeciesIdentifier
 from rmgpy import settings
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -74,7 +72,6 @@ from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
 from cantera import ck2cti
-from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 ################################################################################
 
 solvent = None
@@ -1167,7 +1164,7 @@ class RMG(util.Subject):
         """
         Output a header containing identifying information about RMG to the log.
         """
-        from rmgpy import __version__, getPath, settings
+        from rmgpy import __version__, getPath
         logging.log(level, '#########################################################')
         logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python       #')
         logging.log(level, '# Version: {0:44s} #'.format(__version__))
@@ -1232,7 +1229,6 @@ class RMG(util.Subject):
     
         # The reactions and reactionDict still point to the old reaction families
         reactionDict = {}
-        oldFamilies = self.reactionModel.reactionDict.keys()
         for family0_label in self.reactionModel.reactionDict:
     
             # Find the equivalent library or family in the newly-loaded kinetics database
@@ -1306,7 +1302,7 @@ class RMG(util.Subject):
         self.reactionSystems = []
     
         Tlist = []; Plist = []; concentrationList = []; speciesDict = {}
-        termination = []; atol=1e-16; rtol=1e-8
+        termination = []
         
         with open(path, 'r') as f:
             line = self.readMeaningfulLineJava(f)
@@ -1426,14 +1422,6 @@ class RMG(util.Subject):
                     # Second meaningful line is the error tolerance
                     # We're not doing anything with this information yet!
                     line = self.readMeaningfulLineJava(f)
-                 
-                elif line.startswith('Atol:'):
-                    tokens = line.split()
-                    atol = float(tokens[1])
-                    
-                elif line.startswith('Rtol:'):
-                    tokens = line.split()
-                    rtol = float(tokens[1])
                 
                 line = self.readMeaningfulLineJava(f)
         

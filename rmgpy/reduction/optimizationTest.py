@@ -26,9 +26,7 @@
 ################################################################################
 
 import os
-import sys
 import unittest
-import numpy as np
 from external.wip import work_in_progress
 
 from rmgpy.scoop_framework.framework import TestScoopCommon
@@ -37,7 +35,7 @@ from rmgpy.scoop_framework.util import logger as logging
 import rmgpy
 
 try:
-    from scoop import futures, _control, shared
+    from scoop import futures
 except ImportError, e:
     logging.debug("Could not properly import SCOOP.")
 
@@ -53,13 +51,12 @@ def funcOptimize(rmg, targets):
 
     error = OptimizeTest.error
 
-    atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
     index = 0
     reactionSystem = rmg.reactionSystems[index]
 
     #compute original target observables
-    observables = computeObservables(targets, reactionModel, reactionSystem, \
-     rmg.absoluteTolerance, rmg.relativeTolerance)
+    observables = computeObservables(targets, reactionModel, reactionSystem,
+                                     rmg.absoluteTolerance, rmg.relativeTolerance)
 
     # optimize reduction tolerance
     tol, importantRxns = optimize(targets, reactionModel, rmg, index, error, observables)

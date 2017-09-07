@@ -12,7 +12,6 @@ import os.path
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
-from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
 from rmgpy.rmg.model import Species
 from rmgpy.thermo.thermoengine import submit
