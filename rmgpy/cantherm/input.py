@@ -343,9 +343,6 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         for i in xrange(len(rxn)):
             reactionDict[label+str(i)] = rxn[i]
     
-    # set transition state Energy if not set previously using same method as RMG pdep
-    if transitionState.conformer and transitionState.conformer.E0 is None:
-        transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si,"J/mol")
     return rxn
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
