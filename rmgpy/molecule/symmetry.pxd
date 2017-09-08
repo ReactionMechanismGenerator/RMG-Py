@@ -28,12 +28,12 @@ from .molecule cimport Atom, Bond, Molecule
 
 ################################################################################
 
-cpdef int calculateAtomSymmetryNumber(Molecule molecule, Atom atom) except -1
+cpdef float calculateAtomSymmetryNumber(Molecule molecule, Atom atom) except -1
 
-cpdef int calculateBondSymmetryNumber(Molecule molecule, Atom atom1, Atom atom2) except -1
+cpdef float calculateBondSymmetryNumber(Molecule molecule, Atom atom1, Atom atom2) except -1
 
-cpdef int calculateAxisSymmetryNumber(Molecule molecule) except -1
+cpdef float calculateAxisSymmetryNumber(Molecule molecule) except -1
 
-cpdef int calculateCyclicSymmetryNumber(Molecule molecule) except -1
+cpdef float calculateCyclicSymmetryNumber(Molecule molecule) except -1
 
-cpdef int calculateSymmetryNumber(Molecule molecule) except -1
+cpdef float calculateSymmetryNumber(Molecule molecule) except -1

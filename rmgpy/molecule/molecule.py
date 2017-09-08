@@ -658,7 +658,7 @@ class Molecule(Graph):
     ======================= =========== ========================================
     Attribute               Type        Description
     ======================= =========== ========================================
-    `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
+    `symmetryNumber`        ``float``   The (estimated) external + internal symmetry number of the molecule, modified for chirality
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
     `props`                 ``dict``    A list of properties describing the state of the molecule.
     `InChI`                 ``str``     A string representation of the molecule in InChI
