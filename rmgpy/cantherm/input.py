@@ -220,9 +220,6 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
     rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
     reactionDict[label] = rxn
     
-    # set transition state Energy if not set previously using same method as RMG pdep
-    if transitionState.conformer and transitionState.conformer.E0 is None:
-        transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si,"J/mol")
     return rxn
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
