@@ -57,7 +57,7 @@ def parse_command_line_arguments(command_line_args=None):
     how molecules react.
     """)
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
-        help='a file describing the job to execute')
+                        help='a file describing the job to execute')
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
@@ -69,19 +69,23 @@ def parse_command_line_arguments(command_line_args=None):
 
     # Add options for controlling what directories files are written to
     parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
-        metavar='DIR', help='use DIR as output directory')
+                        metavar='DIR', help='use DIR as output directory')
 
     # Add restart option
     parser.add_argument('-r', '--restart', action='store_true', help='restart an incomplete job')
 
-    parser.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
-    parser.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
+    parser.add_argument('-p', '--profile', action='store_true',
+                        help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
+    parser.add_argument('-P', '--postprocess', action='store_true',
+                        help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
 
     parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
-        metavar='DD:HH:MM:SS', help='set the maximum execution time')
+                        metavar='DD:HH:MM:SS', help='set the maximum execution time')
 
-    #Add option to output a folder that stores the details of each kinetic database entry source
-    parser.add_argument('-k', '--kineticsdatastore', action='store_true', help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
+    # Add option to output a folder that stores the details of each kinetic database entry source
+    parser.add_argument('-k', '--kineticsdatastore', action='store_true',
+                        help='output a folder, kinetics_database, that contains a .txt file for each reaction family '
+                             'listing the source(s) for each entry')
 
     args = parser.parse_args(command_line_args)
 
@@ -96,10 +100,10 @@ def parse_command_line_arguments(command_line_args=None):
         args.walltime = args.walltime[0]
 
     # Set directories
-    inputDirectory = os.path.abspath(os.path.dirname(args.file))
+    input_directory = os.path.abspath(os.path.dirname(args.file))
 
     if args.output_directory == '':
-        args.output_directory = inputDirectory
+        args.output_directory = input_directory
     # If output directory was specified, retrieve this string from the element 1 list
     else:
         args.output_directory = args.output_directory[0]

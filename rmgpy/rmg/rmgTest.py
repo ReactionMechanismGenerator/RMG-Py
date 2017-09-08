@@ -238,7 +238,7 @@ class TestRMGScript(unittest.TestCase):
         """
 
         # Acquire default arguments
-        args = parseCommandLineArguments(['input.py',])
+        args = parse_command_line_arguments(['input.py'])
 
         # Test default values
         self.assertEqual(args.walltime, '00:00:00:00')
@@ -258,8 +258,8 @@ class TestRMGScript(unittest.TestCase):
         """
 
         # Acquire arguments
-        args = parseCommandLineArguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', '-P',
-                                          '-t', '01:20:33:45', '-k'])
+        args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', '-P',
+                                            '-t', '01:20:33:45', '-k'])
 
         # Test expected values
         self.assertEqual(args.walltime, '01:20:33:45')

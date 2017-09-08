@@ -39,10 +39,10 @@ import rmgpy.tools.generate_reactions as generate_reactions
 
 ################################################################################
 
+
 def main():
     generate_reactions.main()
 
+
 if __name__ == '__main__':
     main()
-    
-    

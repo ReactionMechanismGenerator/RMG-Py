@@ -37,13 +37,12 @@ The input file is a subset of that used with regular RMG jobs.
 """
 
 import os.path
-import argparse
 import logging
 
 from rmgpy.rmg.main import initializeLog, RMG
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmg import parseCommandLineArguments
+from rmg import parse_command_line_arguments
 
 
 def main():
@@ -55,9 +54,12 @@ def main():
 
     # Initialize the logging system (resets the RMG.log file)
     level = logging.INFO
-    if args.debug: level = 0
-    elif args.verbose: level = logging.DEBUG
-    elif args.quiet: level = logging.WARNING
+    if args.debug:
+        level = 0
+    elif args.verbose:
+        level = logging.DEBUG
+    elif args.quiet:
+        level = logging.WARNING
 
     kwargs = {
             'restart': args.restart,
@@ -76,6 +78,7 @@ def main():
 
     execute(rmg, **kwargs)
 
+
 def execute(rmg, **kwargs):
     """
 
@@ -86,13 +89,12 @@ def execute(rmg, **kwargs):
     The input file is a subset of that used with regular RMG jobs. 
 
     Returns an RMG object.
-    """   
-    import numpy
+    """
     rmg.initialize(**kwargs)
     
     rmg.reactionModel.enlarge(reactEdge=True,
-        unimolecularReact=rmg.unimolecularReact,
-        bimolecularReact=rmg.bimolecularReact)
+                              unimolecularReact=rmg.unimolecularReact,
+                              bimolecularReact=rmg.bimolecularReact)
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
