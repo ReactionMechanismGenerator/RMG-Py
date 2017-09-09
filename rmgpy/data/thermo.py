@@ -1659,10 +1659,10 @@ class ThermoDatabase(object):
                 estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(bicyclic.atoms)
                 if not estimated_bicyclic_thermodata:
                     estimated_bicyclic_thermodata = matched_group_thermodata 
-                thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True)
+                thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True, verbose=True)
             else:
                 # keep matched_group_thermodata as is
-                thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True)
+                thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
 
         # loop over 1-ring 
         for singleRingTuple, occurance in ringOccurancesDict.iteritems():
@@ -1751,7 +1751,7 @@ class ThermoDatabase(object):
                                                 self.groups['ring'], submol, submol.atoms)[0]
                 
             estimated_bicyclic_thermodata = addThermoData(estimated_bicyclic_thermodata,
-                                                    single_ring_thermoData, groupAdditivity=True)
+                                                    single_ring_thermoData, groupAdditivity=True, verbose=True)
 
         return estimated_bicyclic_thermodata
 
