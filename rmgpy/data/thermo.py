@@ -1708,8 +1708,11 @@ class ThermoDatabase(object):
         # apply formula: 
         # bicyclic correction ~= saturated bicyclic correction - 
         # saturated single ring corrections + single ring corrections
+        
         saturated_bicyclic_thermoData = self.__addRingCorrectionThermoDataFromTree(None, 
                 self.groups['polycyclic'], saturated_bicyclic_submol, saturated_bicyclic_submol.atoms)[0]
+
+        saturated_bicyclic_thermoData.comment = "Estimated bicyclic component: " + saturated_bicyclic_thermoData.comment 
 
         estimated_bicyclic_thermodata = saturated_bicyclic_thermoData
         
@@ -1729,7 +1732,7 @@ class ThermoDatabase(object):
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                                 self.groups['ring'], submol, submol.atoms)[0]
             estimated_bicyclic_thermodata = removeThermoData(estimated_bicyclic_thermodata,
-                                                    single_ring_thermoData, groupAdditivity=True)
+                                                    single_ring_thermoData, groupAdditivity=True, verbose=True)
 
         for submol in single_ring_submols:
 
