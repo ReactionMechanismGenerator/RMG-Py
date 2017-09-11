@@ -214,9 +214,9 @@ class Reaction:
         This method should be replaced by __eq__ when moving to cython 0.27
         """
         if cmp_type == 2: # equality
-            return self.isIsomorphic(other)
+            return self.isIsomorphic(other, checkOnlyID == True)
         elif cmp_type == 3: # inequality
-            return not self.isIsomorphic(other)
+            return not self.isIsomorphic(other, checkOnlyID == True)
         raise TypeError("Only equality checks are implemented for reaction objects. You tried comparison type {}".format(cmp_type))
 
     def toChemkin(self, speciesList=None, kinetics=True):

@@ -193,7 +193,7 @@ class TemplateReaction(Reaction):
             elif not equal_templates and other.reverse is not None:
                 equal_templates = frozenset(other.reverse.template) == frozenset(self.template)
             if equal_templates:
-                if self.isIsomorphic(other):
+                if self.isIsomorphic(other, checkOnlyID=True):
                     return True
         return False
 
