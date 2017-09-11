@@ -313,6 +313,16 @@ def isAromaticRing(submol):
                     return False
     return True
 
+def isBicyclic(polyring):
+    """
+    Given a polyring (a list of `Atom`s)
+    returns True if it's a bicyclic, False otherwise
+    """
+    submol, _ = convertRingToSubMolecule(polyring)
+    sssr = submol.getSmallestSetOfSmallestRings()
+
+    return len(sssr) == 2
+
 def findAromaticBondsFromSubMolecule(submol):
     """
     This method finds all the aromatic bonds within a input submolecule and 
@@ -347,6 +357,8 @@ def convertRingToSubMolecule(ring):
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
     
+    mol0.updateMultiplicity()
+    mol0.updateConnectivityValues()
     return mol0, atomsMapping
 
 def combineTwoRingsIntoSubMolecule(ring1, ring2):
@@ -376,6 +388,9 @@ def combineTwoRingsIntoSubMolecule(ring1, ring2):
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
     
+    mol0.updateMultiplicity()
+    mol0.updateConnectivityValues()
+
     return mol0, atomsMapping
 
 def getCopyForOneRing(ring):
@@ -485,6 +500,45 @@ def bicyclicDecompositionForPolyring(polyring):
         bicyclicsMergedFromRingPair.append(mergedRing)
 
     return bicyclicsMergedFromRingPair, ringOccurancesDict
+
+def splitBicyclicIntoSingleRings(bicyclic_submol):
+    """
+    Splits a given bicyclic submolecule into two individual single 
+    ring submolecules (a list of `Molecule`s ).
+    """
+    SSSR = bicyclic_submol.getDeterministicSmallestSetOfSmallestRings()
+
+    return [convertRingToSubMolecule(SSSR[0])[0], 
+                convertRingToSubMolecule(SSSR[1])[0]]
+
+def saturateRingBonds(ring_submol):
+    """
+    Given a ring submolelcule (`Molecule`), makes a deep copy and converts non-single bonds 
+    into single bonds, returns a new saturated submolecule (`Molecule`)
+    """
+    atomsMapping = {}
+    for atom in ring_submol.atoms:
+        if atom not in atomsMapping:
+            atomsMapping[atom] = atom.copy()
+
+    mol0 = Molecule(atoms=atomsMapping.values())
+
+    alreadySaturated = True
+    for atom in ring_submol.atoms:
+        for bondedAtom, bond in atom.edges.iteritems():
+            if bondedAtom in ring_submol.atoms:
+                if bond.order > 1.0 and not bond.isBenzene(): alreadySaturated = False
+                if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
+                    bond_order = 1.0
+                    if bond.isBenzene():
+                        bond_order = 1.5
+                    mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond_order))
+    
+    mol0.updateAtomTypes()
+    mol0.updateMultiplicity()
+    mol0.updateConnectivityValues()
+    return mol0, alreadySaturated
+
 ################################################################################
 
 class ThermoDepository(Database):
@@ -1558,15 +1612,24 @@ class ThermoDatabase(object):
         be applied.
         """
         # look up polycylic tree directly
-        matched_group_thermodata, _, isPartialMatch = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
+        matched_group_thermodata, matched_group, isPartialMatch = self.__addRingCorrectionThermoDataFromTree(None, self.groups['polycyclic'], molecule, polyring)
         
         # if partial match (non-H atoms number same between 
         # polycylic ring in molecule and match group)
         # otherwise, apply heuristic algorithm
         if not isPartialMatch:
-            thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
-            # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
-            # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
+            if isBicyclic(polyring) and matched_group.label in self.groups['polycyclic'].genericNodes:
+                # apply secondary decompostion formula
+                # to get a estimated_group_thermodata
+                estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+                if not estimated_bicyclic_thermodata:
+                    estimated_bicyclic_thermodata = matched_group_thermodata
+                thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True, verbose=True)
+            else:
+                # keep matched_group_thermodata as is
+                thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
+                # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
+                # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
         else:
             self.__addPolyRingCorrectionThermoDataFromHeuristic(thermoData, polyring)
             
@@ -1587,8 +1650,19 @@ class ThermoDatabase(object):
         
         # loop over 2-ring cores
         for bicyclic in bicyclicsMergedFromRingPair:
-            self.__addRingCorrectionThermoDataFromTree(thermoData, 
+            matched_group_thermodata, matched_group, _ = self.__addRingCorrectionThermoDataFromTree(None, 
                 self.groups['polycyclic'], bicyclic, bicyclic.atoms)
+
+            if matched_group.label in self.groups['polycyclic'].genericNodes:
+                # apply secondary decompostion formula
+                # to get a estimated_group_thermodata
+                estimated_bicyclic_thermodata = self.getBicyclicCorrectionThermoDataFromHeuristic(bicyclic.atoms)
+                if not estimated_bicyclic_thermodata:
+                    estimated_bicyclic_thermodata = matched_group_thermodata 
+                thermoData = addThermoData(thermoData, estimated_bicyclic_thermodata, groupAdditivity=True, verbose=True)
+            else:
+                # keep matched_group_thermodata as is
+                thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
 
         # loop over 1-ring 
         for singleRingTuple, occurance in ringOccurancesDict.iteritems():
@@ -1615,6 +1689,80 @@ class ThermoDatabase(object):
                 # By setting verbose=True, we turn on the comments of polycyclic correction to pass the unittest.
                 # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
+
+    def getBicyclicCorrectionThermoDataFromHeuristic(self, bicyclic):
+
+        # saturate if the bicyclic has unsaturated bonds
+        # otherwise return None
+        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
+        saturated_bicyclic_submol, alreadySaturated = saturateRingBonds(bicyclic_submol)
+
+        if alreadySaturated:
+            return None
+        # split bicyclic into two single ring submols
+        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+
+        # split saturated bicyclic into two single ring submols
+        saturated_single_ring_submols = splitBicyclicIntoSingleRings(saturated_bicyclic_submol)
+
+        # apply formula: 
+        # bicyclic correction ~= saturated bicyclic correction - 
+        # saturated single ring corrections + single ring corrections
+
+        estimated_bicyclic_thermodata = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)")
+        )
+        
+        saturated_bicyclic_thermoData = self.__addRingCorrectionThermoDataFromTree(None, 
+                self.groups['polycyclic'], saturated_bicyclic_submol, saturated_bicyclic_submol.atoms)[0]
+        
+        estimated_bicyclic_thermodata = addThermoData(estimated_bicyclic_thermodata,
+                                                    saturated_bicyclic_thermoData , 
+                                                    groupAdditivity=True)
+
+        estimated_bicyclic_thermodata.comment = "Estimated bicyclic component: " + saturated_bicyclic_thermoData.comment
+
+        for submol in saturated_single_ring_submols:
+            
+            if not isAromaticRing(submol):
+                aromaticBonds = findAromaticBondsFromSubMolecule(submol)
+                for aromaticBond in aromaticBonds:
+                    aromaticBond.setOrderNum(1)
+                
+                submol.update()
+                single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
+                                            self.groups['ring'], submol, submol.atoms)[0]
+                
+            else:
+                submol.update()
+                single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
+                                                self.groups['ring'], submol, submol.atoms)[0]
+            estimated_bicyclic_thermodata = removeThermoData(estimated_bicyclic_thermodata,
+                                                    single_ring_thermoData, groupAdditivity=True, verbose=True)
+
+        for submol in single_ring_submols:
+
+            if not isAromaticRing(submol):
+                aromaticBonds = findAromaticBondsFromSubMolecule(submol)
+                for aromaticBond in aromaticBonds:
+                    aromaticBond.setOrderNum(1)
+                
+                submol.update()
+                single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
+                                            self.groups['ring'], submol, submol.atoms)[0]
+                
+            else:
+                submol.update()
+                single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
+                                                self.groups['ring'], submol, submol.atoms)[0]
+                
+            estimated_bicyclic_thermodata = addThermoData(estimated_bicyclic_thermodata,
+                                                    single_ring_thermoData, groupAdditivity=True, verbose=True)
+
+        return estimated_bicyclic_thermodata
 
     def __addRingCorrectionThermoDataFromTree(self, thermoData, ring_database, molecule, ring):
         """

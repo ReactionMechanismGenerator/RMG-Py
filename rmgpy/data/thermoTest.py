@@ -295,6 +295,25 @@ multiplicity 2
         self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should now be the first one
         self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
 
+    def testThermoEstimationNotAffectDatabase(self):
+
+        poly_root = self.database.groups['polycyclic'].entries['PolycyclicRing']
+        previous_enthalpy = poly_root.data.getEnthalpy(298)/4184.0
+        smiles = 'C1C2CC1C=CC=C2'
+        spec = Species().fromSMILES(smiles)
+        spec.generateResonanceIsomers()
+
+        thermo_gav = self.database.getThermoDataFromGroups(spec)
+        _, polycyclicGroups = self.database.getRingGroupsFromComments(thermo_gav)
+
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('PolycyclicRing', polycyclicGroupLabels)
+
+        latter_enthalpy = poly_root.data.getEnthalpy(298)/4184.0
+
+        self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """
@@ -716,6 +735,133 @@ class TestCyclicThermo(unittest.TestCase):
         self.assertIn('s2_6_6_ane', polycyclicGroupLabels)
         self.assertIn('s2_3_6_ane', polycyclicGroupLabels)
 
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingHighlyUnsaturatedPolycyclics1(self):
+        """
+        Test proper thermo estimation for highly unsaturated polycyclic whose decomposed 
+        bicyclics are not stored in database. Those bicyclics thermo will be estimated through
+        a heuristic formula.
+
+        In the future, the test assertion may be updated if some of the decomposed bicyclics
+        have been added to database.
+        """
+        # create testing molecule
+        smiles = '[CH]=C1C2=C=C3C=CC1C=C32'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('1,4-Cyclohexadiene', ringGroupLabels)
+        self.assertIn('Cyclopentene', ringGroupLabels)
+        self.assertIn('cyclobutadiene_13', ringGroupLabels)
+        self.assertIn('s3_5_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_4_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_4_5_ane', polycyclicGroupLabels)
+
+    def testAddPolyRingCorrectionThermoDataFromHeuristicUsingHighlyUnsaturatedPolycyclics2(self):
+        """
+        Test proper thermo estimation for highly unsaturated polycyclic whose decomposed 
+        bicyclics are not stored in database. Those bicyclics thermo will be estimated through
+        a heuristic formula.
+        
+        In the future, the test assertion may be updated if some of the decomposed bicyclics
+        have been added to database.
+        """
+        # create testing molecule
+        smiles = 'C1=C2C#CC3C=CC1C=C23'
+        mol = Molecule().fromSMILES(smiles)
+        
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        self.database._ThermoDatabase__addPolyRingCorrectionThermoDataFromHeuristic(
+            thermoData, polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('1,4-Cyclohexadiene', ringGroupLabels)
+        self.assertIn('Cyclopentyne', ringGroupLabels)
+        self.assertIn('Cyclopentadiene', ringGroupLabels)
+        self.assertIn('s3_5_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_5_6_ane', polycyclicGroupLabels)
+        self.assertIn('s2_5_5_ane', polycyclicGroupLabels)
+
+    def testGetBicyclicCorrectionThermoDataFromHeuristic1(self):
+        """
+        Test bicyclic correction estimated properly from heuristic formula
+        The test molecule "C1=CCC2C1=C2" has a shared atom with Cd atomtype, 
+        but in the correction estimation we stil expect the five-member ring 
+        part to match Cyclopentene
+        """
+        smiles = 'C1=CCC2C1=C2'
+        mol = Molecule().fromSMILES(smiles)
+
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = self.database.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Cyclopentane', ringGroupLabels)
+        self.assertIn('Cyclopropane', ringGroupLabels)
+        self.assertIn('Cyclopentene', ringGroupLabels)
+        self.assertIn('Cyclopropene', ringGroupLabels)
+        self.assertIn('s2_3_5_ane', polycyclicGroupLabels)
+
+    def testGetBicyclicCorrectionThermoDataFromHeuristic2(self):
+        """
+        Test bicyclic correction estimated properly from heuristic formula
+        The test molecule "C1=CCC2=C1C2" doesn't have controversial shared 
+        atomtypes in correction estimation, which is regarded as a simple case.
+        """
+        smiles = 'C1=CCC2=C1C2'
+        mol = Molecule().fromSMILES(smiles)
+
+        # extract polyring from the molecule
+        polyring = mol.getDisparateRings()[1][0]
+
+        thermoData = self.database.getBicyclicCorrectionThermoDataFromHeuristic(polyring)
+
+        ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermoData)
+
+        ringGroupLabels = [ringGroup.label for ringGroup in ringGroups]
+        polycyclicGroupLabels = [polycyclicGroup.label for polycyclicGroup in polycyclicGroups]
+
+        self.assertIn('Cyclopentane', ringGroupLabels)
+        self.assertIn('Cyclopropane', ringGroupLabels)
+        self.assertIn('Cyclopentadiene', ringGroupLabels)
+        self.assertIn('Cyclopropene', ringGroupLabels)
+        self.assertIn('s2_3_5_ane', polycyclicGroupLabels)
+        
 class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
     """
     Contains unit tests for methods of molecular manipulations for thermo estimation
@@ -852,6 +998,30 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         self.assertEqual(isAromaticRing(ring1mol), False)
         self.assertEqual(isAromaticRing(ring2mol), False)
         self.assertEqual(isAromaticRing(ring3mol), True)
+
+    def testIsBicyclic1(self):
+        """
+        Test isBicyclic identifies bicyclic correctly
+        The test molecule is bicyclic, we expect isBicyclic()
+        returns True.
+        """
+        smiles = 'C1=CCC2C1=C2'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = mol.getDisparateRings()[1][0]
+
+        self.assertTrue(isBicyclic(polyring))
+
+    def testIsBicyclic2(self):
+        """
+        Test isBicyclic identifies bicyclic correctly
+        The test molecule is tetracyclic, we expect 
+        isBicyclic() returns False
+        """
+        smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
+        mol = Molecule().fromSMILES(smiles)
+        polyring = mol.getDisparateRings()[1][0]
+
+        self.assertFalse(isBicyclic(polyring))
 
     def testFindAromaticBondsFromSubMolecule(self):
 
@@ -1014,6 +1184,141 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         testCycle2=mainCycle[6:]
         joinedCycle=combineCycles(testCycle1,testCycle2)
         self.assertTrue(sorted(mainCycle)==sorted(joinedCycle))
+
+    def testSplitBicyclicIntoSingleRings1(self):
+        """
+        Test bicyclic molecule "C1=CCC2C1=C2" can be divided into 
+        individual rings properly
+        """
+        smiles = 'C1=CCC2C1=C2'
+        mol = Molecule().fromSMILES(smiles)
+        bicyclic = mol.getDisparateRings()[1][0]
+
+        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
+        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+        self.assertEqual(len(single_ring_submols), 2)
+
+        single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
+                                key=lambda submol: len(submol.atoms))
+
+        single_ring_submol_a.updateAtomTypes()
+        single_ring_submol_b.updateAtomTypes()
+
+        expected_submol_a = Molecule().fromSMILES('C1=CC1')
+        expected_submol_a.deleteHydrogens()
+        expected_submol_a.updateConnectivityValues()
+
+        expected_submol_b = Molecule().fromSMILES('C1=CCCC1')
+        expected_submol_b.deleteHydrogens()
+        expected_submol_b.updateConnectivityValues()
+
+
+        self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
+        self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
+
+    def testSplitBicyclicIntoSingleRings2(self):
+        """
+        Test bicyclic molecule "C1=CCC2=C1C2" can be divided into 
+        individual rings properly
+        """
+
+        smiles = 'C1=CCC2=C1C2'
+        mol = Molecule().fromSMILES(smiles)
+        bicyclic = mol.getDisparateRings()[1][0]
+
+        bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
+        single_ring_submols = splitBicyclicIntoSingleRings(bicyclic_submol)
+        self.assertEqual(len(single_ring_submols), 2)
+
+        single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
+                                key=lambda submol: len(submol.atoms))
+
+        single_ring_submol_a.updateAtomTypes()
+        single_ring_submol_b.updateAtomTypes()
+
+        expected_submol_a = Molecule().fromSMILES('C1=CC1')
+        # remove hydrogen
+        expected_submol_a.deleteHydrogens()
+        expected_submol_a.updateConnectivityValues()
+
+        expected_submol_b = Molecule().fromSMILES('C1=CC=CC1')
+        # remove hydrogen
+        expected_submol_b.deleteHydrogens()
+        expected_submol_b.updateConnectivityValues()
+
+        self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
+        self.assertTrue(single_ring_submol_b.isIsomorphic(expected_submol_b))
+
+    def testSaturateRingBonds1(self):
+        """
+        Test unsaturated bonds of "C1=CCC2=C1C2" to be saturated properly
+        """
+        smiles = 'C1=CCC2=C1C2'
+        mol = Molecule().fromSMILES(smiles)
+        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+
+        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+
+        expected_saturated_ring_submol = Molecule().fromSMILES('C1CCC2C1C2')
+        # remove hydrogen
+        expected_saturated_ring_submol.deleteHydrogens()
+        
+        expected_saturated_ring_submol.updateConnectivityValues()
+
+        self.assertFalse(alreadySaturated)
+        self.assertEqual(saturated_ring_submol.multiplicity,
+                            expected_saturated_ring_submol.multiplicity)
+        self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
+
+    def testSaturateRingBonds2(self):
+        """
+        Test unsaturated bonds of "C1=CC=C2CCCCC2=C1" to be saturated properly
+        """
+        smiles = 'C1=CC=C2CCCCC2=C1'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        mol = spe.molecule[1]
+        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+
+        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+
+        expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
+        expected_spe.generateResonanceIsomers()
+        expected_saturated_ring_submol = expected_spe.molecule[1]
+        # remove hydrogen
+        expected_saturated_ring_submol.deleteHydrogens()
+        
+        expected_saturated_ring_submol.updateConnectivityValues()
+
+        self.assertTrue(alreadySaturated)
+        self.assertEqual(saturated_ring_submol.multiplicity,
+                            expected_saturated_ring_submol.multiplicity)
+        self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
+
+    def testSaturateRingBonds3(self):
+        """
+        Test unsaturated bonds of "C1=CC=C2CC=CCC2=C1" to be saturated properly
+        """
+        smiles = 'C1=CC=C2CC=CCC2=C1'
+        spe = Species().fromSMILES(smiles)
+        spe.generateResonanceIsomers()
+        mol = spe.molecule[1]
+        ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
+
+        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+
+        expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
+        expected_spe.generateResonanceIsomers()
+        expected_saturated_ring_submol = expected_spe.molecule[1]
+        # remove hydrogen
+        expected_saturated_ring_submol.deleteHydrogens()
+        
+        expected_saturated_ring_submol.updateConnectivityValues()
+
+        self.assertFalse(alreadySaturated)
+        self.assertEqual(saturated_ring_submol.multiplicity,
+                            expected_saturated_ring_submol.multiplicity)
+        self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
 
 @attr('auth')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
