@@ -802,6 +802,51 @@ class TestGraph(unittest.TestCase):
             longest_ring = long_ring2
         
         self.assertEqual(len(longest_ring), len(rings[0]) - 1)
+
+    def testSortCyclicVertices(self):
+        """Test that _sortCyclicVertices works properly for a valid input."""
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge)  # To create a cycle
+
+
+        # Sort the vertices
+        original = list(self.graph.vertices)
+        ordered = self.graph._sortCyclicVertices(original)
+
+        # Check that we didn't lose any vertices
+        self.assertEqual(len(self.graph.vertices), len(ordered), 'Sorting changed the number of vertices.')
+
+        # Check that the order is different
+        self.assertNotEqual(self.graph.vertices, ordered, 'Sorting did not change the order of vertices.')
+
+        # Check that subsequent vertices are connected
+        for i in range(5):
+            self.assertTrue(self.graph.hasEdge(ordered[i], ordered[i - 1]))
+
+    def testSortCyclicVerticesInvalid(self):
+        """Test that _sortCyclicVertices raises an error for an invalid input."""
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
+        self.graph.addEdge(edge)  # To create a cycle
+
+        original = list(self.graph.vertices)
+
+        with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
+            self.graph._sortCyclicVertices(original)
+
+    def testSortCyclicVerticesNoncyclic(self):
+        """Test that _sortCyclicVertices raises an error for a noncyclic input."""
+        original = list(self.graph.vertices)
+        with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
+            self.graph._sortCyclicVertices(original)
+
+    def testSortCyclicVerticesUnconnected(self):
+        """Test that _sortCyclicVertices raises an error for an unconnected input."""
+        self.graph.addVertex(Vertex())
+        original = list(self.graph.vertices)
+        with self.assertRaisesRegexp(RuntimeError, 'not all vertices are connected'):
+            self.graph._sortCyclicVertices(original)
+
+
 ################################################################################
 
 if __name__ == '__main__':
