@@ -63,7 +63,7 @@ cdef class Reaction:
     
     cpdef bint matchesMolecules(self, list reactants)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkOnlyID=?)
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
@@ -105,4 +105,4 @@ cdef class Reaction:
     
     cpdef copy(self)
 
-cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?)
+cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkOnlyID=?)

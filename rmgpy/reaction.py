@@ -418,7 +418,7 @@ class Reaction:
         return False
 
     def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False,
-                     checkOnlyLabel = False):
+                     checkOnlyLabel = False, checkOnlyID = False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -436,12 +436,12 @@ class Reaction:
         # Compare reactants to reactants
         forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 
                                     other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+                                    checkOnlyLabel = checkOnlyLabel, checkOnlyID = checkOnlyID)
         
         # Compare products to products
         forwardProductsMatch = _isomorphicSpeciesList(self.products, 
                                     other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+                                    checkOnlyLabel = checkOnlyLabel, checkOnlyID = checkOnlyID)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -455,12 +455,12 @@ class Reaction:
         # Compare reactants to products
         reverseReactantsMatch = _isomorphicSpeciesList(self.reactants, 
                                     other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+                                    checkOnlyLabel = checkOnlyLabel, checkOnlyID = checkOnlyID)
 
         # Compare products to reactants
         reverseProductsMatch = _isomorphicSpeciesList(self.products, 
                                     other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+                                    checkOnlyLabel = checkOnlyLabel, checkOnlyID = checkOnlyID)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
@@ -1069,7 +1069,7 @@ class Reaction:
         
         return other
 
-def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
+def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False, checkOnlyID=False):
     """
     This method compares whether lists of species or molecules are isomorphic
     or identical. It is used for the 'isIsomorphic' method of Reaction class.
@@ -1080,15 +1080,17 @@ def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = 
         checkIdentical - if true, uses the 'isIdentical' comparison
                          if false, uses the 'isIsomorphic' comparison
         checkOnlyLabel - only look at species' labels, no isomorphism checks
-                         
+        checkOnlyID - only look at species' ID values, no isomorphism checks
     Returns True if the lists are isomorphic/identical & false otherwise
     """
 
-    def comparison_method(other1, other2, checkIdentical=checkIdentical, checkOnlyLabel=checkOnlyLabel):
+    def comparison_method(other1, other2, checkIdentical=checkIdentical, checkOnlyLabel=checkOnlyLabel, checkOnlyID=checkOnlyID):
         if checkOnlyLabel:
             return str(other1) == str(other2)
         elif checkIdentical:
             return other1.isIdentical(other2)
+        elif checkOnlyID:
+            return id(other1) = id(other2)
         else:
             return other1.isIsomorphic(other2)
 
