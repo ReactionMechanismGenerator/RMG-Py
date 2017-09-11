@@ -196,6 +196,7 @@ class CoreEdgeReactionModel:
     `networkList`              A list of pressure-dependent reaction networks (:class:`Network` objects)
     `networkCount`             A counter for the number of pressure-dependent networks created
     `indexSpeciesDict`         A dictionary with a unique index pointing to the species objects
+    `reactionDict`             A dictionary with key and values of reaction objects for efficient retrieval of values.
     =========================  ==============================================================
 
 
@@ -370,100 +371,31 @@ class CoreEdgeReactionModel:
         Check to see if an existing reaction has the same reactants, products, and
         family as `rxn`. Returns :data:`True` or :data:`False` and the matched
         reaction (if found).
-
-        First, a shortlist of reaction is retrieved that have the same reaction keys
-        as the parameter reaction.
-
-        Next, the reaction ID containing an identifier (e.g. label) of the reactants
-        and products is compared between the parameter reaction and the each of the
-        reactions in the shortlist. If a match is found, the discovered reaction is 
-        returned.
-
-        If a match is not yet found, the Library (seed mechs, reaction libs)
-        in the reaction database are iterated over to check if a reaction was overlooked
-        (a reaction with a different "family" key as the parameter reaction).
-
         """
-
-        # Make sure the reactant and product lists are sorted before performing the check
-        rxn.reactants.sort()
-        rxn.products.sort()
-
         # If reactants and products are identical, then something weird happened along
         # the way and we got a symmetrical reaction.
         if rxn.reactants == rxn.products:
             logging.debug("Symmetrical reaction found. Returning no reaction")
             return True, None
-        
-        familyObj = getFamilyLibraryObject(rxn.family)
-        shortlist = self.searchRetrieveReactions(rxn)
 
-        # Now use short-list to check for matches. All should be in same forward direction.
+        try:
+            current_rxn = self.reactionDict[rxn]
+        except KeyError:
+            return False, None
 
-        # Make sure the reactant and product lists are sorted before performing the check
-        rxn_id = generateReactionId(rxn)
-
-        for rxn0 in shortlist:
-            rxn_id0 = generateReactionId(rxn0)
-
-            if (rxn_id == rxn_id0) and isinstance(familyObj, KineticsLibrary):
-                # If the reaction comes from a kinetics library, then we can 
-                # retain duplicates if they are marked
-                if areIdenticalSpeciesReferences(rxn, rxn0) and not rxn.duplicate:
-                    return True, rxn0
-            elif ((rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1])) and \
-                        isinstance(familyObj, KineticsFamily):
-                # ensure TemplateReactions have the same templates and families in order
-                # to classify this as existing reaction. Also checks for reverse
-                # direction matching. Marks duplicate if identical species and different
-                # templates or families
-                if areIdenticalSpeciesReferences(rxn, rxn0):
-                    if rxn.family == rxn0.family:
-                        equal_templates = frozenset(rxn.template) == frozenset(rxn0.template)
-                        # check reverse template
-                        if not equal_templates and familyObj.ownReverse and \
-                                    rxn.reverse is not None:
-                            equal_templates = frozenset(rxn.reverse.template) == frozenset(rxn0.template)
-                        if equal_templates:
-                            return True, rxn0
-                        else:
-                            rxn.duplicate = True
-                            rxn0.duplicate = True
-                    else:
-                        rxn.duplicate = True
-                        rxn0.duplicate = True
-            elif (rxn_id == rxn_id0):
-                if areIdenticalSpeciesReferences(rxn, rxn0):
-                    return True, rxn0
-
-        # Now check seed mechanisms
-        # We want to check for duplicates in *other* seed mechanisms, but allow
-        # duplicated *within* the same seed mechanism
-        _, r1_fwd, r2_fwd = generateReactionKey(rxn)
-        _, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)
-
-        for library in self.reactionDict:
-            libObj = getFamilyLibraryObject(library)
-            if isinstance(libObj, KineticsLibrary) and library != rxn.family:
-
-                # First check seed short-list in forward direction                
-                shortlist = self.retrieve(library, r1_fwd, r2_fwd)
-                
-                for rxn0 in shortlist:
-                    rxn_id0 = generateReactionId(rxn0)
-                    if (rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1]):
-                        if areIdenticalSpeciesReferences(rxn, rxn0):
-                            return True, rxn0
-                
-                # Now get the seed short-list of the reverse reaction
-
-                shortlist = self.retrieve(library, r1_rev, r2_rev)
-                
-                for rxn0 in shortlist:
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        return True, rxn0
-
-        return False, None
+        if not rxn.duplicate:
+            return True, current_rxn
+        else:
+            if isinstance(current_rxn,LibraryReaction):
+                if isinstance(rxn,LibraryReaction) and rxn.library == current_rxn.library:
+                    # occur from the same library, so we want to keep this rxn
+                    return False, None
+                # we prioritize the first reaction library that has a reaction
+                return True, current_rxn
+            # this is a Template Reaction with duplicates
+            current_rxn.duplicate = True
+            rxn.duplicate = True
+            return False, None
 
     def makeNewReaction(self, forward, checkExisting=True):
         """
@@ -516,8 +448,8 @@ class CoreEdgeReactionModel:
             logging.debug('Creating new library reaction {0}'.format(forward))
         else:
             raise Exception("Unrecognized reaction type {0!s}".format(forward.__class__))
-        
-        self.registerReaction(forward)
+
+        self.reactionDict[forward]=forward
 
         forward.index = self.reactionCounter + 1
         self.reactionCounter += 1
@@ -1257,20 +1189,10 @@ class CoreEdgeReactionModel:
 
         # Remove from the global list of reactions
         # also remove it from the global list of reactions
-        for family in self.reactionDict:
-            if spec in self.reactionDict[family]:
-                del self.reactionDict[family][spec]
-            for reactant1 in self.reactionDict[family]:
-                if spec in self.reactionDict[family][reactant1]:
-                    del self.reactionDict[family][reactant1][spec]
-            for reactant1 in self.reactionDict[family]:
-                for reactant2 in self.reactionDict[family][reactant1]:
-                    tempRxnDeleteList = []
-                    for templateReaction in self.reactionDict[family][reactant1][reactant2]:
-                        if spec in templateReaction.reactants or spec in templateReaction.products:
-                            tempRxnDeleteList.append(templateReaction)
-                    for tempRxnToBeDeleted in tempRxnDeleteList:
-                        self.reactionDict[family][reactant1][reactant2].remove(tempRxnToBeDeleted)
+        for rxn in self.reactionDict.keys():
+            if hash(rxn) % spec.index == 0:
+                if spec in rxn.reactants or spec in rxn.products:
+                    del self.reactionDict[rxn]
 
         # remove from the global list of species, to free memory
         formula = spec.molecule[0].getFormula()
@@ -1662,77 +1584,6 @@ class CoreEdgeReactionModel:
         
         rxnList = self.core.reactions + self.outputReactionList
         markDuplicateReactions(rxnList)
-        
-    
-    def registerReaction(self, rxn):
-        """
-        Adds the reaction to the reaction database.
-
-        The reaction database is structured as a multi-level
-        dictionary, for efficient search and retrieval of
-        existing reactions.
-
-        The database has two types of dictionary keys:
-        - reaction family
-        - reactant(s) keys
-
-        First, the keys are generated for the parameter reaction.
-        
-        Next, it is checked whether the reaction database already 
-        contains similar keys. If not, a new container is created,
-        either a dictionary for the family key and first reactant key,
-        or a list for the second reactant key.
-
-        Finally, the reaction is inserted as the first element in the 
-        list.
-        """
-
-        key_family, key1, key2 = generateReactionKey(rxn)
-
-        # make dictionary entries if necessary
-        if key_family not in self.reactionDict:
-            self.reactionDict[key_family] = {}
-
-        if not self.reactionDict[key_family].has_key(key1):
-            self.reactionDict[key_family][key1] = {}
-
-        if not self.reactionDict[key_family][key1].has_key(key2):
-            self.reactionDict[key_family][key1][key2] = []
-
-        # store this reaction at the top of the relevant short-list
-        self.reactionDict[key_family][key1][key2].insert(0, rxn)
-
-
-    def searchRetrieveReactions(self, rxn):
-        """
-        Searches through the reaction database for 
-        reactions with an identical reaction key as the key of the 
-        parameter reaction.
-
-        Both the reaction key based on the reactants as well as on the products
-        is used to search for possible candidate reactions.
-        """
-
-        # Get the short-list of reactions with the same family, reactant1 and reactant2
-        family_label, r1_fwd, r2_fwd = generateReactionKey(rxn)
-        
-        my_reactionList = []
-
-        rxns = self.retrieve(family_label, r1_fwd, r2_fwd)
-        my_reactionList.extend(rxns)
-            
-            
-        family = getFamilyLibraryObject(family_label)       
-        # if the family is its own reverse (H-Abstraction) then check the other direction
-        if isinstance(family,KineticsFamily): 
-
-            # Get the short-list of reactions with the same family, product1 and product2
-            family_label, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)
-
-            rxns = self.retrieve(family_label, r1_rev, r2_rev)
-            my_reactionList.extend(rxns)
-
-        return my_reactionList
 
     def initializeIndexSpeciesDict(self):
         """
@@ -1746,20 +1597,6 @@ class CoreEdgeReactionModel:
         for spc in itertools.chain(self.core.species, self.edge.species):
             if spc.reactive:
                 self.indexSpeciesDict[spc.index] = spc
-
-    def retrieve(self, family_label, key1, key2):
-        """
-        Returns a list of reactions from the reaction database with the 
-        same keys as the parameters.
-
-        Returns an empty list when one of the keys could not be found.
-        """
-        try:
-            return self.reactionDict[family_label][key1][key2][:]
-        except KeyError: # no such short-list: must be new, unless in seed.
-            return []
-
-
 
     def inflate(self, rxn):
         """
@@ -1816,44 +1653,6 @@ class CoreEdgeReactionModel:
                 return self.getSpecies(obj)
         raise Exception("No core species were found in either reactants or products of {0}!".format(deflatedRxn))
 
-
-def generateReactionKey(rxn, useProducts=False):
-    """
-    Returns a tuple with 3 keys:
-    - the reaction family (or library) the reaction belongs to
-    - the keys of the reactants.
-
-    None for the third element in the tuple if there is 
-    only 1 reactant.
-
-    The keys are sorted alphabetically.
-    """
-
-    key_family = rxn.family
-
-    spc_list = rxn.products if useProducts else rxn.reactants
-    key1 = getKey(spc_list[0])
-    key2 = None if len(spc_list) == 1 else getKey(spc_list[1])
-    key1, key2 = sorted([key1, key2], reverse=True)# ensure None is always at end
-
-    return (key_family, key1, key2)
-
-def generateReactionId(rxn):
-    """
-    Returns a tuple of the reactions reactant and product
-    keys.
-
-    Both lists are sorted.
-
-    The first element in the tuple is the reactants list.
-    """
-
-
-    reactants = sorted([getKey(reactant) for reactant in rxn.reactants])
-    products = sorted([getKey(product) for product in rxn.products])
-
-    return (reactants, products)
-
 def getFamilyLibraryObject(label):
     """
     Returns the KineticsFamily or KineticsLibrary object associated with the
@@ -1885,13 +1684,3 @@ def getKey(spc):
     """
 
     return spc.label
-
-def areIdenticalSpeciesReferences(rxn1, rxn2):
-    """
-    Checks if the references of the reactants and products of the two reactions
-    are identical, in either direction.
-    """
-
-    return any([rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products, \
-            rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
-            ])
