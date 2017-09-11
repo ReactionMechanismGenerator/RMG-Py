@@ -991,6 +991,14 @@ cdef class Graph:
                     ordered.append(vertex)
                     vertices.remove(vertex)
                     break
+            else:
+                # No connected vertex was found
+                raise RuntimeError('Could not sort cyclic vertices because '
+                                   'not all vertices are connected to two '
+                                   'other vertices in the input list.')
+
+        if not self.hasEdge(ordered[0], ordered[-1]):
+            raise RuntimeError('Input vertices do not comprise a single cycle.')
 
         return ordered
 
