@@ -129,6 +129,7 @@ class TestReaction(unittest.TestCase):
         """
         ethylene = Species(
             label = 'C2H4',
+            index = 1,
             conformer = Conformer(
                 E0 = (44.7127, 'kJ/mol'),
                 modes = [
@@ -156,6 +157,7 @@ class TestReaction(unittest.TestCase):
         
         hydrogen = Species(          
             label = 'H',
+            index = 2,
             conformer = Conformer(
                 E0 = (211.794, 'kJ/mol'),
                 modes = [
@@ -170,6 +172,7 @@ class TestReaction(unittest.TestCase):
         
         ethyl = Species(
             label = 'C2H5',
+            index = 3,
             conformer = Conformer(
                 E0 = (111.603, 'kJ/mol'),
                 modes = [
@@ -986,6 +989,21 @@ class TestReaction(unittest.TestCase):
 
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)        
+
+    def testHashSpecies(self):
+        """
+        Test that hashing a reaction works when indices are defined for species
+
+        The species have indices 1,2, and 3, so hashing should return 6
+        """
+        self.assertEqual(hash(self.reaction), 6)
+
+    def testHashSpecies2(self):
+        """
+        Test that hashing fails when species do not have indices
+        """
+        hash_func = lambda: hash(self.reaction2)
+        self.assertRaises(KeyError, hash_func)
 
     def testOutput(self):
         """

@@ -185,6 +185,28 @@ class Reaction:
         self._degeneracy = new
     degeneracy = property(__getDegneneracy, __setDegeneracy)
 
+    def __hash__(self):
+        """
+        Create a hash that represents the product of reactant and product indices
+        """
+        cython.declare(hash_int = cython.int)
+        hash_int = 1
+        if isinstance(self.reactants[0], Species):
+            # hash species by their unique index
+            for species in self.reactants:
+                hash_int *= species.index
+            for species in self.products:
+                hash_int *= species.index
+        else:
+            # hash molecules by their built in hash function
+            for species in self.reactants:
+                hash_int *= int(hash(species))
+            for species in self.products:
+                hash_int *= int(hash(species))
+        if abs(hash_int) == 1:
+            raise KeyError('Unable to find hash number for reaction {}'.format(repr(self)))
+        return hash_int
+
     def toChemkin(self, speciesList=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
