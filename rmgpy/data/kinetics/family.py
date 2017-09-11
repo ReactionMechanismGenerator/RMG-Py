@@ -177,6 +177,26 @@ class TemplateReaction(Reaction):
         
         return other
 
+    def __eq__(self, other):
+        """
+        Equality for TemplateReaction checks family, templates and isomorphism 
+        to determine if two reactions are equal.
+        """
+        if not isinstance(other,TemplateReaction):
+            # just check isomorphism for non-TemplateReactions
+            return self.isIsomorphic(other) and self.duplicate == False
+        if self.family == other.family:
+            equal_templates = frozenset(self.template) == frozenset(other.template)
+            # check reverse template
+            if not equal_templates and self.reverse is not None:
+                equal_templates = frozenset(self.reverse.template) == frozenset(other.template)
+            elif not equal_templates and other.reverse is not None:
+                equal_templates = frozenset(other.reverse.template) == frozenset(self.template)
+            if equal_templates:
+                if self.isIsomorphic(other):
+                    return True
+        return False
+
 ################################################################################
 
 class ReactionRecipe:

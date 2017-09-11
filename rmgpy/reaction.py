@@ -207,6 +207,18 @@ class Reaction:
             raise KeyError('Unable to find hash number for reaction {}'.format(repr(self)))
         return hash_int
 
+    def __richcmp__(self, other, cmp_type):
+        """
+        Checks that two reactions are the same by using isIsomorphic
+
+        This method should be replaced by __eq__ when moving to cython 0.27
+        """
+        if cmp_type == 2: # equality
+            return self.isIsomorphic(other)
+        elif cmp_type == 3: # inequality
+            return not self.isIsomorphic(other)
+        raise TypeError("Only equality checks are implemented for reaction objects. You tried comparison type {}".format(cmp_type))
+
     def toChemkin(self, speciesList=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.

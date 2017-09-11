@@ -127,10 +127,10 @@ class TestReaction(unittest.TestCase):
         """
         A method that is called prior to each unit test in this class.
         """
-        ethylene = Species(
-            label = 'C2H4',
-            index = 1,
-            conformer = Conformer(
+        ethylene = Species().fromSMILES('C=C')
+        ethylene.label = 'C2H4'
+        ethylene.index = 1
+        ethylene.conformer = Conformer(
                 E0 = (44.7127, 'kJ/mol'),
                 modes = [
                     IdealGasTranslation(
@@ -152,13 +152,11 @@ class TestReaction(unittest.TestCase):
                 ],
                 spinMultiplicity = 1,
                 opticalIsomers = 1,
-            ),
-        )
-        
-        hydrogen = Species(          
-            label = 'H',
-            index = 2,
-            conformer = Conformer(
+            )
+        hydrogen = Species().fromSMILES('[H]')
+        hydrogen.label = 'H'
+        hydrogen.index = 2
+        hydrogen.conformer = Conformer(
                 E0 = (211.794, 'kJ/mol'),
                 modes = [
                     IdealGasTranslation(
@@ -167,13 +165,12 @@ class TestReaction(unittest.TestCase):
                 ],
                 spinMultiplicity = 2,
                 opticalIsomers = 1,
-            ),
-        )
+            )
         
-        ethyl = Species(
-            label = 'C2H5',
-            index = 3,
-            conformer = Conformer(
+        ethyl = Species().fromSMILES('C[CH2]')
+        ethyl.label = 'C2H5'
+        ethyl.index = 3
+        ethyl.conformer = Conformer(
                 E0 = (111.603, 'kJ/mol'),
                 modes = [
                     IdealGasTranslation(
@@ -201,8 +198,7 @@ class TestReaction(unittest.TestCase):
                 ],
                 spinMultiplicity = 2,
                 opticalIsomers = 1,
-            ),
-        )
+            )
         
         TS = TransitionState(
             label = 'TS',
@@ -247,22 +243,19 @@ class TestReaction(unittest.TestCase):
         )
     
         # CC(=O)O[O]
-        acetylperoxy = Species(
-            label='acetylperoxy',
-            thermo=Wilhoit(Cp0=(4.0*constants.R,"J/(mol*K)"), CpInf=(21.0*constants.R,"J/(mol*K)"), a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=(500.0,"K"), H0=(-6.151e+04,"J/mol"), S0=(-790.2,"J/(mol*K)")),
-        )
+        acetylperoxy = Species().fromSMILES('CC(=O)O[O]')
+        acetylperoxy.label='acetylperoxy'
+        acetylperoxy.thermo=Wilhoit(Cp0=(4.0*constants.R,"J/(mol*K)"), CpInf=(21.0*constants.R,"J/(mol*K)"), a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=(500.0,"K"), H0=(-6.151e+04,"J/mol"), S0=(-790.2,"J/(mol*K)"))
 
         # C[C]=O
-        acetyl = Species(
-            label='acetyl',
-            thermo=Wilhoit(Cp0=(4.0*constants.R,"J/(mol*K)"), CpInf=(15.5*constants.R,"J/(mol*K)"), a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=(500.0,"K"), H0=(-1.439e+05,"J/mol"), S0=(-524.6,"J/(mol*K)")),
-        )
+        acetyl = Species().fromSMILES('C[C]=O')
+        acetyl.label='acetyl'
+        acetyl.thermo=Wilhoit(Cp0=(4.0*constants.R,"J/(mol*K)"), CpInf=(15.5*constants.R,"J/(mol*K)"), a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=(500.0,"K"), H0=(-1.439e+05,"J/mol"), S0=(-524.6,"J/(mol*K)"))
 
         # [O][O]
-        oxygen = Species(
-            label='oxygen',
-            thermo=Wilhoit(Cp0=(3.5*constants.R,"J/(mol*K)"), CpInf=(4.5*constants.R,"J/(mol*K)"), a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=(500.0,"K"), H0=(1.453e+04,"J/mol"), S0=(-12.19,"J/(mol*K)")),
-        )
+        oxygen = Species().fromSMILES('[O][O]')
+        oxygen.label='oxygen'
+        oxygen.thermo=Wilhoit(Cp0=(3.5*constants.R,"J/(mol*K)"), CpInf=(4.5*constants.R,"J/(mol*K)"), a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=(500.0,"K"), H0=(1.453e+04,"J/mol"), S0=(-12.19,"J/(mol*K)"))
         
         self.reaction2 = Reaction(
             reactants=[acetyl, oxygen], 
@@ -1005,11 +998,30 @@ class TestReaction(unittest.TestCase):
         hash_func = lambda: hash(self.reaction2)
         self.assertRaises(KeyError, hash_func)
 
+    def test_equality(self):
+        """
+        Test that reaction in opposite direction matches stated reaction
+        """
+        new_rxn = self.reaction.copy()
+        print new_rxn == new_rxn
+        self.assertEqual(new_rxn, new_rxn)
+        self.assertEqual(new_rxn, self.reaction)
+        self.assertNotEqual(new_rxn, self.reaction2)
+
+    def test_reverse_reaction_equality(self):
+        """
+        Test that reverse directions are also considered equal
+        """
+        new_rxn = self. reaction.copy()
+        new_rxn.reactants, new_rxn.products = new_rxn.products, new_rxn.reactants
+        self.assertEqual(new_rxn, self.reaction)
+
     def testOutput(self):
         """
         Test that a Reaction object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
+        from rmgpy.molecule import Molecule
         exec('reaction = %r' % (self.reaction))
 
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
