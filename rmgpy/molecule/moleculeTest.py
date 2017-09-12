@@ -434,7 +434,7 @@ class TestBond(unittest.TestCase):
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
-                self.fail('Bond.applyAction() unexpectedly processed a BREAK_BOND action.')
+                self.fail('Bond.applyAction() unexpectedly processed a BREAK_BOND action with order {0}.'.format(order0))
             except ActionError:
                 pass
     
@@ -448,7 +448,7 @@ class TestBond(unittest.TestCase):
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
-                self.fail('Bond.applyAction() unexpectedly processed a FORM_BOND action.')
+                self.fail('Bond.applyAction() unexpectedly processed a FORM_BOND action with order {0}.'.format(order0))
             except ActionError:
                 pass
     
@@ -463,7 +463,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue(3 <= order0)
+                self.assertTrue(3 <= order0,'Test failed with order {0}'.format(order0))
                 
     def testApplyActionDecrementBond(self):
         """
@@ -476,7 +476,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue(order0 < 1)
+                self.assertTrue(order0 < 1,'Test failed with order {0}'.format(order0))
             
     def testApplyActionGainRadical(self):
         """
@@ -488,7 +488,7 @@ class TestBond(unittest.TestCase):
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
-                self.fail('Bond.applyAction() unexpectedly processed a GAIN_RADICAL action.')
+                self.fail('Bond.applyAction() unexpectedly processed a GAIN_RADICAL action with order {0}.'.format(order0))
             except ActionError:
                 pass
     
@@ -502,7 +502,7 @@ class TestBond(unittest.TestCase):
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
-                self.fail('Bond.applyAction() unexpectedly processed a LOSE_RADICAL action.')
+                self.fail('Bond.applyAction() unexpectedly processed a LOSE_RADICAL action with order {0}.'.format(order0))
             except ActionError:
                 pass
     
