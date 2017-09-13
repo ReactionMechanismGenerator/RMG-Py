@@ -1027,6 +1027,10 @@ class Molecule(Graph):
         be prescribed to any atom when getAtomType fails. Currently used for
         resonance hybrid atom types.
         """
+        #Because we use lonepairs to match atomtypes and default is -100 when unspecified,
+        #we should update before getting the atomtype.
+        self.updateLonePairs()
+
         for atom in self.vertices:
             try:
                 atom.atomType = getAtomType(atom, atom.edges)
@@ -1680,7 +1684,6 @@ class Molecule(Graph):
         # very expensive, so will do it anyway)
         self.sortVertices()
         self.updateAtomTypes()
-        self.updateLonePairs()
         self.multiplicity = 1
 
         return added
