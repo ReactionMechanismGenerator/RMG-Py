@@ -1489,7 +1489,9 @@ class KineticsFamily(Database):
                 tempObject = self.forbidden
                 self.forbidden = ForbiddenStructures()  # Initialize with empty one
                 try:
-                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                    reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
+                                                            products=rxn.reactants, forward=True)
+                    reactions = findDegeneracies(reactionList)
                 finally:
                     self.forbidden = tempObject
                 if len(reactions) != 1:
