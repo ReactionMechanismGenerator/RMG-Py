@@ -35,6 +35,8 @@ def parseCommandLineArguments():
                         help='The maxuminum number of isotopes you allow in a specific molecule')
     parser.add_argument('--useOriginalReactions' , action='store_true', default=False,
                         help='Use reactions from the original rmgpy generated chem_annotated.inp file')
+    parser.add_argument('--kineticIsotopeEffect', type=str, nargs=1, default='',
+                        help='Type of kinetic isotope effects to use, currently only "simple" supported.')
     args = parser.parse_args()
     
     return args
@@ -49,11 +51,15 @@ def main():
     inputFile = args.input
     outputdir = os.path.abspath(args.output[0]) if args.output else os.path.abspath('.')
     original = os.path.abspath(args.original[0]) if args.original else None
-
+    kie = args.kineticIsotopeEffect[0] if args.kineticIsotopeEffect else None
+    supported_kie_methods = ['simple']
+    if kie not in supported_kie_methods and kie is not None:
+        raise InputError('The kie input, {0}, is not one of the currently supported methods, {1}'.format(kie,supported_kie_methods))
     initializeLog(logging.INFO, os.path.join(os.getcwd(), 'RMG.log'))
     run(inputFile, outputdir, original=original, 
         maximumIsotopicAtoms=maximumIsotopicAtoms,
-        useOriginalReactions=useOriginalReactions)
+        useOriginalReactions=useOriginalReactions,
+        kineticIsotopeEffect = kie)
 
 if __name__ == '__main__':
     main()
