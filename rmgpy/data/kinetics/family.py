@@ -1494,14 +1494,13 @@ class KineticsFamily(Database):
                     reactions = findDegeneracies(reactionList)
                 finally:
                     self.forbidden = tempObject
-                if len(reactions) != 1:
+                if len(reactions) == 1 or (len(reactions) > 1 and all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions])):
+                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                    # This reaction should be forbidden in the forward direction as well
+                    del rxn
+                else:
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                else:
-                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
-                    # Delete this reaction, since it should probably also be forbidden in the initial direction
-                    # Hack fix for now
-                    del rxn
             elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
