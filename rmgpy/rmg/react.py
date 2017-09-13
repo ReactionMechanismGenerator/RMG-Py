@@ -84,10 +84,16 @@ def reactSpecies(speciesTuple):
     # remove reverse reaction
     reactions = findDegeneracies(reactions, sameReactants)
     # add reverse attribute to families with ownReverse
-    for rxn in reactions:
+    toDelete = []
+    for i, rxn in enumerate(reactions):
         family = getDB('kinetics').families[rxn.family]
         if family.ownReverse:
-            family.addReverseAttribute(rxn)
+            successful = family.addReverseAttribute(rxn)
+            if not successful:
+                toDelete.append(i)
+    # delete reactions which we could not find a reverse reaction for
+    for i in reversed(toDelete):
+        del reactions[i]
     # get a molecule list with species indexes
     zippedList = []
     for spec in speciesTuple:
