@@ -522,6 +522,115 @@ def correct_entropy(isotopomer, isotopeless):
     # put the corrected thermo back as a species attribute:
     isotopomer.thermo = nasa
 
+def apply_kinetic_isotope_effect_simple(rxn_clusters, kinetics_database):
+    """
+    This method modifies reaction rates in place for the implementation of
+    kinetic isotope effects using method 'simple', which is described in the
+    publication: Goldman, MJ, Vandewiele, NM, Ono, S, Green WH [in preparation]
+
+    input:
+            rxn_clusters - list of list of reactions obtained from `cluster`
+            kinetics_database - KineticsDatabase object for finding atom labels
+    output:
+            None (clusters are modified in place)
+
+    This method has a number of dependent methods, which appear at the start of
+    this method
+    """
+
+    # now for the start of applyKineticIsotopeEffectSimple
+    for index, cluster in enumerate(rxn_clusters):
+        # hardcoded family values determine what type of transition state
+        # approximation is used.
+        family = kinetics_database.families[cluster[0].family]
+        if cluster[0].family.lower() == 'r_recombination':
+            labels = ['*']
+            three_member_ts = False
+        elif cluster[0].family.lower() == 'r_addition_multiplebond':
+            labels = ['*1','*3']
+            three_member_ts = False
+        elif cluster[0].family.lower() == 'intra_r_add_endocyclic':
+            labels = ['*1','*3']
+            three_member_ts = False
+        elif cluster[0].family.lower() == 'intra_r_add_exocyclic':
+            labels = ['*1','*2']
+            three_member_ts = False
+        elif cluster[0].family.lower() == 'h_abstraction':
+            labels = ['*1','*3']
+            three_member_ts = True
+        elif cluster[0].family.lower() == 'intra_h_migration':
+            labels = ['*1','*2']
+            three_member_ts = True
+        elif cluster[0].family.lower() == 'disproportionation':
+            labels = ['*1','*2']
+            three_member_ts = True
+        else:
+            logging.warning('isotope: kinetic isotope effect of family {0} not encoded into RMG. Ignoring KIE of reaction {1}'.format(cluster[0].family, cluster[-1]))
+            continue
+        logging.debug('modifying reaction rate for cluster {0} for family {1}'.format(index,family.name))
+        # get base reduced mass
+        reaction = cluster[-1] # set unlabeled reaction as the standard to compare
+        labeled_reactants = get_labeled_reactants(reaction,family)
+        base_reduced_mass = get_reduced_mass(labeled_reactants, labels,three_member_ts)
+        for reaction in cluster[:-1]:
+            labeled_reactants = get_labeled_reactants(reaction,family)
+            reduced_mass = get_reduced_mass(labeled_reactants, labels, three_member_ts)
+            reaction.kinetics.changeRate(math.sqrt(base_reduced_mass/reduced_mass))
+
+def get_labeled_reactants(reaction, family):
+    """
+    Returns a list of labeled molecule objects given a species-based reaction object and it's
+    corresponding kinetic family.
+
+    Used for KIE method 'simple'
+    """
+    assert reaction.family == family.name, "{0} != {1}".format(reaction.family, family.name)
+    # save the reactants and products to replace in the reaction object
+    reactants = list(reaction.reactants)
+    products = list(reaction.products)
+
+    family.addAtomLabelsForReaction(reaction, output_with_resonance = True)
+    labeled_reactants = [species.molecule[0] for species in reaction.reactants]
+
+    # replace the original reactants and products
+    reaction.reactants = reactants
+    reaction.products = products
+
+    return labeled_reactants
+
+def get_reduced_mass(labeled_molecules, labels, three_member_ts):
+    """
+    Returns the reduced mass of the labeled elements
+    within the labeled molecules. Used for kinetic isotope effect.
+    The equations are based on Melander & Saunders, Reaction rate of isotopic molecules, 1980
+
+    input: labeled_molecules - list of molecules with labels for the reaction
+           labels - list of strings to search for labels in the product
+           three_member_ts - boolean describing number of atoms in transition state
+                             If True, reactions involving the movement of hydrogen between
+                             two carbons is used. The labels should not include the hydrogen atom
+                             If False, only a 2 member transition state is used.
+    output: float
+
+    Used for KIE method 'simple'
+    """
+    reduced_mass = 0.
+    combined_mass = 0.
+    for labeled_mol in labeled_molecules:
+        for atom in labeled_mol.atoms:
+            if any([atom.label == label for label in labels]):
+                if three_member_ts:
+                    combined_mass += atom.element.mass
+                else:
+                    reduced_mass += 1./atom.element.mass
+    if reduced_mass == 0. and combined_mass == 0:
+        from rmgpy.exceptions import KineticsError
+        raise KineticsError("Did not find a labeled atom in molecules {}".format([mol.toAdjacencyList() for mol in labeled_molecules]))
+    if three_member_ts: # actually convert to reduced mass using the mass of hydrogen
+        from rmgpy.molecule import element
+        reduced_mass = 1/element.H.mass + 1/combined_mass
+    return 1./reduced_mass
+
 def is_enriched(obj):
     """
     Returns True if the species or reaction object has any enriched isotopes.
