@@ -343,6 +343,9 @@ def convertRingToSubMolecule(ring):
     """
     This function takes a ring structure (can either be monoring or polyring) to create a new 
     submolecule with newly deep copied atoms
+
+    Outputted submolecules may have incomplete valence and may cause errors with some Molecule.methods(), such
+    as updateAtomTypes() or update(). In the future we may consider using groups for the sub-molecules.
     """
     
     atomsMapping = {}
@@ -356,7 +359,7 @@ def convertRingToSubMolecule(ring):
             if bondedAtom in ring:
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
-    
+
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
     return mol0, atomsMapping
@@ -508,7 +511,7 @@ def splitBicyclicIntoSingleRings(bicyclic_submol):
     """
     SSSR = bicyclic_submol.getDeterministicSmallestSetOfSmallestRings()
 
-    return [convertRingToSubMolecule(SSSR[0])[0], 
+    return [convertRingToSubMolecule(SSSR[0])[0],
                 convertRingToSubMolecule(SSSR[1])[0]]
 
 def saturateRingBonds(ring_submol):
@@ -533,7 +536,8 @@ def saturateRingBonds(ring_submol):
                     if bond.isBenzene():
                         bond_order = 1.5
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond_order))
-    
+
+    mol0.saturateUnfilledValence()
     mol0.updateAtomTypes()
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
