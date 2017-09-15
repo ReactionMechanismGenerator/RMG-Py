@@ -2144,6 +2144,24 @@ multiplicity 2
         self.molecule[0].fingerprint = 'nitronate'
         self.assertEqual(self.molecule[0].fingerprint, 'nitronate')
 
+    def testSaturateUnfilledValence(self):
+        """
+        Test the saturateUnfilledValence for an aromatic and nonaromatic case
+        """
+
+        expected = Molecule(SMILES='CCCC')
+        test = expected.copy(deep = True)
+        test.deleteHydrogens()
+        test.saturateUnfilledValence()
+        self.assertTrue(expected.isIsomorphic(test))
+
+        expected = Molecule(SMILES='c1ccccc1')
+        test = expected.copy(deep = True)
+        test.deleteHydrogens()
+        test.saturateUnfilledValence()
+        self.assertTrue(expected.isIsomorphic(test))
+
+
 ################################################################################
 
 if __name__ == '__main__':

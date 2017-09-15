@@ -57,6 +57,7 @@ import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
 from .kekulize import kekulize
+from .adjlist import Saturator
 
 ################################################################################
 
@@ -1660,6 +1661,15 @@ class Molecule(Graph):
         for atom in self.vertices:
             charge += atom.charge
         return charge
+
+    def saturateUnfilledValence(self, update = True):
+        """
+        Saturate the molecule by adding H atoms to any unfilled valence
+        """
+
+        saturator = Saturator()
+        saturator.saturate(self.atoms)
+        if update: self.update()
 
     def saturateRadicals(self):
         """
