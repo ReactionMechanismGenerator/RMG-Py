@@ -1693,8 +1693,9 @@ class ThermoDatabase(object):
                     aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                     for aromaticBond in aromaticBonds:
                         aromaticBond.setOrderNum(1)
-                    
-                    submol.update()
+
+                    submol.saturateUnfilledValence()
+                    submol.update
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                 self.groups['ring'], submol, submol.atoms)[0]
                     
@@ -1749,8 +1750,9 @@ class ThermoDatabase(object):
                 aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
-                
-                submol.update()
+
+                submol.saturateUnfilledValence()
+                submol.update
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
                 
@@ -1767,8 +1769,9 @@ class ThermoDatabase(object):
                 aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
-                
-                submol.update()
+
+                submol.saturateUnfilledValence()
+                submol.update
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
                 

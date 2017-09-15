@@ -2148,17 +2148,43 @@ multiplicity 2
         """
         Test the saturateUnfilledValence for an aromatic and nonaromatic case
         """
-
+        #test butane
         expected = Molecule(SMILES='CCCC')
         test = expected.copy(deep = True)
         test.deleteHydrogens()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 0)
+
         test.saturateUnfilledValence()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 10)
+
+        test.update()
         self.assertTrue(expected.isIsomorphic(test))
 
+        #test benzene
         expected = Molecule(SMILES='c1ccccc1')
         test = expected.copy(deep = True)
         test.deleteHydrogens()
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 0)
+
         test.saturateUnfilledValence()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 6)
+
+        test.update()
         self.assertTrue(expected.isIsomorphic(test))
 
 
