@@ -1468,7 +1468,7 @@ multiplicity 2
 17 H u0 p0 c0 {6,S}
 """)
         saturated_molecule = indenyl.copy(deep=True)
-        saturated_molecule.saturate()
+        saturated_molecule.saturateRadicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
     def testMalformedAugmentedInChI(self):

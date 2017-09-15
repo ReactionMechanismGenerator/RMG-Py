@@ -450,7 +450,7 @@ class TransportDatabase(object):
 
             # Saturate structure by replacing all radicals with bonds to
             # hydrogen atoms
-            added = saturatedStruct.saturate()
+            added = saturatedStruct.saturateRadicals()
 
             # Get critical point contribution estimates for saturated form of structure
             criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(saturatedStruct)

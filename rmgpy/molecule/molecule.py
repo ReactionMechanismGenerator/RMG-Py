@@ -1661,7 +1661,7 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
-    def saturate(self):
+    def saturateRadicals(self):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """

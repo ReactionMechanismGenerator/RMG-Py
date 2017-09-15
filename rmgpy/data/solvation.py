@@ -811,7 +811,7 @@ class SolvationDatabase(object):
 
         # Now saturate radicals with H
         if sum([atom.radicalElectrons for atom in saturatedStruct.atoms]) > 0: # radical species
-            addedToRadicals = saturatedStruct.saturate()
+            addedToRadicals = saturatedStruct.saturateRadicals()
 
         # Saturated structure should now have no unpaired electrons, and only "expected" lone pairs
         # based on the valency

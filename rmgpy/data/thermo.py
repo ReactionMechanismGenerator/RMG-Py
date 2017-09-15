@@ -1418,7 +1418,7 @@ class ThermoDatabase(object):
         
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
-        added = saturatedStruct.saturate()
+        added = saturatedStruct.saturateRadicals()
         saturatedStruct.props['saturated'] = True
         
         # Get thermo estimate for saturated form of structure
