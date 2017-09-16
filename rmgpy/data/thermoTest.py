@@ -159,8 +159,8 @@ class TestThermoDatabase(unittest.TestCase):
         GAVspecies = Species(index=3, label="c1c(O)c(O)c(CC(C)CC)cc1", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-1.18833,0.11272,-4.26393e-05,-2.12017e-08,1.441e-11,-51642.9,38.8904], Tmin=(100,'K'), Tmax=(1078.35,'K')),
          NASAPolynomial(coeffs=[26.6057,0.0538434,-2.22538e-05,4.22393e-09,-3.00808e-13,-60208.4,-109.218], Tmin=(1078.35,'K'), Tmax=(5000,'K'))],
          Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsCsH) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) +
-         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-Os) + group(Cb-Os) + group(Cb-H) +
-         group(Cb-H) + group(Cb-H) + group(Os-CbH) + group(Os-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
+         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-O2s) + group(Cb-O2s) + group(Cb-H) +
+         group(Cb-H) + group(Cb-H) + group(O2s-CbH) + group(O2s-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
          longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)"""), molecule=[Molecule(SMILES="c1c(O)c(O)c(CC(C)CC)cc1")])
 
         source = self.database.extractSourceFromComments(GAVspecies)

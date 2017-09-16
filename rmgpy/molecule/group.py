@@ -1359,7 +1359,7 @@ class Group(Graph):
 
     def addExplicitLigands(self):
         """
-        This function Od/Sd ligand to CO or CS atomtypes if they are not already there.
+        This function O2d/S2d ligand to CO or CS atomtypes if they are not already there.
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
@@ -1382,9 +1382,9 @@ class Group(Graph):
             modified = True
             atomtypes = None
             if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
-                atomtypes = ['Od']
+                atomtypes = ['O2d']
             elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
-                atomtypes = ['Sd']
+                atomtypes = ['S2d']
             self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], [2])
 
         return modified
@@ -1394,7 +1394,7 @@ class Group(Graph):
         This function modifies groups to make them have a standard AdjList form.
 
         Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
-        have explicit Od/Sd ligands. Other functions can be added as necessary
+        have explicit O2d/S2d ligands. Other functions can be added as necessary
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
@@ -1990,11 +1990,14 @@ class Group(Graph):
                 else:
                     raise UnexpectedChargeError(graph = newMolecule)
                 #check hardcoded atomtypes
-                positiveCharged = ['Csc','Cdc','Ctc','N3dc','N5sc','N5dc','N5ddc','N5tc','O2sp','O4sc','O4dc','O4tc',
+                positiveCharged = ['Csc','Cdc',
+                                   'N3sc','N5sc','N5dc','N5ddc','N5tc','N5b',
+                                   'O2sc','O4sc','O4dc','O4tc',
                                    'S2sc','S4sc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
-                negativeCharged = ['Csc','Cdc','Ctc','C2sc','C2dc','C2tc','N0sc','N1sc','N1dc','N1tc','N3dc','N3tdc',
-                                   'N5dddc','N5tdc','N5b','O0sc','O0dc','O2sn','O2dc','O2tc','S0sc','S2sc','S2dc',
-                                   'S2tc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                negativeCharged = ['C2sc','C2dc','C2tc',
+                                   'N0sc','N1sc','N1dc','N5dddc',
+                                   'O0sc',
+                                   'S0sc','S2sc','S2dc','S2tc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
                 if groupAtom.atomType[0] in [atomTypes[x] for x in positiveCharged] and atom.charge > 0:
                     pass
                 elif groupAtom.atomType[0] in [atomTypes[x] for x in negativeCharged] and atom.charge < 0:

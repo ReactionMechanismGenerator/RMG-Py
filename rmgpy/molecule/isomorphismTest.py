@@ -99,7 +99,7 @@ def retrieve_unspecified_valency(atom_type, unpaired_electrons):
 def load_cases_group_atom_types():
     '''
     creates test cases in which the atom types of the 1st graph are 'molecule' atom types, like 'C', 'N', ...
-    and are 'group' atom types like 'Cs', 'Od', ... for the 2nd graph.
+    and are 'group' atom types like 'Cs', 'O2d', ... for the 2nd graph.
     '''
     
     output = []

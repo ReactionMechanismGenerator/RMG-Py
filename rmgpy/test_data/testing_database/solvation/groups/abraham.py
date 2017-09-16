@@ -168,7 +168,7 @@ entry(
     label = "S",
     group = 
 """
-1 * [S,Ss,Sd,Sa] u0
+1 * [S,S2s,S2d,Sa] u0
 """,
     solute = SoluteData(
         S = 0.643,

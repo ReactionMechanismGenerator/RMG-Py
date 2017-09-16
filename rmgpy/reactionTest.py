@@ -1063,7 +1063,7 @@ Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(
 """), molecule=[Molecule(SMILES="CC")])
                       
         co2 = Species(index=16, label="CO2", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.27861,0.00274152,7.16074e-06,-1.08027e-08,4.14282e-12,-48470.3,5.97937], Tmin=(100,'K'), Tmax=(988.89,'K')), NASAPolynomial(coeffs=[4.5461,0.00291913,-1.15484e-06,2.27654e-10,-1.7091e-14,-48980.4,-1.43275], Tmin=(988.89,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
-Thermo group additivity estimation: group(Cdd-OdOd) + other(R) + group(Od-Cd) + other(R) + group(Od-Cd) + other(R)
+Thermo group additivity estimation: group(Cdd-OdOd) + other(R) + group(O2d-Cd) + other(R) + group(O2d-Cd) + other(R)
 """), molecule=[Molecule(SMILES="O=C=O")])
 
         ch4 = Species(index=15, label="CH4", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[4.20541,-0.00535556,2.51123e-05,-2.13762e-08,5.97522e-12,-10161.9,-0.921275], Tmin=(100,'K'), Tmax=(1084.12,'K')), NASAPolynomial(coeffs=[0.908272,0.0114541,-4.57173e-06,8.2919e-10,-5.66314e-14,-9719.98,13.9931], Tmin=(1084.12,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
@@ -1091,7 +1091,7 @@ Thermo library: primaryThermoLibrary
 """), molecule=[Molecule(SMILES="[OH]")])
         
         ho2 = Species(index=5, label="HO2", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[4.04594,-0.00173464,1.03766e-05,-1.02202e-08,3.34908e-12,-986.754,4.63581], Tmin=(100,'K'), Tmax=(932.15,'K')), NASAPolynomial(coeffs=[3.21024,0.00367942,-1.27701e-06,2.18045e-10,-1.46338e-14,-910.369,8.18291], Tmin=(932.15,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
-Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + group(Os-OsH) + gauche(Os(RR)) + other(R) + radical(HOOJ)
+Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) + group(O2s-OsH) + gauche(O2s(RR)) + other(R) + radical(HOOJ)
 """), molecule=[Molecule(SMILES="[O]O")])
         
         o2 = Species(index=6, label="O2", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.53732,-0.00121572,5.3162e-06,-4.89446e-09,1.45846e-12,-1038.59,4.68368], Tmin=(100,'K'), Tmax=(1074.55,'K')), NASAPolynomial(coeffs=[3.15382,0.00167804,-7.69974e-07,1.51275e-10,-1.08782e-14,-1040.82,6.16756], Tmin=(1074.55,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
@@ -1099,11 +1099,11 @@ Thermo library: primaryThermoLibrary
 """), molecule=[Molecule(SMILES="[O][O]")])
         
         co = Species(index=9, label="CO", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.66965,-0.00550953,2.00538e-05,-2.08391e-08,7.43738e-12,1200.77,-12.4224], Tmin=(100,'K'), Tmax=(884.77,'K')), NASAPolynomial(coeffs=[2.8813,0.00231665,-4.40151e-07,4.75633e-11,-2.78282e-15,1173.45,-9.65831], Tmin=(884.77,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
-Thermo group additivity estimation: group(Ct-CtCs) + other(R) + group(Os-CsCs) + other(R)
+Thermo group additivity estimation: group(Ct-CtCs) + other(R) + group(O2s-CsCs) + other(R)
 """), molecule=[Molecule(SMILES="[C-]#[O+]")])
         
         h2o2 = Species(index=7, label="H2O2", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.73136,0.00335071,9.35033e-06,-1.521e-08,6.41585e-12,-17721.2,5.45911], Tmin=(100,'K'), Tmax=(908.87,'K')), NASAPolynomial(coeffs=[5.41579,0.00261008,-4.39892e-07,4.91087e-11,-3.35188e-15,-18303,-4.02248], Tmin=(908.87,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
-Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + group(Os-OsH) + gauche(Os(RR)) + other(R)
+Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) + group(O2s-OsH) + gauche(O2s(RR)) + other(R)
 """), molecule=[Molecule(SMILES="OO")])
         
         self.speciesList = [ch3,ethane,co2,ch4,h2o,ar,h2, h, oh, ho2, o2, co, h2o2]
