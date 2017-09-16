@@ -62,7 +62,7 @@ entry(
     label = "O",
     group = 
 """
-1 * [Os,Od,Ot] u0
+1 * [O2s,O2d,O2tc] u0
 """,
     solute = None,
     shortDesc = u"""""",
@@ -77,7 +77,7 @@ entry(
     label = "Oss",
     group = 
 """
-1 * Os u0
+1 * O2s u0
 """,
     solute = None,
     shortDesc = u"""""",
@@ -92,7 +92,7 @@ entry(
     label = "OssH",
     group = 
 """
-1 * Os u0 {2,S}
+1 * O2s u0 {2,S}
 2   H  u0 {1,S}
 """,
     solute = SoluteData(
@@ -146,8 +146,8 @@ entry(
 """
 1 * N3s u0 {2,S} {3,S} {4,S}
 2   R   u0 {1,S}
-3   Os  u0 {1,S}
-4   Os  u0 {1,S}
+3   O2s  u0 {1,S}
+4   O2s  u0 {1,S}
 """,
     solute = SoluteData(
         S = 0.0,
