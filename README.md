@@ -24,7 +24,8 @@ Gaussian, MOPAC, QChem, and MOLPRO.
 - [RMG-database Github Repository](https://github.com/ReactionMechanismGenerator/RMG-database): contains source code for the latest version of the database
 
 ## How to Install
-View the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page.
+You can either download the source from GitHub and compile yourself, or download the binaries from Anaconda.
+Please see the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page for detailed instructions.
 
 ## Documentation
 - [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_CanTherm_Documentation.pdf))
@@ -33,12 +34,9 @@ View the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-
 
 Alternatively, PDF versions of all the documentation can also be found in the `documentation` folder of the source code.  
 
-## Credits
-
-- [Professor William H. Green's research group](http://cheme.scripts.mit.edu/green-group/) at the 
-[Massachusetts Institute of Technology](http://web.mit.edu/) 
-- [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
-[Northeastern University](http://www.northeastern.edu/). 
+## How to Contribute
+Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
+for details on how to contribute to RMG-Py or RMG-database.
 
 ## How to Give Feedback
 
@@ -52,4 +50,9 @@ perform thermodynamics and kinetics searches
 - [Wiki](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki): a wiki for developer notes
 - [Issues Page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/): view current issues and feature requests
 
+## Credits
 
+- [Professor William H. Green's research group](http://cheme.scripts.mit.edu/green-group/) at the 
+[Massachusetts Institute of Technology](http://web.mit.edu/) 
+- [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
+[Northeastern University](http://www.northeastern.edu/). 
