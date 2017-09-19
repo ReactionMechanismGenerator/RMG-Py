@@ -53,6 +53,8 @@ import itertools
 from cpython cimport bool
 from rmgpy.quantity import Quantity
 from rmgpy.chemkin import getSpeciesIdentifier
+from rmgpy.reaction import Reaction
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -523,22 +525,24 @@ cdef class ReactionSystem(DASx):
         cdef int maxSurfaceAccumReactionIndex, maxSurfaceSpeciesIndex
         cdef object maxSurfaceAccumReaction, maxSurfaceSpecies
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRates
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        cdef bool zeroProduction, zeroConsumption, firstTime, useDynamics
+        cdef bool zeroProduction, zeroConsumption, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
         cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
-        cdef list time_array, normSens_array, newSurfaceReactions, newSurfaceReactionInds
+        cdef list time_array, normSens_array, newSurfaceReactions, newSurfaceReactionInds, newObjects, newObjectInds
         
         zeroProduction = False
         zeroConsumption = False
         pdepNetworks = pdepNetworks or []
-
+        
+        schanged = False
+        
         numCoreSpecies = len(coreSpecies)
         numEdgeSpecies = len(edgeSpecies)
         numPdepNetworks = len(pdepNetworks)
@@ -550,8 +554,8 @@ cdef class ReactionSystem(DASx):
         toleranceKeepInEdge = modelSettings.fluxToleranceKeepInEdge if prune else 0
         toleranceMoveToCore = modelSettings.fluxToleranceMoveToCore
         toleranceMoveEdgeReactionToCore = modelSettings.toleranceMoveEdgeReactionToCore
-        toleranceInterruptSimulation =  modelSettings.fluxToleranceInterrupt if prune else modelSettings.fluxToleranceMoveToCore
-        toleranceMoveEdgeReactionToCoreInterrupt=  modelSettings.toleranceMoveEdgeReactionToCore if prune else modelSettings.toleranceMoveEdgeReactionToCore
+        toleranceInterruptSimulation = modelSettings.fluxToleranceInterrupt
+        toleranceMoveEdgeReactionToCoreInterrupt= modelSettings.toleranceMoveEdgeReactionToCore
         toleranceMoveEdgeReactionToSurface = modelSettings.toleranceMoveEdgeReactionToSurface
         toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
         toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
@@ -563,6 +567,8 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+        #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
+        terminateAtMaxObjects = True if not prune else modelSettings.terminateAtMaxObjects 
         
         useDynamics = not (toleranceMoveEdgeReactionToCore == numpy.inf and toleranceMoveEdgeReactionToSurface == numpy.inf)
         
@@ -729,71 +735,8 @@ cdef class ReactionSystem(DASx):
                                 infAccumNumIndex = spcIndex
                                 break
                     
-                #Get edge reaction with greatest total difference in Ln(accumulation number)
+                totalDivLnAccumNums = numpy.log(totalDivAccumNums)
                 
-                if len(totalDivAccumNums) > 0:
-                    maxDifLnAccumNum = numpy.inf
-                    if zeroConsumption:
-                        for index in xrange(numEdgeReactions):
-                            maxEdgeReactionAccum = 0.0
-                            maxAccumReactionIndex = -1
-                            if infAccumNumIndex in self.reactantIndices[index+numCoreReactions]:
-                                reactionRate = edgeReactionRates[index]
-                                if reactionRate > maxEdgeReactionAccum:
-                                    maxEdgeReactionAccum = reactionRate
-                                    maxAccumReactionIndex = index
-                        maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                    elif zeroProduction:
-                        for index in xrange(numEdgeReactions):
-                            maxEdgeReactionAccum = 0.0
-                            maxAccumReactionIndex = -1
-                            if infAccumNumIndex in self.productIndices[index+numCoreReactions]:
-                                reactionRate = edgeReactionRates[index]
-                                if reactionRate > maxEdgeReactionAccum:
-                                    maxEdgeReactionAccum = reactionRate
-                                    maxAccumReactionIndex = index
-                        maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                    elif len(totalDivAccumNums)>0: 
-                        maxAccumReactionIndex = numpy.argmax(totalDivAccumNums)
-                        maxAccumReaction = edgeReactions[maxAccumReactionIndex]
-                        maxDifLnAccumNum = numpy.log(totalDivAccumNums[maxAccumReactionIndex])
-                else:
-                    maxAccumReactionIndex = -1
-                    maxAccumReaction = None
-                    maxDifLnAccumNum = 0.0
-                
-                #get the reaction with the greatest total difference in Ln(accumulation number) under the surface layering constraint
-                maxLayeringReactionIndex = self.maxIndUnderSurfaceLayeringConstraint(totalDivAccumNums,surfaceSpeciesIndices)
-                if maxLayeringReactionIndex>=0: #found 
-                    maxLayeringReaction = edgeReactions[maxLayeringReactionIndex]
-                    maxLayeringDifLnAccumNum = numpy.log(totalDivAccumNums[maxLayeringReactionIndex])
-                else: 
-                    maxLayeringReaction = None
-                    maxLayeringDifLnAccumNum = 0
-            else:
-                maxAccumReactionIndex = -1
-                maxAccumReaction = None
-                maxDifLnAccumNum = 0.0
-                maxLayeringDifLnAccumNum = 0.0
-                maxLayeringReaction = None
-                maxLayeringReactionIndex = -1
-              
-            # Get the edge species with the highest flux
-            if numEdgeSpecies > 0:
-                maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
-                maxSpecies = edgeSpecies[maxSpeciesIndex]
-                maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
-            else:
-                maxSpeciesIndex = -1
-                maxSpecies = None
-                maxSpeciesRate = 0.0
-            if pdepNetworks:
-                maxNetworkIndex = numpy.argmax(networkLeakRates)
-                maxNetwork = pdepNetworks[maxNetworkIndex]
-                maxNetworkRate = networkLeakRates[maxNetworkIndex]
-                
-            #calculate criteria for surface species
-            if useDynamics:
                 surfaceTotalDivAccumNums = numpy.ones(len(surfaceReactionIndices))
                 
                 for i in xrange(len(surfaceReactionIndices)):
@@ -831,76 +774,50 @@ cdef class ReactionSystem(DASx):
                                 zeroProduction = True #otherwise include edge reaction with most flux
                                 infAccumNumIndex = spcIndex
                                 break
-    
-                #Get surface reaction with greatest total difference in Ln(accumulation number)
+                            
+                surfaceTotalDivAccumNums = numpy.log(surfaceTotalDivAccumNums)
+                    
+                surfaceObjects = []
+                surfaceObjectIndices = []
+                surfaceSpeciesIndices = self.surfaceSpeciesIndices
+                surfaceReactionIndices = self.surfaceReactionIndices
                 
-                if len(surfaceTotalDivAccumNums) > 0:
-                    maxSurfaceDifLnAccumNum = numpy.inf
-                    if zeroConsumption:
-                        for i in xrange(len(surfaceReactionIndices)):
-                            index = surfaceReactionIndices[i]
-                            maxSurfaceReactionAccum = 0.0 
-                            maxSurfaceAccumReactionIndex = -1
-                            if surfaceInfAccumNumIndex in reactantIndices[index]:
-                                reactionRate = coreReactionRates[index]
-                                if reactionRate > maxEdgeReactionAccum:
-                                    maxSurfaceReactionAccum = reactionRate
-                                    maxSurfaceAccumReactionIndex = i
-                        maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
-                    elif zeroProduction:
-                        for i in xrange(len(surfaceReactionIndices)):
-                            index = surfaceReactionIndices[i]
-                            maxSurfaceReactionAccum = 0.0
-                            maxSurfaceAccumReactionIndex = -1
-                            if surfaceInfAccumNumIndex in productIndices[index]:
-                                reactionRate = coreReactionRates[index]
-                                if reactionRate > maxEdgeReactionAccum:
-                                    maxSurfaceReactionAccum = reactionRate
-                                    maxSurfaceAccumReactionIndex = i
-                        maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
-                    elif len(surfaceTotalDivAccumNums)>0: 
-                        maxSurfaceAccumReactionIndex = numpy.argmax(surfaceTotalDivAccumNums)
-                        maxSurfaceAccumReaction = surfaceReactions[maxSurfaceAccumReactionIndex]
-                        maxSurfaceDifLnAccumNum = numpy.log(surfaceTotalDivAccumNums[maxSurfaceAccumReactionIndex])
-                else:
-                    maxSurfaceAccumReactionIndex = -1
-                    maxSurfaceAccumReaction = None
-                    maxSurfaceDifLnAccumNum = 0.0
+                #movement from surface to core
+                if surfaceReactionIndices != []:
+                    #manage surface reaction movement "on the fly"
+                    for ind in xrange(len(surfaceTotalDivAccumNums)): #move surface reactions to core
+                        if surfaceTotalDivAccumNums[ind] > toleranceMoveSurfaceReactionToCore:
+                            sind = surfaceReactionIndices[ind]
+                            surfaceObjectIndices.append(sind)
+                            surfaceObjects.append(coreReactions[sind])
                     
-                #manage surface reaction movement "on the fly"
-                if maxSurfaceAccumReaction and maxSurfaceDifLnAccumNum > toleranceMoveSurfaceReactionToCore:
-                    logging.info('Moving reaction {0} from surface to core'.format(maxSurfaceAccumReaction))
-                    surfaceReactions.remove(maxSurfaceAccumReaction)
-                    surfaceSpecies,surfaceReactions =self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                    surfaceSpeciesIndices = self.surfaceSpeciesIndices
-                    surfaceReactionIndices = self.surfaceReactionIndices
-                    logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-
-                #surface flux calculations
-                surfaceSpeciesRates = numpy.zeros(len(surfaceSpeciesIndices))
-                surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
-                surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
-                for i in xrange(len(surfaceSpeciesIndices)):
-                    surfaceSpeciesRates[i] = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))
+                    #surface flux calculations
+                    surfaceSpeciesRateRatios = numpy.zeros(len(surfaceSpeciesIndices))
+                    surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
+                    surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
                     
-                if len(surfaceSpeciesIndices) > 0:
-                    maxSurfaceSpeciesIndex = numpy.argmax(surfaceSpeciesRates)
-                    maxSurfaceSpecies = surfaceSpecies[maxSurfaceSpeciesIndex]
-                    maxSurfaceSpeciesRate = surfaceSpeciesRates[maxSurfaceSpeciesIndex]
-                else:
-                    maxSurfaceSpeciesIndex = -1
-                    maxSurfaceSpecies = None
-                    maxSurfaceSpeciesRate = 0.0
-               
-                #manage surface species movement "on the fly"
-                if maxSurfaceSpecies and maxSurfaceSpeciesRate/charRate > toleranceMoveSurfaceSpeciesToCore:
-                    logging.info('Moving species {0} from surface to core'.format(maxSurfaceSpecies))
-                    surfaceSpecies.remove(maxSurfaceSpecies)
-                    surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
-                    surfaceSpeciesIndices = self.surfaceSpeciesIndices
-                    surfaceReactionIndices = self.surfaceReactionIndices
-                    logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                    for i in xrange(len(surfaceSpeciesIndices)):
+                        surfaceSpeciesRateRatios[i] = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))/charRate
                     
+                    for ind in xrange(len(surfaceSpeciesIndices)):
+                        if surfaceSpeciesRateRatios[i] > toleranceMoveSurfaceSpeciesToCore:
+                            sind = surfaceSpeciesIndices[ind]
+                            surfaceObjectIndices.append(sind)
+                            surfaceObjects.append(coreSpecies[sind])
+                    
+                    if len(surfaceObjects) > 0:
+                        for ind,obj in enumerate(surfaceObjects):
+                            if isinstance(obj,Reaction):
+                                logging.info('Moving reaction {0} from surface to core'.format(obj))
+                                surfaceReactions.remove(obj)
+                            elif isinstance(obj,Species):
+                                logging.info('Moving species {0} from surface to core'.format(obj))
+                                surfaceSpecies.remove(obj)
+                            else:
+                                raise ValueError
+                        surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                        logging.info('Surface now has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
+                
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
                 # Set the maximum unimolecular rate to be kB*T/h
@@ -918,67 +835,90 @@ cdef class ReactionSystem(DASx):
                             if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
                                 bimolecularThreshold[i,j] = True
 
-                # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
-            if (maxSpecies not in invalidObjects) and (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceMoveToCore * charRate) and len(invalidObjects) < maxNumObjsPerIter:
-                logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                self.logConversions(speciesIndex, y0)
-                invalidObjects.append(maxSpecies)
-            if len(invalidObjects) >= maxNumObjsPerIter and (not ignoreOverallFluxCriterion) and (maxSpeciesRate > toleranceInterruptSimulation * charRate):
-                logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for simulation interruption'.format(self.t, maxSpecies))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
-                self.logConversions(speciesIndex, y0)
-                break
+            newObjectInds = []
+            newObjects = []
+            newSurfaceRxnInds = []
+            interrupt = False
             
-            #Interrupt simulation if the difference in natural log of total accumulation number exceeds tolerance
-            #large tolerance case
-            if (maxAccumReaction not in invalidObjects) and maxDifLnAccumNum > toleranceMoveEdgeReactionToCore and len(invalidObjects) < maxNumObjsPerIter:
-                logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for moving to model core'.format(self.t, maxAccumReaction))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                self.logConversions(speciesIndex, y0)
-                invalidObjects.append(maxAccumReaction)
-            if len(invalidObjects) >= maxNumObjsPerIter and maxDifLnAccumNum > toleranceMoveEdgeReactionToCoreInterrupt:
-                logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
-                self.logConversions(speciesIndex, y0)
-                break
+            #if that flux exceeds the characteristic rate times a tolerance
+            if not ignoreOverallFluxCriterion:
+                for ind,obj in enumerate(edgeSpecies):
+                    RR = edgeSpeciesRateRatios[ind]
+                    if RR > toleranceMoveToCore:
+                        if not(obj in newObjects or obj in invalidObjects):
+                            newObjects.append(edgeSpecies[ind])
+                            newObjectInds.append(ind)
+                    if RR > toleranceInterruptSimulation:
+                        logging.info('At time {0:10.4e} s, species {1} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj, RR, toleranceInterruptSimulation))
+                        interrupt = True
+            if useDynamics:     
+                #if the difference in natural log of total accumulation number exceeds tolerance 
+                validLayeringIndices = self.validLayeringIndices
+             
+                for ind,obj in enumerate(edgeReactions):
+                    dlnaccum = totalDivLnAccumNums[ind]
+                    if dlnaccum > toleranceMoveEdgeReactionToCore:
+                        if not(obj in newObjects or obj in invalidObjects):
+                            newObjects.append(edgeReactions[ind])
+                            newObjectInds.append(ind)
+                    elif dlnaccum > toleranceMoveEdgeReactionToSurface and ind in validLayeringIndices:
+                        if not(obj in newObjects or obj in invalidObjects):
+                            newObjects.append(edgeReactions[ind])
+                            newObjectInds.append(ind)
+                            newSurfaceRxnInds.append(len(newObjects)-1)
+                    if dlnaccum > toleranceMoveEdgeReactionToCoreInterrupt:
+                        logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for simulation interruption of {3}'.format(self.t, obj,dlnaccum,toleranceMoveEdgeReactionToCoreInterrupt))
+                        interrupt = True
             
-            #move species to surface and interrupt if the difference in natural log of total accumulation number exceeds tolerance
-            #small tolerance case
-            if (maxLayeringReaction not in invalidObjects) and maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurface and len(invalidObjects) < maxNumObjsPerIter:
-                invalidObjects.append(maxLayeringReaction)
-                newSurfaceReactions.append(maxLayeringReaction)
-                newSurfaceReactionInds.append(maxLayeringReactionIndex)
-                
-                logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for moving from edge to model surface'.format(self.t, maxAccumReaction))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
-                logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                self.logConversions(speciesIndex, y0)
-                
-
-                if len(invalidObjects) >= maxNumObjsPerIter and maxLayeringDifLnAccumNum > toleranceMoveEdgeReactionToSurfaceInterrupt: 
-                    logging.info('At time {0:10.4e} s, Reaction {1} exceeded the minimum difference in total log(accumulation number) for simulation interruption'.format(self.t, maxAccumReaction))
-                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxLayeringDifLnAccumNum, maxNetwork, maxNetworkRate)
-                    self.logConversions(speciesIndex, y0)
-                    break
-            
-           
-            # If pressure dependence, also check the network leak fluxes
+            #if the network leak rate ratios exceed tolerance
             if pdepNetworks:
-                if (maxNetwork not in invalidObjects) and maxNetworkRate > toleranceMoveToCore * charRate and len(invalidObjects) < maxNumObjsPerIter:
-                    logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for exploring'.format(self.t, maxNetwork.index))
-                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
-                    logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                    self.logConversions(speciesIndex, y0)
-                    invalidObjects.append(maxNetwork)
-                if len(invalidObjects) >= maxNumObjsPerIter and maxNetworkRate > toleranceInterruptSimulation * charRate:
-                    logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for simulation interruption'.format(self.t, maxNetwork.index))
-                    self.logRates(charRate, maxSpecies, maxSpeciesRate, maxDifLnAccumNum, maxNetwork, maxNetworkRate)
-                    logging.info('Surface has {0} Species and {1} Reactions'.format(len(surfaceSpeciesIndices),len(surfaceReactionIndices)))
-                    self.logConversions(speciesIndex, y0)
-                    break
+                for ind,obj in enumerate(pdepNetworks):
+                    LR = networkLeakRateRatios[ind]
+                    if LR > toleranceMoveToCore:
+                        if not(obj in newObjects or obj in invalidObjects):
+                            newObjects.append(pdepNetworks[ind])
+                            newObjectInds.append(ind)
+                    if LR > toleranceInterruptSimulation:
+                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj.index,LR,toleranceInterruptSimulation))
+                        interrupt = True
+            
+            #remove excess objects
+            if len(invalidObjects) + len(newObjects) > maxNumObjsPerIter:
+                logging.info('Exceeded max number of objects...removing excess objects')
+                num = maxNumObjsPerIter - len(invalidObjects)
+                newObjects = newObjects[:num]
+                newObjectInds = newObjectInds[:num]
+            
+            if terminateAtMaxObjects and len(invalidObjects) >= maxNumObjsPerIter:
+                logging.info('Reached max number of objects...preparing to terminate')
+                interrupt = True
+            
+            if newObjects != []:
+                for i,obj in enumerate(newObjects): #log everything and add reactions to surface
+                    ind = newObjectInds[i]
+                    if isinstance(obj,Species):
+                        logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} exceeded the minimum rate for moving to model core of {3}'.format(self.t, obj,edgeSpeciesRateRatios[ind],toleranceMoveToCore))
+                    elif isinstance(obj,Reaction):
+                        dlnaccum = totalDivLnAccumNums[ind]
+                        if i in newSurfaceRxnInds:
+                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model surface of {3}'.format(self.t, obj, dlnaccum,toleranceMoveEdgeReactionToSurface))
+                            newSurfaceReactions.append(obj)
+                            newSurfaceReactionInds.append(ind)
+                        else:
+                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model core of {3}'.format(self.t, obj, dlnaccum,toleranceMoveEdgeReactionToCore))
+                    else: 
+                        logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for exploring of {3}'.format(self.t, maxNetwork.index, networkLeakRateRatios[ind],toleranceMoveToCore))
+    
+                
+                invalidObjects += newObjects
+                
+            if schanged: #reinitialize surface
+                surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                schanged = False
+                
+            if interrupt: #breaks while loop terminating iterations
+                logging.info('terminating simulation due to interrupt...')
+                break
 
             # Finish simulation if any of the termination criteria are satisfied
             for term in self.termination:
