@@ -284,7 +284,7 @@ cdef class ReactionSystem(DASx):
                 surfaceReactions.remove(coreReactions[i])
                 surfaceReactionIndices.remove(i)
         
-        possibleSpeciesIndices -= {-1}
+        possibleSpeciesIndices -= {-1} #remove the -1 indexes that indicate there is no third/second reactant/product
         
         for i in surfaceSpeciesIndices: #remove species without reactions in the surface
             if not(i in possibleSpeciesIndices):
@@ -702,7 +702,7 @@ cdef class ReactionSystem(DASx):
                 if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
                     maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
             
-            if charRate == 0 and len(edgeSpeciesRates)>0:
+            if charRate == 0 and len(edgeSpeciesRates)>0: #this deals with the case when there is no flux in the system
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
                 maxSpecies = edgeSpecies[maxSpeciesIndex]
                 maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
@@ -712,9 +712,10 @@ cdef class ReactionSystem(DASx):
                 invalidObjects.append(maxSpecies)
                 break
             
-            #get abs(delta(Ln(total accumulation numbers))) (accumulation number=Production/Consumption)
-            #(the natural log operation is avoided until after the maximum accumulation number is found)
             if useDynamics:
+                #######################################################
+                # Calculation of dynamics criterion for edge reactions#
+                #######################################################
                 totalDivAccumNums = numpy.ones(numEdgeReactions)
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
@@ -746,7 +747,10 @@ cdef class ReactionSystem(DASx):
                 surfaceSpeciesIndices = self.surfaceSpeciesIndices
                 surfaceReactionIndices = self.surfaceReactionIndices
                 
-                #calculate criteria for surface species
+                ##########################################################
+                # Calculation of dynamics criterion for surface reactions#
+                ##########################################################
+                
                 surfaceTotalDivAccumNums = numpy.ones(len(surfaceReactionIndices))
                 
                 for i in xrange(len(surfaceReactionIndices)):
@@ -786,19 +790,24 @@ cdef class ReactionSystem(DASx):
                                 break
                             
                 surfaceTotalDivAccumNums = numpy.log(surfaceTotalDivAccumNums)
-                    
+                
+                ###############################################
+                # Move objects from surface to core on-the-fly#
+                ###############################################
+                
                 surfaceObjects = []
                 surfaceObjectIndices = []
                 
-                #movement from surface to core
-                #manage surface reaction movement "on the fly"
-                for ind,stdan in enumerate(surfaceTotalDivAccumNums): #move surface reactions to core
+                #Determination of reactions moving from surface to core on-the-fly
+                
+                for ind,stdan in enumerate(surfaceTotalDivAccumNums): 
                     if stdan > toleranceMoveSurfaceReactionToCore:
                         sind = surfaceReactionIndices[ind]
                         surfaceObjectIndices.append(sind)
                         surfaceObjects.append(coreReactions[sind])
                     
-                #surface flux calculations
+                #Determination of species moving from surface to core on-the-fly
+
                 surfaceSpeciesRateRatios = numpy.zeros(len(surfaceSpeciesIndices))
                 surfaceSpeciesProduction = coreSpeciesProductionRates[surfaceSpeciesIndices]
                 surfaceSpeciesConsumption = coreSpeciesConsumptionRates[surfaceSpeciesIndices]
@@ -811,7 +820,9 @@ cdef class ReactionSystem(DASx):
                         sind = surfaceSpeciesIndices[i]
                         surfaceObjectIndices.append(sind)
                         surfaceObjects.append(coreSpecies[sind])
-                    
+                
+                #process objects to be moved from surface to core
+                
                 if len(surfaceObjects) > 0:
                     schanged = True
                     for ind,obj in enumerate(surfaceObjects):
@@ -842,7 +853,12 @@ cdef class ReactionSystem(DASx):
                         if not bimolecularThreshold[i,j]:
                             if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
                                 bimolecularThreshold[i,j] = True
-
+            
+            
+            ###############################################################################
+            # Movement from edge to core or surface processing and interrupt determination#
+            ###############################################################################
+            
             newObjectInds = []
             newObjects = []
             newObjectVals = []
@@ -854,7 +870,8 @@ cdef class ReactionSystem(DASx):
             newSurfaceRxnInds = []
             interrupt = False
             
-            #if that flux exceeds the characteristic rate times a tolerance
+            #movement of species to core based on rate ratios
+            
             if not ignoreOverallFluxCriterion:
                 for ind,obj in enumerate(edgeSpecies):
                     RR = edgeSpeciesRateRatios[ind]
@@ -879,7 +896,9 @@ cdef class ReactionSystem(DASx):
                 tempNewObjectVals = []
             
             if useDynamics:     
-                #if the difference in natural log of total accumulation number exceeds tolerance 
+                
+                #movement of reactions to core/surface based on dynamics number
+            
                 validLayeringIndices = self.validLayeringIndices
                 tempSurfaceObjects = []
                 
@@ -912,9 +931,8 @@ cdef class ReactionSystem(DASx):
                 tempNewObjectInds = []
                 tempNewObjectVals = []
                 
-                
-                
-            #if the network leak rate ratios exceed tolerance
+            #Determination of pdepNetworks in need of exploring
+            
             if pdepNetworks:
                 for ind,obj in enumerate(pdepNetworks):
                     LR = networkLeakRateRatios[ind]
@@ -936,7 +954,11 @@ cdef class ReactionSystem(DASx):
                 tempNewObjects = []
                 tempNewObjectInds = []
                 tempNewObjectVals = []
-                
+            
+            ###########################
+            #Overall Object Processing#
+            ###########################
+            
             #remove excess objects
             if len(invalidObjects) + len(newObjects) > maxNumObjsPerIter:
                 logging.info('Exceeded max number of objects...removing excess objects')
@@ -944,7 +966,7 @@ cdef class ReactionSystem(DASx):
                 newObjects = newObjects[:num]
                 newObjectInds = newObjectInds[:num]
                 newObjectVals = newObjectVals[:num]
-                
+            
             if terminateAtMaxObjects and len(invalidObjects)+len(newObjects) >= maxNumObjsPerIter:
                 logging.info('Reached max number of objects...preparing to terminate')
                 interrupt = True
