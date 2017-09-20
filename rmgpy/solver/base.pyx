@@ -518,7 +518,7 @@ cdef class ReactionSystem(DASx):
         cdef dict speciesIndex
         cdef list row, tempSurfaceObjects
         cdef list sortedInds, tempNewObjects, tempNewObjectInds, tempNewObjectVals, tempInds
-        cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex, infAccumNumIndex
+        cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, maxEdgeReactionAccum, stdan
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
@@ -534,7 +534,7 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        cdef bool zeroProduction, zeroConsumption, firstTime, useDynamics, terminateAtMaxObjects, schanged
+        cdef bool firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
         cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
@@ -722,25 +722,14 @@ cdef class ReactionSystem(DASx):
                     for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
                         if spcIndex != -1 and spcIndex<numCoreSpecies:
                             consumption = coreSpeciesConsumptionRates[spcIndex]
-                            if consumption != 0:
+                            if consumption != 0: #if consumption = 0 ignore species
                                 totalDivAccumNums[index] *= (reactionRate+consumption)/consumption
-                            elif coreSpeciesConcentrations[spcIndex] == 0: 
-                                pass  #if the species concentration is zero ignore
-                            else:
-                                zeroConsumption = True #otherwise include edge reaction with most flux
-                                infAccumNumIndex = spcIndex
-                                break
+                            
                     for spcIndex in self.productIndices[index+numCoreReactions,:]:
                         if spcIndex != -1 and spcIndex<numCoreSpecies:
                             production = coreSpeciesProductionRates[spcIndex]
-                            if production != 0:
+                            if production != 0: #if production = 0 ignore species
                                 totalDivAccumNums[index] *= (reactionRate+production)/production
-                            elif coreSpeciesConcentrations[spcIndex] == 0: 
-                                pass #if the species concentration is zero ignore
-                            else:
-                                zeroProduction = True #otherwise include edge reaction with most flux
-                                infAccumNumIndex = spcIndex
-                                break
                     
                 totalDivLnAccumNums = numpy.log(totalDivAccumNums)
                 
@@ -759,36 +748,25 @@ cdef class ReactionSystem(DASx):
                     for spcIndex in reactantIndices[index,:]:
                         if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
                             consumption = coreSpeciesConsumptionRates[spcIndex]
-                            if consumption != 0:
+                            if consumption != 0: #if consumption=0 ignore species
                                 if abs(abs(consumption) - abs(reactionRate)) < absoluteTolerance:
                                     surfaceTotalDivAccumNums[i] = numpy.inf
                                 elif reactionRate > 0:
                                     surfaceTotalDivAccumNums[i] *= consumption/(consumption-reactionRate)
                                 else:
                                     surfaceTotalDivAccumNums[i] *= (consumption-reactionRate)/consumption
-                            elif coreSpeciesConcentrations[spcIndex] == 0: 
-                                pass #if the species concentration is zero ignore
-                            else:
-                                zeroConsumption = True #otherwise include edge reaction with most flux
-                                surfaceInfAccumNumIndex = spcIndex
-                                break
+                            
                     for spcIndex in productIndices[index,:]:
                         if spcIndex != -1 and spcIndex<numCoreSpecies and not(spcIndex in surfaceSpeciesIndices):
                             production = coreSpeciesProductionRates[spcIndex]
-                            if production != 0:
+                            if production != 0: #if production = 0 ignore species
                                 if abs(abs(production) - abs(reactionRate)) < absoluteTolerance:
                                     surfaceTotalDivAccumNums[i] = numpy.inf
                                 elif reactionRate > 0:
                                     surfaceTotalDivAccumNums[i] *= production/(production-reactionRate)
                                 else:
                                     surfaceTotalDivAccumNums[i] *= (production-reactionRate)/production
-                            elif coreSpeciesConcentrations[spcIndex] == 0: 
-                                pass #if the species concentration is zero ignore
-                            else:
-                                zeroProduction = True #otherwise include edge reaction with most flux
-                                infAccumNumIndex = spcIndex
-                                break
-                            
+
                 surfaceTotalDivAccumNums = numpy.log(surfaceTotalDivAccumNums)
                 
                 ###############################################
