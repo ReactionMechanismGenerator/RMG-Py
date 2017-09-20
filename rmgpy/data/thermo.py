@@ -514,7 +514,7 @@ def splitBicyclicIntoSingleRings(bicyclic_submol):
     return [convertRingToSubMolecule(SSSR[0])[0],
                 convertRingToSubMolecule(SSSR[1])[0]]
 
-def saturateRingBonds(ring_submol):
+def saturate_ring_bonds(ring_submol):
     """
     Given a ring submolelcule (`Molecule`), makes a deep copy and converts non-single bonds 
     into single bonds, returns a new saturated submolecule (`Molecule`)
@@ -537,7 +537,7 @@ def saturateRingBonds(ring_submol):
                         bond_order = 1.5
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond_order))
 
-    mol0.saturateUnfilledValence()
+    mol0.saturate_unfilled_valence()
     mol0.updateAtomTypes()
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
@@ -1422,7 +1422,7 @@ class ThermoDatabase(object):
         
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
-        added = saturatedStruct.saturateRadicals()
+        added = saturatedStruct.saturate_radicals()
         saturatedStruct.props['saturated'] = True
         
         # Get thermo estimate for saturated form of structure
@@ -1698,7 +1698,7 @@ class ThermoDatabase(object):
                     for aromaticBond in aromaticBonds:
                         aromaticBond.setOrderNum(1)
 
-                    submol.saturateUnfilledValence()
+                    submol.saturate_unfilled_valence()
                     submol.update
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                 self.groups['ring'], submol, submol.atoms)[0]
@@ -1718,7 +1718,7 @@ class ThermoDatabase(object):
         # saturate if the bicyclic has unsaturated bonds
         # otherwise return None
         bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
-        saturated_bicyclic_submol, alreadySaturated = saturateRingBonds(bicyclic_submol)
+        saturated_bicyclic_submol, alreadySaturated = saturate_ring_bonds(bicyclic_submol)
 
         if alreadySaturated:
             return None
@@ -1755,7 +1755,7 @@ class ThermoDatabase(object):
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
 
-                submol.saturateUnfilledValence()
+                submol.saturate_unfilled_valence()
                 submol.update
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
@@ -1774,7 +1774,7 @@ class ThermoDatabase(object):
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
 
-                submol.saturateUnfilledValence()
+                submol.saturate_unfilled_valence()
                 submol.update
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]

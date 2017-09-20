@@ -9,7 +9,7 @@ longDesc = u"""
 entry(
     index = 0,
     label = "CsOsCdSs",
-    group = 
+    group =
 """
 1 * [Cs,O2s,Cd,S2s] u0
 """,
@@ -20,7 +20,7 @@ entry(
         S298 = (0,'cal/(mol*K)'),
     ),
     shortDesc = u"""""",
-    longDesc = 
+    longDesc =
 u"""
 
 """,
@@ -29,7 +29,7 @@ u"""
 entry(
     index = 1,
     label = "Cs(RRRR)",
-    group = 
+    group =
 """
 1 * Cs u0
 """,

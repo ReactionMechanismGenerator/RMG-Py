@@ -336,7 +336,7 @@ class Uncertainty:
         molecule = species.molecule[0]
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
-        saturatedStruct.saturateRadicals()
+        saturatedStruct.saturate_radicals()
         for otherSpecies in self.speciesList:
             if otherSpecies.isIsomorphic(saturatedStruct):
                 return otherSpecies, False

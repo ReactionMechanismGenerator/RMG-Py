@@ -1201,8 +1201,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
-        single_ring_submol_a.saturateUnfilledValence()
-        single_ring_submol_b.saturateUnfilledValence()
+        single_ring_submol_a.saturate_unfilled_valence()
+        single_ring_submol_b.saturate_unfilled_valence()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
         expected_submol_a.updateConnectivityValues()
@@ -1231,8 +1231,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
-        single_ring_submol_a.saturateUnfilledValence()
-        single_ring_submol_b.saturateUnfilledValence()
+        single_ring_submol_a.saturate_unfilled_valence()
+        single_ring_submol_b.saturate_unfilled_valence()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
         expected_submol_a.updateConnectivityValues()
@@ -1251,7 +1251,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = Molecule().fromSMILES(smiles)
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_saturated_ring_submol = Molecule().fromSMILES('C1CCC2C1C2')
         
@@ -1272,7 +1272,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = spe.molecule[1]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
@@ -1295,7 +1295,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = spe.molecule[1]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()

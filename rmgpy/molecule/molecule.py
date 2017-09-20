@@ -1663,7 +1663,7 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
-    def saturateUnfilledValence(self, update = True):
+    def saturate_unfilled_valence(self, update = True):
         """
         Saturate the molecule by adding H atoms to any unfilled valence
         """
@@ -1672,7 +1672,7 @@ class Molecule(Graph):
         saturator.saturate(self.atoms)
         if update: self.update()
 
-    def saturateRadicals(self):
+    def saturate_radicals(self):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """

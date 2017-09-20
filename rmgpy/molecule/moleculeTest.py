@@ -1468,7 +1468,7 @@ multiplicity 2
 17 H u0 p0 c0 {6,S}
 """)
         saturated_molecule = indenyl.copy(deep=True)
-        saturated_molecule.saturateRadicals()
+        saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
     def testMalformedAugmentedInChI(self):
@@ -2158,7 +2158,7 @@ multiplicity 2
             if atom.isHydrogen(): hydrogens +=1
         self.assertEquals(hydrogens, 0)
 
-        test.saturateUnfilledValence()
+        test.saturate_unfilled_valence()
 
         hydrogens = 0
         for atom in test.atoms:
@@ -2177,7 +2177,7 @@ multiplicity 2
             if atom.isHydrogen(): hydrogens +=1
         self.assertEquals(hydrogens, 0)
 
-        test.saturateUnfilledValence()
+        test.saturate_unfilled_valence()
 
         hydrogens = 0
         for atom in test.atoms:
