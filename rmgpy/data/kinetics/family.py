@@ -1393,7 +1393,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generateReactions(self, reactants):
+    def generateReactions(self, reactants, products=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1406,11 +1406,11 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, forward=True))
+        reactionList.extend(self.__generateReactions(reactants, products, forward=True))
         
         if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, forward=False))
+            reactionList.extend(self.__generateReactions(reactants, products, forward=False))
 
         return reactionList
 
@@ -1625,45 +1625,6 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
-        # If products is given, remove reactions from the reaction list that
-        # don't generate the given products
-        if products is not None:
-            if isinstance(products[0],Molecule):
-                products = [product.generateResonanceIsomers() for product in products]
-            elif isinstance(products[0],Species):
-                products = [product.molecule for product in products]
-            else:
-                raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
-            
-            rxnList0 = rxnList[:]
-            rxnList = []
-            index = 0
-            for reaction in rxnList0:
-            
-                products0 = reaction.products if forward else reaction.reactants
-                    
-                # Skip reactions that don't match the given products
-                match = False
-
-                if len(products) == len(products0) == 1:
-                    for product in products[0]:
-                        if products0[0].isIsomorphic(product):
-                            match = True
-                            break
-                elif len(products) == len(products0) == 2:
-                    for productA in products[0]:
-                        for productB in products[1]:
-                            if products0[0].isIsomorphic(productA) and products0[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
-                                match = True
-                                break
-                elif len(products) == len(products0):
-                    raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
-                    
-                if match: 
-                    rxnList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
@@ -1685,6 +1646,71 @@ class KineticsFamily(Database):
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
+
+        # If products is given, remove reactions from the reaction list that
+        # don't generate the given products
+        if products is not None:
+            if isinstance(products[0],Molecule):
+                products_iso = []
+                for product in products:
+                    isomers = product.generateResonanceIsomers()
+                    # restore props
+                    for isomer in isomers:
+                        isomer.props = product.props
+                    products_iso.append(isomers)
+
+                products = products_iso
+
+            elif isinstance(products[0],Species):
+                products = [product.molecule for product in products]
+            else:
+                raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
+            
+            rxnList0 = rxnList[:]
+            rxnList = []
+            index = 0
+            for reaction in rxnList0:
+            
+                products0 = reaction.products if forward else reaction.reactants
+                    
+                # Skip reactions that don't match the given products
+                match = False
+
+                if len(products) == len(products0) == 1:
+                    for product in products[0]:
+                        if products0[0].isIsomorphic(product):
+                            match = True
+                            if forward:
+                                reaction.products[0].props = product.props
+                            else:
+                                reaction.reactants[0].props = product.props
+                            break
+                elif len(products) == len(products0) == 2:
+                    for productA in products[0]:
+                        for productB in products[1]:
+                            if products0[0].isIsomorphic(productA) and products0[1].isIsomorphic(productB):
+                                match = True
+                                if forward:
+                                    reaction.products[0].props = productA.props
+                                    reaction.products[1].props = productB.props
+                                else:
+                                    reaction.reactants[0].props = productA.props
+                                    reaction.reactants[1].props = productB.props
+                                break
+                            elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
+                                match = True
+                                if forward:
+                                    reaction.products[0].props = productB.props
+                                    reaction.products[1].props = productA.props
+                                else:
+                                    reaction.reactants[0].props = productB.props
+                                    reaction.reactants[1].props = productA.props
+                                break
+                elif len(products) == len(products0):
+                    raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
+                    
+                if match: 
+                    rxnList.append(reaction)
             
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions
