@@ -416,7 +416,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         # If there are two structures and they are the same, then make a copy
         # of the second one so we can independently manipulate both of them 
         # This is for the case where A + A --> products
-        if len(reactants) == 2 and reactants[0] == reactants[1]:
+        if len(reactants) == 2 and reactants[0] == reactants[1] and reactants[0].props == reactants[1].props:
             reactants[1] = reactants[1].copy(deep=True)
         
         reactionList = []
