@@ -461,9 +461,9 @@ def generateAromaticResonanceStructures(mol, features=None):
     # Then determine which ones are aromatic
     aromaticBonds = molecule.getAromaticRings(rings)[1]
 
-    # If the species is a radical and the number of aromatic rings is less than the number of total rings,
-    # then there is a chance that the radical can be shifted to a location that increases the number of aromatic rings.
-    if (features['isRadical'] and not features['isArylRadical']) and (len(aromaticBonds) < len(rings)):
+    # If the species is a radical, then there is a chance that the radical can be shifted
+    #   to a location that increases the number of perceived aromatic rings.
+    if features['isRadical'] and not features['isArylRadical']:
         if molecule.isAromatic():
             kekuleList = generateKekuleStructure(molecule)
         else:
