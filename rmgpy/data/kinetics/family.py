@@ -2161,8 +2161,8 @@ class KineticsFamily(Database):
                 evalCommentString = re.sub(r" \+ ", ",",                        # any remaining + signs
                                     re.sub(r"Average of ", "",                  # average of averages
                                     re.sub(r"Average of \[(?!Average)", "['",   # average of groups
-                                    re.sub(r"(\b|\))]", r"\1']",                # initial closing bracket
-                                    re.sub(r"(?<=\b) \+ (?=Average)", "',",     # + sign between non-average and average
+                                    re.sub(r"(\w|\))]", r"\1']",                # initial closing bracket
+                                    re.sub(r"(?<=[\w)]) \+ (?=Average)", "',",  # + sign between non-average and average
                                     re.sub(r"(?<=]) \+ (?!Average)", ",'",      # + sign between average and non-average
                                     re.sub(r"(?<!]) \+ (?!Average)", "','",     # + sign between non-averages
                                     comment)))))))
