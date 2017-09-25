@@ -157,6 +157,8 @@ class KineticsJob:
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order-1)
         self.kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
+        self.Kequnits = {2:'mol^2/cm^6', 1:'mol/cm^3', 0:'       ', -1:'cm^3/mol', -2:'cm^6/mol^2'}[len(self.reaction.products)-len(self.reaction.reactants)]
+        self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
         self.reaction.kinetics = Arrhenius().fitToData(Tlist, klist, kunits=self.kunits)
 
     def save(self, outputFile):
@@ -165,6 +167,9 @@ class KineticsJob:
         at `path` on disk.
         """
         reaction = self.reaction
+        
+        ks = []
+        k0s = []
         
         logging.info('Saving kinetics for {0}...'.format(reaction))
         
@@ -190,9 +195,26 @@ class KineticsJob:
             k = reaction.calculateTSTRateCoefficient(T) * factor
             tunneling = reaction.transitionState.tunneling
             kappa = k / k0
+            ks.append(k)
+            k0s.append(k0)
             f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.kunits))
         f.write('#   ======= =========== =========== =========== ===============\n')
+        f.write('\n\n')
         
+        f.write('#   ======= ============ =========== ============ ============= =========\n')
+        f.write('#   Temp.    Kc (eq)        Units     krev (TST)   krev (TST+T)   Units\n')
+        f.write('#   ======= ============ =========== ============ ============= =========\n')
+        
+        for n,T in enumerate(Tlist):
+            k = ks[n]
+            k0 = k0s[n]
+            Keq = reaction.getEquilibriumConstant(T)
+            f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits, k0/Keq, k/Keq, self.krunits))
+
+            
+        f.write('#   ======= ============ =========== ============ ============= =========\n')
+        f.write('\n\n')
+            
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         string = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(string)))
