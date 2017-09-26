@@ -456,12 +456,12 @@ class StatMechJob:
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix')
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix, if running Molpro include keyword print, hessian')
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = numpy.array([])
         else:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix')
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix, if running Molpro include keyword print, hessian')
             frequencies = numpy.array([])
             rotors = numpy.array([])
 

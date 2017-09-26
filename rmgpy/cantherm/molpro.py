@@ -72,10 +72,34 @@ class MolproLog:
 
     def loadForceConstantMatrix(self):
         """
-        No force constant matrices are reported by the MolPro Files
+        Print the force constant matrix by including the print, hessian command in the input file
         """
 
         F = None
+
+        Natoms = self.getNumberOfAtoms()
+        Nrows = Natoms * 3
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+            # Read force constant matrix
+            if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
+                F = numpy.zeros((Nrows,Nrows), numpy.float64)
+                for i in range(int(math.ceil(Nrows / 5.0))):
+                    # Header row
+                    line = f.readline()
+                    # Matrix element rows
+                    for j in range(i*5, Nrows):
+                        data = f.readline().split()
+                        for k in range(len(data)-1):
+                            F[j,i*5+k] = float(data[k+1].replace('D', 'E'))
+                            F[i*5+k,j] = F[j,i*5+k]
+                # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
+                F *= 4.35974417e-18 / 5.291772108e-11**2
+            line = f.readline()
+        # Close file when finished
+        f.close()
 
         return F
 
