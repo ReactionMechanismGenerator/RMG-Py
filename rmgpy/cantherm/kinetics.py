@@ -170,6 +170,8 @@ class KineticsJob:
         
         ks = []
         k0s = []
+        k0revs = []
+        krevs = []
         
         logging.info('Saving kinetics for {0}...'.format(reaction))
         
@@ -209,12 +211,22 @@ class KineticsJob:
             k = ks[n]
             k0 = k0s[n]
             Keq = reaction.getEquilibriumConstant(T)
-            f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits, k0/Keq, k/Keq, self.krunits))
+            k0rev = k0/Keq
+            krev =  k/Keq
+            k0revs.append(k0rev)
+            krevs.append(krev)
+            f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits, k0rev, krev, self.krunits))
 
             
         f.write('#   ======= ============ =========== ============ ============= =========\n')
         f.write('\n\n')
-            
+        
+        kinetics0rev = Arrhenius().fitToData(Tlist, numpy.array(k0revs), kunits=self.krunits)
+        kineticsrev = Arrhenius().fitToData(Tlist, numpy.array(krevs), kunits=self.krunits)
+        
+        f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
+        f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
+                
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         string = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(string)))
