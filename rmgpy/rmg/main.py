@@ -565,7 +565,8 @@ class RMG(util.Subject):
             unimolecularReact=self.unimolecularReact, 
             bimolecularReact=self.bimolecularReact)
         
-        self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
+        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+            self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
         
         logging.info('Completed initial enlarge edge step...')
         
@@ -712,7 +713,8 @@ class RMG(util.Subject):
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
                         
-                        self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
+                        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+                            self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                     
                     maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
 
