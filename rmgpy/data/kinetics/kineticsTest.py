@@ -27,17 +27,16 @@
 
 import os
 import unittest 
-from external.wip import work_in_progress
 import itertools
+import numpy
 
 from rmgpy import settings
+from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.kinetics.database import KineticsDatabase
-from rmgpy.data.base import DatabaseError
-import numpy
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.react import findDegeneracies, react, reactSpecies, _labelListOfSpecies
-from rmgpy.data.base import ForbiddenStructures
+from rmgpy.rmg.react import findDegeneracies, react, reactSpecies
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import Species
 ###################################################
 
@@ -729,8 +728,6 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         self.database = database
 
     def testParseKinetics(self):
-        from rmgpy.chemkin import loadChemkinFile
-        import rmgpy
         species, reactions = loadChemkinFile(os.path.join(settings['test_data.directory'], 'parsing_data','chem_annotated.inp'),
                                              os.path.join(settings['test_data.directory'], 'parsing_data','species_dictionary.txt')
                                                        )
@@ -816,7 +813,6 @@ class TestKinetics(unittest.TestCase):
     
     @classmethod
     def setUpClass(self):
-        from rmgpy.chemkin import loadChemkinFile
         """A function that is run ONCE before all unit tests in this class."""
 
         global database
@@ -877,8 +873,6 @@ class TestKinetics(unittest.TestCase):
         tests that save entry can run
         """
         from rmgpy.data.kinetics.common import saveEntry
-        import os
-        from rmgpy.data.base import Entry
         
         reactions=self.reactions
         
