@@ -6,7 +6,7 @@ dependencies:
   - libgcc # [unix]
   - python
   - numpy >=1.10.0
-  - cantera >=2.2
+  - cantera >=2.3.0a3
   - coolprop
   - cython >=0.25.2
   - matplotlib >=1.5
