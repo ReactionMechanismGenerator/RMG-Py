@@ -360,7 +360,7 @@ class Network:
                     badness = error.badness()
                     if previous_error and (previous_error.message == error.message): # only compare badness if same reaction is causing problem
                         improvement = previous_error.badness()/badness
-                        if improvement < 0.2 or (grainCount > 1e4 and improvement < 1.1) or (grainCount > 1.5e6): # allow it to get worse at first
+                        if improvement < 0.2 or (Ngrains > 1e4 and improvement < 1.1) or (Ngrains > 1.5e6): # allow it to get worse at first
                             logging.error(error.message)
                             logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with network {2}".format(badness,previous_error.badness(),self.label))
                             raise error
