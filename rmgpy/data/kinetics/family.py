@@ -2140,8 +2140,12 @@ class KineticsFamily(Database):
             
             # Discard the last line, unless it's the only line!
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'
-            if len(lines) == 1:
-                comment = lines[0]
+            #if from training reaction is in the first line append it to the end of the second line and skip the first line
+            if not 'Average of' in kinetics.comment:
+                if 'from training reaction' in lines[0]:
+                    comment = lines[1]
+                else:
+                    comment = lines[0]
                 if comment.startswith('Estimated using template'):
                     tokenTemplateLabel = comment.split()[3][1:-1]
                     ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel) 
@@ -2157,8 +2161,8 @@ class KineticsFamily(Database):
                 evalCommentString = re.sub(r" \+ ", ",",                        # any remaining + signs
                                     re.sub(r"Average of ", "",                  # average of averages
                                     re.sub(r"Average of \[(?!Average)", "['",   # average of groups
-                                    re.sub(r"(\b|\))]", r"\1']",                # initial closing bracket
-                                    re.sub(r"(?<=\b) \+ (?=Average)", "',",     # + sign between non-average and average
+                                    re.sub(r"(\w|\))]", r"\1']",                # initial closing bracket
+                                    re.sub(r"(?<=[\w)]) \+ (?=Average)", "',",  # + sign between non-average and average
                                     re.sub(r"(?<=]) \+ (?!Average)", ",'",      # + sign between average and non-average
                                     re.sub(r"(?<!]) \+ (?!Average)", "','",     # + sign between non-averages
                                     comment)))))))
@@ -2243,7 +2247,7 @@ class KineticsFamily(Database):
             elif line.startswith('Estimated'):
                 pass
             elif line.startswith('Multiplied by'):
-                degeneracy = int(line.split()[-1])
+                degeneracy = float(line.split()[-1])
 
         # Extract the rate rule information 
         fullCommentString = reaction.kinetics.comment.replace('\n', ' ')
