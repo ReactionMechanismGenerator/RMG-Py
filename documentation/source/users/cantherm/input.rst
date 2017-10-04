@@ -113,22 +113,22 @@ will be referred to as the species input file.
 
 The species input file accepts the following parameters:
 
-======================= =========================== ====================================
-Parameter               Required?                   Description
-======================= =========================== ====================================
-``atoms``               yes                         Type and number of atoms in the species
-``bonds``               optional                    Type and number of bonds in the species
-``linear``              yes                         ``True`` if the molecule is linear, ``False`` if not
-``externalSymmetry``    yes                         The external symmetry number for rotation
-``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
-``opticalIsomers``      yes                         The number of optical isomers of the species
-``energy``              yes                         The ground-state 0 K atomization energy in Hartree (without zero-point energy)
-                                                    **or**
-                                                    The path to the quantum chemistry output file containing the energy
-``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
-``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
-``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
-======================= =========================== ====================================
+======================= ============================= ====================================
+Parameter               Required?                     Description
+======================= ============================= ====================================
+``atoms``               yes                           Type and number of atoms in the species
+``bonds``               optional                      Type and number of bonds in the species
+``linear``              yes                           ``True`` if the molecule is linear, ``False`` if not
+``externalSymmetry``    no, but strongly recommended  The external symmetry number for rotation
+``spinMultiplicity``    no                            The ground-state spin multiplicity (degeneracy)
+``opticalIsomers``      yes                           The number of optical isomers of the species
+``energy``              yes                           The ground-state 0 K atomization energy in Hartree (without zero-point energy)
+                                                      **or**
+                                                      The path to the quantum chemistry output file containing the energy
+``geometry``            yes                           The path to the quantum chemistry output file containing the optimized geometry
+``frequencies``         yes                           The path to the quantum chemistry output file containing the computed frequencies
+``rotors``              optional                      A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
+======================= ============================= ====================================
 
 The ``atom`` and ``bond`` parameters are used to apply atomization energy corrections (AEC), bond corrections (BC), and spin orbit corrections (SOC) for a given ``modelChemistry()`` (see `Model Chemistry`_).
 

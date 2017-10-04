@@ -33,6 +33,7 @@ import numpy
 import os.path
 from rmgpy.cantherm.common import checkConformerEnergy
 import rmgpy.constants as constants
+import logging
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 ################################################################################
@@ -199,6 +200,7 @@ class GaussianLog:
                     # Read Gaussian's estimate of the external symmetry number
                     elif 'Rotational symmetry number' in line and symmetry is None:
                         symmetry = int(float(line.split()[3]))
+                        logging.info('externalSymmetry (Rotational Symmetry Number) was extracted from gaussian output: {}'.format(symmetry))
 
                     # Read moments of inertia for external rotational modes
                     elif 'Rotational constants (GHZ):' in line:
@@ -236,6 +238,7 @@ class GaussianLog:
                     # Read spin multiplicity if not explicitly given
                     elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity is None:
                         spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
+                        logging.info('Spin Multiplicity was extracted from gaussian output: {}'.format(spinMultiplicity))
 
                     elif 'Log10(Q)' in line:
                         inPartitionFunctions = True
