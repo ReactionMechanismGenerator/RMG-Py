@@ -53,6 +53,7 @@ import rmgpy.molecule.resonance as resonance
 _known_smiles_molecules = {
                  'N2': 'N#N',
                  'CH4': 'C',
+                 'CH2O': 'C=O',
                  'H2O': 'O',
                  'C2H6': 'CC',
                  'H2': '[H][H]',
@@ -66,6 +67,12 @@ _known_smiles_molecules = {
                  'C2H4': 'C=C',
                  'O2': 'O=O',
                  'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
+                 'SO2': 'O=S=O',
+                 'SO3': 'O=S(=O)=O',
+                 'H2SO4': 'OS(=O)(=O)O',
+                 'N2O': 'N#[N+][O-]',
+                 'NH3': 'N',
+                 'O3': '[O-][O+]=O',
              }
 
 _known_smiles_radicals = {
@@ -81,6 +88,11 @@ _known_smiles_radicals = {
                  #'CO': '[C]=O', could also be [C][O]
                  #'C2H4': could  be [CH3][CH] or [CH2][CH2]
                  'O2': '[O][O]',
+                 'S2': '[S][S]',
+                 'SO': '[S][O]',
+                 'HSO3': 'OS(=O)[O]',
+                 'NO': '[N]=O',
+                 'NO2': 'N(=O)[O]',
              }
 
 def toInChI(mol):
