@@ -62,10 +62,6 @@ cpdef Molecule fromSMARTS(Molecule mol, str smartsstr, str backend=*)
 
 cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
     
-cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol)
-
-cpdef Molecule fromOBMol(Molecule mol, object obmol)
-
 cdef Molecule __lookup(Molecule mol, str identifier, str type_identifier)
 
 # parser helper functions: 

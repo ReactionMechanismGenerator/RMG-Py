@@ -52,11 +52,11 @@ from rdkit import Chem
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
 from .adjlist import ConsistencyChecker
+from rmgpy.molecule.converter import fromRDKitMol, fromOBMol
 
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
 import rmgpy.molecule.pathfinder as pathfinder
-import rmgpy.molecule.generator as generator
 
 # constants
 
@@ -364,127 +364,6 @@ def fromSMARTS(mol, smartsstr, backend = 'rdkit'):
 
     return __parse(mol, smartsstr, 'sma', backend)
 
-
-def fromRDKitMol(mol, rdkitmol):
-    """
-    Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
-    This Kekulizes everything, removing all aromatic atom types.
-    """
-    cython.declare(i=cython.int,
-                   radicalElectrons=cython.int,
-                   charge=cython.int,
-                   lonePairs=cython.int,
-                   number=cython.int,
-                   order=cython.float,
-                   atom=Atom,
-                   atom1=Atom,
-                   atom2=Atom,
-                   bond=Bond)
-    
-    mol.vertices = []
-    
-    # Add hydrogen atoms to complete molecule if needed
-    rdkitmol.UpdatePropertyCache(strict=False)
-    rdkitmol = Chem.AddHs(rdkitmol)
-    Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
-    
-    # iterate through atoms in rdkitmol
-    for i in xrange(rdkitmol.GetNumAtoms()):
-        rdkitatom = rdkitmol.GetAtomWithIdx(i)
-        
-        # Use atomic number as key for element
-        number = rdkitatom.GetAtomicNum()
-        element = elements.getElement(number)
-            
-        # Process charge
-        charge = rdkitatom.GetFormalCharge()
-        radicalElectrons = rdkitatom.GetNumRadicalElectrons()
-        
-        atom = Atom(element, radicalElectrons, charge, '', 0)
-        mol.vertices.append(atom)
-        
-        # Add bonds by iterating again through atoms
-        for j in xrange(0, i):
-            rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
-            rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
-            if rdkitbond is not None:
-                order = 0
-    
-                # Process bond type
-                rdbondtype = rdkitbond.GetBondType()
-                if rdbondtype.name == 'SINGLE': order = 1
-                elif rdbondtype.name == 'DOUBLE': order = 2
-                elif rdbondtype.name == 'TRIPLE': order = 3
-                elif rdbondtype.name == 'AROMATIC': order = 1.5
-    
-                bond = Bond(mol.vertices[i], mol.vertices[j], order)
-                mol.addBond(bond)
-    
-    # Set atom types and connectivity values
-    mol.update()
-
-    # Assume this is always true
-    # There are cases where 2 radicalElectrons is a singlet, but
-    # the triplet is often more stable, 
-    mol.multiplicity = mol.getRadicalCount() + 1
-    # mol.updateAtomTypes()
-
-    return mol
-
-def fromOBMol(mol, obmol):
-    """
-    Convert a OpenBabel Mol object `obmol` to a molecular structure. Uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-    """
-    # Below are the declared variables for cythonizing the module
-    # cython.declare(i=cython.int)
-    # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-    # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
-    
-    mol.vertices = []
-    
-    # Add hydrogen atoms to complete molecule if needed
-    obmol.AddHydrogens()
-    # TODO Chem.rdmolops.Kekulize(obmol, clearAromaticFlags=True)
-    
-    # iterate through atoms in obmol
-    for obatom in openbabel.OBMolAtomIter(obmol):
-        idx = obatom.GetIdx()#openbabel idx starts at 1!
-        
-        # Use atomic number as key for element
-        number = obatom.GetAtomicNum()
-        element = elements.getElement(number)
-        # Process charge
-        charge = obatom.GetFormalCharge()
-        obatom_multiplicity = obatom.GetSpinMultiplicity()
-        radicalElectrons =  obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
-        
-        atom = Atom(element, radicalElectrons, charge, '', 0)
-        mol.vertices.append(atom)
-    
-    # iterate through bonds in obmol
-    for obbond in openbabel.OBMolBondIter(obmol):
-        # Process bond type
-        oborder = obbond.GetBondOrder()
-        if oborder not in [1,2,3] and obbond.IsAromatic() : 
-            oborder = 1.5
-
-        bond = Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0
-        mol.addBond(bond)
-
-    
-    # Set atom types and connectivity values
-    mol.updateConnectivityValues()
-    mol.updateAtomTypes()
-    mol.updateMultiplicity()
-    
-    # Assume this is always true
-    # There are cases where 2 radicalElectrons is a singlet, but
-    # the triplet is often more stable, 
-    mol.multiplicity = mol.getRadicalCount() + 1
-    
-    return mol
 
 def fixCharge(mol, u_indices):
     """

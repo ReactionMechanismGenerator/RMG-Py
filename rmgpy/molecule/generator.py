@@ -31,9 +31,7 @@
 # global imports
 
 import cython
-import logging
 import itertools
-import sys
 
 # local imports
 try:
@@ -45,6 +43,7 @@ from rdkit import Chem
 from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
 from .util import partition, agglomerate, generate_combo
+from rmgpy.molecule.converter import toOBMol, toRDKitMol
 
 import rmgpy.molecule.element as element
 import rmgpy.molecule.inchi as inchiutil
@@ -308,113 +307,6 @@ def toSMILES(mol):
         return Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
     return Chem.MolToSmiles(rdkitmol)
 
-def toOBMol(mol, returnMapping=False):
-    """
-    Convert a molecular structure to an OpenBabel OBMol object. Uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-    """
-
-    # Sort the atoms to ensure consistent output
-    mol.sortAtoms()
-    atoms = mol.vertices
-
-    obAtomIds = {}  # dictionary of OB atom IDs
-    obmol = openbabel.OBMol()
-    for atom in atoms:
-        a = obmol.NewAtom()
-        a.SetAtomicNum(atom.number)
-        a.SetFormalCharge(atom.charge)
-        obAtomIds[atom] = a.GetId()
-    orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
-    for atom1 in mol.vertices:
-        for atom2, bond in atom1.edges.iteritems():
-            index1 = atoms.index(atom1)
-            index2 = atoms.index(atom2)
-            if index1 < index2:
-                order = orders[bond.order]
-                obmol.AddBond(index1+1, index2+1, order)
-
-    obmol.AssignSpinMultiplicity(True)
-
-    if returnMapping:
-        return obmol, obAtomIds
-
-    return obmol
-
-def debugRDKitMol(rdmol, level=logging.INFO):
-    """
-    Takes an rdkit molecule object and logs some debugging information
-    equivalent to calling rdmol.Debug() but uses our logging framework.
-    Default logging level is INFO but can be controlled with the `level` parameter.
-    Also returns the message as a string, should you want it for something.
-    """
-    import tempfile
-    import os
-    my_temp_file = tempfile.NamedTemporaryFile()
-    try:
-        old_stdout_file_descriptor = os.dup(sys.stdout.fileno())
-    except:
-        message = "Can't access the sys.stdout file descriptor, so can't capture RDKit debug info"
-        print message
-        rdmol.Debug()
-        return message
-    os.dup2(my_temp_file.fileno(), sys.stdout.fileno())
-    rdmol.Debug()
-    os.dup2(old_stdout_file_descriptor, sys.stdout.fileno())
-    my_temp_file.file.seek(0)
-    message = my_temp_file.file.read()
-    message = "RDKit Molecule debugging information:\n" + message
-    logging.log(level, message)
-    return message
-
-
-def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
-    """
-    Convert a molecular structure to a RDKit rdmol object. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
-    Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.
-    
-    If returnMapping==True then it also returns a dictionary mapping the 
-    atoms to RDKit's atom indices.
-    """
-    
-    # Sort the atoms before converting to ensure output is consistent
-    # between different runs
-    mol.sortAtoms()           
-    atoms = mol.vertices
-    rdAtomIndices = {} # dictionary of RDKit atom indices
-    rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
-    for index, atom in enumerate(mol.vertices):
-        rdAtom = Chem.rdchem.Atom(atom.element.symbol)
-        rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
-        if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
-        rdkitmol.AddAtom(rdAtom)
-        if removeHs and atom.symbol == 'H':
-            pass
-        else:
-            rdAtomIndices[atom] = index
-    
-    rdBonds = Chem.rdchem.BondType
-    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
-    # Add the bonds
-    for atom1 in mol.vertices:
-        for atom2, bond in atom1.edges.iteritems():
-            index1 = atoms.index(atom1)
-            index2 = atoms.index(atom2)
-            if index1 < index2:
-                order_string = bond.getOrderStr()
-                order = orders[order_string]
-                rdkitmol.AddBond(index1, index2, order)
-    
-    # Make editable mol into a mol and rectify the molecule
-    rdkitmol = rdkitmol.GetMol()
-    if sanitize:
-        Chem.SanitizeMol(rdkitmol)
-    if removeHs:
-        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
-    if returnMapping:
-        return rdkitmol, rdAtomIndices
-    return rdkitmol
 
 def is_valid_combo(combo, mol, distances):
     """

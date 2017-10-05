@@ -1532,7 +1532,7 @@ multiplicity 2
         Test that the atom mapping returned by toRDKitMol contains the correct
         atom indices of the atoms of the molecule when hydrogens are removed.
         """
-        from .generator import toRDKitMol
+        from rmgpy.molecule.converter import toRDKitMol
 
         adjlist = '''
 1 H u0 p0 c0 {2,S}

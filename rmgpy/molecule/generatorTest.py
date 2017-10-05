@@ -36,6 +36,7 @@ from rmgpy.species import Species
 from .molecule import Atom, Molecule
 from .inchi import P_LAYER_PREFIX, U_LAYER_PREFIX
 from .generator import *
+from rmgpy.molecule.converter import debugRDKitMol
 
 class RDKitTest(unittest.TestCase):
     def testDebugger(self):

@@ -45,7 +45,6 @@ from collections import OrderedDict
 import itertools
 from copy import deepcopy
 
-import element as elements
 try:
     import openbabel
 except:
@@ -55,6 +54,8 @@ import rmgpy.molecule.group as gr
 from rmgpy.molecule.pathfinder import find_shortest_path
 from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
 import rmgpy.constants as constants
+import rmgpy.molecule.element as elements
+import rmgpy.molecule.converter as converter
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
@@ -1480,7 +1481,7 @@ class Molecule(Graph):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
-        return generator.toRDKitMol(self, *args, **kwargs)
+        return converter.toRDKitMol(self, *args, **kwargs)
 
     def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False, oldStyle=False):
         """
@@ -1856,7 +1857,7 @@ class Molecule(Graph):
             return [], []
 
         try:
-            rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
+            rdkitmol, rdAtomIndices = converter.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
             logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
         else:
@@ -1883,7 +1884,7 @@ class Molecule(Graph):
 
         logging.info('Trying to use OpenBabel to check aromaticity.')
         try:
-            obmol, obAtomIds = generator.toOBMol(self, returnMapping=True)
+            obmol, obAtomIds = converter.toOBMol(self, returnMapping=True)
         except ImportError:
             logging.warning('Unable to check aromaticity by converting for OB Mol.')
             return [], []

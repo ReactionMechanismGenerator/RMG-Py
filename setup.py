@@ -76,6 +76,7 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
+        Extension('rmgpy.molecule.converter', ['rmgpy/molecule/converter.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.generator', ['rmgpy/molecule/generator.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
