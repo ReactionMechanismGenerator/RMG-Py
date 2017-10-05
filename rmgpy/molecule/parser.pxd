@@ -54,6 +54,8 @@ cdef Molecule __parse(Molecule mol, str identifier, str type_identifier, str bac
 
 cpdef Molecule parse_openbabel(Molecule mol, str identifier, str type_identifier)
 
+cpdef isCorrectlyParsed(Molecule mol, str identifier)
+
 cpdef Molecule fromInChI(Molecule mol, str inchistr, backend=*)
 
 cpdef Molecule fromSMILES(Molecule mol, str smilesstr, str backend=*)
@@ -64,20 +66,3 @@ cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
     
 cdef Molecule __lookup(Molecule mol, str identifier, str type_identifier)
 
-# parser helper functions: 
-
-cpdef reset_lone_pairs(Molecule mol, list p_indices)
-
-cdef Molecule fix_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
-
-cpdef bint isUnsaturated(Molecule mol)
-
-cpdef isCorrectlyParsed(Molecule mol, str identifier)
-   
-cpdef check(Molecule mol, aug_inchi)
-
-cpdef fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
-
-cpdef fixCharge(Molecule mol, list u_indices)
-
-cpdef fix_triplet_to_singlet(Molecule mol, list p_indices)

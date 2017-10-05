@@ -31,7 +31,6 @@
 # global imports
 
 import cython
-import itertools
 
 # local imports
 try:
@@ -40,14 +39,11 @@ except:
     pass
 from rdkit import Chem
 
-from .molecule import Atom, Bond, Molecule
-from .pathfinder import compute_atom_distance
-from .util import partition, agglomerate, generate_combo
+from .molecule import Atom
 from rmgpy.molecule.converter import toOBMol, toRDKitMol
 
-import rmgpy.molecule.element as element
 import rmgpy.molecule.inchi as inchiutil
-import rmgpy.molecule.resonance as resonance
+
 # global variables:
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
@@ -126,55 +122,6 @@ def toInChI(mol):
     obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
     return obConversion.WriteString(obmol).strip()
 
-def create_U_layer(mol, auxinfo):
-    """
-    Creates a string with the positions of the atoms that bear unpaired electrons. The string
-    can be used to complement the InChI with an additional layer that allows for the differentiation
-    between structures with multiple unpaired electrons.
-
-    The string is composed of a prefix ('u') followed by the positions of each of the unpaired electrons,
-    sorted in numerical order.
-
-    Example:
-    - methyl radical ([CH3]) : u1
-    - triplet methylene biradical ([CH2]) : u1,1
-    - ethane-1,2-diyl biradical ([CH2][CH2]): u1,2
-    
-    When the molecule does not bear any unpaired electrons, None is returned.
-
-    """
-
-    cython.declare(
-                minmol=Molecule,
-                #rdkitmol=,
-                u_layer=list,
-                i=int,
-                at=Atom,
-                equivalent_atoms=list,
-               )
-
-    if mol.getRadicalCount() == 0:
-        return None
-    elif mol.getFormula() == 'H':
-        return inchiutil.U_LAYER_PREFIX + '1'
-
-
-    # find the resonance isomer with the lowest u index:
-    minmol = generate_minimum_resonance_isomer(mol)
-    
-    # create preliminary u-layer:
-    u_layer = []
-    for i, at in enumerate(minmol.atoms):
-        u_layer.extend([i+1] * at.radicalElectrons)
-    
-    # extract equivalent atom pairs from E-layer of auxiliary info:
-    equivalent_atoms = inchiutil.parse_E_layer(auxinfo)
-    if equivalent_atoms:
-        # select lowest u-layer:
-        u_layer = find_lowest_u_layer(minmol, u_layer, equivalent_atoms)
-
-    return (inchiutil.U_LAYER_PREFIX + ','.join(map(str, u_layer)))
-
 
 def toAugmentedInChI(mol):
     """
@@ -193,7 +140,7 @@ def toAugmentedInChI(mol):
                )
     inchi = toInChI(mol)
 
-    ulayer, player = create_augmented_layers(mol)
+    ulayer, player = inchiutil.create_augmented_layers(mol)
 
     aug_inchi = inchiutil.compose_aug_inchi(inchi, ulayer, player)
 
@@ -243,7 +190,7 @@ def toAugmentedInChIKey(mol):
 
     key = toInChIKey(mol)
 
-    ulayer, player = create_augmented_layers(mol)
+    ulayer, player = inchiutil.create_augmented_layers(mol)
 
     return inchiutil.compose_aug_inchi_key(key, ulayer, player)
 
@@ -308,293 +255,3 @@ def toSMILES(mol):
     return Chem.MolToSmiles(rdkitmol)
 
 
-def is_valid_combo(combo, mol, distances):
-    """
-    Check if the combination of atom indices refers to
-    atoms that are adjacent in the molecule.
-    """
-    cython.declare(
-        agglomerates=list,
-        new_distances=list,
-        orig_dist=dict,
-        new_dist=dict,
-        )
-
-    # compute shortest path between atoms 
-    agglomerates = agglomerate(combo)
-    new_distances = compute_agglomerate_distance(agglomerates, mol)
-
-    # combo is valid if the distance is equal to the parameter distance
-
-    if len(distances) != len(new_distances): return False
-
-    for orig_dist, new_dist in zip(distances, new_distances):
-        # only compare the values of the dictionaries:
-        if sorted(orig_dist.values()) != sorted(new_dist.values()):
-            return False
-
-    return True
-
-def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
-    """
-    Searches for the "minimum" combination of indices of atoms that bear unpaired electrons.
-
-    It does so by using the information on equivalent atoms to permute equivalent atoms to 
-    obtain a combination of atoms that is the (numerically) lowest possible combination.
-
-    Each possible combination is valid if and only if the distances between the atoms of the
-    combination is identical to the distances between the original combination.
-
-    First, the algorithm partitions equivalent atoms that bear an unpaired electron.
-    Next, the combinations are generated, and for each combination it is verified whether
-    it pertains to a "valid" combination.
-
-    Returns a list of indices corresponding to the lowest combination of atom indices bearing
-    unpaired electrons.
-    """
-
-    cython.declare(
-        new_u_layer=list,
-        grouped_electrons=list,
-        corresponding_E_layers=list,
-        group=list,
-        e_layer=list,
-        combos=list,
-        orig_agglomerates=list,
-        orig_distances=list,
-        selected_group=list,
-        combo=list,
-        )
-    if not equivalent_atoms:
-        return u_layer
-
-    new_u_layer = []
-
-    grouped_electrons, corresponding_E_layers = partition(u_layer, equivalent_atoms)
-
-    # don't process atoms that do not belong to an equivalence layer
-    for group, e_layer in zip(grouped_electrons[:], corresponding_E_layers[:]):
-        if not e_layer:
-            new_u_layer.extend(group)
-            grouped_electrons.remove(group)
-            corresponding_E_layers.remove(e_layer)
-
-
-    combos = generate_combo(grouped_electrons, corresponding_E_layers)
-    # compute original distance:
-    orig_agglomerates = agglomerate(grouped_electrons)
-    orig_distances = compute_agglomerate_distance(orig_agglomerates, mol)
-
-    # deflate the list of lists to be able to numerically compare them
-    selected_group = sorted(itertools.chain.from_iterable(grouped_electrons))
-
-    # see if any of the combos is valid and results in a lower numerical combination than the original 
-    for combo in combos:    
-        if is_valid_combo(combo, mol, orig_distances):
-            combo = sorted(itertools.chain.from_iterable(combo))
-            if combo < selected_group:
-                selected_group = combo
-
-    # add the minimized unpaired electron positions to the u-layer:
-    new_u_layer.extend(selected_group)
-
-    return sorted(new_u_layer)
-
-def generate_minimum_resonance_isomer(mol):
-    """
-    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
-    electrons descriptor, unless this unnecessarily forms a charged molecule.
-
-    First, we generate all isomorphic resonance isomers.
-    Next, we return the candidate with the lowest unpaired electrons metric.
-
-    The metric is a sorted list with indices of the atoms that bear an unpaired electron
-    """
-
-    cython.declare(
-        atom=Atom,
-        candidates=list,
-        sel=Molecule,
-        cand=Molecule,
-        metric_sel=list,
-        charge_sel=int,
-        charge_cand=int,
-        metric_cand=list,
-        )
-
-    candidates = resonance.generate_isomorphic_resonance_structures(mol)
-
-    sel = mol
-    metric_sel = get_unpaired_electrons(sel)
-    charge_sel = sum([abs(atom.charge) for atom in sel.vertices])
-    for cand in candidates:
-        metric_cand = get_unpaired_electrons(cand)
-        if metric_cand < metric_sel:
-            charge_cand = sum([abs(atom.charge) for atom in cand.vertices])
-            if charge_cand <= charge_sel:
-                sel = cand
-                metric_sel = metric_cand
-                charge_sel = charge_cand
-    return sel
-
-
-def get_unpaired_electrons(mol):
-    """
-    Returns a sorted list of the indices of the atoms that bear one or more 
-    unpaired electrons.
-    """
-
-    cython.declare(
-        locations=list,
-        index=int,
-        at=Atom,
-        )
-    locations = []
-    for index, at in enumerate(mol.atoms):
-        if at.radicalElectrons >= 1:
-            locations.append(index)
-
-    return sorted(locations)  
-
-def compute_agglomerate_distance(agglomerates, mol):
-    """
-    Iterates over a list of lists containing atom indices.
-    For each list the distances between the atoms is computed.
-    A list of distances is returned.
-
-    """
-
-    cython.declare(
-        distances=list,
-        agglomerate=list,
-        dist=dict,
-        )
-
-    distances = []
-    for agglomerate in agglomerates:
-        dist = compute_atom_distance(agglomerate, mol)
-        distances.append(dist)
-
-    return distances
-
-def has_unexpected_lone_pairs(mol):
-    """
-    Iterates over the atoms of the Molecule and returns whether 
-    at least one atom bears an unexpected number of lone pairs.
-
-    E.g. 
-    carbon with > 0 lone pairs
-    nitrogen with > 1 lone pairs
-    oxygen with > 2 lone pairs
-
-    The expected number of lone pairs of an element is equal to
-    """
-
-    for at in mol.atoms:
-        try:
-            exp = element.PeriodicSystem.lone_pairs[at.symbol]
-        except KeyError:
-            raise Exception("Unrecognized element: {}".format(at.symbol))
-        else:
-            if at.lonePairs != element.PeriodicSystem.lone_pairs[at.symbol]: return True 
-
-    return False
-
-def create_augmented_layers(mol):
-    """
-
-    The indices in the string refer to the atom indices in the molecule, according to the atom order
-    obtained by sorting the atoms using the InChI canonicalization algorithm.
-
-    First a deep copy is created of the original molecule and hydrogen atoms are removed from the molecule.
-    Next, the molecule is converted into an InChI string, and the auxiliary information of the inchification 
-    procedure is retrieved. 
-
-    The N-layer is parsed and used to sort the atoms of the original order according
-    to the order in the InChI. In case, the molecule contains atoms that cannot be distinguished
-    with the InChI algorithm ('equivalent atoms'), the position of the unpaired electrons is changed
-    as to ensure the atoms with the lowest indices are used to compose the string.
-
-    """
-
-    if mol.getRadicalCount() == 0 and not has_unexpected_lone_pairs(mol):
-        return None, None
-    elif mol.getFormula() == 'H':
-        return inchiutil.U_LAYER_PREFIX + '1', None
-    else:
-        molcopy = mol.copy(deep=True)
-
-        hydrogens = filter(lambda at: at.number == 1, molcopy.atoms)
-        [molcopy.removeAtom(h) for h in hydrogens]
-
-        rdkitmol = toRDKitMol(molcopy)
-        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')# suppress stereo warnings
-        
-        # extract the atom numbers from N-layer of auxiliary info:
-        atom_indices = inchiutil.parse_N_layer(auxinfo)    
-        atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
-
-        # sort the atoms based on the order of the atom indices
-        molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
-    
-        ulayer = create_U_layer(molcopy, auxinfo)
-
-        player = create_P_layer(molcopy, auxinfo)
-
-        return ulayer, player
-
-def create_P_layer(mol, auxinfo):
-    """
-
-    Creates a string with the positions of the atoms that bear an unexpected number of lone pairs. The string
-    can be used to complement the InChI with an additional layer that allows for the differentiation
-    between structures with lone pairs.
-
-    The string is composed of a prefix ('P_LAYER_PREFIX') followed by the positions of each of the atoms with an
-    unexpected number of lone pairs, sorted in numerical order.
-
-    Example:
-    - singlet methylene biradical ([CH2]) : 'P_LAYER_PREFIX'1
-
-    When the molecule does not bear any atoms with an unexpected number of lone pairs,
-    None is returned.
-
-
-    """
-
-    # TODO: find the resonance isomer with the lowest p index:
-    minmol = mol
-
-    # create preliminary p-layer:
-    p_layer = []
-    for i, at in enumerate(mol.atoms):
-        try:
-            exp = element.PeriodicSystem.lone_pairs[at.symbol]
-        except KeyError:
-            raise Exception("Unrecognized element: {}".format(at.symbol))
-        else:
-            if at.lonePairs != element.PeriodicSystem.lone_pairs[at.symbol]:
-                if at.lonePairs == 0:
-                    p_layer.append('{}{}'.format(i, '(0)'))
-                else:
-                    p_layer.extend([i+1] * at.lonePairs)
-
-    # extract equivalent atom pairs from E-layer of auxiliary info:
-    equivalent_atoms = inchiutil.parse_E_layer(auxinfo)
-    if equivalent_atoms:
-        # select lowest u-layer:
-        u_layer = find_lowest_p_layer(minmol, p_layer, equivalent_atoms)
-
-    if p_layer:
-        return (inchiutil.P_LAYER_PREFIX + inchiutil.P_LAYER_SEPARATOR.join(map(str, p_layer)))
-    else:
-        return None
-
-def find_lowest_p_layer(minmol, p_layer, equivalent_atoms):
-    """
-    Permute the equivalent atoms and return the combination with the 
-    lowest p-layer.
-
-    TODO: The presence of unpaired electrons complicates stuff. 
-    """
-    return minmol
