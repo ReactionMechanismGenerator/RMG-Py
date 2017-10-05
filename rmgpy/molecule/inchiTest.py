@@ -29,8 +29,9 @@
 ###############################################################################
 
 import unittest
+from external.wip import work_in_progress
 
-from .molecule import Molecule
+from .molecule import Atom, Molecule
 
 from .inchi import *
 
@@ -181,6 +182,154 @@ class DecomposeTest(unittest.TestCase):
         string = 'InChI=1S/XXXX/cXXX/hXXX/lp1(0)'
         inchi, u_indices, p_indices = decompose(string)
         self.assertEquals([(1,0)], p_indices)
+
+class CreateULayerTest(unittest.TestCase):
+    def testC4H6(self):
+        """
+        Test that 3-butene-1,2-diyl biradical is always resulting in the
+        same u-layer, regardless of the original order.
+        """
+
+        # radical positions 3 and 4
+        adjlist1 = """
+1  C u0 p0 c0 {2,D} {5,S} {6,S}
+2  C u0 p0 c0 {1,D} {3,S} {7,S}
+3  C u1 p0 c0 {2,S} {4,S} {8,S}
+4  C u1 p0 c0 {3,S} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+
+        """
+
+        # radical positions 1 and 2
+        adjlist2 = """
+1  C u1 p0 c0 {2,S} {5,S} {6,S}
+2  C u1 p0 c0 {1,S} {3,S} {7,S}
+3  C u0 p0 c0 {2,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+        """
+
+        u_layers = []
+        for adjlist in [adjlist1, adjlist2]:
+            mol = Molecule().fromAdjacencyList(adjlist)
+            u_layer = create_augmented_layers(mol)[0]
+            u_layers.append(u_layer)
+
+        self.assertEquals(u_layers[0], u_layers[1])
+
+
+class ExpectedLonePairsTest(unittest.TestCase):
+    def test_SingletCarbon(self):
+        mol = Molecule(atoms=[Atom(element='C', lonePairs=1)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertTrue(unexpected)
+
+    def test_NormalCarbon(self):
+        mol = Molecule(atoms=[Atom(element='C', lonePairs=0)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertFalse(unexpected)
+
+    def test_NormalOxygen(self):
+        mol = Molecule(atoms=[Atom(element='O', lonePairs=2)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertFalse(unexpected)
+
+    def test_Oxygen_3LP(self):
+        mol = Molecule(atoms=[Atom(element='O', lonePairs=3)])
+        unexpected = has_unexpected_lone_pairs(mol)
+        self.assertTrue(unexpected)
+
+
+class CreateAugmentedLayersTest(unittest.TestCase):
+    def test_Methane(self):
+        smi = 'C'
+        mol = Molecule().fromSMILES(smi)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertTrue(not player)
+
+    def test_SingletMethylene(self):
+        adjlist = """
+multiplicity 1
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertEquals(P_LAYER_PREFIX + '1', player)
+
+    def test_TripletMethylene(self):
+        adjlist = """
+multiplicity 3
+1 C u2 p0 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertEquals(U_LAYER_PREFIX + '1,1', ulayer)
+        self.assertTrue(not player)
+
+    @work_in_progress
+    def test_Nitrate(self):
+        """
+        Test that N atom in the p-layer has correct symbol.
+        """
+
+        adjlist = """
+1 O u0 p2 c0 {4,D}
+2 O u0 p3 c-1 {4,S}
+3 O u0 p3 c-1 {4,S}
+4 N u0 p0 c+1 {1,D} {2,S} {3,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertTrue(player.contains(P_LAYER_PREFIX + '1(0)'))
+
+
+class ResetLonePairsTest(unittest.TestCase):
+
+    def test_Methane(self):
+        smi = 'C'
+        mol = Molecule().fromSMILES(smi)
+        p_indices = []
+
+        reset_lone_pairs(mol, p_indices)
+
+        for at in mol.atoms:
+            self.assertEquals(at.lonePairs, 0)
+
+    def test_SingletMethylene(self):
+        adjlist = """
+multiplicity 1
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        p_indices = [1]
+
+        reset_lone_pairs(mol, p_indices)
+
+        for at in mol.atoms:
+            if at.symbol == 'C':
+                self.assertEquals(at.lonePairs, 1)
+            else:
+                self.assertEquals(at.lonePairs, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

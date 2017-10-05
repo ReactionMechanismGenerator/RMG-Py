@@ -28,73 +28,19 @@
 #                                                                             #
 ###############################################################################
 
+"""
+This module contains unit test for the translator module.
+"""
+
 import re
 import unittest
 from external.wip import work_in_progress
 
+from rmgpy.molecule.atomtype import atomTypes
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.translator import *
 from rmgpy.species import Species
-from .molecule import Atom, Molecule
-from .inchi import P_LAYER_PREFIX, U_LAYER_PREFIX, create_augmented_layers, has_unexpected_lone_pairs
-from .translator import *
-from rmgpy.molecule.converter import debugRDKitMol
 
-class RDKitTest(unittest.TestCase):
-    def testDebugger(self):
-        """
-        Test the debugRDKitMol(rdmol) function doesn't crash
-        
-        We can't really test it in the unit testing framework, because 
-        that already captures and redirects standard output, and that
-        conflicts with the function, but this checks it doesn't crash.
-        """
-        import rdkit.Chem
-        import logging
-        rdmol = rdkit.Chem.MolFromSmiles('CCC')
-        message = debugRDKitMol(rdmol, level=logging.INFO)
-
-class CreateULayerTest(unittest.TestCase):
-    def testC4H6(self):
-        """
-        Test that 3-butene-1,2-diyl biradical is always resulting in the 
-        same u-layer, regardless of the original order.
-        """
-
-        # radical positions 3 and 4
-        adjlist1 = """
-1  C u0 p0 c0 {2,D} {5,S} {6,S}
-2  C u0 p0 c0 {1,D} {3,S} {7,S}
-3  C u1 p0 c0 {2,S} {4,S} {8,S}
-4  C u1 p0 c0 {3,S} {9,S} {10,S}
-5  H u0 p0 c0 {1,S}
-6  H u0 p0 c0 {1,S}
-7  H u0 p0 c0 {2,S}
-8  H u0 p0 c0 {3,S}
-9  H u0 p0 c0 {4,S}
-10 H u0 p0 c0 {4,S}
-
-        """        
-
-        # radical positions 1 and 2
-        adjlist2 = """
-1  C u1 p0 c0 {2,S} {5,S} {6,S}
-2  C u1 p0 c0 {1,S} {3,S} {7,S}
-3  C u0 p0 c0 {2,S} {4,D} {8,S}
-4  C u0 p0 c0 {3,D} {9,S} {10,S}
-5  H u0 p0 c0 {1,S}
-6  H u0 p0 c0 {1,S}
-7  H u0 p0 c0 {2,S}
-8  H u0 p0 c0 {3,S}
-9  H u0 p0 c0 {4,S}
-10 H u0 p0 c0 {4,S}
-        """
-
-        u_layers = []
-        for adjlist in [adjlist1, adjlist2]:
-            mol = Molecule().fromAdjacencyList(adjlist)
-            u_layer = create_augmented_layers(mol)[0]
-            u_layers.append(u_layer)
-
-        self.assertEquals(u_layers[0], u_layers[1])
 
 class InChIGenerationTest(unittest.TestCase):
     def compare(self, adjlist, aug_inchi):
@@ -149,7 +95,7 @@ class InChIGenerationTest(unittest.TestCase):
 
         aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/u2,3'
         self.compare(adjlist, aug_inchi)
-    
+
     def test_C8H8(self):
         """Looks a lot like cycloctene but with 1 double bond replaced by a biradical."""
 
@@ -316,10 +262,10 @@ multiplicity 2
 7 C 1 {4,S} {5,S} {6,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,4,7'
+        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,2,4'
         self.compare(adjlist, aug_inchi)
 
-    def test_C7H9(self):
+    def test_C11H16(self):
 
         adjlist = """
 1 C 0 {5,D}
@@ -364,25 +310,25 @@ multiplicity 2
         closed_shell_aug_inchi = closed_shell.getAugmentedInChI()
         self.assertTrue(singlet_aug_inchi != closed_shell_aug_inchi)
 
-#     def test_C6H5(self):
-#         """Test that the u-layer of phenyl shows atom 1."""
-#         adjlist = """
-# multiplicity 2
-# 1  C u0 p0 c0 {2,D} {3,S} {10,S}
-# 2  C u0 p0 c0 {1,D} {5,S} {7,S}
-# 3  C u0 p0 c0 {1,S} {6,D} {8,S}
-# 4  C u0 p0 c0 {5,D} {6,S} {11,S}
-# 5  C u0 p0 c0 {2,S} {4,D} {9,S}
-# 6  C u1 p0 c0 {3,D} {4,S}
-# 7  H u0 p0 c0 {2,S}
-# 8  H u0 p0 c0 {3,S}
-# 9  H u0 p0 c0 {5,S}
-# 10 H u0 p0 c0 {1,S}
-# 11 H u0 p0 c0 {4,S}
-# """
+    #     def test_C6H5(self):
+    #         """Test that the u-layer of phenyl shows atom 1."""
+    #         adjlist = """
+    # multiplicity 2
+    # 1  C u0 p0 c0 {2,D} {3,S} {10,S}
+    # 2  C u0 p0 c0 {1,D} {5,S} {7,S}
+    # 3  C u0 p0 c0 {1,S} {6,D} {8,S}
+    # 4  C u0 p0 c0 {5,D} {6,S} {11,S}
+    # 5  C u0 p0 c0 {2,S} {4,D} {9,S}
+    # 6  C u1 p0 c0 {3,D} {4,S}
+    # 7  H u0 p0 c0 {2,S}
+    # 8  H u0 p0 c0 {3,S}
+    # 9  H u0 p0 c0 {5,S}
+    # 10 H u0 p0 c0 {1,S}
+    # 11 H u0 p0 c0 {4,S}
+    # """
 
-#         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
-#         self.compare(adjlist, aug_inchi)
+    #         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
+    #         self.compare(adjlist, aug_inchi)
 
     @work_in_progress
     def test_C5H6_triplet_singlet(self):
@@ -413,76 +359,6 @@ multiplicity 3
         aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp4,5'
         self.compare(adjlist, aug_inchi)
 
-class ExpectedLonePairsTest(unittest.TestCase):
-
-    def test_SingletCarbon(self):
-        mol = Molecule(atoms=[Atom(element='C', lonePairs=1)])
-        unexpected = has_unexpected_lone_pairs(mol)
-        self.assertTrue(unexpected)
-
-    def test_NormalCarbon(self):
-        mol = Molecule(atoms=[Atom(element='C', lonePairs=0)])
-        unexpected = has_unexpected_lone_pairs(mol)
-        self.assertFalse(unexpected)
-
-    def test_NormalOxygen(self):
-        mol = Molecule(atoms=[Atom(element='O', lonePairs=2)])
-        unexpected = has_unexpected_lone_pairs(mol)
-        self.assertFalse(unexpected)
-
-    def test_Oxygen_3LP(self):
-        mol = Molecule(atoms=[Atom(element='O', lonePairs=3)])
-        unexpected = has_unexpected_lone_pairs(mol)
-        self.assertTrue(unexpected)
-
-class CreateAugmentedLayersTest(unittest.TestCase):
-    def test_Methane(self):
-        smi = 'C'
-        mol = Molecule().fromSMILES(smi)
-        ulayer, player = create_augmented_layers(mol)
-        self.assertTrue(not ulayer)
-        self.assertTrue(not player)
-
-    def test_SingletMethylene(self):
-        adjlist = """
-multiplicity 1
-1 C u0 p1 c0 {2,S} {3,S}
-2 H u0 p0 c0 {1,S}
-3 H u0 p0 c0 {1,S}
-"""
-        mol = Molecule().fromAdjacencyList(adjlist)
-        ulayer, player = create_augmented_layers(mol)
-        self.assertTrue(not ulayer)
-        self.assertEquals(P_LAYER_PREFIX + '1', player)
-
-    def test_TripletMethylene(self):
-        adjlist = """
-multiplicity 3
-1 C u2 p0 c0 {2,S} {3,S}
-2 H u0 p0 c0 {1,S}
-3 H u0 p0 c0 {1,S}
-"""
-        mol = Molecule().fromAdjacencyList(adjlist)
-        ulayer, player = create_augmented_layers(mol)
-        self.assertEquals(U_LAYER_PREFIX + '1,1', ulayer)
-        self.assertTrue(not player)
-
-    @work_in_progress
-    def test_Nitrate(self):
-        """
-        Test that N atom in the p-layer has correct symbol.
-        """
-        
-        adjlist = """
-1 O u0 p2 c0 {4,D}
-2 O u0 p3 c-1 {4,S}
-3 O u0 p3 c-1 {4,S}
-4 N u0 p0 c+1 {1,D} {2,S} {3,S}
-"""
-        mol = Molecule().fromAdjacencyList(adjlist)
-        ulayer, player = create_augmented_layers(mol)
-        self.assertTrue(not ulayer)
-        self.assertTrue(player.contains(P_LAYER_PREFIX + '1(0)'))
 
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):
@@ -766,5 +642,336 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[O][O]'
         self.compare(adjlist, smiles)
 
-if __name__ == '__main__':
-    unittest.main()
+
+class ParsingTest(unittest.TestCase):
+    def setUp(self):
+
+        self.methane = Molecule().fromAdjacencyList("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+""")
+        self.methylamine = Molecule().fromAdjacencyList("""
+1 N u0 p1 c0 {2,S} {3,S} {4,S}
+2 C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+""")
+
+    def test_fromAugmentedInChI(self):
+        aug_inchi = 'InChI=1S/CH4/h1H4'
+        mol = fromAugmentedInChI(Molecule(), aug_inchi)
+        self.assertTrue(not mol.InChI == '')
+        self.assertTrue(mol.isIsomorphic(self.methane))
+
+        aug_inchi = 'InChI=1/CH4/h1H4'
+        mol = fromAugmentedInChI(Molecule(), aug_inchi)
+        self.assertTrue(not mol.InChI == '')
+        self.assertTrue(mol.isIsomorphic(self.methane))
+
+    def compare(self, adjlist, smiles):
+        """
+        Compare result of parsing an adjacency list and a SMILES string.
+
+        The adjacency list is presumed correct and this is to test the SMILES parser.
+        """
+        mol1 = Molecule().fromAdjacencyList(adjlist)
+        mol2 = Molecule(SMILES=smiles)
+        self.assertTrue(mol1.isIsomorphic(mol2),
+                        "Parsing SMILES={!r} gave unexpected molecule\n{}".format(smiles, mol2.toAdjacencyList()))
+
+    def test_fromSMILES(self):
+        smiles = 'C'
+        mol = fromSMILES(Molecule(), smiles)
+        self.assertTrue(mol.isIsomorphic(self.methane))
+
+        # Test that atomtypes that rely on lone pairs for identity are typed correctly
+        smiles = 'CN'
+        mol = fromSMILES(Molecule(), smiles)
+        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'])
+
+        # Test N2
+        adjlist = '''
+        1 N u0 p1 c0 {2,T}
+        2 N u0 p1 c0 {1,T}
+        '''
+        smiles = 'N#N'
+        self.compare(adjlist, smiles)
+
+        # Test CH4
+        adjlist = '''
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        '''
+        smiles = 'C'
+        self.compare(adjlist, smiles)
+
+        # Test H2O
+        adjlist = '''
+        1 O u0 p2 c0 {2,S} {3,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        '''
+        smiles = 'O'
+        self.compare(adjlist, smiles)
+
+        # Test C2H6
+        adjlist = '''
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        '''
+        smiles = 'CC'
+        self.compare(adjlist, smiles)
+
+        # Test H2
+        adjlist = '''
+        1 H u0 p0 c0 {2,S}
+        2 H u0 p0 c0 {1,S}
+        '''
+        smiles = '[H][H]'
+        self.compare(adjlist, smiles)
+
+        # Test H2O2
+        adjlist = '''
+        1 O u0 p2 c0 {2,S} {3,S}
+        2 O u0 p2 c0 {1,S} {4,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {2,S}
+        '''
+        smiles = 'OO'
+        self.compare(adjlist, smiles)
+
+        # Test C3H8
+        adjlist = '''
+        1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+        2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+        3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+        4  H u0 p0 c0 {1,S}
+        5  H u0 p0 c0 {1,S}
+        6  H u0 p0 c0 {1,S}
+        7  H u0 p0 c0 {2,S}
+        8  H u0 p0 c0 {2,S}
+        9  H u0 p0 c0 {3,S}
+        10 H u0 p0 c0 {3,S}
+        11 H u0 p0 c0 {3,S}
+        '''
+        smiles = 'CCC'
+        self.compare(adjlist, smiles)
+
+        # Test Ar
+        adjlist = '''
+        1 Ar u0 p4 c0
+        '''
+        smiles = '[Ar]'
+        self.compare(adjlist, smiles)
+
+        # Test He
+        adjlist = '''
+        1 He u0 p1 c0
+        '''
+        smiles = '[He]'
+        self.compare(adjlist, smiles)
+
+        # Test CH4O
+        adjlist = '''
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 O u0 p2 c0 {1,S} {6,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {2,S}
+        '''
+        smiles = 'CO'
+        self.compare(adjlist, smiles)
+
+        # Test CO2
+        adjlist = '''
+        1 O u0 p2 c0 {2,D}
+        2 C u0 p0 c0 {1,D} {3,D}
+        3 O u0 p2 c0 {2,D}
+        '''
+        smiles = 'O=C=O'
+        self.compare(adjlist, smiles)
+
+        # Test CO
+        adjlist = '''
+        1 C u0 p1 c-1 {2,T}
+        2 O u0 p1 c+1 {1,T}
+        '''
+        smiles = '[C-]#[O+]'
+        self.compare(adjlist, smiles)
+
+        # Test C2H4
+        adjlist = '''
+        1 C u0 p0 c0 {2,D} {3,S} {4,S}
+        2 C u0 p0 c0 {1,D} {5,S} {6,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {2,S}
+        6 H u0 p0 c0 {2,S}
+        '''
+        smiles = 'C=C'
+        self.compare(adjlist, smiles)
+
+        # Test O2
+        adjlist = '''
+        1 O u0 p2 c0 {2,D}
+        2 O u0 p2 c0 {1,D}
+        '''
+        smiles = 'O=O'
+        self.compare(adjlist, smiles)
+
+        # Test CH3
+        adjlist = '''
+        multiplicity 2
+        1 C u1 p0 c0 {2,S} {3,S} {4,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        '''
+        smiles = '[CH3]'
+        self.compare(adjlist, smiles)
+
+        # Test HO
+        adjlist = '''
+        multiplicity 2
+        1 O u1 p2 c0 {2,S}
+        2 H u0 p0 c0 {1,S}
+        '''
+        smiles = '[OH]'
+        self.compare(adjlist, smiles)
+
+        # Test C2H5
+        adjlist = '''
+        multiplicity 2
+        1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+        2 C u1 p0 c0 {1,S} {3,S} {4,S}
+        3 H u0 p0 c0 {2,S}
+        4 H u0 p0 c0 {2,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {1,S}
+        7 H u0 p0 c0 {1,S}
+        '''
+        smiles = 'C[CH2]'
+        self.compare(adjlist, smiles)
+
+        # Test O
+        adjlist = '''
+        multiplicity 3
+        1 O u2 p2 c0
+        '''
+        smiles = '[O]'
+        self.compare(adjlist, smiles)
+
+        # Test HO2
+        adjlist = '''
+        multiplicity 2
+        1 O u1 p2 c0 {2,S}
+        2 O u0 p2 c0 {1,S} {3,S}
+        3 H u0 p0 c0 {2,S}
+        '''
+        smiles = '[O]O'
+        self.compare(adjlist, smiles)
+
+        # Test CH, methylidyne.
+        # Wikipedia reports:
+        # The ground state is a doublet radical with one unpaired electron,
+        # and the first two excited states are a quartet radical with three
+        # unpaired electrons and a doublet radical with one unpaired electron.
+        # With the quartet radical only 71 kJ above the ground state, a sample
+        # of methylidyne exists as a mixture of electronic states even at
+        # room temperature, giving rise to complex reactions.
+        #
+        adjlist = '''
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 H u0 p0 c0 {1,S}
+        '''
+        smiles = '[CH]'
+        self.compare(adjlist, smiles)
+
+        # Test H
+        adjlist = '''
+        multiplicity 2
+        1 H u1 p0 c0
+        '''
+        smiles = '[H]'
+        self.compare(adjlist, smiles)
+
+        # Test atomic C, which is triplet in ground state
+        adjlist = '''
+        multiplicity 3
+        1 C u2 p1 c0
+        '''
+        smiles = '[C]'
+        self.compare(adjlist, smiles)
+
+        # Test O2
+        adjlist = '''
+        multiplicity 3
+        1 O u1 p2 c0 {2,S}
+        2 O u1 p2 c0 {1,S}
+        '''
+        smiles = '[O][O]'
+        self.compare(adjlist, smiles)
+
+    def test_fromInChI(self):
+        inchi = 'InChI=1S/CH4/h1H4'
+        mol = fromInChI(Molecule(), inchi)
+        self.assertTrue(mol.isIsomorphic(self.methane))
+        # Test that atomtypes that rely on lone pairs for identity are typed correctly
+        inchi = "InChI=1S/CH5N/c1-2/h2H2,1H3"
+        mol = fromInChI(Molecule(), inchi)
+        self.assertEquals(mol.atoms[1].atomType, atomTypes['N3s'])
+
+    # current implementation of SMARTS is broken
+    def test_fromSMARTS(self):
+        smarts = '[CH4]'
+        mol = fromSMARTS(Molecule(), smarts)
+        self.assertTrue(mol.isIsomorphic(self.methane))
+
+    def test_toRDKitMol(self):
+        """
+        Test that toRDKitMol returns correct indices and atom mappings.
+        """
+        bondOrderDict = {'SINGLE': 1, 'DOUBLE': 2, 'TRIPLE': 3, 'AROMATIC': 1.5}
+        mol = fromSMILES(Molecule(), 'C1CCC=C1C=O')
+        rdkitmol, rdAtomIndices = mol.toRDKitMol(removeHs=False, returnMapping=True, sanitize=True)
+        for atom in mol.atoms:
+            # Check that all atoms are found in mapping
+            self.assertTrue(atom in rdAtomIndices)
+            # Check that all bonds are in rdkitmol with correct mapping and order
+            for connectedAtom, bond in atom.bonds.iteritems():
+                bondType = str(
+                    rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom], rdAtomIndices[connectedAtom]).GetBondType())
+                rdkitBondOrder = bondOrderDict[bondType]
+                self.assertEqual(bond.order, rdkitBondOrder)
+
+        # Test for removeHs = True
+        rdkitmol2, rdAtomIndices2 = mol.toRDKitMol(removeHs=True, returnMapping=True, sanitize=True)
+
+        for atom in mol.atoms:
+            # Check that all non-hydrogen atoms are found in mapping
+            if atom.symbol != 'H':
+                self.assertTrue(atom in rdAtomIndices)
+                # Check that all bonds connected to non-hydrogen have the correct mapping and order
+                for connectedAtom, bond in atom.bonds.iteritems():
+                    if connectedAtom.symbol != 'H':
+                        bondType = str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom],
+                                                                    rdAtomIndices[connectedAtom]).GetBondType())
+                        rdkitBondOrder = bondOrderDict[bondType]
+                        self.assertEqual(bond.order, rdkitBondOrder)
