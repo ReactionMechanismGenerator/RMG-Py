@@ -25,24 +25,29 @@
 #                                                                             #
 ###############################################################################
 
-# global imports
-
+from .molecule cimport Atom, Molecule
 cimport element as elements
 cimport inchi as inchiutil
-
-# no .pxd files for these:
-#from .util cimport retrieveElementCount, VALENCES, ORDERS
-#from .inchi cimport AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
-
-from .molecule cimport Atom, Bond, Molecule
 
 cpdef list BACKENDS
 cpdef dict INSTALLED_BACKENDS
 cpdef dict INCHI_LOOKUPS
 cpdef dict SMILES_LOOKUPS
 
+cpdef dict _known_smiles_molecules
+cpdef dict _known_smiles_radicals
 
-#  from <identifier> functions:
+cpdef str toInChI(Molecule mol)
+
+cpdef str toAugmentedInChI(Molecule mol)
+
+cpdef str toInChIKey(Molecule mol)
+
+cpdef str toAugmentedInChIKey(Molecule mol)
+
+cpdef str toSMARTS(Molecule mol)
+
+cpdef str toSMILES(Molecule mol)
 
 cdef Molecule __fromSMILES(Molecule mol, str smilesstr, str backend)
 
@@ -63,6 +68,6 @@ cpdef Molecule fromSMILES(Molecule mol, str smilesstr, str backend=*)
 cpdef Molecule fromSMARTS(Molecule mol, str smartsstr, str backend=*)
 
 cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
-    
+
 cdef Molecule __lookup(Molecule mol, str identifier, str type_identifier)
 

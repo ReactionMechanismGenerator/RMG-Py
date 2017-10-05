@@ -35,7 +35,7 @@ from external.wip import work_in_progress
 from rmgpy.species import Species
 from .molecule import Atom, Molecule
 from .inchi import P_LAYER_PREFIX, U_LAYER_PREFIX, create_augmented_layers, has_unexpected_lone_pairs
-from .generator import *
+from .translator import *
 from rmgpy.molecule.converter import debugRDKitMol
 
 class RDKitTest(unittest.TestCase):

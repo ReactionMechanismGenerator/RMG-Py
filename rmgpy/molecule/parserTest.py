@@ -33,7 +33,7 @@ import unittest
 from rmgpy.molecule.atomtype import atomTypes
 from rmgpy.molecule.inchi import reset_lone_pairs
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.parser import *
+from rmgpy.molecule.translator import *
 
 
 class ParserTest(unittest.TestCase):

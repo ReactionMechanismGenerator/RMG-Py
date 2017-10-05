@@ -38,7 +38,7 @@ from .molecule import Molecule
 from .util import retrieveElementCount
 from .inchi import compose_aug_inchi, P_LAYER_PREFIX, P_LAYER_SEPARATOR, U_LAYER_PREFIX, U_LAYER_SEPARATOR
 
-from .parser import *
+from .translator import fromAugmentedInChI
 
 class InChIParsingTest(unittest.TestCase):
 
