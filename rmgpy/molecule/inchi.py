@@ -28,27 +28,25 @@
 #                                                                             #
 ###############################################################################
 
-import cython
-import re
 import itertools
+import re
 
+import cython
 from rdkit import Chem
 
-from rmgpy.exceptions import InchiException
-
-# search for (*) PARENTHESES
-from rmgpy.molecule.adjlist import ConsistencyChecker
-from rmgpy.molecule.molecule import Atom, Bond, Molecule
-from rmgpy.molecule.converter import toRDKitMol
-from rmgpy.molecule.util import agglomerate, partition, generate_combo, swap
-import rmgpy.molecule.resonance as resonance
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.pathfinder as pathfinder
+import rmgpy.molecule.resonance as resonance
+from rmgpy.exceptions import InchiException
+from rmgpy.molecule.adjlist import ConsistencyChecker
+from rmgpy.molecule.converter import toRDKitMol
+from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.util import agglomerate, partition, generate_combo, swap
 
-PARENTHESES = re.compile( r'\((.[^\(\)]*)\)')
+# search for (*) PARENTHESES
+PARENTHESES = re.compile(r'\((.[^\(\)]*)\)')
 
 INCHI_PREFIX = 'InChI=1'
-
 
 """
 The prefix with the information on the distribution of unpaired electrons across the atoms.
@@ -66,7 +64,6 @@ U_LAYER_PREFIX = '/u'
 
 """The separator that separates the indices of the atoms that bear unpaired electrons."""
 U_LAYER_SEPARATOR = ','
-
 
 """
 The prefix with the information on the distribution of the atoms 
@@ -89,6 +86,7 @@ P_LAYER_SEPARATOR = ','
 ulayer_pattern = re.compile(U_LAYER_PREFIX + r'(.*)')
 player_pattern = re.compile(P_LAYER_PREFIX + r'(.*)')
 
+
 def decompose(string):
     """
     Converts an augmented inchi into 
@@ -104,10 +102,10 @@ def decompose(string):
 
     """
     cython.declare(
-            inchi=str,
-            u_indices=list,
-            p_indices=list,
-        )
+        inchi=str,
+        u_indices=list,
+        p_indices=list,
+    )
 
     if U_LAYER_PREFIX in string:
         inchi = string.split(U_LAYER_PREFIX)[0]
@@ -127,11 +125,12 @@ def decompose(string):
         for index in dummy:
             if '(0)' in str(index):
                 index = int(str(index).split('(0)')[0])
-                p_indices.append((index,0))
+                p_indices.append((index, 0))
             else:
                 p_indices.append(int(index))
 
     return inchi, u_indices, p_indices
+
 
 def ignore_prefix(string):
     """
@@ -144,6 +143,7 @@ def ignore_prefix(string):
 
     return re.split(r"(InChI=1+)(S*)/", string)[-1]
 
+
 def compose_aug_inchi(inchi, ulayer=None, player=None):
     """
     Composes an augmented InChI by concatenating the different pieces
@@ -152,16 +152,17 @@ def compose_aug_inchi(inchi, ulayer=None, player=None):
     InChI=1S/XXXX.../c.../h.../ux,x,/...
     """
     cython.declare(
-            temp=str,
-        )
+        temp=str,
+    )
 
     aug_inchi = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
     aug_inchi += inchi
-    
+
     for layer in filter(None, [ulayer, player]):
         aug_inchi += layer
 
     return aug_inchi
+
 
 def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
     """
@@ -176,9 +177,10 @@ def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
     aug_inchi_key = inchi_key
 
     for layer in filter(None, [ulayer, player]):
-        aug_inchi_key += '-' + layer[1:]#cut off the '/'
+        aug_inchi_key += '-' + layer[1:]  # cut off the '/'
 
-    return aug_inchi_key 
+    return aug_inchi_key
+
 
 def parse_H_layer(inchi):
     """
@@ -200,14 +202,13 @@ def parse_H_layer(inchi):
     """
 
     cython.declare(
-            pieces=list,
-            h_layer=str,
-            piece=str,
-            couples=list,
-            match=str,
-            mobile_h_atoms=list,
-        )
-
+        pieces=list,
+        h_layer=str,
+        piece=str,
+        couples=list,
+        match=str,
+        mobile_h_atoms=list,
+    )
 
     pieces = inchi.split('/')
     h_layer = None
@@ -215,7 +216,7 @@ def parse_H_layer(inchi):
         if piece.startswith('h'):
             h_layer = piece
             break
-    else: 
+    else:
         raise Exception('Could not find the hydrogen layer in the inchi: {}'.format(inchi))
 
     couples = []
@@ -224,6 +225,7 @@ def parse_H_layer(inchi):
         couples.append(mobile_h_atoms)
 
     return couples
+
 
 def parse_E_layer(auxinfo):
     """
@@ -249,19 +251,19 @@ def parse_E_layer(auxinfo):
     """
 
     cython.declare(
-            pieces=list,
-            e_layer=str,
-            piece=str,
-            equivalent_atoms=list,
-            atomtuple=str,
-            indices=list,
-        )
+        pieces=list,
+        e_layer=str,
+        piece=str,
+        equivalent_atoms=list,
+        atomtuple=str,
+        indices=list,
+    )
 
     pieces = auxinfo.split('/')
     e_layer = None
     for piece in pieces:
         if piece.startswith('E'):
-            e_layer = piece[2:]#cut off /E:
+            e_layer = piece[2:]  # cut off /E:
             break
     else:
         return []
@@ -273,7 +275,7 @@ def parse_E_layer(auxinfo):
 
     return equivalent_atoms
 
- 
+
 def parse_N_layer(auxinfo):
     """
     Parses the layer with atom ordering information (N-layer) 
@@ -289,24 +291,23 @@ def parse_N_layer(auxinfo):
     /N:4,3,2,1
 
     The original number of an atom with identification number n is given as the
-    n-th member of this list for a component; the lists are separated with “;”. 
+    n-th member of this list for a component; the lists are separated with ";".
 
     Raises an exception when the N-layer could not be found.
     """
 
-
     cython.declare(
-            pieces=list,
-            atom_numbers=str,
-            piece=str,
-            indices=list,
-        )
+        pieces=list,
+        atom_numbers=str,
+        piece=str,
+        indices=list,
+    )
 
     pieces = auxinfo.split('/')
     atom_numbers = None
     for piece in pieces:
         if piece.startswith('N'):
-            atom_numbers = piece[2:]#cut off N:
+            atom_numbers = piece[2:]  # cut off N:
             break
     else:
         raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
@@ -335,19 +336,18 @@ def create_U_layer(mol, auxinfo):
     """
 
     cython.declare(
-                minmol=Molecule,
-                #rdkitmol=,
-                u_layer=list,
-                i=int,
-                at=Atom,
-                equivalent_atoms=list,
-               )
+        minmol=Molecule,
+        # rdkitmol=,
+        u_layer=list,
+        i=int,
+        at=Atom,
+        equivalent_atoms=list,
+    )
 
     if mol.getRadicalCount() == 0:
         return None
     elif mol.getFormula() == 'H':
         return U_LAYER_PREFIX + '1'
-
 
     # find the resonance isomer with the lowest u index:
     minmol = generate_minimum_resonance_isomer(mol)
@@ -355,7 +355,7 @@ def create_U_layer(mol, auxinfo):
     # create preliminary u-layer:
     u_layer = []
     for i, at in enumerate(minmol.atoms):
-        u_layer.extend([i+1] * at.radicalElectrons)
+        u_layer.extend([i + 1] * at.radicalElectrons)
 
     # extract equivalent atom pairs from E-layer of auxiliary info:
     equivalent_atoms = parse_E_layer(auxinfo)
@@ -376,7 +376,7 @@ def is_valid_combo(combo, mol, distances):
         new_distances=list,
         orig_dist=dict,
         new_dist=dict,
-        )
+    )
 
     # compute shortest path between atoms
     agglomerates = agglomerate(combo)
@@ -423,7 +423,7 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
         orig_distances=list,
         selected_group=list,
         combo=list,
-        )
+    )
     if not equivalent_atoms:
         return u_layer
 
@@ -437,7 +437,6 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
             new_u_layer.extend(group)
             grouped_electrons.remove(group)
             corresponding_E_layers.remove(e_layer)
-
 
     combos = generate_combo(grouped_electrons, corresponding_E_layers)
     # compute original distance:
@@ -477,16 +476,15 @@ def generate_minimum_resonance_isomer(mol):
         cand=Molecule,
         metric_sel=list,
         metric_cand=list,
-        )
-
+    )
 
     candidates = resonance.generate_isomorphic_resonance_structures(mol)
 
     sel = candidates[0]
     metric_sel = get_unpaired_electrons(sel)
     for cand in candidates[1:]:
-       metric_cand = get_unpaired_electrons(cand)
-       if metric_cand < metric_sel:
+        metric_cand = get_unpaired_electrons(cand)
+        if metric_cand < metric_sel:
             sel = cand
             metric_sel = metric_cand
 
@@ -503,7 +501,7 @@ def get_unpaired_electrons(mol):
         locations=list,
         index=int,
         at=Atom,
-        )
+    )
     locations = []
     for index, at in enumerate(mol.atoms):
         if at.radicalElectrons >= 1:
@@ -524,7 +522,7 @@ def compute_agglomerate_distance(agglomerates, mol):
         distances=list,
         agglomerate=list,
         dist=dict,
-        )
+    )
 
     distances = []
     for agglomerate in agglomerates:
@@ -586,14 +584,14 @@ def create_augmented_layers(mol):
         [molcopy.removeAtom(h) for h in hydrogens]
 
         rdkitmol = toRDKitMol(molcopy)
-        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')# suppress stereo warnings
+        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
 
         # extract the atom numbers from N-layer of auxiliary info:
         atom_indices = parse_N_layer(auxinfo)
         atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
 
         # sort the atoms based on the order of the atom indices
-        molcopy.atoms = [x for (y,x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
+        molcopy.atoms = [x for (y, x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
 
         ulayer = create_U_layer(molcopy, auxinfo)
 
@@ -636,7 +634,7 @@ def create_P_layer(mol, auxinfo):
                 if at.lonePairs == 0:
                     p_layer.append('{}{}'.format(i, '(0)'))
                 else:
-                    p_layer.extend([i+1] * at.lonePairs)
+                    p_layer.extend([i + 1] * at.lonePairs)
 
     # extract equivalent atom pairs from E-layer of auxiliary info:
     equivalent_atoms = parse_E_layer(auxinfo)
@@ -1194,15 +1192,17 @@ def fix_unsaturated_bond(mol, indices, aug_inchi):
 
 class InChI(str):
     """InChI is a type of string in which the InChI=1 prefix is ignored."""
+
     def __new__(self, inchi):
+        if not INCHI_PREFIX in inchi:
+            raise InchiException('Not a valid InChI: {}'.format(inchi))
 
-      if not INCHI_PREFIX in inchi:
-        raise InchiException('Not a valid InChI: {}'.format(inchi))
+        return str.__new__(self, ignore_prefix(inchi))
 
-      return str.__new__(self, ignore_prefix(inchi))
 
 class AugmentedInChI(InChI):
     """AugmentedInChI is an InChI with inchi, and unpaired electron attributes."""
+
     def __init__(self, aug_inchi):
         super(AugmentedInChI, self).__init__()
         inchi, u_indices, p_indices = decompose(str(self))
@@ -1212,4 +1212,3 @@ class AugmentedInChI(InChI):
         # default to None
         self.u_indices = u_indices or None
         self.p_indices = p_indices or None
-        
