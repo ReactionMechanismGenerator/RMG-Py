@@ -761,40 +761,6 @@ def fixCharge(mol, u_indices):
     fix_adjacent_charges(mol)
 
 
-def check_bond_order_oxygen(mol):
-    """Check if total bond order of oxygen atoms is smaller than 4."""
-    from rmgpy.molecule.util import ORDERS
-
-    for at in mol.atoms:
-        if at.number == 8:
-            order = sum([ORDERS[b.order] for _, b in at.bonds.iteritems()])
-            not_correct = order >= 4
-            if not_correct:
-                return False
-
-    return True
-
-
-def find_mobile_h_system(mol, all_mobile_h_atoms_couples, test_indices):
-    """
-
-    """
-    dummy = test_indices[:]
-
-    for mobile_h_atom_couple in all_mobile_h_atoms_couples:
-        for test_index in test_indices:
-            if test_index in mobile_h_atom_couple:
-                original_atom = test_index
-                dummy.remove(test_index)
-                mobile_h_atom_couple.remove(test_index)
-                new_partner = mobile_h_atom_couple[0]
-                central = dummy[0]
-                return mol.atoms[central - 1], mol.atoms[original_atom - 1], mol.atoms[new_partner - 1]
-
-    raise Exception('We should always have found the mobile-H system. All mobile H couples: {}, test indices: {}'
-                    .format(all_mobile_h_atoms_couples, test_indices))
-
-
 def fix_adjacent_charges(mol):
     """
     Searches for pairs of charged atoms.
