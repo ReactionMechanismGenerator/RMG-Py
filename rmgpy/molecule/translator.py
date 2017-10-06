@@ -478,7 +478,7 @@ def fromAugmentedInChI(mol, aug_inchi):
 
     mol.multiplicity = len(aug_inchi.u_indices) + 1 if aug_inchi.u_indices else 1
 
-    inchiutil.fix(mol, aug_inchi)
+    inchiutil.fix_molecule(mol, aug_inchi)
 
     mol.updateAtomTypes()
 

@@ -657,127 +657,28 @@ def find_lowest_p_layer(minmol, p_layer, equivalent_atoms):
     """
     return minmol
 
+##################################################################
+# Methods for fixing molecules generated from an augmented InChI #
+##################################################################
 
-def check(mol, aug_inchi):
+def _fix_triplet_to_singlet(mol, p_indices):
     """
-    Check if the molecular structure is correct.
+    Iterates over the atoms and checks whether atoms bearing two unpaired electrons are
+    also present in the p_indices list.
 
-    Checks whether the multiplicity contained in the augmented inchi,
-    corresponds to the number of unpaired electrons + 1 found in the molecule.
-
-    Checks whether the valence of each atom is compatible with the bond order,
-    number of unpaired electrons, lone pairs and charge.
-
-    """
-    cython.declare(inchi=str,
-                   at=Atom
-                   )
-
-    ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
-    inchi, u_indices, p_indices = decompose(str(aug_inchi))
-    assert(mol.getRadicalCount() == len(u_indices))
-
-    for at in mol.atoms:
-        ConsistencyChecker.check_partial_charge(at)
-
-
-def fix_oxygen_unsaturated_bond(mol, u_indices):
-    """
-    Searches for a radical or a charged oxygen atom connected to
-    a closed-shell carbon via an unsatured bond.
-
-    Decrements the unsatured bond,
-    transfers the unpaired electron from O to C or
-    converts the charge from O to an unpaired electron on C,
-    increases the lone pair count of O to 2.
-
-    Only do this once per molecule.
+    If so, convert to the two unpaired electrons into a lone pair, and remove that atom
+    index from the p_indices list.
     """
 
     for at in mol.atoms:
-        if at.isOxygen() and at.radicalElectrons == 1 and at.lonePairs == 1:
-            bonds = mol.getBonds(at)
-            oxygen = at
-            for atom2, bond in bonds.iteritems():
-                if bond.isTriple():
-                    bond.decrementOrder()
-                    oxygen.radicalElectrons -= 1
-                    atom2.radicalElectrons += 1
-                    oxygen.lonePairs += 1
-                    return
-        elif at.isOxygen() and at.charge == 1 and at.lonePairs == 1:
-            bonds = mol.getBonds(at)
-            oxygen = at
-
-            start = oxygen
-            # search for 3-atom-2-bond [X=X-X] paths
-            paths = pathfinder.find_allyl_end_with_charge(start)
-            for path in paths:
-                end = path[-1]
-                start.charge += 1 if start.charge < 0 else -1
-                end.charge += 1 if end.charge < 0 else -1
-                start.lonePairs += 1
-                # filter bonds from path and convert bond orders:
-                bonds = path[1::2]  # odd elements
-                for bond in bonds[::2]:  # even bonds
-                    assert isinstance(bond, Bond)
-                    bond.decrementOrder()
-                for bond in bonds[1::2]:  # odd bonds
-                    assert isinstance(bond, Bond)
-                    bond.incrementOrder()
-                return
-            else:
-                for atom2, bond in bonds.iteritems():
-                    if not bond.isSingle() and atom2.charge == 0:
-                        oxygen.charge -= 1
-                        if (mol.atoms.index(atom2) + 1) in u_indices:
-                            bond.decrementOrder()
-                            atom2.radicalElectrons += 1
-                            u_indices.remove(mol.atoms.index(atom2) + 1)
-                        oxygen.lonePairs += 1
-                        return
+        index = mol.atoms.index(at) + 1
+        if mol.getRadicalCount() == 2 and index in p_indices:
+            at.lonePairs += 1
+            at.radicalElectrons -= 2
+            p_indices.remove(index)
 
 
-def fixCharge(mol, u_indices):
-    """
-    Tries to fix a number of structural features in the molecule related to charge,
-    based on the information from the parameter list of atom indices with unpaired electrons.
-    """
-
-    if not u_indices:
-        return
-
-    is_charged = sum([abs(at.charge) for at in mol.atoms]) != 0
-    is_correct = mol.getRadicalCount() == (mol.multiplicity - 1)
-    if mol.multiplicity < 3 or is_correct or not is_charged:
-        return
-
-    # converting charges to unpaired electrons for atoms in the u-layer
-    convert_charge_to_unpaired_electron(mol, u_indices)
-
-    # convert neighboring atoms (or delocalized paths) to unpaired electrons
-    convert_delocalized_charge_to_unpaired_electron(mol, u_indices)
-
-    fix_adjacent_charges(mol)
-
-
-def fix_adjacent_charges(mol):
-    """
-    Searches for pairs of charged atoms.
-    Neutralizes one unit of charge on each atom,
-    and increments the bond order of the bond in between
-    the atoms.
-    """
-    for at in mol.atoms:
-        if at.charge != 0:
-            for neigh, bond in at.bonds.iteritems():
-                if neigh.charge != 0:
-                    bond.incrementOrder()
-                    at.charge += 1 if at.charge < 0 else -1
-                    neigh.charge += 1 if neigh.charge < 0 else -1
-
-
-def convert_charge_to_unpaired_electron(mol, u_indices):
+def _convert_charge_to_unpaired_electron(mol, u_indices):
     """
     Iterates over the atoms foundin the parameter list and
     converts a unit of charge on atoms into an unpaired electron.
@@ -792,29 +693,7 @@ def convert_charge_to_unpaired_electron(mol, u_indices):
             u_indices.remove(at_index)
 
 
-def convert_delocalized_charge_to_unpaired_electron(mol, u_indices):
-    """
-    Iterates over the atom indices of the parameter list and searches
-    a charged atom that is connected to that atom via some kind of
-    delocalization path.
-
-    """
-    u_indices_copy = u_indices[:]
-    for index in u_indices_copy:
-        start = mol.atoms[index - 1]
-
-        found = convert_4_atom_3_bond_path(start)
-        if found:
-            u_indices.remove(index)
-            continue
-
-        found = convert_3_atom_2_bond_path(start, mol)
-        if found:
-            u_indices.remove(index)
-            continue
-
-
-def convert_4_atom_3_bond_path(start):
+def _convert_4_atom_3_bond_path(start):
     """
     Searches for 4-atom-3-bond [X=X-X=X+] paths starting from the parameter atom.
     If a path is found, the starting atom receives an unpaired electron while
@@ -843,7 +722,7 @@ def convert_4_atom_3_bond_path(start):
     return False
 
 
-def convert_3_atom_2_bond_path(start, mol):
+def _convert_3_atom_2_bond_path(start, mol):
     """
     Searches for 3-atom-2-bond [X=X-X+] paths paths starting from the parameter atom.
     If a correct path is found, the starting atom receives an unpaired electron while
@@ -913,81 +792,174 @@ def convert_3_atom_2_bond_path(start, mol):
     return False
 
 
-def fix(mol, aug_inchi):
+def _convert_delocalized_charge_to_unpaired_electron(mol, u_indices):
     """
-    Fixes a number of structural features of the erroneous Molecule
-    parsed by the backends, based on multiplicity and unpaired electron information
-    stored in the augmented inchi.
+    Iterates over the atom indices of the parameter list and searches
+    a charged atom that is connected to that atom via some kind of
+    delocalization path.
+
+    """
+    u_indices_copy = u_indices[:]
+    for index in u_indices_copy:
+        start = mol.atoms[index - 1]
+
+        found = _convert_4_atom_3_bond_path(start)
+        if found:
+            u_indices.remove(index)
+            continue
+
+        found = _convert_3_atom_2_bond_path(start, mol)
+        if found:
+            u_indices.remove(index)
+            continue
+
+
+def _fix_adjacent_charges(mol):
+    """
+    Searches for pairs of charged atoms.
+    Neutralizes one unit of charge on each atom,
+    and increments the bond order of the bond in between
+    the atoms.
+    """
+    for at in mol.atoms:
+        if at.charge != 0:
+            for neigh, bond in at.bonds.iteritems():
+                if neigh.charge != 0:
+                    bond.incrementOrder()
+                    at.charge += 1 if at.charge < 0 else -1
+                    neigh.charge += 1 if neigh.charge < 0 else -1
+
+
+def _fix_charge(mol, u_indices):
+    """
+    Tries to fix a number of structural features in the molecule related to charge,
+    based on the information from the parameter list of atom indices with unpaired electrons.
     """
 
-    u_indices = aug_inchi.u_indices[:] if aug_inchi.u_indices else []
-    p_indices = aug_inchi.p_indices[:] if aug_inchi.p_indices else []
+    if not u_indices:
+        return
 
-    # ignore atoms that bear already unpaired electrons:
-    for i in set(u_indices[:]):
-        atom = mol.atoms[i - 1]
-        [u_indices.remove(i) for _ in range(atom.radicalElectrons)]
+    is_charged = sum([abs(at.charge) for at in mol.atoms]) != 0
+    is_correct = mol.getRadicalCount() == (mol.multiplicity - 1)
+    if mol.multiplicity < 3 or is_correct or not is_charged:
+        return
 
-        # ignore atoms that bear already lone pairs:
-    for i in set(p_indices[:]):
-        atom = mol.atoms[i - 1]
-        [p_indices.remove(i) for _ in range(atom.lonePairs)]
+    # converting charges to unpaired electrons for atoms in the u-layer
+    _convert_charge_to_unpaired_electron(mol, u_indices)
 
-    fix_triplet_to_singlet(mol, p_indices)
+    # convert neighboring atoms (or delocalized paths) to unpaired electrons
+    _convert_delocalized_charge_to_unpaired_electron(mol, u_indices)
 
-    fixCharge(mol, u_indices)
-
-    reset_lone_pairs(mol, p_indices)
-
-    fix_oxygen_unsaturated_bond(mol, u_indices)
-
-    fix_unsaturated_bond(mol, u_indices, aug_inchi)
-
-    check(mol, aug_inchi)
+    _fix_adjacent_charges(mol)
 
 
-def fix_triplet_to_singlet(mol, p_indices):
+def _reset_lone_pairs(mol, p_indices):
     """
-    Iterates over the atoms and checks whether atoms bearing two unpaired electrons are
-    also present in the p_indices list.
+    Iterates over the atoms of the molecule and
+    resets the atom's lone pair count to the value stored in the p_indices list,
+    or to the default value.
 
-    If so, convert to the two unpaired electrons into a lone pair, and remove that atom
-    index from the p_indices list.
+    """
+    for at in mol.atoms:
+        index = mol.atoms.index(at) + 1  # 1-based index
+        count = p_indices.count(index)
+        if count != 0:
+            at.lonePairs = count
+        else:
+            order = at.getBondOrdersForAtom()
+            at.lonePairs = (elements.PeriodicSystem.valence_electrons[
+                                at.symbol] - order - at.radicalElectrons - at.charge) / 2
+
+
+def _fix_oxygen_unsaturated_bond(mol, u_indices):
+    """
+    Searches for a radical or a charged oxygen atom connected to
+    a closed-shell carbon via an unsatured bond.
+
+    Decrements the unsatured bond,
+    transfers the unpaired electron from O to C or
+    converts the charge from O to an unpaired electron on C,
+    increases the lone pair count of O to 2.
+
+    Only do this once per molecule.
     """
 
     for at in mol.atoms:
-        index = mol.atoms.index(at) + 1
-        if mol.getRadicalCount() == 2 and index in p_indices:
-            at.lonePairs += 1
-            at.radicalElectrons -= 2
-            p_indices.remove(index)
+        if at.isOxygen() and at.radicalElectrons == 1 and at.lonePairs == 1:
+            bonds = mol.getBonds(at)
+            oxygen = at
+            for atom2, bond in bonds.iteritems():
+                if bond.isTriple():
+                    bond.decrementOrder()
+                    oxygen.radicalElectrons -= 1
+                    atom2.radicalElectrons += 1
+                    oxygen.lonePairs += 1
+                    return
+        elif at.isOxygen() and at.charge == 1 and at.lonePairs == 1:
+            bonds = mol.getBonds(at)
+            oxygen = at
+
+            start = oxygen
+            # search for 3-atom-2-bond [X=X-X] paths
+            paths = pathfinder.find_allyl_end_with_charge(start)
+            for path in paths:
+                end = path[-1]
+                start.charge += 1 if start.charge < 0 else -1
+                end.charge += 1 if end.charge < 0 else -1
+                start.lonePairs += 1
+                # filter bonds from path and convert bond orders:
+                bonds = path[1::2]  # odd elements
+                for bond in bonds[::2]:  # even bonds
+                    assert isinstance(bond, Bond)
+                    bond.decrementOrder()
+                for bond in bonds[1::2]:  # odd bonds
+                    assert isinstance(bond, Bond)
+                    bond.incrementOrder()
+                return
+            else:
+                for atom2, bond in bonds.iteritems():
+                    if not bond.isSingle() and atom2.charge == 0:
+                        oxygen.charge -= 1
+                        if (mol.atoms.index(atom2) + 1) in u_indices:
+                            bond.decrementOrder()
+                            atom2.radicalElectrons += 1
+                            u_indices.remove(mol.atoms.index(atom2) + 1)
+                        oxygen.lonePairs += 1
+                        return
 
 
-def fix_butadiene_path(start, end):
+def _is_unsaturated(mol):
     """
-    Searches for a 1,3-butadiene path between the start and end atom.
-    Adds an unpaired electron to start and end atom, and "inverts" the bonds
-    in between them.
+    Does the molecule have a bond that's not single?
+    Eg. a bond that is double or triple or benzene
     """
-    path = pathfinder.find_butadiene(start, end)
-    if path is not None:
-        start.radicalElectrons += 1
-        end.radicalElectrons += 1
-        # filter bonds from path and convert bond orders:
-        bonds = path[1::2]  # odd elements
-        for bond in bonds[::2]:  # even bonds
-            assert isinstance(bond, Bond)
-            bond.decrementOrder()
-        for bond in bonds[1::2]:  # odd bonds
-            assert isinstance(bond, Bond)
-            bond.incrementOrder()
-
-        return True
+    cython.declare(atom1=Atom,
+                   atom2=Atom,
+                   bonds=dict,
+                   bond=Bond)
+    for atom1 in mol.atoms:
+        bonds = mol.getBonds(atom1)
+        for atom2, bond in bonds.iteritems():
+            if not bond.isSingle():
+                return True
 
     return False
 
 
-def fix_mobile_h(mol, inchi, u1, u2):
+def _convert_unsaturated_bond_to_triplet(bond):
+    """
+    Decrements the bond if it is unsatured, and adds an unpaired
+    electron to each of the atoms connected by the bond.
+    """
+    if not bond.isSingle():
+        for at in (bond.atom1, bond.atom2):
+            at.radicalElectrons += 1
+        bond.decrementOrder()
+        return True
+    return False
+
+
+def _fix_mobile_h(mol, inchi, u1, u2):
     """
 
     Identifies a system of atoms bearing unpaired electrons and mobile hydrogens
@@ -1038,38 +1010,31 @@ def fix_mobile_h(mol, inchi, u1, u2):
     return False
 
 
-def convert_unsaturated_bond_to_triplet(bond):
+def _fix_butadiene_path(start, end):
     """
-    Decrements the bond if it is unsatured, and adds an unpaired
-    electron to each of the atoms connected by the bond.
+    Searches for a 1,3-butadiene path between the start and end atom.
+    Adds an unpaired electron to start and end atom, and "inverts" the bonds
+    in between them.
     """
-    if not bond.isSingle():
-        for at in (bond.atom1, bond.atom2):
-            at.radicalElectrons += 1
-        bond.decrementOrder()
+    path = pathfinder.find_butadiene(start, end)
+    if path is not None:
+        start.radicalElectrons += 1
+        end.radicalElectrons += 1
+        # filter bonds from path and convert bond orders:
+        bonds = path[1::2]  # odd elements
+        for bond in bonds[::2]:  # even bonds
+            assert isinstance(bond, Bond)
+            bond.decrementOrder()
+        for bond in bonds[1::2]:  # odd bonds
+            assert isinstance(bond, Bond)
+            bond.incrementOrder()
+
         return True
+
     return False
 
 
-def reset_lone_pairs(mol, p_indices):
-    """
-    Iterates over the atoms of the molecule and
-    resets the atom's lone pair count to the value stored in the p_indices list,
-    or to the default value.
-
-    """
-    for at in mol.atoms:
-        index = mol.atoms.index(at) + 1  # 1-based index
-        count = p_indices.count(index)
-        if count != 0:
-            at.lonePairs = count
-        else:
-            order = at.getBondOrdersForAtom()
-            at.lonePairs = (elements.PeriodicSystem.valence_electrons[
-                                at.symbol] - order - at.radicalElectrons - at.charge) / 2
-
-
-def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
+def _fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """
     Convert an unsaturated bond (double, triple) into a bond
     with a lower bond order (single, double), and give an unpaired electron
@@ -1088,16 +1053,16 @@ def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
         atom2 = mol.atoms[u2 - 1]  # convert to 0-based index for atoms in molecule
         if mol.hasBond(atom1, atom2):
             b = mol.getBond(atom1, atom2)
-            isFixed = convert_unsaturated_bond_to_triplet(b)
+            isFixed = _convert_unsaturated_bond_to_triplet(b)
             if isFixed:
                 break
 
             else:
-                isFixed = fix_mobile_h(mol, inchi, u1, u2)
+                isFixed = _fix_mobile_h(mol, inchi, u1, u2)
                 if isFixed:
                     break
         else:
-            isFixed = fix_butadiene_path(atom1, atom2)
+            isFixed = _fix_butadiene_path(atom1, atom2)
             if isFixed:
                 break
 
@@ -1113,25 +1078,7 @@ def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
         )
 
 
-def isUnsaturated(mol):
-    """
-    Does the molecule have a bond that's not single?
-    Eg. a bond that is double or triple or benzene
-    """
-    cython.declare(atom1=Atom,
-                   atom2=Atom,
-                   bonds=dict,
-                   bond=Bond)
-    for atom1 in mol.atoms:
-        bonds = mol.getBonds(atom1)
-        for atom2, bond in bonds.iteritems():
-            if not bond.isSingle():
-                return True
-
-    return False
-
-
-def fix_unsaturated_bond(mol, indices, aug_inchi):
+def _fix_unsaturated_bond(mol, indices, aug_inchi):
     """
     Adds unpaired electrons to the molecule by converting unsaturated bonds into triplets.
 
@@ -1148,12 +1095,68 @@ def fix_unsaturated_bond(mol, indices, aug_inchi):
         raise Exception('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...' \
                         .format(mol.toAdjacencyList(), aug_inchi))
 
-    unsaturated = isUnsaturated(mol)
+    unsaturated = _is_unsaturated(mol)
 
     while not correct and unsaturated and len(indices) > 1:
-        mol = fix_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
+        mol = _fix_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
         correct = mol.getRadicalCount() == (mol.multiplicity - 1)
-        unsaturated = isUnsaturated(mol)
+        unsaturated = _is_unsaturated(mol)
+
+
+def _check_molecule(mol, aug_inchi):
+    """
+    Check if the molecular structure is correct.
+
+    Checks whether the multiplicity contained in the augmented inchi,
+    corresponds to the number of unpaired electrons + 1 found in the molecule.
+
+    Checks whether the valence of each atom is compatible with the bond order,
+    number of unpaired electrons, lone pairs and charge.
+
+    """
+    cython.declare(inchi=str,
+                   at=Atom
+                   )
+
+    ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
+    inchi, u_indices, p_indices = decompose(str(aug_inchi))
+    assert(mol.getRadicalCount() == len(u_indices))
+
+    for at in mol.atoms:
+        ConsistencyChecker.check_partial_charge(at)
+
+
+def fix_molecule(mol, aug_inchi):
+    """
+    Fixes a number of structural features of the erroneous Molecule
+    parsed by the backends, based on multiplicity and unpaired electron information
+    stored in the augmented inchi.
+    """
+
+    u_indices = aug_inchi.u_indices[:] if aug_inchi.u_indices else []
+    p_indices = aug_inchi.p_indices[:] if aug_inchi.p_indices else []
+
+    # ignore atoms that bear already unpaired electrons:
+    for i in set(u_indices[:]):
+        atom = mol.atoms[i - 1]
+        [u_indices.remove(i) for _ in range(atom.radicalElectrons)]
+
+        # ignore atoms that bear already lone pairs:
+    for i in set(p_indices[:]):
+        atom = mol.atoms[i - 1]
+        [p_indices.remove(i) for _ in range(atom.lonePairs)]
+
+    _fix_triplet_to_singlet(mol, p_indices)
+
+    _fix_charge(mol, u_indices)
+
+    _reset_lone_pairs(mol, p_indices)
+
+    _fix_oxygen_unsaturated_bond(mol, u_indices)
+
+    _fix_unsaturated_bond(mol, u_indices, aug_inchi)
+
+    _check_molecule(mol, aug_inchi)
 
 
 class InChI(str):

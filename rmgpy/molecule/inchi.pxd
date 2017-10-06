@@ -55,16 +55,36 @@ cpdef list compute_agglomerate_distance(list agglomerates, Molecule mol)
 
 cpdef str create_P_layer(Molecule mol, str auxinfo)
 
-cpdef reset_lone_pairs(Molecule mol, list p_indices)
+cpdef _fix_triplet_to_singlet(Molecule mol, list p_indices)
 
-cdef Molecule fix_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
+cpdef _convert_charge_to_unpaired_electron(Molecule mol, list u_indices)
 
-cpdef bint isUnsaturated(Molecule mol)
+cpdef _convert_4_atom_3_bond_path(Atom start)
 
-cpdef check(Molecule mol, aug_inchi)
+cpdef _convert_3_atom_2_bond_path(Atom start, Molecule mol)
 
-cpdef fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
+cpdef _convert_delocalized_charge_to_unpaired_electron(Molecule mol, list u_indices)
 
-cpdef fixCharge(Molecule mol, list u_indices)
+cpdef _fix_adjacent_charges(Molecule mol)
 
-cpdef fix_triplet_to_singlet(Molecule mol, list p_indices)
+cpdef _fix_charge(Molecule mol, list u_indices)
+
+cpdef _reset_lone_pairs(Molecule mol, list p_indices)
+
+cpdef _fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
+
+cpdef bint _is_unsaturated(Molecule mol)
+
+cpdef bint _convert_unsaturated_bond_to_triplet(Bond bond)
+
+cpdef bint _fix_mobile_h(Molecule mol, str inchi, int u1, int u2)
+
+cpdef bint _fix_butadiene_path(Atom start, Atom end)
+
+cpdef Molecule _fix_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
+
+cpdef _fix_unsaturated_bond(Molecule mol, list u_indices, aug_inchi)
+
+cpdef _check_molecule(Molecule mol, aug_inchi)
+
+cpdef fix_molecule(Molecule mol, aug_inchi)

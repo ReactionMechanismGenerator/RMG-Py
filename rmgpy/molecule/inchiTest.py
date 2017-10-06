@@ -34,6 +34,7 @@ from external.wip import work_in_progress
 from .molecule import Atom, Molecule
 
 from .inchi import *
+from .inchi import _reset_lone_pairs
 
 class InChITest(unittest.TestCase):
 
@@ -307,7 +308,7 @@ class ResetLonePairsTest(unittest.TestCase):
         mol = Molecule().fromSMILES(smi)
         p_indices = []
 
-        reset_lone_pairs(mol, p_indices)
+        _reset_lone_pairs(mol, p_indices)
 
         for at in mol.atoms:
             self.assertEquals(at.lonePairs, 0)
@@ -322,7 +323,7 @@ multiplicity 1
         mol = Molecule().fromAdjacencyList(adjlist)
         p_indices = [1]
 
-        reset_lone_pairs(mol, p_indices)
+        _reset_lone_pairs(mol, p_indices)
 
         for at in mol.atoms:
             if at.symbol == 'C':
