@@ -1190,6 +1190,10 @@ class KineticsFamily(Database):
                 if atom.label == '*1' or atom.label == '*2': atom.label = '*'
 
         # If reaction family is its own reverse, relabel atoms
+        # This allows comparison of the product species to forbidden
+        #  structures which are labeled as reactants.
+        # Unfortunately, this means that reaction family info is
+        #  hardcoded, so this must be updated if the database changes.
         if not self.reverseTemplate:
             # Get atom labels for products
             atomLabels = {}
@@ -1197,7 +1201,6 @@ class KineticsFamily(Database):
                 if atom.label != '':
                     atomLabels[atom.label] = atom
 
-            # This is hardcoding of reaction families (bad!)
             label = self.label.lower()
             if label == 'h_abstraction':
                 # '*2' is the H that migrates
@@ -1211,18 +1214,44 @@ class KineticsFamily(Database):
                 atomLabels['*1'].label = '*2'
                 atomLabels['*2'].label = '*1'
                 # reverse all the atoms in the chain between *1 and *2
-                # i.e. swap *4 with the highest, *5 with the second-highest
                 highest = len(atomLabels)
-                if highest>4:
-                    for i in range(4,highest+1):
-                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
+                if highest > 4:
+                    # swap *4 with *5
+                    atomLabels['*4'].label = '*5'
+                    atomLabels['*5'].label = '*4'
+                if highest > 6:
+                    # swap *6 with the highest, etc.
+                    for i in range(6, highest+1):
+                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(6+highest-i)
                         
-            elif label == 'H_shift_cyclopentadiene':
+            elif label == 'intra_ene_reaction':
                 # Labels for nodes are swapped
                 atomLabels['*1'].label = '*2'
                 atomLabels['*2'].label = '*1'
                 atomLabels['*3'].label = '*5'
                 atomLabels['*5'].label = '*3'
+
+            elif label == '6_membered_central_c-c_shift':
+                # Labels for nodes are swapped
+                atomLabels['*1'].label = '*3'
+                atomLabels['*3'].label = '*1'
+                atomLabels['*4'].label = '*6'
+                atomLabels['*6'].label = '*4'
+
+            elif label == '1,2_shiftc':
+                # Labels for nodes are swapped
+                atomLabels['*2'].label = '*3'
+                atomLabels['*3'].label = '*2'
+
+            elif label == 'intra_r_add_exo_scission':
+                # Labels for nodes are swapped
+                atomLabels['*1'].label = '*3'
+                atomLabels['*3'].label = '*1'
+
+            elif label == 'intra_substitutions_isomerization':
+                # Swap *2 and *3
+                atomLabels['*2'].label = '*3'
+                atomLabels['*3'].label = '*2'
 
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
