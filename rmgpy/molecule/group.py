@@ -1990,9 +1990,14 @@ class Group(Graph):
                 else:
                     raise UnexpectedChargeError(graph = newMolecule)
                 #check hardcoded atomtypes
-                if groupAtom.atomType[0] in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s', 'Ot']] and atom.charge == 1:
+                positiveCharged = ['Csc','Cdc','Ctc','N3dc','N5sc','N5dc','N5ddc','N5tc','O2sp','O4sc','O4dc','O4tc',
+                                   'S2sc','S4sc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                negativeCharged = ['Csc','Cdc','Ctc','C2sc','C2dc','C2tc','N0sc','N1sc','N1dc','N1tc','N3dc','N3tdc',
+                                   'N5dddc','N5tdc','N5b','O0sc','O0dc','O2sn','O2dc','O2tc','S0sc','S2sc','S2dc',
+                                   'S2tc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                if groupAtom.atomType[0] in [atomTypes[x] for x in positiveCharged] and atom.charge > 0:
                     pass
-                elif groupAtom.atomType[0] in [atomTypes[x] for x in ['N1d', 'N2s']] and atom.charge == -1:
+                elif groupAtom.atomType[0] in [atomTypes[x] for x in negativeCharged] and atom.charge < 0:
                     pass
                 #declared charge in original group is not same as new charge
                 elif atom.charge in groupAtom.charge:
