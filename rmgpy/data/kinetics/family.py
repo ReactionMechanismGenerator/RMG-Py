@@ -57,10 +57,18 @@ from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsErr
 
 class TemplateReaction(Reaction):
     """
-    A Reaction object generated from a reaction family template. In addition to
-    the usual attributes, this class includes a `family` attribute to store the
-    family that it was created from, as well as a `estimator` attribute to indicate
-    whether it came from a rate rules or a group additivity estimate.
+    A Reaction object generated from a reaction family template. In addition
+    to attributes inherited from :class:`Reaction`, this class includes the
+    following attributes:
+
+    =========== ========================= =====================================
+    Attribute   Type                      Description
+    =========== ========================= =====================================
+    `family`    ``str``                   The kinetics family that the reaction was created from.
+    `estimator` ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`   :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `isForward` ``bool``                  Whether the reaction was generated in the forward direction of the family.
+    =========== ========================= =====================================
     """
 
     def __init__(self,
