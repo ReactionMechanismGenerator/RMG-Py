@@ -25,15 +25,20 @@
 #
 ################################################################################
 
-import unittest
+import filecmp
+import mock
 import os.path
 import shutil
+import unittest
 
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
-from rmgpy.data.kinetics.family import ReactionRecipe
+from rmgpy.data.kinetics.family import TemplateReaction
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
-import filecmp
+from rmgpy.species import Species
+
+
 ###################################################
 
 class TestFamily(unittest.TestCase):
@@ -572,3 +577,48 @@ multiplicity 2
                                  os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/dictionary.txt')))
         finally:
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+
+
+class TestGenerateReactions(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """A function run ONCE before all unit tests in this class."""
+        # Set up a dummy database
+        cls.database = RMGDatabase()
+        cls.database.load(
+            path=os.path.join(settings['test_data.directory'], 'testing_database'),
+            thermoLibraries=[],
+            reactionLibraries=[],
+            kineticsFamilies=['H_Abstraction'],
+            depository=False,
+            solvation=False,
+            testing=True,
+        )
+        cls.database.loadForbiddenStructures()
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function run ONCE after all unit tests in this class."""
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
+    @mock.patch('rmgpy.data.kinetics.family.logging')
+    def test_debug_forbidden_reverse_rxn(self, mock_logging):
+        """Test that we can automatically debug when a reverse reaction is forbidden."""
+        reactants = [Species().fromSMILES('CC'), Species().fromSMILES('[CH2]C=C[CH2]')]
+        products = [Species().fromSMILES('C[CH2]'), Species().fromSMILES('[CH2]C=CC')]
+
+        reaction = TemplateReaction(reactants=reactants, products=products)
+
+        successful = self.database.kinetics.families['H_Abstraction'].addReverseAttribute(reaction)
+
+        self.assertFalse(successful)
+
+        mock_logging.error.assert_has_calls([
+            mock.call('Expecting one matching reverse reaction, not zero in reaction family H_Abstraction for forward reaction CC + [CH2]C=C[CH2] <=> C[CH2] + [CH2]C=CC.\n'),
+        ])
+
+        mock_logging.error.assert_has_calls([
+            mock.call('Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.'),
+        ])
